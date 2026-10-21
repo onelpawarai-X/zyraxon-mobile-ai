@@ -9,7 +9,7 @@
 
 ## ডাউনলোড
 
-সবচেয়ে নতুন বিল্ড **[Releases](../../releases/latest)** পেজে আছে:
+সবচেয়ে নতুন বিল্ড **[Releases](https://github.com/onelpawarai-X/zyraxon-mobile-ai/releases/latest)** পেজে আছে:
 
 | প্ল্যাটফর্ম | ফাইল | সাইজ |
 |---|---|---|
