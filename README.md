@@ -114,9 +114,10 @@ test/       End-to-end টেস্ট
 node test/e2e.mjs        # ফুল end-to-end: UI, মডেল, SSE, টুল কল, টুডু, publish, চরিত্র
 node test/bridgecheck.mjs # বাংলা ভয়েস ব্রিজ (মাইক → চ্যাট → কণ্ঠ)
 node test/mediaperf.mjs  # ব্যাকগ্রাউন্ড ভিডিও: fps, ফ্রেম ড্রপ, CPU খরচ
+node test/typing.mjs     # কম্পোজারে স্পেস/ট্যাব (বাংলা লেখা সহ)
 ```
 
-তিনটাই আসল Chromium-এ আসল কোড চালায় — কোনো নকল নয়।
+চারটাই আসল Chromium-এ আসল কোড চালায় — কোনো নকল নয়।
 
 ### ব্যাকগ্রাউন্ড ভিডিও অপ্টিমাইজ
 
