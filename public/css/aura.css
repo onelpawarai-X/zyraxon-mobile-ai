@@ -1,0 +1,258 @@
+/* ══════════════════════════════════════════════════════════════
+   LIVING PINK AURA — the user's own orb markup, made alive.
+
+   Nested layers keep every motion inside the sphere, and the whole
+   sphere reacts to state (idle / listening / thinking / speaking)
+   through classes set on .voice-hall, so it never looks frozen.
+   ══════════════════════════════════════════════════════════════ */
+
+.orb-wrap{ background:none; border:0; }
+.aura{
+  position:relative; width:100%; height:100%; border-radius:50%;
+  overflow:hidden; isolation:isolate;
+  transform:translateZ(0);
+  background:
+    radial-gradient(circle at 35% 27%, #fffaff 0%, #ffd8f2 9%, #ff9cde 24%, transparent 49%),
+    radial-gradient(ellipse at 70% 70%, #ff4cbe 0%, #ff80d5 30%, transparent 59%),
+    radial-gradient(ellipse at 30% 72%, #ffe7f8 0%, #ff91d9 34%, transparent 59%),
+    #ff69ca;
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.75),
+    inset 0 0 38px rgba(255,192,237,.55),
+    0 0 25px rgba(255,115,214,.65),
+    0 0 65px rgba(255,48,181,.38);
+  animation:auraBreathe 6s ease-in-out infinite;
+}
+.aura-ambient{
+  position:absolute; inset:-38%; border-radius:50%;
+  background:conic-gradient(from 0deg, transparent,
+    rgba(255,65,190,.28), rgba(255,190,238,.22), transparent,
+    rgba(255,60,190,.30), transparent);
+  filter:blur(26px);
+  animation:ambientTurn 20s linear infinite;
+}
+.aura-plasma{ position:absolute; inset:-30%; border-radius:50%; overflow:hidden;
+  filter:blur(9px); mix-blend-mode:screen; }
+.aura-plasma::before{
+  content:''; position:absolute; inset:0;
+  border-radius:45% 55% 60% 40% / 50% 40% 60% 50%;
+  background:conic-gradient(from 0deg,
+    #fffaff 0deg, #ffc5ed 35deg, #ff52c2 70deg, #ffb8e8 105deg,
+    #ffffff 145deg, #ff80d7 180deg, #ff3db9 220deg, #ffd5f2 265deg,
+    #fffaff 310deg, #ff69ca 340deg, #fffaff 360deg);
+  animation:plasmaRotate 7s linear infinite;
+}
+.aura-plasma::after{
+  content:''; position:absolute; inset:8%; border-radius:50%;
+  background:
+    radial-gradient(ellipse at 30% 24%, white 0%, rgba(255,255,255,.96) 8%, rgba(255,229,249,.6) 20%, transparent 40%),
+    radial-gradient(ellipse at 70% 70%, #ff38b9 0%, rgba(255,67,191,.8) 20%, transparent 45%),
+    radial-gradient(ellipse at 28% 78%, #fffaff 0%, #ffa8e1 23%, transparent 48%),
+    radial-gradient(ellipse at 75% 30%, #ffc2eb 0%, transparent 45%);
+  animation:cloudDrift 5s ease-in-out infinite alternate;
+}
+.aura-ribbon{
+  position:absolute; width:150%; height:42%; left:-25%; top:28%;
+  border-radius:50%; filter:blur(8px); mix-blend-mode:screen;
+  background:linear-gradient(180deg, transparent 0%, rgba(255,255,255,.15) 17%,
+    rgba(255,235,250,.98) 39%, rgba(255,128,218,.96) 51%, rgba(255,255,255,.88) 62%,
+    rgba(255,90,200,.45) 77%, transparent 100%);
+  animation:ribbonMove 3.6s ease-in-out infinite alternate;
+}
+.aura-ribbon.r2{ width:145%; height:35%; left:-22%; top:38%;
+  background:linear-gradient(90deg, transparent, rgba(255,105,207,.2),
+    rgba(255,247,253,.98), rgba(255,143,222,.9), rgba(255,75,195,.7), transparent);
+  animation:ribbonMoveTwo 4.4s ease-in-out infinite alternate;
+}
+.aura-ribbon.r3{ width:130%; height:30%; left:-15%; top:18%; filter:blur(12px);
+  background:linear-gradient(90deg, transparent, rgba(255,72,193,.7),
+    rgba(255,255,255,.85), rgba(255,163,227,.9), transparent);
+  animation:ribbonMoveThree 5.2s ease-in-out infinite alternate;
+}
+.aura-core{
+  position:absolute; width:64%; height:64%; left:18%; top:18%; border-radius:50%;
+  filter:blur(12px); mix-blend-mode:screen;
+  background:
+    radial-gradient(ellipse at 40% 30%, rgba(255,255,255,.95), rgba(255,225,247,.7) 20%, transparent 55%),
+    radial-gradient(ellipse at 70% 72%, rgba(255,70,195,.85), transparent 60%);
+  animation:coreMove 4.2s ease-in-out infinite alternate;
+}
+.aura-shine{
+  position:absolute; inset:0; border-radius:50%; pointer-events:none;
+  background:linear-gradient(140deg, rgba(255,255,255,.34), transparent 25%, transparent 75%, rgba(255,255,255,.09));
+  box-shadow:inset 1px 2px 4px rgba(255,255,255,.6), inset 0 0 14px rgba(255,221,247,.3);
+}
+.aura-ripple{ position:absolute; inset:-14%; border-radius:50%; pointer-events:none; z-index:4; }
+.aura-ripple i{ position:absolute; inset:0; border-radius:50%; border:1.5px solid transparent; }
+.voice-hall.listening .aura-ripple i{ animation:auraRipple 2s ease-out infinite; border-color:rgba(120,230,255,.65); }
+.voice-hall.listening .aura-ripple i:nth-child(2){ animation-delay:.66s; }
+.voice-hall.listening .aura-ripple i:nth-child(3){ animation-delay:1.33s; }
+
+/* state reactions — the sphere visibly changes character */
+.voice-hall.listening .aura{
+  animation:auraBreathe 3.2s ease-in-out infinite;
+  box-shadow:inset 0 0 18px rgba(255,255,255,.8), inset 0 0 38px rgba(190,240,255,.6),
+    0 0 32px rgba(120,230,255,.7), 0 0 80px rgba(56,232,255,.45); }
+.voice-hall.thinking .aura{ animation:auraBreathe 2.1s ease-in-out infinite; filter:saturate(1.15); }
+.voice-hall.speaking .aura{ animation:auraSpeak .34s ease-in-out infinite alternate; }
+.voice-hall.speaking .aura-plasma{ animation-duration:3.2s; }
+.voice-hall.speaking .aura-ribbon{ animation-duration:1.8s; }
+.voice-hall.speaking .aura-core{ animation-duration:2s; }
+.voice-hall.speaking .aura-ambient{ animation-duration:9s; }
+
+@keyframes auraBreathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.035); } }
+@keyframes auraSpeak{ from{ transform:scale(1); } to{ transform:scale(1.075); } }
+@keyframes ambientTurn{ to{ transform:rotate(360deg); } }
+@keyframes plasmaRotate{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+@keyframes cloudDrift{
+  0%{ transform:translate(-12%,7%) rotate(-18deg); }
+  35%{ transform:translate(8%,-8%) rotate(15deg); }
+  70%{ transform:translate(-4%,-3%) rotate(38deg); }
+  100%{ transform:translate(10%,9%) rotate(58deg); } }
+@keyframes ribbonMove{
+  0%{ transform:translate(-15%,-25%) rotate(-30deg); }
+  45%{ transform:translate(10%,10%) rotate(8deg); }
+  100%{ transform:translate(-6%,28%) rotate(32deg); } }
+@keyframes ribbonMoveTwo{
+  0%{ transform:translate(12%,18%) rotate(32deg); }
+  50%{ transform:translate(-10%,-12%) rotate(-8deg); }
+  100%{ transform:translate(8%,-20%) rotate(-35deg); } }
+@keyframes ribbonMoveThree{
+  0%{ transform:translate(-8%,-15%) rotate(18deg); }
+  50%{ transform:translate(12%,15%) rotate(-20deg); }
+  100%{ transform:translate(-12%,4%) rotate(30deg); } }
+@keyframes coreMove{
+  0%{ transform:translate(-12%,8%) rotate(0deg); opacity:.65; }
+  50%{ transform:translate(9%,-10%) rotate(45deg); opacity:1; }
+  100%{ transform:translate(-4%,12%) rotate(95deg); opacity:.8; } }
+@keyframes auraRipple{
+  0%{ transform:scale(.86); opacity:.9; }
+  100%{ transform:scale(1.22); opacity:0; } }
+
+/* ══════════════════════════════════════════════════════════════
+   AURA STYLES — the picker really changes the character.
+
+   Each style re-tints the sphere and re-times its motion, driven by
+   [data-aura-style] on .voice-hall. Before this, setStyle() only set the
+   attribute and no CSS answered it, so choosing a style did nothing.
+   ══════════════════════════════════════════════════════════════ */
+.voice-hall[data-aura-style] .aura{ animation-name:auraBreathe; }
+
+/* Aurora — teal/violet, slow and wide */
+.voice-hall[data-aura-style="aurora"] .aura{
+  background:
+    radial-gradient(circle at 35% 27%, #f4fffd 0%, #c9fff4 9%, #56e8d0 24%, transparent 49%),
+    radial-gradient(ellipse at 70% 70%, #2ad6c0 0%, #7af0dc 30%, transparent 59%),
+    radial-gradient(ellipse at 30% 72%, #eafffb 0%, #4fd8e8 34%, transparent 59%),
+    #35d9c8;
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.75), inset 0 0 38px rgba(140,255,240,.55),
+    0 0 25px rgba(90,235,215,.65), 0 0 65px rgba(30,190,180,.40);
+  animation-duration:11s;
+}
+.voice-hall[data-aura-style="aurora"] .aura-ambient{ animation-duration:34s; }
+.voice-hall[data-aura-style="aurora"] .aura-plasma{ filter:blur(14px); animation-duration:26s; }
+
+/* Ember — deep amber/red, fast and hot */
+.voice-hall[data-aura-style="ember"] .aura{
+  background:
+    radial-gradient(circle at 35% 27%, #fff6e8 0%, #ffdcb0 9%, #ff9a3c 24%, transparent 49%),
+    radial-gradient(ellipse at 70% 70%, #ff6a1a 0%, #ffb066 30%, transparent 59%),
+    radial-gradient(ellipse at 30% 72%, #fff0dc 0%, #ff8a3c 34%, transparent 59%),
+    #ff7a2a;
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.7), inset 0 0 38px rgba(255,210,150,.55),
+    0 0 25px rgba(255,150,60,.65), 0 0 65px rgba(255,90,20,.42);
+  animation-duration:4.2s;
+}
+.voice-hall[data-aura-style="ember"] .aura-ambient{ animation-duration:13s; }
+.voice-hall[data-aura-style="ember"] .aura-ribbon{ animation-duration:6s; }
+.voice-hall[data-aura-style="ember"] .aura-core{ animation-duration:5s; }
+
+/* Mint — cool green, gentle */
+.voice-hall[data-aura-style="mint"] .aura{
+  background:
+    radial-gradient(circle at 35% 27%, #f7fff9 0%, #d6ffe4 9%, #7ee9a8 24%, transparent 49%),
+    radial-gradient(ellipse at 70% 70%, #3fd98a 0%, #8df0bb 30%, transparent 59%),
+    radial-gradient(ellipse at 30% 72%, #effff5 0%, #66e6a0 34%, transparent 59%),
+    #4fe096;
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.75), inset 0 0 38px rgba(180,255,210,.55),
+    0 0 25px rgba(110,235,165,.65), 0 0 65px rgba(50,200,130,.40);
+  animation-duration:8s;
+}
+.voice-hall[data-aura-style="mint"] .aura-ambient{ animation-duration:27s; }
+
+/* Ocean — deep blue, very slow drift */
+.voice-hall[data-aura-style="ocean"] .aura{
+  background:
+    radial-gradient(circle at 35% 27%, #f2f8ff 0%, #cfe4ff 9%, #5aa8ff 24%, transparent 49%),
+    radial-gradient(ellipse at 70% 70%, #2f7ff0 0%, #7fc0ff 30%, transparent 59%),
+    radial-gradient(ellipse at 30% 72%, #eaf4ff 0%, #4f96f0 34%, transparent 59%),
+    #3f8ef0;
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.75), inset 0 0 38px rgba(170,215,255,.55),
+    0 0 25px rgba(100,170,255,.65), 0 0 65px rgba(40,110,230,.42);
+  animation-duration:14s;
+}
+.voice-hall[data-aura-style="ocean"] .aura-ambient{ animation-duration:44s; }
+.voice-hall[data-aura-style="ocean"] .aura-plasma{ animation-duration:32s; }
+
+/* Sunset — magenta to gold, lively */
+.voice-hall[data-aura-style="sunset"] .aura{
+  background:
+    radial-gradient(circle at 35% 27%, #fff8f0 0%, #ffd9b8 9%, #ff8fb0 24%, transparent 49%),
+    radial-gradient(ellipse at 70% 70%, #ff5a8a 0%, #ffb26b 30%, transparent 59%),
+    radial-gradient(ellipse at 30% 72%, #fff0e0 0%, #ff9a6b 34%, transparent 59%),
+    #ff7f9a;
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.75), inset 0 0 38px rgba(255,205,175,.55),
+    0 0 25px rgba(255,145,150,.65), 0 0 65px rgba(255,95,120,.42);
+  animation-duration:5.5s;
+}
+.voice-hall[data-aura-style="sunset"] .aura-ribbon{ animation-duration:7.5s; }
+
+/* Galaxy — indigo with a starfield feel, slow turn */
+.voice-hall[data-aura-style="galaxy"] .aura{
+  background:
+    radial-gradient(circle at 35% 27%, #f6f2ff 0%, #ded0ff 9%, #9a6bff 24%, transparent 49%),
+    radial-gradient(ellipse at 70% 70%, #6f3ff0 0%, #b18fff 30%, transparent 59%),
+    radial-gradient(ellipse at 30% 72%, #efe8ff 0%, #8f66f0 34%, transparent 59%),
+    #8259f0;
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.7), inset 0 0 38px rgba(200,180,255,.55),
+    0 0 25px rgba(150,110,255,.65), 0 0 65px rgba(90,50,220,.45);
+  animation-duration:12s;
+}
+.voice-hall[data-aura-style="galaxy"] .aura-ambient{ animation-duration:38s; }
+.voice-hall[data-aura-style="galaxy"] .aura-plasma{ animation-duration:22s; filter:blur(11px); }
+
+/* Rose — soft blush, the gentlest motion */
+.voice-hall[data-aura-style="rose"] .aura{
+  background:
+    radial-gradient(circle at 35% 27%, #fffafc 0%, #ffe0ee 9%, #ffa8cd 24%, transparent 49%),
+    radial-gradient(ellipse at 70% 70%, #ff6aa8 0%, #ffb0d0 30%, transparent 59%),
+    radial-gradient(ellipse at 30% 72%, #fff2f8 0%, #ff9ac4 34%, transparent 59%),
+    #ff8cbc;
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.8), inset 0 0 38px rgba(255,215,235,.6),
+    0 0 25px rgba(255,150,195,.6), 0 0 65px rgba(255,110,175,.38);
+  animation-duration:16s;
+}
+.voice-hall[data-aura-style="rose"] .aura-ambient{ animation-duration:48s; }
+
+/* Cyber — neon cyan/magenta, quick pulse */
+.voice-hall[data-aura-style="cyber"] .aura{
+  background:
+    radial-gradient(circle at 35% 27%, #f0ffff 0%, #c8fbff 9%, #38e8ff 24%, transparent 49%),
+    radial-gradient(ellipse at 70% 70%, #00d4ff 0%, #7cf0ff 30%, transparent 59%),
+    radial-gradient(ellipse at 30% 72%, #ffe6fb 0%, #ff4fd8 34%, transparent 59%),
+    #2fd8f0;
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.8), inset 0 0 38px rgba(160,250,255,.6),
+    0 0 25px rgba(60,230,255,.7), 0 0 65px rgba(255,70,215,.4);
+  animation-duration:3.2s;
+}
+.voice-hall[data-aura-style="cyber"] .aura-ambient{ animation-duration:9s; }
+.voice-hall[data-aura-style="cyber"] .aura-core{ animation-duration:3.5s; }
+

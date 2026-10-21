@@ -1,0 +1,54 @@
+{
+  "name": "zyraxon-desktop",
+  "productName": "ZYRAXON",
+  "version": "1.0.0",
+  "description": "ZYRAXON — বাংলা মোবাইল/ডেস্কটপ AI অ্যাসিস্ট্যান্ট (Windows, macOS, Linux)",
+  "main": "main.cjs",
+  "private": true,
+  "author": {
+    "name": "ZYRAXON",
+    "email": "hello@zyraxon.ai"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zyraxon/zyraxon.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "test": "ZYRAXON_SELFTEST=1 electron .",
+    "dist": "electron-builder --win --mac --linux",
+    "dist:linux": "electron-builder --linux AppImage",
+    "dist:win": "electron-builder --win nsis",
+    "dist:mac": "electron-builder --mac dmg"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "ai.zyraxon.desktop",
+    "productName": "ZYRAXON",
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "lib/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      { "from": "../server", "to": "server" },
+      { "from": "../public", "to": "public" },
+      { "from": "../data", "to": "data", "filter": ["**/*", "!sites/**"] }
+    ],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "artifactName": "ZYRAXON-Setup-${version}.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "mac": { "target": ["dmg"], "category": "public.app-category.productivity" },
+    "linux": { "target": ["AppImage"], "category": "Utility" }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "ZYRAXON — মোবাইল AI সহকারী",
+  "short_name": "ZYRAXON",
+  "description": "রিয়েল-টাইম বাংলা ভয়েস, রিয়েল টুল কল, টুডু-চালিত অটোনমি, ওয়েবসাইট পাবলিশ — একটাই মোবাইল অ্যাসিস্ট্যান্ট।",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05060f",
+  "theme_color": "#05060f",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    { "src": "/assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "স্ক্রিন দেখো", "url": "/?q=স্ক্রিনে%20কী%20আছে%20দেখো" },
+    { "name": "ওয়েবসাইট বানাও", "url": "/?q=ওয়েবসাইট%20বানাও" }
+  ]
+}

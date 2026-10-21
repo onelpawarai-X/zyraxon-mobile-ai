@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZYRAXON — যোগাযোগ</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg,#0f0c29,#302b63,#24243e); color:#fff; min-height:100vh; }
+  nav { display:flex; justify-content:space-between; align-items:center; padding:18px 40px; background:rgba(0,0,0,0.3); backdrop-filter:blur(10px); position:sticky; top:0; z-index:10; }
+  .logo { font-size:22px; font-weight:800; letter-spacing:2px; background:linear-gradient(90deg,#ff6ec4,#7873f5); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  nav a { color:#fff; text-decoration:none; margin-left:24px; font-size:15px; opacity:0.85; transition:opacity .2s; }
+  nav a:hover { opacity:1; }
+  .container { max-width:600px; margin:60px auto; padding:0 24px; }
+  h1 { text-align:center; font-size:40px; margin-bottom:8px; }
+  .subtitle { text-align:center; opacity:0.7; margin-bottom:40px; }
+  .card { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:28px; }
+  .field { margin-bottom:18px; }
+  .field label { display:block; margin-bottom:6px; font-size:14px; opacity:0.8; }
+  .field input, .field textarea { width:100%; padding:12px 14px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; font-size:15px; font-family:inherit; }
+  .field textarea { min-height:120px; resize:vertical; }
+  .btn { width:100%; padding:14px; background:linear-gradient(90deg,#ff6ec4,#7873f5); color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; transition:transform .2s; }
+  .btn:hover { transform:translateY(-2px); }
+  .info { margin-top:24px; text-align:center; opacity:0.7; font-size:14px; }
+  footer { text-align:center; padding:30px; opacity:0.5; font-size:13px; border-top:1px solid rgba(255,255,255,0.1); margin-top:40px; }
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">ZYRAXON</div>
+  <div>
+    <a href="index.html">হোম</a>
+    <a href="about.html">আমার সম্পর্কে</a>
+    <a href="contact.html">যোগাযোগ</a>
+  </div>
+</nav>
+<div class="container">
+  <h1>যোগাযোগ করুন</h1>
+  <p class="subtitle">আমার সাথে যোগাযোগ করতে নিচের ফর্মটি পূরণ করুন</p>
+  <div class="card">
+    <div class="field"><label>নাম</label><input type="text" placeholder="আপনার নাম"></div>
+    <div class="field"><label>ইমেইল</label><input type="email" placeholder="আপনার ইমেইল"></div>
+    <div class="field"><label>বার্তা</label><textarea placeholder="আপনার বার্তা লিখুন..."></textarea></div>
+    <button class="btn">পাঠান</button>
+  </div>
+  <p class="info">ইমেইল: hello@zyraxon.com · ফোন: +880 1XXX-XXXXXX</p>
+</div>
+<footer>© 2025 ZYRAXON — সর্বস্বত্ব সংরক্ষিত</footer>
+</body>
+</html>

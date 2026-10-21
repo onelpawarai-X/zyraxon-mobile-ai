@@ -1,0 +1,27 @@
+# ── build outputs (shipped as GitHub Releases, not source) ──
+desktop/dist/
+desktop/node_modules/
+android/build/
+android/zyraxon.apk
+android/zyraxon.apk.idsig
+android/app/src/main/assets/
+
+# ── vendored binaries (fetched at runtime, too large for git) ──
+public/vendor/
+public/shots/
+public/assets/bg/
+public/assets/gt/
+
+# ── runtime data ──
+data/sites/
+data/*.db
+data/*.sqlite
+*.log
+
+# ── tooling ──
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.agent_tmp/
+node_modules/

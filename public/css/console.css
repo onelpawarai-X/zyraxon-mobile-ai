@@ -1,0 +1,203 @@
+/* ══════════════════════════════════════════════════════════════
+   ZYRAXON — HOME + CONSOLE
+   Home is the orb alone over the live video. Everything textual
+   (chat, live AI speech, todos, tool runs, artifacts) lives in a
+   separate console sheet that slides up over it.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── home: the orb owns the screen ──────────────────────────── */
+.app{ display:flex; flex-direction:column; }
+.stage{ flex:1; display:flex; align-items:center; justify-content:center;
+  padding:0 14px; overflow:hidden; }
+.voice-hall{ gap:14px; width:100%; max-width:460px; }
+.orb-wrap{ width:min(72vw,300px); height:min(72vw,300px); }
+
+/* glass that does not need a backdrop pass — cheaper and just as pretty */
+.live-caption,
+.speak-box{
+  background:linear-gradient(158deg, rgba(255,255,255,.20), rgba(255,255,255,.07));
+  border:1px solid rgba(255,255,255,.30);
+  box-shadow:0 10px 30px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.45);
+  border-radius:var(--r-lg);
+  backdrop-filter:blur(9px) saturate(160%);
+  -webkit-backdrop-filter:blur(9px) saturate(160%);
+}
+.live-caption{ width:100%; padding:11px 14px; text-align:center; }
+.live-head{ justify-content:center; }
+.live-wave{ margin-left:10px; }
+#live-text{ font-size:14px; line-height:1.55; }
+.speak-box{ display:flex; gap:9px; align-items:flex-start; width:100%; padding:10px 13px; }
+.speak-box .sb-ico{ flex:0 0 auto; font-size:15px; line-height:1.5; }
+#speak-text{ margin:0; font-size:13.5px; line-height:1.55; color:var(--ink); }
+
+/* ── the button that opens the console ──────────────────────── */
+.console-btn{
+  display:inline-flex; align-items:center; gap:9px; padding:10px 18px;
+  border-radius:99px; font-size:13px; font-weight:600; color:var(--ink);
+  background:linear-gradient(158deg, rgba(255,255,255,.26), rgba(255,255,255,.10));
+  border:1px solid rgba(255,255,255,.34);
+  box-shadow:0 10px 26px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.5);
+  backdrop-filter:blur(10px) saturate(170%); -webkit-backdrop-filter:blur(10px) saturate(170%);
+  transition:transform .16s ease, box-shadow .16s ease;
+}
+.console-btn:active{ transform:scale(.97); }
+.console-btn svg{ width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+.cb-dot{ width:8px; height:8px; border-radius:50%; background:#ff5cae; box-shadow:0 0 10px #ff5cae; animation:pulse 1.1s ease-in-out infinite; }
+
+/* ── console sheet ──────────────────────────────────────────── */
+.console{ position:fixed; inset:0; z-index:60; display:flex; align-items:flex-end; justify-content:center; }
+.console[hidden]{ display:none; }
+.console-panel{
+  position:relative; width:100%; max-width:640px; height:92dvh;
+  display:flex; flex-direction:column; overflow:hidden;
+  border-radius:24px 24px 0 0;
+  animation:sheetUp .26s cubic-bezier(.22,1,.36,1);
+}
+.console-head{ display:flex; align-items:center; gap:8px; padding:10px 12px 8px; }
+.console-tabs{ flex:1; display:flex; gap:6px; justify-content:center; }
+.ctab{ padding:7px 15px; border-radius:99px; font-size:12.5px; font-weight:600; color:var(--ink2);
+  background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.20); }
+.ctab.on{ color:#fff; background:linear-gradient(158deg, rgba(255,92,174,.55), rgba(139,92,255,.45));
+  border-color:rgba(255,255,255,.42); box-shadow:0 6px 18px rgba(255,92,174,.28); }
+.ctab span{ font-size:10.5px; opacity:.9; }
+
+.console-body{ flex:1; overflow-y:auto; overscroll-behavior:contain; padding:4px 12px 10px;
+  display:flex; flex-direction:column; gap:10px; scroll-behavior:smooth; }
+.cview{ display:none; flex-direction:column; gap:10px; }
+.cview.on{ display:flex; }
+
+/* surfaces inside the console sit on glass-on-glass, so no extra blur pass */
+/* the todo card and the tool card are the same frosted glass as everything
+   else, on a slightly lighter fill so they read as cards, not as holes */
+.console .taskboard,
+.console .toollog,
+.console .dock,
+.console .artifact{
+  background:linear-gradient(158deg, rgba(255,255,255,.17), rgba(255,255,255,.07)) !important;
+  border:1px solid rgba(255,255,255,.30) !important;
+  box-shadow:0 8px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.42) !important;
+  border-radius:16px; padding:10px 12px;
+}
+/* The docked panels are small; blurring them on top of the sheet's own blur
+   would be a second full-screen pass every frame. A translucent fill reads the
+   same and costs nothing. */
+.console .dock{ backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+.console .composer{ padding:8px 12px calc(10px + var(--sab)); }
+.console .composer-inner{ border-radius:18px; }
+.console .quickbar{ padding-bottom:2px; }
+
+/* chat bubbles: white glass, high contrast, no blur */
+.console .chat{ padding:2px 0; }
+.console .msg{ backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+.console .msg.ai{ background:linear-gradient(158deg, rgba(255,255,255,.20), rgba(255,255,255,.08));
+  border:1px solid rgba(255,255,255,.28); }
+.console .msg.user{ background:linear-gradient(158deg, rgba(255,92,174,.42), rgba(139,92,255,.34));
+  border:1px solid rgba(255,255,255,.30); }
+
+/* the live reasoning bubble: visible in the transcript, never spoken */
+.console .msg.think{ background:rgba(255,255,255,.07); border:1px dashed rgba(255,255,255,.22);
+  font-size:.86em; opacity:.92; }
+.console .msg.think .think-head{ display:flex; align-items:center; gap:6px; font-size:.74em;
+  letter-spacing:.08em; text-transform:uppercase; opacity:.7; margin-bottom:4px; }
+.console .msg.think .think-body{ white-space:pre-wrap; word-break:break-word; opacity:.88; }
+.console .msg.think.live .think-head::after{ content:'…'; }
+/* three dots that keep moving while she is thinking — visible feedback from the
+   instant the user speaks, before a single token has arrived */
+.console .msg.think .tdot{ width:6px; height:6px; border-radius:50%; background:currentColor;
+  opacity:.35; animation:thinkDot 1.05s ease-in-out infinite; }
+.console .msg.think .tdot:nth-child(2){ animation-delay:.15s; }
+.console .msg.think .tdot:nth-child(3){ animation-delay:.3s; }
+@keyframes thinkDot{ 0%,100%{ opacity:.25; transform:translateY(0); } 50%{ opacity:1; transform:translateY(-2px); } }
+
+#tb-empty{ text-align:center; padding:18px 6px; opacity:.75; }
+.tb-list.collapsed{ display:none; }
+.tb-item.done .tb-title{ text-decoration:line-through; opacity:.65; }
+
+@keyframes sheetUp{ from{ transform:translateY(6%); opacity:.4; } to{ transform:none; opacity:1; } }
+
+/* ── modal-open: the glass stays, the video keeps playing ──────
+   An earlier version dimmed the clip, killed every backdrop-filter and
+   painted the panel navy so it would be cheap. It looked nothing like the
+   crystal skin and the background stopped moving. The panel is one large
+   surface, so a real blur costs nothing noticeable — keep the look. */
+html.modal-open .bg-video,
+html.modal-open .bg-image{ opacity:1; }
+html.modal-open .console-panel,
+html.modal-open .drawer-panel{
+  background:linear-gradient(168deg, rgba(255,255,255,.17), rgba(255,255,255,.07)) !important;
+  backdrop-filter:blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(180%) !important;
+  border:1px solid rgba(255,255,255,.30) !important;
+}
+
+/* the monitoring model's running commentary */
+.monitorbar{
+  display:flex; align-items:center; gap:9px; padding:9px 12px; border-radius:14px;
+  background:linear-gradient(158deg, rgba(255,255,255,.17), rgba(255,255,255,.07));
+  border:1px solid rgba(255,255,255,.30);
+  box-shadow:0 8px 22px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.42);
+  backdrop-filter:blur(12px) saturate(170%); -webkit-backdrop-filter:blur(12px) saturate(170%);
+  font-size:12.5px; line-height:1.5;
+}
+.monitorbar[hidden]{ display:none; }
+.mon-name{ font-weight:700; font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:var(--ink2); }
+.mon-text{ color:var(--ink); }
+.mon-dot{ width:8px; height:8px; border-radius:50%; background:#4ade80; box-shadow:0 0 10px #4ade80; animation:pulse 1.1s ease-in-out infinite; flex:0 0 auto; }
+
+/* ══════════════════════════════════════════════════════════════
+   SEPARATE DOCKED PANELS + LIVE CODE OVERLAY
+   The todo list and the tool log are their own panels beside the
+   chat sheet, and the code she is writing floats on top of the
+   whole screen as translucent glass. All three keep the same
+   performance rule: one blur pass on a large surface, no nested
+   backdrop-filters, so the phone stays smooth.
+   ══════════════════════════════════════════════════════════════ */
+
+.console-panel{ position:relative; }
+
+.dock{
+  position:absolute; top:56px; right:calc(100% + 14px); width:280px;
+  max-height:calc(100% - 90px); display:flex; flex-direction:column; gap:8px;
+  padding:10px 12px; border-radius:18px; overflow:hidden;
+  background:linear-gradient(158deg, rgba(255,255,255,.19), rgba(255,255,255,.07));
+  border:1px solid rgba(255,255,255,.30);
+  box-shadow:0 12px 34px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.44);
+  backdrop-filter:blur(13px) saturate(175%); -webkit-backdrop-filter:blur(13px) saturate(175%);
+  animation:dockIn .22s cubic-bezier(.22,1,.36,1);
+}
+.dock[hidden]{ display:none; }
+.dock + .dock{ top:auto; bottom:16px; }
+.dock-head{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink); }
+.dock-head b{ flex:1; }
+.dock-head .tb-count,.dock-head .tl-count{ font-size:11.5px; opacity:.85; }
+.dock .tb-list{ overflow-y:auto; margin:0; padding:0 0 0 2px; list-style:none; }
+.dock .tl-list{ overflow-y:auto; }
+.dock .tb-bar{ height:5px; border-radius:99px; background:rgba(255,255,255,.16); overflow:hidden; }
+.dock .tb-bar i{ display:block; height:100%; width:0%; border-radius:99px;
+  background:linear-gradient(90deg,var(--acc),var(--acc2)); transition:width .4s ease; }
+@keyframes dockIn{ from{ transform:translateX(10px); opacity:.3; } to{ transform:none; opacity:1; } }
+
+/* Narrow screens (a phone in portrait) have no room beside the sheet, so the
+   panels stack under the chat instead of overflowing off-screen. */
+@media (max-width:860px){
+  .dock{ position:static; width:auto; max-height:34dvh; margin:0 12px 8px; right:auto; }
+  .dock + .dock{ bottom:auto; }
+}
+
+/* ── live code overlay ─────────────────────────────────────── */
+.code-overlay{
+  position:fixed; z-index:75; left:50%; transform:translateX(-50%);
+  top:calc(14px + var(--sat)); width:min(94vw,720px); max-height:44dvh;
+  display:flex; flex-direction:column; overflow:hidden;
+  border-radius:18px; padding:10px 12px;
+  animation:coIn .24s cubic-bezier(.22,1,.36,1);
+}
+.code-overlay[hidden]{ display:none; }
+.co-head{ display:flex; align-items:center; gap:8px; font-size:12px; color:var(--ink); margin-bottom:6px; }
+.co-head b{ flex:1; }
+.co-dot{ width:8px; height:8px; border-radius:50%; background:var(--acc3); box-shadow:0 0 10px var(--acc3); animation:pulse 1.1s ease-in-out infinite; }
+.co-body{ margin:0; overflow:auto; font-family:var(--mono,ui-monospace,Menlo,Consolas,monospace);
+  font-size:11.5px; line-height:1.55; white-space:pre; color:#eaf2ff; }
+.co-body code{ white-space:pre; }
+@keyframes coIn{ from{ transform:translate(-50%,-8px); opacity:.35; } to{ transform:translate(-50%,0); opacity:1; } }
+

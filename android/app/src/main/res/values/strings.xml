@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ZYRAXON</string>
+    <string name="acc_label">ZYRAXON কন্ট্রোল</string>
+    <string name="acc_summary">অ্যাপ খোলা, ট্যাপ, লেখা, স্ক্রিন পড়া</string>
+    <string name="acc_desc">চালু করলে জাইরাক্সন সত্যিই তোমার ফোন চালাতে পারবে — অ্যাপ খুলবে, ট্যাপ করবে, লিখবে, স্ক্রিন পড়বে, স্ক্রিনশট নেবে।</string>
+</resources>

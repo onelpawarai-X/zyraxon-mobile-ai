@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You — ZYRAXON</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 30%, #4a2c6a 60%, #7b4a9e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #ff6b6b, #ff8c42);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            letter-spacing: 0.2em;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+        }
+
+        .poem {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin: 2rem 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .poem-line {
+            font-size: 1.3rem;
+            margin: 0.5rem 0;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .poem-line:nth-child(1) { animation-delay: 0s; }
+        .poem-line:nth-child(2) { animation-delay: 0.2s; }
+        .poem-line:nth-child(3) { animation-delay: 0.4s; }
+        .poem-line:nth-child(4) { animation-delay: 0.6s; }
+        .poem-line:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card h3 {
+            color: #ff6b6b;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .card p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #ff6b6b, #ff8c42);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-top: 1rem;
+            font-weight: 500;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .features {
+            margin: 3rem 0;
+        }
+
+        .feature {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature h4 {
+            color: #ff6b6b;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>For You</h1>
+            <div class="subtitle">A little something, just for you</div>
+        </header>
+
+        <div class="poem">
+            <div class="poem-line">তোমার জন্য এই সাইট বানিয়েছি</div>
+            <div class="poem-line">তোমার হাসি, তোমার গল্প</div>
+            <div class="poem-line">তোমার নাম, তোমার আলো</div>
+            <div class="poem-line">তোমার জন্য, সবসময়</div>
+        </div>
+
+        <div class="gallery">
+            <div class="card">
+                <h3>✦ Romantic</h3>
+                <p>For the one who owns my heart</p>
+            </div>
+            <div class="card">
+                <h3>✦ Sweet</h3>
+                <p>As sweet as your smile</p>
+            </div>
+            <div class="card">
+                <h3>✦ Eternal</h3>
+                <p>Like our never-ending story</p>
+            </div>
+        </div>
+
+        <a href="https://m.facebook.com" class="btn">Say Hello</a>
+
+        <div class="features">
+            <div class="feature">
+                <h4>✦ Just for you</h4>
+                <p>Every pixel, every line — made with you in mind</p>
+            </div>
+            <div class="feature">
+                <h4>✦ Forever yours</h4>
+                <p>This site will always welcome you back</p>
+            </div>
+            <div class="feature">
+                <h4>✦ Made with love</h4>
+                <p>Every word, every design choice is heartfelt</p>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Created with affection, always.</p>
+        </footer>
+    </div>
+</body>
+</html>

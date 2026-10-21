@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#05060f" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>ZYRAXON</title>
+<link rel="manifest" href="/manifest.webmanifest" />
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="/css/app.css" />
+  <link rel="stylesheet" href="/css/aura.css" />
+  <link rel="stylesheet" href="/css/console.css" />
+</head>
+<body>
+<div id="app" class="app">
+
+  <!-- ── animated background ─────────────────────────────────── -->
+  <div class="bg-stage" aria-hidden="true">
+    <canvas id="bg-canvas"></canvas>
+    <video id="bg-video" class="bg-video" playsinline muted loop preload="auto"></video>
+    <img id="bg-image" class="bg-image" alt="" />
+    <div class="bg-veil"></div>
+    <div class="bg-grain"></div>
+  </div>
+
+  <!-- ── top bar ─────────────────────────────────────────────── -->
+  <header class="topbar glass">
+    <button class="char-chip" id="char-chip" data-i18n-title="set.characters">
+      <span class="char-avatar" id="char-chip-avatar">💜</span>
+      <span class="char-meta">
+        <b id="char-chip-name">Girlfriend</b>
+        <i id="char-chip-mood" data-i18n="app.mood">online • realtime</i>
+      </span>
+    </button>
+
+    <div class="top-actions">
+      <div class="model-picker" id="model-picker">
+        <button class="model-btn" id="model-btn">
+          <span class="dot" id="model-dot"></span>
+          <span id="model-label">ZYRAXON Titan</span>
+          <svg viewBox="0 0 24 24" class="caret"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="model-menu glass" id="model-menu" hidden></div>
+      </div>
+      <button class="icon-btn" id="btn-settings" data-i18n-title="set.title">
+        <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6h.09A1.7 1.7 0 0 0 10 3.05V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button class="icon-btn" id="btn-menu" data-i18n-title="set.permissions">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── main stage: HOME IS THE ORB, nothing else ───────────── -->
+  <main class="stage" id="stage">
+
+    <section class="voice-hall" id="voice-hall">
+      <button class="orb-wrap" id="orb-btn" data-i18n-title="set.mic" data-i18n-aria="set.mic">
+        <div class="aura" id="aura">
+          <div class="aura-ambient"></div>
+          <div class="aura-plasma"></div>
+          <div class="aura-ribbon"></div>
+          <div class="aura-ribbon r2"></div>
+          <div class="aura-ribbon r3"></div>
+          <div class="aura-core"></div>
+          <div class="aura-shine"></div>
+        </div>
+        <span class="orb-ring"></span>
+        <span class="orb-halo"></span>
+        <span class="aura-ripple" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+
+      <div class="live-caption" id="live-caption">
+        <div class="live-head">
+          <span class="live-badge" id="live-badge" data-i18n="status.ready">Ready</span>
+          <span class="live-wave" id="live-wave"><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+        <p id="live-text" data-i18n="home.hint">The mic is always on — just speak.</p>
+      </div>
+
+      <div class="think-strip" id="think-strip" hidden>
+        <span class="think-dot"></span>
+        <span id="think-text" data-i18n="home.thinking">Thinking…</span>
+      </div>
+
+      <!-- what the assistant is saying right now, under the orb -->
+      <div class="speak-box" id="speak-box" hidden>
+        <span class="sb-ico">🔊</span>
+        <p id="speak-text"></p>
+      </div>
+
+      <button class="console-btn" id="btn-console">
+        <svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H8l-4 3v-5.5A8 8 0 0 1 13 4a8 8 0 0 1 8 8z"/></svg>
+        <span data-i18n="home.chat_panel">Chat panel</span>
+        <i class="cb-dot" id="cb-dot" hidden></i>
+      </button>
+    </section>
+  </main>
+
+  <!-- ── console sheet: chat only ────────────────────────────── -->
+  <section class="console" id="console" hidden>
+    <div class="console-panel glass">
+      <header class="console-head">
+        <button class="icon-btn" id="console-close" data-i18n-title="btn.close">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <div class="console-tabs">
+          <button class="ctab on" data-tab="chat" data-i18n="console.title">Chat</button>
+        </div>
+        <button class="icon-btn" id="console-clear" data-i18n-title="btn.clear_chat">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M7 7l1 13h8l1-13"/></svg>
+        </button>
+      </header>
+
+      <div class="console-body">
+        <!-- CHAT is just the conversation now. The todo list and the tool log
+             are their own docked panels (below), not cards inside the chat. -->
+        <div class="cview on" data-view="chat">
+          <section class="chat" id="chat" aria-live="polite"></section>
+          <!-- the second model's running commentary on the real work -->
+          <section class="monitorbar" id="monitorbar" hidden>
+            <span class="mon-dot"></span>
+            <span class="mon-name" id="mon-name" data-i18n="monitor.label">Monitor</span>
+            <span class="mon-text" id="mon-text"></span>
+          </section>
+        </div>
+
+        <!-- artifact / code box -->
+        <section class="artifact" id="artifact" hidden>
+          <header class="artifact-head">
+            <b id="artifact-title" data-i18n="console.artifact">Output</b>
+            <div class="artifact-actions">
+              <button class="mini-btn" id="artifact-copy" data-i18n="btn.copy">Copy</button>
+              <button class="mini-btn" id="artifact-open" data-i18n="btn.open">Open</button>
+              <button class="mini-btn" id="artifact-close" data-i18n="btn.close">Close</button>
+            </div>
+          </header>
+          <pre><code id="artifact-body"></code></pre>
+        </section>
+      </div>
+
+      <!-- ── separate docked panels: tasks and tool runs ──────────
+           The user asked for these to be their own panels, not squeezed
+           inside the chat. They dock to the right of the sheet and can be
+           collapsed independently. -->
+      <aside class="dock" id="dock-todos" hidden>
+        <header class="dock-head">
+          <b data-i18n="console.todo">Tasks</b>
+          <span class="tb-count" id="tb-count">0/0</span>
+          <button class="mini-btn" id="tb-toggle" data-i18n="btn.close">Close</button>
+        </header>
+        <div class="tb-bar"><i id="tb-progress"></i></div>
+        <ol class="tb-list" id="tb-list"></ol>
+      </aside>
+
+      <aside class="dock" id="dock-tools" hidden>
+        <header class="dock-head">
+          <b data-i18n="console.tools">Tools</b>
+          <span class="tl-count" id="tl-count">0</span>
+          <button class="mini-btn" id="tl-toggle" data-i18n="btn.close">Close</button>
+        </header>
+        <div class="tl-list" id="tl-list"></div>
+      </aside>
+
+      <footer class="composer">
+        <div class="composer-inner glass">
+          <textarea id="input" rows="1" data-i18n-ph="composer.placeholder" autocomplete="off"></textarea>
+          <button class="send-btn" id="btn-send" data-i18n-title="btn.send">
+            <svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 8 6 8-16-8z"/></svg>
+          </button>
+          <button class="stop-btn" id="btn-stop" data-i18n-title="btn.stop" hidden>
+            <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          </button>
+          <button class="icon-btn attach-btn" id="btn-attach" data-i18n-title="btn.attach">
+            <svg viewBox="0 0 24 24"><path d="M21 12.5V7a2 2 0 0 0-2-2h-3.5M3 11.5V17a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M12 3v13M8 12l4 4 4-4"/></svg>
+          </button>
+          <input type="file" id="file-input" accept="image/*,video/*,audio/*" multiple hidden />
+        </div>
+        <div class="proc-strip" id="proc-strip" hidden>
+          <span class="proc-spin" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="proc-text"></span>
+        </div>
+        <div class="attach-tray" id="attach-tray" hidden></div>
+        <nav class="quickbar">
+          <button data-q="Send a Facebook message to a friend" data-i18n="quick.facebook">Facebook message</button>
+          <button data-q="Build and publish a website for me" data-i18n="quick.website">Build a website</button>
+          <button data-q="Read what is on my screen" data-i18n="quick.screen">Read the screen</button>
+          <button id="btn-cam" class="cam-btn" data-i18n="quick.camera">Camera</button>
+          <button data-q="Make me a todo for today" data-i18n="quick.todo">Make a todo</button>
+        </nav>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ── live code overlay: what she is writing, line by line ─────
+       The user asked for this on top of everything, as translucent glass,
+       visible while the code is still being written — not only at the end. -->
+  <section class="code-overlay glass" id="code-overlay" hidden>
+    <header class="co-head">
+      <span class="co-dot"></span>
+      <b id="co-title" data-i18n="code.live">Writing code…</b>
+      <button class="mini-btn" id="co-close" data-i18n="btn.close">Close</button>
+    </header>
+    <pre class="co-body"><code id="co-code"></code></pre>
+  </section>
+
+  <!-- ── drawer: settings / memory / history / permissions ───── -->
+  <aside class="drawer" id="drawer" hidden>
+    <div class="drawer-panel glass">
+      <header class="drawer-head">
+        <b id="drawer-title" data-i18n="set.title">Settings</b>
+        <button class="icon-btn" id="drawer-close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </header>
+
+      <div class="drawer-body" id="drawer-body">
+        <!-- SETTINGS -->
+        <div class="pane" data-pane="settings">
+          <div class="group">
+            <h4 data-i18n="set.language">App language</h4>
+            <label class="row"><span data-i18n="set.language">App language</span><select id="set-ui-lang"></select></label>
+            <p class="hint" data-i18n="set.language_hint"></p>
+          </div>
+          <div class="group">
+            <h4 data-i18n="set.voice">Voice (TTS)</h4>
+            <label class="row"><span data-i18n="set.speak_replies">Read replies aloud</span><input type="checkbox" id="set-tts" checked /></label>
+            <label class="row"><span data-i18n="set.voice_pick">Voice</span><select id="set-voice"></select></label>
+            <label class="row"><span data-i18n="set.speed">Speed</span><input type="range" id="set-rate" min="0.6" max="1.6" step="0.05" value="1" /></label>
+            <label class="row"><span data-i18n="set.pitch">Pitch</span><input type="range" id="set-pitch" min="0.6" max="1.6" step="0.05" value="1.05" /></label>
+            <button class="primary-btn" id="set-voice-test" data-i18n="set.voice_test">Test voice</button>
+          </div>
+          <div class="group">
+            <h4 data-i18n="set.mic">Microphone</h4>
+            <label class="row"><span data-i18n="set.mic_always">Always listening (never stops)</span><input type="checkbox" id="set-alwaysmic" checked /></label>
+            <label class="row"><span data-i18n="set.auto_send">Auto-send when you pause</span><input type="checkbox" id="set-autosend" checked /></label>
+            <label class="row"><span data-i18n="set.stt_lang">Recognition language</span><select id="set-stt-lang"></select></label>
+          </div>
+          <div class="group">
+            <h4 data-i18n="set.orb">Orb (animation)</h4>
+            <label class="row"><span data-i18n="set.orb_style">Orb style</span><select id="set-orb"></select></label>
+            <button class="ghost-btn" id="set-orb-cycle" data-i18n="set.next_style">Show next style</button>
+          </div>
+          <div class="group">
+            <h4 data-i18n="set.appearance">Appearance</h4>
+            <label class="row"><span data-i18n="set.brand">Brand name</span><input type="text" id="set-brand" placeholder="ZYRAXON" /></label>
+            <label class="row"><span data-i18n="set.bg">Background animation</span><select id="set-bg"></select></label>
+            <label class="row"><span data-i18n="set.bg_sound">Play video sound</span><input type="checkbox" id="set-bg-sound" /></label>
+            <label class="row"><span data-i18n="set.volume">Sound volume</span><input type="range" id="set-bg-vol" min="0" max="1" step="0.05" value="0.55" /></label>
+            <label class="row"><span data-i18n="set.custom_url">Custom background URL (mp4/gif/png)</span><input type="text" id="set-bg-url" placeholder="https://…" /></label>
+            <label class="row"><span data-i18n="set.anim_speed">Animation speed</span><input type="range" id="set-bg-speed" min="0.3" max="2" step="0.1" value="1" /></label>
+            <label class="row"><span data-i18n="set.glass">Glass effect</span><input type="range" id="set-glass" min="0" max="24" step="1" value="14" /></label>
+          </div>
+          <div class="group">
+            <h4 data-i18n="set.network">Network</h4>
+            <label class="row"><span data-i18n="set.api_base">APK / API base URL</span><input type="text" id="set-base" /></label>
+            <label class="row"><span data-i18n="set.proxy">SSE transport</span><select id="set-proxy"><option value="proxy" data-i18n="set.proxy_reliable">Proxy (reliable)</option><option value="direct" data-i18n="set.proxy_direct">Direct</option></select></label>
+          </div>
+        </div>
+
+        <!-- PERMISSIONS -->
+        <div class="pane" data-pane="permissions" hidden>
+          <p class="hint" data-i18n="perm.hint">Tap a button and the system popup appears. Just press Allow.</p>
+          <div class="perm-list" id="perm-list"></div>
+          <p class="hint" id="perm-note"></p>
+        </div>
+
+        <!-- MEMORY -->
+        <div class="pane" data-pane="memory" hidden>
+          <p class="hint" data-i18n="memory.hint"></p>
+          <div id="memory-list" class="mem-list"></div>
+          <div class="group">
+            <h4 data-i18n="memory.new">New memory</h4>
+            <input type="text" id="mem-key" data-i18n-ph="memory.key" />
+            <input type="text" id="mem-val" data-i18n-ph="memory.value" />
+            <button class="primary-btn" id="mem-add" data-i18n="memory.save">Save</button>
+            <button class="ghost-btn" id="mem-export" data-i18n="memory.export">Export (json)</button>
+            <button class="ghost-btn" id="mem-clear" data-i18n="memory.clear">Clear all</button>
+          </div>
+        </div>
+
+        <!-- CHARACTERS -->
+        <div class="pane" data-pane="characters" hidden>
+          <p class="hint" data-i18n="char.hint"></p>
+          <div class="char-grid" id="char-grid"></div>
+        </div>
+
+        <!-- CHAT HISTORY -->
+        <div class="pane" data-pane="history" hidden>
+          <button class="ghost-btn" id="hist-clear" data-i18n="hist.clear">Clear all chats</button>
+          <div id="hist-list" class="hist-list"></div>
+        </div>
+
+        <!-- SKILLS / CAPABILITY GUIDE (learned tool manual) -->
+        <div class="pane" data-pane="skills" hidden>
+          <p class="hint" data-i18n="skills.hint"></p>
+          <div id="skill-list" class="skill-list"></div>
+          <div class="group">
+            <h4 data-i18n="skills.play">How to turn off Google Play Protect</h4>
+            <p class="hint" id="play-note"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── android permission popup host ───────────────────────── -->
+  <div class="sheet-host" id="sheet-host" hidden>
+    <div class="sheet glass">
+      <div class="sheet-head"><b id="sheet-title" data-i18n="perm.needed">Permission needed</b></div>
+      <p class="sheet-body" id="sheet-text"></p>
+      <div class="sheet-actions">
+        <button class="ghost-btn" id="sheet-deny" data-i18n="perm.deny">Not now</button>
+        <button class="primary-btn" id="sheet-allow" data-i18n="perm.allow">Allow</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-host" id="toast-host"></div>
+</div>
+
+<script src="/js/i18n.js"></script>
+<script src="/js/db.js"></script>
+<script src="/js/platform.js"></script>
+<script src="/js/characters.js"></script>
+<script src="/js/skills.js"></script>
+<script src="/js/bg.js"></script>
+<script src="/js/native.js"></script>
+<script src="/js/call.js"></script>
+<script src="/js/voice.js"></script>
+<script src="/js/tools.js"></script>
+<script src="/js/monitor.js"></script>
+<script src="/js/screen.js"></script>
+<script src="/js/agent.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
