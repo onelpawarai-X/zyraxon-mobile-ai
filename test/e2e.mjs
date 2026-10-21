@@ -416,6 +416,45 @@ async function main() {
     })()`);
     record('the character persona switches and is stored',
       switched.ok === true && /বন্ধু/.test(String(switched.name || '')), switched);
+
+    // ── 10. the microphone really comes back after she speaks ──
+    // The user's complaint was "while she talks I cannot say a word": the
+    // recogniser and the TTS engine share the audio hardware on a phone, so
+    // speech closes the mic — and nothing reopened it. This drives the real
+    // TTS queue and watches the real STT gate, counting calls to the genuine
+    // pause/resume (they still run; they are only observed).
+    const micCycle = await cdp.eval(`(async () => {
+      const V = window.ZY && window.ZY.VOICE;
+      if (!V || !V.TTS || !V.STT) return JSON.stringify({ ok: false, why: 'no voice layer' });
+      const S = V.STT, T = V.TTS;
+      T.enabled = true;            // the test profile boots with the voice muted
+      let paused = 0, resumed = 0;
+      const realPause = S.pause.bind(S), realResume = S.resume.bind(S);
+      S.pause = function () { paused++; return realPause(); };
+      S.resume = function () { resumed++; return realResume(); };
+      // Speak a long sentence so the gate is unmistakably shut for a while.
+      T.speak('আমি তোমার সাথে বাংলায় কথা বলছি, এই বাক্যটি একটু লম্বা করে বলছি যাতে মাইক বন্ধ থাকে।');
+      const sawPaused = await new Promise((res) => {
+        const t0 = Date.now();
+        const iv = setInterval(() => {
+          if (S._paused) { clearInterval(iv); res(true); }
+          else if (Date.now() - t0 > 3000) { clearInterval(iv); res(false); }
+        }, 50);
+      });
+      // Then wait for the guard/queue to drain and the gate to reopen.
+      const reopened = await new Promise((res) => {
+        const t0 = Date.now();
+        const iv = setInterval(() => {
+          if (!S._paused) { clearInterval(iv); res(true); }
+          else if (Date.now() - t0 > 20000) { clearInterval(iv); res(false); }
+        }, 100);
+      });
+      S.pause = realPause; S.resume = realResume;
+      return JSON.stringify({ ok: true, sawPaused, reopened, paused, resumed });
+    })()`);
+    record('the mic is closed while she speaks and re-armed when she stops',
+      micCycle.ok === true && micCycle.sawPaused === true &&
+      micCycle.reopened === true && micCycle.resumed > 0, micCycle);
   } finally {
     cdp.ws.close();
     try { chrome.kill('SIGKILL'); } catch {}
