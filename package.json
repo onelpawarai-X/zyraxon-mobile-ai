@@ -1,6 +1,6 @@
 {
   "name": "zyraxon-mobile-assistant",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "description": "ZYRAXON — a real mobile AI assistant: realtime SSE chat, Bangla TTS, real tool calling, todo-driven autonomy, publishable websites.",

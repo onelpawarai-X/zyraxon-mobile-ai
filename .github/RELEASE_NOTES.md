@@ -10,9 +10,9 @@
 | প্ল্যাটফর্ম | ফাইল |
 |---|---|
 | Android 5.0+ | `zyraxon.apk` |
-| Windows 10/11 (64-bit) | `ZYRAXON-Setup-1.1.0.exe` |
-| macOS | `ZYRAXON-1.1.0-mac.dmg` |
-| Linux | `ZYRAXON-1.1.0.AppImage` |
+| Windows 10/11 (64-bit) | `ZYRAXON-Setup-1.2.0.exe` |
+| macOS | `ZYRAXON-1.2.0-mac.dmg` |
+| Linux | `ZYRAXON-1.2.0.AppImage` |
 
 ### ভিতরে কী আছে
 
@@ -39,4 +39,4 @@
 Windows-এ SmartScreen প্রথমবার সতর্কতা দিতে পারে ("More info" → "Run anyway")।
 macOS-এ Gatekeeper অ্যাপটা আটকালে ডান-ক্লিক → Open। এগুলো সাইনিং সার্টিফিকেটের
 অভাব, অ্যাপের সমস্যা নয়। Linux-এ AppImage চালানোর আগে একবার
-`chmod +x ZYRAXON-1.1.0.AppImage`।
+`chmod +x ZYRAXON-1.2.0.AppImage`।
