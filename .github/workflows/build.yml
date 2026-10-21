@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       # The acceptance test drives a real Chromium over CDP, which is exactly
       # what the runner's preinstalled Chrome can do — no display needed.
@@ -51,8 +51,22 @@ jobs:
 
       # The APK is built without Gradle, straight against the SDK tools, so the
       # SDK has to be here with exactly the pieces build.sh reaches for.
+      # android-actions/setup-android@v3 is not used: its bundled cmdline-tools
+      # are no longer published, so the action fails before it installs
+      # anything. The SDK is fetched and pinned here instead, and the runner
+      # keeps ANDROID_HOME set for build.sh.
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        run: |
+          set -e
+          export ANDROID_HOME="$HOME/android-sdk"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          curl -fsSL -o /tmp/cmdline-tools.zip \
+            https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q /tmp/cmdline-tools.zip -d "$ANDROID_HOME/cmdline-tools"
+          mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
 
       - name: Install build tools
         run: sdkmanager "build-tools;36.0.0" "platforms;android-34"
@@ -101,7 +115,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install desktop dependencies
         working-directory: desktop

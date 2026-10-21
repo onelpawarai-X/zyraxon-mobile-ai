@@ -601,7 +601,11 @@
       document.querySelectorAll('.cview').forEach((v) => v.classList.toggle('on', v.dataset.view === 'chat'));
       if (tab === 'todos') UI.togglePanel('todos', true);
       else if (tab === 'tools') UI.togglePanel('tools', true);
-      else { UI.showPanel('todos', false); UI.showPanel('tools', false); }
+      // Chat means "show me the conversation", so both docks are put away.
+      // This used to call showPanel(..., false), whose force=false path *opened*
+      // a panel that had no saved preference — so tapping Chat opened both
+      // docks, and the next tap on Tasks closed one of them again.
+      else { UI.hidePanel('todos'); UI.hidePanel('tools'); }
       UI.syncPanelTabs();
       const body = UI._el.consoleBody;
       if (body) body.scrollTop = body.scrollHeight;
@@ -613,8 +617,11 @@
       const el = which === 'todos' ? e.taskboard : e.toollog;
       if (!el) return;
       UI._panelPref = UI._panelPref || {};
-      if (force === true || UI._panelPref[which] === undefined) UI._panelPref[which] = true;
-      el.hidden = !UI._panelPref[which];
+      // A dock is closed until the user opens it from its tab. The old default
+      // was "open", so a tool run or a new todo popped both docks open beside
+      // the chat on their own — the clutter the user asked to remove.
+      if (force === true) UI._panelPref[which] = true;
+      el.hidden = UI._panelPref[which] !== true;
       UI.syncPanelTabs();
     },
 

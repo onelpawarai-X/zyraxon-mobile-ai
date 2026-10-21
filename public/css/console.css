@@ -45,7 +45,11 @@
 .cb-dot{ width:8px; height:8px; border-radius:50%; background:#ff5cae; box-shadow:0 0 10px #ff5cae; animation:pulse 1.1s ease-in-out infinite; }
 
 /* ── console sheet ──────────────────────────────────────────── */
-.console{ position:fixed; inset:0; z-index:60; display:flex; align-items:flex-end; justify-content:center; }
+/* Sits above the live code overlay (z-index 75): while the sheet is open it is
+   the topmost surface, so nothing floats over its header and swallows taps on
+   the Chat / Tasks / Tools tabs — that is the "tapping the tab does nothing"
+   bug, since the code box used to cover them. */
+.console{ position:fixed; inset:0; z-index:76; display:flex; align-items:flex-end; justify-content:center; }
 .console[hidden]{ display:none; }
 .console-panel{
   position:relative; width:100%; max-width:640px; height:92dvh;
@@ -148,8 +152,15 @@ html.modal-open .drawer-panel{
 
 .console{ gap:14px; }
 
+/* The sheet is capped at 640px, so on a wide screen there IS room beside it —
+   but `right: calc(100% + 14px)` measured from the full-bleed `.console`
+   overlay, not from the sheet, which parked both docks hundreds of pixels past
+   the left edge of the viewport. The user could not tap them because they were
+   not on the screen at all. The dock is now pinned inside the viewport with
+   clamp() and only borrows the space beside the sheet when there is any. */
 .dock{
-  position:absolute; top:56px; right:calc(100% + 14px); width:288px;
+  position:absolute; top:56px; width:288px;
+  left:clamp(8px, calc(50% - 320px - 14px - 288px), calc(100% - 296px));
   max-height:calc(100% - 90px); display:flex; flex-direction:column; gap:8px;
   padding:10px 12px; border-radius:18px; overflow:hidden;
   background:linear-gradient(158deg, rgba(38,26,66,.94), rgba(16,12,34,.92));
@@ -171,14 +182,21 @@ html.modal-open .drawer-panel{
 @keyframes dockIn{ from{ transform:translateX(10px); opacity:.3; } to{ transform:none; opacity:1; } }
 
 /* Narrow screens (a phone in portrait) have no room beside the sheet, so the
-   panels dock to the bottom of the screen instead of overflowing off it. */
-@media (max-width:900px){
+   panels dock to the bottom of the screen instead of overflowing off it. The
+   breakpoint is where the 640px sheet plus a 288px dock plus the gap stop
+   fitting side by side (640/2 + 288 + 14 + 8 = 630, so anything under 1260px),
+   which keeps the docks from ever landing on top of the conversation. */
+@media (max-width:1260px){
   .console{ flex-direction:column; gap:0; }
+  /* Stacked below the sheet head, not pinned to the very top: `top: var(--sat)`
+     put the Tools dock over the header and its own tab, so the tab could not be
+     tapped a second time to close it. */
+  .console{ --dock-top: 96px; }
   .dock{
     position:fixed; left:8px; right:8px; width:auto; max-height:30dvh;
     top:auto; bottom:calc(6px + var(--sab)); z-index:62;
   }
-  #dock-tools{ bottom:auto; top:calc(6px + var(--sat)); }
+  #dock-tools{ bottom:auto; top:calc(var(--dock-top) + var(--sat)); }
 }
 
 /* ── live code overlay ─────────────────────────────────────── */
