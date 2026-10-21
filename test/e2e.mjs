@@ -9,11 +9,28 @@
  *
  * Usage:  node test/e2e.mjs [port]
  */
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+
+
+/** Find a Chromium-family binary. CI runners ship Chrome, not "chromium", so
+ *  the name is probed instead of assumed. */
+function findChrome() {
+  const names = [process.env.ZYRAXON_CHROME, 'chromium', 'chromium-browser',
+    'google-chrome', 'google-chrome-stable',
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome']
+    .filter(Boolean);
+  for (const n of names) {
+    try {
+      const r = spawnSync(n, ['--version'], { stdio: 'ignore' });
+      if (r.status === 0) return n;
+    } catch {}
+  }
+  return 'chromium';
+}
 
 const PORT = Number(process.argv[2] || 12000);
 const APP = `http://127.0.0.1:${PORT}`;
@@ -94,7 +111,7 @@ async function main() {
   }
 
   const profile = await mkdtemp(path.join(tmpdir(), 'zyraxon-e2e-'));
-  const chrome = spawn('chromium', [
+  const chrome = spawn(findChrome(), [
     '--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage',
     `--remote-debugging-port=${CDP_PORT}`, `--user-data-dir=${profile}`,
     '--autoplay-policy=no-user-gesture-required',

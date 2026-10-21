@@ -11,6 +11,32 @@ permissions:
   contents: write
 
 jobs:
+  verify:
+    name: Verify (real browser)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # The acceptance test drives a real Chromium over CDP, which is exactly
+      # what the runner's preinstalled Chrome can do — no display needed.
+      - name: Start the app
+        run: node zyraxon.mjs --no-open --port 12000 > /tmp/zyraxon.log 2>&1 &
+
+      - name: Wait for the health endpoint
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:12000/api/health > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          echo "server never came up"; cat /tmp/zyraxon.log; exit 1
+
+      - name: Run the end-to-end acceptance test
+        run: node test/e2e.mjs 12000
+
   android:
     name: Android APK
     runs-on: ubuntu-latest
@@ -30,6 +56,17 @@ jobs:
 
       - name: Install build tools
         run: sdkmanager "build-tools;36.0.0" "platforms;android-34"
+
+      # build.sh signs with the standard debug keystore, which a fresh runner
+      # does not have. apksigner will not emit an unsigned APK, so without this
+      # the job dies at step 6/6. Same alias and passwords build.sh expects.
+      - name: Create the debug keystore
+        run: |
+          mkdir -p "$HOME/.android"
+          keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" \
+            -storepass android -keypass android -alias androiddebugkey \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Build APK
         run: bash android/build.sh
