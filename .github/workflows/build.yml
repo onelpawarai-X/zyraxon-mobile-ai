@@ -149,7 +149,11 @@ jobs:
         run: |
           set -e
           TAG="${{ github.ref_name }}"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then TAG="v1.0.0"; fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # No tag was pushed, so take the version the manifests declare rather
+            # than a hardcoded one that drifts every release.
+            TAG="v$(node -p "require('./package.json').version")"
+          fi
           # The tag stays: it triggered this run, and deleting it would leave
           # the version pointing at nothing. Only the release is replaced.
           gh release delete "$TAG" --yes --repo "${{ github.repository }}" || true
