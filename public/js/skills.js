@@ -1,76 +1,141 @@
-/* ══════════════════════════════════════════════════════════════
-   ZYRAXON Skills — the self-taught tool manual.
-   Each entry: how the assistant calls a tool, and what it really
-   does on-device or on the paired host. Rendered in the Skills pane.
-   ══════════════════════════════════════════════════════════════ */
-(function (global) {
-  'use strict';
+(() => {
+  (function(global) {
+    "use strict";
+    const SKILLS = [
+      {
+        name: "todo_write",
+        tag: "\u0985\u099F\u09CB\u09A8\u09AE\u09BF",
+        code: '{"todos":[{"id":"t1","title":"\u2026","status":"in_progress"}]}',
+        desc: "\u09B2\u09BE\u0987\u09AD \u099F\u09BE\u09B8\u09CD\u0995 \u09AC\u09CB\u09B0\u09CD\u09A1 \u09AC\u09BE\u09A8\u09BE\u09AF\u09BC/\u0986\u09AA\u09A1\u09C7\u099F \u0995\u09B0\u09C7\u0964 \u0995\u09BE\u099C \u09B6\u09C7\u09B7 \u09A8\u09BE \u09B9\u09B2\u09C7 \u09B8\u09C7 \u09A5\u09BE\u09AE\u09AC\u09C7 \u09A8\u09BE \u2014 \u09AA\u09CD\u09B0\u09A4\u09BF\u099F\u09BE \u099F\u09C1\u09B2 \u09B0\u09C7\u099C\u09BE\u09B2\u09CD\u099F\u09C7\u09B0 \u09AA\u09B0\u09C7 \u098F\u099F\u09BE \u0995\u09B2 \u0995\u09B0\u09C7 \u09AA\u09B0\u09C7\u09B0 \u09A7\u09BE\u09AA\u09C7 \u09AF\u09BE\u09AF\u09BC\u0964"
+      },
+      {
+        name: "open_app",
+        tag: "\u09A1\u09BF\u09AD\u09BE\u0987\u09B8",
+        code: '{"package":"com.whatsapp","name":"WhatsApp"}',
+        desc: "\u0985\u09CD\u09AF\u09BE\u09A8\u09CD\u09A1\u09CD\u09B0\u09AF\u09BC\u09C7\u09A1\u09C7\u09B0 \u09B0\u09BF\u09AF\u09BC\u09C7\u09B2 \u0985\u09CD\u09AF\u09BE\u09AA \u0993\u09AA\u09C7\u09A8 \u0995\u09B0\u09C7 (Intent/AppLauncher \u09AC\u09CD\u09B0\u09BF\u099C, Capacitor \u09B9\u09B2\u09C7 native plugin, \u09AC\u09CD\u09B0\u09BE\u0989\u099C\u09BE\u09B0\u09C7 deep-link \u09ABallback)\u0964"
+      },
+      {
+        name: "launch_url",
+        tag: "\u09AC\u09CD\u09B0\u09BE\u0989\u099C\u09BE\u09B0",
+        code: '{"url":"https://www.facebook.com","new_tab":true}',
+        desc: "\u0995\u09CD\u09B0\u09CB\u09AE/\u09B8\u09BF\u09B8\u09CD\u099F\u09C7\u09AE \u09AC\u09CD\u09B0\u09BE\u0989\u099C\u09BE\u09B0\u09C7 \u09B8\u09A4\u09CD\u09AF\u09BF\u0995\u09BE\u09B0\u09C7\u09B0 URL \u0996\u09CB\u09B2\u09C7 \u0993 \u09A8\u09A4\u09C1\u09A8 \u099F\u09CD\u09AF\u09BE\u09AC \u09A6\u09C7\u09AF\u09BC\u0964"
+      },
+      {
+        name: "read_screen",
+        tag: "\u09A6\u09C3\u09B7\u09CD\u099F\u09BF",
+        code: '{"target":"current"}',
+        desc: "\u09B8\u09CD\u0995\u09CD\u09B0\u09BF\u09A8\u09B6\u099F \u09A8\u09C7\u09AF\u09BC, \u099F\u09C7\u0995\u09CD\u09B8\u099F/OCR \u09AC\u09C7\u09B0 \u0995\u09B0\u09C7 \u09AC\u09CD\u09AF\u09BE\u0995\u0997\u09CD\u09B0\u09BE\u0989\u09A8\u09CD\u09A1\u09C7 \u0987\u09A8\u099C\u09C7\u0995\u09CD\u099F \u0995\u09B0\u09C7 \u2014 \u09A4\u09BE\u0987 \u0985\u09CD\u09AF\u09BE\u09AA \u0996\u09CB\u09B2\u09BE\u09B0 \u09AA\u09B0\u09C7 \u09B8\u09C7 \u09A6\u09C7\u0996\u09C7 \u09A8\u09C7\u09AF\u09BC \u0995\u09C0 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7\u0964"
+      },
+      {
+        name: "tap",
+        tag: "\u09A8\u09BF\u09AF\u09BC\u09A8\u09CD\u09A4\u09CD\u09B0\u09A3",
+        code: '{"x":540,"y":1620}',
+        desc: "Accessibility \u09B8\u09BE\u09B0\u09CD\u09AD\u09BF\u09B8 \u09A6\u09BF\u09AF\u09BC\u09C7 \u09B8\u09CD\u0995\u09CD\u09B0\u09BF\u09A8\u09C7 \u09B0\u09BF\u09AF\u09BC\u09C7\u09B2 \u099F\u09CD\u09AF\u09BE\u09AA \u0995\u09B0\u09C7 (\u09AB\u09B2\u09AC\u09CD\u09AF\u09BE\u0995: synthesizeTap / CDP)\u0964"
+      },
+      {
+        name: "swipe",
+        tag: "\u09A8\u09BF\u09AF\u09BC\u09A8\u09CD\u09A4\u09CD\u09B0\u09A3",
+        code: '{"x1":540,"y1":1800,"x2":540,"y2":400}',
+        desc: "\u09B8\u09A4\u09CD\u09AF\u09BF\u0995\u09BE\u09B0\u09C7\u09B0 swipe \u2014 \u09B8\u09CD\u0995\u09CD\u09B0\u09B2, back gesture, slider \u09B8\u09AC\u0964"
+      },
+      {
+        name: "type_text",
+        tag: "\u09A8\u09BF\u09AF\u09BC\u09A8\u09CD\u09A4\u09CD\u09B0\u09A3",
+        code: '{"text":"\u09B9\u09CD\u09AF\u09BE\u09B2\u09CB","enter":true}',
+        desc: "\u09AB\u09CB\u0995\u09BE\u09B8 \u0995\u09B0\u09BE \u0987\u09A8\u09AA\u09C1\u099F\u09C7 \u09B0\u09BF\u09AF\u09BC\u09C7\u09B2 \u099F\u09BE\u0987\u09AA \u0995\u09B0\u09C7 (ADB `input text` / Accessibility ACTION_SET_TEXT / native plugin)\u0964"
+      },
+      {
+        name: "press_key",
+        tag: "\u09A8\u09BF\u09AF\u09BC\u09A8\u09CD\u09A4\u09CD\u09B0\u09A3",
+        code: '{"key":"home"}',
+        desc: "home / back / recents / enter / volume \u2014 \u09B9\u09BE\u09B0\u09CD\u09A1\u0993\u09AF\u09BC\u09CD\u09AF\u09BE\u09B0 \u0995\u09C0 \u09AA\u09CD\u09B0\u09C7\u09B8\u0964"
+      },
+      {
+        name: "notify",
+        tag: "\u09A1\u09BF\u09AD\u09BE\u0987\u09B8",
+        code: '{"title":"ZYRAXON","body":"\u0993\u09AF\u09BC\u09C7\u09AC\u09B8\u09BE\u0987\u099F \u09AA\u09BE\u09AC\u09B2\u09BF\u09B6 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7"}',
+        desc: "\u0985\u09CD\u09AF\u09BE\u09A8\u09CD\u09A1\u09CD\u09B0\u09AF\u09BC\u09C7\u09A1 \u09A8\u09CB\u099F\u09BF\u09AB\u09BF\u0995\u09C7\u09B6\u09A8\u09C7 \u0986\u09B8\u09B2 \u09AE\u09C7\u09B8\u09C7\u099C \u09AA\u09CB\u09B8\u09CD\u099F \u0995\u09B0\u09C7\u0964"
+      },
+      {
+        name: "clipboard_read",
+        tag: "\u09A1\u09BF\u09AD\u09BE\u0987\u09B8",
+        code: "{}",
+        desc: "\u09A8\u09C7\u099F\u09BF\u09AD \u0995\u09CD\u09B2\u09BF\u09AA\u09AC\u09CB\u09B0\u09CD\u09A1 \u09AA\u09A1\u09BC\u09C7 \u2014 \u0995\u09AE\u09CD\u09AA\u09BF\u0989\u099F\u09BE\u09B0/\u09AB\u09CB\u09A8\u09C7\u09B0 \u0995\u09AA\u09BF \u0995\u09B0\u09BE \u0995\u09A8\u099F\u09C7\u09A8\u09CD\u099F \u0986\u09A8\u09C7\u0964"
+      },
+      {
+        name: "clipboard_write",
+        tag: "\u09A1\u09BF\u09AD\u09BE\u0987\u09B8",
+        code: '{"text":"\u2026"}',
+        desc: "\u0995\u09CD\u09B2\u09BF\u09AA\u09AC\u09CB\u09B0\u09CD\u09A1\u09C7 \u09B2\u09C7\u0996\u09C7 \u09AF\u09BE\u09A4\u09C7 \u0985\u09A8\u09CD\u09AF \u0985\u09CD\u09AF\u09BE\u09AA \u09AA\u09C7\u09B8\u09CD\u099F \u0995\u09B0\u09A4\u09C7 \u09AA\u09BE\u09B0\u09C7\u0964"
+      },
+      {
+        name: "share",
+        tag: "\u09A1\u09BF\u09AD\u09BE\u0987\u09B8",
+        code: '{"text":"\u09B2\u09BF\u0982\u0995","url":"https://\u2026"}',
+        desc: "\u0985\u09CD\u09AF\u09BE\u09A8\u09CD\u09A1\u09CD\u09B0\u09AF\u09BC\u09C7\u09A1 \u09B6\u09C7\u09AF\u09BC\u09BE\u09B0 \u09B6\u09BF\u099F \u0996\u09CB\u09B2\u09C7 \u2014 \u09B2\u09BF\u0982\u0995/\u099F\u09C7\u0995\u09CD\u09B8\u099F/\u09AB\u09BE\u0987\u09B2 \u0985\u09A8\u09CD\u09AF \u0985\u09CD\u09AF\u09BE\u09AA\u09C7 \u09AA\u09BE\u09A0\u09BE\u09AF\u09BC\u0964"
+      },
+      {
+        name: "read_url",
+        tag: "\u0993\u09AF\u09BC\u09C7\u09AC",
+        code: '{"url":"https://\u2026"}',
+        desc: "\u09AA\u09C7\u099C \u09AB\u09C7\u099A \u0995\u09B0\u09C7 \u099F\u09C7\u0995\u09CD\u09B8\u099F \u09AC\u09BE\u09A8\u09BE\u09AF\u09BC (\u09B8\u09BE\u09B0\u09CD\u09AD\u09BE\u09B0 \u09AA\u09CD\u09B0\u0995\u09CD\u09B8\u09BF, CORS \u09A8\u09C7\u0987)\u0964 \u09B0\u09BF\u09B8\u09BE\u09B0\u09CD\u099A \u0993 \u09AD\u09C7\u09B0\u09BF\u09AB\u09BF\u0995\u09C7\u09B6\u09A8\u09C7\u09B0 \u099C\u09A8\u09CD\u09AF\u0964"
+      },
+      {
+        name: "read_media",
+        tag: "\u09AE\u09BE\u09B2\u09CD\u099F\u09BF\u09AE\u09CB\u09A1\u09BE\u09B2",
+        code: '{"url":"https://\u2026/clip.mp4","modality":"video"}',
+        desc: "URL/\u09B2\u09CB\u0995\u09BE\u09B2 \u09AB\u09BE\u0987\u09B2 \u09A5\u09C7\u0995\u09C7 video / audio / image / PDF \u09AA\u09A1\u09BC\u09C7, base64 data-URL \u09AC\u09BE\u09A8\u09BF\u09AF\u09BC\u09C7 multimodal \u09AE\u09A1\u09C7\u09B2\u09C7 \u09AA\u09BE\u09A0\u09BE\u09AF\u09BC \u2014 \u09A8\u09BF\u09B0\u09CD\u09A6\u09BF\u09B7\u09CD\u099F \u0985\u0982\u09B6\u0993 \u09AA\u09A1\u09BC\u09A4\u09C7 \u09AA\u09BE\u09B0\u09C7 (\u099F\u09BE\u0987\u09AE\u09B8\u09CD\u099F\u09CD\u09AF\u09BE\u09AE\u09CD\u09AA/\u09AA\u09C7\u099C)\u0964"
+      },
+      {
+        name: "generate_file",
+        tag: "\u09AC\u09BF\u09B2\u09CD\u09A1",
+        code: '{"path":"index.html","content":"<html>\u2026"}',
+        desc: "\u09B8\u09BE\u09B0\u09CD\u09AD\u09BE\u09B0\u09C7 \u0986\u09B8\u09B2 \u09AB\u09BE\u0987\u09B2 \u09B2\u09C7\u0996\u09C7 (site workspace)\u0964 \u0995\u09A8\u099F\u09C7\u09A8\u09CD\u099F \u09AC\u09BE\u09A8\u09BE\u09A8\u09CB/\u09B0\u09BF\u09AA\u09C7\u09AF\u09BC\u09BE\u09B0\u09C7\u09B0 \u09AE\u09C2\u09B2 \u09B9\u09BE\u09A4\u09BF\u09AF\u09BC\u09BE\u09B0\u0964"
+      },
+      {
+        name: "publish_website",
+        tag: "\u09AA\u09BE\u09AC\u09B2\u09BF\u09B6",
+        code: '{"name":"portfolio","html":"<html>\u2026","files":{"app.js":"\u2026"}}',
+        desc: "\u0986\u09B8\u09B2 \u09B8\u09BE\u0987\u099F \u09A1\u09BF\u09B8\u09CD\u0995\u09C7 \u09B2\u09BF\u0996\u09C7 \u09AA\u09BE\u09AC\u09B2\u09BF\u0995 \u09AA\u09CB\u09B0\u09CD\u099F\u09C7 \u09B8\u09BE\u09B0\u09CD\u09AD \u0995\u09B0\u09C7, \u09B2\u09BE\u0987\u09AD URL \u09B0\u09BF\u099F\u09BE\u09B0\u09CD\u09A8 \u0995\u09B0\u09C7, \u0986\u09B0 URL \u09AB\u09C7\u099A \u0995\u09B0\u09C7 \u09AD\u09C7\u09B0\u09BF\u09AB\u09BE\u0987 \u0995\u09B0\u09C7 `verified:true` \u09A6\u09C7\u09AF\u09BC\u0964"
+      },
+      {
+        name: "run_shell",
+        tag: "\u09B9\u09CB\u09B8\u09CD\u099F",
+        code: '{"command":"ls -la"}',
+        desc: "\u09AA\u09C7\u09AF\u09BC\u09BE\u09B0 \u0995\u09B0\u09BE ZYRAXON \u09B9\u09CB\u09B8\u09CD\u099F\u09C7 \u0986\u09B8\u09B2 \u0995\u09AE\u09BE\u09A8\u09CD\u09A1 \u099A\u09BE\u09B2\u09BE\u09AF\u09BC, stdout/stderr \u09AB\u09C7\u09B0\u09A4 \u09A6\u09C7\u09AF\u09BC\u0964"
+      },
+      {
+        name: "memory_write",
+        tag: "\u09AE\u09C7\u09AE\u09B0\u09BF",
+        code: '{"key":"\u09AA\u09CD\u09B0\u09BF\u09AF\u09BC \u09B0\u0982","value":"\u09A8\u09C0\u09B2"}',
+        desc: "\u0987\u0989\u099C\u09BE\u09B0 \u09B8\u09AE\u09CD\u09AA\u09B0\u09CD\u0995\u09C7 \u09B8\u09CD\u09A5\u09BE\u09AF\u09BC\u09C0 \u09A4\u09A5\u09CD\u09AF \u09B2\u09CB\u0995\u09BE\u09B2 DB-\u09A4\u09C7 \u09B2\u09BF\u0996\u09C7 \u09B0\u09BE\u0996\u09C7 \u2014 \u0995\u09CD\u09B2\u09BE\u0989\u09A1 \u09AE\u09C1\u099B\u09B2\u09C7\u0993 \u09A5\u09BE\u0995\u09AC\u09C7\u0964"
+      }
+    ];
+    const PERMISSIONS = [
+      { id: "microphone", emoji: "\u{1F399}\uFE0F", label: "\u09AE\u09BE\u0987\u0995\u09CD\u09B0\u09CB\u09AB\u09CB\u09A8", why: "\u09A4\u09CB\u09AE\u09BE\u09B0 \u09AC\u09BE\u0982\u09B2\u09BE \u0995\u09A5\u09BE \u09B6\u09C1\u09A8\u09A4\u09C7 (Speech Recognition)" },
+      { id: "camera", emoji: "\u{1F4F7}", label: "\u0995\u09CD\u09AF\u09BE\u09AE\u09C7\u09B0\u09BE", why: "\u099B\u09AC\u09BF/\u09AD\u09BF\u09A1\u09BF\u0993 \u09A6\u09C7\u0996\u09BE \u0993 \u0995\u09CD\u09AF\u09BE\u09AA\u099A\u09BE\u09B0 \u0995\u09B0\u09A4\u09C7" },
+      { id: "geolocation", emoji: "\u{1F4CD}", label: "\u09B2\u09CB\u0995\u09C7\u09B6\u09A8", why: "\u0986\u09B8\u09C7\u09AA\u09BE\u09B6\u09C7\u09B0 \u09A4\u09A5\u09CD\u09AF \u09A6\u09BF\u09A4\u09C7" },
+      { id: "notifications", emoji: "\u{1F514}", label: "\u09A8\u09CB\u099F\u09BF\u09AB\u09BF\u0995\u09C7\u09B6\u09A8", why: "\u0995\u09BE\u099C \u09B6\u09C7\u09B7 \u09B9\u09B2\u09C7 \u099C\u09BE\u09A8\u09BE\u09A4\u09C7" },
+      { id: "clipboard-read", emoji: "\u{1F4CB}", label: "\u0995\u09CD\u09B2\u09BF\u09AA\u09AC\u09CB\u09B0\u09CD\u09A1", why: "\u0995\u09AA\u09BF \u0995\u09B0\u09BE \u099C\u09BF\u09A8\u09BF\u09B8 \u09AA\u09A1\u09BC\u09A4\u09C7/\u09B2\u09BF\u0996\u09A4\u09C7" },
+      { id: "screen", emoji: "\u{1F5A5}\uFE0F", label: "\u09B8\u09CD\u0995\u09CD\u09B0\u09BF\u09A8 \u0995\u09CD\u09AF\u09BE\u09AA\u099A\u09BE\u09B0", why: "\u09B8\u09CD\u0995\u09CD\u09B0\u09BF\u09A8 \u09A6\u09C7\u0996\u09C7 \u09AA\u09B0\u09C7\u09B0 \u09A7\u09BE\u09AA \u09A0\u09BF\u0995 \u0995\u09B0\u09A4\u09C7" },
+      { id: "overlay", emoji: "\u{1FA9F}", label: "\u0993\u09AD\u09BE\u09B0\u09C7 \u09A6\u09C7\u0996\u09BE\u09A8\u09CB", why: "\u0985\u09A8\u09CD\u09AF \u0985\u09CD\u09AF\u09BE\u09AA\u09C7\u09B0 \u0989\u09AA\u09B0\u09C7 \u0995\u09CB\u09A1/\u099F\u09BE\u09B8\u09CD\u0995 \u09AC\u0995\u09CD\u09B8 \u09A6\u09C7\u0996\u09BE\u09A4\u09C7 (\u09B2\u09BE\u0987\u09AD \u0995\u09CB\u09A1 \u0993\u09AD\u09BE\u09B0\u09B2\u09C7)" },
+      { id: "accessibility", emoji: "\u{1F916}", label: "\u0985\u09CD\u09AF\u09BE\u0995\u09CD\u09B8\u09C7\u09B8\u09BF\u09AC\u09BF\u09B2\u09BF\u099F\u09BF \u09B8\u09BE\u09B0\u09CD\u09AD\u09BF\u09B8", why: "\u09B0\u09BF\u09AF\u09BC\u09C7\u09B2\u09BF \u099F\u09CD\u09AF\u09BE\u09AA/\u099F\u09BE\u0987\u09AA/swipe \u0995\u09B0\u09A4\u09C7 (\u0985\u09A8\u09CD\u09AF \u0985\u09CD\u09AF\u09BE\u09AA \u09A8\u09BF\u09AF\u09BC\u09A8\u09CD\u09A4\u09CD\u09B0\u09A3)" },
+      { id: "storage", emoji: "\u{1F4BE}", label: "\u09B8\u09CD\u099F\u09CB\u09B0\u09C7\u099C", why: "\u09AB\u09BE\u0987\u09B2 \u0993 \u09B8\u09BE\u0987\u099F \u09A1\u09BF\u09B8\u09CD\u0995\u09C7 \u09B2\u09BF\u0996\u09A4\u09C7" },
+      { id: "install-apk", emoji: "\u{1F4E6}", label: "\u0985\u09CD\u09AF\u09BE\u09AA \u0987\u09A8\u09B8\u09CD\u099F\u09B2", why: "\u09A8\u09A4\u09C1\u09A8 APK \u0987\u09A8\u09B8\u09CD\u099F\u09B2 \u0995\u09B0\u09A4\u09C7" },
+      { id: "write-settings", emoji: "\u2699\uFE0F", label: "\u09B8\u09BF\u09B8\u09CD\u099F\u09C7\u09AE \u09B8\u09C7\u099F\u09BF\u0982 \u09AC\u09A6\u09B2", why: "\u09B8\u09C7\u099F\u09BF\u0982 \u09A8\u09BF\u099C\u09C7 \u09AC\u09A6\u09B2\u09BE\u09A4\u09C7 (\u09B0\u09BF\u09B8\u09CD\u099F\u09BE\u09B0\u09CD\u099F \u099B\u09BE\u09A1\u09BC\u09BE)" },
+      { id: "play-protect", emoji: "\u{1F6E1}\uFE0F", label: "Play Protect \u09AC\u09A8\u09CD\u09A7", why: "\u09AF\u09C7\u0995\u09CB\u09A8\u09CB APK \u0987\u09A8\u09B8\u09CD\u099F\u09B2 \u0995\u09B0\u09A4\u09C7 \u2014 \u09B6\u09C1\u09A7\u09C1 Allow \u099A\u09BE\u09AA\u09CB" }
+    ];
+    const PLAY_NOTE = `\u0997\u09C1\u0997\u09B2 \u09AA\u09CD\u09B2\u09C7 \u09AA\u09CD\u09B0\u09CB\u099F\u09C7\u0995\u09CD\u099F (Play Protect) \u09AC\u09A8\u09CD\u09A7 \u0995\u09B0\u09BE\u09B0 \u09A7\u09BE\u09AA:
 
-  const SKILLS = [
-    { name: 'todo_write', tag: 'অটোনমি', code: '{"todos":[{"id":"t1","title":"…","status":"in_progress"}]}',
-      desc: 'লাইভ টাস্ক বোর্ড বানায়/আপডেট করে। কাজ শেষ না হলে সে থামবে না — প্রতিটা টুল রেজাল্টের পরে এটা কল করে পরের ধাপে যায়।' },
-    { name: 'open_app', tag: 'ডিভাইস', code: '{"package":"com.whatsapp","name":"WhatsApp"}',
-      desc: 'অ্যান্ড্রয়েডের রিয়েল অ্যাপ ওপেন করে (Intent/AppLauncher ব্রিজ, Capacitor হলে native plugin, ব্রাউজারে deep-link ফallback)।' },
-    { name: 'launch_url', tag: 'ব্রাউজার', code: '{"url":"https://www.facebook.com","new_tab":true}',
-      desc: 'ক্রোম/সিস্টেম ব্রাউজারে সত্যিকারের URL খোলে ও নতুন ট্যাব দেয়।' },
-    { name: 'read_screen', tag: 'দৃষ্টি', code: '{"target":"current"}',
-      desc: 'স্ক্রিনশট নেয়, টেক্সট/OCR বের করে ব্যাকগ্রাউন্ডে ইনজেক্ট করে — তাই অ্যাপ খোলার পরে সে দেখে নেয় কী হয়েছে।' },
-    { name: 'tap', tag: 'নিয়ন্ত্রণ', code: '{"x":540,"y":1620}',
-      desc: 'Accessibility সার্ভিস দিয়ে স্ক্রিনে রিয়েল ট্যাপ করে (ফলব্যাক: synthesizeTap / CDP)।' },
-    { name: 'swipe', tag: 'নিয়ন্ত্রণ', code: '{"x1":540,"y1":1800,"x2":540,"y2":400}',
-      desc: 'সত্যিকারের swipe — স্ক্রল, back gesture, slider সব।' },
-    { name: 'type_text', tag: 'নিয়ন্ত্রণ', code: '{"text":"হ্যালো","enter":true}',
-      desc: 'ফোকাস করা ইনপুটে রিয়েল টাইপ করে (ADB `input text` / Accessibility ACTION_SET_TEXT / native plugin)।' },
-    { name: 'press_key', tag: 'নিয়ন্ত্রণ', code: '{"key":"home"}',
-      desc: 'home / back / recents / enter / volume — হার্ডওয়্যার কী প্রেস।' },
-    { name: 'notify', tag: 'ডিভাইস', code: '{"title":"ZYRAXON","body":"ওয়েবসাইট পাবলিশ হয়েছে"}',
-      desc: 'অ্যান্ড্রয়েড নোটিফিকেশনে আসল মেসেজ পোস্ট করে।' },
-    { name: 'clipboard_read', tag: 'ডিভাইস', code: '{}',
-      desc: 'নেটিভ ক্লিপবোর্ড পড়ে — কম্পিউটার/ফোনের কপি করা কনটেন্ট আনে।' },
-    { name: 'clipboard_write', tag: 'ডিভাইস', code: '{"text":"…"}',
-      desc: 'ক্লিপবোর্ডে লেখে যাতে অন্য অ্যাপ পেস্ট করতে পারে।' },
-    { name: 'share', tag: 'ডিভাইস', code: '{"text":"লিংক","url":"https://…"}',
-      desc: 'অ্যান্ড্রয়েড শেয়ার শিট খোলে — লিংক/টেক্সট/ফাইল অন্য অ্যাপে পাঠায়।' },
-    { name: 'read_url', tag: 'ওয়েব', code: '{"url":"https://…"}',
-      desc: 'পেজ ফেচ করে টেক্সট বানায় (সার্ভার প্রক্সি, CORS নেই)। রিসার্চ ও ভেরিফিকেশনের জন্য।' },
-    { name: 'read_media', tag: 'মাল্টিমোডাল', code: '{"url":"https://…/clip.mp4","modality":"video"}',
-      desc: 'URL/লোকাল ফাইল থেকে video / audio / image / PDF পড়ে, base64 data-URL বানিয়ে multimodal মডেলে পাঠায় — নির্দিষ্ট অংশও পড়তে পারে (টাইমস্ট্যাম্প/পেজ)।' },
-    { name: 'generate_file', tag: 'বিল্ড', code: '{"path":"index.html","content":"<html>…"}',
-      desc: 'সার্ভারে আসল ফাইল লেখে (site workspace)। কনটেন্ট বানানো/রিপেয়ারের মূল হাতিয়ার।' },
-    { name: 'publish_website', tag: 'পাবলিশ', code: '{"name":"portfolio","html":"<html>…","files":{"app.js":"…"}}',
-      desc: 'আসল সাইট ডিস্কে লিখে পাবলিক পোর্টে সার্ভ করে, লাইভ URL রিটার্ন করে, আর URL ফেচ করে ভেরিফাই করে `verified:true` দেয়।' },
-    { name: 'run_shell', tag: 'হোস্ট', code: '{"command":"ls -la"}',
-      desc: 'পেয়ার করা ZYRAXON হোস্টে আসল কমান্ড চালায়, stdout/stderr ফেরত দেয়।' },
-    { name: 'memory_write', tag: 'মেমরি', code: '{"key":"প্রিয় রং","value":"নীল"}',
-      desc: 'ইউজার সম্পর্কে স্থায়ী তথ্য লোকাল DB-তে লিখে রাখে — ক্লাউড মুছলেও থাকবে।' },
-  ];
+\u09E7. \u0985\u09CD\u09AF\u09BE\u09AA \u09A8\u09BF\u099C\u09C7\u0987 \u0986\u0997\u09C7 \u099A\u09C7\u09B7\u09CD\u099F\u09BE \u0995\u09B0\u09C7: \u09B8\u09C7\u099F\u09BF\u0982 \u09AC\u09A6\u09B2\u09BE\u09A8\u09CB\u09B0 \u0985\u09A8\u09C1\u09AE\u09A4\u09BF (WRITE_SETTINGS) \u09A5\u09BE\u0995\u09B2\u09C7 \u09B8\u09C7 \u09A8\u09BF\u099C\u09C7 \u09A5\u09C7\u0995\u09C7\u0987 \`package_verifier_enable=0\` \u0993 \`verifier_verify_adb_installs=0\` \u09B8\u09C7\u099F \u0995\u09B0\u09C7 \u09A6\u09C7\u09AF\u09BC \u2014 Play Protect \u09AC\u09A8\u09CD\u09A7\u0964
+\u09E8. \u0985\u09A8\u09C1\u09AE\u09A4\u09BF \u09A8\u09BE \u09A5\u09BE\u0995\u09B2\u09C7 \u0989\u09AA\u09B0\u09C7\u09B0 "Play Protect \u09AC\u09A8\u09CD\u09A7" \u09AC\u09BE\u099F\u09A8\u09C7 \u099A\u09BE\u09AA \u09A6\u09BE\u0993 \u2014 \u0985\u09CD\u09AF\u09BE\u09AA \u09B8\u09CB\u099C\u09BE \u09AA\u09CD\u09B2\u09C7 \u09B8\u09CD\u099F\u09CB\u09B0\u09C7\u09B0 Play Protect \u09B8\u09CD\u0995\u09CD\u09B0\u09BF\u09A8 \u0996\u09C1\u09B2\u09C7 \u09A6\u09C7\u09AC\u09C7\u0964 \u0993\u0996\u09BE\u09A8\u09C7 \u09B6\u09C1\u09A7\u09C1 "Scan apps with Play Protect" \u099F\u0997\u09B2\u099F\u09BE \u09AC\u09A8\u09CD\u09A7 \u0995\u09B0\u09CB\u0964
+\u09E9. \u0985\u09CD\u09AF\u09BE\u0995\u09CD\u09B8\u09C7\u09B8\u09BF\u09AC\u09BF\u09B2\u09BF\u099F\u09BF \u09B8\u09BE\u09B0\u09CD\u09AD\u09BF\u09B8 \u09AC\u09CD\u09AF\u09AC\u09B9\u09BE\u09B0 \u0995\u09B0\u09A4\u09C7 Play Protect \u09AC\u09A8\u09CD\u09A7 \u0995\u09B0\u09BE \u09B2\u09BE\u0997\u09C7 \u09A8\u09BE, \u0995\u09BF\u09A8\u09CD\u09A4\u09C1 \u09AF\u09C7\u0995\u09CB\u09A8\u09CB APK \u09A8\u09BF\u099C\u09C7 \u0987\u09A8\u09B8\u09CD\u099F\u09B2/\u09B8\u09BE\u0987\u09A8 \u0995\u09B0\u09A4\u09C7 \u09B2\u09BE\u0997\u09C7\u0964
+\u09EA. ADB \u09A5\u09BE\u0995\u09B2\u09C7 \u09A8\u09BF\u09B0\u09AC\u099A\u09CD\u099B\u09BF\u09A8\u09CD\u09A8: \`adb shell settings put global package_verifier_enable 0\` \u098F\u09AC\u0982 \`adb shell settings put global verifier_verify_adb_installs 0\`\u0964
 
-  const PERMISSIONS = [
-    { id: 'microphone', emoji: '🎙️', label: 'মাইক্রোফোন', why: 'তোমার বাংলা কথা শুনতে (Speech Recognition)' },
-    { id: 'camera', emoji: '📷', label: 'ক্যামেরা', why: 'ছবি/ভিডিও দেখা ও ক্যাপচার করতে' },
-    { id: 'geolocation', emoji: '📍', label: 'লোকেশন', why: 'আসেপাশের তথ্য দিতে' },
-    { id: 'notifications', emoji: '🔔', label: 'নোটিফিকেশন', why: 'কাজ শেষ হলে জানাতে' },
-    { id: 'clipboard-read', emoji: '📋', label: 'ক্লিপবোর্ড', why: 'কপি করা জিনিস পড়তে/লিখতে' },
-    { id: 'screen', emoji: '🖥️', label: 'স্ক্রিন ক্যাপচার', why: 'স্ক্রিন দেখে পরের ধাপ ঠিক করতে' },
-    { id: 'overlay', emoji: '🪟', label: 'ওভারে দেখানো', why: 'অন্য অ্যাপের উপরে কোড/টাস্ক বক্স দেখাতে (লাইভ কোড ওভারলে)' },
-    { id: 'accessibility', emoji: '🤖', label: 'অ্যাক্সেসিবিলিটি সার্ভিস', why: 'রিয়েলি ট্যাপ/টাইপ/swipe করতে (অন্য অ্যাপ নিয়ন্ত্রণ)' },
-    { id: 'storage', emoji: '💾', label: 'স্টোরেজ', why: 'ফাইল ও সাইট ডিস্কে লিখতে' },
-    { id: 'install-apk', emoji: '📦', label: 'অ্যাপ ইনস্টল', why: 'নতুন APK ইনস্টল করতে' },
-    { id: 'write-settings', emoji: '⚙️', label: 'সিস্টেম সেটিং বদল', why: 'সেটিং নিজে বদলাতে (রিস্টার্ট ছাড়া)' },
-    { id: 'play-protect', emoji: '🛡️', label: 'Play Protect বন্ধ', why: 'যেকোনো APK ইনস্টল করতে — শুধু Allow চাপো' },
-  ];
-
-  const PLAY_NOTE = `গুগল প্লে প্রোটেক্ট (Play Protect) বন্ধ করার ধাপ:
-
-১. অ্যাপ নিজেই আগে চেষ্টা করে: সেটিং বদলানোর অনুমতি (WRITE_SETTINGS) থাকলে সে নিজে থেকেই \`package_verifier_enable=0\` ও \`verifier_verify_adb_installs=0\` সেট করে দেয় — Play Protect বন্ধ।
-২. অনুমতি না থাকলে উপরের "Play Protect বন্ধ" বাটনে চাপ দাও — অ্যাপ সোজা প্লে স্টোরের Play Protect স্ক্রিন খুলে দেবে। ওখানে শুধু "Scan apps with Play Protect" টগলটা বন্ধ করো।
-৩. অ্যাক্সেসিবিলিটি সার্ভিস ব্যবহার করতে Play Protect বন্ধ করা লাগে না, কিন্তু যেকোনো APK নিজে ইনস্টল/সাইন করতে লাগে।
-৪. ADB থাকলে নিরবচ্ছিন্ন: \`adb shell settings put global package_verifier_enable 0\` এবং \`adb shell settings put global verifier_verify_adb_installs 0\`।
-
-যেসব অনুমতি উপরে Allow পপ-আপে আসে না (ওভারে, অ্যাক্সেসিবিলিটি, সিস্টেম সেটিং, অ্যাপ ইনস্টল, স্ক্রিন ক্যাপচার) — সেগুলোর জন্য অ্যাপ নিজেই সিস্টেমের ঠিক পর্দাটা খুলে দেয়। শুধু ওখানে টগলটা অন করে ফিরে আসো। কোনো মেনু খুঁজতে হবে না।`;
-
-  global.ZY = global.ZY || {};
-  global.ZY.skills = SKILLS;
-  global.ZY.permissions = PERMISSIONS;
-  global.ZY.playNote = PLAY_NOTE;
-})(window);
+\u09AF\u09C7\u09B8\u09AC \u0985\u09A8\u09C1\u09AE\u09A4\u09BF \u0989\u09AA\u09B0\u09C7 Allow \u09AA\u09AA-\u0986\u09AA\u09C7 \u0986\u09B8\u09C7 \u09A8\u09BE (\u0993\u09AD\u09BE\u09B0\u09C7, \u0985\u09CD\u09AF\u09BE\u0995\u09CD\u09B8\u09C7\u09B8\u09BF\u09AC\u09BF\u09B2\u09BF\u099F\u09BF, \u09B8\u09BF\u09B8\u09CD\u099F\u09C7\u09AE \u09B8\u09C7\u099F\u09BF\u0982, \u0985\u09CD\u09AF\u09BE\u09AA \u0987\u09A8\u09B8\u09CD\u099F\u09B2, \u09B8\u09CD\u0995\u09CD\u09B0\u09BF\u09A8 \u0995\u09CD\u09AF\u09BE\u09AA\u099A\u09BE\u09B0) \u2014 \u09B8\u09C7\u0997\u09C1\u09B2\u09CB\u09B0 \u099C\u09A8\u09CD\u09AF \u0985\u09CD\u09AF\u09BE\u09AA \u09A8\u09BF\u099C\u09C7\u0987 \u09B8\u09BF\u09B8\u09CD\u099F\u09C7\u09AE\u09C7\u09B0 \u09A0\u09BF\u0995 \u09AA\u09B0\u09CD\u09A6\u09BE\u099F\u09BE \u0996\u09C1\u09B2\u09C7 \u09A6\u09C7\u09AF\u09BC\u0964 \u09B6\u09C1\u09A7\u09C1 \u0993\u0996\u09BE\u09A8\u09C7 \u099F\u0997\u09B2\u099F\u09BE \u0985\u09A8 \u0995\u09B0\u09C7 \u09AB\u09BF\u09B0\u09C7 \u0986\u09B8\u09CB\u0964 \u0995\u09CB\u09A8\u09CB \u09AE\u09C7\u09A8\u09C1 \u0996\u09C1\u0981\u099C\u09A4\u09C7 \u09B9\u09AC\u09C7 \u09A8\u09BE\u0964`;
+    global.ZY = global.ZY || {};
+    global.ZY.skills = SKILLS;
+    global.ZY.permissions = PERMISSIONS;
+    global.ZY.playNote = PLAY_NOTE;
+  })(window);
+})();

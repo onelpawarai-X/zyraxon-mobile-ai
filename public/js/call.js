@@ -1,136 +1,125 @@
-/* ══════════════════════════════════════════════════════════════
-   ZYRAXON Call — the assistant answers the phone itself.
-
-   Android has no single public API for "pick up now", so the native side
-   (CallWatcher.java) uses TelecomManager plus the reflection fallbacks that
-   work from Android 5 to 14. This layer:
-
-     • watches for an incoming call and pushes it into the chat as a real
-       turn, so the assistant greets the caller without the user typing;
-     • pipes the caller's speech (Android's own call audio → our STT) into
-       the normal agent loop;
-     • speaks the reply back through TTS with the loudspeaker on, so the
-       assistant talks to the caller and the user never has to;
-     • can place calls and hang up on request.
-   ══════════════════════════════════════════════════════════════ */
-(function (global) {
-  'use strict';
-
-  const Call = {
-    state: 'idle',        // idle | ringing | active
-    number: '',
-    name: '',
-    autoAnswer: false,
-    _wired: false,
-
-    nativeOn() {
-      const n = global.ZY.Native;
-      return !!(n && n.app && n.call && n.call.available());
-    },
-
-    /** Subscribe to native call events and enable auto-answer if the user set it. */
-    init() {
-      const st = global.ZY.store.get('settings') || {};
-      Call.autoAnswer = st.callAutoAnswer !== false; // default: on, that is the ask
-      if (!Call.nativeOn()) return false;
-      global.ZY.Native.call.onEvent((e) => Call._onNative(e));
-      try { global.ZY.Native.call.setAutoAnswer(Call.autoAnswer); } catch {}
-      Call._wired = true;
-      return true;
-    },
-
-    setAutoAnswer(on) {
-      Call.autoAnswer = !!on;
-      const st = global.ZY.store.get('settings') || {};
-      st.callAutoAnswer = Call.autoAnswer;
-      global.ZY.store.set('settings', st);
-      try { global.ZY.Native.call.setAutoAnswer(Call.autoAnswer); } catch {}
-      return Call.autoAnswer;
-    },
-
-    _onNative(e) {
-      const st = e.state;
-      if (st === 'ringing') {
-        Call.state = 'ringing';
-        Call.number = e.text || '';
-        global.ZY.ui && global.ZY.ui.toast('কল আসছে — আমি ধরছি');
-        global.ZY.ui && global.ZY.ui.addCallCard && global.ZY.ui.addCallCard({ state: 'ringing', number: Call.number });
-      } else if (st === 'active') {
-        Call.state = 'active';
-        global.ZY.Native.call.speaker(true);
-        global.ZY.ui && global.ZY.ui.addCallCard && global.ZY.ui.addCallCard({ state: 'active', number: Call.number });
-        // The assistant opens the conversation — the user does not have to.
-        Call._greetCaller();
-      } else if (st === 'ended') {
-        Call.state = 'idle';
-        global.ZY.ui && global.ZY.ui.addCallCard && global.ZY.ui.addCallCard({ state: 'ended', number: Call.number });
-        Call.number = ''; Call.name = '';
+(() => {
+  (function(global) {
+    "use strict";
+    const Call = {
+      state: "idle",
+      // idle | ringing | active
+      number: "",
+      name: "",
+      autoAnswer: false,
+      _wired: false,
+      nativeOn() {
+        const n = global.ZY.Native;
+        return !!(n && n.app && n.call && n.call.available());
+      },
+      /** Subscribe to native call events and enable auto-answer if the user set it. */
+      init() {
+        const st = global.ZY.store.get("settings") || {};
+        Call.autoAnswer = st.callAutoAnswer !== false;
+        if (!Call.nativeOn()) return false;
+        global.ZY.Native.call.onEvent((e) => Call._onNative(e));
+        try {
+          global.ZY.Native.call.setAutoAnswer(Call.autoAnswer);
+        } catch {
+        }
+        Call._wired = true;
+        return true;
+      },
+      setAutoAnswer(on) {
+        Call.autoAnswer = !!on;
+        const st = global.ZY.store.get("settings") || {};
+        st.callAutoAnswer = Call.autoAnswer;
+        global.ZY.store.set("settings", st);
+        try {
+          global.ZY.Native.call.setAutoAnswer(Call.autoAnswer);
+        } catch {
+        }
+        return Call.autoAnswer;
+      },
+      _onNative(e) {
+        const st = e.state;
+        if (st === "ringing") {
+          Call.state = "ringing";
+          Call.number = e.text || "";
+          global.ZY.ui && global.ZY.ui.toast("\u0995\u09B2 \u0986\u09B8\u099B\u09C7 \u2014 \u0986\u09AE\u09BF \u09A7\u09B0\u099B\u09BF");
+          global.ZY.ui && global.ZY.ui.addCallCard && global.ZY.ui.addCallCard({ state: "ringing", number: Call.number });
+        } else if (st === "active") {
+          Call.state = "active";
+          global.ZY.Native.call.speaker(true);
+          global.ZY.ui && global.ZY.ui.addCallCard && global.ZY.ui.addCallCard({ state: "active", number: Call.number });
+          Call._greetCaller();
+        } else if (st === "ended") {
+          Call.state = "idle";
+          global.ZY.ui && global.ZY.ui.addCallCard && global.ZY.ui.addCallCard({ state: "ended", number: Call.number });
+          Call.number = "";
+          Call.name = "";
+        }
+      },
+      /** Speak first when the call connects, then keep listening for the caller. */
+      async _greetCaller() {
+        const who = Call.name || Call.number || "\u098F\u0995\u099C\u09A8";
+        try {
+          global.ZY.VOICE.TTS.say(`\u09B9\u09CD\u09AF\u09BE\u09B2\u09CB, \u0986\u09AE\u09BF ZYRAXON \u09AC\u09B2\u099B\u09BF\u0964 ${who} \u0995\u09C7 \u09AC\u09B2\u099B\u09C7\u09A8?`);
+        } catch {
+        }
+        try {
+          global.ZY.VOICE.STT.start();
+        } catch {
+        }
+        const api = global.ZY.Agent;
+        if (api && api.send) {
+          try {
+            await api.send(`[\u0995\u09B2 \u099A\u09B2\u099B\u09C7] ${who} \u09AB\u09CB\u09A8\u09C7 \u0986\u099B\u09C7\u09A8\u0964 \u09A4\u09BE\u0995\u09C7 \u09AC\u09BE\u0982\u09B2\u09BE\u09AF\u09BC \u09B9\u09CD\u09AF\u09BE\u09B2\u09CB \u09AC\u09B2\u09CB \u098F\u09AC\u0982 \u099C\u09BF\u099C\u09CD\u099E\u09C7\u09B8 \u0995\u09B0\u09CB \u0995\u09C0 \u09A6\u09B0\u0995\u09BE\u09B0\u0964`);
+          } catch {
+          }
+        }
+      },
+      /** A line for the system prompt so the model knows it can handle calls. */
+      promptLine() {
+        const lines = [
+          "- \u09AB\u09CB\u09A8 \u0995\u09B2: \u09A4\u09C1\u09AE\u09BF \u09A8\u09BF\u099C\u09C7\u0987 \u0995\u09B2 \u09A7\u09B0\u09A4\u09C7 \u09AA\u09BE\u09B0\u09CB, \u0995\u09A5\u09BE \u09AC\u09B2\u09A4\u09C7 \u09AA\u09BE\u09B0\u09CB, \u0995\u09B2 \u0995\u09BE\u099F\u09A4\u09C7 \u09AA\u09BE\u09B0\u09CB, \u0986\u09B0 \u0995\u09B2 \u0995\u09B0\u09A4\u09C7 \u09AA\u09BE\u09B0\u09CB\u0964",
+          "- \u0995\u09B2 \u0986\u09B8\u09B2\u09C7 user_ringing \u0987\u09AD\u09C7\u09A8\u09CD\u099F \u0986\u09B8\u09AC\u09C7; \u0995\u09B2 \u09A7\u09B0\u09BE\u09B0 \u09AA\u09B0 \u0995\u09B2\u09C7 \u09AF\u09BF\u09A8\u09BF \u0986\u099B\u09C7\u09A8 \u09A4\u09BE\u09B0 \u0995\u09A5\u09BE STT \u09B9\u09AF\u09BC\u09C7 \u09A4\u09CB\u09AE\u09BE\u09B0 \u0995\u09BE\u099B\u09C7 \u0986\u09B8\u09AC\u09C7 \u2014 \u09A4\u09BE\u0995\u09C7 \u09AC\u09BE\u0982\u09B2\u09BE\u09AF\u09BC \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09BE\u0993 (TTS-\u098F \u09B8\u09C7 \u09B6\u09C1\u09A8\u09AC\u09C7)\u0964",
+          "- \u0995\u09B2 \u0995\u09BE\u099F\u09A4\u09C7 call_hangup, \u0995\u09B2 \u0995\u09B0\u09A4\u09C7 call_dial, \u098F\u0996\u09A8\u0995\u09BE\u09B0 \u0995\u09B2 \u0985\u09AC\u09B8\u09CD\u09A5\u09BE \u099C\u09BE\u09A8\u09A4\u09C7 call_state \u099F\u09C1\u09B2 \u09AC\u09CD\u09AF\u09AC\u09B9\u09BE\u09B0 \u0995\u09B0\u09CB\u0964",
+          "- \u0995\u09B2 \u099A\u09B2\u09BE\u0995\u09BE\u09B2\u09C0\u09A8 \u099B\u09CB\u099F \u09AC\u09BE\u0995\u09CD\u09AF\u09C7 \u0995\u09A5\u09BE \u09AC\u09B2\u09CB, \u0995\u09BE\u09B0\u09A3 \u09A4\u09CB\u09AE\u09BE\u09B0 \u0995\u09A5\u09BE \u0995\u09B2\u09C7\u09B0 \u0985\u09AA\u09B0 \u09AA\u09CD\u09B0\u09BE\u09A8\u09CD\u09A4\u09C7 \u09B6\u09CB\u09A8\u09BE \u09AF\u09BE\u099A\u09CD\u099B\u09C7\u0964"
+        ];
+        if (!Call.nativeOn()) lines.push("- (\u098F\u0987 \u09A1\u09BF\u09AD\u09BE\u0987\u09B8\u09C7 \u0995\u09B2-\u09AC\u09CD\u09B0\u09BF\u099C \u09A8\u09C7\u0987 \u2014 \u0995\u09B2-\u099F\u09C1\u09B2 \u09B6\u09C1\u09A7\u09C1 APK-\u09A4\u09C7 \u0986\u09B8\u09B2 \u0995\u09BE\u099C \u0995\u09B0\u09AC\u09C7, \u09B8\u09C7\u099F\u09BE \u09B8\u09CE\u09AD\u09BE\u09AC\u09C7 \u09AC\u09B2\u09CB\u0964)");
+        return lines.join("\n");
+      },
+      /** Ask Android for the call permissions the bridge needs (one popup each). */
+      async ensurePermissions() {
+        const n = global.ZY.Native;
+        if (!n) return false;
+        n.permission.request("phone", "\u09AB\u09CB\u09A8 \u0995\u09B2 \u09A7\u09B0\u09BE\u09B0 \u0985\u09A8\u09C1\u09AE\u09A4\u09BF");
+        return true;
+      },
+      async answer() {
+        if (!Call.nativeOn()) return { ok: false, error: "no-native", summary: "\u0995\u09B2 \u09A7\u09B0\u09BE\u09B0 \u099C\u09A8\u09CD\u09AF APK \u09A6\u09B0\u0995\u09BE\u09B0" };
+        const ok = await global.ZY.Native.call.answer();
+        return ok ? { ok: true, summary: "\u0995\u09B2 \u09A7\u09B0\u09BE \u09B9\u09B2\u09CB", data: { number: Call.number } } : { ok: false, error: "answer-failed", summary: "\u0995\u09B2 \u09A7\u09B0\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF" };
+      },
+      async hangup() {
+        if (!Call.nativeOn()) return { ok: false, error: "no-native", summary: "\u0995\u09B2 \u0995\u09BE\u099F\u09BE\u09B0 \u099C\u09A8\u09CD\u09AF APK \u09A6\u09B0\u0995\u09BE\u09B0" };
+        const ok = await global.ZY.Native.call.end();
+        return ok ? { ok: true, summary: "\u0995\u09B2 \u0995\u09C7\u099F\u09C7 \u09A6\u09C7\u0993\u09AF\u09BC\u09BE \u09B9\u09B2\u09CB" } : { ok: false, error: "end-failed", summary: "\u0995\u09B2 \u0995\u09BE\u099F\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF" };
+      },
+      async dial(number) {
+        if (!number) return { ok: false, error: "number-required", summary: "\u09A8\u09AE\u09CD\u09AC\u09B0 \u09A6\u09BE\u0993" };
+        if (Call.nativeOn()) {
+          const ok = await global.ZY.Native.call.dial(number);
+          return ok ? { ok: true, summary: `${number} \u09A8\u09BE\u09AE\u09CD\u09AC\u09BE\u09B0\u09C7 \u0995\u09B2 \u0995\u09B0\u09BE \u09B9\u09B2\u09CB` } : { ok: false, error: "dial-failed", summary: "\u0995\u09B2 \u0995\u09B0\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF" };
+        }
+        const plat = global.ZY.Platform && global.ZY.Platform.data;
+        if (plat && plat.isMobile) {
+          try {
+            location.href = "tel:" + encodeURIComponent(number);
+            return { ok: true, summary: `${number} \u09A1\u09BE\u09AF\u09BC\u09BE\u09B2\u09BE\u09B0 \u0996\u09CB\u09B2\u09BE \u09B9\u09B2\u09CB` };
+          } catch {
+          }
+        }
+        return { ok: false, error: "no-native", summary: "\u098F\u0987 \u09A1\u09BF\u09AD\u09BE\u0987\u09B8\u09C7 \u0995\u09B2 \u0995\u09B0\u09BE \u09B8\u09AE\u09CD\u09AD\u09AC \u09A8\u09AF\u09BC (APK \u09A6\u09B0\u0995\u09BE\u09B0)" };
       }
-    },
-
-    /** Speak first when the call connects, then keep listening for the caller. */
-    async _greetCaller() {
-      const who = Call.name || Call.number || 'একজন';
-      try {
-        global.ZY.VOICE.TTS.say(`হ্যালো, আমি ZYRAXON বলছি। ${who} কে বলছেন?`);
-      } catch {}
-      // Re-arm the mic so the caller's voice lands in the chat box.
-      try { global.ZY.VOICE.STT.start(); } catch {}
-      const api = global.ZY.Agent;
-      if (api && api.send) {
-        try { await api.send(`[কল চলছে] ${who} ফোনে আছেন। তাকে বাংলায় হ্যালো বলো এবং জিজ্ঞেস করো কী দরকার।`); } catch {}
-      }
-    },
-
-    /** A line for the system prompt so the model knows it can handle calls. */
-    promptLine() {
-      const lines = [
-        '- ফোন কল: তুমি নিজেই কল ধরতে পারো, কথা বলতে পারো, কল কাটতে পারো, আর কল করতে পারো।',
-        '- কল আসলে user_ringing ইভেন্ট আসবে; কল ধরার পর কলে যিনি আছেন তার কথা STT হয়ে তোমার কাছে আসবে — তাকে বাংলায় উত্তর দাও (TTS-এ সে শুনবে)।',
-        '- কল কাটতে call_hangup, কল করতে call_dial, এখনকার কল অবস্থা জানতে call_state টুল ব্যবহার করো।',
-        '- কল চলাকালীন ছোট বাক্যে কথা বলো, কারণ তোমার কথা কলের অপর প্রান্তে শোনা যাচ্ছে।',
-      ];
-      if (!Call.nativeOn()) lines.push('- (এই ডিভাইসে কল-ব্রিজ নেই — কল-টুল শুধু APK-তে আসল কাজ করবে, সেটা সৎভাবে বলো।)');
-      return lines.join('\n');
-    },
-
-    /** Ask Android for the call permissions the bridge needs (one popup each). */
-    async ensurePermissions() {
-      const n = global.ZY.Native;
-      if (!n) return false;
-      n.permission.request('phone', 'ফোন কল ধরার অনুমতি');
-      return true;
-    },
-
-    async answer() {
-      if (!Call.nativeOn()) return { ok: false, error: 'no-native', summary: 'কল ধরার জন্য APK দরকার' };
-      const ok = await global.ZY.Native.call.answer();
-      return ok ? { ok: true, summary: 'কল ধরা হলো', data: { number: Call.number } } : { ok: false, error: 'answer-failed', summary: 'কল ধরা যায়নি' };
-    },
-
-    async hangup() {
-      if (!Call.nativeOn()) return { ok: false, error: 'no-native', summary: 'কল কাটার জন্য APK দরকার' };
-      const ok = await global.ZY.Native.call.end();
-      return ok ? { ok: true, summary: 'কল কেটে দেওয়া হলো' } : { ok: false, error: 'end-failed', summary: 'কল কাটা যায়নি' };
-    },
-
-    async dial(number) {
-      if (!number) return { ok: false, error: 'number-required', summary: 'নম্বর দাও' };
-      if (Call.nativeOn()) {
-        const ok = await global.ZY.Native.call.dial(number);
-        return ok ? { ok: true, summary: `${number} নাম্বারে কল করা হলো` } : { ok: false, error: 'dial-failed', summary: 'কল করা যায়নি' };
-      }
-      // Browser fallback only where a dialer can exist — on a desktop host
-      // there is none, and pretending otherwise would be a lie.
-      const plat = global.ZY.Platform && global.ZY.Platform.data;
-      if (plat && plat.isMobile) {
-        try { location.href = 'tel:' + encodeURIComponent(number); return { ok: true, summary: `${number} ডায়ালার খোলা হলো` }; }
-        catch { /* fall through */ }
-      }
-      return { ok: false, error: 'no-native', summary: 'এই ডিভাইসে কল করা সম্ভব নয় (APK দরকার)' };
-    },
-  };
-
-  global.ZY = global.ZY || {};
-  global.ZY.Call = Call;
-})(window);
+    };
+    global.ZY = global.ZY || {};
+    global.ZY.Call = Call;
+  })(window);
+})();
