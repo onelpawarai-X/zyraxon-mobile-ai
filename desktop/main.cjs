@@ -20,8 +20,22 @@ const os = require('node:os');
 const fs = require('node:fs');
 const { backend, which, runShell, IS_WIN, IS_MAC } = require('./lib/device.cjs');
 
-const ROOT = path.resolve(__dirname, '..');
-const SERVER = path.join(ROOT, 'server', 'server.mjs');
+// Where the server and its public/ folder live. Electron runs the desktop code
+// from inside app.asar once installed, and asar is read-only — the server has to
+// be unpacked, so electron-builder places it under resources/ outside the asar.
+// In development the repo root is the same place and this resolves identically.
+const APP_ROOT = app.isPackaged
+  ? path.join(process.resourcesPath)
+  : path.resolve(__dirname, '..');
+const ROOT = APP_ROOT;
+const SERVER = path.join(APP_ROOT, 'server', 'server.mjs');
+
+// The server writes caches and published sites next to itself, which is read-only
+// once installed (AppImage, /Applications). Point it at the user's data folder
+// instead, so the app works the same installed as it does from a checkout.
+function userDataDir() {
+  try { return app.getPath('userData'); } catch { return os.tmpdir(); }
+}
 
 // Software rendering by default: the app must work on VMs and machines without
 // a usable GPU, where Chromium's GPU process fails and the window stays black.
@@ -48,7 +62,13 @@ function freePort() {
 function startServer(port) {
   serverProc = spawn(process.execPath, [SERVER], {
     cwd: ROOT,
-    env: { ...process.env, PORT: String(port), ELECTRON_RUN_AS_NODE: '1' },
+    env: {
+      ...process.env,
+      PORT: String(port),
+      ELECTRON_RUN_AS_NODE: '1',
+      ZYRAXON_ROOT: APP_ROOT,
+      ZYRAXON_DATA_DIR: userDataDir(),
+    },
     stdio: ['ignore', 'pipe', 'pipe'],
     windowsHide: true,
   });

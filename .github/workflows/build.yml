@@ -1,0 +1,122 @@
+name: Build ZYRAXON
+
+# One tag, four installers, one release. The tag is what the release is named
+# after, so pushing v1.2.0 publishes v1.2.0 — nothing has to be renamed by hand.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # The APK is built without Gradle, straight against the SDK tools, so the
+      # SDK has to be here with exactly the pieces build.sh reaches for.
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install build tools
+        run: sdkmanager "build-tools;36.0.0" "platforms;android-34"
+
+      - name: Build APK
+        run: bash android/build.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zyraxon-apk
+          path: android/zyraxon.apk
+          if-no-files-found: error
+
+  desktop:
+    name: Desktop ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: Linux
+            target: --linux AppImage
+            artifact: zyraxon-linux
+          - os: windows-latest
+            name: Windows
+            target: --win nsis
+            artifact: zyraxon-windows
+          - os: macos-latest
+            name: macOS
+            target: --mac dmg
+            artifact: zyraxon-macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install desktop dependencies
+        working-directory: desktop
+        run: npm install
+
+      - name: Build installer
+        working-directory: desktop
+        run: npx electron-builder ${{ matrix.target }} --publish never
+        env:
+          # electron-builder tries to sign with a local identity if one exists;
+          # CI has none, and failing there would hide a build that otherwise works.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/*.AppImage
+            desktop/dist/*.dmg
+            desktop/dist/*.zip
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: [android, desktop]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List the files going out
+        run: find dist -type f | sort
+
+      # A release that already exists is replaced outright: the old assets were
+      # broken, and half-updated downloads are worse than none. The tag itself
+      # is kept so the version history stays in one place.
+      - name: Replace the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          TAG="${{ github.ref_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then TAG="v1.0.0"; fi
+          # The tag stays: it triggered this run, and deleting it would leave
+          # the version pointing at nothing. Only the release is replaced.
+          gh release delete "$TAG" --yes --repo "${{ github.repository }}" || true
+          gh release create "$TAG" --repo "${{ github.repository }}" \
+            --title "ZYRAXON $TAG" \
+            --notes-file .github/RELEASE_NOTES.md \
+            dist/*

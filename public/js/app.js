@@ -543,6 +543,30 @@
       $('set-voice').addEventListener('change', () => global.ZY.VOICE.TTS.setVoiceByName($('set-voice').value));
       $('set-voice-test').addEventListener('click', () => global.ZY.VOICE.TTS.test());
 
+      // "open in the browser" — the same page is already served on a local
+      // port, so the user's own Chrome can run it with their own voices and
+      // can outlive this window. In a browser already, a new tab is enough.
+      $('set-open-browser').addEventListener('click', async () => {
+        const here = location.origin;
+        if (!global.ZY.Native || !global.ZY.Native.app) {
+          global.open(here, '_blank', 'noopener');
+          return;
+        }
+        const base = (global.ZY.store.get('base') || here).replace(/\/$/, '');
+        global.ZY.ui.toast(global.ZY.t('toast.browser_open'));
+        try {
+          const r = await fetch(base + '/api/open-browser', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: base }),
+          });
+          const j = await r.json();
+          if (!j.ok) global.ZY.ui.toast(global.ZY.t('toast.browser_none'));
+        } catch {
+          global.open(here, '_blank', 'noopener');
+        }
+      });
+
       // memory pane actions
       $('mem-add').addEventListener('click', async () => {
         const k = $('mem-key').value.trim(), v = $('mem-val').value.trim();

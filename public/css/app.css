@@ -66,7 +66,7 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; str
 .bg-video.on,.bg-image.on{ opacity:.55; }
 .bg-veil{ position:absolute; inset:0; background:
   linear-gradient(180deg, rgba(4,5,14,.55) 0%, rgba(4,5,14,.2) 35%, rgba(4,5,14,.75) 80%, rgba(4,5,14,.94) 100%);
-  backdrop-filter:blur(1px); }
+  backdrop-filter:none; }
 .bg-grain{ position:absolute; inset:0; opacity:.05; mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
@@ -198,6 +198,10 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; str
 .tl-row .tl-name{ font-weight:600; color:var(--acc3); font-family:var(--font-mono); font-size:10.5px; }
 .tl-row .tl-arg{ color:var(--ink-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:34%; }
 .tl-row .tl-res{ margin-left:auto; color:var(--good); font-size:10px; }
+/* A tool result carrying a live URL must show it in full: a truncated link
+   cannot be opened, which is exactly what the user needs to do with it. */
+.tl-row .tl-res.has-link{ white-space:normal; word-break:break-all; max-width:72%; text-align:right; line-height:1.35; }
+.tl-row .tl-res.has-link a{ color:var(--acc3); text-decoration:underline; }
 .tl-row.err .tl-res{ color:var(--bad); }
 .tl-row .spinner{ width:11px; height:11px; border:2px solid rgba(255,255,255,.2); border-top-color:var(--acc3); border-radius:50%; animation:spin .7s linear infinite; }
 
@@ -209,7 +213,7 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; str
 .msg{ max-width:86%; padding:9px 12px; border-radius:18px; font-size:13.5px; line-height:1.5; animation:rise .25s ease;
   box-shadow:0 8px 24px rgba(0,0,0,.28); white-space:pre-wrap; word-break:break-word; }
 .msg.user{ align-self:flex-end; background:linear-gradient(135deg,var(--acc),#6b3fe0); border-bottom-right-radius:6px; }
-.msg.ai{ align-self:flex-start; background:rgba(20,24,48,.72); backdrop-filter:blur(10px); border:1px solid var(--line); border-bottom-left-radius:6px; }
+.msg.ai{ align-self:flex-start; background:rgba(20,24,48,.86); border:1px solid var(--line); border-bottom-left-radius:6px; }
 .msg.ai.streaming::after{ content:'▍'; color:var(--acc3); animation:blink .8s steps(2) infinite; margin-left:2px; }
 .msg .msg-tools{ margin-top:7px; display:flex; flex-wrap:wrap; gap:5px; }
 .msg .chip{ font-size:10px; padding:2px 8px; border-radius:99px; background:rgba(56,232,255,.14); border:1px solid rgba(56,232,255,.3); color:#c8f4ff; font-family:var(--font-mono); }
@@ -253,7 +257,7 @@ svg{ fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; str
 @keyframes camPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.45; } }
 
 /* ── drawer ───────────────────────────────────────────────── */
-.drawer{ position:fixed; inset:0; z-index:40; display:flex; justify-content:flex-end; background:rgba(0,0,0,.5); backdrop-filter:blur(3px); animation:fade .2s ease; }
+.drawer{ position:fixed; inset:0; z-index:40; display:flex; justify-content:flex-end; background:rgba(0,0,0,.62); animation:fade .2s ease; }
 .drawer-panel{ width:min(94vw,440px); height:100%; border-radius:0; border-right:0; display:flex; flex-direction:column; animation:slideIn .26s cubic-bezier(.2,.8,.2,1); }
 .drawer-head{ display:flex; align-items:center; padding:calc(var(--sat) + 12px) 14px 10px; border-bottom:1px solid var(--line); }
 .drawer-head b{ font-size:15px; font-family:var(--font-dis); }
@@ -306,7 +310,7 @@ input[type=checkbox]{ width:20px; height:20px; accent-color:var(--acc); }
 .char-card i{ font-size:10px; color:var(--ink-dim); font-style:normal; }
 
 /* ── permission sheet + toast ─────────────────────────────── */
-.sheet-host,.toast-host{ position:fixed; inset:0; z-index:80; display:flex; align-items:flex-end; justify-content:center; padding:16px calc(var(--sab) + 16px); background:rgba(0,0,0,.55); backdrop-filter:blur(4px); }
+.sheet-host,.toast-host{ position:fixed; inset:0; z-index:80; display:flex; align-items:flex-end; justify-content:center; padding:16px calc(var(--sab) + 16px); background:rgba(0,0,0,.62); }
 .toast-host{ background:none; backdrop-filter:none; pointer-events:none; flex-direction:column; justify-content:flex-end; gap:8px; }
 .sheet{ width:min(94vw,420px); padding:18px; border-radius:var(--r-xl); animation:rise .26s ease; }
 .sheet-head b{ font-size:15px; font-family:var(--font-dis); }
@@ -371,6 +375,21 @@ input[type=checkbox]{ width:20px; height:20px; accent-color:var(--acc); }
   backdrop-filter:none; -webkit-backdrop-filter:none; }
 .bg-video.on,.bg-image.on{ opacity:1; }
 .bg-grain{ display:none; }
+
+/* ── the orb costs nothing while a sheet covers it ─────────────
+   The orb is a stack of blurred, screen-blended layers, and the compositor
+   kept blending them over the playing clip on every frame even when the chat
+   sheet had them fully hidden. That alone held the app at 24fps with the chat
+   open. `content-visibility:hidden` removes the subtree from the compositor
+   without stopping it: it keeps its state, its animations and its position, so
+   it comes back exactly as it was the moment the sheet closes — measured
+   60fps with the sheet open and the clip still playing.
+   Both sheets cover the whole viewport: the console from the bottom (92dvh,
+   full width up to 640px) and the settings drawer from the right. */
+html.modal-open .orb-wrap{ content-visibility:hidden; }
+@media (min-width: 700px){
+  html.modal-open .drawer .orb-wrap{ content-visibility:visible; }
+}
 
 /* ── 1. heavy frosted surfaces (real blur, few elements) ────── */
 .glass,
@@ -444,10 +463,13 @@ input[type=checkbox]{ width:20px; height:20px; accent-color:var(--acc); }
   background:linear-gradient(158deg, rgba(255,204,77,.32), rgba(255,204,77,.12)) !important; }
 
 /* ── 4. chat: both sides white glass, tinted edge to tell them apart ── */
+/* No blur on bubbles: there is one per message, so a long conversation meant
+   dozens of blurred layers stacked over the playing clip — every one of them
+   re-blurring its backdrop each frame. The translucent fills below are visually
+   indistinguishable and cost nothing. */
 .chat{ gap:10px; }
 .msg{
   max-width:88%; padding:11px 14px; border-radius:20px; font-size:14px; line-height:1.58;
-  backdrop-filter:blur(16px) saturate(175%); -webkit-backdrop-filter:blur(16px) saturate(175%);
   border:1px solid var(--g-edge-lo);
 }
 .msg.user{
@@ -478,7 +500,7 @@ input[type=checkbox]{ width:20px; height:20px; accent-color:var(--acc); }
 .composer::before{ background:linear-gradient(180deg, rgba(4,5,14,0), rgba(4,5,14,.55)); }
 
 /* ── 6. drawer, settings rows, sheets ───────────────────────── */
-.drawer{ background:rgba(4,6,16,.42); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
+.drawer{ background:rgba(4,6,16,.62); }
 .drawer-panel{ border-radius:var(--r-xl) 0 0 var(--r-xl); }
 .group h4{ color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.5); }
 .group{ padding:10px; border-radius:var(--r-lg); }
@@ -508,7 +530,7 @@ input[type=range]{ background:rgba(255,255,255,.3); }
 
 /* ── 8. orb as the one big control ─────────────────────────── */
 .orb-ring{ border:2px solid rgba(255,255,255,.5); box-shadow:0 0 34px rgba(255,255,255,.22), inset 0 0 34px rgba(255,255,255,.12); }
-.orb-mic{ background:var(--g-fill-hi); backdrop-filter:blur(14px) saturate(180%); -webkit-backdrop-filter:blur(14px) saturate(180%);
+.orb-mic{ background:var(--g-fill-hi);
   border:1px solid rgba(255,255,255,.5); box-shadow:0 6px 18px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.6); }
 .orb-mic svg{ stroke:#fff; }
 .voice-hall.listening .orb-mic{ background:linear-gradient(160deg, rgba(56,232,255,.96), rgba(139,92,255,.96)) !important; box-shadow:0 0 26px rgba(56,232,255,.65); }

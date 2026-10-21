@@ -71,17 +71,12 @@
    else, on a slightly lighter fill so they read as cards, not as holes */
 .console .taskboard,
 .console .toollog,
-.console .dock,
 .console .artifact{
   background:linear-gradient(158deg, rgba(255,255,255,.17), rgba(255,255,255,.07)) !important;
   border:1px solid rgba(255,255,255,.30) !important;
   box-shadow:0 8px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.42) !important;
   border-radius:16px; padding:10px 12px;
 }
-/* The docked panels are small; blurring them on top of the sheet's own blur
-   would be a second full-screen pass every frame. A translucent fill reads the
-   same and costs nothing. */
-.console .dock{ backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
 .console .composer{ padding:8px 12px calc(10px + var(--sab)); }
 .console .composer-inner{ border-radius:18px; }
 .console .quickbar{ padding-bottom:2px; }
@@ -116,10 +111,11 @@
 @keyframes sheetUp{ from{ transform:translateY(6%); opacity:.4; } to{ transform:none; opacity:1; } }
 
 /* ── modal-open: the glass stays, the video keeps playing ──────
-   An earlier version dimmed the clip, killed every backdrop-filter and
-   painted the panel navy so it would be cheap. It looked nothing like the
-   crystal skin and the background stopped moving. The panel is one large
-   surface, so a real blur costs nothing noticeable — keep the look. */
+   One blur pass on the sheet, which is a single large surface, is affordable.
+   What was NOT affordable was stacking more blurs on top of it: every blurred
+   child forces the compositor to re-blur its whole backdrop each frame while
+   the video plays behind it. The opaque fills below read almost identically
+   and cost nothing. */
 html.modal-open .bg-video,
 html.modal-open .bg-image{ opacity:1; }
 html.modal-open .console-panel,
@@ -133,10 +129,9 @@ html.modal-open .drawer-panel{
 /* the monitoring model's running commentary */
 .monitorbar{
   display:flex; align-items:center; gap:9px; padding:9px 12px; border-radius:14px;
-  background:linear-gradient(158deg, rgba(255,255,255,.17), rgba(255,255,255,.07));
+  background:linear-gradient(158deg, rgba(38,26,66,.80), rgba(18,14,38,.76));
   border:1px solid rgba(255,255,255,.30);
   box-shadow:0 8px 22px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.42);
-  backdrop-filter:blur(12px) saturate(170%); -webkit-backdrop-filter:blur(12px) saturate(170%);
   font-size:12.5px; line-height:1.5;
 }
 .monitorbar[hidden]{ display:none; }
@@ -145,29 +140,27 @@ html.modal-open .drawer-panel{
 .mon-dot{ width:8px; height:8px; border-radius:50%; background:#4ade80; box-shadow:0 0 10px #4ade80; animation:pulse 1.1s ease-in-out infinite; flex:0 0 auto; }
 
 /* ══════════════════════════════════════════════════════════════
-   SEPARATE DOCKED PANELS + LIVE CODE OVERLAY
-   The todo list and the tool log are their own panels beside the
-   chat sheet, and the code she is writing floats on top of the
-   whole screen as translucent glass. All three keep the same
-   performance rule: one blur pass on a large surface, no nested
-   backdrop-filters, so the phone stays smooth.
+   SEPARATE PANELS — tasks and tool runs
+   These are siblings of the chat sheet, not children of it, so they sit beside
+   it as their own floating panels and can be moved. No blur: they are small
+   surfaces over a playing clip, and an opaque fill reads the same for free.
    ══════════════════════════════════════════════════════════════ */
 
-.console-panel{ position:relative; }
+.console{ gap:14px; }
 
 .dock{
-  position:absolute; top:56px; right:calc(100% + 14px); width:280px;
+  position:absolute; top:56px; right:calc(100% + 14px); width:288px;
   max-height:calc(100% - 90px); display:flex; flex-direction:column; gap:8px;
   padding:10px 12px; border-radius:18px; overflow:hidden;
-  background:linear-gradient(158deg, rgba(255,255,255,.19), rgba(255,255,255,.07));
+  background:linear-gradient(158deg, rgba(38,26,66,.94), rgba(16,12,34,.92));
   border:1px solid rgba(255,255,255,.30);
   box-shadow:0 12px 34px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.44);
-  backdrop-filter:blur(13px) saturate(175%); -webkit-backdrop-filter:blur(13px) saturate(175%);
   animation:dockIn .22s cubic-bezier(.22,1,.36,1);
 }
 .dock[hidden]{ display:none; }
-.dock + .dock{ top:auto; bottom:16px; }
-.dock-head{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink); }
+#dock-tools{ top:auto; bottom:16px; }
+.dock-head{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink); cursor:grab; touch-action:none; }
+.dock-head:active{ cursor:grabbing; }
 .dock-head b{ flex:1; }
 .dock-head .tb-count,.dock-head .tl-count{ font-size:11.5px; opacity:.85; }
 .dock .tb-list{ overflow-y:auto; margin:0; padding:0 0 0 2px; list-style:none; }
@@ -178,10 +171,14 @@ html.modal-open .drawer-panel{
 @keyframes dockIn{ from{ transform:translateX(10px); opacity:.3; } to{ transform:none; opacity:1; } }
 
 /* Narrow screens (a phone in portrait) have no room beside the sheet, so the
-   panels stack under the chat instead of overflowing off-screen. */
-@media (max-width:860px){
-  .dock{ position:static; width:auto; max-height:34dvh; margin:0 12px 8px; right:auto; }
-  .dock + .dock{ bottom:auto; }
+   panels dock to the bottom of the screen instead of overflowing off it. */
+@media (max-width:900px){
+  .console{ flex-direction:column; gap:0; }
+  .dock{
+    position:fixed; left:8px; right:8px; width:auto; max-height:30dvh;
+    top:auto; bottom:calc(6px + var(--sab)); z-index:62;
+  }
+  #dock-tools{ bottom:auto; top:calc(6px + var(--sat)); }
 }
 
 /* ── live code overlay ─────────────────────────────────────── */

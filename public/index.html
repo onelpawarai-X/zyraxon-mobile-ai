@@ -109,6 +109,8 @@
         </button>
         <div class="console-tabs">
           <button class="ctab on" data-tab="chat" data-i18n="console.title">Chat</button>
+          <button class="ctab panel-tab" id="tab-todos" data-i18n="console.todo">Tasks</button>
+          <button class="ctab panel-tab" id="tab-tools" data-i18n="console.tools">Tools</button>
         </div>
         <button class="icon-btn" id="console-clear" data-i18n-title="btn.clear_chat">
           <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M7 7l1 13h8l1-13"/></svg>
@@ -142,29 +144,6 @@
         </section>
       </div>
 
-      <!-- ── separate docked panels: tasks and tool runs ──────────
-           The user asked for these to be their own panels, not squeezed
-           inside the chat. They dock to the right of the sheet and can be
-           collapsed independently. -->
-      <aside class="dock" id="dock-todos" hidden>
-        <header class="dock-head">
-          <b data-i18n="console.todo">Tasks</b>
-          <span class="tb-count" id="tb-count">0/0</span>
-          <button class="mini-btn" id="tb-toggle" data-i18n="btn.close">Close</button>
-        </header>
-        <div class="tb-bar"><i id="tb-progress"></i></div>
-        <ol class="tb-list" id="tb-list"></ol>
-      </aside>
-
-      <aside class="dock" id="dock-tools" hidden>
-        <header class="dock-head">
-          <b data-i18n="console.tools">Tools</b>
-          <span class="tl-count" id="tl-count">0</span>
-          <button class="mini-btn" id="tl-toggle" data-i18n="btn.close">Close</button>
-        </header>
-        <div class="tl-list" id="tl-list"></div>
-      </aside>
-
       <footer class="composer">
         <div class="composer-inner glass">
           <textarea id="input" rows="1" data-i18n-ph="composer.placeholder" autocomplete="off"></textarea>
@@ -192,7 +171,32 @@
           <button data-q="Make me a todo for today" data-i18n="quick.todo">Make a todo</button>
         </nav>
       </footer>
+
+      <!-- ── separate panels: tasks and tool runs ──────────
+           These are NOT children of the chat sheet. They float beside it as
+           their own draggable panels, so the user can read the todo list and
+           the tool log while the chat is open — the thing the previous nesting
+           prevented. -->
     </div>
+
+    <aside class="dock" id="dock-todos" hidden>
+      <header class="dock-head">
+        <b data-i18n="console.todo">Tasks</b>
+        <span class="tb-count" id="tb-count">0/0</span>
+        <button class="mini-btn" id="tb-toggle" data-i18n="btn.close">Close</button>
+      </header>
+      <div class="tb-bar"><i id="tb-progress"></i></div>
+      <ol class="tb-list" id="tb-list"></ol>
+    </aside>
+
+    <aside class="dock" id="dock-tools" hidden>
+      <header class="dock-head">
+        <b data-i18n="console.tools">Tools</b>
+        <span class="tl-count" id="tl-count">0</span>
+        <button class="mini-btn" id="tl-toggle" data-i18n="btn.close">Close</button>
+      </header>
+      <div class="tl-list" id="tl-list"></div>
+    </aside>
   </section>
 
   <!-- ── live code overlay: what she is writing, line by line ─────
@@ -256,6 +260,8 @@
             <h4 data-i18n="set.network">Network</h4>
             <label class="row"><span data-i18n="set.api_base">APK / API base URL</span><input type="text" id="set-base" /></label>
             <label class="row"><span data-i18n="set.proxy">SSE transport</span><select id="set-proxy"><option value="proxy" data-i18n="set.proxy_reliable">Proxy (reliable)</option><option value="direct" data-i18n="set.proxy_direct">Direct</option></select></label>
+            <button class="ghost-btn" id="set-open-browser" data-i18n="set.open_browser">Open in the browser</button>
+            <p class="hint" data-i18n="set.open_browser_hint"></p>
           </div>
         </div>
 

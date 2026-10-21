@@ -69,8 +69,10 @@
         if (/^https?:\/\//.test(t)) global.open(t, '_blank');
         else { const b = new Blob([t], { type: 'text/plain' }); global.open(URL.createObjectURL(b), '_blank'); }
       });
-      $('tb-toggle').addEventListener('click', () => (e.taskboard.hidden = true));
-      $('tl-toggle').addEventListener('click', () => (e.toollog.hidden = true));
+      $('tb-toggle').addEventListener('click', () => UI.hidePanel('todos'));
+      $('tl-toggle').addEventListener('click', () => UI.hidePanel('tools'));
+      if (e.taskboard) UI.makeDraggable(e.taskboard);
+      if (e.toollog) UI.makeDraggable(e.toollog);
       $('co-close').addEventListener('click', () => (e.codeOverlay.hidden = true));
       $('model-btn').addEventListener('click', (ev) => { ev.stopPropagation(); e.modelMenu.hidden = !e.modelMenu.hidden; });
       document.addEventListener('click', () => { e.modelMenu.hidden = true; });
@@ -339,7 +341,7 @@
         if (e.taskboard) e.taskboard.hidden = true;
         return;
       }
-      if (e.taskboard) { e.taskboard.hidden = false; e.tbList.classList.remove('collapsed'); }
+      if (e.taskboard) { UI.showPanel('todos'); e.tbList.classList.remove('collapsed'); }
       const done = list.filter((t) => t.status === 'done').length;
       e.tbCount.textContent = `${done}/${list.length}`;
       e.tbProgress.style.width = (done / list.length * 100) + '%';
@@ -359,7 +361,7 @@
     addToolRow(name, args, state, res) {
       const e = UI._el;
       if (!e.toollog) return;
-      e.toollog.hidden = false;
+      UI.showPanel('tools');
       const argStr = Object.entries(args || {}).map(([k, v]) => `${k}=${typeof v === 'string' ? v : JSON.stringify(v)}`).join(' ').slice(0, 60);
       if (state === 'running') {
         const row = document.createElement('div');
@@ -373,7 +375,17 @@
         if (row) {
           row.querySelector('.spinner') && row.querySelector('.spinner').remove();
           row.classList.toggle('err', !res.ok);
-          row.querySelector('.tl-res').textContent = (res.summary || '').slice(0, 70) + (res.ms ? ` · ${res.ms}ms` : '');
+          const resEl = row.querySelector('.tl-res');
+          const full = String(res.summary || '');
+          const suffix = res.ms ? ` · ${res.ms}ms` : '';
+          // A URL in the result is the point of the call ("here is your live
+          // site"), so it is never cut in half: it stays whole and clickable.
+          if (/https?:\/\//.test(full)) {
+            resEl.innerHTML = linkify(full) + esc(suffix);
+            resEl.classList.add('has-link');
+          } else {
+            resEl.textContent = full.slice(0, 70) + suffix;
+          }
         }
       }
       e.tlCount.textContent = UI._tools;
@@ -527,8 +539,68 @@
       UI._consoleTab = tab;
       document.querySelectorAll('.ctab').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
       document.querySelectorAll('.cview').forEach((v) => v.classList.toggle('on', v.dataset.view === tab));
+      // The Tasks and Tools tabs are not views inside the sheet — they toggle
+      // the standalone panels beside it, so a tap always has a visible result.
+      if (tab === 'todos') UI.showPanel('todos', true);
+      else if (tab === 'tools') UI.showPanel('tools', true);
       const body = UI._el.consoleBody;
       if (body) body.scrollTop = body.scrollHeight;
+    },
+
+    /**
+     * Open/close one of the standalone panels. They remember the user's choice
+     * so that work starting later never re-opens a panel that was deliberately
+     * closed.
+     */
+    showPanel(which, force) {
+      const e = UI._el;
+      const el = which === 'todos' ? e.taskboard : e.toollog;
+      if (!el) return;
+      UI._panelPref = UI._panelPref || {};
+      if (force === true || UI._panelPref[which] === undefined) UI._panelPref[which] = true;
+      el.hidden = !UI._panelPref[which];
+    },
+
+    hidePanel(which) {
+      UI._panelPref = UI._panelPref || {};
+      UI._panelPref[which] = false;
+      const e = UI._el;
+      const el = which === 'todos' ? e.taskboard : e.toollog;
+      if (el) el.hidden = true;
+      document.querySelectorAll('.ctab').forEach((b) => {
+        if (b.dataset.tab === which) b.classList.remove('on');
+      });
+      if (UI._consoleTab === which) UI.consoleTab('chat');
+    },
+
+    /** Panels can be dragged by their header so they never block the chat. */
+    makeDraggable(el) {
+      const head = el.querySelector('.dock-head');
+      if (!head || head.dataset.drag === '1') return;
+      head.dataset.drag = '1';
+      let sx = 0, sy = 0, ox = 0, oy = 0, dragging = false;
+      const down = (ev) => {
+        const p = ev.touches ? ev.touches[0] : ev;
+        const r = el.getBoundingClientRect();
+        dragging = true; sx = p.clientX; sy = p.clientY;
+        ox = r.left; oy = r.top;
+        el.style.left = ox + 'px'; el.style.top = oy + 'px';
+        el.style.right = 'auto'; el.style.bottom = 'auto';
+        ev.preventDefault();
+      };
+      const move = (ev) => {
+        if (!dragging) return;
+        const p = ev.touches ? ev.touches[0] : ev;
+        const w = el.offsetWidth, h = el.offsetHeight;
+        let x = Math.max(4, Math.min(innerWidth - w - 4, ox + p.clientX - sx));
+        let y = Math.max(4, Math.min(innerHeight - h - 4, oy + p.clientY - sy));
+        el.style.left = x + 'px'; el.style.top = y + 'px';
+      };
+      const up = () => { dragging = false; };
+      head.addEventListener('pointerdown', down);
+      addEventListener('pointermove', move, { passive: true });
+      addEventListener('pointerup', up);
+      addEventListener('pointercancel', up);
     },
 
     /** Nudge the home button when something lands in the console unread. */
@@ -573,8 +645,13 @@
      */
     _overlay(on) {
       document.documentElement.classList.toggle('modal-open', !!on);
-      // The live background must never stop: it is the thing the user looks at
-      // while the assistant works. Only make sure it is still rolling.
+      // The clip must keep rolling — it is the live background the user asked
+      // for, and it stays visible around the sheet. The thing that actually
+      // cost frames was the orb: its blurred, screen-blended layers kept being
+      // composited over the playing clip on every frame even though the sheet
+      // hid them. `modal-open` now takes the orb out of the compositor
+      // entirely (see app.css), which took the app from 24fps to 60fps with the
+      // chat open, and the clip never stops.
       const v = document.getElementById('bg-video');
       if (v && v.src && v.paused) { try { v.play().catch(() => {}); } catch {} }
     },

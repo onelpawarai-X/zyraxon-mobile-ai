@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>ZYRAXON · Voice</title>
+<style>
+  :root{
+    --acc:#8b5cff; --acc2:#38e8ff; --pink:#ff5cae;
+    --ink:#f2ecff; --ink2:rgba(242,236,255,.62);
+    --font:'Hind Siliguri',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;overflow:hidden}
+  body{
+    font-family:var(--font); color:var(--ink); background:#05040f;
+    display:grid; place-items:center;
+  }
+  /* one still gradient, no video and no blur: this window is a background
+     helper that must cost nothing while the user talks to the real app */
+  body::before{
+    content:''; position:fixed; inset:0; z-index:-1;
+    background:
+      radial-gradient(60% 55% at 30% 25%, rgba(139,92,255,.55), transparent 70%),
+      radial-gradient(55% 50% at 78% 72%, rgba(255,92,174,.45), transparent 72%),
+      radial-gradient(45% 45% at 62% 18%, rgba(56,232,255,.32), transparent 70%),
+      linear-gradient(160deg,#0b0720,#05040f 65%);
+  }
+  .wrap{ width:min(92vw,430px); text-align:center; padding:26px 20px; }
+  .orb{
+    width:132px; height:132px; margin:0 auto 22px; border-radius:50%;
+    display:grid; place-items:center; position:relative;
+    background:radial-gradient(circle at 34% 30%, #fff2ff, var(--pink) 34%, var(--acc) 70%, #2a1660);
+    box-shadow:0 0 60px rgba(139,92,255,.55), inset 0 0 40px rgba(255,255,255,.28);
+    transition:transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s;
+  }
+  .orb svg{ width:56px; height:56px; stroke:#12082b; stroke-width:2.1; fill:none;
+    stroke-linecap:round; stroke-linejoin:round; }
+  .orb.on{ transform:scale(1.06); box-shadow:0 0 90px rgba(56,232,255,.75), inset 0 0 44px rgba(255,255,255,.4); }
+  .orb.speak{ background:radial-gradient(circle at 34% 30%, #fff6ff, var(--acc2) 36%, var(--acc) 72%, #2a1660); }
+  .orb::after{
+    content:''; position:absolute; inset:-14px; border-radius:50%;
+    border:2px solid rgba(255,255,255,.32); opacity:0; transform:scale(.9);
+  }
+  .orb.on::after{ animation:ripple 1.6s ease-out infinite; }
+  @keyframes ripple{ 0%{opacity:.55;transform:scale(.92)} 100%{opacity:0;transform:scale(1.28)} }
+  h1{ font-size:19px; margin:0 0 6px; letter-spacing:.01em; }
+  .sub{ color:var(--ink2); font-size:13px; line-height:1.6; margin:0 0 18px; }
+  .heard{
+    min-height:76px; padding:14px 16px; border-radius:16px; text-align:left;
+    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.16);
+    font-size:16px; line-height:1.65; word-break:break-word;
+  }
+  .heard .ph{ color:var(--ink2); font-size:14px; }
+  .heard b{ color:#fff; }
+  .row{ display:flex; gap:10px; margin-top:16px; }
+  button{
+    flex:1; padding:13px 14px; border-radius:14px; cursor:pointer;
+    font:inherit; font-weight:600; font-size:14px; color:#fff;
+    background:linear-gradient(135deg,var(--acc),var(--pink));
+    border:1px solid rgba(255,255,255,.3); box-shadow:0 8px 22px rgba(0,0,0,.32);
+  }
+  button.ghost{ background:rgba(255,255,255,.09); }
+  button:active{ transform:translateY(1px); }
+  .state{ display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-top:14px; font-size:12.5px; color:var(--ink2); }
+  .dot{ width:8px; height:8px; border-radius:50%; background:#f59e0b; }
+  .dot.ok{ background:#4ade80; box-shadow:0 0 10px #4ade80; }
+  .dot.err{ background:#ff5b6e; box-shadow:0 0 10px #ff5b6e; }
+  .lang{ margin-top:12px; font-size:12px; color:var(--ink2); }
+  select{
+    font:inherit; font-size:12.5px; padding:7px 10px; border-radius:10px; color:var(--ink);
+    background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.22);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="orb" id="orb">
+    <svg viewBox="0 0 24 24"><path d="M12 3v10"/><path d="M8.5 6.5a5 5 0 0 0 7 0"/><path d="M6 11a6 6 0 0 0 12 0"/><path d="M12 17v4"/><path d="M9 21h6"/></svg>
+  </div>
+
+  <h1>ZYRAXON ভয়েস</h1>
+  <p class="sub">এই উইন্ডোটি Chrome/Edge-এর নিজের স্পিচ ইঞ্জিন চালায়, কারণ Electron-এ সেটি নেই। মাইকে যা বলবেন, ঠিক সেই ভাষায় অ্যাপের চ্যাট বক্সে পৌঁছে যাবে।</p>
+
+  <div class="heard" id="heard"><span class="ph">এখন বলুন… যা বলবেন এখানে দেখা যাবে।</span></div>
+
+  <div class="row">
+    <button id="toggle">মাইক বন্ধ করুন</button>
+    <button class="ghost" id="test">কণ্ঠ পরীক্ষা</button>
+  </div>
+
+  <div class="state"><span class="dot" id="dot"></span><span id="stateText">সংযোগ হচ্ছে…</span></div>
+  <div class="lang">
+    ভাষা
+    <select id="langSel">
+      <option value="bn-BD" selected>বাংলা (বাংলাদেশ)</option>
+      <option value="bn-IN">বাংলা (ভারত)</option>
+      <option value="en-US">English (US)</option>
+      <option value="en-IN">English (India)</option>
+      <option value="hi-IN">हिन्दी</option>
+      <option value="ar-SA">العربية</option>
+    </select>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   The voice helper.
+
+   This page is opened by the desktop app in a real Chrome or Edge window,
+   because those builds — and only those — carry the Google-backed speech
+   service that webkitSpeechRecognition talks to. Electron has the same API
+   but no backend, so it fails with "network"/"not-allowed" forever.
+
+   What crosses the wire is only the recognised words, relayed over the
+   local server; the microphone audio itself is handled by the browser and
+   never reaches us.
+   ══════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  var base = location.origin;
+  var orb = document.getElementById('orb');
+  var heard = document.getElementById('heard');
+  var dot = document.getElementById('dot');
+  var stateText = document.getElementById('stateText');
+  var toggle = document.getElementById('toggle');
+  var langSel = document.getElementById('langSel');
+
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  var rec = null, running = false, wantOn = true, retry = 0, timer = 0;
+  var finalText = '', lastSent = '', sentAt = 0;
+
+  function setState(text, cls) {
+    stateText.textContent = text;
+    dot.className = 'dot' + (cls ? ' ' + cls : '');
+  }
+
+  function show(text, isFinal) {
+    if (!text) { heard.innerHTML = '<span class="ph">এখন বলুন… যা বলবেন এখানে দেখা যাবে।</span>'; return; }
+    heard.innerHTML = isFinal ? '<b>' + esc(text) + '</b>' : esc(text);
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c];
+    });
+  }
+
+  function post(path, body) {
+    return fetch(base + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {}),
+      keepalive: true,
+    }).catch(function () {});
+  }
+
+  /** Send what was heard to the app. Interim words update the chat box live. */
+  function say(text, kind) {
+    text = String(text || '').trim();
+    if (!text) return;
+    if (kind === 'final') {
+      // Chrome re-emits the same final result when a session restarts; sending
+      // it twice would post the user's sentence to the assistant twice.
+      if (text === lastSent && Date.now() - sentAt < 4000) return;
+      lastSent = text; sentAt = Date.now();
+    }
+    post('/api/bridge/say', { text: text, kind: kind, lang: langSel.value });
+  }
+
+  if (!SR) {
+    setState('এই ব্রাউজারে স্পিচ নেই — Chrome বা Edge ব্যবহার করুন।', 'err');
+    toggle.disabled = true;
+    return;
+  }
+
+  function build() {
+    var r = new SR();
+    r.continuous = true;
+    r.interimResults = true;
+    r.maxAlternatives = 1;
+    r.lang = langSel.value;
+
+    r.onstart = function () {
+      running = true; retry = 0;
+      orb.classList.add('on');
+      setState('শুনছি…', 'ok');
+      toggle.textContent = 'মাইক বন্ধ করুন';
+    };
+    r.onresult = function (e) {
+      var interim = '', fin = '';
+      for (var i = e.resultIndex; i < e.results.length; i++) {
+        var t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) fin += t; else interim += t;
+      }
+      if (interim) { show(finalText + interim, false); say(interim, 'partial'); }
+      if (fin) {
+        finalText = (finalText ? finalText + ' ' : '') + fin.trim();
+        show(finalText, true);
+        say(fin.trim(), 'final');
+        // Clear shortly after, so the next sentence starts from a clean slate
+        // but the user can still read what they just said.
+        setTimeout(function () { finalText = ''; }, 1500);
+      }
+    };
+    r.onerror = function (e) {
+      var err = e && e.error;
+      running = false;
+      orb.classList.remove('on');
+      if (err === 'not-allowed' || err === 'service-not-allowed') {
+        // The user has not allowed the microphone in this window yet. Keep the
+        // session armed so the very next click anywhere opens it.
+        setState('মাইক্রোফোন অনুমতি দিন — উইন্ডোতে একবার ক্লিক করুন।', 'err');
+        wantOn = true;
+        armGesture();
+      } else if (err === 'no-speech') {
+        setState('শুনছি…', 'ok');
+      } else if (err === 'aborted') {
+        /* our own stop */
+      } else {
+        setState('স্পিচ সমস্যা: ' + err, 'err');
+      }
+    };
+    r.onend = function () {
+      running = false;
+      orb.classList.remove('on');
+      // Chrome ends a session after every utterance; reopen at once so the mic
+      // is never silently deaf between sentences.
+      if (wantOn) {
+        clearTimeout(timer);
+        timer = setTimeout(function () { try { r.start(); } catch (e) {} }, Math.min(1000, 120 + retry++ * 120));
+      } else {
+        setState('মাইক বন্ধ', '');
+      }
+    };
+    return r;
+  }
+
+  var gestureArmed = false;
+  function armGesture() {
+    if (gestureArmed) return;
+    gestureArmed = true;
+    var go = function () {
+      document.removeEventListener('pointerdown', go, true);
+      document.removeEventListener('keydown', go, true);
+      gestureArmed = false;
+      start();
+    };
+    document.addEventListener('pointerdown', go, true);
+    document.addEventListener('keydown', go, true);
+  }
+
+  function start() {
+    if (!rec) rec = build();
+    rec.lang = langSel.value;
+    try { rec.start(); } catch (e) { /* already started */ }
+  }
+  function stop() {
+    wantOn = false;
+    clearTimeout(timer);
+    try { rec && rec.abort(); } catch (e) {}
+    running = false;
+    orb.classList.remove('on');
+    setState('মাইক বন্ধ', '');
+    toggle.textContent = 'মাইক চালু করুন';
+  }
+
+  toggle.addEventListener('click', function () {
+    if (wantOn) stop(); else { wantOn = true; start(); }
+  });
+
+  langSel.addEventListener('change', function () {
+    if (rec) rec.lang = langSel.value;
+    if (wantOn) { try { rec.abort(); } catch (e) {} }
+  });
+
+  /* ── speaking: the app asks this window to say something out loud ──
+     Chrome's speechSynthesis carries Google's own voices, including Bengali,
+     which is why the assistant's reply is audible here even on a machine whose
+     OS has no Bangla voice installed. */
+  var synth = window.speechSynthesis;
+  function speak(text, lang) {
+    if (!synth || !text) return;
+    try { synth.cancel(); } catch (e) {}
+    var u = new SpeechSynthesisUtterance(String(text).slice(0, 1200));
+    u.lang = lang || langSel.value || 'bn-BD';
+    u.rate = 1; u.pitch = 1.05;
+    var voices = synth.getVoices() || [];
+    var want = u.lang.split('-')[0];
+    var pick = voices.filter(function (v) { return v.lang && v.lang.split('-')[0] === want; });
+    // Prefer a Google voice: those are the natural-sounding cloud voices.
+    var g = pick.filter(function (v) { return /google/i.test(v.name); });
+    if (g.length) u.voice = g[0];
+    else if (pick.length) u.voice = pick[0];
+    orb.classList.add('speak');
+    u.onend = u.onerror = function () {
+      orb.classList.remove('speak');
+      // Tell the app the sentence is out loud now, so it can queue the next one
+      // instead of guessing how long speech takes.
+      post('/api/bridge/say', { kind: 'spoke' });
+    };
+    synth.speak(u);
+  }
+  if (synth && synth.getVoices) { try { synth.getVoices(); } catch (e) {} }
+
+  document.getElementById('test').addEventListener('click', function () {
+    speak('হ্যালো, আমি জাইরাক্সন। আপনার কথা শুনতে পাচ্ছি।', langSel.value);
+  });
+
+  /* ── relay: commands from the app, and presence ── */
+  var since = 0;
+  function poll() {
+    fetch(base + '/api/bridge/poll?since=' + since)
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j && j.now) since = j.now;
+        (j && j.cmds || []).forEach(function (c) {
+          if (c.cmd === 'speak') speak(c.text, c.lang);
+          else if (c.cmd === 'stop') { try { synth.cancel(); } catch (e) {} }
+        });
+      })
+      .catch(function () {})
+      .then(function () { setTimeout(poll, 1200); });
+  }
+  poll();
+
+  function hello() {
+    post('/api/bridge/hello', { name: navigator.userAgent.indexOf('Edg/') > -1 ? 'Edge' : 'Chrome' });
+  }
+  hello();
+  setInterval(hello, 8000);
+
+  // The app may be closed and reopened; reconnect the events stream forever.
+  function events() {
+    var es = new EventSource(base + '/api/bridge/events');
+    es.onmessage = function (m) {
+      var d; try { d = JSON.parse(m.data); } catch (e) { return; }
+      if (d.type === 'stt') {
+        // The app itself does not need to echo this back, but showing it keeps
+        // the helper window honest about what it heard.
+        if (d.kind === 'final') show(d.text, true);
+      }
+    };
+    es.onerror = function () { try { es.close(); } catch (e) {} setTimeout(events, 1500); };
+  }
+  events();
+
+  // Open the microphone immediately: the user already asked for it by starting
+  // the app, and Chrome only needs one gesture, which the first click supplies.
+  wantOn = true;
+  try { start(); } catch (e) { armGesture(); }
+  document.addEventListener('pointerdown', function once() {
+    document.removeEventListener('pointerdown', once, true);
+    if (wantOn && !running) start();
+  }, true);
+})();
+</script>
+</body>
+</html>

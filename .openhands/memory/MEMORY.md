@@ -1,22 +1,12 @@
 # ZYRAXON mobile assistant — project memory
 
 ## Deliverable & current state (latest session)
-Ships as a real **Android APK**; `public/` is the exact web code the APK bundles
-(`android/build.sh` copies it into assets). Server: `server/server.mjs`, port 12000.
-
-Verified this session (all green):
-- `test/e2e.py` ALL PASSED — 10 models (fastest first), 8 real tool calls,
-  todos 4/4, published site HTTP 200, character switch persists.
-- `test/homeconsole.py` — hit-test all 6 buttons ok, home = orb only
-  (stageKids 1), console hidden on load, tabs ok, no page errors.
-- `test/inject.py` — mid-task injection toast + todos + tool rows, no fails.
-- `test/voiceflow.py` — tap orb -> listening -> speech -> auto-send -> reply
-  spoken -> mic auto-restarts. No fails.
-- Background: user's Drive clip as a seamless ping-pong loop **with audio**.
-
-APK: `android/zyraxon.apk` (~40MB) via `cd android && bash build.sh`
-(aapt2 + javac + d8 + apksigner; no Gradle). Debug keystore `~/.android/debug.keystore`.
-The APK is kept in the workspace; the user asked for the APK link later.
+Real **Android APK** (+ Windows/macOS/Linux desktop); `public/` is the exact code the
+APK bundles. Server `server/server.mjs` on port 12000. Latest artifacts, all verified
+fresh against source: `android/zyraxon.apk` 48.3MB, `desktop/dist/ZYRAXON-Setup-1.0.0.exe`
+178.2MB, `ZYRAXON-1.0.0-mac.zip` 197.6MB, `ZYRAXON-1.0.0.AppImage` 206.3MB.
+Published to GitHub (see below). Background: user's Drive clip as a seamless
+ping-pong loop **with audio**.
 
 ## What this is
 Bengali-language mobile AI assistant PWA at `/workspace/project`. Node server
@@ -54,38 +44,18 @@ proxy. Client is dependency-free JS in `public/js/` (global `window.ZY`).
 - When an edit "doesn't take effect", check what the server actually returns
   (`curl .../js/app.js | grep <symbol>`) and the SW cache before debugging logic.
 
-## Artifact freshness (check before claiming a build is current)
-Compare `ls -la --time-style=+%m-%d_%H:%M public/js/app.js` against every
-`desktop/dist/*` and `android/zyraxon.apk`. Editing `public/` silently invalidates
-all four packages; the `.exe`/`.zip` are the ones most often forgotten. There is no
-emulator (no KVM) and no headless Electron (no `xauth`, SUID sandbox unset), so prove
-each bundle by extracting and grepping it:
-APK = `zipfile` -> `assets/js/...`; AppImage = `--appimage-extract` -> `resources/public/...`;
-mac = `unzip` -> `*/Resources/public/...`; win = `desktop/dist/win-unpacked/resources/public/`.
-
-## Verification
-- `python3 test/e2e.py` (Playwright) is the acceptance test: real tool execution,
-  visible todo board, `publish_website` really called, published URL returns 200.
-  Currently ALL CHECKS PASSED.
-- `python3 test/verify_all.py` is the one-shot matrix (streaming, TTS, tools, code
-  panel, permissions, no page errors). Its stream probe must sum text across
-  `.msg.ai.streaming/.think/.live .body` — measuring `.streaming .body` alone reports
-  0 whenever a turn opens with reasoning.
-- `python3 test/toolmatrix.py` = the real tool test (10/10 models issue a tool call).
-  `test/toolcheck.py` is only a 3-model raw-JSON debug script.
-- `python3 test/bangla_box.py` proves Bangla speech reaches the composer (`#input`)
-  and the chat (`#chat .msg.user .body`) — the user's headline complaint.
-- `python3 test/uicheck.py` covers PWA manifest/SW, model ordering, characters,
-  6 background scenes, permission rows, token streaming and TTS invocation.
-- `python3 test/memory.py` proves long-term memory: history, facts and todos all
-  come back after a reload. `python3 test/inject.py` proves mid-task injection.
-- `python3 test/nativecheck.py` proves the Android bridge (TTS/STT/accessibility).
-- `python3 test/shots.py` captures all 15 app screens into `public/shots/` with a
-  gallery page (`public/shots/index.html`) for visual review.
-- APK: `android/build.sh` (aapt2+javac+d8+apksigner, no Gradle). Build it after any
-  `public/` change; verify with
-  `unzip -p android/zyraxon.apk assets/js/app.js | sha256sum` vs the source file.
-  No KVM here, so an emulator is not possible — that hash check is the proof.
+## Verification (all green)
+`test/e2e.py` is the acceptance test: real tool execution, visible todo board,
+`publish_website` really called, published URL 200. One-shot matrix `verify_all.py`
+(its stream probe must sum text across `.msg.ai.streaming/.think/.live .body`).
+Others: `toolmatrix.py` 10/10 models issue a tool call; `bangla_box.py` Bangla
+speech reaches `#input` + `#chat .msg.user .body`; `memory.py` history/facts/todos
+survive reload; `inject.py` mid-task injection; `nativecheck.py` Android bridge;
+`homefeed.py` speech-box growth (needs `tts:true` — with TTS off, `push()` returns
+early and the box stays empty); `verify_echo.py`; `desktop_mic.py`; `_sweep.sh` runs
+all of them serially. No KVM (no emulator) and no headless Electron, so prove a
+bundle by extracting and grepping it: APK -> `assets/js/...`, AppImage ->
+`--appimage-extract`, mac -> `unzip`, win -> `dist/win-unpacked/resources/public/`.
 
 ## Voice echo (the "আমার কথা আবার চ্যাটে উঠছে" bug)
 `voice.js isEcho()` normalised with `[^\p{L}\p{N}\s]`, which deletes Bengali
@@ -128,3 +98,36 @@ speaks Bangla (internal English reasoning stays silent on purpose).
 - All user-facing copy is Bengali. Default character is `girlfriend` (প্রেমিকা).
 - TTS falls back to `/api/tts` (Google translate TTS, disk-cached in `data/tts/`)
   when the device has no Bangla speech voice — desktop Chromium has none.
+
+## GitHub publishing (verified 2026-10-21)
+- The user's token belongs to account **onelpawarai-X**, NOT `zyraxon-X`.
+- Live repos: `onelpawarai-X/zyraxon-mobile-ai` (current, README + source + release)
+  and `onelpawarai-X/zyraxon` (older, same content). Both have release `v1.0.0`
+  with 4 assets: `zyraxon.apk` 48.3MB, `ZYRAXON-Setup-1.0.0.exe` 178.2MB,
+  `ZYRAXON-1.0.0-mac.zip` 197.6MB, `ZYRAXON-1.0.0.AppImage` 206.3MB.
+- The old `zyraxon` repo was created 2026-09-18 but had **zero commits** before
+  this session (verified: commits API returned only my commit, events API showed
+  only my ReleaseEvent). Nothing was deleted — it was always an empty shell.
+- `.gitignore` excludes `desktop/dist/`, `desktop/node_modules/`, `android/build/`,
+  `public/vendor|shots|assets/`, `data/sites/` — source is ~756 files.
+- Release assets go to `uploads.github.com` (returns 201); browser download URLs
+  are `github.com/<owner>/<repo>/releases/download/v1.0.0/<file>`.
+
+## Cross-platform rebuild recipe (each verified)
+- Android: `bash android/build.sh` — no Gradle; needs `ANDROID_HOME` + debug keystore.
+- Linux: `npx electron-builder --linux AppImage`
+- Windows: `npx electron-builder --win nsis` — needs wine32:i386 **and** an initialised
+  32-bit prefix (`WINEPREFIX=~/.wine-zyraxon WINEARCH=win32 wineboot -i`); without the
+  prefix rcedit-ia32 dies with "could not load kernel32.dll".
+- macOS: `npx electron-builder --mac zip`
+- Freshness check: compare the packed `js/voice.js` byte size with the source
+  (56120 = fresh). Don't trust build timestamps alone.
+- Container restarts wipe `$HOME`, the Android SDK, wine and the Python test deps;
+  re-verify tool presence at the start of a session.
+
+## Real shell on the phone (user asked whether it exists — it does)
+`MainActivity.java:566` `Bridge.shellExec` runs `/system/bin/sh -c` inside the app
+sandbox and returns real `{code,stdout,stderr}`; registered at `:185` via
+`addJavascriptInterface(..., "ZYNative")`. `public/js/tools.js:435` prefers that
+native path on a phone and falls back to the host `/api/shell` on desktop.
+Host shells: Windows powershell/pwsh/cmd, macOS zsh/bash/sh, Linux bash/sh/zsh.

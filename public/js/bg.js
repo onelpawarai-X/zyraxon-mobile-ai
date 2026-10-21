@@ -53,6 +53,17 @@
       };
       addEventListener('pointerdown', unlock, { once: true });
       addEventListener('touchstart', unlock, { once: true });
+
+      // A clip that fails to load (offline, bad custom URL) must not leave the
+      // screen empty: fall back to the particle layer.
+      BG.el.video.addEventListener('error', () => {
+        BG.el.video.classList.remove('on');
+        BG._wake();
+      });
+      // Coming back from the background tab: re-arm whichever layer is visible.
+      addEventListener('visibilitychange', () => {
+        if (document.hidden) BG._park(); else if (BG._wantCanvas()) BG._wake();
+      });
     },
 
     _resize() {
@@ -91,7 +102,7 @@
       BG.el.video.classList.remove('on'); BG.el.image.classList.remove('on');
       BG.el.video.pause(); BG.el.video.removeAttribute('src');
       BG.el.image.removeAttribute('src');
-      cancelAnimationFrame(BG._raf);
+      cancelAnimationFrame(BG._raf); BG._raf = 0;
 
       if (scene.kind === 'video') {
         BG.el.video.src = scene.src;
@@ -99,15 +110,17 @@
         BG.el.video.playbackRate = BG.speed;
         BG.el.video.classList.add('on');
         BG.el.video.play().catch(() => {});
+        BG._park();
       } else if (scene.kind === 'custom' && customUrl) {
         const isImg = /\.(png|jpe?g|webp|gif|avif)(\?|$)/i.test(customUrl);
-        if (isImg) { BG.el.image.src = customUrl; BG.el.image.classList.add('on'); }
+        if (isImg) { BG.el.image.src = customUrl; BG.el.image.classList.add('on'); BG._wake(); }
         else {
           BG.el.video.src = customUrl; BG.el.video.playbackRate = BG.speed;
           BG.el.video.classList.add('on'); BG.el.video.play().catch(() => {});
+          BG._park();
         }
       } else {
-        BG._loop();
+        BG._wake();
       }
     },
 
@@ -129,7 +142,38 @@
       BG.el.video.volume = target;
     },
 
-    _loop() {
+    /**
+     * The particle layer only exists for the scenes that have no clip. When a
+     * video is playing it is invisible behind the clip, yet it used to keep
+     * repainting the whole viewport every frame — a full-screen composite on top
+     * of a decoding 1080p video. That was the single biggest source of the lag
+     * the user reported, so the loop now parks itself whenever the canvas is not
+     * actually the visible layer.
+     */
+    _wantCanvas() {
+      return !(BG.el.video && BG.el.video.classList.contains('on'));
+    },
+
+    _park() {
+      if (BG._raf) { cancelAnimationFrame(BG._raf); BG._raf = 0; }
+      BG.el.canvas.style.opacity = '0';
+    },
+
+    _wake() {
+      if (BG._raf) return;
+      BG.el.canvas.style.opacity = '';
+      BG._last = 0;
+      BG._raf = requestAnimationFrame(BG._loop);
+    },
+
+    _loop(now) {
+      BG._raf = 0;
+      if (document.hidden || !BG._wantCanvas()) { BG._park(); return; }
+      // The canvas layer is decoration. Painting it at display refresh on a
+      // phone costs battery for no visible gain, so cap it at ~30fps.
+      if (now && BG._last && now - BG._last < 32) { BG._raf = requestAnimationFrame(BG._loop); return; }
+      BG._last = now;
+
       const ctx = BG._ctx, W = BG._w, H = BG._h, t = performance.now() / 1000;
       ctx.clearRect(0, 0, W, H);
 
@@ -144,7 +188,11 @@
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); ctx.fill();
       }
 
-      // nebula stars with connecting filaments
+      // nebula stars with connecting filaments.
+      // The old version compared every star with every other star every frame
+      // (O(n²) — ~4000 pairs at 90 stars) and called beginPath/stroke once per
+      // hit. A uniform grid plus a hard neighbour cap keeps the same look for a
+      // fraction of the cost.
       const pts = [];
       for (const s of BG._stars) {
         s.x += s.vx * BG.speed * (0.4 + s.z); s.y += s.vy * BG.speed * (0.4 + s.z);
@@ -155,16 +203,36 @@
         ctx.fill();
         pts.push(s);
       }
-      ctx.lineWidth = 0.5;
+
+      const CELL = 130, NEAR2 = 15000, MAX_LINKS = 140;
+      const grid = new Map();
       for (let i = 0; i < pts.length; i++) {
-        for (let j = i + 1; j < pts.length; j++) {
-          const a = pts[i], b = pts[j], dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy;
-          if (d2 < 15000) {
-            ctx.strokeStyle = `hsla(${a.hue},80%,70%,${(1 - d2 / 15000) * 0.14})`;
-            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        const key = ((pts[i].x / CELL) | 0) + ':' + ((pts[i].y / CELL) | 0);
+        const bucket = grid.get(key);
+        if (bucket) bucket.push(i); else grid.set(key, [i]);
+      }
+      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = 'rgba(190,150,255,.12)';
+      ctx.beginPath();
+      let links = 0;
+      for (let i = 0; i < pts.length && links < MAX_LINKS; i++) {
+        const a = pts[i], cx = (a.x / CELL) | 0, cy = (a.y / CELL) | 0;
+        for (let ox = -1; ox <= 1 && links < MAX_LINKS; ox++) {
+          for (let oy = -1; oy <= 1 && links < MAX_LINKS; oy++) {
+            const bucket = grid.get((cx + ox) + ':' + (cy + oy));
+            if (!bucket) continue;
+            for (const j of bucket) {
+              if (j <= i) continue;
+              const b = pts[j], dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy;
+              if (d2 < NEAR2) {
+                ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+                if (++links >= MAX_LINKS) break;
+              }
+            }
           }
         }
       }
+      ctx.stroke();
       BG._raf = requestAnimationFrame(BG._loop);
     },
   };

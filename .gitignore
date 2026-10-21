@@ -6,16 +6,23 @@ android/zyraxon.apk
 android/zyraxon.apk.idsig
 android/app/src/main/assets/
 
-# ── vendored binaries (fetched at runtime, too large for git) ──
-public/vendor/
+# ── marketing page + runtime-fetched engines (not needed to build) ──
 public/shots/
-public/assets/bg/
-public/assets/gt/
+public/vendor/transformers/
+# The background clips and character animations ARE the app, so they are
+# tracked: CI has to be able to build an installer that actually plays them.
+public/assets/bg/*.part
 
-# ── runtime data ──
+# ── runtime data (grown on the user's machine, never shipped) ──
 data/sites/
+data/browser-profile/
+data/tts/
+data/workspace/
+data/stt/
+data/tests/
 data/*.db
 data/*.sqlite
+data/model-health.json
 *.log
 
 # ── tooling ──
