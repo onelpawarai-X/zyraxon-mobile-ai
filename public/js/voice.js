@@ -302,7 +302,7 @@
 
   /* ─────────────────────────── TTS ─────────────────────────── */
   const TTS = {
-    enabled: true, rate: 1, pitch: 1.05, voice: null, _queue: [], _speaking: false,
+    enabled: true, rate: 1, pitch: 1.05, voice: null, _queue: [], _speaking: false, _guard: null,
     lang: 'bn-BD', voices: [],
     /** Latest content of the streaming answer — speech only ever reaches here. */
     live: '',
@@ -411,6 +411,26 @@
       if (!stt) return;
       try { on ? stt.pause() : stt.resume(); } catch {}
     },
+    /**
+     * A spoken sentence must always end, and the microphone must always come
+     * back. Engines are not reliable about this: a hidden window, a machine with
+     * no sound card and a browser that refuses autoplay all leave "speaking"
+     * true forever, and because the microphone is closed while she talks the
+     * assistant goes permanently deaf. This arms a timer proportional to the
+     * sentence and forces the turn closed if nothing reported the end.
+     */
+    _guardArm(text) {
+      TTS._guardDone();
+      const ms = 4000 + String(text || '').length * 150;
+      TTS._guard = setTimeout(() => {
+        TTS._guard = null;
+        try { TTS._audio && TTS._audio.pause(); } catch {}
+        TTS._speaking = false; ORB.setLevel(0); TTS._drain();
+      }, ms);
+    },
+    _guardDone() {
+      if (TTS._guard) { clearTimeout(TTS._guard); TTS._guard = null; }
+    },
     _drain() {
       if (TTS._speaking || !TTS._queue.length) {
         if (!TTS._speaking && !TTS._queue.length) {
@@ -494,8 +514,22 @@
           || (base === 'en' && /^en/.test(vl));
       });
       if (!match) {
-        // No engine voice for this language — speak it through the server's TTS
-        // proxy instead, which covers every language the app offers.
+        // No engine voice for this language. On desktop the helper window has
+        // Chrome's own Google voices — including a real Bangla one — so hand the
+        // sentence over to it rather than settling for the server's proxy.
+        const S = global.ZY.VOICE && global.ZY.VOICE.STT;
+        if (S && S.bridgeOn && S.bridgeOn()) {
+          TTS._speaking = true; ORB.setState('speaking'); TTS._gate(true);
+          const stop = ORB.talkEnvelope(text);
+          TTS._brDone = () => { stop(); TTS._guardDone(); TTS._speaking = false; ORB.setLevel(0); TTS._drain(); };
+          S._bridgeSay(text, lang);
+          // The helper's "spoke" event is the real signal; this makes sure a
+          // helper that never answers cannot leave the microphone shut.
+          TTS._guardArm(text);
+          return;
+        }
+        // No helper either — speak it through the server's TTS proxy instead,
+        // which covers every language the app offers.
         TTS._speakRemote(text, lang);
         return;
       }
@@ -506,9 +540,22 @@
       u.rate = TTS.rate; u.pitch = TTS.pitch; u.lang = lang;
       TTS._speaking = true; ORB.setState('speaking'); TTS._gate(true);
       const stop = ORB.talkEnvelope(text);
-      u.onend = () => { stop(); TTS._speaking = false; ORB.setLevel(0); TTS._drain(); };
-      u.onerror = () => { stop(); TTS._speaking = false; TTS._drain(); };
-      try { speechSynthesis.speak(u); } catch { stop(); TTS._speaking = false; TTS._drain(); }
+      TTS._guardArm(text);
+      const finish = () => { stop(); TTS._guardDone(); TTS._speaking = false; ORB.setLevel(0); TTS._drain(); };
+      u.onend = finish;
+      u.onerror = finish;
+      try { speechSynthesis.speak(u); } catch { finish(); }
+      // A machine with no sound card, or a browser that refuses to play without
+      // a gesture, accepts the utterance and then never says a word. Waiting for
+      // a "finished" event that will never come would keep the microphone shut
+      // for the whole length of the sentence — so if the engine has not even
+      // started after a moment, treat the line as spoken and listen again.
+      setTimeout(() => {
+        if (!TTS._speaking) return;
+        let live = false;
+        try { live = speechSynthesis.speaking || speechSynthesis.pending; } catch {}
+        if (!live) finish();
+      }, 800);
     },
     /**
      * No Bangla voice in this engine — speak through the server's real Bangla
@@ -536,11 +583,13 @@
         // Real audio: measure the actual waveform with an AnalyserNode, so the
         // orb moves with the true sound, not a decoration.
         const stopReal = ORB.trackAudio(a);
-        const next = () => { stopReal(); play(i + 1); };
+        const next = () => { stopReal(); TTS._guardDone(); play(i + 1); };
         a.onended = next;
-        a.onerror = () => { stopReal(); ORB.setLevel(0); TTS._speaking = false; TTS._drain(); };
+        const fail = () => { stopReal(); TTS._guardDone(); ORB.setLevel(0); TTS._speaking = false; TTS._drain(); };
+        a.onerror = fail;
         TTS._audio = a;
-        a.play().catch(() => { stopReal(); ORB.setLevel(0); TTS._speaking = false; TTS._drain(); });
+        TTS._guardArm(pieces[i]);
+        a.play().catch(fail);
       };
       play(0);
     },
@@ -552,6 +601,7 @@
       // Forget the in-flight native utterance: its late "stopped" callback must
       // not be mistaken for a finished sentence and pull the next one in.
       TTS._natId = null; TTS._natDone = null;
+      TTS._guardDone();
       TTS._speaking = false; ORB.setLevel(0);
       // Stopping the voice means the loudspeaker is silent, so the microphone
       // may open again right away.
@@ -703,14 +753,18 @@
 
   /* ─────────────────────────── STT ─────────────────────────── */
   const STT = {
-    // Electron exposes webkitSpeechRecognition but ships no speech backend, so
-    // it always fails with "not-allowed" and the assistant would silently never
-    // hear anything. Treating it as absent routes the microphone to the in-page
-    // Whisper model, which really transcribes.
+    // Electron exposes webkitSpeechRecognition but ships no speech backend:
+    // the API is wired to Google's proprietary cloud keys, which only the real
+    // Chrome and Edge builds carry. In Electron it is a stub that always fails
+    // with "network"/"not-allowed". Reporting it as absent lets the desktop app
+    // bridge real Chrome/Edge speech in (see bridge.html) instead of recording
+    // audio that nothing can transcribe.
     SR: (function () {
-      const C = global.SpeechRecognition || global.webkitSpeechRecognition || null;
-      const isElectron = /Electron/i.test(navigator.userAgent || '') || !!(global.ZYDesktop && global.ZYDesktop.isDesktop);
-      return isElectron ? null : C;
+      // A plain Chromium exposes the API and then fails with "network", because
+      // the service behind it ships only in branded Chrome and Edge. That is
+      // discovered on the first attempt (see _srBroken) rather than guessed from
+      // the user agent, so a real Chrome is never mistaken for a Chromium.
+      return global.SpeechRecognition || global.webkitSpeechRecognition || null;
     })(),
     rec: null, onPartial: null, onFinal: null, onState: null,
     listening: false, lang: '', autoRestart: true, _manualStop: false,
@@ -722,133 +776,185 @@
     always: true,
     _retry: 0,
     _timer: 0,
+    /**
+     * True when some recogniser can really hear the user.
+     *
+     * The local Whisper engine that used to fill this role is gone. It was the
+     * wrong tool: Whisper writes Bangla in roman letters ("amar naam") or, if
+     * forced into Bangla script with an initial prompt, produces nonsense. The
+     * browser's own recogniser is Google-backed and writes Bangla exactly as
+     * spoken, which is what the user asked for.
+     */
     available() {
       const n = global.ZY.Native;
-      return !!(n && n.app && n.stt.available()) || !!STT.SR || STT.serverOn();
+      return !!(n && n.app && n.stt.available()) || !!STT.SR || STT.bridgeOn() || STT._desktopShell();
     },
+    /**
+     * True on a desktop browser, where a helper window can be opened.
+     *
+     * The app no longer ships an Electron shell: on Windows, macOS and Linux it
+     * runs as a localhost page inside the user's own Chrome. A phone never gets
+     * here (Android uses its own recogniser), so "not a phone" is the test.
+     */
+    _desktopShell() {
+      if (STT.nativeOn()) return false;
+      const p = global.ZY.Platform && global.ZY.Platform.data;
+      return !!(p && p.isDesktop) || !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+    },
+    /**
+     * True once the browser's own recogniser has proved it has no speech
+     * service. A Chromium build exposes webkitSpeechRecognition and then fails
+     * every attempt with "network"; that is the signal to open the helper
+     * window, which is a real Chrome/Edge and does have the service.
+     */
+    _srBroken: false,
+    /** The phone's own recogniser (Android SpeechRecognizer, via the bridge). */
     nativeOn() {
       const n = global.ZY.Native;
       return !!(n && n.app && n.stt.available());
     },
+
+    /* ── desktop speech bridge ──────────────────────────────────
+       Electron has no speech backend at all, so the desktop shell opens a real
+       Chrome/Edge window on bridge.html and the recognised words arrive here
+       over SSE. The user sees them in the chat box exactly as they spoke them,
+       in Bangla script, because it is the same Google recogniser Chrome uses.
+    ─────────────────────────────────────────────────────────────── */
+    _br: null, _brOn: false, _brTry: 0, _helper: false, _helperName: '', _helperPoll: null,
     /**
-     * The browser's own recogniser, for platforms that have no Web Speech at
-     * all. Electron ships no webkitSpeechRecognition (and no Google API keys)
-     * and Firefox has none either, so on those the microphone would be dead.
-     * Records a short chunk and transcribes it with a Whisper model running in
-     * the page itself — no server, no API key, works offline.
+     * True only when a helper window has actually announced itself.
+     *
+     * This used to answer "is this Electron", which meant the app chose the
+     * helper's voice on a machine where the helper was never opened — and since
+     * nothing then reported the sentence as finished, the microphone gate stayed
+     * shut and the assistant went deaf. Presence, not platform, decides.
      */
-    serverOn() {
-      if (STT.nativeOn() || STT.SR) return false;
-      if (global.ZY.store.get('serverStt', true) === false) return false;
-      return !!(global.MediaRecorder && global.AudioContext && navigator.mediaDevices
-                && navigator.mediaDevices.getUserMedia);
+    bridgeOn() {
+      return STT._helper === true;
     },
-    /** Load Whisper once, lazily. Kept out of the boot path: 3s of work that
-     * only matters the first time the user actually speaks. */
-    async _wasmModel() {
-      if (STT._asr) return STT._asr;
-      if (STT._asrLoading) return STT._asrLoading;
-      STT._asrLoading = (async () => {
-        const base = (global.ZY.store.get('base') || location.origin).replace(/\/$/, '');
-        const mod = await import(base + '/vendor/transformers/transformers.min.js');
-        const { pipeline, env } = mod;
-        // Everything stays local: the model is fetched once from the Hub and then
-        // cached by the browser; the wasm runtime is served by us. Without this
-        // ORT downloads its runtime from a CDN on first use, which would make the
-        // recogniser fail offline and add a third-party dependency at runtime.
-        env.allowLocalModels = false;
-        if (env.backends && env.backends.onnx && env.backends.onnx.wasm) {
-          env.backends.onnx.wasm.wasmPaths = base + '/vendor/transformers/';
-        }
-        const model = global.ZY.store.get('sttModel', 'Xenova/whisper-tiny');
-        STT._asr = await pipeline('automatic-speech-recognition', model, { dtype: 'q8' });
-        return STT._asr;
-      })().catch((e) => { STT._asrLoading = null; throw e; });
-      return STT._asrLoading;
+    /** Note that the helper window has announced itself (or has gone away). */
+    _helperSeen(name) {
+      STT._helper = !!name;
+      STT._helperName = String(name || '');
+      if (STT._helper) {
+        STT._brOn = true;
+        STT._bridgeInit();
+      } else {
+        STT._brOn = false;
+        if (STT._paused) { STT._paused = false; }
+      }
     },
-    _srvRec: null, _srvStream: null, _srvBusy: false, _srvTimer: 0,
-    _srvStart() {
-      if (STT._paused || STT._srvStream) return;
-      navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } })
-        .then((stream) => {
-          if (STT._paused) { stream.getTracks().forEach((t) => t.stop()); return; }
-          STT._srvStream = stream;
-          STT.listening = true; ORB.setState('listening'); STT.onState && STT.onState('listening');
-          // Warm the model now so the first utterance is not the one that waits.
-          STT._wasmModel().catch(() => {});
-          STT._srvCycle();
-        })
-        .catch(() => { STT.onState && STT.onState('denied'); });
-    },
-    /** One short recording at a time — Whisper needs a complete utterance. */
-    _srvCycle() {
-      if (STT._paused || !STT._srvStream) return;
-      const mime = global.MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
-      let rec;
-      try { rec = new MediaRecorder(STT._srvStream, { mimeType: mime, audioBitsPerSecond: 32000 }); }
-      catch { return; }
-      STT._srvRec = rec;
-      const chunks = [];
-      rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
-      rec.onstop = () => {
-        const blob = new Blob(chunks, { type: mime.split(';')[0] });
-        // A chunk smaller than this is room noise, not speech — sending it just
-        // burns CPU and returns hallucinated text.
-        if (!STT._paused && blob.size > 1600) STT._srvSend(blob);
-        STT._srvCycle();
-      };
-      rec.start();
-      STT._srvTimer = setTimeout(() => { try { rec.stop(); } catch {} }, 2200);
-    },
-    async _srvSend(blob) {
-      // One utterance at a time: Whisper is CPU-bound, and overlapping calls
-      // would delay the reply instead of producing it sooner.
-      if (STT._srvBusy || STT._paused) return;
-      STT._srvBusy = true;
+    /**
+     * Listen for recognised speech from the helper window.
+     *
+     * Exactly one stream is ever open. EventSource reconnects by itself, so
+     * closing it and opening another on error would leave two live listeners —
+     * and every sentence would then arrive twice and be sent to the assistant
+     * twice.
+     */
+    _bridgeInit() {
+      if (STT._br) return STT._br;
+      const base = (global.ZY.store.get('base') || location.origin).replace(/\/$/, '');
       try {
-        const t = await STT._transcribe(blob);
-        if (t && !STT._paused) {
-          STT.onPartial && STT.onPartial(t);
-          STT.onFinal && STT.onFinal(t);
-        }
-      } catch {}
-      finally { STT._srvBusy = false; }
+        const es = new EventSource(base + '/api/bridge/events');
+        es.onopen = () => {
+          STT._brOn = true; STT._brTry = 0;
+          STT.listening = true;
+          ORB.setState('listening');
+          STT.onState && STT.onState('listening');
+        };
+        es.onmessage = (m) => {
+          let d; try { d = JSON.parse(m.data); } catch { return; }
+          // Anything arriving on this stream came from the helper, so its
+          // presence is confirmed here as well as by the watchdog below.
+          if (!STT._helper) { STT._helper = true; STT._paused = false; }
+          if (d.type === 'spoke') {
+            // The helper finished reading a sentence out loud.
+            const T = global.ZY.VOICE && global.ZY.VOICE.TTS;
+            if (T && T._brDone) { const f = T._brDone; T._brDone = null; f(); }
+            return;
+          }
+          if (d.type !== 'stt') return;
+          if (STT._paused) return;
+          if (d.kind === 'final') STT.onFinal && STT.onFinal(String(d.text || '').trim());
+          else STT.onPartial && STT.onPartial(String(d.text || ''));
+        };
+        es.onerror = () => {
+          // The server may still be starting, or the window may be asleep.
+          // EventSource retries on its own; this only reports the state so the
+          // orb does not claim to be listening while it is disconnected.
+          STT._brOn = false;
+          STT.listening = false;
+        };
+        STT._br = es;
+        STT._helperWatch();
+      } catch { STT._br = null; }
+      return STT._br;
     },
-    /** Whisper in the page; falls back to the server's recogniser if it cannot
-     * load (no network for the model, or wasm blocked). */
-    async _transcribe(blob) {
-      const want = (!STT.auto && STT.lang) ? STT.lang : (global.ZY.I18N && global.ZY.I18N.sttTag ? global.ZY.I18N.sttTag() : 'bn');
-      const lang = String(want || 'bn').split('-')[0];
-      try {
-        const asr = await STT._wasmModel();
-        const ctx = new (global.AudioContext || global.webkitAudioContext)({ sampleRate: 16000 });
-        const decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
-        const out = await asr(new Float32Array(decoded.getChannelData(0)), { language: lang, task: 'transcribe' });
-        const text = (out && out.text ? String(out.text) : '').trim();
-        STT._srvLang = lang;
-        if (text) return text;
-      } catch (e) { STT._wasmError = String(e); }
-      return STT._transcribeServer(blob, lang);
+    /**
+     * Open the speech helper window.
+     *
+     * A window opened by a click is allowed to keep running; one opened without
+     * a gesture is popup-blocked, so it is also offered on the next tap. It is a
+     * small, clearly-labelled window rather than a tab, and the app keeps
+     * working (text chat, tools, publishing) whether or not it is there.
+     */
+    _openHelper() {
+      if (STT._helperWin && !STT._helperWin.closed) { try { STT._helperWin.focus(); } catch {} return; }
+      const url = (global.ZY.store.get('base') || location.origin).replace(/\/$/, '') + '/bridge.html';
+      let win = null;
+      try { win = window.open(url, 'zyraxon-voice', 'width=460,height=620'); } catch {}
+      STT._helperWin = win || null;
+      if (win) {
+        global.ZY.ui && global.ZY.ui.toast && global.ZY.ui.toast(
+          'ভয়েস উইন্ডো খুলছে — মাইক আর কণ্ঠ সেখানে কাজ করবে।');
+        STT._bridgeInit();
+        return;
+      }
+      // Blocked because no click preceded it. Open it on the next tap, and say
+      // so once so the user knows why nothing happened yet.
+      STT._needsGesture = true;
+      STT._helperWanted = true;
+      STT._armGesture();
+      if (!STT._helperNotice) {
+        STT._helperNotice = true;
+        global.ZY.ui && global.ZY.ui.toast && global.ZY.ui.toast(
+          'স্ক্রিনে একবার ট্যাপ করো — ভয়েস উইন্ডো খুলবে।');
+      }
     },
-    /** The server's local Whisper, when the page cannot run its own. */
-    async _transcribeServer(blob, lang) {
-      try {
-        const base = (global.ZY.store.get('base') || location.origin).replace(/\/$/, '');
-        const r = await fetch(`${base}/api/stt?lang=${encodeURIComponent(lang)}`, {
-          method: 'POST', headers: { 'Content-Type': blob.type || 'audio/webm' }, body: blob,
-        });
-        const j = await r.json();
-        if (j && j.lang) STT._srvLang = j.lang;
-        return (j && j.text ? String(j.text) : '').trim();
-      } catch { return ''; }
+    /** Ask the helper window to say something in its own (better) voice. */
+    /**
+     * Keep track of whether the helper window is really open.
+     *
+     * The helper closes when the user closes its window, and there is no
+     * "goodbye" event for that. Without this the app would keep handing
+     * sentences to a window that is gone, and nothing would ever report them
+     * finished — which is how the microphone ended up shut for good.
+     */
+    _helperWatch() {
+      if (STT._helperPoll) return;
+      const base = (global.ZY.store.get('base') || location.origin).replace(/\/$/, '');
+      STT._helperPoll = setInterval(async () => {
+        if (STT._manualStop) return;
+        try {
+          const r = await fetch(base + '/api/bridge/status', { cache: 'no-store' });
+          const j = await r.json();
+          if (j && j.helper) {
+            if (!STT._helper) STT._helperSeen(j.helperName || 'browser');
+            STT._helperName = j.helperName || STT._helperName;
+          } else if (STT._helper) {
+            STT._helperSeen('');
+          }
+        } catch {}
+      }, 2000);
     },
-    _srvStop() {
-      clearTimeout(STT._srvTimer);
-      try { STT._srvRec && STT._srvRec.stop(); } catch {}
-      STT._srvRec = null;
-      try { STT._srvStream && STT._srvStream.getTracks().forEach((t) => t.stop()); } catch {}
-      STT._srvStream = null;
-      STT.listening = false;
+    _bridgeSay(text, lang) {
+      const base = (global.ZY.store.get('base') || location.origin).replace(/\/$/, '');
+      return fetch(base + '/api/bridge/cmd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cmd: 'speak', text: String(text || '').slice(0, 1200), lang: lang || '' }),
+      }).catch(() => {});
     },
     init() {
       if (STT._inited) return true;
@@ -877,13 +983,19 @@
         STT.rec = true;
         return true;
       }
-      // No Web Speech engine here (Electron, Firefox): use the server's local
-      // Whisper. There is no recogniser object to configure — the recording
-      // loop drives itself — so init only has to record which path is live.
-      if (!STT.SR) {
-        if (!STT.serverOn()) return false;
-        STT.rec = true;
-        STT._server = true;
+      // Watch for a helper window from the very start, not only once one has
+      // been seen. The window can outlive a page reload or a second tab, and
+      // without this the app would never notice it and would keep retrying a
+      // recogniser that cannot hear anything.
+      STT._helperWatch();
+      // No recogniser at all in this browser (Firefox has none). The helper
+      // window bridges real Chrome/Edge speech in over SSE instead — the same
+      // Google recogniser, so the same Bangla output. The stream is opened
+      // straight away so the app is already listening the moment the helper
+      // window connects, rather than after the first failed attempt.
+      if (!STT.SR || STT._srBroken) {
+        if (!STT._desktopShell() && !STT.bridgeOn()) return false;
+        STT._bridgeInit();
         return true;
       }
       const r = new STT.SR();
@@ -911,6 +1023,19 @@
         if (final) STT.onFinal && STT.onFinal(final.trim());
       };
       r.onerror = (e) => {
+        // "network" from a Chromium build means the speech service is missing,
+        // not that the user's connection is down. A real Chrome/Edge window can
+        // hear them, so open one and relay its results — the user asked for a
+        // localhost app, and this keeps full voice on every desktop without
+        // shipping a second browser of our own.
+        if (e.error === 'network' && !STT._srBroken && STT._desktopShell()) {
+          STT._srBroken = true;
+          STT.listening = false;
+          try { r.abort(); } catch {}
+          STT._openHelper();
+          STT.onState && STT.onState('idle');
+          return;
+        }
         if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
           STT.listening = false;
           // Chrome refuses to start recognition until the page has had a real
@@ -965,7 +1090,9 @@
         document.removeEventListener('pointerdown', go, true);
         document.removeEventListener('keydown', go, true);
         STT._gestureArmed = false;
-        if (STT.always) { STT._needsGesture = false; STT._start(); }
+        STT._needsGesture = false;
+        if (STT._helperWanted) { STT._helperWanted = false; STT._openHelper(); return; }
+        if (STT.always) STT._start();
       };
       document.addEventListener('pointerdown', go, true);
       document.addEventListener('keydown', go, true);
@@ -984,7 +1111,12 @@
         global.ZY.Native.stt.start(STT.auto ? '' : STT.lang);
         return true;
       }
-      if (STT._server) { STT._srvStart(); return true; }
+      if (STT.bridgeOn()) {
+        // The helper window owns the microphone; all this side does is listen
+        // for the words it recognised.
+        STT._bridgeInit();
+        return true;
+      }
       if (!STT.rec && !STT.init()) return false;
       STT._start();
       return true;
@@ -1003,8 +1135,7 @@
       STT._paused = true;
       clearTimeout(STT._timer);
       if (STT.nativeOn()) { try { global.ZY.Native.stt.stop(); } catch {} }
-      else if (STT._server) STT._srvStop();
-      else { try { STT.rec && STT.rec.abort && STT.rec.abort(); } catch {} }
+      else if (!STT.bridgeOn()) { try { STT.rec && STT.rec.abort && STT.rec.abort(); } catch {} }
       STT.listening = false;
       // Never leave the composer holding half a heard sentence: it would look
       // like the user typed it and would be sent on the next Enter.
@@ -1016,7 +1147,7 @@
       if (STT._manualStop) return;
       if (!STT.always && !global.ZY.store.get('alwaysMic', true)) return;
       if (STT.nativeOn()) { try { global.ZY.Native.stt.keepAlive(true); } catch {} }
-      else if (STT._server) { try { STT._srvStart(); } catch {} }
+      else if (STT.bridgeOn()) STT._bridgeInit()
       else if (STT.rec) { try { STT._start(); } catch {} }
     },
     /** Re-arm the microphone after the assistant finished speaking. The mic is
@@ -1027,7 +1158,7 @@
       if (STT._paused) return;
       if (!STT.always && !global.ZY.store.get('alwaysMic', true)) return;
       if (STT.nativeOn()) { try { global.ZY.Native.stt.keepAlive(true); } catch {} }
-      else if (STT._server) { if (!STT._srvStream) { try { STT._srvStart(); } catch {} } }
+      else if (STT.bridgeOn()) STT._bridgeInit()
       else if (STT.rec && !STT.listening) { try { STT._start(); } catch {} }
     },
 
@@ -1065,10 +1196,7 @@
       clearTimeout(STT._timer);
       clearInterval(STT._wd);
       if (STT.nativeOn()) { global.ZY.Native.stt.keepAlive(false); global.ZY.Native.stt.stop(); }
-      // The server/Whisper path has no recogniser object: `rec` is a flag, so
-      // the old `rec.stop()` did nothing and the microphone stayed open (and the
-      // recording loop kept cycling) after the user switched voice off.
-      else if (STT._server) { STT._srvStop(); clearTimeout(STT._srvTimer); }
+      else if (STT.bridgeOn()) { try { STT._br && STT._br.close(); } catch {} STT._br = null; STT._brOn = false; }
       else { try { STT.rec && STT.rec.stop(); } catch {} }
       STT.listening = false; ORB.setState('idle');
       STT.onState && STT.onState('idle');

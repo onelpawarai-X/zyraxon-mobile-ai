@@ -8,10 +8,15 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, '..');
+// The desktop app ships this server unpacked next to its resources and tells it
+// where that is, because the code's own location may be inside a read-only asar.
+const ROOT = process.env.ZYRAXON_ROOT ? path.resolve(process.env.ZYRAXON_ROOT) : path.resolve(__dirname, '..');
 const PUBLIC_DIR = path.join(ROOT, 'public');
-const SITES_DIR = path.join(ROOT, 'data', 'sites');
-const DATA_DIR = path.join(ROOT, 'data');
+// Writable state (caches, published sites, the model health file) goes to a
+// directory the caller owns when one is given; installed builds cannot write
+// next to their own code.
+const DATA_DIR = process.env.ZYRAXON_DATA_DIR ? path.resolve(process.env.ZYRAXON_DATA_DIR) : path.join(ROOT, 'data');
+const SITES_DIR = path.join(DATA_DIR, 'sites');
 
 const PORT = Number(process.env.PORT || 12000);
 const ZYRAXON_BASE = process.env.ZYRAXON_BASE || 'https://zyraxonai.lovable.app/api/public/zyraxon/v1';
@@ -38,6 +43,190 @@ function send(res, code, body, headers = {}) {
 function sendJson(res, code, obj) {
   send(res, code, JSON.stringify(obj), { 'Content-Type': 'application/json; charset=utf-8' });
 }
+
+/** True when the port is already served by a ZYRAXON instance (our /api/health). */
+async function isOurServer(port = PORT) {
+  return new Promise((resolve) => {
+    const req = http.get({ host: '127.0.0.1', port, path: '/api/health', timeout: 1500 }, (res) => {
+      let body = '';
+      res.on('data', (c) => { body += c; });
+      res.on('end', () => {
+        try { resolve(JSON.parse(body).ok === true); } catch { resolve(false); }
+      });
+    });
+    req.on('error', () => resolve(false));
+    req.on('timeout', () => { req.destroy(); resolve(false); });
+  });
+}
+
+/**
+ * A browser that can actually recognise speech.
+ *
+ * Only the branded Chrome and Edge builds carry the speech service behind
+ * webkitSpeechRecognition — an open-source Chromium exposes the API but always
+ * fails with "network". Since voice is the whole point of the app, the launcher
+ * prefers Chrome, then Edge, then anything else installed.
+ */
+function speechBrowser() {
+  const cands = process.platform === 'win32'
+    ? [
+      `${process.env['ProgramFiles'] || 'C:\\Program Files'}\\Google\\Chrome\\Application\\chrome.exe`,
+      `${process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)'}\\Google\\Chrome\\Application\\chrome.exe`,
+      `${process.env['LOCALAPPDATA'] || ''}\\Google\\Chrome\\Application\\chrome.exe`,
+      `${process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)'}\\Microsoft\\Edge\\Application\\msedge.exe`,
+      `${process.env['ProgramFiles'] || 'C:\\Program Files'}\\Microsoft\\Edge\\Application\\msedge.exe`,
+    ]
+    : process.platform === 'darwin'
+      ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+        '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser']
+      : ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/microsoft-edge',
+        '/usr/bin/microsoft-edge-stable', '/usr/bin/brave-browser', '/opt/google/chrome/chrome',
+        '/snap/bin/chromium', '/usr/bin/chromium', '/usr/lib/chromium/chromium'];
+  return cands.find((p) => { try { return p && fs.existsSync(p); } catch { return false; } }) || null;
+}
+
+/**
+ * Open the app in a window the user can actually talk to.
+ *
+ * The app is a local server, so "installing" it on any of the three desktop
+ * systems is just this: start Node, open a browser. Chrome/Edge are preferred
+ * and opened as an app window with the microphone allowed, which is what makes
+ * speech work with no separate STT/TTS setup.
+ */
+function openBrowser(target, { app = false } = {}) {
+  const exe = app ? speechBrowser() : null;
+  if (exe) {
+    const profile = path.join(DATA_DIR, 'browser-profile');
+    try { fs.mkdirSync(profile, { recursive: true }); } catch {}
+    try {
+      const child = spawn(exe, [
+        `--app=${target}`, `--user-data-dir=${profile}`,
+        '--no-first-run', '--no-default-browser-check',
+        '--use-fake-ui-for-media-stream',
+      ], { detached: true, stdio: 'ignore' });
+      child.unref();
+      return exe;
+    } catch { /* fall through to the default browser */ }
+  }
+  try {
+    const cmd = process.platform === 'win32' ? 'cmd'
+      : process.platform === 'darwin' ? 'open' : 'xdg-open';
+    const args = process.platform === 'win32' ? ['/c', 'start', '', target] : [target];
+    const child = spawn(cmd, args, { detached: true, stdio: 'ignore' });
+    child.unref();
+  } catch { /* a headless machine simply has no browser — not an error */ }
+  return null;
+}
+/* --------------------------- speech bridge ---------------------------
+   A plain Chromium ships a webkitSpeechRecognition stub with no speech backend — the
+   API is wired to Google's proprietary cloud keys, which only real Chrome and
+   Edge carry — so a packaged desktop app cannot recognise speech on its own.
+   The app therefore opens a real Chrome/Edge window on bridge.html,
+   which does have working speech, and the two talk over this relay.
+
+   Transport is SSE plus POST rather than a WebSocket, so the server keeps zero
+   dependencies. It is strictly a relay: audio never leaves the machine, and the
+   only things that cross are the words Chrome already recognised.
+------------------------------------------------------------------------ */
+const bridge = { clients: new Set(), helperAt: 0, last: null };
+
+/**
+ * Open the app in the user's own browser.
+ *
+ * The desktop builds run the whole app on a local port, so the same address
+ * already works in Chrome — with the browser's own voices, and surviving the
+ * app window being closed. This is what the "open in browser" button calls.
+ */
+function openInBrowser(res, body) {
+  let target = '';
+  try { target = String((JSON.parse(body || '{}').url) || ''); } catch {}
+  if (!/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(target)) {
+    target = `http://localhost:${PORT}`;
+  }
+  const used = openBrowser(target, { app: true });
+  return sendJson(res, 200, {
+    ok: !!used, url: target, browser: used ? path.basename(used) : '',
+    hint: used ? '' : 'no Chrome or Edge was found on this machine',
+  });
+}
+
+/** Events for the app window. Held open, one per app window. */
+function bridgeEvents(req, res) {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream; charset=utf-8',
+    'Cache-Control': 'no-store',
+    Connection: 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+    'X-Accel-Buffering': 'no',
+  });
+  res.write(': connected\n\n');
+  bridge.clients.add(res);
+  // A comment every 20s keeps proxies from closing an idle stream.
+  const beat = setInterval(() => { try { res.write(': ping\n\n'); } catch {} }, 20000);
+  const drop = () => { clearInterval(beat); bridge.clients.delete(res); };
+  req.on('close', drop);
+  req.on('error', drop);
+}
+
+function bridgePush(obj) {
+  const line = `data: ${JSON.stringify(obj)}\n\n`;
+  for (const c of bridge.clients) { try { c.write(line); } catch {} }
+}
+
+/** The helper (Chrome/Edge) reports what it heard, or that it stopped talking. */
+async function bridgeSay(res, req) {
+  let body;
+  try { body = await readBody(req, 1024 * 1024); } catch { return sendJson(res, 413, { error: 'too large' }); }
+  let msg;
+  try { msg = JSON.parse(body.toString('utf8') || '{}'); } catch { return sendJson(res, 400, { error: 'bad json' }); }
+  // "spoke" is the helper telling the app that a sentence finished playing, so
+  // the app can release the next one instead of guessing a duration.
+  if (msg.kind === 'spoke') { bridgePush({ type: 'spoke' }); return sendJson(res, 200, { ok: true }); }
+  const text = String(msg.text || '').slice(0, 4000);
+  const kind = msg.kind === 'partial' ? 'partial' : 'final';
+  if (!text) return sendJson(res, 200, { ok: true, ignored: true });
+  bridge.last = { text, kind, at: Date.now() };
+  bridgePush({ type: 'stt', kind, text, lang: String(msg.lang || '') });
+  return sendJson(res, 200, { ok: true });
+}
+
+/** The helper announces itself and then polls here for commands (TTS, mute). */
+async function bridgeHello(res, req) {
+  let msg = {};
+  try { msg = JSON.parse((await readBody(req, 64 * 1024)).toString('utf8') || '{}'); } catch {}
+  bridge.helperAt = Date.now();
+  bridge.helperName = String(msg.name || 'browser');
+  return sendJson(res, 200, { ok: true, app: true, say: bridge.sayQueue || [] });
+}
+
+/** Poll for commands the app wants the helper's speech engine to perform. */
+function bridgePoll(res, url) {
+  const since = Number(url.searchParams.get('since') || 0);
+  const out = (bridge.cmds || []).filter((c) => c.at > since);
+  return sendJson(res, 200, { ok: true, cmds: out, now: Date.now() });
+}
+
+/** The app queues a command (e.g. "speak this out loud") for the helper. */
+async function bridgeCmd(res, req) {
+  let msg = {};
+  try { msg = JSON.parse((await readBody(req, 1024 * 1024)).toString('utf8') || '{}'); } catch {}
+  bridge.cmds = (bridge.cmds || []).filter((c) => Date.now() - c.at < 120000);
+  bridge.cmds.push({ at: Date.now(), cmd: String(msg.cmd || ''), text: String(msg.text || ''), lang: String(msg.lang || '') });
+  return sendJson(res, 200, { ok: true });
+}
+
+/** Who is connected — the desktop app uses this to tell the user what to fix. */
+function bridgeStatus(res) {
+  return sendJson(res, 200, {
+    ok: true,
+    app: bridge.clients.size,
+    helper: !!bridge.helperAt && Date.now() - bridge.helperAt < 15000,
+    helperName: bridge.helperName || '',
+    last: bridge.last,
+  });
+}
+
 function readBody(req, limit = 40 * 1024 * 1024) {
   return new Promise((resolve, reject) => {
     let size = 0; const chunks = [];
@@ -362,138 +551,6 @@ async function banglaTTS(res, url) {
   } catch (e) {
     sendJson(res, 502, { error: String(e) });
   }
-}
-
-/* ------------------------------ speech to text ------------------------------ */
-
-/**
- * Local Whisper, kept warm.
- *
- * The provider has no audio endpoint at all (audio/transcriptions is 404) and
- * its chat endpoint silently drops input_audio parts, so speech cannot be
- * recognised upstream. Electron ships no webkitSpeechRecognition either, so
- * desktop and Firefox would be deaf without a real local recogniser.
- *
- * Loading the model costs ~40s, which is far too slow per utterance, so the
- * Python worker is started once and fed one JSON request per line. Requests are
- * serialised through a single worker: Whisper already saturates the CPU, and
- * queueing keeps the first answer fast instead of thrashing.
- */
-const STT_SCRIPT = path.join(__dirname, 'stt.py');
-const STT_DIR = path.join(DATA_DIR, 'stt');
-let sttWorker = null;
-let sttReady = false;
-let sttQueue = Promise.resolve();
-const sttWaiters = [];
-
-function sttPython() {
-  return process.env.ZYRAXON_PYTHON || 'python3';
-}
-
-function startSttWorker() {
-  if (sttWorker) return sttWorker;
-  let child;
-  try {
-    child = spawn(sttPython(), [STT_SCRIPT, '--serve'], {
-      cwd: ROOT,
-      env: { ...process.env, PYTHONUNBUFFERED: '1' },
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-  } catch {
-    return null;
-  }
-  sttWorker = child;
-  let buf = '';
-  child.stdout.on('data', (chunk) => {
-    buf += chunk.toString('utf8');
-    let nl;
-    while ((nl = buf.indexOf('\n')) >= 0) {
-      const line = buf.slice(0, nl).trim();
-      buf = buf.slice(nl + 1);
-      if (!line) continue;
-      let msg;
-      try { msg = JSON.parse(line); } catch { continue; }
-      if (msg.ready) { sttReady = true; continue; }
-      const waiter = sttWaiters.shift();
-      if (waiter) waiter(msg);
-    }
-  });
-  child.stderr.on('data', () => {});
-  const die = () => { sttWorker = null; sttReady = false; while (sttWaiters.length) sttWaiters.shift()({ error: 'stt worker stopped' }); };
-  child.on('exit', die);
-  child.on('error', die);
-  return child;
-}
-
-/** Transcribe one audio buffer. Serialised — one utterance at a time. */
-function sttTranscribe(buffer, ext, lang) {
-  const run = async () => {
-    const child = startSttWorker();
-    if (!child) return { error: 'stt-unavailable', hint: 'python3 + faster-whisper প্রয়োজন' };
-    await fsp.mkdir(STT_DIR, { recursive: true });
-    const file = path.join(STT_DIR, `in-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`);
-    await fsp.writeFile(file, buffer);
-    try {
-      // The first request must wait for the model to finish loading.
-      const deadline = Date.now() + 180000;
-      while (!sttReady && Date.now() < deadline && sttWorker) {
-        await new Promise((r) => setTimeout(r, 250));
-      }
-      const answer = await new Promise((resolve) => {
-        sttWaiters.push(resolve);
-        try { child.stdin.write(JSON.stringify({ path: file, lang: lang || '' }) + '\n'); }
-        catch { resolve({ error: 'stt-write-failed' }); }
-        setTimeout(() => resolve({ error: 'stt-timeout' }), 180000);
-      });
-      return answer;
-    } finally {
-      fsp.unlink(file).catch(() => {});
-    }
-  };
-  const next = sttQueue.then(run, run);
-  sttQueue = next.catch(() => {});
-  return next;
-}
-
-function extFor(mime, name) {
-  const fromName = name && path.extname(name).toLowerCase();
-  if (fromName && MIME[fromName]) return fromName;
-  if (/webm/i.test(mime || '')) return '.webm';
-  if (/ogg/i.test(mime || '')) return '.ogg';
-  if (/wav/i.test(mime || '')) return '.wav';
-  if (/mp4|m4a|aac/i.test(mime || '')) return '.m4a';
-  if (/mpeg|mp3/i.test(mime || '')) return '.mp3';
-  return '.webm';
-}
-
-async function sttUpload(res, req, url) {
-  let buffer;
-  let mime = req.headers['content-type'] || '';
-  let lang = url.searchParams.get('lang') || '';
-  let name = '';
-  try { buffer = await readBody(req); } catch { return sendJson(res, 413, { error: 'too large' }); }
-  if (!buffer || !buffer.length) return sendJson(res, 400, { error: 'empty body' });
-
-  // Accept either a raw upload or a JSON envelope carrying base64.
-  if (/^application\/json/.test(mime)) {
-    try {
-      const j = JSON.parse(buffer.toString('utf8'));
-      const dataUrl = String(j.audio || j.dataUrl || '');
-      const b64 = dataUrl.includes(',') ? dataUrl.slice(dataUrl.indexOf(',') + 1) : dataUrl;
-      mime = (dataUrl.match(/^data:([^;]+)/) || [, j.mime || 'audio/webm'])[1];
-      buffer = Buffer.from(b64, 'base64');
-      lang = j.lang || lang;
-      name = j.name || '';
-    } catch { return sendJson(res, 400, { error: 'bad json' }); }
-  }
-
-  const out = await sttTranscribe(buffer, extFor(mime, name), lang);
-  if (out.error) return sendJson(res, 503, out);
-  return sendJson(res, 200, { ...out, ok: true });
-}
-
-function sttStatus(res) {
-  return sendJson(res, 200, { ok: true, ready: sttReady, worker: !!sttWorker, python: sttPython() });
 }
 
 /* ------------------------------ workspace fs ------------------------------ */
@@ -1240,6 +1297,13 @@ const server = http.createServer(async (req, res) => {
         'Content-Disposition': 'attachment; filename="zyraxon.apk"',
       });
     }
+    if (p === '/api/open-browser' && req.method === 'POST') return openInBrowser(res, await readBody(req));
+    if (p === '/api/bridge/events' && req.method === 'GET') return bridgeEvents(req, res);
+    if (p === '/api/bridge/say' && req.method === 'POST') return bridgeSay(res, req);
+    if (p === '/api/bridge/hello' && req.method === 'POST') return bridgeHello(res, req);
+    if (p === '/api/bridge/cmd' && req.method === 'POST') return bridgeCmd(res, req);
+    if (p === '/api/bridge/poll' && req.method === 'GET') return bridgePoll(res, url);
+    if (p === '/api/bridge/status' && req.method === 'GET') return bridgeStatus(res);
     if (p === '/api/models' && req.method === 'GET') return listModels(res);
     if (p === '/api/model-health' && req.method === 'GET') return modelHealth(res, url.searchParams.get('force') === '1');
     if (p === '/api/chat' && req.method === 'POST') return chatProxy(req, res, await readBody(req));
@@ -1254,8 +1318,6 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/check-url' && req.method === 'POST') return checkUrl(res, await readBody(req));
     if (p === '/api/write-file' && req.method === 'POST') return writeFile(res, await readBody(req));
     if (p === '/api/tts' && req.method === 'GET') return banglaTTS(res, url);
-    if (p === '/api/stt' && req.method === 'POST') return sttUpload(res, req, url);
-    if (p === '/api/stt' && req.method === 'GET') return sttStatus(res);
     if (p === '/api/github/info' && req.method === 'GET') return ghInfo(res);
     if (p === '/api/github/user' && req.method === 'GET') return ghUser(res);
     if (p === '/api/github/publish' && req.method === 'POST') return ghPublish(res, await readBody(req));
@@ -1287,9 +1349,41 @@ await loadHealthCache();
 // Warm the pool ranking in the background so the first /api/model-health is fast
 // without ever delaying a page load.
 if (!healthCache) refreshHealthInBackground();
+
+/**
+ * Starting twice used to print an unhandled EADDRINUSE stack trace, which reads
+ * as "the app is broken" when in fact it is already running. Detect that case,
+ * confirm the process on the port is really us, and exit with a clear message.
+ */
+server.on('error', async (err) => {
+  if (err && err.code === 'EADDRINUSE') {
+    const already = await isOurServer();
+    if (already) {
+      console.log(`ZYRAXON is already running on http://localhost:${PORT} — opening it instead of starting a second copy.`);
+      openBrowser(`http://localhost:${PORT}`);
+      process.exit(0);
+    }
+    console.error(`Port ${PORT} is in use by another program.\n`
+      + `Close it, or start ZYRAXON on a different port:\n`
+      + `  PORT=8080 npm start          (macOS / Linux)\n`
+      + `  set PORT=8080 && npm start   (Windows cmd)\n`
+      + `  $env:PORT=8080; npm start    (Windows PowerShell)`);
+    process.exit(1);
+  }
+  console.error('ZYRAXON failed to start:', err && err.message ? err.message : err);
+  process.exit(1);
+});
+
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`ZYRAXON mobile assistant running on http://0.0.0.0:${PORT}`);
   console.log(`public origin: ${PUBLIC_ORIGIN}`);
+  // Starting the app is the user's request to use it, so open the window.
+  // Set ZYRAXON_NO_OPEN=1 for a headless run (services, containers, tests).
+  if (!process.env.ZYRAXON_NO_OPEN) {
+    const used = openBrowser(`http://localhost:${PORT}`, { app: true });
+    if (used) console.log(`opened in ${path.basename(used)} (speech-capable window)`);
+    else console.log('no Chrome or Edge found — speech will need a Chromium-based browser');
+  }
   // Re-probe only when the cached ranking has gone stale; never block startup.
   if (!healthCache || Date.now() - healthCache.at > HEALTH_TTL) refreshHealthInBackground();
 });

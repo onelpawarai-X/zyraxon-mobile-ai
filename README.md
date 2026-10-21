@@ -11,12 +11,14 @@
 
 সবচেয়ে নতুন বিল্ড **[Releases](https://github.com/onelpawarai-X/zyraxon-mobile-ai/releases/latest)** পেজে আছে:
 
-| প্ল্যাটফর্ম | ফাইল | সাইজ |
-|---|---|---|
-| Android 5.0+ | `zyraxon.apk` | 48 MB |
-| Windows 10/11 | `ZYRAXON-Setup-1.0.0.exe` | 178 MB |
-| macOS | `ZYRAXON-1.0.0-mac.zip` | 198 MB |
-| Linux | `ZYRAXON-1.0.0.AppImage` | 206 MB |
+| প্ল্যাটফর্ম | কী লাগবে |
+|---|---|
+| Android 5.0+ | `zyraxon.apk` — সরাসরি ইনস্টল, ব্রাউজার লাগে না |
+| Windows 10/11 | Node 20+ — তারপর `node zyraxon.mjs` (নিচে দেখুন) |
+| macOS | Node 20+ — তারপর `node zyraxon.mjs` |
+| Linux | Node 20+ — তারপর `node zyraxon.mjs` |
+
+ডেস্কটপে আলাদা করে ইনস্টল করার মতো কিছু নেই — অ্যাপটা নিজেই একটা লোকাল সার্ভার, আর সেটা আপনার নিজের Chrome-এ খোলে।
 
 ---
 
@@ -44,9 +46,9 @@
 | প্ল্যাটফর্ম | STT (আপনার কথা) | TTS (তার কথা) |
 |---|---|---|
 | Android | ফোনের নিজের `SpeechRecognizer` | ফোনের নিজের `TextToSpeech` |
-| Windows / macOS / Linux | পেজের ভিতরের Whisper (অফলাইন), ব্যাকআপ হিসেবে সার্ভারের Whisper | সিস্টেম `speechSynthesis` |
+| Windows / macOS / Linux | Chrome/Edge-এর নিজের recogniser (ব্রিজ উইন্ডো) | Chrome/Edge-এর নিজের কণ্ঠ, না থাকলে সার্ভারের বাংলা TTS |
 
-Electron-এ `webkitSpeechRecognition` থাকে কিন্তু পিছনের সার্ভিস নেই — তাই কোড সেটা ইচ্ছাকৃতভাবে বাদ দিয়ে Whisper-এ পাঠায়। এতে মাইক সত্যিই কাজ করে।
+ওপেন-সোর্স Chromium-এ `webkitSpeechRecognition` থাকে কিন্তু পিছনের Google সার্ভিসটা থাকে না — তাই শুধু আসল Chrome বা Edge-এ ভয়েস কাজ করে, আর লঞ্চার নিজেই সেটা বেছে খোলে। কেউ না থাকলে টেক্সট-চ্যাট, টুল কল, কোড লেখা — সবই চলে, শুধু মাইক আর কণ্ঠ বন্ধ থাকে।
 
 ### চরিত্র
 গার্লফ্রেন্ড, বয়ফ্রেন্ড আর সাধারণ বন্ধু — ইউজার বললেই সুইচ করে। লোকাল ডেটাবেসে সব মনে রাখে, ক্লাউড মুছে গেলেও।
@@ -56,34 +58,51 @@ Electron-এ `webkitSpeechRecognition` থাকে কিন্তু পিছ
 
 ---
 
-## সোর্স থেকে চালানো
+## চালানো — Windows / macOS / Linux
+
+শুধু Node (v20+) থাকলেই হবে। একটাই ফাইল:
 
 ```bash
-node server/server.mjs          # http://localhost:12000
+node zyraxon.mjs
 ```
 
-### ডেস্কটপ অ্যাপ বিল্ড
-```bash
-cd desktop
-npm install
-npx electron-builder --linux AppImage   # বা --win nsis / --mac zip
+এটা শুধু **লোকাল হোস্টে** সার্ভার চালু করে — কিছুই কোথাও আপলোড হয় না, বাইরে থেকে কিছু আসে না। তারপর নিজেই Chrome/Edge খুঁজে একটা অ্যাপ-উইন্ডোতে অ্যাপটা খুলে দেয়, আর ওই উইন্ডোতেই মাইক আর কণ্ঠ সবচেয়ে ভালো কাজ করে। কোনো ইনস্টলার, কোনো Electron, কোনো বিল্ড — কিছুই লাগে না।
+
+চাইলে Chrome ব্রাউজারের ভেতরেও সরাসরি একই ঠিকানা খুলতে পারেন:
+
 ```
+http://localhost:12000
+```
+
+পোর্টগুলো এই ক্রমে চেষ্টা করা হয় — যেটা খালি, সেটাতেই চলে:
+`12000 → 12001 → 12002 → 13000 → 13001 → 13002 → 14000 → 8080`
+
+```bash
+node zyraxon.mjs --port 13000   # অন্য পোর্ট
+node zyraxon.mjs --no-open      # হেডলেস (সার্ভিস/কনটেইনার/CI)
+node zyraxon.mjs --browser      # কোন ব্রাউজার ব্যবহার হবে দেখাও
+```
+
+পোর্ট ব্যস্ত থাকলে নিজেই পরের ফাঁকা পোর্টে চলে যায়; অ্যাপ আগেই চালু থাকলে দ্বিতীয় কপি না খুলে সেটাই খোলে।
+
+> ভয়েসের জন্য আসল **Chrome** বা **Edge** দরকার — ওপেন-সোর্স Chromium-এ পিছনের Google স্পিচ সার্ভিস থাকে না। যদি এমন ব্রাউজারে অ্যাপটা খোলেন, অ্যাপ নিজেই বুঝে নিয়ে একটা ছোট ভয়েস-উইন্ডো খুলে দেয় (প্রথম ট্যাপেই) — ওখানেই মাইক আর কণ্ঠ চলে। ব্রাউজার একেবারেই না পেলেও টেক্সট-চ্যাট, টুল কল, কোড, publish — সব চলে।
 
 ### Android APK বিল্ড
 Gradle লাগে না — শুধু Android SDK (aapt2 + javac + d8 + apksigner):
 ```bash
-bash android/build.sh
+bash android/build.sh        # → android/zyraxon.apk
 ```
+APK-তে ভয়েস ফোনের নিজের `SpeechRecognizer` + `TextToSpeech` দিয়ে চলে, ব্রাউজার লাগে না।
 
 ---
 
 ## স্ট্রাকচার
 
 ```
-server/     Node সার্ভার — SSE, টুল API, GitHub publish, Whisper STT
+server/     Node সার্ভার — SSE, টুল API, GitHub publish, স্পিচ ব্রিজ
 public/     WebView ক্লায়েন্ট — UI, ভয়েস, টুল, মেমরি
 android/    নেটিভ Android — MainActivity (TTS/STT/shell/accessibility), AccessibilityBridge
-desktop/    Electron শেল — Windows/macOS/Linux
+zyraxon.mjs Windows/macOS/Linux লঞ্চার — লোকাল সার্ভার + ব্রাউজার
 test/       End-to-end টেস্ট
 ```
 
@@ -92,8 +111,8 @@ test/       End-to-end টেস্ট
 ## টেস্ট
 
 ```bash
-python3 test/e2e.py            # ফুল end-to-end
-python3 test/e2e_mobile.py     # মোবাইল UI
-python3 test/desktop_mic.py    # ডেস্কটপ মাইক
-bash   test/_sweep.sh          # সব অ্যাকসেপ্টেন্স টেস্ট
+node test/e2e.mjs        # ফুল end-to-end: UI, মডেল, SSE, টুল কল, টুডু, publish, চরিত্র
+node test/bridgecheck.mjs # বাংলা ভয়েস ব্রিজ (মাইক → চ্যাট → কণ্ঠ)
 ```
+
+দুটোই আসল Chromium-এ আসল কোড চালায় — কোনো নকল নয়।

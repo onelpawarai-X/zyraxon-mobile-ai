@@ -130,6 +130,33 @@
 
   /* ─────────────────── tool implementations ─────────────────── */
   const impl = {
+    /**
+     * Show the live code box, and close it when the file is finished. The user
+     * asked for the assistant to open it herself before writing and shut it
+     * down when done, so this is a real tool, not a UI side effect.
+     */
+    async code_box(args) {
+      const ui = global.ZY.ui;
+      const action = String(args.action || 'open');
+      if (!ui) return { ok: false, summary: 'UI নেই — কোড বক্স চালানো যায়নি' };
+      if (action === 'close') {
+        ui.closeCodeOverlay && ui.closeCodeOverlay();
+        return { ok: true, summary: 'কোড বক্স বন্ধ করা হলো', data: { action } };
+      }
+      if (action === 'minimize') {
+        if (!ui._codeMin) ui.toggleCodeMin && ui.toggleCodeMin();
+        return { ok: true, summary: 'কোড বক্স ছোট করা হলো', data: { action } };
+      }
+      if (action === 'restore') {
+        if (ui._codeMin) ui.toggleCodeMin && ui.toggleCodeMin();
+        return { ok: true, summary: 'কোড বক্স আবার বড় করা হলো', data: { action } };
+      }
+      const title = args.title || 'Writing code…';
+      const body = args.code || '';
+      ui.showCodeOverlay(title, body);
+      return { ok: true, summary: `কোড বক্স খোলা হলো — ${title}`, data: { action: 'open' } };
+    },
+
     async todo_write(args) {
       const todos = Array.isArray(args.todos) ? args.todos : [];
       global.ZY.store.set('todos', todos);
@@ -662,6 +689,7 @@
   /* ─────────────────── JSON schemas sent to the model ─────────────────── */
   const S = (props, req, extra = {}) => ({ type: 'object', properties: props, required: req, additionalProperties: false, ...extra });
   const Schemas = [
+    { name: 'code_box', description: 'Show or close the live code panel on screen. Call it with action:"open" (and optionally title/code) before you write a file, then action:"close" when the file is finished. Use action:"minimize"/"restore" to shrink it out of the way without losing what was written.', parameters: S({ action: { type: 'string', enum: ['open', 'close', 'minimize', 'restore'] }, title: { type: 'string' }, code: { type: 'string' } }, ['action']) },
     { name: 'todo_write', description: 'Create or update the live task board. Call it after every tool result. Never give a final answer while a task is unfinished.', parameters: S({ todos: { type: 'array', items: S({ id: { type: 'string' }, title: { type: 'string' }, status: { type: 'string', enum: ['pending', 'in_progress', 'done'] } }, ['id', 'title', 'status']) } }, ['todos']) },
     { name: 'open_app', description: 'Open a real app on the phone (by package or by name).', parameters: S({ package: { type: 'string' }, name: { type: 'string' } }, []) },
     { name: 'launch_url', description: 'Open a URL in the browser. The URL is verified first; a dead link is reported, never opened.', parameters: S({ url: { type: 'string' }, new_tab: { type: 'boolean' } }, ['url']) },

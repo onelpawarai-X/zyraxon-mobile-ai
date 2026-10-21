@@ -741,6 +741,8 @@ public class MainActivity extends Activity {
 
         private android.view.View overlayView;
         private android.widget.TextView overlayText;
+        private android.widget.TextView overlayHead;
+        private boolean overlayMin = false;
 
         /**
          * Show the live code/status box on top of everything — including other
@@ -797,7 +799,15 @@ public class MainActivity extends Activity {
                     }
                     android.widget.TextView head = overlayView.findViewById(android.R.id.title);
                     if (head != null) head.setText(title);
-                    if (overlayText != null) overlayText.setText(body);
+                    overlayHead = head;
+                    if (overlayText != null) {
+                        overlayText.setText(body);
+                        // Minimised: the code keeps arriving into the hidden
+                        // view, so restoring it shows everything written while
+                        // it was out of the way.
+                        overlayText.setVisibility(overlayMin
+                                ? android.view.View.GONE : android.view.View.VISIBLE);
+                    }
                 } catch (Exception ignored) {}
             });
             return true;
@@ -815,6 +825,29 @@ public class MainActivity extends Activity {
                 } catch (Exception ignored) {}
                 overlayView = null; overlayText = null;
             });
+        }
+
+        /**
+         * Shrink the floating code box to just its title line, or restore it.
+         * The code is still written into the hidden view while minimised.
+         */
+        @JavascriptInterface
+        public void overlayMinimize(final boolean min) {
+            micHandler.post(() -> {
+                overlayMin = min;
+                if (overlayText != null) {
+                    overlayText.setVisibility(min ? android.view.View.GONE : android.view.View.VISIBLE);
+                }
+                if (overlayHead != null) {
+                    String bare = overlayHead.getText().toString().replace("  \u2581", "");
+                    overlayHead.setText(min ? bare + "  \u2581" : bare);
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public boolean overlayMinimized() {
+            return overlayMin;
         }
 
         @JavascriptInterface
