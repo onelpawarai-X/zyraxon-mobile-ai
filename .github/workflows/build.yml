@@ -49,6 +49,16 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # The APK packages public/, which holds compiled JavaScript, not the
+      # TypeScript in src/web. build.sh copies whatever is there, so the bundle
+      # has to be built before it runs.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build the web bundle
+        run: npm install && npm run build
+
       # The APK is built without Gradle, straight against the SDK tools, so the
       # SDK has to be here with exactly the pieces build.sh reaches for.
       # android-actions/setup-android@v3 is not used: its bundled cmdline-tools
@@ -125,6 +135,12 @@ jobs:
       - name: Install desktop dependencies
         working-directory: desktop
         run: npm install
+
+      # electron-builder copies ../public into the installer, and public/js is
+      # compiled output — build it first so the installer never ships a stale
+      # bundle.
+      - name: Build the web bundle
+        run: npm install && npm run build
 
       - name: Build installer
         working-directory: desktop

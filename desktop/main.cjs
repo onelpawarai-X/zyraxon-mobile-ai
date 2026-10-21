@@ -37,9 +37,13 @@ function userDataDir() {
   try { return app.getPath('userData'); } catch { return os.tmpdir(); }
 }
 
-// Software rendering by default: the app must work on VMs and machines without
-// a usable GPU, where Chromium's GPU process fails and the window stays black.
-app.disableHardwareAcceleration();
+// Hardware acceleration is kept ON: the app is a full-screen video with
+// animated blurred glass over it, and software rendering of that combination
+// was the "everything lags, the background video crawls" complaint. Chromium
+// falls back to software on its own when a machine has no usable GPU, so the
+// old unconditional disable only ever cost frames on the machines that had one.
+// ZYRAXON_FORCE_SOFTWARE=1 restores it for a machine whose driver is broken.
+if (process.env.ZYRAXON_FORCE_SOFTWARE) app.disableHardwareAcceleration();
 
 let win = null;
 let serverProc = null;

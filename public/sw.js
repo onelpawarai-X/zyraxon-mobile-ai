@@ -1,5 +1,5 @@
 /* ZYRAXON service worker — offline shell for the PWA */
-const CACHE = 'zyraxon-v3';
+const CACHE = 'zyraxon-v4';
 const SHELL = [
   '/', '/index.html', '/manifest.webmanifest',
   '/css/app.css', '/css/aura.css', '/css/console.css',

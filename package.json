@@ -7,8 +7,14 @@
   "scripts": {
     "start": "node zyraxon.mjs",
     "serve": "node server/server.mjs",
+    "build": "node scripts/build-web.mjs",
+    "build:watch": "node scripts/build-web.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "prepare": "node scripts/build-web.mjs",
     "test": "node test/e2e.mjs",
-    "test:voice": "node test/bridgecheck.mjs"
+    "test:voice": "node test/bridgecheck.mjs",
+    "test:media": "node test/mediaperf.mjs",
+    "optimize:media": "bash scripts/optimize-media.sh"
   },
   "engines": {
     "node": ">=20"
@@ -16,5 +22,10 @@
   "main": "zyraxon.mjs",
   "bin": {
     "zyraxon": "zyraxon.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.3"
   }
 }

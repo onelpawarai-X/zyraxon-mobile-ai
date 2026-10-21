@@ -12,6 +12,14 @@ rm -rf "$OUT"
 mkdir -p "$OUT/compiled" "$OUT/gen" "$OUT/classes" "$OUT/dex" "$OUT/apk"
 
 echo "1/6 staging web assets"
+# public/js is compiled from src/web, so build it here as well. Someone running
+# build.sh directly should not have to know that, and a stale bundle would ship
+# silently. Skipped when esbuild is not installed (no node_modules).
+if [ -f "$HERE/../node_modules/.bin/esbuild" ]; then
+  (cd "$HERE/.." && node scripts/build-web.mjs)
+else
+  echo "    (esbuild not installed — using the existing public/js)"
+fi
 rm -rf "$APP/assets"
 mkdir -p "$APP/assets"
 cp -r "$HERE/../public/." "$APP/assets/"
