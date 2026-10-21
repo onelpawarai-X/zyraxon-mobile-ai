@@ -149,3 +149,17 @@ sandbox and returns real `{code,stdout,stderr}`; registered at `:185` via
 `addJavascriptInterface(..., "ZYNative")`. `public/js/tools.js:435` prefers that
 native path on a phone and falls back to the host `/api/shell` on desktop.
 Host shells: Windows powershell/pwsh/cmd, macOS zsh/bash/sh, Linux bash/sh/zsh.
+
+## Push & release (learned the hard way)
+- Live repo is **neworigin remote** = github.com/onelpawarai-X/zyraxon-mobile-ai.
+  `origin` (zyraxon) is stale history — never push there.
+- A token embedded in a git remote URL is IGNORED (git prompts for a password).
+  Working recipe: `gh auth setup-git`, set remote to plain https URL, then push.
+- Tag push runs `.github/workflows/build.yml` -> APK + 3 desktop installers -> release.
+- CI android: `yes | sdkmanager --licenses; yes | sdkmanager "build-tools;36.0.0" ...`
+  (a bare sdkmanager call blocks on stdin for licences and installs nothing -> aapt2 missing).
+- Bump version in ALL of: package.json, desktop/package.json, AndroidManifest
+  versionCode/versionName, and .github/RELEASE_NOTES.md installer filenames.
+- Console sheet must stay above the live code overlay: console z-index 76 > overlay 75.
+- Server published-site origin comes from the request Host (PUBLIC_ORIGIN overrides);
+  a hardcoded origin makes every published URL 404 off the dev box.
