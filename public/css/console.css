@@ -198,3 +198,16 @@ html.modal-open .drawer-panel{
 .co-body code{ white-space:pre; }
 @keyframes coIn{ from{ transform:translate(-50%,-8px); opacity:.35; } to{ transform:translate(-50%,0); opacity:1; } }
 
+/* Minimised: only the title bar stays, pinned to the corner. The code keeps
+   streaming into the hidden body, so bringing it back shows everything that
+   was written while it was out of the way. */
+.code-overlay.min{
+  width:auto; max-width:min(78vw,420px); max-height:none;
+  left:auto; right:12px; transform:none; top:calc(10px + var(--sat));
+  border-radius:999px; padding:6px 12px; animation:none;
+}
+.code-overlay.min .co-body{ display:none; }
+.code-overlay.min .co-head{ margin-bottom:0; }
+.code-overlay.min #co-close{ display:none; }
+.code-overlay.min #co-min svg{ transform:rotate(180deg); }
+

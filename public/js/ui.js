@@ -73,7 +73,8 @@
       $('tl-toggle').addEventListener('click', () => UI.hidePanel('tools'));
       if (e.taskboard) UI.makeDraggable(e.taskboard);
       if (e.toollog) UI.makeDraggable(e.toollog);
-      $('co-close').addEventListener('click', () => (e.codeOverlay.hidden = true));
+      $('co-close').addEventListener('click', () => UI.closeCodeOverlay());
+      $('co-min').addEventListener('click', () => UI.toggleCodeMin());
       $('model-btn').addEventListener('click', (ev) => { ev.stopPropagation(); e.modelMenu.hidden = !e.modelMenu.hidden; });
       document.addEventListener('click', () => { e.modelMenu.hidden = true; });
       document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') e.modelMenu.hidden = true; });
@@ -183,10 +184,65 @@
       if (!e.codeOverlay) return;
       e.codeTitle.textContent = title;
       e.codeBody.textContent = code;
+      // Re-opening must not undo the user's own choice to minimise it: the body
+      // is written either way, so the box stays out of the way while she keeps
+      // typing code into it.
       e.codeOverlay.hidden = false;
+      e.codeOverlay.classList.toggle('min', !!UI._codeMin);
       // Follow the tail so the newest line is always the one in view.
       const pre = e.codeBody.parentElement;
       if (pre) pre.scrollTop = pre.scrollHeight;
+    },
+
+    /**
+     * Reveal a finished file line by line in the code box, so the user watches
+     * it being written instead of seeing a wall of text appear at once. The
+     * timer is kept so a second file restarts cleanly instead of interleaving.
+     */
+    typeCodeBox(title, code, lang) {
+      const e = UI._el;
+      if (!e.codeOverlay) return;
+      clearInterval(UI._typeTimer);
+      const lines = String(code == null ? '' : code).split('\n');
+      e.codeTitle.textContent = title || ('Writing code · ' + (lang || 'code'));
+      e.codeBody.textContent = '';
+      e.codeOverlay.hidden = false;
+      e.codeOverlay.classList.toggle('min', !!UI._codeMin);
+      // Desktop is fast; the phone shows a little more per tick so a long file
+      // does not take minutes. Both stay visibly line by line.
+      const per = global.ZY.Native && global.ZY.Native.app ? 1 : 2;
+      let i = 0;
+      const step = () => {
+        const chunk = lines.slice(i, i + per).join('\n');
+        const first = i === 0;
+        i += per;
+        e.codeBody.textContent += (first ? '' : '\n') + chunk;
+        const pre = e.codeBody.parentElement;
+        if (pre) pre.scrollTop = pre.scrollHeight;
+        if (i >= lines.length) clearInterval(UI._typeTimer);
+      };
+      step();
+      UI._typeTimer = setInterval(step, 28);
+    },
+
+    /** Shrink the code box to its title bar, or bring the code back. */
+    toggleCodeMin() {
+      const e = UI._el;
+      UI._codeMin = !UI._codeMin;
+      // On the phone the same box also lives as a real system overlay above
+      // other apps, so the choice has to travel there too.
+      const nat = global.ZY.Native;
+      if (nat && nat.app && nat.settings.overlayMinimize) nat.settings.overlayMinimize(UI._codeMin);
+      if (e.codeOverlay) e.codeOverlay.classList.toggle('min', !!UI._codeMin);
+    },
+
+    /** Close the code box here and, on the phone, above other apps as well. */
+    closeCodeOverlay() {
+      const e = UI._el;
+      UI._codeMin = false;
+      if (e.codeOverlay) { e.codeOverlay.hidden = true; e.codeOverlay.classList.remove('min'); }
+      const nat = global.ZY.Native;
+      if (nat && nat.app && nat.settings.overlayHide) { nat.settings.overlayMinimize(false); nat.settings.overlayHide(); }
     },
 
     /** Ask for the overlay grant once, on the first code the assistant writes. */
@@ -536,22 +592,22 @@
     },
 
     consoleTab(tab) {
+      // Chat, Tasks and Tools are three independent things. Chat is a view in
+      // the sheet; Tasks and Tools are their own floating panels. Tapping a tab
+      // must therefore touch only its own panel — the old code showed whichever
+      // panel had no saved preference, so tapping Tools opened Tasks as well.
       UI._consoleTab = tab;
-      document.querySelectorAll('.ctab').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
-      document.querySelectorAll('.cview').forEach((v) => v.classList.toggle('on', v.dataset.view === tab));
-      // The Tasks and Tools tabs are not views inside the sheet — they toggle
-      // the standalone panels beside it, so a tap always has a visible result.
-      if (tab === 'todos') UI.showPanel('todos', true);
-      else if (tab === 'tools') UI.showPanel('tools', true);
+      document.querySelectorAll('.ctab').forEach((b) => { if (b.dataset.tab === 'chat') b.classList.toggle('on', tab === 'chat'); });
+      document.querySelectorAll('.cview').forEach((v) => v.classList.toggle('on', v.dataset.view === 'chat'));
+      if (tab === 'todos') UI.togglePanel('todos', true);
+      else if (tab === 'tools') UI.togglePanel('tools', true);
+      else { UI.showPanel('todos', false); UI.showPanel('tools', false); }
+      UI.syncPanelTabs();
       const body = UI._el.consoleBody;
       if (body) body.scrollTop = body.scrollHeight;
     },
 
-    /**
-     * Open/close one of the standalone panels. They remember the user's choice
-     * so that work starting later never re-opens a panel that was deliberately
-     * closed.
-     */
+    /** Reveal one panel without touching the other. */
     showPanel(which, force) {
       const e = UI._el;
       const el = which === 'todos' ? e.taskboard : e.toollog;
@@ -559,6 +615,23 @@
       UI._panelPref = UI._panelPref || {};
       if (force === true || UI._panelPref[which] === undefined) UI._panelPref[which] = true;
       el.hidden = !UI._panelPref[which];
+      UI.syncPanelTabs();
+    },
+
+    /**
+     * Tapping the tab itself flips the panel: open it if it was closed, close
+     * it if it was open. The other panel is left exactly as it was, so the two
+     * are never dragged open together.
+     */
+    togglePanel(which, fromTab) {
+      const e = UI._el;
+      const el = which === 'todos' ? e.taskboard : e.toollog;
+      if (!el) return;
+      const wasOpen = !el.hidden;
+      UI._panelPref = UI._panelPref || {};
+      UI._panelPref[which] = !wasOpen;
+      el.hidden = wasOpen;
+      UI.syncPanelTabs();
     },
 
     hidePanel(which) {
@@ -567,10 +640,22 @@
       const e = UI._el;
       const el = which === 'todos' ? e.taskboard : e.toollog;
       if (el) el.hidden = true;
-      document.querySelectorAll('.ctab').forEach((b) => {
-        if (b.dataset.tab === which) b.classList.remove('on');
-      });
+      UI.syncPanelTabs();
       if (UI._consoleTab === which) UI.consoleTab('chat');
+    },
+
+    /**
+     * The Tasks/Tools tabs light up to mirror what is actually on screen, so a
+     * tap and a visible change always agree — closing a panel by its own X
+     * clears its tab too.
+     */
+    syncPanelTabs() {
+      const e = UI._el;
+      const open = (el) => !!el && !el.hidden;
+      document.querySelectorAll('.ctab').forEach((b) => {
+        if (b.dataset.tab === 'todos') b.classList.toggle('on', open(e.taskboard));
+        else if (b.dataset.tab === 'tools') b.classList.toggle('on', open(e.toollog));
+      });
     },
 
     /** Panels can be dragged by their header so they never block the chat. */

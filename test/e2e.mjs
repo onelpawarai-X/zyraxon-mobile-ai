@@ -199,6 +199,98 @@ async function main() {
     const real = cdp.errors.filter((e) => !/favicon/i.test(e));
     record('the page ran without uncaught errors', real.length === 0, real.slice(0, 4));
 
+    // ── the three panels are independent ──
+    // The user's complaint: tapping one tab opened both floating panels, so a
+    // single idea cost two taps. Each tab must touch only its own panel.
+    await cdp.eval(`(() => {
+      document.getElementById('dock-todos').hidden = true;
+      document.getElementById('dock-tools').hidden = true;
+      window.ZY.ui.consoleTab('todos');
+      return 'ok';
+    })()`);
+    await sleep(150);
+    const onlyTodos = await cdp.eval(`JSON.stringify({
+      todos: !document.getElementById('dock-todos').hidden,
+      tools: !document.getElementById('dock-tools').hidden,
+    })`);
+    record('the Tasks tab opens only the todo panel',
+      onlyTodos.todos === true && onlyTodos.tools === false, onlyTodos);
+
+    await cdp.eval(`(() => {
+      document.getElementById('dock-todos').hidden = true;
+      document.getElementById('dock-tools').hidden = true;
+      window.ZY.ui.consoleTab('tools');
+      return 'ok';
+    })()`);
+    await sleep(150);
+    const onlyTools = await cdp.eval(`JSON.stringify({
+      todos: !document.getElementById('dock-todos').hidden,
+      tools: !document.getElementById('dock-tools').hidden,
+    })`);
+    record('the Tools tab opens only the tool panel',
+      onlyTools.tools === true && onlyTools.todos === false, onlyTools);
+
+    // A tool call must never write its name into the chat bubble.
+    const noToolText = await cdp.eval(`JSON.stringify({
+      leaked: /\\[টুল:/.test(document.getElementById('chat').innerText),
+    })`);
+    record('tool names never leak into the chat bubbles', noToolText.leaked === false, noToolText);
+
+    // ── the live code box: line by line, and minimisable ──
+    await cdp.eval(`(() => {
+      window.ZY.ui.showCodeOverlay('Writing code · html', '<h1>hi</h1>\\n<p>there</p>');
+      return 'ok';
+    })()`);
+    await sleep(200);
+    const codeOpen = await cdp.eval(`JSON.stringify({
+      visible: !document.getElementById('code-overlay').hidden,
+      text: document.getElementById('co-code').textContent,
+    })`);
+    record('the code box shows the file line by line',
+      codeOpen.visible === true && codeOpen.text.includes('<h1>hi</h1>'), codeOpen);
+
+    await cdp.eval(`document.getElementById('co-min').click(); 'ok'`);
+    await sleep(150);
+    const minimised = await cdp.eval(`JSON.stringify({
+      min: document.getElementById('code-overlay').classList.contains('min'),
+      bodyHidden: getComputedStyle(document.querySelector('.co-body')).display === 'none',
+    })`);
+    record('the user can minimise the code box to its title bar',
+      minimised.min === true && minimised.bodyHidden === true, minimised);
+
+    // Minimised must not stop the work: new code still arrives.
+    await cdp.eval(`window.ZY.ui.showCodeOverlay('Writing code · html', '<h1>hi</h1>\\n<p>more</p>'); 'ok'`);
+    await sleep(150);
+    const stillWriting = await cdp.eval(`JSON.stringify({
+      min: document.getElementById('code-overlay').classList.contains('min'),
+      text: document.getElementById('co-code').textContent,
+    })`);
+    record('code keeps streaming while the box stays minimised',
+      stillWriting.min === true && stillWriting.text.includes('<p>more</p>'), stillWriting);
+
+    // The assistant can close its own box through a real tool call.
+    const closed = await cdp.eval(`(async () => {
+      const r = await window.ZY.Tools.execute('code_box', { action: 'close' });
+      return JSON.stringify({ ok: r.ok, hidden: document.getElementById('code-overlay').hidden });
+    })()`);
+    record('the assistant closes its own code box with a tool call',
+      closed.ok === true && closed.hidden === true, closed);
+
+    // A real file is revealed line by line, not in one block.
+    const typed = await cdp.eval(`(async () => {
+      const code = Array.from({length: 40}, (_, i) => 'line ' + i).join('\\n');
+      window.ZY.ui.typeCodeBox('Writing big.js', code, 'js');
+      await new Promise(r => setTimeout(r, 60));
+      const early = document.getElementById('co-code').textContent.split('\\n').length;
+      await new Promise(r => setTimeout(r, 700));
+      const late = document.getElementById('co-code').textContent.split('\\n').length;
+      return JSON.stringify({ early, late, title: document.getElementById('co-title').textContent });
+    })()`);
+    record('a written file is revealed line by line in the code box',
+      typed.early < typed.late && typed.late >= 40, typed);
+    await cdp.eval(`window.ZY.ui.closeCodeOverlay(); 'ok'`);
+    await sleep(200);
+
     // ── 9. opening a sheet must not cost frames ──
     // The orb is a stack of blurred, screen-blended layers. It used to keep
     // being composited over the playing clip while the chat sheet hid it, which

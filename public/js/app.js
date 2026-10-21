@@ -100,8 +100,12 @@
         for (const m of shown) {
           const div = document.createElement('div');
           div.className = 'msg ' + (m.role === 'user' ? 'user' : 'ai') + ' restored';
-          div.innerHTML = `<span class="body"></span><span class="msg-time">${new Date(m.ts || Date.now()).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</span>`;
-          div.querySelector('.body').textContent = m.content;
+          // Tool names ride in their own field, so an old bubble never shows
+          // "[টুল: …]" and a fresh one hints at what ran without repeating it.
+          div.innerHTML = `<span class="body"></span>${m.tools && m.tools.length ? global.ZY.ui._chips(m.tools.map((n) => ({ name: n }))) : ''}<span class="msg-time">${new Date(m.ts || Date.now()).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</span>`;
+          // Older rows kept the tool names inside the words; strip that suffix
+          // so a past conversation reads as plain speech again.
+          div.querySelector('.body').textContent = String(m.content || '').replace(/\n?\[টুল:[^\]]*\]\s*$/g, '').trim();
           chat.appendChild(div);
         }
         global.ZY.ui._scroll(true);

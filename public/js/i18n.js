@@ -40,7 +40,7 @@
     'btn.attach': 'Send photo / video / audio',
     'btn.copy': 'Copy',
     'btn.open': 'Open',
-    'btn.close': 'Close',
+    'btn.close': 'Close', 'btn.min': 'Minimize',
     'btn.clear_chat': 'Clear chat',
 
     'quick.facebook': 'Facebook message',
@@ -178,7 +178,7 @@
     'btn.attach': 'ছবি / ভিডিও / অডিও পাঠাও',
     'btn.copy': 'কপি',
     'btn.open': 'ওপেন',
-    'btn.close': 'বন্ধ',
+    'btn.close': 'বন্ধ', 'btn.min': 'ছোট করো',
     'btn.clear_chat': 'চ্যাট মুছো',
     'quick.facebook': 'ফেসবুক মেসেজ',
     'quick.website': 'ওয়েবসাইট বানাও',

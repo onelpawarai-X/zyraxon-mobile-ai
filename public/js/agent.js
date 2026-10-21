@@ -286,7 +286,15 @@
           const assistant = { role: 'assistant', content: content || '' };
           if (toolCalls.length) assistant.tool_calls = toolCalls;
           Agent.history.push(assistant);
-          await Agent._persist({ role: 'assistant', content: (content || '') + (toolCalls.length ? '\n[টুল: ' + toolCalls.map((t) => t.function.name).join(', ') + ']' : '') });
+          // The tool names are stored in their own field, never appended to the
+          // words. Gluing them into content put "[টুল: …]" inside the bubble and
+          // brought it back on every restart, so the chat filled with tool
+          // names the user had already read in the Tools panel.
+          await Agent._persist({
+            role: 'assistant',
+            content: content || '',
+            tools: toolCalls.map((t) => t.function.name),
+          });
 
           if (!toolCalls.length) {
             // No tools this round. Enforce the todo contract *and* the
@@ -751,7 +759,14 @@
           ui.toast('Site published — opening it');
           global.open(r.data.url, '_blank');
         } else if (r.ok && typeof args.content === 'string' && (name === 'write_file' || name === 'generate_file')) {
-          ui.showArtifact('File · ' + (args.path || 'file'), args.content);
+          // The file is revealed line by line in the live code box, and the
+          // finished text also lands in the output stack so it is never lost.
+          const p = args.path || 'file';
+          const lang = (String(p).split('.').pop() || 'code').toLowerCase();
+          ui.typeCodeBox('Writing ' + p, args.content, lang);
+          ui.showArtifact('File · ' + p, args.content);
+        } else if (r.ok && typeof args.content === 'string' && name === 'edit_file') {
+          ui.showArtifact('Edit · ' + (args.path || 'file'), String(args.replace == null ? '' : args.replace));
         } else if (r.ok && r.data && r.data.dataUrl) {
           ui.showArtifact('Media read: ' + r.data.modality, r.data.dataUrl, r.data.modality);
         } else if (r.ok && r.data && r.data.content && (name === 'read_file' || name === 'read_url')) {

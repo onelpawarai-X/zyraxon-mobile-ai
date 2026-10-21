@@ -113,6 +113,8 @@
       overlayAllowed() { return !!(N && N.overlayAllowed && N.overlayAllowed()); },
       overlayShow(title, body) { return !!(N && N.overlayShow && N.overlayShow(title, body)); },
       overlayHide() { if (N && N.overlayHide) N.overlayHide(); },
+      overlayMinimize(min) { if (N && N.overlayMinimize) N.overlayMinimize(!!min); },
+      overlayMinimized() { return !!(N && N.overlayMinimized && N.overlayMinimized()); },
     },
 
     /* ───────── real device control ───────── */

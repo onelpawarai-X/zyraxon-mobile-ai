@@ -203,9 +203,12 @@
        The user asked for this on top of everything, as translucent glass,
        visible while the code is still being written — not only at the end. -->
   <section class="code-overlay glass" id="code-overlay" hidden>
-    <header class="co-head">
+    <header class="co-head" id="co-head">
       <span class="co-dot"></span>
       <b id="co-title" data-i18n="code.live">Writing code…</b>
+      <button class="mini-btn" id="co-min" data-i18n-title="btn.min" title="Minimize">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+      </button>
       <button class="mini-btn" id="co-close" data-i18n="btn.close">Close</button>
     </header>
     <pre class="co-body"><code id="co-code"></code></pre>

@@ -60,7 +60,8 @@
           ]
         }
       ],
-      "artifactName": "ZYRAXON-Setup-${version}.exe"
+      "artifactName": "ZYRAXON-Setup-${version}.exe",
+      "icon": "../build/icons/icon.ico"
     },
     "nsis": {
       "oneClick": false,
@@ -73,14 +74,25 @@
         "zip"
       ],
       "category": "public.app-category.productivity",
-      "artifactName": "ZYRAXON-${version}-mac.${ext}"
+      "artifactName": "ZYRAXON-${version}-mac.${ext}",
+      "icon": "../build/icons/icon.icns"
     },
     "linux": {
       "target": [
         "AppImage"
       ],
       "category": "Utility",
-      "artifactName": "ZYRAXON-${version}.${ext}"
+      "artifactName": "ZYRAXON-${version}.${ext}",
+      "icon": "../build/icons",
+      "desktop": {
+        "Name": "ZYRAXON",
+        "Comment": "বাংলা AI অ্যাসিস্ট্যান্ট",
+        "Categories": "Utility;"
+      }
+    },
+    "directories": {
+      "buildResources": "../build/icons",
+      "output": "dist"
     }
   }
 }
