@@ -455,6 +455,26 @@ async function main() {
     record('the mic is closed while she speaks and re-armed when she stops',
       micCycle.ok === true && micCycle.sawPaused === true &&
       micCycle.reopened === true && micCycle.resumed > 0, micCycle);
+
+    // ── 11. Bangla speech reaches the composer as it is spoken ──
+    // The complaint was that saying something in Bangla never appeared in the
+    // chat box. The path is STT.onPartial -> UI.setLive + the composer, so the
+    // real callbacks are fired with real Bangla and the composer is read back.
+    const heard = await cdp.eval(`(async () => {
+      const V = window.ZY && window.ZY.VOICE;
+      if (!V || !V.STT || !V.STT.onPartial) return JSON.stringify({ ok: false, why: 'no stt callbacks' });
+      const box = document.getElementById('input');
+      box.value = '';
+      const bangla = 'আমার ফেসবুকে মেসেজ দাও';
+      V.STT.onPartial(bangla);
+      await new Promise(r => setTimeout(r, 60));
+      const inBox = box.value;
+      const live = (document.getElementById('live-text') || {}).textContent || '';
+      return JSON.stringify({ ok: true, inBox, live, ttsEcho: V.TTS.isEcho(bangla) });
+    })()`);
+    record('speaking Bangla shows up in the chat box as it is spoken',
+      heard.ok === true && heard.inBox === 'আমার ফেসবুকে মেসেজ দাও' &&
+      heard.ttsEcho === false, heard);
   } finally {
     cdp.ws.close();
     try { chrome.kill('SIGKILL'); } catch {}
