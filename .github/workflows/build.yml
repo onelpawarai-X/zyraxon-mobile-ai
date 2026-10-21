@@ -68,8 +68,13 @@ jobs:
           mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
 
+      # sdkmanager prints the licence and waits on stdin when the package needs
+      # one that is not yet accepted, and a non-interactive runner has no stdin
+      # to answer with — so the packages must be accepted from the pipe. A bare
+      # `sdkmanager "build-tools;36.0.0"` installed nothing and build.sh then
+      # died on a missing aapt2.
       - name: Install build tools
-        run: sdkmanager "build-tools;36.0.0" "platforms;android-34"
+        run: yes | sdkmanager --licenses > /dev/null 2>&1; yes | sdkmanager "build-tools;36.0.0" "platforms;android-34"
 
       # build.sh signs with the standard debug keystore, which a fresh runner
       # does not have. apksigner will not emit an unsigned APK, so without this

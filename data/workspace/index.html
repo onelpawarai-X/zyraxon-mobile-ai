@@ -1,27 +1,99 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>হ্যালো জাইরাক্সন</title>
 <style>
+  :root {
+    --bg: #0b1020;
+    --card: rgba(255, 255, 255, 0.06);
+    --accent: #7c5cff;
+    --accent2: #23d5ab;
+    --text: #eef1ff;
+    --muted: #9aa3c7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    margin: 0;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    font-family: 'Segoe UI', sans-serif;
-    color: #fff;
+    padding: 24px;
+    font-family: "Noto Sans Bengali", "Hind Siliguri", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(900px 600px at 12% 18%, rgba(124, 92, 255, 0.35), transparent 60%),
+      radial-gradient(800px 500px at 88% 82%, rgba(35, 213, 171, 0.28), transparent 60%),
+      var(--bg);
+    overflow-x: hidden;
+  }
+  .card {
+    width: min(720px, 100%);
+    padding: 56px 40px;
+    text-align: center;
+    background: var(--card);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 28px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(14px);
+    animation: rise 0.9s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(26px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .badge {
+    display: inline-block;
+    padding: 7px 18px;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: #d9d4ff;
+    border: 1px solid rgba(124, 92, 255, 0.5);
+    border-radius: 999px;
+    background: rgba(124, 92, 255, 0.14);
   }
   h1 {
-    font-size: 3rem;
-    text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    margin: 26px 0 14px;
+    font-size: clamp(34px, 7vw, 62px);
+    line-height: 1.25;
+    font-weight: 800;
+    background: linear-gradient(100deg, #ffffff 10%, var(--accent2) 55%, var(--accent) 95%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  p {
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.85;
+  }
+  .dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    background: var(--accent2);
+    box-shadow: 0 0 14px var(--accent2);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.35; transform: scale(0.82); }
+  }
+  footer {
+    margin-top: 30px;
+    font-size: 14px;
+    color: #6f78a0;
   }
 </style>
 </head>
 <body>
-  <h1>হ্যালো জাইরাক্সন</h1>
+  <main class="card">
+    <span class="badge">ZYRAXON</span>
+    <h1>হ্যালো জাইরাক্সন</h1>
+    <p><span class="dot"></span>এই ছোট সাইটটি ZYRAXON দিয়ে তৈরি — সম্পূর্ণ লাইভ এবং প্রকাশিত।</p>
+    <footer>ভালোবাসা দিয়ে বানানো · ZYRAXON</footer>
+  </main>
 </body>
 </html>

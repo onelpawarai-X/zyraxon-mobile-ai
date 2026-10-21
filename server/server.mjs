@@ -20,7 +20,20 @@ const SITES_DIR = path.join(DATA_DIR, 'sites');
 
 const PORT = Number(process.env.PORT || 12000);
 const ZYRAXON_BASE = process.env.ZYRAXON_BASE || 'https://zyraxonai.lovable.app/api/public/zyraxon/v1';
-const PUBLIC_ORIGIN = process.env.PUBLIC_ORIGIN || 'https://work-1-xjvfsfgnuxzdemie.prod-runtime.all-hands.dev';
+// The origin a published site is advertised under. A hardcoded host is wrong on
+// any machine but the one it names — the app runs on localhost, in a runner, or
+// on the user's phone, and the URL it hands back must be one that really
+// answers. The request's own Host header is therefore preferred; PUBLIC_ORIGIN
+// stays as an explicit override for a reverse proxy that rewrites Host.
+const PUBLIC_ORIGIN = process.env.PUBLIC_ORIGIN || '';
+function originFor(req) {
+  if (PUBLIC_ORIGIN) return PUBLIC_ORIGIN.replace(/\/$/, '');
+  const fwdHost = req && req.headers['x-forwarded-host'];
+  const fwdProto = req && req.headers['x-forwarded-proto'];
+  const host = fwdHost || (req && req.headers.host) || `127.0.0.1:${PORT}`;
+  const proto = String(fwdProto || '').split(',')[0].trim() || (/^(localhost|127\.|\[::1\])/.test(host) ? 'http' : 'https');
+  return `${proto}://${String(host).split(',')[0].trim()}`;
+}
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -483,7 +496,7 @@ const decTail = (u8) => _tail.decode(u8.length > 64 ? u8.slice(-64) : u8);
 /* ------------------------------ publish sites ----------------------------- */
 const slug = (s) => String(s || 'site').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'site';
 
-async function publishSite(res, bodyBuf) {
+async function publishSite(res, bodyBuf, req) {
   const { name, html, files } = JSON.parse(bodyBuf.toString('utf8') || '{}');
   const siteId = `${slug(name)}-${crypto.randomBytes(3).toString('hex')}`;
   const dir = path.join(SITES_DIR, siteId);
@@ -505,7 +518,7 @@ async function publishSite(res, bodyBuf) {
   }
   if (!htmlOut) htmlOut = `<!doctype html><meta charset="utf-8"><title>${slug(name)}</title><h1>${slug(name)}</h1>`;
   await fsp.writeFile(path.join(dir, 'index.html'), htmlOut);
-  const url = `${PUBLIC_ORIGIN.replace(/\/$/, '')}/sites/${siteId}/`;
+  const url = `${originFor(req)}/sites/${siteId}/`;
   // Verify it really serves — and retry, because the first request for a brand
   // new path can hit a cold proxy and 404 even though the file is on disk.
   let verified = false, status = 0;
@@ -1307,7 +1320,7 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/models' && req.method === 'GET') return listModels(res);
     if (p === '/api/model-health' && req.method === 'GET') return modelHealth(res, url.searchParams.get('force') === '1');
     if (p === '/api/chat' && req.method === 'POST') return chatProxy(req, res, await readBody(req));
-    if (p === '/api/publish' && req.method === 'POST') return publishSite(res, await readBody(req));
+    if (p === '/api/publish' && req.method === 'POST') return publishSite(res, await readBody(req), req);
     if (p === '/api/shell' && req.method === 'POST') return runShell(res, await readBody(req));
     if (p === '/api/fs' && req.method === 'POST') return fsOp(res, await readBody(req));
     if (p === '/api/platform' && req.method === 'GET') return platformInfo(res);
@@ -1376,7 +1389,7 @@ server.on('error', async (err) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`ZYRAXON mobile assistant running on http://0.0.0.0:${PORT}`);
-  console.log(`public origin: ${PUBLIC_ORIGIN}`);
+  console.log(`public origin: ${PUBLIC_ORIGIN || '(from request Host header)'}`);
   // Starting the app is the user's request to use it, so open the window.
   // Set ZYRAXON_NO_OPEN=1 for a headless run (services, containers, tests).
   if (!process.env.ZYRAXON_NO_OPEN) {
