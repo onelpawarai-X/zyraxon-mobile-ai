@@ -78,6 +78,24 @@ apex 0.35s, visionary 0.78, titan 1.0, pulse 1.8, codex 1.9, neural 3.5,
 quantum 4.6, cyber 5.6, genesis 6.2, matrix 19.0 (all 0 drops). Hedge timeout is
 **10 minutes** (a slow connect is not a failure), not 5s.
 
+## Panel independence + the live code box (2026-10-21)
+- The console sheet has three tabs. **Each panel must be toggled only by its own
+  tab.** A shared `showPanel` that defaulted *both* todo and tool panels visible
+  when no preference was saved made one tap open two panels. `ui.js` now has
+  `togglePanel(which)` (own panel only) + `syncPanelTabs()` (tabs mirror real
+  `.hidden` state).
+- **Never encode structured data in a persisted human-visible string.** Tool names
+  were appended to the assistant message content, so they lived inside `content`
+  and replayed into the chat bubble on every reload. They ride in a `tools` field.
+- The assistant drives a real **code box** through the `code_box` tool
+  (`open|close|minimize|restore`). Written files are revealed line by line via
+  `UI.typeCodeBox()` (28ms/line). Minimise only hides the body; the stream keeps
+  flowing. Android mirrors the box into a real system overlay.
+- **This container cannot run `desktop/lib/selftest.cjs` to completion** — it
+  crashes at its second check with or without local changes (no audio device / no
+  GPU under Xvfb). Smoked the packaged app as: boots, server line prints, page
+  loaded. Do not treat that crash as a regression.
+
 ## Layout trap (cost a full debugging session)
 The composer and the transcript live inside `#console`, a modal sheet that is
 `hidden` on load. On the home screen `.composer` measures **0x0** and `#input` is
