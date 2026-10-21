@@ -13,7 +13,10 @@ Bengali-language mobile AI assistant PWA at `/workspace/project`. Node server
 (`server/server.mjs`, port 12000) proxies the real ZYRAXON OpenAI-compatible API
 (`https://zyraxonai.lovable.app/api/public/zyraxon/v1`) with SSE streaming, plus
 static hosting, `/sites/<id>/` publishing, workspace file writes, and a Bangla TTS
-proxy. Client is dependency-free JS in `public/js/` (global `window.ZY`).
+proxy. Client source is TypeScript in `src/web/*.ts`; `public/js/` is COMPILED
+output (esbuild via `scripts/build-web.mjs`, global `window.ZY`) and is committed
+on purpose because `android/build.sh` and desktop electron-builder both copy
+`public/` verbatim. Run `npm run build` after editing `src/web`.
 
 ## Hard-won facts about the ZYRAXON provider (expensive to relearn)
 - `stream:true` combined with `tools` frequently hangs: tokens (often only
@@ -146,7 +149,7 @@ speaks Bangla (internal English reasoning stays silent on purpose).
 ## Real shell on the phone (user asked whether it exists — it does)
 `MainActivity.java:566` `Bridge.shellExec` runs `/system/bin/sh -c` inside the app
 sandbox and returns real `{code,stdout,stderr}`; registered at `:185` via
-`addJavascriptInterface(..., "ZYNative")`. `public/js/tools.js:435` prefers that
+`addJavascriptInterface(..., "ZYNative")`. `src/web/tools.ts` (compiled to `public/js/tools.js`) prefers that
 native path on a phone and falls back to the host `/api/shell` on desktop.
 Host shells: Windows powershell/pwsh/cmd, macOS zsh/bash/sh, Linux bash/sh/zsh.
 
@@ -163,3 +166,22 @@ Host shells: Windows powershell/pwsh/cmd, macOS zsh/bash/sh, Linux bash/sh/zsh.
 - Console sheet must stay above the live code overlay: console z-index 76 > overlay 75.
 - Server published-site origin comes from the request Host (PUBLIC_ORIGIN overrides);
   a hardcoded origin makes every published URL 404 off the dev box.
+
+## Background video (why the shell lagged — settled)
+- The `gt/` clips were VP8/VP9 webm, which browsers almost never hardware-decode;
+  every frame was CPU-decoded (nightlights was 3840x2160, city 1920x1080). They are
+  now H.264 Main / yuv420p, max 1280x720. Only re-encode what is mis-encoded: the
+  landscape `bg/*.mp4` were already H.264 720p and re-encoding them was a pure loss.
+- `nightlights` is a 3 fps NASA timelapse — never upsample it, and never judge a
+  clip's stalls against a 24 fps yardstick; use its own frame interval.
+- Measure with `requestVideoFrameCallback` presented frames + CDP
+  `Performance.getMetrics` TaskDuration, A/B'd in one headless session. Absolute
+  fps in headless is meaningless (software rasterisation); only the delta is real.
+- Guard: `node test/mediaperf.mjs` (budgets 1280px / keep 0.6 / fps 2 / stall 6x);
+  pass a src as argv to vet a new clip. Desktop `app.disableHardwareAcceleration()`
+  is now opt-in (`ZYRAXON_FORCE_SOFTWARE=1`) — the unconditional call cost frames.
+
+## Typing in the composer (not a bug)
+Space/Tab/Enter are all native in `#input`; `node test/typing.mjs` proves Bangla
+spaces survive and nothing cancels a space keypress. The "typed text never arrives"
+complaint was the Layout trap above — the sheet was hidden, so nothing could land.
