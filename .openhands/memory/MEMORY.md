@@ -59,6 +59,11 @@ early and the box stays empty); `verify_echo.py`; `desktop_mic.py`; `_sweep.sh` 
 all of them serially. No KVM (no emulator) and no headless Electron, so prove a
 bundle by extracting and grepping it: APK -> `assets/js/...`, AppImage ->
 `--appimage-extract`, mac -> `unzip`, win -> `dist/win-unpacked/resources/public/`.
+Node-side suites: `test/e2e.mjs` (UI/SSE/tools, polls instead of sleeping — see
+below), `bridgecheck.mjs`, `mediaperf.mjs`, `typing.mjs`, `perfattr.mjs`. Any test
+that waits on `/api/models` must POLL, not sleep: the provider takes 2.7-4.2s.
+Inside `CDP.eval` the page sees `window`, never Node's `global` (ReferenceError).
+A test run rewrites `data/workspace/index.html` — `git checkout -- data/workspace/`.
 
 ## Voice echo (the "আমার কথা আবার চ্যাটে উঠছে" bug)
 `voice.js isEcho()` normalised with `[^\p{L}\p{N}\s]`, which deletes Bengali
@@ -185,3 +190,17 @@ Host shells: Windows powershell/pwsh/cmd, macOS zsh/bash/sh, Linux bash/sh/zsh.
 Space/Tab/Enter are all native in `#input`; `node test/typing.mjs` proves Bangla
 spaces survive and nothing cancels a space keypress. The "typed text never arrives"
 complaint was the Layout trap above — the sheet was hidden, so nothing could land.
+
+## "Does it lag because of the language?" — answered by measurement
+User asked whether a native-Java rewrite would be smoother. Answer: no. The main
+thread sits at ~0% busy with ZERO long tasks with every visual layer on, so none of
+our JS costs frames; the frame cost is compositor work (video decode + blurred-layer
+rasterisation) a native app pays identically. `node test/perfattr.mjs` measures it.
+- A SINGLE perf sample here is not evidence. One run showed the orb costing 1.62x;
+  it did not reproduce (36fps on one sample, 60 on the next four). Warm up, interleave
+  configs, take the MEDIAN of >=5 samples.
+- Prove a guard by injecting a regression: full-screen `blur(60px)` -> 1.56x FAIL,
+  removed -> PASS. A guard that has never failed is not a guard.
+- Don't ship an unproven optimization. A will-change/translateZ promotion on the aura
+  layers measured identically to none, so it was reverted; `public/css/aura.css` is
+  unchanged. Unexplained GPU memory on a phone is worse than a no-op.
