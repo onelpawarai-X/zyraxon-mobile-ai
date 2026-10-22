@@ -1,206 +1,154 @@
 # ZYRAXON mobile assistant — project memory
 
-## Deliverable & current state (latest session)
+## Deliverable & current state
 Real **Android APK** (+ Windows/macOS/Linux desktop); `public/` is the exact code the
-APK bundles. Server `server/server.mjs` on port 12000. Latest artifacts, all verified
-fresh against source: `android/zyraxon.apk` 48.3MB, `desktop/dist/ZYRAXON-Setup-1.0.0.exe`
-178.2MB, `ZYRAXON-1.0.0-mac.zip` 197.6MB, `ZYRAXON-1.0.0.AppImage` 206.3MB.
-Published to GitHub (see below). Background: user's Drive clip as a seamless
-ping-pong loop **with audio**.
+APK bundles. Server `server/server.mjs` port 12000 proxies the real ZYRAXON
+OpenAI-compatible API (`https://zyraxonai.lovable.app/api/public/zyraxon/v1`) with
+SSE streaming, static hosting, `/sites/<id>/` publishing, workspace writes, Bangla
+TTS proxy. Client source is TypeScript in `src/web/*.ts`; `public/js/` is COMPILED
+(esbuild via `scripts/build-web.mjs`, global `window.ZY`) and committed on purpose —
+`android/build.sh` and electron-builder both copy `public/` verbatim. Run
+`npm run build` after editing `src/web`.
+Artifacts, all verified fresh: `android/zyraxon.apk` 48.3MB,
+`ZYRAXON-Setup-1.0.0.exe` 178.2MB, `-mac.zip` 197.6MB, `-1.0.0.AppImage` 206.3MB.
 
-## What this is
-Bengali-language mobile AI assistant PWA at `/workspace/project`. Node server
-(`server/server.mjs`, port 12000) proxies the real ZYRAXON OpenAI-compatible API
-(`https://zyraxonai.lovable.app/api/public/zyraxon/v1`) with SSE streaming, plus
-static hosting, `/sites/<id>/` publishing, workspace file writes, and a Bangla TTS
-proxy. Client source is TypeScript in `src/web/*.ts`; `public/js/` is COMPILED
-output (esbuild via `scripts/build-web.mjs`, global `window.ZY`) and is committed
-on purpose because `android/build.sh` and desktop electron-builder both copy
-`public/` verbatim. Run `npm run build` after editing `src/web`.
+## Provider facts (expensive to relearn)
+- `stream:true` + `tools` frequently hangs: tokens (often only `reasoning_content`)
+  arrive, socket never closes. `stream:false` with the same payload returns ~1.7s.
+  Pool capacity throttling, varies by minute.
+- So the proxy treats an incomplete stream (no `finish_reason`, or a stream that
+  carried `tool_calls`) as failure, re-asks non-streaming, re-frames as SSE, and
+  emits `{zyraxon:"reset"}` first so the client drops partial tool-call args.
+- Cloudflare needs a browser-like User-Agent. Truncated `function.arguments` echoed
+  upstream => HTTP 500; sanitize invalid-JSON tool args to `{}` before re-sending.
+- Model latency order is UNSTABLE. `/api/model-health` probes live (2 rounds,
+  best-of-2), caches to `data/model-health.json`, ranks drops-first then ms. Client
+  keeps the fastest healthy model first unless the user picked one (`userModel`).
+  Hedge timeout is **10 minutes** (a slow connect is not a failure).
 
-## Hard-won facts about the ZYRAXON provider (expensive to relearn)
-- `stream:true` combined with `tools` frequently hangs: tokens (often only
-  `reasoning_content`) arrive and then the socket never closes. Non-streaming
-  (`stream:false`) with the same payload returns in ~1.7s. This is model/pool
-  capacity throttling and varies by minute.
-- Because of the above, the server proxy treats an incomplete stream (no
-  `finish_reason`, or a stream that carried `tool_calls`) as a failure and re-asks
-  non-streaming, re-framing the reply as SSE. It emits a `{zyraxon:"reset"}` chunk
-  first so the client discards partial tool-call args.
-- Cloudflare in front of the API requires a browser-like User-Agent.
-- Truncated `function.arguments` echoed back upstream causes HTTP 500; always
-  sanitize invalid-JSON tool args to `{}` before re-sending.
-- Model latency order is unstable; `/api/model-health` probes it live (2 rounds,
-  best-of-2) and caches to `data/model-health.json`. The client keeps the fastest
-  healthy model first unless the user explicitly picks one (`userModel` in
-  localStorage). Deployed default: `zyraxon-apex`. Measured order:
-  apex > pulse > titan > codex > matrix > visionary > quantum > neural > cyber > genesis.
-
-## Performance / caching traps (cost hours if forgotten)
-- **Never await a slow network call in `App.boot()` before painting.** The model
-  health probe takes ~12s; awaiting it delayed chat restore, which looked exactly
-  like "history isn't persisted". Boot now restores history first, then loads
-  models, and `refreshHealth()` runs in the background.
-- **`public/sw.js` must stay network-first.** A cache-first SW pinned users to old
-  JavaScript, so shipped fixes silently never arrived. It is also not registered
-  inside the APK (`!global.ZY.Native.app`).
+## Performance / caching traps
+- **Never await a slow network call in `App.boot()` before painting.** The health
+  probe takes ~12s; awaiting it delayed chat restore, which looked exactly like
+  "history isn't persisted". Boot restores history first, then models; `refreshHealth()`
+  runs in background.
+- **`public/sw.js` must stay network-first** (cache-first pinned users to old JS and
+  shipped fixes never arrived). Not registered inside the APK (`!global.ZY.Native.app`).
+- `/api/models` takes **2.7-4.2s** (provider round-trip). Never sleep a fixed time
+  waiting on it — poll.
 - When an edit "doesn't take effect", check what the server actually returns
   (`curl .../js/app.js | grep <symbol>`) and the SW cache before debugging logic.
 
-## Verification (all green)
+## Frame cost (settled — answers "is it slow because of the language?")
+No. The main thread sits at ~0% busy with ZERO long tasks with every visual layer
+on, so none of our JS costs frames; the cost is compositor work (video decode +
+blurred-layer rasterisation) a native app pays identically. `node test/perfattr.mjs`
+measures it and fails if any layer exceeds 1.15x the bare shell.
+- A SINGLE perf sample here is NOT evidence: one run showed the orb at 1.62x, and it
+  did not reproduce (36fps on one sample, 60 on the next four). Warm up, interleave
+  configs, take the MEDIAN of >=5 samples.
+- Prove a guard by injecting a regression: full-screen `blur(60px)` => 1.56x FAIL,
+  removed => PASS. A guard that has never failed is not a guard.
+- Don't ship an unproven optimization: a will-change/translateZ promotion on the aura
+  layers measured identically to none, so it was reverted (`public/css/aura.css` is
+  unchanged). Unexplained GPU memory on a phone is worse than a no-op.
+- Background clips: `gt/` were VP8/VP9 webm, which browsers almost never
+  hardware-decode (nightlights 3840x2160, city 1920x1080) — every frame CPU-decoded.
+  Now H.264 Main / yuv420p, max 1280x720. Only re-encode what is mis-encoded: the
+  landscape `bg/*.mp4` were already H.264 720p. `nightlights` is a 3fps NASA
+  timelapse — never upsample it, never judge its stalls on a 24fps yardstick.
+  Guard: `node test/mediaperf.mjs`. Desktop `app.disableHardwareAcceleration()` is
+  now opt-in (`ZYRAXON_FORCE_SOFTWARE=1`) — the unconditional call cost frames.
+
+## Verification
 `test/e2e.py` is the acceptance test: real tool execution, visible todo board,
-`publish_website` really called, published URL 200. One-shot matrix `verify_all.py`
-(its stream probe must sum text across `.msg.ai.streaming/.think/.live .body`).
-Others: `toolmatrix.py` 10/10 models issue a tool call; `bangla_box.py` Bangla
-speech reaches `#input` + `#chat .msg.user .body`; `memory.py` history/facts/todos
-survive reload; `inject.py` mid-task injection; `nativecheck.py` Android bridge;
-`homefeed.py` speech-box growth (needs `tts:true` — with TTS off, `push()` returns
-early and the box stays empty); `verify_echo.py`; `desktop_mic.py`; `_sweep.sh` runs
-all of them serially. No KVM (no emulator) and no headless Electron, so prove a
-bundle by extracting and grepping it: APK -> `assets/js/...`, AppImage ->
-`--appimage-extract`, mac -> `unzip`, win -> `dist/win-unpacked/resources/public/`.
-Node-side suites: `test/e2e.mjs` (UI/SSE/tools, polls instead of sleeping — see
-below), `bridgecheck.mjs`, `mediaperf.mjs`, `typing.mjs`, `perfattr.mjs`. Any test
-that waits on `/api/models` must POLL, not sleep: the provider takes 2.7-4.2s.
-Inside `CDP.eval` the page sees `window`, never Node's `global` (ReferenceError).
-A test run rewrites `data/workspace/index.html` — `git checkout -- data/workspace/`.
+`publish_website` really called, URL 200. Others: `toolmatrix.py` 10/10 models issue
+a tool call; `bangla_box.py` Bangla speech reaches `#input` + chat; `memory.py`
+history survives reload; `inject.py` mid-task injection; `nativecheck.py` bridge;
+`homefeed.py` (needs `tts:true`); `_sweep.sh` runs all serially.
+Node suites: `e2e.mjs`, `bridgecheck.mjs`, `mediaperf.mjs`, `typing.mjs`,
+`perfattr.mjs`. Inside `CDP.eval` the page sees `window`, never Node's `global`
+(ReferenceError). A test run rewrites `data/workspace/index.html` —
+`git checkout -- data/workspace/` after.
+No KVM (no emulator) and no headless Electron, so prove a bundle by extracting and
+grepping it: APK -> `assets/js/...`, AppImage -> `--appimage-extract`, mac -> `unzip`,
+win -> `dist/win-unpacked/resources/public/`.
 
-## Voice echo (the "আমার কথা আবার চ্যাটে উঠছে" bug)
-`voice.js isEcho()` normalised with `[^\p{L}\p{N}\s]`, which deletes Bengali
-vowel signs — they are Unicode **Marks** (`\p{M}`), not Letters — turning "আমার"
-into "আম র" and matching unrelated words, so her own TTS re-entered as a user
-prompt. Keep `\p{M}`. The echo window must also stay open ~9s after the last
-spoken word (mic + reverb lag); a bigram `sim()` catches respelled fragments.
-`test/verify_echo.py` covers both directions (echo dropped, real question kept).
+## Voice
+- Echo bug: `voice.js isEcho()` normalised with `[^\p{L}\p{N}\s]`, which deletes
+  Bengali vowel signs — Unicode **Marks** (`\p{M}`), not Letters — so "আমার" became
+  "আম র" and matched unrelated words; her own TTS re-entered as a user prompt. Keep
+  `\p{M}`. Echo window stays open ~9s after the last spoken word; bigram `sim()`
+  catches respelled fragments.
+- Mid-task talk: new words must NOT stop her speech immediately. The old sentence
+  keeps playing; the moment the reply to the new words emits its first content token
+  the old speech stops (`Agent._stopSpeechOnNextToken`). Work is never killed.
+- `TTS.push` is the single choke point for all speech; `TTS.reason()` speaks Bangla
+  only (internal English reasoning stays silent on purpose). Falls back to `/api/tts`
+  (Google TTS, disk-cached in `data/tts/`) when the device has no Bangla voice —
+  desktop Chromium has none.
 
-## Mid-task talk (user's exact rule)
-New words while she is working must NOT stop her speech immediately. The old
-sentence keeps playing; the moment the *reply* to the new words emits its first
-content token, the old speech stops (`Agent._stopSpeechOnNextToken`). Work is
-never killed. `TTS.stop()` was removed from `app.js stt.onFinal`.
-
-## Speed ranking
-`/api/model-health?force=1` probes all ten models 3x and ranks by **drops first,
-then ms** — the user wants the fastest model that never fails. Measured:
-apex 0.35s, visionary 0.78, titan 1.0, pulse 1.8, codex 1.9, neural 3.5,
-quantum 4.6, cyber 5.6, genesis 6.2, matrix 19.0 (all 0 drops). Hedge timeout is
-**10 minutes** (a slow connect is not a failure), not 5s.
-
-## Panel independence + the live code box (2026-10-21)
-- The console sheet has three tabs. **Each panel must be toggled only by its own
-  tab.** A shared `showPanel` that defaulted *both* todo and tool panels visible
-  when no preference was saved made one tap open two panels. `ui.js` now has
-  `togglePanel(which)` (own panel only) + `syncPanelTabs()` (tabs mirror real
-  `.hidden` state).
+## UI structure traps
+- The console sheet has three tabs. **Each panel is toggled only by its own tab**;
+  a shared `showPanel` once defaulted both visible. `togglePanel(which)` +
+  `syncPanelTabs()`. Console sheet z-index 76 > code overlay 75.
 - **Never encode structured data in a persisted human-visible string.** Tool names
-  were appended to the assistant message content, so they lived inside `content`
-  and replayed into the chat bubble on every reload. They ride in a `tools` field.
-- The assistant drives a real **code box** through the `code_box` tool
-  (`open|close|minimize|restore`). Written files are revealed line by line via
-  `UI.typeCodeBox()` (28ms/line). Minimise only hides the body; the stream keeps
-  flowing. Android mirrors the box into a real system overlay.
-- **This container cannot run `desktop/lib/selftest.cjs` to completion** — it
-  crashes at its second check with or without local changes (no audio device / no
-  GPU under Xvfb). Smoked the packaged app as: boots, server line prints, page
-  loaded. Do not treat that crash as a regression.
+  were appended to message content and replayed into the chat bubble on reload; they
+  ride in a `tools` field now.
+- The assistant drives a real **code box** via the `code_box` tool
+  (`open|close|minimize|restore`); written files are revealed line by line
+  (`UI.typeCodeBox()`, 28ms/line). Minimise hides the body only; the stream keeps
+  flowing. Android mirrors it into a real system overlay.
+- **Layout trap:** composer + transcript live in `#console`, `hidden` on load, so on
+  the home screen `.composer` measures 0x0 and `#input` is invisible — anything
+  writing there looks like "nothing happens". Home has its own live feed
+  (`#home-feed`/`#hf-list`, `UI.feed()/feedEnd()/feedNote()`). Tests must open the
+  console (`#btn-console`) before touching `#input`, and never assert a transient
+  element from a single sample.
+- Composer `#input` is a `<textarea>`; Space/Tab/Enter are native, nothing cancels
+  them. `node test/typing.mjs` proves Bangla spaces survive. The "typed text never
+  arrives" complaint was the layout trap.
 
-## Layout trap (cost a full debugging session)
-The composer and the transcript live inside `#console`, a modal sheet that is
-`hidden` on load. On the home screen `.composer` measures **0x0** and `#input` is
-invisible, so anything writing there looks like "nothing happens". The home screen
-now has its own live feed (`#home-feed`/`#hf-list`) driven by `UI.feed()` /
-`UI.feedEnd()` / `UI.feedNote()`; `UI.streamToken` mirrors the stream into it.
-Two consequences for tests: open the console (`#btn-console`) before touching
-`#input`, and never assert a transient UI element with a single sample.
+## Android / native bridge
+- `MainActivity.java` `Bridge.shellExec` runs `/system/bin/sh -c` in the app sandbox
+  and returns real `{code,stdout,stderr}`; registered `addJavascriptInterface(..., "ZYNative")`.
+  `src/web/tools.ts` prefers that native path on a phone, falls back to host
+  `/api/shell` on desktop (Windows powershell/pwsh/cmd; macOS zsh/bash/sh; Linux
+  bash/sh/zsh).
+- Screenshot API (`takeScreenshot`) is API 30+ only; below that it emits window text
+  as an honest fallback. Guards are in place (`Build.VERSION.SDK_INT < 30`).
+- `WRITE_SETTINGS` cannot be granted by a runtime dialog and `checkSelfPermission`
+  always denies it — use `Settings.System.canWrite()`. `playProtect(off)` writes
+  `package_verifier_enable` / `verifier_verify_adb_installs` / `package_verifier_user_consent`.
+- This container cannot run `desktop/lib/selftest.cjs` to completion (crashes at its
+  second check with or without local changes — no audio device / no GPU under Xvfb).
+  Not a regression. Smoke the packaged app instead: boots, server line prints, page loads.
 
-## Permissions
-`WRITE_SETTINGS` cannot be granted by a runtime dialog and `checkSelfPermission`
-always denies it — use `Settings.System.canWrite()`. `playProtect(off)` writes
-`package_verifier_enable` / `verifier_verify_adb_installs` / `package_verifier_user_consent`.
-Speech: `TTS.push` is the single choke point for all speech; `TTS.reason()` only
-speaks Bangla (internal English reasoning stays silent on purpose).
-
-## Conventions
-- All user-facing copy is Bengali. Default character is `girlfriend` (প্রেমিকা).
-- TTS falls back to `/api/tts` (Google translate TTS, disk-cached in `data/tts/`)
-  when the device has no Bangla speech voice — desktop Chromium has none.
-
-## GitHub publishing (verified 2026-10-21)
-- The user's token belongs to account **onelpawarai-X**, NOT `zyraxon-X`.
-- Live repos: `onelpawarai-X/zyraxon-mobile-ai` (current, README + source + release)
-  and `onelpawarai-X/zyraxon` (older, same content). Both have release `v1.0.0`
-  with 4 assets: `zyraxon.apk` 48.3MB, `ZYRAXON-Setup-1.0.0.exe` 178.2MB,
-  `ZYRAXON-1.0.0-mac.zip` 197.6MB, `ZYRAXON-1.0.0.AppImage` 206.3MB.
-- The old `zyraxon` repo was created 2026-09-18 but had **zero commits** before
-  this session (verified: commits API returned only my commit, events API showed
-  only my ReleaseEvent). Nothing was deleted — it was always an empty shell.
-- `.gitignore` excludes `desktop/dist/`, `desktop/node_modules/`, `android/build/`,
-  `public/vendor|shots|assets/`, `data/sites/` — source is ~756 files.
-- Release assets go to `uploads.github.com` (returns 201); browser download URLs
-  are `github.com/<owner>/<repo>/releases/download/v1.0.0/<file>`.
-
-## Cross-platform rebuild recipe (each verified)
-- Android: `bash android/build.sh` — no Gradle; needs `ANDROID_HOME` + debug keystore.
-- Linux: `npx electron-builder --linux AppImage`
-- Windows: `npx electron-builder --win nsis` — needs wine32:i386 **and** an initialised
-  32-bit prefix (`WINEPREFIX=~/.wine-zyraxon WINEARCH=win32 wineboot -i`); without the
-  prefix rcedit-ia32 dies with "could not load kernel32.dll".
-- macOS: `npx electron-builder --mac zip`
-- Freshness check: compare the packed `js/voice.js` byte size with the source
-  (56120 = fresh). Don't trust build timestamps alone.
-- Container restarts wipe `$HOME`, the Android SDK, wine and the Python test deps;
-  re-verify tool presence at the start of a session.
-
-## Real shell on the phone (user asked whether it exists — it does)
-`MainActivity.java:566` `Bridge.shellExec` runs `/system/bin/sh -c` inside the app
-sandbox and returns real `{code,stdout,stderr}`; registered at `:185` via
-`addJavascriptInterface(..., "ZYNative")`. `src/web/tools.ts` (compiled to `public/js/tools.js`) prefers that
-native path on a phone and falls back to the host `/api/shell` on desktop.
-Host shells: Windows powershell/pwsh/cmd, macOS zsh/bash/sh, Linux bash/sh/zsh.
-
-## Push & release (learned the hard way)
-- Live repo is **neworigin remote** = github.com/onelpawarai-X/zyraxon-mobile-ai.
-  `origin` (zyraxon) is stale history — never push there.
-- A token embedded in a git remote URL is IGNORED (git prompts for a password).
-  Working recipe: `gh auth setup-git`, set remote to plain https URL, then push.
+## GitHub publishing & release
+- The user's token belongs to account **onelpawarai-X**, NOT `zyraxon-X`. Live repo =
+  **neworigin** remote = `onelpawarai-X/zyraxon-mobile-ai`; `origin` (zyraxon) is
+  stale — never push there. `onelpawarai-X/zyraxon` was an empty shell (zero commits).
+- A token embedded in a git remote URL is IGNORED (git prompts). Working recipe:
+  `gh auth setup-git`, set the remote to a plain https URL, then push.
 - Tag push runs `.github/workflows/build.yml` -> APK + 3 desktop installers -> release.
-- CI android: `yes | sdkmanager --licenses; yes | sdkmanager "build-tools;36.0.0" ...`
-  (a bare sdkmanager call blocks on stdin for licences and installs nothing -> aapt2 missing).
+  Release assets upload to `uploads.github.com` (201).
+- CI android needs `yes | sdkmanager --licenses` first (a bare `sdkmanager` blocks on
+  stdin and installs nothing -> aapt2 missing).
 - Bump version in ALL of: package.json, desktop/package.json, AndroidManifest
-  versionCode/versionName, and .github/RELEASE_NOTES.md installer filenames.
-- Console sheet must stay above the live code overlay: console z-index 76 > overlay 75.
+  versionCode/versionName, `.github/RELEASE_NOTES.md` installer filenames.
 - Server published-site origin comes from the request Host (PUBLIC_ORIGIN overrides);
   a hardcoded origin makes every published URL 404 off the dev box.
 
-## Background video (why the shell lagged — settled)
-- The `gt/` clips were VP8/VP9 webm, which browsers almost never hardware-decode;
-  every frame was CPU-decoded (nightlights was 3840x2160, city 1920x1080). They are
-  now H.264 Main / yuv420p, max 1280x720. Only re-encode what is mis-encoded: the
-  landscape `bg/*.mp4` were already H.264 720p and re-encoding them was a pure loss.
-- `nightlights` is a 3 fps NASA timelapse — never upsample it, and never judge a
-  clip's stalls against a 24 fps yardstick; use its own frame interval.
-- Measure with `requestVideoFrameCallback` presented frames + CDP
-  `Performance.getMetrics` TaskDuration, A/B'd in one headless session. Absolute
-  fps in headless is meaningless (software rasterisation); only the delta is real.
-- Guard: `node test/mediaperf.mjs` (budgets 1280px / keep 0.6 / fps 2 / stall 6x);
-  pass a src as argv to vet a new clip. Desktop `app.disableHardwareAcceleration()`
-  is now opt-in (`ZYRAXON_FORCE_SOFTWARE=1`) — the unconditional call cost frames.
+## Build recipes
+- Android: `bash android/build.sh` (no Gradle; needs `ANDROID_HOME` + debug keystore)
+- Linux: `npx electron-builder --linux AppImage`; macOS: `--mac zip`
+- Windows: `--win nsis` — needs wine32:i386 AND an initialised 32-bit prefix
+  (`WINEPREFIX=~/.wine-zyraxon WINEARCH=win32 wineboot -i`), else rcedit-ia32 dies
+  with "could not load kernel32.dll".
+- Freshness: compare packed `js/voice.js` byte size with source (56120 = fresh);
+  don't trust timestamps.
+- Container restarts wipe `$HOME`, the Android SDK, wine and the Python test deps;
+  re-verify tool presence at session start.
 
-## Typing in the composer (not a bug)
-Space/Tab/Enter are all native in `#input`; `node test/typing.mjs` proves Bangla
-spaces survive and nothing cancels a space keypress. The "typed text never arrives"
-complaint was the Layout trap above — the sheet was hidden, so nothing could land.
+## Conventions
+All user-facing copy is Bengali. Default character is `girlfriend` (প্রেমিকা).
 
-## "Does it lag because of the language?" — answered by measurement
-User asked whether a native-Java rewrite would be smoother. Answer: no. The main
-thread sits at ~0% busy with ZERO long tasks with every visual layer on, so none of
-our JS costs frames; the frame cost is compositor work (video decode + blurred-layer
-rasterisation) a native app pays identically. `node test/perfattr.mjs` measures it.
-- A SINGLE perf sample here is not evidence. One run showed the orb costing 1.62x;
-  it did not reproduce (36fps on one sample, 60 on the next four). Warm up, interleave
-  configs, take the MEDIAN of >=5 samples.
-- Prove a guard by injecting a regression: full-screen `blur(60px)` -> 1.56x FAIL,
-  removed -> PASS. A guard that has never failed is not a guard.
-- Don't ship an unproven optimization. A will-change/translateZ promotion on the aura
-  layers measured identically to none, so it was reverted; `public/css/aura.css` is
-  unchanged. Unexplained GPU memory on a phone is worse than a no-op.
