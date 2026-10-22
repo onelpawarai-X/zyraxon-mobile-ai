@@ -158,7 +158,17 @@ async function main() {
 
     // ── 2. the ten models load, fastest first ──
     await cdp.eval(`document.getElementById('model-btn').click(); 'ok'`);
-    await sleep(700);
+    // The provider takes 2.7-4.2s to answer /api/models, so a fixed sleep races
+    // it and reads an empty menu. Wait for the menu to actually fill instead.
+    await cdp.eval(`(async () => {
+      const end = performance.now() + 20000;
+      while (performance.now() < end) {
+        if (document.querySelectorAll('.model-item[data-id]').length) return 'ready';
+        await new Promise(r => setTimeout(r, 150));
+      }
+      return 'timeout';
+    })()`);
+    await sleep(300);
     const models = await cdp.eval(`JSON.stringify({
       count: document.querySelectorAll('.model-item[data-id]').length,
       order: [...document.querySelectorAll('.model-item[data-id]')].map(b => b.dataset.id),
@@ -166,6 +176,16 @@ async function main() {
     })`);
     // The user asked for the models that answer fastest to sit at the top, so
     // the rendered order is compared against the provider's own live ranking.
+    // The live probe is backgrounded, so give it a moment to land before
+    // asserting on the order it produces.
+    await cdp.eval(`(async () => {
+      const end = performance.now() + 20000;
+      while (performance.now() < end) {
+        if (window.ZY && ZY.Agent && ZY.Agent.healthOrder && ZY.Agent.healthOrder.length) return "ready";
+        await new Promise(r => setTimeout(r, 200));
+      }
+      return 'timeout';
+    })()`);
     const health = await (await fetch(`${APP}/api/model-health`)).json().catch(() => null);
     const live = (health && health.order) || [];
     const expected = live.length ? live[0] : '';
