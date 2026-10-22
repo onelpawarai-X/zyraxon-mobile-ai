@@ -19,6 +19,17 @@ const DATA_DIR = process.env.ZYRAXON_DATA_DIR ? path.resolve(process.env.ZYRAXON
 const SITES_DIR = path.join(DATA_DIR, 'sites');
 
 const PORT = Number(process.env.PORT || 12000);
+
+// The one true version. package.json is the source; the APK bakes the same
+// string into its manifest, and the UI badge asks for it here (or reads it from
+// the native bridge on Android), so the three can never disagree.
+const APP_VERSION = (() => {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version || '0.0.0';
+  } catch {
+    return '0.0.0';
+  }
+})();
 const ZYRAXON_BASE = process.env.ZYRAXON_BASE || 'https://zyraxonai.lovable.app/api/public/zyraxon/v1';
 // The origin a published site is advertised under. A hardcoded host is wrong on
 // any machine but the one it names — the app runs on localhost, in a runner, or
@@ -1304,6 +1315,7 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (p === '/api/health') return sendJson(res, 200, { ok: true, ts: Date.now() });
+    if (p === '/api/version') return sendJson(res, 200, { version: APP_VERSION });
     if ((p === '/zyraxon.apk' || p === '/download/zyraxon.apk') && req.method === 'GET') {
       return serveFile(res, path.join(ROOT, 'android', 'zyraxon.apk'), {
         'Content-Type': 'application/vnd.android.package-archive',

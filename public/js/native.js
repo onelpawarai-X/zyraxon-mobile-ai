@@ -148,6 +148,10 @@
         setServerBase(u) {
           if (N) N.setServerBase(u);
         },
+        /** The version baked into this APK, straight from the package manager. */
+        appVersion() {
+          return N && N.appVersion ? N.appVersion() : "";
+        },
         /** Turn Play Protect's installer verification off (true) or on (false). */
         playProtect(off) {
           return !!(N && N.playProtect && N.playProtect(!!off));

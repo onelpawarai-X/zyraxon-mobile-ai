@@ -196,6 +196,35 @@ async function main() {
       { first: models.order[0], healthFastest: expected, badge: models.fastestBadge });
     await cdp.eval(`document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'})); 'ok'`);
 
+    // ── 2b. the version badge in the bottom-left corner ──
+    // The user asked for the app version to be visible in the corner. It is
+    // read from the server (web) or the package manager (Android), so it is
+    // asserted against the same source rather than a hardcoded string.
+    const badgeState = await cdp.eval(`(() => {
+      const el = document.getElementById('app-version');
+      if (!el) return { present: false };
+      const r = el.getBoundingClientRect();
+      const orb = document.getElementById('orb-btn');
+      const o = orb ? orb.getBoundingClientRect() : null;
+      return {
+        present: true,
+        text: (el.textContent || '').trim(),
+        inLeftHalf: r.left < window.innerWidth / 2,
+        inBottomHalf: r.top > window.innerHeight / 2,
+        onScreen: r.width > 0 && r.height > 0,
+        coversOrb: o ? !(r.right < o.left || r.left > o.right || r.bottom < o.top || r.top > o.bottom) : false,
+      };
+    })()`);
+    const served = await (await fetch(`${APP}/api/version`)).json().catch(() => null);
+    record('the version is shown in the bottom-left corner',
+      badgeState.present && badgeState.onScreen && badgeState.inLeftHalf && badgeState.inBottomHalf,
+      badgeState);
+    record('the shown version is the version the app really is',
+      !!served && badgeState.text === 'v' + served.version,
+      { shown: badgeState.text, served: served && served.version });
+    record('the version badge never covers a control',
+      badgeState.present && !badgeState.coversOrb, { coversOrb: badgeState.coversOrb });
+
     // ── 3. a real Bangla task: SSE stream + real tool calls ──
     await cdp.eval(`document.getElementById('btn-console').click(); 'ok'`);
     await sleep(600);

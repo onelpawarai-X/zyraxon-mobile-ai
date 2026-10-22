@@ -31,6 +31,7 @@
         App.bindComposer();
         App.bindVoice();
         App.bindQuickbar();
+        App.showVersion();
         await App.restore();
         await App.loadModels();
         global.ZY.Tools.native.available() && global.ZY.ui.toast("\u09A1\u09BF\u09AD\u09BE\u0987\u09B8 \u09AC\u09CD\u09B0\u09BF\u099C \u09AA\u09BE\u0993\u09AF\u09BC\u09BE \u0997\u09C7\u099B\u09C7 \u2713");
@@ -384,6 +385,21 @@
           global.ZY.ui.toast(global.ZY.t("toast.attached"));
         });
         App._renderAttachTray = render;
+      },
+      /** Fill the bottom-left badge with the version this build really is.
+       *  On Android the package manager is authoritative (the APK cannot lie about
+       *  itself); on desktop/web the server answers. Never blocks boot, and stays
+       *  quiet if neither knows — a wrong version is worse than none. */
+      showVersion() {
+        const el = $("app-version");
+        if (!el) return;
+        const paint = (v) => {
+          if (v) el.textContent = "v" + String(v).replace(/^v/i, "");
+        };
+        const native = global.ZY.Native.settings.appVersion && global.ZY.Native.settings.appVersion();
+        if (native) return paint(native);
+        fetch("/api/version").then((r) => r.ok ? r.json() : null).then((d) => d && paint(d.version)).catch(() => {
+        });
       },
       bindSettings() {
         const s = store();

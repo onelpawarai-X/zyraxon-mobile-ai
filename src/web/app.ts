@@ -55,6 +55,7 @@
       App.bindComposer();
       App.bindVoice();
       App.bindQuickbar();
+      App.showVersion();            // corner badge, filled from the real version
       await App.restore();          // past conversation first — the user must see it immediately
       await App.loadModels();
       global.ZY.Tools.native.available() && global.ZY.ui.toast('ডিভাইস ব্রিজ পাওয়া গেছে ✓');
@@ -441,6 +442,19 @@
       });
       // Let the camera button refresh the same tray without duplicating it.
       App._renderAttachTray = render;
+    },
+
+    /** Fill the bottom-left badge with the version this build really is.
+     *  On Android the package manager is authoritative (the APK cannot lie about
+     *  itself); on desktop/web the server answers. Never blocks boot, and stays
+     *  quiet if neither knows — a wrong version is worse than none. */
+    showVersion() {
+      const el = $('app-version');
+      if (!el) return;
+      const paint = (v) => { if (v) el.textContent = 'v' + String(v).replace(/^v/i, ''); };
+      const native = global.ZY.Native.settings.appVersion && global.ZY.Native.settings.appVersion();
+      if (native) return paint(native);
+      fetch('/api/version').then((r) => (r.ok ? r.json() : null)).then((d) => d && paint(d.version)).catch(() => {});
     },
 
     bindSettings() {

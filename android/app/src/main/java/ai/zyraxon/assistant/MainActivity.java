@@ -413,6 +413,17 @@ public class MainActivity extends Activity {
             return prefs().getString("server", BuildConfig.SERVER_BASE);
         }
 
+        /** The version baked into this APK. Read from the package manager, so it
+         *  can never disagree with AndroidManifest.xml. */
+        @JavascriptInterface
+        public String appVersion() {
+            try {
+                return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            } catch (Exception e) {
+                return BuildConfig.VERSION;
+            }
+        }
+
         @JavascriptInterface
         public void setServerBase(String base) {
             prefs().edit().putString("server", base).apply();

@@ -581,3 +581,16 @@ input[type=range]{ background:rgba(255,255,255,.3); }
 .msg-media{ display:flex; gap:6px; flex-wrap:wrap; margin-top:7px; }
 .msg-media img,.msg-media video{ width:104px; max-height:150px; border-radius:12px; object-fit:cover; border:1px solid rgba(255,255,255,.2); }
 .msg-media .aud{ padding:6px 10px; border-radius:10px; font-size:12px; background:var(--g-fill-lo); border:1px solid var(--g-edge-lo); }
+
+/* Version badge — bottom-left corner, always visible. It sits above the
+   background video but below every sheet, so it never covers a control. */
+.app-version{
+  position:fixed; left:12px; bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+  z-index:70; pointer-events:none;
+  font:600 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing:.04em; color:rgba(234,240,255,.62);
+  padding:4px 8px; border-radius:8px;
+  background:rgba(5,6,15,.42); border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+}
+
