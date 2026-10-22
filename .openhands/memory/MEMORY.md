@@ -127,19 +127,36 @@ win -> `dist/win-unpacked/resources/public/`.
 - The user's token belongs to account **onelpawarai-X**, NOT `zyraxon-X`. Live repo =
   **neworigin** remote = `onelpawarai-X/zyraxon-mobile-ai`; `origin` (zyraxon) is
   stale — never push there. `onelpawarai-X/zyraxon` was an empty shell (zero commits).
-- A token embedded in a git remote URL is IGNORED (git prompts). Working recipe:
-  `gh auth setup-git`, set the remote to a plain https URL, then push.
+- The INJECTED `$GITHUB_TOKEN` is account **zyraxon-X** and has only `pull` on the
+  release repo: push and release-create both 403. Use the user-supplied PAT
+  (account **onelpawarai-X**, admin on both repos) for anything that writes.
+- Working push recipe (no prompt): `git push https://onelpawarai-X:$TOKEN@github.com/OWNER/REPO.git main`.
+  A token in the URL with NO username is what makes git prompt for one — always
+  include `user:token@`. (Older note said tokens in URLs are ignored; that was the
+  missing-username case.)
 - Tag push runs `.github/workflows/build.yml` -> APK + 3 desktop installers -> release.
-  Release assets upload to `uploads.github.com` (201).
+  Release assets upload to `uploads.github.com` (201). To publish by hand instead:
+  POST /repos/O/R/git/refs (tag), POST /repos/O/R/releases, POST the asset to the
+  release's upload_url.
 - CI android needs `yes | sdkmanager --licenses` first (a bare `sdkmanager` blocks on
   stdin and installs nothing -> aapt2 missing).
-- Bump version in ALL of: package.json, desktop/package.json, AndroidManifest
-  versionCode/versionName, `.github/RELEASE_NOTES.md` installer filenames.
+- Version lives in FIVE places: package.json, desktop/package.json, AndroidManifest
+  versionCode+versionName, BuildConfig.java (+ RELEASE_NOTES installer filenames).
+  `test/versioncheck.mjs` (`npm run test:version`) fails on any drift and reads the
+  built APK's manifest back. versionCode = dotted parts padded to 2 digits each
+  (19.0.6 -> 190006); Android refuses an update if it does not grow.
 - Server published-site origin comes from the request Host (PUBLIC_ORIGIN overrides);
   a hardcoded origin makes every published URL 404 off the dev box.
+- `GET /api/version` serves the version (read from package.json at boot). The UI
+  bottom-left badge uses it on web, the `appVersion()` bridge (package manager) on
+  Android.
 
 ## Build recipes
-- Android: `bash android/build.sh` (no Gradle; needs `ANDROID_HOME` + debug keystore)
+- Android: `bash android/build.sh` (no Gradle; needs `ANDROID_HOME` + debug keystore).
+  It also needs the **`zip`** binary at the packaging step — without it the build dies
+  at "6/6 packaging" after doing all the work. `sudo apt-get install -y zip`.
+  The built APK is ~22MB: it stages public/ minus `shots/` (19MB) and
+  `vendor/transformers/` — both gitignored; that is correct, not a regression.
 - Linux: `npx electron-builder --linux AppImage`; macOS: `--mac zip`
 - Windows: `--win nsis` — needs wine32:i386 AND an initialised 32-bit prefix
   (`WINEPREFIX=~/.wine-zyraxon WINEARCH=win32 wineboot -i`), else rcedit-ia32 dies
