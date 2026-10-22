@@ -92,7 +92,25 @@ Gradle লাগে না — শুধু Android SDK (aapt2 + javac + d8 + ap
 ```bash
 bash android/build.sh        # → android/zyraxon.apk
 ```
+আগে যা লাগবে: **JDK 17+** (`javac`), `zip`, আর একটা Android SDK — `build-tools`
+(36.0.0) আর `platforms/android-34` সহ। SDK-র জায়গা `ANDROID_HOME`-এ দিন
+(ডিফল্ট `~/android-sdk`); লাইসেন্স `sdkmanager --licenses` দিয়ে একবার মেনে নিন।
+ডিবাগ কীস্টোর না থাকলে `~/android/.debug.keystore` নিজেই বানিয়ে নেয়।
+
 APK-তে ভয়েস ফোনের নিজের `SpeechRecognizer` + `TextToSpeech` দিয়ে চলে, ব্রাউজার লাগে না।
+মার্কেটিং স্ক্রিনশট (`public/shots/`) আর Whisper ইঞ্জিন APK-তে ঢোকে না — ফোনে
+দরকারও নেই, তাই বিল্ড হালকা থাকে (~২২MB)।
+
+### ভার্সন বদলাতে হলে
+ভার্সন পাঁচ জায়গায় থাকে — `package.json`, `desktop/package.json`,
+`AndroidManifest.xml` (`versionName` **ও** `versionCode`), আর `BuildConfig.java`।
+সবগুলো একসাথে বদলান, তারপর:
+```bash
+node test/versioncheck.mjs   # একটাও আলাদা থাকলে ফেল করবে
+```
+বিল্ড হওয়া APK থাকলে এই টেস্টটা তার ভিতরের ম্যানিফেস্ট পড়ে সেটাও যাচাই করে।
+`versionCode` = ভার্সনের প্রতিটা অংশ দুই ডিজিটে (১৯.০.৬ → `190006`) — না বাড়লে
+Android আপডেট ইনস্টল করতে রাজি হয় না।
 
 ---
 
