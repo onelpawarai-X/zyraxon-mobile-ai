@@ -128,19 +128,11 @@ async function main() {
         document.querySelectorAll('.aura-ambient,.aura-plasma,.aura-ribbon,.aura-core,.aura-shine')
           .forEach(a => { a.style.filter = 'none'; });
       }
-      if (what === 'orbfix1') {
-        // Candidate fix: keep the blur on the single outermost glow (which is
-        // what actually reads as "soft"), drop it from the inner layers whose
-        // gradients are already soft. One render pass instead of five.
-        document.querySelectorAll('.orb-wrap').forEach(o => o.style.display = '');
-        document.querySelectorAll('.aura-plasma,.aura-ribbon,.aura-core,.aura-shine')
-          .forEach(a => { a.style.filter = 'none'; });
-      }
       if (what === 'orbnopromo') {
-        // Reproduces the pre-fix behaviour: strip the compositor promotion the
-        // stylesheet now applies, so the blurred layers are re-rastered every
-        // frame. If this row is slow and the shipping row is fast, the CSS rule
-        // is what is buying the frames.
+        // Control row: force the blurred layers back to plain, unpromoted
+        // layers. It proves the compositor promotion a stylesheet may add is
+        // not itself what makes the orb cheap — this row measures the same as
+        // the shipping row, so no promotion rule is shipped.
         document.querySelectorAll('.orb-wrap').forEach(o => o.style.display = '');
         document.querySelectorAll('.aura-ambient,.aura-plasma,.aura-ribbon,.aura-core,.aura-shine')
           .forEach(a => { a.style.willChange = 'auto'; a.style.transform = 'none'; a.style.backfaceVisibility = 'visible'; });
