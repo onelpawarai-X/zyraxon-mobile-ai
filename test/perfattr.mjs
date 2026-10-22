@@ -120,6 +120,31 @@ async function main() {
       if (what === 'orb') {
         document.querySelectorAll('.orb-wrap').forEach(o => o.style.display = on ? '' : 'none');
       }
+      if (what === 'orbcheap') {
+        // Same orb, but the per-layer blur() that makes each aura ribbon a
+        // separate offscreen render pass is dropped. Tests whether the cost is
+        // the animation itself or the blurred layers it animates.
+        document.querySelectorAll('.orb-wrap').forEach(o => o.style.display = '');
+        document.querySelectorAll('.aura-ambient,.aura-plasma,.aura-ribbon,.aura-core,.aura-shine')
+          .forEach(a => { a.style.filter = 'none'; });
+      }
+      if (what === 'orbfix1') {
+        // Candidate fix: keep the blur on the single outermost glow (which is
+        // what actually reads as "soft"), drop it from the inner layers whose
+        // gradients are already soft. One render pass instead of five.
+        document.querySelectorAll('.orb-wrap').forEach(o => o.style.display = '');
+        document.querySelectorAll('.aura-plasma,.aura-ribbon,.aura-core,.aura-shine')
+          .forEach(a => { a.style.filter = 'none'; });
+      }
+      if (what === 'orbnopromo') {
+        // Reproduces the pre-fix behaviour: strip the compositor promotion the
+        // stylesheet now applies, so the blurred layers are re-rastered every
+        // frame. If this row is slow and the shipping row is fast, the CSS rule
+        // is what is buying the frames.
+        document.querySelectorAll('.orb-wrap').forEach(o => o.style.display = '');
+        document.querySelectorAll('.aura-ambient,.aura-plasma,.aura-ribbon,.aura-core,.aura-shine')
+          .forEach(a => { a.style.willChange = 'auto'; a.style.transform = 'none'; a.style.backfaceVisibility = 'visible'; });
+      }
       if (what === 'blur') {
         document.querySelectorAll('.glass, .console-panel, .composer-inner').forEach(g => {
           g.style.backdropFilter = on ? '' : 'none';
@@ -132,36 +157,95 @@ async function main() {
   })()`);
 
   const rows = [];
-  async function measure(label, setup) {
+  async function measureOnce(label, setup) {
     await cdp.eval(`(() => { window.__setLayer('video', false); window.__setLayer('orb', false); window.__setLayer('blur', false); return 'ok'; })()`);
     await cdp.eval(setup);
     await sleep(900); // let the compositor settle
-    const r = JSON.parse(await cdp.eval(`${SAMPLE}(3000)`));
-    rows.push({ label, ...r });
-    console.log(`  ${label.padEnd(34)} ${String(r.fps).padStart(3)} fps   med ${String(r.med).padStart(6)}ms   p95 ${String(r.p95).padStart(6)}ms   worst ${String(r.worst).padStart(6)}ms   busy ${String(r.busyPct).padStart(3)}% (${r.longTasks} long)`);
-    return r;
+    return JSON.parse(await cdp.eval(`${SAMPLE}(2000)`));
   }
 
+  // A single sample under a software rasteriser is dominated by warm-up and
+  // scheduler noise: the same configuration has read 37fps and 60fps in
+  // consecutive runs. Interleave the configurations round-robin and keep the
+  // best sample for each, which is the least-contended frame the machine can
+  // actually produce. Compare that across configurations; a single run's
+  // number is not evidence of anything.
+  const configs = [
+    ['nothing (bare shell)', `'ok'`],
+    ['+ background video', `window.__setLayer('video', true)`],
+    ['+ animated orb (shipping CSS)', `window.__setLayer('orb', true)`],
+    ['+ orb without its blur passes', `window.__setLayer('orbcheap', true)`],
+    ['+ orb with the promotion stripped', `window.__setLayer('orbnopromo', true)`],
+    ['+ glass blur', `window.__setLayer('blur', true)`],
+    ['all three (shipping state)', `window.__setLayer('video', true); window.__setLayer('orb', true); window.__setLayer('blur', true)`],
+  ];
+  const best = new Map(configs.map(([l]) => [l, []]));
+
   console.log(`\nFrame-cost attribution on ${APP} (headless, software raster — compare rows, not absolutes)\n`);
+  await measureOnce('warm-up', `'ok'`); // discard
+  const ROUNDS = 5;
+  for (let r = 0; r < ROUNDS; r++) {
+    for (const [label, setup] of configs) {
+      best.get(label).push(await measureOnce(label, setup));
+    }
+  }
+  // Median across interleaved rounds, not the best. A best-of hides a real
+  // regression behind one lucky frame; the median is what a user would feel.
+  const median = (xs) => xs.slice().sort((a, b) => a - b)[Math.floor(xs.length / 2)];
+  const summary = new Map(configs.map(([l]) => {
+    const xs = best.get(l);
+    const pick = median(xs);
+    return [l, pick];
+  }));
+
   console.log(`  ${'layer'.padEnd(34)} fps        median         p95          worst        main-thread`);
   console.log('  ' + '─'.repeat(108));
+  for (const [label] of configs) {
+    const s = summary.get(label);
+    const all = best.get(label).map((x) => x.fps).join('/');
+    rows.push({ label, ...s });
+    console.log(`  ${label.padEnd(34)} ${String(s.fps).padStart(3)} fps   med ${String(s.med).padStart(6)}ms   p95 ${String(s.p95).padStart(6)}ms   worst ${String(s.worst).padStart(6)}ms   busy ${String(s.busyPct).padStart(3)}% (${s.longTasks} long)   all: ${all}`);
+  }
+  console.log(`  (median of ${ROUNDS} interleaved samples each)`);
 
-  const none = await measure('nothing (bare shell)', `'ok'`);
-  const video = await measure('+ background video', `window.__setLayer('video', true)`);
-  const orb = await measure('+ animated orb', `window.__setLayer('orb', true)`);
-  const blur = await measure('+ glass blur', `window.__setLayer('blur', true)`);
-  const all = await measure('all three (shipping state)', `window.__setLayer('video', true); window.__setLayer('orb', true); window.__setLayer('blur', true)`);
+  const get = (l) => summary.get(l);
+  const none = get('nothing (bare shell)');
+  const video = get('+ background video');
+  const orb = get('+ animated orb (shipping CSS)');
+  const orbcheap = get('+ orb without its blur passes');
+  const orbnopromo = get('+ orb with the promotion stripped');
+  const blur = get('+ glass blur');
+  const all = get('all three (shipping state)');
 
   const rel = (r) => (r.med / none.med);
   console.log('\n  Cost relative to the bare shell (higher = more frames dropped):');
-  console.log(`    video alone    ${rel(video).toFixed(2)}x`);
-  console.log(`    orb alone      ${rel(orb).toFixed(2)}x`);
-  console.log(`    blur alone     ${rel(blur).toFixed(2)}x`);
-  console.log(`    all three      ${rel(all).toFixed(2)}x`);
+  console.log(`    video alone       ${rel(video).toFixed(2)}x`);
+  console.log(`    orb (shipping)    ${rel(orb).toFixed(2)}x`);
+  console.log(`    orb, blur dropped ${rel(orbcheap).toFixed(2)}x`);
+  console.log(`    orb, no promotion ${rel(orbnopromo).toFixed(2)}x`);
+  console.log(`    blur alone        ${rel(blur).toFixed(2)}x`);
+  console.log(`    all three         ${rel(all).toFixed(2)}x`);
 
-  console.log(`\n  rAF callbacks in 3s: bare ${none.n}, all three ${all.n}`);
+  console.log(`\n  rAF callbacks: bare ${none.n}, all three ${all.n} (2s samples)`);
+
+  // Guard, not just a report: every layer combination must stay within 15% of
+  // the bare shell's frame interval. Measured median-of-5 so a single noisy
+  // sample cannot fail the run — but a real regression (a layer that costs
+  // frames on every sample) will push the median and fail.
+  const LIMIT = 1.15;
+  const over = configs.filter(([l]) => {
+    const s = summary.get(l);
+    return s.med > none.med * LIMIT;
+  }).map(([l]) => `${l} ${summary.get(l).med}ms vs ${none.med}ms`);
+
   console.log('\n  Read this as: the frame cost is a property of the layers being composited,');
   console.log('  not of the language the code is written in.');
+
+  if (over.length) {
+    console.log(`\nFAIL layers over ${LIMIT}x the bare shell: ${over.join('; ')}`);
+    cdp.ws.close(); chrome.kill(); process.exit(1);
+  }
+  console.log(`\nPASS every layer stays within ${LIMIT}x of the bare shell (${none.med}ms)`);
 
   cdp.ws.close(); chrome.kill();
   process.exit(0);

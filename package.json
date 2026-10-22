@@ -15,6 +15,7 @@
     "test:voice": "node test/bridgecheck.mjs",
     "test:media": "node test/mediaperf.mjs",
     "test:typing": "node test/typing.mjs",
+    "test:perf": "node test/perfattr.mjs",
     "optimize:media": "bash scripts/optimize-media.sh"
   },
   "engines": {
