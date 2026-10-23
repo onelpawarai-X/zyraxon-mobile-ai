@@ -32,3 +32,4 @@ __pycache__/
 .DS_Store
 .agent_tmp/
 node_modules/
+sites/

@@ -1,7 +1,7 @@
 {
   "name": "zyraxon-desktop",
   "productName": "ZYRAXON",
-  "version": "19.0.6",
+  "version": "19.0.7",
   "description": "ZYRAXON — বাংলা মোবাইল/ডেস্কটপ AI অ্যাসিস্ট্যান্ট (Windows, macOS, Linux)",
   "main": "main.cjs",
   "private": true,
