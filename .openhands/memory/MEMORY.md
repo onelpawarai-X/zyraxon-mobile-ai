@@ -182,6 +182,14 @@ that marks every row `done` in one turn used to satisfy it with zero real tools 
 nudge demands a real call; (2) the nudge is gated on the board being written *this*
 turn, else a previous turn's leftover todos nag every later chat. See 2026-10-23 log.
 
+## Releasing: one tag, four installers, and the release is the deliverable
+Repo `onelpawarai-X/zyraxon-mobile-ai`, CI in `.github/workflows/build.yml` on
+`v*` tags. **A fix that is committed but not tagged and pushed is not shipped** —
+the published 19.0.6 was cut before its own fixes. Always: bump the version in
+five places, push `main`, push the tag, then *download the release asset back*
+and check the fix markers are really inside it. See 2026-10-23 log for the full
+procedure and the `GITHUB_TOKEN`-env-vs-stored-credential trap.
+
 ## Network helper contract (was a silent, wide bug — see 2026-10-23 log)
 `Tools._netFetch` has TWO backends (Android native bridge, else browser `fetch`) and
 must return ONE shape: `{ ok, status, headers, text, contentType, bytes, viaBridge,
