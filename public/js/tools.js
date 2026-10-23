@@ -3,7 +3,77 @@
     "use strict";
     const API = () => (global.ZY.store.get("base") || location.origin).replace(/\/$/, "");
     const BRIDGE_TIMEOUT = 12e3;
+    async function netFetch(url, opts = {}) {
+      const nat = global.ZY.Native;
+      const hdr = Object.assign({}, opts.headers || {});
+      if (nat && nat.app && nat.http && nat.http.available()) {
+        const r = nat.http.fetch({
+          url,
+          method: opts.method || "GET",
+          headers: hdr,
+          body: typeof opts.body === "string" ? opts.body : opts.body == null ? "" : JSON.stringify(opts.body),
+          timeoutMs: opts.timeoutMs || 2e4,
+          maxBytes: opts.maxBytes || 4e5,
+          asDataUrl: !!opts.asDataUrl
+        });
+        if (r && !r.error) {
+          return {
+            ok: !!r.ok,
+            status: Number(r.status) || 0,
+            headers: r.headers || {},
+            text: String(r.body == null ? "" : r.body),
+            dataUrl: r.dataUrl || null,
+            contentType: r.contentType || (r.headers && (r.headers["Content-Type"] || r.headers["content-type"]) || ""),
+            bytes: Number(r.bytes) || 0,
+            truncated: !!r.truncated,
+            viaBridge: true,
+            // Callers await this and some chain `.catch()`, so it must be a
+            // promise exactly like the browser path below.
+            json() {
+              try {
+                return Promise.resolve(JSON.parse(String(r.body == null ? "" : r.body)));
+              } catch {
+                return Promise.resolve(null);
+              }
+            }
+          };
+        }
+      }
+      const res = await fetch(url, opts);
+      const text = await res.text();
+      const headers = {};
+      try {
+        res.headers.forEach((v, k) => {
+          headers[k] = v;
+        });
+      } catch {
+      }
+      return {
+        ok: res.ok,
+        status: res.status,
+        headers,
+        text,
+        dataUrl: null,
+        contentType: headers["content-type"] || "",
+        bytes: text.length,
+        truncated: false,
+        viaBridge: false,
+        json() {
+          try {
+            return Promise.resolve(JSON.parse(text));
+          } catch {
+            return Promise.resolve(null);
+          }
+        }
+      };
+    }
     async function fsCall(body) {
+      const nat = global.ZY.Native;
+      if (nat && nat.fs && nat.fs.available()) {
+        const j = nat.fs.op(body);
+        if (j && !j.error) return j;
+        if (j && j.error && !/unknown op|not available/i.test(String(j.error))) return j;
+      }
       try {
         const r = await fetch(`${API()}/api/fs`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
         return await r.json();
@@ -227,7 +297,7 @@
         }
         let reachable = true, status = 0;
         try {
-          const r = await fetch(`${API()}/api/check-url`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
+          const r = await netFetch(`${API()}/api/check-url`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
           const j = await r.json();
           reachable = !!j.ok;
           status = j.status || 0;
@@ -455,44 +525,99 @@
         const url = args.url || "";
         if (!/^https?:\/\//i.test(url)) return { ok: false, error: "bad-url", summary: `"${url}" \u09AC\u09C8\u09A7 http(s) \u09B2\u09BF\u0982\u0995 \u09A8\u09AF\u09BC\u0964` };
         try {
-          const r = await fetch(`${API()}/api/check-url`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
-          const j = await r.json();
-          if (j.ok) return { ok: true, summary: `\u09B2\u09BF\u0982\u0995 \u09A0\u09BF\u0995 \u0986\u099B\u09C7: ${url} (${j.status}${j.contentType ? ", " + j.contentType : ""})`, data: j };
-          return { ok: false, error: "url-unreachable", summary: `\u09B2\u09BF\u0982\u0995\u099F\u09BF \u09A8\u09C7\u0987 \u09AC\u09BE \u0995\u09BE\u099C \u0995\u09B0\u099B\u09C7 \u09A8\u09BE: ${url} (status ${j.status || "?"})`, data: j };
+          let r = await netFetch(url, { method: "HEAD", timeoutMs: 12e3 });
+          if (!r.status || r.status >= 400) {
+            r = await netFetch(url, { method: "GET", headers: { Range: "bytes=0-0" }, timeoutMs: 12e3 });
+          }
+          const ct = String(r.contentType || r.headers && (r.headers["Content-Type"] || r.headers["content-type"]) || "");
+          const ok = r.status >= 200 && r.status < 400;
+          const j = { ok, status: r.status, contentType: ct };
+          if (ok) return { ok: true, summary: `\u09B2\u09BF\u0982\u0995 \u09A0\u09BF\u0995 \u0986\u099B\u09C7: ${url} (${r.status}${ct ? ", " + ct : ""})`, data: j };
+          return { ok: false, error: "url-unreachable", summary: `\u09B2\u09BF\u0982\u0995\u099F\u09BF \u09A8\u09C7\u0987 \u09AC\u09BE \u0995\u09BE\u099C \u0995\u09B0\u099B\u09C7 \u09A8\u09BE: ${url} (status ${r.status || "?"})`, data: j };
         } catch (e) {
           return { ok: false, error: String(e), summary: `\u09B2\u09BF\u0982\u0995 \u09AF\u09BE\u099A\u09BE\u0987 \u0995\u09B0\u09BE \u0997\u09C7\u09B2 \u09A8\u09BE: ${url}` };
         }
       },
       async read_url(args) {
-        const r = await fetch(`${API()}/api/fetch-url`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: args.url }) });
-        const j = await r.json();
-        if (j.error) return { ok: false, error: j.error, summary: `URL \u09AA\u09A1\u09BC\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF: ${args.url}` };
-        const text = (j.text || "").slice(0, args.max_chars || 12e3);
-        return { ok: true, summary: `${args.url} \u09AA\u09A1\u09BC\u09BE \u09B9\u09B2\u09CB (${(j.text || "").length} \u0985\u0995\u09CD\u09B7\u09B0)`, data: { status: j.status, contentType: j.contentType, text } };
+        const url = String(args.url || "");
+        if (!/^https?:\/\//i.test(url)) return { ok: false, error: "bad-url", summary: `"${url}" \u09AC\u09C8\u09A7 \u09B2\u09BF\u0982\u0995 \u09A8\u09AF\u09BC` };
+        try {
+          const r = await netFetch(url, { timeoutMs: 3e4, maxBytes: 2e6 });
+          const text = typeof r.text === "function" ? await r.text() : r.text;
+          const ct = String(r.contentType || r.headers && (r.headers["Content-Type"] || r.headers["content-type"]) || "");
+          const isHtml = /html/i.test(ct) || /<html/i.test(String(text).slice(0, 500));
+          const clean = isHtml ? String(text).replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/[ \t]+/g, " ").replace(/\n\s*\n\s*\n+/g, "\n\n").trim() : String(text);
+          const out = clean.slice(0, args.max_chars || 12e3);
+          return { ok: r.ok, summary: `${url} \u09AA\u09A1\u09BC\u09BE \u09B9\u09B2\u09CB (${clean.length} \u0985\u0995\u09CD\u09B7\u09B0)`, data: { status: r.status, contentType: ct, text: out } };
+        } catch (e) {
+          return { ok: false, error: String(e), summary: `URL \u09AA\u09A1\u09BC\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF: ${url} (${e})` };
+        }
       },
       async read_media(args) {
-        const r = await fetch(`${API()}/api/fetch-url`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: args.url }) });
-        const j = await r.json();
-        if (j.error) return { ok: false, error: j.error, summary: `\u09AE\u09BF\u09A1\u09BF\u09AF\u09BC\u09BE \u09AA\u09A1\u09BC\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF: ${args.url}` };
-        if (j.dataUrl) {
-          const modality = args.modality || (/^audio/.test(j.contentType) ? "audio" : /^video/.test(j.contentType) ? "video" : /pdf/.test(j.contentType) ? "pdf" : "image");
-          global.ZY._pendingMedia = { url: args.url, dataUrl: j.dataUrl, modality, part: args.part };
-          return { ok: true, summary: `${modality} \u09AA\u09A1\u09BC\u09BE \u09B9\u09B2\u09CB (${(j.bytes / 1024).toFixed(0)}KB) \u2014 \u09AE\u09A1\u09C7\u09B2\u09C7 \u09AA\u09BE\u09A0\u09BE\u09A8\u09CB\u09B0 \u099C\u09A8\u09CD\u09AF \u09A4\u09C8\u09B0\u09BF`, data: { modality, bytes: j.bytes, part: args.part, note: "\u09AA\u09B0\u09C7\u09B0 \u099F\u09BE\u09B0\u09CD\u09A8\u09C7 \u098F\u099F\u09BF \u09AE\u09A1\u09C7\u09B2\u09C7\u09B0 \u0987\u09A8\u09AA\u09C1\u099F\u09C7 \u09AF\u09C1\u0995\u09CD\u09A4 \u09B9\u09AC\u09C7" } };
+        const url = String(args.url || "");
+        if (!/^https?:\/\//i.test(url)) return { ok: false, error: "bad-url", summary: `"${url}" \u09AC\u09C8\u09A7 \u09B2\u09BF\u0982\u0995 \u09A8\u09AF\u09BC` };
+        try {
+          const r = await netFetch(url, { timeoutMs: 6e4, maxBytes: 12 * 1024 * 1024, asDataUrl: true });
+          if (!r.ok) return { ok: false, error: `http-${r.status}`, summary: `\u09AE\u09BF\u09A1\u09BF\u09AF\u09BC\u09BE \u0986\u09A8\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF: ${url} (status ${r.status})` };
+          const ct = String(r.contentType || "");
+          if (r.dataUrl) {
+            const modality2 = args.modality || (/^audio/.test(ct) ? "audio" : /^video/.test(ct) ? "video" : /pdf/.test(ct) ? "pdf" : "image");
+            global.ZY._pendingMedia = { url, dataUrl: r.dataUrl, modality: modality2, part: args.part };
+            return { ok: true, summary: `${modality2} \u09AA\u09A1\u09BC\u09BE \u09B9\u09B2\u09CB (${Math.round((r.bytes || 0) / 1024)}KB) \u2014 \u09AE\u09A1\u09C7\u09B2\u09C7 \u09AA\u09BE\u09A0\u09BE\u09A8\u09CB\u09B0 \u099C\u09A8\u09CD\u09AF \u09A4\u09C8\u09B0\u09BF`, data: { modality: modality2, bytes: r.bytes, part: args.part, note: "\u09AA\u09B0\u09C7\u09B0 \u099F\u09BE\u09B0\u09CD\u09A8\u09C7 \u098F\u099F\u09BF \u09AE\u09A1\u09C7\u09B2\u09C7\u09B0 \u0987\u09A8\u09AA\u09C1\u099F\u09C7 \u09AF\u09C1\u0995\u09CD\u09A4 \u09B9\u09AC\u09C7" } };
+          }
+          const blob = await (await fetch(url)).blob();
+          const dataUrl = await new Promise((res) => {
+            const fr = new FileReader();
+            fr.onload = () => res(String(fr.result));
+            fr.readAsDataURL(blob);
+          });
+          const modality = args.modality || (/^audio/.test(blob.type) ? "audio" : /^video/.test(blob.type) ? "video" : /pdf/.test(blob.type) ? "pdf" : "image");
+          global.ZY._pendingMedia = { url, dataUrl, modality, part: args.part };
+          return { ok: true, summary: `${modality} \u09AA\u09A1\u09BC\u09BE \u09B9\u09B2\u09CB (${Math.round(blob.size / 1024)}KB) \u2014 \u09AE\u09A1\u09C7\u09B2\u09C7 \u09AA\u09BE\u09A0\u09BE\u09A8\u09CB\u09B0 \u099C\u09A8\u09CD\u09AF \u09A4\u09C8\u09B0\u09BF`, data: { modality, bytes: blob.size, part: args.part, note: "\u09AA\u09B0\u09C7\u09B0 \u099F\u09BE\u09B0\u09CD\u09A8\u09C7 \u098F\u099F\u09BF \u09AE\u09A1\u09C7\u09B2\u09C7\u09B0 \u0987\u09A8\u09AA\u09C1\u099F\u09C7 \u09AF\u09C1\u0995\u09CD\u09A4 \u09B9\u09AC\u09C7" } };
+        } catch (e) {
+          return { ok: false, error: String(e), summary: `\u09AE\u09BF\u09A1\u09BF\u09AF\u09BC\u09BE \u09AA\u09A1\u09BC\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF: ${url} (${e})` };
         }
-        return { ok: true, summary: `${args.url} \u099F\u09C7\u0995\u09CD\u09B8\u099F \u09B9\u09BF\u09B8\u09C7\u09AC\u09C7 \u09AA\u09A1\u09BC\u09BE \u09B9\u09B2\u09CB`, data: { text: (j.text || "").slice(0, 12e3) } };
       },
       async generate_file(args) {
-        const r = await fetch(`${API()}/api/write-file`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path: args.path, content: args.content, mode: args.mode }) });
-        const j = await r.json();
-        if (j.error) return { ok: false, error: j.error, summary: `\u09AB\u09BE\u0987\u09B2 \u09B2\u09C7\u0996\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF: ${args.path}` };
+        const j = await fsCall({ op: "write", path: args.path, content: args.content, append: args.mode === "append" });
+        if (!j.ok) return { ok: false, error: j.error, summary: `\u09AB\u09BE\u0987\u09B2 \u09B2\u09C7\u0996\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF: ${args.path} (${j.error})` };
         return { ok: true, summary: `${args.path} \u09B2\u09C7\u0996\u09BE \u09B9\u09B2\u09CB (${j.bytes} \u09AC\u09BE\u0987\u099F)`, data: j };
       },
+      /**
+       * Put a site on the real web. With a server it goes to the server's static
+       * host; with no server (the APK) the user's own GitHub Pages is the real
+       * host, and the result is verified before it is called live. Files are
+       * always written locally first, so nothing is lost if publishing fails.
+       */
       async publish_website(args) {
-        const r = await fetch(`${API()}/api/publish`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: args.name, html: args.html, files: args.files }) });
-        const j = await r.json().catch(() => ({}));
-        if (!j.ok) return { ok: false, error: j.error || "publish-failed", summary: "\u09AA\u09BE\u09AC\u09B2\u09BF\u09B6 \u09AC\u09CD\u09AF\u09B0\u09CD\u09A5 \u2014 \u09B8\u09BE\u0987\u099F\u099F\u09BF \u09B8\u09A4\u09CD\u09AF\u09BF\u0987 \u09B8\u09BE\u09B0\u09CD\u09AD \u09B9\u099A\u09CD\u099B\u09C7 \u09A8\u09BE (status " + (j.status || "?") + ")\u0964 \u0986\u09AC\u09BE\u09B0 \u099A\u09C7\u09B7\u09CD\u099F\u09BE \u0995\u09B0\u09CB\u0964", data: j };
-        global.ZY.store.set("lastSite", j.url);
-        return { ok: true, summary: `\u0993\u09AF\u09BC\u09C7\u09AC\u09B8\u09BE\u0987\u099F \u09AA\u09BE\u09AC\u09B2\u09BF\u09B6 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7 \u0993 \u09AD\u09C7\u09B0\u09BF\u09AB\u09BE\u0987 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7: ${j.url}`, data: j };
+        const name = String(args.name || "zyraxon-site").replace(/[^A-Za-z0-9._-]/g, "-");
+        const files = args.files && typeof args.files === "object" ? { ...args.files } : {};
+        if (args.html && !files["index.html"]) files["index.html"] = args.html;
+        if (!Object.keys(files).length) return { ok: false, error: "no-files", summary: "\u09AA\u09CD\u09B0\u0995\u09BE\u09B6 \u0995\u09B0\u09BE\u09B0 \u099C\u09A8\u09CD\u09AF \u0995\u09CB\u09A8\u09CB \u09AB\u09BE\u0987\u09B2 \u09A6\u09C7\u0993\u09AF\u09BC\u09BE \u09B9\u09AF\u09BC\u09A8\u09BF" };
+        for (const [rel, content] of Object.entries(files)) {
+          await fsCall({ op: "write", path: `sites/${name}/${String(rel).replace(/^\/+/, "")}`, content: String(content) });
+        }
+        const hasSrv = !!(global.ZY.Platform && global.ZY.Platform.hasServer && global.ZY.Platform.hasServer());
+        if (hasSrv) {
+          const r = await netFetch(`${API()}/api/publish`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, html: args.html, files }) });
+          const j = await r.json().catch(() => ({}));
+          if (j.ok) {
+            global.ZY.store.set("lastSite", j.url);
+            return { ok: true, summary: `\u0993\u09AF\u09BC\u09C7\u09AC\u09B8\u09BE\u0987\u099F \u09AA\u09BE\u09AC\u09B2\u09BF\u09B6 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7 \u0993 \u09AD\u09C7\u09B0\u09BF\u09AB\u09BE\u0987 \u09B9\u09AF\u09BC\u09C7\u099B\u09C7: ${j.url}`, data: j };
+          }
+        }
+        const GH = global.ZY.GH;
+        if (GH && GH.connected()) {
+          const j = await GH.publish({ name, files, pages: true });
+          if (j.ok) {
+            const url = j.pages && j.pages.url;
+            if (url) global.ZY.store.set("lastSite", url);
+            if (j.pages && j.pages.live) return { ok: true, summary: `\u09B2\u09BE\u0987\u09AD \u0993\u09AF\u09BC\u09C7\u09AC\u09B8\u09BE\u0987\u099F (\u09AF\u09BE\u099A\u09BE\u0987 \u0995\u09B0\u09BE): ${url} \u2014 \u09B0\u09BF\u09AA\u09CB ${j.repo}`, data: j };
+            return { ok: true, summary: `GitHub Pages-\u098F \u09AA\u09CD\u09B0\u0995\u09BE\u09B6 \u0995\u09B0\u09BE \u09B9\u09B2\u09CB: ${url || j.repo} \u2014 \u09AC\u09BF\u09B2\u09CD\u09A1 propagate \u09B9\u099A\u09CD\u099B\u09C7, \u0995\u09BF\u099B\u09C1\u0995\u09CD\u09B7\u09A3 \u09AA\u09B0 verify_url \u09A6\u09BF\u09AF\u09BC\u09C7 \u09AF\u09BE\u099A\u09BE\u0987 \u0995\u09B0\u09CB`, data: j };
+          }
+          return { ok: false, error: j.error || "publish-failed", summary: `\u09AA\u09CD\u09B0\u0995\u09BE\u09B6 \u09AC\u09CD\u09AF\u09B0\u09CD\u09A5${j.message ? ": " + j.message : ""}`, data: j };
+        }
+        return { ok: false, error: "not-connected", summary: "\u09B8\u09BE\u0987\u099F\u099F\u09BF \u09AB\u09CB\u09A8\u09C7 \u09B8\u09C7\u09AD \u09B9\u09AF\u09BC\u09C7\u099B\u09C7 (sites/" + name + "), \u0995\u09BF\u09A8\u09CD\u09A4\u09C1 \u09B2\u09BE\u0987\u09AD \u0995\u09B0\u09A4\u09C7 \u0997\u09BF\u099F\u09B9\u09BE\u09AC \u099F\u09CB\u0995\u09C7\u09A8 \u09A6\u09B0\u0995\u09BE\u09B0 \u2014 \u09B8\u09C7\u099F\u09BF\u0982\u09B8\u09C7 \u099F\u09CB\u0995\u09C7\u09A8 \u09AC\u09B8\u09BE\u0993, \u09A4\u09BE\u09B0\u09AA\u09B0 \u0986\u09AC\u09BE\u09B0 publish_website \u09A1\u09BE\u0995\u09CB" };
       },
       async run_shell(args) {
         const P = global.ZY.Platform;
@@ -505,7 +630,7 @@
           const tail2 = String(j2.stdout || "").trim().split("\n").slice(-6).join("\n").slice(0, 400);
           return { ok: ok2, summary: `[\u09AB\u09CB\u09A8/Android sandbox] $ ${args.command} \u2192 exit ${j2.code}${tail2 ? " | " + tail2 : ""}`, data: j2 };
         }
-        const r = await fetch(`${API()}/api/shell`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ command: args.command, cwd: args.cwd, shell: args.shell, timeout_ms: args.timeout_ms }) });
+        const r = await netFetch(`${API()}/api/shell`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ command: args.command, cwd: args.cwd, shell: args.shell, timeout_ms: args.timeout_ms }) });
         const j = await r.json();
         if (j.error) return { ok: false, error: j.error, summary: "\u0995\u09AE\u09BE\u09A8\u09CD\u09A1 \u099A\u09BE\u09B2\u09BE\u09A8\u09CB \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF" };
         const ok = j.code === 0;
@@ -556,24 +681,95 @@
       },
       /* ── web: real search and generic HTTP ── */
       async web_search(args) {
-        const r = await fetch(`${API()}/api/web-search`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: args.query, count: args.count }) });
-        const j = await r.json();
-        if (!j.ok || !j.results || !j.results.length) return { ok: false, error: j.error || "no-results", summary: `"${args.query}" \u2014 \u0995\u09BF\u099B\u09C1 \u09AA\u09BE\u0993\u09AF\u09BC\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF` };
-        const top = j.results.slice(0, 5).map((x, i) => `${i + 1}. ${x.title} \u2014 ${x.url}`).join("\n");
-        return { ok: true, summary: `${j.results.length}\u099F\u09BF \u09AB\u09B2\u09BE\u09AB\u09B2 (${j.engine}):
-${top}`, data: j };
+        const q = String(args.query || "").trim();
+        if (!q) return { ok: false, error: "query-required", summary: "\u0996\u09CB\u0981\u099C\u09BE\u09B0 \u09B6\u09AC\u09CD\u09A6 \u09A6\u09C7\u0993\u09AF\u09BC\u09BE \u09B9\u09AF\u09BC\u09A8\u09BF" };
+        const n = Math.min(Math.max(Number(args.count) || 8, 1), 25);
+        const strip = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\s+/g, " ").trim();
+        const parseDDG = (html) => {
+          const out = [];
+          const rx = /<a[^>]+class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?(?:class="result__snippet"[^>]*>([\s\S]*?)<\/a>)?/g;
+          let m;
+          while ((m = rx.exec(html)) && out.length < n) {
+            let url = m[1];
+            const red = /uddg=([^&]+)/.exec(url);
+            if (red) {
+              try {
+                url = decodeURIComponent(red[1]);
+              } catch {
+              }
+            }
+            if (/^https?:/.test(url)) out.push({ title: strip(m[2]), url, snippet: strip(m[3]) });
+          }
+          return out;
+        };
+        const attempts = [
+          `https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}`,
+          `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(q)}`
+        ];
+        for (const u of attempts) {
+          try {
+            const r = await netFetch(u, { headers: { Accept: "text/html" }, timeoutMs: 15e3, maxBytes: 6e5 });
+            if (!r.ok) continue;
+            const html = typeof r.text === "function" ? await r.text() : r.text;
+            let results = parseDDG(html);
+            if (!results.length) {
+              const rx = /<a[^>]+href="(https?:\/\/[^"]+)"[^>]*>([^<]{3,120})<\/a>/g;
+              let m;
+              while ((m = rx.exec(html)) && results.length < n) {
+                if (/duckduckgo|javascript/.test(m[1])) continue;
+                results.push({ title: strip(m[2]), url: m[1], snippet: "" });
+              }
+            }
+            if (results.length) {
+              const top = results.slice(0, 5).map((x, i) => `${i + 1}. ${x.title} \u2014 ${x.url}`).join("\n");
+              return { ok: true, summary: `${results.length}\u099F\u09BF \u09AB\u09B2\u09BE\u09AB\u09B2 (duckduckgo):
+${top}`, data: { ok: true, engine: "duckduckgo", query: q, results } };
+            }
+          } catch {
+          }
+        }
+        try {
+          const r = await netFetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&srlimit=${n}`, { timeoutMs: 15e3 });
+          const j = await r.json();
+          const results = (j && j.query && j.query.search || []).map((s) => ({ title: s.title, url: `https://en.wikipedia.org/wiki/${encodeURIComponent(String(s.title).replace(/ /g, "_"))}`, snippet: strip(s.snippet) }));
+          if (results.length) {
+            const top = results.slice(0, 5).map((x, i) => `${i + 1}. ${x.title} \u2014 ${x.url}`).join("\n");
+            return { ok: true, summary: `${results.length}\u099F\u09BF \u09AB\u09B2\u09BE\u09AB\u09B2 (wikipedia):
+${top}`, data: { ok: true, engine: "wikipedia", query: q, results } };
+          }
+        } catch {
+        }
+        return { ok: false, error: "no-results", summary: `"${q}" \u2014 \u0995\u09BF\u099B\u09C1 \u09AA\u09BE\u0993\u09AF\u09BC\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF` };
       },
       async http_request(args) {
-        const r = await fetch(`${API()}/api/http`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: args.url, method: args.method, headers: args.headers, body: args.body }) });
-        const j = await r.json();
-        if (j.error) return { ok: false, error: j.error, summary: `${args.method || "GET"} ${args.url} \u09AC\u09CD\u09AF\u09B0\u09CD\u09A5: ${j.error}` };
-        const brief = typeof j.data === "string" ? j.data.slice(0, 200) : JSON.stringify(j.data).slice(0, 200);
-        return { ok: j.ok, summary: `${args.method || "GET"} ${args.url} \u2192 ${j.status} (${j.bytes} \u09AC\u09BE\u0987\u099F) ${brief}`, data: j };
+        try {
+          const r = await netFetch(args.url, {
+            method: (args.method || "GET").toUpperCase(),
+            headers: args.headers || {},
+            body: args.body,
+            timeoutMs: 25e3,
+            maxBytes: 4e5
+          });
+          const bodyText = typeof r.text === "function" ? await r.text() : r.text;
+          const j = { ok: r.ok, status: r.status, bytes: r.bytes != null ? r.bytes : bodyText.length, contentType: r.headers && (r.headers["Content-Type"] || r.headers["content-type"]) || "", data: bodyText.slice(0, 2e5) };
+          if (!j.ok && !j.status) return { ok: false, error: "request-failed", summary: `${args.method || "GET"} ${args.url} \u09AC\u09CD\u09AF\u09B0\u09CD\u09A5`, data: j };
+          const brief = String(j.data).slice(0, 200);
+          return { ok: j.ok, summary: `${args.method || "GET"} ${args.url} \u2192 ${j.status} (${j.bytes} \u09AC\u09BE\u0987\u099F) ${brief}`, data: j };
+        } catch (e) {
+          return { ok: false, error: String(e), summary: `${args.method || "GET"} ${args.url} \u09AC\u09CD\u09AF\u09B0\u09CD\u09A5: ${e}` };
+        }
       },
       /* ── desktop / host system ── */
       async sys_info() {
-        const r = await fetch(`${API()}/api/sysinfo`);
+        const P = global.ZY.Platform;
+        const nat = global.ZY.Native;
+        if (nat && nat.app && nat.device && nat.device.info) {
+          const d = nat.device.info() || {};
+          return { ok: true, summary: `${d.model || "Android"} (Android ${d.release || "?"}), SDK ${d.sdk || "?"}, \u09AC\u09CD\u09AF\u09BE\u099F\u09BE\u09B0\u09BF ${d.battery != null ? d.battery + "%" : "?"}`, data: d };
+        }
+        const r = await netFetch(`${API()}/api/sysinfo`);
         const j = await r.json();
+        if (!j || j.error) return { ok: false, error: "sysinfo-unavailable", summary: "\u09B8\u09BF\u09B8\u09CD\u099F\u09C7\u09AE \u09A4\u09A5\u09CD\u09AF \u09AA\u09BE\u0993\u09AF\u09BC\u09BE \u0997\u09C7\u09B2 \u09A8\u09BE", data: j };
         return { ok: true, summary: `${j.osName} ${j.release} ${j.arch}, CPU ${j.cpus && j.cpus.length ? j.cpus[j.cpus.length - 1] : "?"}, RAM ${j.freeMemMB}/${j.totalMemMB}MB \u09AB\u09BE\u0981\u0995\u09BE${j.disk ? `, \u09A1\u09BF\u09B8\u09CD\u0995 ${j.disk.freeGB}GB \u09AB\u09BE\u0981\u0995\u09BE` : ""}`, data: j };
       },
       async platform_info() {
@@ -581,28 +777,34 @@ ${top}`, data: j };
         return { ok: true, summary: `\u0986\u09AE\u09BF \u099A\u09B2\u099B\u09BF ${p.osName} (${p.kind}) \u2014 \u09B6\u09C7\u09B2 ${p.host && p.host.defaultShell || p.shell}, \u09A8\u09C7\u099F\u09BF\u09AD \u09AC\u09CD\u09B0\u09BF\u099C ${p.nativeBridge ? "\u0986\u099B\u09C7" : "\u09A8\u09C7\u0987"}`, data: p };
       },
       async download_file(args) {
-        const r = await fetch(`${API()}/api/http`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: args.url }) });
-        const j = await r.json();
-        if (j.error) return { ok: false, error: j.error, summary: `${args.url} \u09A8\u09BE\u09AE\u09BE\u09A8\u09CB \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF: ${j.error}` };
-        const fallbackName = (args.url.split("/").pop() || "file").split("?")[0] || "file";
+        const url = String(args.url || "");
+        if (!/^https?:\/\//i.test(url)) return { ok: false, error: "bad-url", summary: `"${url}" \u09AC\u09C8\u09A7 \u09B2\u09BF\u0982\u0995 \u09A8\u09AF\u09BC` };
+        const fallbackName = (url.split("/").pop() || "file").split("?")[0] || "file";
         const target = args.path || "downloads/" + fallbackName;
-        let wr;
-        if (j.dataUrl) {
-          const b64 = j.dataUrl.split(",")[1] || "";
-          wr = await fsCall({ op: "write", path: target, content: b64 });
-          if (wr.ok) return { ok: true, summary: `${args.url} \u2192 ${wr.path} (${Math.round(b64.length * 0.75 / 1024)}KB, base64)`, data: { ...wr, encoding: "base64", bytes: Math.round(b64.length * 0.75) } };
-        } else if (typeof j.data === "string") {
-          wr = await fsCall({ op: "write", path: target, content: j.data });
-          if (wr.ok) return { ok: true, summary: `${args.url} \u2192 ${wr.path} (${j.bytes} \u09AC\u09BE\u0987\u099F \u099F\u09C7\u0995\u09CD\u09B8\u099F)`, data: { ...wr, encoding: "utf8" } };
-        } else {
-          wr = await fsCall({ op: "write", path: target, content: JSON.stringify(j.data) });
-          if (wr.ok) return { ok: true, summary: `${args.url} \u2192 ${wr.path} (JSON)`, data: { ...wr, encoding: "json" } };
+        try {
+          const r = await netFetch(url, { timeoutMs: 6e4, maxBytes: 12 * 1024 * 1024 });
+          const text = typeof r.text === "function" ? await r.text() : r.text;
+          if (!r.ok) return { ok: false, error: `http-${r.status}`, summary: `${url} \u09A8\u09BE\u09AE\u09BE\u09A8\u09CB \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF (status ${r.status})` };
+          const viaBridge = !!r.viaBridge;
+          const ct = String(r.headers && (r.headers["Content-Type"] || r.headers["content-type"]) || "");
+          const isText = /^(text\/|application\/(json|xml|javascript|x-javascript|yaml)|)/.test(ct) && !/image|video|audio|pdf|octet/.test(ct);
+          const wr = isText ? await fsCall({ op: "write", path: target, content: text }) : await fsCall({ op: "write", path: target, content: viaBridge ? text : btoa(unescape(encodeURIComponent(text))) });
+          if (!wr.ok) return { ok: false, error: wr.error || "save-failed", summary: `\u09B8\u09C7\u09AD \u0995\u09B0\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF: ${wr.error || "unknown"}` };
+          return { ok: true, summary: `${url} \u2192 ${wr.path} (${wr.bytes} \u09AC\u09BE\u0987\u099F${isText ? "" : ", base64"})`, data: { ...wr, contentType: ct, encoding: isText ? "utf8" : "base64" } };
+        } catch (e) {
+          return { ok: false, error: String(e), summary: `${url} \u09A8\u09BE\u09AE\u09BE\u09A8\u09CB \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF: ${e}` };
         }
-        return { ok: false, error: wr && wr.error || "save-failed", summary: `\u09B8\u09C7\u09AD \u0995\u09B0\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF: ${wr && wr.error || "unknown"}` };
       },
       async process_list() {
-        const r = await fetch(`${API()}/api/sysinfo`);
+        const nat = global.ZY.Native;
+        if (nat && nat.shell && nat.shell.available()) {
+          const j2 = nat.shell.exec("ps -A -o PID,NAME 2>/dev/null || ps 2>/dev/null", "", 8e3) || {};
+          const lines = String(j2.stdout || "").trim().split("\n").filter(Boolean).slice(0, 120);
+          return { ok: true, summary: `\u099A\u09B2\u09AE\u09BE\u09A8 \u09AA\u09CD\u09B0\u09B8\u09C7\u09B8 (${Math.max(0, lines.length - 1)})`, data: { processes: lines } };
+        }
+        const r = await netFetch(`${API()}/api/sysinfo`);
         const j = await r.json();
+        if (!j || j.error) return { ok: false, error: "unavailable", summary: "\u09AA\u09CD\u09B0\u09B8\u09C7\u09B8 \u09A4\u09BE\u09B2\u09BF\u0995\u09BE \u09AA\u09BE\u0993\u09AF\u09BC\u09BE \u0997\u09C7\u09B2 \u09A8\u09BE", data: j };
         return { ok: true, summary: `\u099A\u09B2\u09AE\u09BE\u09A8 \u09AA\u09CD\u09B0\u09B8\u09C7\u09B8 (${(j.processes || []).length})`, data: { processes: j.processes || [] } };
       },
       /* ── phone calls: the assistant speaks to the caller ── */
@@ -655,20 +857,30 @@ ${top}`, data: j };
           );
         });
       },
-      /* ── GitHub: real repositories, real Pages, real Actions builds ── */
+      /* ── GitHub: the user's own account, with the user's own token ── */
       async github_account() {
-        const j = await fetch(`${API()}/api/github/info`).then((r) => r.json()).catch((e) => ({ ok: false, error: String(e) }));
-        if (!j.ok) return { ok: false, error: j.error || "not-connected", summary: `\u0997\u09BF\u099F\u09B9\u09BE\u09AC \u0985\u09CD\u09AF\u09BE\u0995\u09BE\u0989\u09A8\u09CD\u099F \u09AA\u09BE\u0993\u09AF\u09BC\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF${j.message ? ": " + j.message : ""}` };
+        const GH = global.ZY.GH;
+        if (!GH) return { ok: false, error: "no-module", summary: "\u0997\u09BF\u099F\u09B9\u09BE\u09AC \u09AE\u09A1\u09BF\u0989\u09B2 \u09B2\u09CB\u09A1 \u09B9\u09AF\u09BC\u09A8\u09BF" };
+        if (!GH.connected()) return { ok: false, error: "not-connected", summary: "\u0997\u09BF\u099F\u09B9\u09BE\u09AC \u099F\u09CB\u0995\u09C7\u09A8 \u09A6\u09C7\u0993\u09AF\u09BC\u09BE \u09B9\u09AF\u09BC\u09A8\u09BF \u2014 \u09B8\u09C7\u099F\u09BF\u0982\u09B8\u09C7 \u0997\u09BF\u099F\u09B9\u09BE\u09AC \u099F\u09CB\u0995\u09C7\u09A8 \u09AC\u09B8\u09BE\u0993, \u09A4\u09BE\u09B0\u09AA\u09B0 \u0986\u09AC\u09BE\u09B0 \u099A\u09C7\u09B7\u09CD\u099F\u09BE \u0995\u09B0\u09CB" };
+        const j = await GH.account();
+        if (!j.ok) return { ok: false, error: j.error || "not-connected", summary: `\u0997\u09BF\u099F\u09B9\u09BE\u09AC \u0985\u09CD\u09AF\u09BE\u0995\u09BE\u0989\u09A8\u09CD\u099F \u09AA\u09BE\u0993\u09AF\u09BC\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF${j.message ? ": " + j.message : ""}`, data: j };
         return { ok: true, summary: `\u0997\u09BF\u099F\u09B9\u09BE\u09AC \u0995\u09BE\u09A8\u09C7\u0995\u09CD\u099F\u09C7\u09A1: ${j.login} (${j.repos.length}\u099F\u09BF \u09B0\u09BF\u09AA\u09CB\u099C\u09BF\u099F\u09B0\u09BF)`, data: j };
       },
       async github_publish(args) {
-        const files = args.files && typeof args.files === "object" ? args.files : {};
+        const GH = global.ZY.GH;
+        if (!GH) return { ok: false, error: "no-module", summary: "\u0997\u09BF\u099F\u09B9\u09BE\u09AC \u09AE\u09A1\u09BF\u0989\u09B2 \u09B2\u09CB\u09A1 \u09B9\u09AF\u09BC\u09A8\u09BF" };
+        if (!GH.connected()) return { ok: false, error: "not-connected", summary: "\u0997\u09BF\u099F\u09B9\u09BE\u09AC \u099F\u09CB\u0995\u09C7\u09A8 \u09A6\u09C7\u0993\u09AF\u09BC\u09BE \u09B9\u09AF\u09BC\u09A8\u09BF \u2014 \u09B8\u09C7\u099F\u09BF\u0982\u09B8\u09C7 \u099F\u09CB\u0995\u09C7\u09A8 \u09AC\u09B8\u09BE\u09B2\u09C7 \u09B8\u09A4\u09CD\u09AF\u09BF\u0995\u09BE\u09B0\u09C7\u09B0 \u09B0\u09BF\u09AA\u09CB\u099C\u09BF\u099F\u09B0\u09BF \u09A4\u09C8\u09B0\u09BF \u09B9\u09AC\u09C7" };
+        const files = args.files && typeof args.files === "object" ? { ...args.files } : {};
         if (args.html && !files["index.html"]) files["index.html"] = args.html;
-        const j = await fetch(`${API()}/api/github/publish`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: args.name, files, description: args.description, private: args.private, pages: args.pages !== false, owner: args.owner, branch: args.branch })
-        }).then((r) => r.json()).catch((e) => ({ ok: false, error: String(e) }));
+        const j = await GH.publish({
+          name: args.name,
+          files,
+          description: args.description,
+          private: args.private,
+          pages: args.pages !== false,
+          owner: args.owner,
+          branch: args.branch
+        });
         if (!j.ok) return { ok: false, error: j.error || "github-failed", summary: `\u0997\u09BF\u099F\u09B9\u09BE\u09AC\u09C7 \u09AA\u09BE\u09AC\u09B2\u09BF\u09B6 \u09AC\u09CD\u09AF\u09B0\u09CD\u09A5${j.message ? ": " + j.message : ""}`, data: j };
         const lines = [`\u09B0\u09BF\u09AA\u09CB\u099C\u09BF\u099F\u09B0\u09BF ${j.created ? "\u09A4\u09C8\u09B0\u09BF \u09B9\u09AF\u09BC\u09C7\u099B\u09C7" : "\u0986\u0997\u09C7\u0987 \u099B\u09BF\u09B2"}: ${j.repo}`, `${j.committed.length}\u099F\u09BF \u09AB\u09BE\u0987\u09B2 \u0995\u09AE\u09BF\u099F \u09B9\u09AF\u09BC\u09C7\u099B\u09C7`];
         if (j.pages && j.pages.live) lines.push(`\u09B2\u09BE\u0987\u09AD \u09B8\u09BE\u0987\u099F (\u09AF\u09BE\u099A\u09BE\u0987 \u0995\u09B0\u09BE, \u09A8\u09A4\u09C1\u09A8 \u0995\u09A8\u099F\u09C7\u09A8\u09CD\u099F\u09B8\u09B9): ${j.pages.url}`);
@@ -678,19 +890,15 @@ ${top}`, data: j };
         return { ok: true, summary: lines.join(" | "), data: j };
       },
       async github_workflow(args) {
-        const j = await fetch(`${API()}/api/github/workflow`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ repo: args.repo, content: args.content, path: args.path, branch: args.branch })
-        }).then((r) => r.json()).catch((e) => ({ ok: false, error: String(e) }));
+        const GH = global.ZY.GH;
+        if (!GH || !GH.connected()) return { ok: false, error: "not-connected", summary: "\u0997\u09BF\u099F\u09B9\u09BE\u09AC \u099F\u09CB\u0995\u09C7\u09A8 \u09A6\u09C7\u0993\u09AF\u09BC\u09BE \u09B9\u09AF\u09BC\u09A8\u09BF" };
+        const j = await GH.workflow(args);
         return j.ok ? { ok: true, summary: `\u0993\u09AF\u09BC\u09BE\u09B0\u09CD\u0995\u09AB\u09CD\u09B2\u09CB \u09B2\u09C7\u0996\u09BE \u09B9\u09B2\u09CB: ${j.path}`, data: j } : { ok: false, error: j.error || "failed", summary: `\u0993\u09AF\u09BC\u09BE\u09B0\u09CD\u0995\u09AB\u09CD\u09B2\u09CB \u09B2\u09C7\u0996\u09BE \u09AF\u09BE\u09AF\u09BC\u09A8\u09BF${j.message ? ": " + j.message : ""}`, data: j };
       },
       async github_actions(args) {
-        const j = await fetch(`${API()}/api/github/actions`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ repo: args.repo, workflow: args.workflow, ref: args.ref, files: args.files, timeout_ms: args.timeout_ms })
-        }).then((r) => r.json()).catch((e) => ({ ok: false, error: String(e) }));
+        const GH = global.ZY.GH;
+        if (!GH || !GH.connected()) return { ok: false, error: "not-connected", summary: "\u0997\u09BF\u099F\u09B9\u09BE\u09AC \u099F\u09CB\u0995\u09C7\u09A8 \u09A6\u09C7\u0993\u09AF\u09BC\u09BE \u09B9\u09AF\u09BC\u09A8\u09BF" };
+        const j = await GH.actions(args);
         if (!j.ok) return { ok: false, error: j.error || "build-failed", summary: `\u09AC\u09BF\u09B2\u09CD\u09A1 \u09AC\u09CD\u09AF\u09B0\u09CD\u09A5${j.conclusion ? " (" + j.conclusion + ")" : ""}${j.stage ? " \u2014 " + j.stage : ""}`, data: j };
         const jobs = (j.jobs || []).map((x) => `${x.name}=${x.conclusion}`).join(", ");
         const arts = (j.artifacts || []).map((a) => a.name).join(", ");
@@ -780,6 +988,7 @@ ${top}`, data: j };
       }
     };
     global.ZY = global.ZY || {};
+    Tools._netFetch = netFetch;
     global.ZY.Tools = Tools;
   })(window);
 })();

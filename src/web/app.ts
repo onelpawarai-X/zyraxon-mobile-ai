@@ -124,12 +124,20 @@
 
     async loadModels() {
       let list = [];
-      try {
-        const r = await fetch('/api/models');
-        const j = await r.json();
-        list = j.data || [];
-      } catch {
-        try { const r = await fetch('https://zyraxonai.lovable.app/api/public/zyraxon/v1/models'); list = (await r.json()).data || []; } catch {}
+      // Prefer the local server when one exists; otherwise the provider is the
+      // only source that can answer, so ask it first and skip the dead probe.
+      const hasSrv = !!(global.ZY.Platform && global.ZY.Platform.hasServer && global.ZY.Platform.hasServer());
+      const modelsUrl = (global.ZY.Platform && global.ZY.Platform.provider) ? global.ZY.Platform.provider.models
+        : 'https://zyraxonai.lovable.app/api/public/zyraxon/v1/models';
+      const sources = hasSrv ? ['/api/models', modelsUrl] : [modelsUrl, '/api/models'];
+      for (const u of sources) {
+        try {
+          const r = await fetch(u, { cache: 'no-store' });
+          if (!r.ok) continue;
+          const j = await r.json();
+          list = j.data || [];
+          if (list.length) break;
+        } catch {}
       }
       if (!list.length) {
         list = [{ id: 'zyraxon-titan', name: 'ZYRAXON Titan', description: 'দ্রুত ও শক্তিশালী', input_modalities: ['text', 'image', 'video'] }];
@@ -417,8 +425,12 @@
         const atts = global.ZY.Agent.attachments || [];
         tray.hidden = !atts.length;
         tray.innerHTML = atts.map((a, i) => `
-          <div class="att" data-i="${i}">
-            ${a.kind === 'image' ? `<img src="${a.dataUrl}" alt="" />` : a.kind === 'video' ? `<video src="${a.dataUrl}" muted></video>` : '🎵'}
+          <div class="att" data-i="${i}" title="${a.name || a.kind}">
+            ${a.kind === 'image' ? `<img src="${a.dataUrl}" alt="" />`
+              : a.kind === 'video' ? `<video src="${a.dataUrl}" muted></video>`
+              : a.kind === 'pdf' ? '<span class="att-ico">📄</span>'
+              : a.kind === 'file' ? '<span class="att-ico">📎</span>'
+              : '<span class="att-ico">🎵</span>'}
             <button class="x" data-rm="${i}">✕</button>
           </div>`).join('');
         $('btn-attach').classList.toggle('has', !!atts.length);
@@ -432,9 +444,9 @@
         for (const f of fileInput.files) {
           if (f.size > 24 * 1024 * 1024) { global.ZY.ui.toast(global.ZY.t('toast.file_big')); continue; }
           const dataUrl = await new Promise((res) => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); });
-          const kind = /^image\//.test(f.type) ? 'image' : /^video\//.test(f.type) ? 'video' : 'audio';
-          const fmt = kind === 'audio' ? (f.type.split('/')[1] || 'wav').split(';')[0] : undefined;
-          global.ZY.Agent.attachments.push({ kind, dataUrl, name: f.name, format: fmt });
+          const kind = App._kindOf(f.type, f.name);
+          const format = kind === 'audio' ? App._audioFormat(f.type, f.name) : undefined;
+          global.ZY.Agent.attachments.push({ kind, dataUrl, name: f.name, format, mime: f.type });
         }
         fileInput.value = '';
         render();
@@ -442,6 +454,36 @@
       });
       // Let the camera button refresh the same tray without duplicating it.
       App._renderAttachTray = render;
+    },
+
+    /** What this file really is. A PDF is not audio, and a document is not a
+     *  picture — classifying by name as well as MIME is what keeps them apart. */
+    _kindOf(mime, name) {
+      const m = String(mime || '').toLowerCase();
+      const n = String(name || '').toLowerCase();
+      if (m.startsWith('image/')) return 'image';
+      if (m.startsWith('video/')) return 'video';
+      if (m.startsWith('audio/')) return 'audio';
+      if (m === 'application/pdf' || n.endsWith('.pdf')) return 'pdf';
+      if (/\.(png|jpe?g|gif|webp|bmp|heic|avif)$/.test(n)) return 'image';
+      if (/\.(mp4|webm|mov|mkv|avi|m4v)$/.test(n)) return 'video';
+      if (/\.(mp3|wav|m4a|aac|ogg|oga|opus|flac|amr|3gp)$/.test(n)) return 'audio';
+      return 'file';
+    },
+
+    /** The container name the provider expects (`mp3`, not `mpeg`). */
+    _audioFormat(mime, name) {
+      const m = String(mime || '').toLowerCase();
+      const n = String(name || '').toLowerCase();
+      if (/mpeg|mp3/.test(m) || n.endsWith('.mp3')) return 'mp3';
+      if (/mp4|m4a|x-m4a/.test(m) || /\.(m4a|mp4)$/.test(n)) return 'm4a';
+      if (/wav|x-wav/.test(m) || n.endsWith('.wav')) return 'wav';
+      if (/ogg|opus/.test(m) || /\.(ogg|oga|opus)$/.test(n)) return 'ogg';
+      if (/webm/.test(m) || n.endsWith('.webm')) return 'webm';
+      if (/aac/.test(m) || n.endsWith('.aac')) return 'aac';
+      if (/flac/.test(m) || n.endsWith('.flac')) return 'flac';
+      const ext = n.split('.').pop();
+      return ext && ext.length <= 5 ? ext : 'mp3';
     },
 
     /** Fill the bottom-left badge with the version this build really is.
@@ -529,6 +571,31 @@
       });
       $('set-base').addEventListener('change', () => global.ZY.ui.toast(global.ZY.t('toast.settings_saved')));
       $('set-brand').addEventListener('change', () => { const v = $('set-brand').value; document.title = v || 'ZYRAXON'; });
+
+      // GitHub: the user's own token, kept on the device, used for real repos.
+      const ghStatus = (text) => { const el = $('set-gh-status'); if (el) el.textContent = text; };
+      $('set-gh-token').value = global.ZY.GH.token() ? '••••••••' : '';
+      ghStatus(global.ZY.GH.connected() ? 'টোকেন সেভ করা আছে' : 'টোকেন দেওয়া হয়নি');
+      $('set-gh-save').addEventListener('click', async () => {
+        const v = String($('set-gh-token').value || '').trim();
+        if (!v || /^•+$/.test(v)) return global.ZY.ui.toast('আগে টোকেন পেস্ট করো');
+        global.ZY.GH.setToken(v);
+        $('set-gh-token').value = '••••••••';
+        ghStatus('যাচাই করা হচ্ছে…');
+        const a = await global.ZY.GH.account();
+        ghStatus(a.ok ? `কানেক্টেড: ${a.login} (${a.repos.length}টি রিপো)` : `ব্যর্থ: ${a.message || a.error}`);
+        global.ZY.ui.toast(a.ok ? `গিটহাব কানেক্টেড: ${a.login}` : 'টোকেন যাচাই হয়নি');
+      });
+      $('set-gh-check').addEventListener('click', async () => {
+        ghStatus('যাচাই করা হচ্ছে…');
+        const a = await global.ZY.GH.account();
+        ghStatus(a.ok ? `কানেক্টেড: ${a.login} (${a.repos.length}টি রিপো)` : `ব্যর্থ: ${a.message || a.error}`);
+      });
+      $('set-gh-clear').addEventListener('click', () => {
+        global.ZY.GH.setToken('');
+        $('set-gh-token').value = '';
+        ghStatus('টোকেন মুছে ফেলা হলো');
+      });
 
       // orb animation style picker — the user asked for several to choose from
       const orbSel = $('set-orb');

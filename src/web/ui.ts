@@ -101,7 +101,9 @@
       if (!atts || !atts.length) return '';
       const one = (a) => a.kind === 'image' ? `<img src="${a.dataUrl}" alt="" />`
         : a.kind === 'video' ? `<video src="${a.dataUrl}" muted playsinline></video>`
-          : `<span class="aud">🎵 ${esc(a.name || 'অডিও')}</span>`;
+          : a.kind === 'pdf' ? `<span class="aud">📄 ${esc(a.name || 'PDF')}</span>`
+            : a.kind === 'file' ? `<span class="aud">📎 ${esc(a.name || 'ফাইল')}</span>`
+              : `<span class="aud">🎵 ${esc(a.name || 'অডিও')}</span>`;
       return `<span class="msg-media">${atts.map(one).join('')}</span>`;
     },
     _chips(tools) {

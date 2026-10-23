@@ -5,6 +5,7 @@
     const MUTATING = /^(write_file|edit_file|generate_file|delete_file|publish_website|github_publish|github_workflow|github_actions|open_app|launch_url|tap|swipe|type_text|press_key|clipboard_write|share|notify|download_file|memory_write|todo_write|call_answer|call_hangup|call_dial|call_auto_answer|run_shell)$/;
     const VERIFYING = /^(read_file|read_url|read_media|read_screen|screen_shot|list_dir|find_files|grep_files|list_apps|sys_info|platform_info|process_list|clipboard_read|memory_read|github_account|call_state|geolocate|web_search)$/;
     const SYSTEM_PROMPT_URL = "/knowledge/zyraxon-system-prompt.md";
+    const PROVIDER_CHAT_URL = global.ZY && global.ZY.Platform && global.ZY.Platform.provider ? global.ZY.Platform.provider.chat : "https://zyraxonai.lovable.app/api/public/zyraxon/v1/chat/completions";
     const Agent = {
       history: [],
       // OpenAI messages
@@ -141,8 +142,10 @@ ${call}` : "",
       },
       /**
        * Build a user message, folding any pending attachments in as OpenAI
-       * multimodal content parts. Every ZYRAXON model accepts image, video and
-       * audio input, so we forward them verbatim rather than describing them.
+       * multimodal content parts. Every ZYRAXON model accepts image, video,
+       * audio and PDF input, so we forward them verbatim rather than describing
+       * them. The part shapes follow the provider's own spec exactly: audio is
+       * bare base64 (no data-URL prefix), a document is a `file` part.
        */
       _buildUserMessage(text) {
         const atts = Agent.attachments || [];
@@ -152,11 +155,18 @@ ${call}` : "",
         if (text) parts.push({ type: "text", text });
         for (const p of scr) parts.push(p);
         for (const a of atts) {
-          if (a.kind === "image") parts.push({ type: "image_url", image_url: { url: a.dataUrl } });
-          else if (a.kind === "video") parts.push({ type: "video_url", video_url: { url: a.dataUrl } });
-          else if (a.kind === "audio") {
-            parts.push({ type: "input_audio", input_audio: { data: a.dataUrl, format: a.format || "wav" } });
-            parts.push({ type: "text", text: `(\u09B8\u0982\u09AF\u09C1\u0995\u09CD\u09A4 \u0985\u09A1\u09BF\u0993 \u09AB\u09BE\u0987\u09B2: ${a.name || "audio"} \u2014 \u098F\u099F\u09BF \u09AA\u09A1\u09BC\u09A4\u09C7 \u09A8\u09BE \u09AA\u09BE\u09B0\u09B2\u09C7 \u09B8\u09CE\u09AD\u09BE\u09AC\u09C7 \u09AC\u09B2\u09CB \u09AF\u09C7 \u098F\u0987 \u09AE\u09A1\u09C7\u09B2\u09C7 \u0985\u09A1\u09BF\u0993 \u09AA\u09A1\u09BC\u09BE \u09AF\u09BE\u099A\u09CD\u099B\u09C7 \u09A8\u09BE\u0964)` });
+          if (a.kind === "image") {
+            parts.push({ type: "image_url", image_url: { url: a.dataUrl } });
+          } else if (a.kind === "video") {
+            parts.push({ type: "video_url", video_url: { url: a.dataUrl } });
+          } else if (a.kind === "audio") {
+            const b64 = String(a.dataUrl || "").includes(",") ? String(a.dataUrl).split(",")[1] : String(a.dataUrl || "");
+            parts.push({ type: "input_audio", input_audio: { data: b64, format: a.format || "mp3" } });
+            parts.push({ type: "text", text: `(\u09B8\u0982\u09AF\u09C1\u0995\u09CD\u09A4 \u0985\u09A1\u09BF\u0993: ${a.name || "audio"} \u2014 \u09B6\u09C1\u09A8\u09C7 \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09BE\u0993\u0964)` });
+          } else {
+            const name = a.name || (a.kind === "pdf" ? "document.pdf" : "file");
+            parts.push({ type: "file", file: { filename: name, file_data: a.dataUrl } });
+            parts.push({ type: "text", text: `(\u09B8\u0982\u09AF\u09C1\u0995\u09CD\u09A4 \u09A1\u0995\u09C1\u09AE\u09C7\u09A8\u09CD\u099F: ${name} \u2014 \u09AA\u09A1\u09BC\u09C7 \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09BE\u0993\u0964)` });
           }
         }
         Agent.attachments = [];
@@ -228,6 +238,9 @@ ${call}` : "",
           let round = 0;
           let dirty = false;
           let verified = false;
+          let workDone = false;
+          let todoTouched = false;
+          let nudges = 0;
           let lastSig = "";
           let sameSig = 0;
           for (; ; ) {
@@ -284,6 +297,11 @@ ${call}` : "",
                 Agent.history.push({ role: "user", content: `[system] ${open.length} todo(s) are still open: ${open.map((t) => t.title).join(", ")}. Do not stop \u2014 make the next tool call.` });
                 continue;
               }
+              if (todos.length && todoTouched && !workDone && nudges < 2) {
+                nudges++;
+                Agent.history.push({ role: "user", content: '[system] \u09A4\u09C1\u09AE\u09BF \u099F\u09C1\u09A1\u09C1 \u09AC\u09CB\u09B0\u09CD\u09A1\u09C7 \u09B8\u09AC \u0995\u09BE\u099C "done" \u09B2\u09BF\u0996\u09C7\u099B, \u0995\u09BF\u09A8\u09CD\u09A4\u09C1 \u098F\u0996\u09A8\u09CB \u098F\u0995\u099F\u09BE\u0993 \u0986\u09B8\u09B2 \u099F\u09C1\u09B2 \u099A\u09BE\u09B2\u09BE\u0993 \u09A8\u09BF \u2014 \u0995\u09CB\u09A8\u09CB \u09AB\u09BE\u0987\u09B2 \u09B2\u09C7\u0996\u09BE \u09B9\u09AF\u09BC\u09A8\u09BF, \u0995\u09CB\u09A8\u09CB \u09B8\u09BE\u0987\u099F \u09AA\u09BE\u09AC\u09B2\u09BF\u09B6 \u09B9\u09AF\u09BC\u09A8\u09BF, \u0995\u09CB\u09A8\u09CB \u0985\u09CD\u09AF\u09BE\u09AA \u0996\u09CB\u09B2\u09BE \u09B9\u09AF\u09BC\u09A8\u09BF\u0964 \u09A8\u09BF\u099B\u0995 \u099F\u09C1\u09A1\u09C1 \u09B2\u09C7\u0996\u09BE \u0995\u09BE\u099C \u09A8\u09AF\u09BC\u0964 \u098F\u0996\u09A8\u0987 \u0986\u09B8\u09B2 \u099F\u09C1\u09B2 \u0995\u09B2 \u0995\u09B0\u09CB (generate_file / publish_website / open_app / run_shell / read_url \u2026) \u098F\u09AC\u0982 \u09AB\u09B2\u09BE\u09AB\u09B2 \u09A6\u09C7\u0996\u09BE\u0993\u0964' });
+                continue;
+              }
               if (dirty && !verified) {
                 Agent.history.push({ role: "user", content: '[system] \u09A4\u09C1\u09AE\u09BF \u0995\u09BF\u099B\u09C1 \u09AC\u09A6\u09B2\u09C7\u099B \u0995\u09BF\u09A8\u09CD\u09A4\u09C1 \u098F\u0996\u09A8\u09CB \u09AF\u09BE\u099A\u09BE\u0987 \u0995\u09B0\u09CB \u09A8\u09BF\u0964 \u098F\u0996\u09A8\u0987 \u098F\u0995\u099F\u09BE read-only \u099F\u09C1\u09B2 \u099A\u09BE\u09B2\u09BE\u0993 (read_file / read_url / read_screen / screen_shot / list_dir) \u098F\u09AC\u0982 \u0986\u09B8\u09B2 \u09AB\u09B2\u09BE\u09AB\u09B2 \u09A6\u09C7\u0996\u09BE\u0993\u0964 \u09AA\u09CD\u09B0\u09AE\u09BE\u09A3 \u099B\u09BE\u09A1\u09BC\u09BE "\u09B9\u09AF\u09BC\u09C7 \u0997\u09C7\u099B\u09C7" \u09AC\u09B2\u09A4\u09C7 \u09AA\u09BE\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964' });
                 continue;
@@ -297,12 +315,17 @@ ${call}` : "",
             for (const r of results) {
               const name = r.name || "";
               const ok = !(r.result && r.result.ok === false);
+              if (name === "todo_write") {
+                todoTouched = true;
+                continue;
+              }
               if (MUTATING.test(name) && ok) {
                 dirty = true;
                 verified = false;
               } else if (VERIFYING.test(name) && ok) {
                 verified = true;
               }
+              if (ok) workDone = true;
             }
             const seen = results.map((r) => r.result && r.result.data && r.result.data.dataUrl && r.result.data).filter(Boolean);
             if (seen.length && !Agent.aborted) {
@@ -396,7 +419,8 @@ ${call}` : "",
         const canImage = caps.includes("image");
         const canVideo = caps.includes("video");
         const canAudio = caps.includes("audio");
-        if (canImage && canVideo && canAudio) return messages;
+        const canPdf = caps.includes("pdf");
+        if (canImage && canVideo && canAudio && canPdf) return messages;
         const note = (kind) => `(\u098F\u0995\u099F\u09BF ${kind} \u09B8\u0982\u09AF\u09C1\u0995\u09CD\u09A4 \u099B\u09BF\u09B2; \u098F\u0987 \u09AE\u09A1\u09C7\u09B2\u099F\u09BF ${kind} \u0987\u09A8\u09AA\u09C1\u099F \u09B8\u09AE\u09B0\u09CD\u09A5\u09A8 \u0995\u09B0\u09C7 \u09A8\u09BE \u2014 \u09AC\u09BF\u09B7\u09AF\u09BC\u099F\u09BF \u09AC\u09B0\u09CD\u09A3\u09A8\u09BE \u0995\u09B0\u09C7 \u098F\u0997\u09BF\u09AF\u09BC\u09C7 \u09AF\u09BE\u0993, "\u0995\u09BF\u099B\u09C1 \u09A6\u09C7\u0996\u099B\u09BF \u09A8\u09BE" \u09AC\u09B2\u09C7 \u09A5\u09C7\u09AE\u09CB \u09A8\u09BE\u0964)`;
         return messages.map((m) => {
           if (!Array.isArray(m.content)) return m;
@@ -411,6 +435,9 @@ ${call}` : "",
             } else if (p.type === "input_audio") {
               if (canAudio) parts.push(p);
               else parts.push({ type: "text", text: note("\u0985\u09A1\u09BF\u0993") });
+            } else if (p.type === "file") {
+              if (canPdf) parts.push(p);
+              else parts.push({ type: "text", text: note("\u09A1\u0995\u09C1\u09AE\u09C7\u09A8\u09CD\u099F") });
             } else parts.push(p);
           }
           return { ...m, content: parts.length ? parts : [{ type: "text", text: "(\u09B8\u0982\u09AF\u09C1\u0995\u09CD\u09A4 \u09AE\u09BF\u09A1\u09BF\u09AF\u09BC\u09BE \u09AC\u09BE\u09A6 \u09A6\u09C7\u0993\u09AF\u09BC\u09BE \u09B9\u09B2\u09CB)" }] };
@@ -420,12 +447,13 @@ ${call}` : "",
       _capsOf(id) {
         const list = global.ZY.App && global.ZY.App.models || [];
         const m = list.find((x) => x.id === id);
-        const caps = m && m.input_modalities || ["text"];
+        const caps = m && m.input_modalities || ["text", "image", "audio", "video", "pdf"];
         return caps.map((c) => String(c).toLowerCase());
       },
       /**
-       * Which input kinds this turn actually carries (image / video / audio), so
-       * only a model that really accepts them is ever asked to handle it.
+       * Which input kinds this turn actually carries (image / video / audio /
+       * document), so only a model that really accepts them is ever asked to
+       * handle it.
        */
       _needModalities(messages) {
         const need = /* @__PURE__ */ new Set();
@@ -435,6 +463,7 @@ ${call}` : "",
             if (p.type === "image_url") need.add("image");
             else if (p.type === "video_url") need.add("video");
             else if (p.type === "input_audio") need.add("audio");
+            else if (p.type === "file") need.add("pdf");
           }
         }
         return [...need];
@@ -475,8 +504,11 @@ ${call}` : "",
         const ui = global.ZY.ui;
         global.ZY.VOICE && global.ZY.VOICE.TTS.resetLive();
         const need = Agent._needModalities(messages);
-        const useProxy = global.ZY.store.get("proxy", "proxy") === "proxy";
-        const url = useProxy ? "/api/chat" : "https://zyraxonai.lovable.app/api/public/zyraxon/v1/chat/completions";
+        const wantProxy = global.ZY.store.get("proxy", "proxy") === "proxy";
+        const useProxy = wantProxy && !!(global.ZY.Platform && global.ZY.Platform.hasServer && global.ZY.Platform.hasServer());
+        const url = useProxy ? "/api/chat" : PROVIDER_CHAT_URL;
+        const viaProxy = { used: useProxy, url };
+        Agent._lastTransport = viaProxy;
         let chain = (opts.chain || Agent._chain(opts.model)).filter((m) => Agent._canTake(m, need));
         if (!chain.length) chain = Agent._mediaCapable(need);
         const hedgeMs = Math.max(1200, Number(global.ZY.store.get("hedgeMs", 6e5)) || 6e5);

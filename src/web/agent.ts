@@ -24,6 +24,11 @@
   // change, is real evidence that the change works.
   const VERIFYING = /^(read_file|read_url|read_media|read_screen|screen_shot|list_dir|find_files|grep_files|list_apps|sys_info|platform_info|process_list|clipboard_read|memory_read|github_account|call_state|geolocate|web_search)$/;
   const SYSTEM_PROMPT_URL = '/knowledge/zyraxon-system-prompt.md';
+  // The model provider itself. This is the only transport the APK can always
+  // rely on: its own origin serves static files and nothing else.
+  const PROVIDER_CHAT_URL = (global.ZY && global.ZY.Platform && global.ZY.Platform.provider
+    ? global.ZY.Platform.provider.chat
+    : 'https://zyraxonai.lovable.app/api/public/zyraxon/v1/chat/completions');
 
   const Agent: any = {
     history: [],           // OpenAI messages
@@ -130,8 +135,10 @@
 
     /**
      * Build a user message, folding any pending attachments in as OpenAI
-     * multimodal content parts. Every ZYRAXON model accepts image, video and
-     * audio input, so we forward them verbatim rather than describing them.
+     * multimodal content parts. Every ZYRAXON model accepts image, video,
+     * audio and PDF input, so we forward them verbatim rather than describing
+     * them. The part shapes follow the provider's own spec exactly: audio is
+     * bare base64 (no data-URL prefix), a document is a `file` part.
      */
     _buildUserMessage(text) {
       const atts = Agent.attachments || [];
@@ -144,14 +151,23 @@
       if (text) parts.push({ type: 'text', text });
       for (const p of scr) parts.push(p);
       for (const a of atts) {
-        if (a.kind === 'image') parts.push({ type: 'image_url', image_url: { url: a.dataUrl } });
-        else if (a.kind === 'video') parts.push({ type: 'video_url', video_url: { url: a.dataUrl } });
-        else if (a.kind === 'audio') {
-          // Some provider revisions accept audio, some silently drop the part.
-          // Send it the OpenAI way and name the file, so a model that cannot
-          // decode it says so instead of claiming nothing was attached.
-          parts.push({ type: 'input_audio', input_audio: { data: a.dataUrl, format: a.format || 'wav' } });
-          parts.push({ type: 'text', text: `(সংযুক্ত অডিও ফাইল: ${a.name || 'audio'} — এটি পড়তে না পারলে সৎভাবে বলো যে এই মডেলে অডিও পড়া যাচ্ছে না।)` });
+        if (a.kind === 'image') {
+          parts.push({ type: 'image_url', image_url: { url: a.dataUrl } });
+        } else if (a.kind === 'video') {
+          parts.push({ type: 'video_url', video_url: { url: a.dataUrl } });
+        } else if (a.kind === 'audio') {
+          // The provider wants the bytes without the data-URL prefix and the
+          // container named separately; sending the whole data URL is what made
+          // an earlier build's audio silently unreadable.
+          const b64 = String(a.dataUrl || '').includes(',') ? String(a.dataUrl).split(',')[1] : String(a.dataUrl || '');
+          parts.push({ type: 'input_audio', input_audio: { data: b64, format: a.format || 'mp3' } });
+          parts.push({ type: 'text', text: `(সংযুক্ত অডিও: ${a.name || 'audio'} — শুনে উত্তর দাও।)` });
+        } else {
+          // PDF and any other document: one `file` part, named, so the model
+          // knows what it is reading.
+          const name = a.name || (a.kind === 'pdf' ? 'document.pdf' : 'file');
+          parts.push({ type: 'file', file: { filename: name, file_data: a.dataUrl } });
+          parts.push({ type: 'text', text: `(সংযুক্ত ডকুমেন্ট: ${name} — পড়ে উত্তর দাও।)` });
         }
       }
       Agent.attachments = [];
@@ -239,6 +255,13 @@
         // repeating voice and the long delay, not the network.
         let dirty = false;     // has anything changed since the last check?
         let verified = false;  // has a read-only tool succeeded since the change?
+        // The user's exact complaint: the model writes a todo board, marks every
+        // row `done` in the same breath and stops — with no real tool ever run.
+        // `todo_write` alone is bookkeeping, not work, so it must not count as
+        // evidence that anything happened.
+        let workDone = false;  // did any tool other than todo_write really run?
+        let todoTouched = false; // was the todo board written during THIS turn?
+        let nudges = 0;        // bounded pushes against an all-done-but-idle board
         let lastSig = '';      // detects a model that repeats itself
         let sameSig = 0;
         for (;;) {
@@ -308,6 +331,15 @@
               Agent.history.push({ role: 'user', content: `[system] ${open.length} todo(s) are still open: ${open.map((t) => t.title).join(', ')}. Do not stop — make the next tool call.` });
               continue;
             }
+            // Every todo is marked `done` but no real tool has run: the model
+            // wrote a plan, ticked it off and tried to stop. That is precisely
+            // the failure the user reported, so refuse the answer and demand the
+            // actual work. Bounded, so a genuinely empty task cannot spin.
+            if (todos.length && todoTouched && !workDone && nudges < 2) {
+              nudges++;
+              Agent.history.push({ role: 'user', content: '[system] তুমি টুডু বোর্ডে সব কাজ "done" লিখেছ, কিন্তু এখনো একটাও আসল টুল চালাও নি — কোনো ফাইল লেখা হয়নি, কোনো সাইট পাবলিশ হয়নি, কোনো অ্যাপ খোলা হয়নি। নিছক টুডু লেখা কাজ নয়। এখনই আসল টুল কল করো (generate_file / publish_website / open_app / run_shell / read_url …) এবং ফলাফল দেখাও।' });
+              continue;
+            }
             if (dirty && !verified) {
               // Nothing has been checked since the last change. Do not accept
               // "it works" as proof — ask for the real read-back.
@@ -327,8 +359,12 @@
           for (const r of results) {
             const name = r.name || '';
             const ok = !(r.result && r.result.ok === false);
+            // Bookkeeping is not work: writing the todo board changes nothing in
+            // the world, so it must never satisfy the "did something happen" test.
+            if (name === 'todo_write') { todoTouched = true; continue; }
             if (MUTATING.test(name) && ok) { dirty = true; verified = false; }
             else if (VERIFYING.test(name) && ok) { verified = true; }
+            if (ok) workDone = true;
           }
           // A screenshot or a read image is only useful if the model can SEE it.
           // Tool results are text, so the picture is re-sent as a real image
@@ -439,7 +475,8 @@
       const canImage = caps.includes('image');
       const canVideo = caps.includes('video');
       const canAudio = caps.includes('audio');
-      if (canImage && canVideo && canAudio) return messages;
+      const canPdf = caps.includes('pdf');
+      if (canImage && canVideo && canAudio && canPdf) return messages;
       const note = (kind) => `(একটি ${kind} সংযুক্ত ছিল; এই মডেলটি ${kind} ইনপুট সমর্থন করে না — বিষয়টি বর্ণনা করে এগিয়ে যাও, "কিছু দেখছি না" বলে থেমো না।)`;
       return messages.map((m) => {
         if (!Array.isArray(m.content)) return m;
@@ -448,6 +485,7 @@
           if (p.type === 'image_url') { if (canImage) parts.push(p); else parts.push({ type: 'text', text: note('ছবি') }); }
           else if (p.type === 'video_url') { if (canVideo) parts.push(p); else parts.push({ type: 'text', text: note('ভিডিও') }); }
           else if (p.type === 'input_audio') { if (canAudio) parts.push(p); else parts.push({ type: 'text', text: note('অডিও') }); }
+          else if (p.type === 'file') { if (canPdf) parts.push(p); else parts.push({ type: 'text', text: note('ডকুমেন্ট') }); }
           else parts.push(p);
         }
         return { ...m, content: parts.length ? parts : [{ type: 'text', text: '(সংযুক্ত মিডিয়া বাদ দেওয়া হলো)' }] };
@@ -458,13 +496,17 @@
     _capsOf(id) {
       const list = (global.ZY.App && global.ZY.App.models) || [];
       const m = list.find((x) => x.id === id);
-      const caps = (m && m.input_modalities) || ['text'];
+      // Until the live catalogue has arrived, assume the full set: every
+      // ZYRAXON model accepts all of them, and assuming text-only would drop a
+      // picture the user just attached for no reason.
+      const caps = (m && m.input_modalities) || ['text', 'image', 'audio', 'video', 'pdf'];
       return caps.map((c) => String(c).toLowerCase());
     },
 
     /**
-     * Which input kinds this turn actually carries (image / video / audio), so
-     * only a model that really accepts them is ever asked to handle it.
+     * Which input kinds this turn actually carries (image / video / audio /
+     * document), so only a model that really accepts them is ever asked to
+     * handle it.
      */
     _needModalities(messages) {
       const need = new Set();
@@ -474,6 +516,7 @@
           if (p.type === 'image_url') need.add('image');
           else if (p.type === 'video_url') need.add('video');
           else if (p.type === 'input_audio') need.add('audio');
+          else if (p.type === 'file') need.add('pdf');
         }
       }
       return [...need];
@@ -517,8 +560,15 @@
       const ui = global.ZY.ui;
       global.ZY.VOICE && global.ZY.VOICE.TTS.resetLive();
       const need = Agent._needModalities(messages);
-      const useProxy = global.ZY.store.get('proxy', 'proxy') === 'proxy';
-      const url = useProxy ? '/api/chat' : 'https://zyraxonai.lovable.app/api/public/zyraxon/v1/chat/completions';
+      // Transport: the proxy is a convenience, never a requirement. When no
+      // server answers (the APK runs from a static asset host) the request goes
+      // straight to the provider, whose CORS is open. Without this the APK
+      // posted into its own origin, got a 404, and the chat silently died.
+      const wantProxy = global.ZY.store.get('proxy', 'proxy') === 'proxy';
+      const useProxy = wantProxy && !!(global.ZY.Platform && global.ZY.Platform.hasServer && global.ZY.Platform.hasServer());
+      const url = useProxy ? '/api/chat' : PROVIDER_CHAT_URL;
+      const viaProxy = { used: useProxy, url };
+      Agent._lastTransport = viaProxy;
 
       let chain = ((opts as any).chain || Agent._chain((opts as any).model)).filter((m) => Agent._canTake(m, need));
       if (!chain.length) chain = Agent._mediaCapable(need);

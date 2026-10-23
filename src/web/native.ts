@@ -77,6 +77,16 @@
       setPitch(p) { if (N) N.ttsSetPitch(p); },
       speak(text, lang) { if (!N) return null; return N.ttsSpeak(text, lang || ''); },
       stop() { if (N) N.ttsStop(); },
+      /**
+       * Real speech bytes for `text`, fetched by the bridge because Google's
+       * translate endpoint sends no CORS headers. Returns
+       * { ok, dataUrl, lang, bytes } or { error }. Only present on Android.
+       */
+      fetch(text, lang) {
+        if (!N || !N.ttsFetch) return null;
+        try { return JSON.parse(N.ttsFetch(String(text), lang || '')); }
+        catch (e) { return { error: String(e) }; }
+      },
     },
 
     /* ───────── voice in: native STT, any language ───────── */
@@ -119,8 +129,30 @@
       overlayMinimized() { return !!(N && N.overlayMinimized && N.overlayMinimized()); },
     },
 
-    /* ───────── real device control ───────── */
+    /* ───────── real network, free of CORS ───────── */
+    http: {
+      available() { return !!(N && N.httpFetch); },
+      fetch(body) {
+        if (!N || !N.httpFetch) return null;
+        try { return JSON.parse(N.httpFetch(JSON.stringify(body || {}))); }
+        catch (e) { return { error: String(e) }; }
+      },
+    },
+
+    /* ───────── real filesystem (no server needed) ───────── */
+    fs: {
+      available() { return !!(N && N.fsOp); },
+      /** Same contract as the server's /api/fs, so tools need no special case. */
+      op(body) {
+        if (!N || !N.fsOp) return null;
+        try { return JSON.parse(N.fsOp(JSON.stringify(body || {}))); }
+        catch (e) { return { error: String(e) }; }
+      },
+    },
+
+    /* ───────── real device facts (no server needed) ───────── */
     device: {
+      info() { if (!N || !N.deviceInfo) return null; try { return JSON.parse(N.deviceInfo()); } catch { return null; } },
       openApp(nameOrPkg) { if (N) N.openApp(nameOrPkg); },
       /** Does this app really exist here? Never claim an app that isn't installed. */
       resolveApp(nameOrPkg) {

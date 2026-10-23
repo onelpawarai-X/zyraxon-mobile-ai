@@ -34,7 +34,13 @@ function findChrome() {
 
 const PORT = Number(process.argv[2] || 12000);
 const APP = `http://127.0.0.1:${PORT}`;
-const CDP_PORT = 9334;
+// A fixed debug port is a trap: a Chromium left behind by an earlier run keeps
+// listening on it, the new browser fails to bind, and attach() silently drives
+// the *stale* session instead — where the task already finished, so the run
+// reports "0 tool calls" for a perfectly working app. A fresh port per run, and
+// an attach that refuses a page which is already sitting on the app, removes
+// that whole class of phantom failure.
+const CDP_PORT = 9400 + Math.floor(Math.random() * 500);
 const PROMPT = 'একটা ছোট ওয়েবসাইট বানিয়ে পাবলিশ করো যেখানে লেখা থাকবে হ্যালো জাইরাক্সন।';
 
 const results = [];
@@ -70,9 +76,18 @@ class CDP {
           await c.send('Page.enable');
           await c.send('Runtime.enable');
           // Headless Chromium has no speech engine; turning TTS off keeps the
-          // run silent without changing any of the code paths under test.
+          // run silent without changing any of the code paths under test. The
+          // storage is also wiped once, so a run can never inherit a finished
+          // todo list (or a transcript) from an earlier session and stop early.
           await c.send('Page.addScriptToEvaluateOnNewDocument', {
-            source: `localStorage.setItem('zyraxon:settings', JSON.stringify({tts:false,automic:false}));`,
+            source: `try {
+              if (!sessionStorage.getItem('__zyr_clean')) {
+                localStorage.clear();
+                try { indexedDB.deleteDatabase('zyraxon'); } catch (e) {}
+                sessionStorage.setItem('__zyr_clean', '1');
+              }
+            } catch (e) {}
+            localStorage.setItem('zyraxon:settings', JSON.stringify({tts:false,automic:false}));`,
           });
           await c.send('Page.navigate', { url });
           await sleep(2500);
@@ -260,10 +275,16 @@ async function main() {
     record('publish_website was really called', names.includes('publish_website'), names);
 
     // ── 6. the published site really serves ──
+    // Prefer the URL the tool itself stored as `lastSite`; the tool log is a
+    // fallback. Any random link in a result would prove nothing.
     const url = await cdp.eval(`(() => {
+      const stored = window.ZY.store.get('lastSite', '');
+      if (stored) return stored;
       const txt = [...document.querySelectorAll('#tl-list .tl-row .tl-res')].map(n => n.textContent).join(' ');
-      const m = txt.match(/https?:\\/\\/[^\\s"']+/);
-      return m ? m[0] : '';
+      const m = txt.match(/https?:\\/\\/[^\\s"']+\\/sites\\/[^\\s"']+/);
+      if (m) return m[0];
+      const any = txt.match(/https?:\\/\\/[^\\s"']+/);
+      return any ? any[0] : '';
     })()`);
     let status = 0;
     if (url) {
@@ -524,6 +545,224 @@ async function main() {
     record('speaking Bangla shows up in the chat box as it is spoken',
       heard.ok === true && heard.inBox === 'আমার ফেসবুকে মেসেজ দাও' &&
       heard.ttsEcho === false, heard);
+
+    // ── 14. every media kind is sent in the exact shape the provider expects ──
+    // The user's complaint was that a model should never be treated as text-only.
+    // This checks the app's own message builder: a picture, a video, a
+    // recording and a PDF must each become the right content part, and audio
+    // must carry bare base64 (a data-URL prefix there is silently unreadable).
+    const media = await cdp.eval(`(() => {
+      const A = window.ZY.Agent;
+      const keep = A.attachments;
+      A.attachments = [
+        { kind: 'image', dataUrl: 'data:image/png;base64,AAAA', name: 'p.png' },
+        { kind: 'video', dataUrl: 'data:video/mp4;base64,BBBB', name: 'v.mp4' },
+        { kind: 'audio', dataUrl: 'data:audio/mpeg;base64,CCCC', name: 'a.mp3', format: 'mp3' },
+        { kind: 'pdf', dataUrl: 'data:application/pdf;base64,DDDD', name: 'd.pdf' },
+      ];
+      const msg = A._buildUserMessage('দেখো');
+      A.attachments = keep;
+      const kinds = msg.content.map((p) => p.type);
+      const audio = msg.content.find((p) => p.type === 'input_audio');
+      const file = msg.content.find((p) => p.type === 'file');
+      const img = msg.content.find((p) => p.type === 'image_url' && p.image_url.url === 'data:image/png;base64,AAAA');
+      const vid = msg.content.find((p) => p.type === 'video_url');
+      // Every model in the live catalogue accepts all five modalities.
+      const caps = A._capsOf('zyraxon-apex');
+      const need = A._needModalities(msg.content.map((p) => ({ role: 'user', content: [p] })));
+      return JSON.stringify({
+        kinds,
+        audioBare: !!audio && audio.input_audio.data === 'CCCC',
+        audioFormat: audio && audio.input_audio.format,
+        fileShape: !!file && file.file.filename === 'd.pdf' && file.file.file_data.startsWith('data:application/pdf'),
+        img: !!img, vid: !!vid,
+        order: [kinds.indexOf('image_url'), kinds.indexOf('video_url'), kinds.indexOf('input_audio'), kinds.indexOf('file')],
+        caps, need,
+        canTake: A._canTake('zyraxon-apex', need),
+      });
+    })()`);
+    record('an image, video, recording and PDF each become the right content part',
+      media.kinds.includes('text') && media.audioBare === true && media.audioFormat === 'mp3' &&
+      media.fileShape === true && media.img === true && media.vid === true &&
+      media.order.every((i, n) => i >= 0 && (n === 0 || i > media.order[n - 1])), media);
+    record('no model is treated as text-only for media it really accepts',
+      media.caps.includes('image') && media.caps.includes('video') &&
+      media.caps.includes('audio') && media.caps.includes('pdf') &&
+      media.canTake === true &&
+      media.need.sort().join(',') === 'audio,image,pdf,video', media);
+
+    // ── 15. a real picture, attached and answered, end to end ──
+    // The shape test above is not enough: this attaches an actual PNG through
+    // the app's own attachment list and waits for the model to read it. The
+    // marker text exists only inside that image, so reading it proves the bytes
+    // truly reached the model.
+    const MARK = 'ZYRAXON 42';
+    const png = await cdp.eval(`(async () => {
+      const c = document.createElement('canvas'); c.width = 340; c.height = 120;
+      const g = c.getContext('2d');
+      g.fillStyle = '#0b0e1e'; g.fillRect(0, 0, 340, 120);
+      g.fillStyle = '#00f0c8'; g.font = 'bold 34px monospace';
+      g.fillText(${JSON.stringify(MARK)}, 18, 74);
+      return c.toDataURL('image/png');
+    })()`);
+    // Only the newest assistant bubble counts, and only the full marker — a
+    // partial match or an older turn would prove nothing about the picture.
+    // The provider occasionally returns an empty turn, so one retry is allowed;
+    // without it a working app fails this check at random.
+    const sendImage = `(() => {
+      window.ZY.Agent.attachments = [{ kind: 'image', dataUrl: ${JSON.stringify(png)}, name: 'mark.png' }];
+      if (window.ZY.App._renderAttachTray) window.ZY.App._renderAttachTray();
+      const i = document.getElementById('input');
+      i.value = 'এই ছবিতে ইংরেজি বড় হাতের অক্ষরে ঠিক কী লেখা আছে? হুবহু লেখাটা লেখো।';
+      i.dispatchEvent(new Event('input', { bubbles: true }));
+      document.getElementById('btn-send').click();
+      return 'sent';
+    })()`;
+
+    let lastBubble = '', sawMark = false;
+    for (let attempt = 0; attempt < 2 && !sawMark; attempt++) {
+      const before = await cdp.eval(`document.querySelectorAll('.msg.ai .body').length`);
+      await cdp.eval(sendImage);
+      let started = false, idle = 0;
+      for (let i = 0; i < 90; i++) {
+        await sleep(1000);
+        const st = await cdp.eval(`JSON.stringify({
+          busy: !document.getElementById('btn-stop').hidden,
+          n: document.querySelectorAll('.msg.ai .body').length,
+          last: (() => { const b = document.querySelectorAll('.msg.ai .body'); return b.length ? b[b.length - 1].textContent : ''; })(),
+        })`);
+        if (st.busy) { started = true; idle = 0; } else idle++;
+        if (st.n > before) lastBubble = st.last || '';
+        if (st.n > before && /zyraxon\s*42/i.test(lastBubble)) { sawMark = true; break; }
+        // A reply must both start and finish; a moment of idleness right after
+        // the click is not a finished turn.
+        if (started && st.n > before && idle >= 2) break;
+      }
+    }
+    record('a real attached image is read by the model and answered',
+      sawMark, { looked_for: MARK, bubble: lastBubble.slice(0, 300) });
+
+    // ── 16. words spoken mid-task really reach the running turn ──
+    // The user talks while she works, and those words must join the *same*
+    // turn instead of being dropped or starting a second one. A long task is
+    // started, an extra sentence is injected while it runs, and the turn must
+    // pick it up (it appears in the history and is answered in the same run).
+    await cdp.eval(`(() => {
+      window.__inj = { seen: [] };
+      const A = window.ZY.Agent;
+      const origSend = A.send.bind(A);
+      A.send = (t, o) => { window.__inj.seen.push({ text: t, busy: !!A.busy }); return origSend(t, o); };
+      return 1;
+    })()`);
+    await cdp.eval(`(() => {
+      const i = document.getElementById('input');
+      i.value = 'ধীরে ধীরে ১ থেকে ৫ পর্যন্ত গুনে গুনে পাঁচটা টেক্সট ফাইল বানাও, প্রতি ধাপে todo_write কল করে এগোও।';
+      i.dispatchEvent(new Event('input', { bubbles: true }));
+      document.getElementById('btn-send').click();
+      return 'sent';
+    })()`);
+    // Wait until the turn is genuinely running, then talk over it. `busy` on
+    // the Agent is the reliable signal; the stop button lags behind it.
+    let injectBusy = false;
+    for (let i = 0; i < 60; i++) {
+      await sleep(500);
+      injectBusy = await cdp.eval(`!!(window.ZY.Agent && window.ZY.Agent.busy)`);
+      if (injectBusy) break;
+    }
+    await cdp.eval(`(() => {
+      const i = document.getElementById('input');
+      i.value = 'বোনাস: একটা লাইন যোগ করো যে তুমি এখনো কাজ করছ।';
+      i.dispatchEvent(new Event('input', { bubbles: true }));
+      document.getElementById('btn-send').click();
+      return 'sent';
+    })()`);
+    await sleep(4000);
+    const inj = await cdp.eval(`JSON.stringify({
+      hooks: window.__inj ? window.__inj.seen : [],
+      queued: (window.ZY.Agent.pending || []).length,
+      inHistory: (window.ZY.Agent.history || []).some((m) => typeof m.content === 'string' && m.content.includes('বোনাস')),
+    })`);
+    record('words spoken mid-task join the running turn, not a new one',
+      injectBusy && inj.hooks.some((h) => h.busy === true) && (inj.inHistory || inj.queued > 0),
+      { wasBusy: injectBusy, busyCalls: inj.hooks.filter((h) => h.busy).length, queued: inj.queued, inHistory: inj.inHistory });
+
+    // ── 17. a real network read returns the real body ──
+    // read_url goes through netFetch. That helper once returned the browser's
+    // raw Response, whose `text` is a *method* — so every caller read the string
+    // "function text() { [native code] }" instead of the page. This pins the
+    // behaviour down with content that can only come from the live network.
+    const netRead = await cdp.eval(`(async () => {
+      const r = await window.ZY.Tools.execute('read_url', { url: 'https://api.github.com/zen' });
+      return JSON.stringify({ ok: !!r.ok, summary: String(r.summary || ''), data: String((r.data && (r.data.text || r.data.content)) || '').slice(0, 120) });
+    })()`);
+    const readOk = netRead.ok === true && !/native code/.test(JSON.stringify(netRead));
+    record('a real network read returns the real body, not a stub', readOk, netRead);
+
+    // ── 18. an all-done todo board with no real work is refused ──
+    // The user's exact complaint: she writes the todo board, ticks every row
+    // `done` in the same breath and stops — without ever calling a real tool.
+    // This drives the loop with a scripted model that tries to do exactly that,
+    // and asserts the app refuses to accept the answer until real work happens.
+    const noWork = await cdp.eval(`(async () => {
+      const A = window.ZY.Agent;
+      // A previous real turn may still be streaming; words sent while busy are
+      // only queued, which would make this test measure nothing. Abort it and
+      // wait for the loop to unwind before installing the scripted model.
+      if (A.busy) A.stop();
+      const t0 = Date.now();
+      while (A.busy && Date.now() - t0 < 120000) await new Promise((r) => setTimeout(r, 250));
+      if (A.busy) return JSON.stringify({ skipped: 'still busy' });
+      const realStream = A._stream.bind(A);
+      const realRun = A._runTools.bind(A);
+      let rounds = 0, demanded = 0, sawRealWork = false;
+      A._stream = async () => {
+        rounds++;
+        if (rounds === 1) {
+          return { content: '', reasoning: '', toolCalls: [{
+            id: 'c1', type: 'function',
+            function: { name: 'todo_write', arguments: JSON.stringify({ todos: [
+              { id: 't1', title: 'সাইট বানানো', status: 'done' },
+              { id: 't2', title: 'পাবলিশ', status: 'done' },
+            ] }) },
+          }] };
+        }
+        if (rounds === 2) {
+          // The failure: every row is done and the model tries to answer
+          // without a single real tool ever having run.
+          return { content: 'সব কাজ শেষ, সাইট বানানো হয়ে গেছে।', reasoning: '', toolCalls: [] };
+        }
+        if (rounds === 3) {
+          // After the nudge, it finally does real work.
+          return { content: '', reasoning: '', toolCalls: [{
+            id: 'c3', type: 'function',
+            function: { name: 'list_dir', arguments: JSON.stringify({ path: '.' }) },
+          }] };
+        }
+        return { content: 'হয়ে গেছে', reasoning: '', toolCalls: [] };
+      };
+      A._runTools = async (calls) => {
+        const out = await realRun(calls);
+        if (calls.some((c) => c.function.name !== 'todo_write')) sawRealWork = true;
+        return out;
+      };
+      const realPush = A.history.push.bind(A.history);
+      A.history.push = (m) => {
+        if (m && m.role === 'user' && typeof m.content === 'string' && /আসল টুল কল করো/.test(m.content)) demanded++;
+        return realPush(m);
+      };
+      window.ZY.store.set('todos', []);
+      try {
+        await A.send('একটা সাইট বানাও', { hidden: true });
+      } finally {
+        A._stream = realStream; A._runTools = realRun;
+        A.history.push = realPush;
+        window.ZY.store.set('todos', []);
+      }
+      return JSON.stringify({ rounds, demanded, sawRealWork });
+    })()`);
+    record('a board of done todos with no real work is refused, not accepted',
+      noWork.demanded >= 1 && noWork.rounds >= 3 && noWork.sawRealWork === true,
+      noWork);
   } finally {
     cdp.ws.close();
     try { chrome.kill('SIGKILL'); } catch {}

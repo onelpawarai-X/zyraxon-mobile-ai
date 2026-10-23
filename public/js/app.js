@@ -84,14 +84,16 @@
       },
       async loadModels() {
         let list = [];
-        try {
-          const r = await fetch("/api/models");
-          const j = await r.json();
-          list = j.data || [];
-        } catch {
+        const hasSrv = !!(global.ZY.Platform && global.ZY.Platform.hasServer && global.ZY.Platform.hasServer());
+        const modelsUrl = global.ZY.Platform && global.ZY.Platform.provider ? global.ZY.Platform.provider.models : "https://zyraxonai.lovable.app/api/public/zyraxon/v1/models";
+        const sources = hasSrv ? ["/api/models", modelsUrl] : [modelsUrl, "/api/models"];
+        for (const u of sources) {
           try {
-            const r = await fetch("https://zyraxonai.lovable.app/api/public/zyraxon/v1/models");
-            list = (await r.json()).data || [];
+            const r = await fetch(u, { cache: "no-store" });
+            if (!r.ok) continue;
+            const j = await r.json();
+            list = j.data || [];
+            if (list.length) break;
           } catch {
           }
         }
@@ -354,8 +356,8 @@
           const atts = global.ZY.Agent.attachments || [];
           tray.hidden = !atts.length;
           tray.innerHTML = atts.map((a, i) => `
-          <div class="att" data-i="${i}">
-            ${a.kind === "image" ? `<img src="${a.dataUrl}" alt="" />` : a.kind === "video" ? `<video src="${a.dataUrl}" muted></video>` : "\u{1F3B5}"}
+          <div class="att" data-i="${i}" title="${a.name || a.kind}">
+            ${a.kind === "image" ? `<img src="${a.dataUrl}" alt="" />` : a.kind === "video" ? `<video src="${a.dataUrl}" muted></video>` : a.kind === "pdf" ? '<span class="att-ico">\u{1F4C4}</span>' : a.kind === "file" ? '<span class="att-ico">\u{1F4CE}</span>' : '<span class="att-ico">\u{1F3B5}</span>'}
             <button class="x" data-rm="${i}">\u2715</button>
           </div>`).join("");
           $("btn-attach").classList.toggle("has", !!atts.length);
@@ -376,15 +378,43 @@
               r.onload = () => res(r.result);
               r.readAsDataURL(f);
             });
-            const kind = /^image\//.test(f.type) ? "image" : /^video\//.test(f.type) ? "video" : "audio";
-            const fmt = kind === "audio" ? (f.type.split("/")[1] || "wav").split(";")[0] : void 0;
-            global.ZY.Agent.attachments.push({ kind, dataUrl, name: f.name, format: fmt });
+            const kind = App._kindOf(f.type, f.name);
+            const format = kind === "audio" ? App._audioFormat(f.type, f.name) : void 0;
+            global.ZY.Agent.attachments.push({ kind, dataUrl, name: f.name, format, mime: f.type });
           }
           fileInput.value = "";
           render();
           global.ZY.ui.toast(global.ZY.t("toast.attached"));
         });
         App._renderAttachTray = render;
+      },
+      /** What this file really is. A PDF is not audio, and a document is not a
+       *  picture — classifying by name as well as MIME is what keeps them apart. */
+      _kindOf(mime, name) {
+        const m = String(mime || "").toLowerCase();
+        const n = String(name || "").toLowerCase();
+        if (m.startsWith("image/")) return "image";
+        if (m.startsWith("video/")) return "video";
+        if (m.startsWith("audio/")) return "audio";
+        if (m === "application/pdf" || n.endsWith(".pdf")) return "pdf";
+        if (/\.(png|jpe?g|gif|webp|bmp|heic|avif)$/.test(n)) return "image";
+        if (/\.(mp4|webm|mov|mkv|avi|m4v)$/.test(n)) return "video";
+        if (/\.(mp3|wav|m4a|aac|ogg|oga|opus|flac|amr|3gp)$/.test(n)) return "audio";
+        return "file";
+      },
+      /** The container name the provider expects (`mp3`, not `mpeg`). */
+      _audioFormat(mime, name) {
+        const m = String(mime || "").toLowerCase();
+        const n = String(name || "").toLowerCase();
+        if (/mpeg|mp3/.test(m) || n.endsWith(".mp3")) return "mp3";
+        if (/mp4|m4a|x-m4a/.test(m) || /\.(m4a|mp4)$/.test(n)) return "m4a";
+        if (/wav|x-wav/.test(m) || n.endsWith(".wav")) return "wav";
+        if (/ogg|opus/.test(m) || /\.(ogg|oga|opus)$/.test(n)) return "ogg";
+        if (/webm/.test(m) || n.endsWith(".webm")) return "webm";
+        if (/aac/.test(m) || n.endsWith(".aac")) return "aac";
+        if (/flac/.test(m) || n.endsWith(".flac")) return "flac";
+        const ext = n.split(".").pop();
+        return ext && ext.length <= 5 ? ext : "mp3";
       },
       /** Fill the bottom-left badge with the version this build really is.
        *  On Android the package manager is authoritative (the APK cannot lie about
@@ -484,6 +514,32 @@
         $("set-brand").addEventListener("change", () => {
           const v = $("set-brand").value;
           document.title = v || "ZYRAXON";
+        });
+        const ghStatus = (text) => {
+          const el = $("set-gh-status");
+          if (el) el.textContent = text;
+        };
+        $("set-gh-token").value = global.ZY.GH.token() ? "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" : "";
+        ghStatus(global.ZY.GH.connected() ? "\u099F\u09CB\u0995\u09C7\u09A8 \u09B8\u09C7\u09AD \u0995\u09B0\u09BE \u0986\u099B\u09C7" : "\u099F\u09CB\u0995\u09C7\u09A8 \u09A6\u09C7\u0993\u09AF\u09BC\u09BE \u09B9\u09AF\u09BC\u09A8\u09BF");
+        $("set-gh-save").addEventListener("click", async () => {
+          const v = String($("set-gh-token").value || "").trim();
+          if (!v || /^•+$/.test(v)) return global.ZY.ui.toast("\u0986\u0997\u09C7 \u099F\u09CB\u0995\u09C7\u09A8 \u09AA\u09C7\u09B8\u09CD\u099F \u0995\u09B0\u09CB");
+          global.ZY.GH.setToken(v);
+          $("set-gh-token").value = "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022";
+          ghStatus("\u09AF\u09BE\u099A\u09BE\u0987 \u0995\u09B0\u09BE \u09B9\u099A\u09CD\u099B\u09C7\u2026");
+          const a = await global.ZY.GH.account();
+          ghStatus(a.ok ? `\u0995\u09BE\u09A8\u09C7\u0995\u09CD\u099F\u09C7\u09A1: ${a.login} (${a.repos.length}\u099F\u09BF \u09B0\u09BF\u09AA\u09CB)` : `\u09AC\u09CD\u09AF\u09B0\u09CD\u09A5: ${a.message || a.error}`);
+          global.ZY.ui.toast(a.ok ? `\u0997\u09BF\u099F\u09B9\u09BE\u09AC \u0995\u09BE\u09A8\u09C7\u0995\u09CD\u099F\u09C7\u09A1: ${a.login}` : "\u099F\u09CB\u0995\u09C7\u09A8 \u09AF\u09BE\u099A\u09BE\u0987 \u09B9\u09AF\u09BC\u09A8\u09BF");
+        });
+        $("set-gh-check").addEventListener("click", async () => {
+          ghStatus("\u09AF\u09BE\u099A\u09BE\u0987 \u0995\u09B0\u09BE \u09B9\u099A\u09CD\u099B\u09C7\u2026");
+          const a = await global.ZY.GH.account();
+          ghStatus(a.ok ? `\u0995\u09BE\u09A8\u09C7\u0995\u09CD\u099F\u09C7\u09A1: ${a.login} (${a.repos.length}\u099F\u09BF \u09B0\u09BF\u09AA\u09CB)` : `\u09AC\u09CD\u09AF\u09B0\u09CD\u09A5: ${a.message || a.error}`);
+        });
+        $("set-gh-clear").addEventListener("click", () => {
+          global.ZY.GH.setToken("");
+          $("set-gh-token").value = "";
+          ghStatus("\u099F\u09CB\u0995\u09C7\u09A8 \u09AE\u09C1\u099B\u09C7 \u09AB\u09C7\u09B2\u09BE \u09B9\u09B2\u09CB");
         });
         const orbSel = $("set-orb");
         orbSel.innerHTML = global.ZY.ORB.styles.map((st) => `<option value="${st.id}">${st.name}</option>`).join("");

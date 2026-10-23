@@ -20,8 +20,83 @@
   const API = () => (global.ZY.store.get('base') || location.origin).replace(/\/$/, '');
   const BRIDGE_TIMEOUT = 12000;
 
-  /** One call shape for every filesystem operation (server does the real work). */
+  /**
+   * One network call that works in every build.
+   *
+   * A WebView is bound by CORS, so endpoints that do not send permissive
+   * headers (Google's speech endpoint, many sites the tools read) cannot be
+   * fetched by the page at all. The native bridge is not a browser and has no
+   * such limit, so on Android every outbound request goes through it first.
+   * Anywhere else the normal fetch is used.
+   */
+  async function netFetch(url: string, opts: any = {}): Promise<any> {
+    const nat = global.ZY.Native;
+    const hdr = Object.assign({}, opts.headers || {});
+    if (nat && nat.app && nat.http && nat.http.available()) {
+      const r = nat.http.fetch({
+        url,
+        method: opts.method || 'GET',
+        headers: hdr,
+        body: typeof opts.body === 'string' ? opts.body : (opts.body == null ? '' : JSON.stringify(opts.body)),
+        timeoutMs: opts.timeoutMs || 20000,
+        maxBytes: opts.maxBytes || 400000,
+        asDataUrl: !!opts.asDataUrl,
+      });
+      if (r && !r.error) {
+        return {
+          ok: !!r.ok,
+          status: Number(r.status) || 0,
+          headers: r.headers || {},
+          text: String(r.body == null ? '' : r.body),
+          dataUrl: r.dataUrl || null,
+          contentType: r.contentType || ((r.headers && (r.headers['Content-Type'] || r.headers['content-type'])) || ''),
+          bytes: Number(r.bytes) || 0,
+          truncated: !!r.truncated,
+          viaBridge: true,
+          // Callers await this and some chain `.catch()`, so it must be a
+          // promise exactly like the browser path below.
+          json() { try { return Promise.resolve(JSON.parse(String(r.body == null ? '' : r.body))); } catch { return Promise.resolve(null); } },
+        };
+      }
+      // The bridge itself failed (no network permission, bad URL). Fall through
+      // to the plain fetch so a browser build still has a chance.
+    }
+    const res = await fetch(url, opts);
+    // A browser Response has `text` as a *method*, but every caller expects the
+    // bridge's `{ ok, status, headers, text }` shape and reads `.text` directly.
+    // Left as-is, `r.text` was the function itself, so read_url, web_search,
+    // http_request and the GitHub client all parsed the string
+    // "function text() { [native code] }" instead of the real body. Normalising
+    // here fixes every caller at once.
+    const text = await res.text();
+    const headers = {};
+    try { res.headers.forEach((v, k) => { headers[k] = v; }); } catch {}
+    return {
+      ok: res.ok,
+      status: res.status,
+      headers,
+      text,
+      dataUrl: null,
+      contentType: headers['content-type'] || '',
+      bytes: text.length,
+      truncated: false,
+      viaBridge: false,
+      json() { try { return Promise.resolve(JSON.parse(text)); } catch { return Promise.resolve(null); } },
+    };
+  }
+
+  /** One call shape for every filesystem operation.
+   *  The phone's own storage is tried first when the native bridge is present,
+   *  so files work with no server at all; otherwise the server does the work. */
   async function fsCall(body) {
+    const nat = global.ZY.Native;
+    if (nat && nat.fs && nat.fs.available()) {
+      const j = nat.fs.op(body);
+      if (j && !j.error) return j;
+      // A real filesystem error (missing file, bad path) must be reported as
+      // it is. Only a bridge that could not run at all falls through.
+      if (j && j.error && !/unknown op|not available/i.test(String(j.error))) return j;
+    }
     try {
       const r = await fetch(`${API()}/api/fs`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       return await r.json();
@@ -226,7 +301,7 @@
       // skip the check (they are ours), everything on the web is checked.
       let reachable = true, status = 0;
       try {
-        const r = await fetch(`${API()}/api/check-url`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+        const r = await netFetch(`${API()}/api/check-url`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
         const j = await r.json();
         reachable = !!j.ok; status = j.status || 0;
       } catch (e) { reachable = true; }   // server unreachable: do not block the user
@@ -409,49 +484,112 @@
     async verify_url(args) {
       const url = args.url || '';
       if (!/^https?:\/\//i.test(url)) return { ok: false, error: 'bad-url', summary: `"${url}" বৈধ http(s) লিংক নয়।` };
+      // A HEAD is cheap; some servers reject it, so a one-byte ranged GET is the
+      // fallback. This is the difference between "খোলা হলো" and "লিংকটি নেই".
       try {
-        const r = await fetch(`${API()}/api/check-url`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
-        const j = await r.json();
-        if (j.ok) return { ok: true, summary: `লিংক ঠিক আছে: ${url} (${j.status}${j.contentType ? ', ' + j.contentType : ''})`, data: j };
-        return { ok: false, error: 'url-unreachable', summary: `লিংকটি নেই বা কাজ করছে না: ${url} (status ${j.status || '?'})`, data: j };
+        let r = await netFetch(url, { method: 'HEAD', timeoutMs: 12000 });
+        if (!r.status || r.status >= 400) {
+          r = await netFetch(url, { method: 'GET', headers: { Range: 'bytes=0-0' }, timeoutMs: 12000 });
+        }
+        const ct = String(r.contentType || (r.headers && (r.headers['Content-Type'] || r.headers['content-type'])) || '');
+        const ok = r.status >= 200 && r.status < 400;
+        const j = { ok, status: r.status, contentType: ct };
+        if (ok) return { ok: true, summary: `লিংক ঠিক আছে: ${url} (${r.status}${ct ? ', ' + ct : ''})`, data: j };
+        return { ok: false, error: 'url-unreachable', summary: `লিংকটি নেই বা কাজ করছে না: ${url} (status ${r.status || '?'})`, data: j };
       } catch (e) {
         return { ok: false, error: String(e), summary: `লিংক যাচাই করা গেল না: ${url}` };
       }
     },
 
     async read_url(args) {
-      const r = await fetch(`${API()}/api/fetch-url`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: args.url }) });
-      const j = await r.json();
-      if (j.error) return { ok: false, error: j.error, summary: `URL পড়া যায়নি: ${args.url}` };
-      const text = (j.text || '').slice(0, args.max_chars || 12000);
-      return { ok: true, summary: `${args.url} পড়া হলো (${(j.text || '').length} অক্ষর)`, data: { status: j.status, contentType: j.contentType, text } };
+      const url = String(args.url || '');
+      if (!/^https?:\/\//i.test(url)) return { ok: false, error: 'bad-url', summary: `"${url}" বৈধ লিংক নয়` };
+      try {
+        const r = await netFetch(url, { timeoutMs: 30000, maxBytes: 2000000 });
+        const text = typeof r.text === 'function' ? await r.text() : r.text;
+        const ct = String(r.contentType || (r.headers && (r.headers['Content-Type'] || r.headers['content-type'])) || '');
+        // A page is read as prose; scripts and styles are noise, not content.
+        const isHtml = /html/i.test(ct) || /<html/i.test(String(text).slice(0, 500));
+        const clean = isHtml
+          ? String(text)
+            .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+            .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+            .replace(/[ \t]+/g, ' ').replace(/\n\s*\n\s*\n+/g, '\n\n').trim()
+          : String(text);
+        const out = clean.slice(0, args.max_chars || 12000);
+        return { ok: r.ok, summary: `${url} পড়া হলো (${clean.length} অক্ষর)`, data: { status: r.status, contentType: ct, text: out } };
+      } catch (e) {
+        return { ok: false, error: String(e), summary: `URL পড়া যায়নি: ${url} (${e})` };
+      }
     },
 
     async read_media(args) {
-      const r = await fetch(`${API()}/api/fetch-url`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: args.url }) });
-      const j = await r.json();
-      if (j.error) return { ok: false, error: j.error, summary: `মিডিয়া পড়া যায়নি: ${args.url}` };
-      if (j.dataUrl) {
-        const modality = args.modality || (/^audio/.test(j.contentType) ? 'audio' : /^video/.test(j.contentType) ? 'video' : /pdf/.test(j.contentType) ? 'pdf' : 'image');
-        global.ZY._pendingMedia = { url: args.url, dataUrl: j.dataUrl, modality, part: args.part };
-        return { ok: true, summary: `${modality} পড়া হলো (${(j.bytes / 1024).toFixed(0)}KB) — মডেলে পাঠানোর জন্য তৈরি`, data: { modality, bytes: j.bytes, part: args.part, note: 'পরের টার্নে এটি মডেলের ইনপুটে যুক্ত হবে' } };
+      const url = String(args.url || '');
+      if (!/^https?:\/\//i.test(url)) return { ok: false, error: 'bad-url', summary: `"${url}" বৈধ লিংক নয়` };
+      try {
+        const r = await netFetch(url, { timeoutMs: 60000, maxBytes: 12 * 1024 * 1024, asDataUrl: true });
+        if (!r.ok) return { ok: false, error: `http-${r.status}`, summary: `মিডিয়া আনা যায়নি: ${url} (status ${r.status})` };
+        const ct = String(r.contentType || '');
+        if (r.dataUrl) {
+          const modality = args.modality || (/^audio/.test(ct) ? 'audio' : /^video/.test(ct) ? 'video' : /pdf/.test(ct) ? 'pdf' : 'image');
+          global.ZY._pendingMedia = { url, dataUrl: r.dataUrl, modality, part: args.part };
+          return { ok: true, summary: `${modality} পড়া হলো (${Math.round((r.bytes || 0) / 1024)}KB) — মডেলে পাঠানোর জন্য তৈরি`, data: { modality, bytes: r.bytes, part: args.part, note: 'পরের টার্নে এটি মডেলের ইনপুটে যুক্ত হবে' } };
+        }
+        // No bridge (desktop/browser): read the bytes as a blob and inline them.
+        const blob = await (await fetch(url)).blob();
+        const dataUrl = await new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.readAsDataURL(blob); });
+        const modality = args.modality || (/^audio/.test(blob.type) ? 'audio' : /^video/.test(blob.type) ? 'video' : /pdf/.test(blob.type) ? 'pdf' : 'image');
+        global.ZY._pendingMedia = { url, dataUrl, modality, part: args.part };
+        return { ok: true, summary: `${modality} পড়া হলো (${Math.round(blob.size / 1024)}KB) — মডেলে পাঠানোর জন্য তৈরি`, data: { modality, bytes: blob.size, part: args.part, note: 'পরের টার্নে এটি মডেলের ইনপুটে যুক্ত হবে' } };
+      } catch (e) {
+        return { ok: false, error: String(e), summary: `মিডিয়া পড়া যায়নি: ${url} (${e})` };
       }
-      return { ok: true, summary: `${args.url} টেক্সট হিসেবে পড়া হলো`, data: { text: (j.text || '').slice(0, 12000) } };
     },
 
     async generate_file(args) {
-      const r = await fetch(`${API()}/api/write-file`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: args.path, content: args.content, mode: args.mode }) });
-      const j = await r.json();
-      if (j.error) return { ok: false, error: j.error, summary: `ফাইল লেখা যায়নি: ${args.path}` };
+      const j = await fsCall({ op: 'write', path: args.path, content: args.content, append: args.mode === 'append' });
+      if (!j.ok) return { ok: false, error: j.error, summary: `ফাইল লেখা যায়নি: ${args.path} (${j.error})` };
       return { ok: true, summary: `${args.path} লেখা হলো (${j.bytes} বাইট)`, data: j };
     },
 
+    /**
+     * Put a site on the real web. With a server it goes to the server's static
+     * host; with no server (the APK) the user's own GitHub Pages is the real
+     * host, and the result is verified before it is called live. Files are
+     * always written locally first, so nothing is lost if publishing fails.
+     */
     async publish_website(args) {
-      const r = await fetch(`${API()}/api/publish`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: args.name, html: args.html, files: args.files }) });
-      const j = await r.json().catch(() => ({}));
-      if (!j.ok) return { ok: false, error: j.error || 'publish-failed', summary: 'পাবলিশ ব্যর্থ — সাইটটি সত্যিই সার্ভ হচ্ছে না (status ' + (j.status || '?') + ')। আবার চেষ্টা করো।', data: j };
-      global.ZY.store.set('lastSite', j.url);
-      return { ok: true, summary: `ওয়েবসাইট পাবলিশ হয়েছে ও ভেরিফাই হয়েছে: ${j.url}`, data: j };
+      const name = String(args.name || 'zyraxon-site').replace(/[^A-Za-z0-9._-]/g, '-');
+      const files = args.files && typeof args.files === 'object' ? { ...args.files } : {};
+      if (args.html && !files['index.html']) files['index.html'] = args.html;
+      if (!Object.keys(files).length) return { ok: false, error: 'no-files', summary: 'প্রকাশ করার জন্য কোনো ফাইল দেওয়া হয়নি' };
+
+      for (const [rel, content] of Object.entries(files)) {
+        await fsCall({ op: 'write', path: `sites/${name}/${String(rel).replace(/^\/+/, '')}`, content: String(content) });
+      }
+
+      const hasSrv = !!(global.ZY.Platform && global.ZY.Platform.hasServer && global.ZY.Platform.hasServer());
+      if (hasSrv) {
+        const r = await netFetch(`${API()}/api/publish`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, html: args.html, files }) });
+        const j = await r.json().catch(() => ({}));
+        if (j.ok) { global.ZY.store.set('lastSite', j.url); return { ok: true, summary: `ওয়েবসাইট পাবলিশ হয়েছে ও ভেরিফাই হয়েছে: ${j.url}`, data: j }; }
+      }
+
+      const GH = global.ZY.GH;
+      if (GH && GH.connected()) {
+        const j = await GH.publish({ name, files, pages: true });
+        if (j.ok) {
+          const url = j.pages && j.pages.url;
+          if (url) global.ZY.store.set('lastSite', url);
+          if (j.pages && j.pages.live) return { ok: true, summary: `লাইভ ওয়েবসাইট (যাচাই করা): ${url} — রিপো ${j.repo}`, data: j };
+          return { ok: true, summary: `GitHub Pages-এ প্রকাশ করা হলো: ${url || j.repo} — বিল্ড propagate হচ্ছে, কিছুক্ষণ পর verify_url দিয়ে যাচাই করো`, data: j };
+        }
+        return { ok: false, error: j.error || 'publish-failed', summary: `প্রকাশ ব্যর্থ${j.message ? ': ' + j.message : ''}`, data: j };
+      }
+
+      return { ok: false, error: 'not-connected', summary: 'সাইটটি ফোনে সেভ হয়েছে (sites/' + name + '), কিন্তু লাইভ করতে গিটহাব টোকেন দরকার — সেটিংসে টোকেন বসাও, তারপর আবার publish_website ডাকো' };
     },
 
     async run_shell(args) {
@@ -470,7 +608,7 @@
         return { ok, summary: `[ফোন/Android sandbox] $ ${args.command} → exit ${j.code}${tail ? ' | ' + tail : ''}`, data: j };
       }
 
-      const r = await fetch(`${API()}/api/shell`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: args.command, cwd: args.cwd, shell: args.shell, timeout_ms: args.timeout_ms }) });
+      const r = await netFetch(`${API()}/api/shell`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: args.command, cwd: args.cwd, shell: args.shell, timeout_ms: args.timeout_ms }) });
       const j = await r.json();
       if (j.error) return { ok: false, error: j.error, summary: 'কমান্ড চালানো যায়নি' };
       const ok = j.code === 0;
@@ -529,25 +667,94 @@
 
     /* ── web: real search and generic HTTP ── */
     async web_search(args) {
-      const r = await fetch(`${API()}/api/web-search`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: args.query, count: args.count }) });
-      const j = await r.json();
-      if (!j.ok || !j.results || !j.results.length) return { ok: false, error: j.error || 'no-results', summary: `"${args.query}" — কিছু পাওয়া যায়নি` };
-      const top = j.results.slice(0, 5).map((x, i) => `${i + 1}. ${x.title} — ${x.url}`).join('\n');
-      return { ok: true, summary: `${j.results.length}টি ফলাফল (${j.engine}):\n${top}`, data: j };
+      // Search is done in-process so it works with no server at all. On Android
+      // the request goes through the bridge, which is not bound by CORS.
+      const q = String(args.query || '').trim();
+      if (!q) return { ok: false, error: 'query-required', summary: 'খোঁজার শব্দ দেওয়া হয়নি' };
+      const n = Math.min(Math.max(Number(args.count) || 8, 1), 25);
+      const strip = (s) => String(s || '').replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&').replace(/&#x27;/g, "'").replace(/&quot;/g, '"')
+        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
+      const parseDDG = (html) => {
+        const out = [];
+        const rx = /<a[^>]+class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?(?:class="result__snippet"[^>]*>([\s\S]*?)<\/a>)?/g;
+        let m;
+        while ((m = rx.exec(html)) && out.length < n) {
+          let url = m[1];
+          const red = /uddg=([^&]+)/.exec(url);
+          if (red) { try { url = decodeURIComponent(red[1]); } catch {} }
+          if (/^https?:/.test(url)) out.push({ title: strip(m[2]), url, snippet: strip(m[3]) });
+        }
+        return out;
+      };
+      const attempts = [
+        `https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}`,
+        `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(q)}`,
+      ];
+      for (const u of attempts) {
+        try {
+          const r = await netFetch(u, { headers: { Accept: 'text/html' }, timeoutMs: 15000, maxBytes: 600000 });
+          if (!r.ok) continue;
+          const html = typeof r.text === 'function' ? await r.text() : r.text;
+          let results = parseDDG(html);
+          if (!results.length) {
+            const rx = /<a[^>]+href="(https?:\/\/[^"]+)"[^>]*>([^<]{3,120})<\/a>/g;
+            let m;
+            while ((m = rx.exec(html)) && results.length < n) {
+              if (/duckduckgo|javascript/.test(m[1])) continue;
+              results.push({ title: strip(m[2]), url: m[1], snippet: '' });
+            }
+          }
+          if (results.length) {
+            const top = results.slice(0, 5).map((x, i) => `${i + 1}. ${x.title} — ${x.url}`).join('\n');
+            return { ok: true, summary: `${results.length}টি ফলাফল (duckduckgo):\n${top}`, data: { ok: true, engine: 'duckduckgo', query: q, results } };
+          }
+        } catch {}
+      }
+      try {
+        const r = await netFetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&format=json&srlimit=${n}`, { timeoutMs: 15000 });
+        const j = await r.json();
+        const results = ((j && j.query && j.query.search) || []).map((s) => ({ title: s.title, url: `https://en.wikipedia.org/wiki/${encodeURIComponent(String(s.title).replace(/ /g, '_'))}`, snippet: strip(s.snippet) }));
+        if (results.length) {
+          const top = results.slice(0, 5).map((x, i) => `${i + 1}. ${x.title} — ${x.url}`).join('\n');
+          return { ok: true, summary: `${results.length}টি ফলাফল (wikipedia):\n${top}`, data: { ok: true, engine: 'wikipedia', query: q, results } };
+        }
+      } catch {}
+      return { ok: false, error: 'no-results', summary: `"${q}" — কিছু পাওয়া যায়নি` };
     },
 
     async http_request(args) {
-      const r = await fetch(`${API()}/api/http`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: args.url, method: args.method, headers: args.headers, body: args.body }) });
-      const j = await r.json();
-      if (j.error) return { ok: false, error: j.error, summary: `${args.method || 'GET'} ${args.url} ব্যর্থ: ${j.error}` };
-      const brief = typeof j.data === 'string' ? j.data.slice(0, 200) : JSON.stringify(j.data).slice(0, 200);
-      return { ok: j.ok, summary: `${args.method || 'GET'} ${args.url} → ${j.status} (${j.bytes} বাইট) ${brief}`, data: j };
+      try {
+        const r = await netFetch(args.url, {
+          method: (args.method || 'GET').toUpperCase(),
+          headers: args.headers || {},
+          body: args.body,
+          timeoutMs: 25000,
+          maxBytes: 400000,
+        });
+        const bodyText = typeof r.text === 'function' ? await r.text() : r.text;
+        const j = { ok: r.ok, status: r.status, bytes: r.bytes != null ? r.bytes : bodyText.length, contentType: (r.headers && (r.headers['Content-Type'] || r.headers['content-type'])) || '', data: bodyText.slice(0, 200000) };
+        if (!j.ok && !j.status) return { ok: false, error: 'request-failed', summary: `${args.method || 'GET'} ${args.url} ব্যর্থ`, data: j };
+        const brief = String(j.data).slice(0, 200);
+        return { ok: j.ok, summary: `${args.method || 'GET'} ${args.url} → ${j.status} (${j.bytes} বাইট) ${brief}`, data: j };
+      } catch (e) {
+        return { ok: false, error: String(e), summary: `${args.method || 'GET'} ${args.url} ব্যর্থ: ${e}` };
+      }
     },
 
     /* ── desktop / host system ── */
     async sys_info() {
-      const r = await fetch(`${API()}/api/sysinfo`);
+      // The phone reports its own device facts; a host with a server reports
+      // the server's. Never invent numbers for the other case.
+      const P = global.ZY.Platform;
+      const nat = global.ZY.Native;
+      if (nat && nat.app && nat.device && nat.device.info) {
+        const d = nat.device.info() || {};
+        return { ok: true, summary: `${d.model || 'Android'} (Android ${d.release || '?'}), SDK ${d.sdk || '?'}, ব্যাটারি ${d.battery != null ? d.battery + '%' : '?'}`, data: d };
+      }
+      const r = await netFetch(`${API()}/api/sysinfo`);
       const j = await r.json();
+      if (!j || j.error) return { ok: false, error: 'sysinfo-unavailable', summary: 'সিস্টেম তথ্য পাওয়া গেল না', data: j };
       return { ok: true, summary: `${j.osName} ${j.release} ${j.arch}, CPU ${j.cpus && j.cpus.length ? j.cpus[j.cpus.length - 1] : '?'}, RAM ${j.freeMemMB}/${j.totalMemMB}MB ফাঁকা${j.disk ? `, ডিস্ক ${j.disk.freeGB}GB ফাঁকা` : ''}`, data: j };
     },
 
@@ -557,30 +764,39 @@
     },
 
     async download_file(args) {
-      const r = await fetch(`${API()}/api/http`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: args.url }) });
-      const j = await r.json();
-      if (j.error) return { ok: false, error: j.error, summary: `${args.url} নামানো যায়নি: ${j.error}` };
-      const fallbackName = (args.url.split('/').pop() || 'file').split('?')[0] || 'file';
+      const url = String(args.url || '');
+      if (!/^https?:\/\//i.test(url)) return { ok: false, error: 'bad-url', summary: `"${url}" বৈধ লিংক নয়` };
+      const fallbackName = (url.split('/').pop() || 'file').split('?')[0] || 'file';
       const target = args.path || ('downloads/' + fallbackName);
-      let wr;
-      if (j.dataUrl) {
-        // binary: the server hands back base64 in a data URL
-        const b64 = j.dataUrl.split(',')[1] || '';
-        wr = await fsCall({ op: 'write', path: target, content: b64 });
-        if (wr.ok) return { ok: true, summary: `${args.url} → ${wr.path} (${Math.round(b64.length * 0.75 / 1024)}KB, base64)`, data: { ...wr, encoding: 'base64', bytes: Math.round(b64.length * 0.75) } };
-      } else if (typeof j.data === 'string') {
-        wr = await fsCall({ op: 'write', path: target, content: j.data });
-        if (wr.ok) return { ok: true, summary: `${args.url} → ${wr.path} (${j.bytes} বাইট টেক্সট)`, data: { ...wr, encoding: 'utf8' } };
-      } else {
-        wr = await fsCall({ op: 'write', path: target, content: JSON.stringify(j.data) });
-        if (wr.ok) return { ok: true, summary: `${args.url} → ${wr.path} (JSON)`, data: { ...wr, encoding: 'json' } };
+      try {
+        const r = await netFetch(url, { timeoutMs: 60000, maxBytes: 12 * 1024 * 1024 });
+        const text = typeof r.text === 'function' ? await r.text() : r.text;
+        if (!r.ok) return { ok: false, error: `http-${r.status}`, summary: `${url} নামানো যায়নি (status ${r.status})` };
+        // Bytes travel through the bridge as a data URL, so a binary file is
+        // written as base64 and a text file as it is — no guessing.
+        const viaBridge = !!r.viaBridge;
+        const ct = String((r.headers && (r.headers['Content-Type'] || r.headers['content-type'])) || '');
+        const isText = /^(text\/|application\/(json|xml|javascript|x-javascript|yaml)|)/.test(ct) && !/image|video|audio|pdf|octet/.test(ct);
+        const wr = isText
+          ? await fsCall({ op: 'write', path: target, content: text })
+          : await fsCall({ op: 'write', path: target, content: viaBridge ? text : btoa(unescape(encodeURIComponent(text))) });
+        if (!wr.ok) return { ok: false, error: wr.error || 'save-failed', summary: `সেভ করা যায়নি: ${wr.error || 'unknown'}` };
+        return { ok: true, summary: `${url} → ${wr.path} (${wr.bytes} বাইট${isText ? '' : ', base64'})`, data: { ...wr, contentType: ct, encoding: isText ? 'utf8' : 'base64' } };
+      } catch (e) {
+        return { ok: false, error: String(e), summary: `${url} নামানো যায়নি: ${e}` };
       }
-      return { ok: false, error: (wr && wr.error) || 'save-failed', summary: `সেভ করা যায়নি: ${(wr && wr.error) || 'unknown'}` };
     },
 
     async process_list() {
-      const r = await fetch(`${API()}/api/sysinfo`);
+      const nat = global.ZY.Native;
+      if (nat && nat.shell && nat.shell.available()) {
+        const j = nat.shell.exec('ps -A -o PID,NAME 2>/dev/null || ps 2>/dev/null', '', 8000) || {};
+        const lines = String(j.stdout || '').trim().split('\n').filter(Boolean).slice(0, 120);
+        return { ok: true, summary: `চলমান প্রসেস (${Math.max(0, lines.length - 1)})`, data: { processes: lines } };
+      }
+      const r = await netFetch(`${API()}/api/sysinfo`);
       const j = await r.json();
+      if (!j || j.error) return { ok: false, error: 'unavailable', summary: 'প্রসেস তালিকা পাওয়া গেল না', data: j };
       return { ok: true, summary: `চলমান প্রসেস (${(j.processes || []).length})`, data: { processes: j.processes || [] } };
     },
 
@@ -640,20 +856,26 @@
       });
     },
 
-    /* ── GitHub: real repositories, real Pages, real Actions builds ── */
+    /* ── GitHub: the user's own account, with the user's own token ── */
     async github_account() {
-      const j = await fetch(`${API()}/api/github/info`).then((r) => r.json()).catch((e) => ({ ok: false, error: String(e) }));
-      if (!j.ok) return { ok: false, error: j.error || 'not-connected', summary: `গিটহাব অ্যাকাউন্ট পাওয়া যায়নি${j.message ? ': ' + j.message : ''}` };
+      const GH = global.ZY.GH;
+      if (!GH) return { ok: false, error: 'no-module', summary: 'গিটহাব মডিউল লোড হয়নি' };
+      if (!GH.connected()) return { ok: false, error: 'not-connected', summary: 'গিটহাব টোকেন দেওয়া হয়নি — সেটিংসে গিটহাব টোকেন বসাও, তারপর আবার চেষ্টা করো' };
+      const j = await GH.account();
+      if (!j.ok) return { ok: false, error: j.error || 'not-connected', summary: `গিটহাব অ্যাকাউন্ট পাওয়া যায়নি${j.message ? ': ' + j.message : ''}`, data: j };
       return { ok: true, summary: `গিটহাব কানেক্টেড: ${j.login} (${j.repos.length}টি রিপোজিটরি)`, data: j };
     },
 
     async github_publish(args) {
-      const files = args.files && typeof args.files === 'object' ? args.files : {};
+      const GH = global.ZY.GH;
+      if (!GH) return { ok: false, error: 'no-module', summary: 'গিটহাব মডিউল লোড হয়নি' };
+      if (!GH.connected()) return { ok: false, error: 'not-connected', summary: 'গিটহাব টোকেন দেওয়া হয়নি — সেটিংসে টোকেন বসালে সত্যিকারের রিপোজিটরি তৈরি হবে' };
+      const files = args.files && typeof args.files === 'object' ? { ...args.files } : {};
       if (args.html && !files['index.html']) files['index.html'] = args.html;
-      const j = await fetch(`${API()}/api/github/publish`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: args.name, files, description: args.description, private: args.private, pages: args.pages !== false, owner: args.owner, branch: args.branch }),
-      }).then((r) => r.json()).catch((e) => ({ ok: false, error: String(e) }));
+      const j = await GH.publish({
+        name: args.name, files, description: args.description, private: args.private,
+        pages: args.pages !== false, owner: args.owner, branch: args.branch,
+      });
       if (!j.ok) return { ok: false, error: j.error || 'github-failed', summary: `গিটহাবে পাবলিশ ব্যর্থ${j.message ? ': ' + j.message : ''}`, data: j };
       const lines = [`রিপোজিটরি ${j.created ? 'তৈরি হয়েছে' : 'আগেই ছিল'}: ${j.repo}`, `${j.committed.length}টি ফাইল কমিট হয়েছে`];
       // Only claim a live site when the exact content we pushed was served.
@@ -665,20 +887,18 @@
     },
 
     async github_workflow(args) {
-      const j = await fetch(`${API()}/api/github/workflow`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ repo: args.repo, content: args.content, path: args.path, branch: args.branch }),
-      }).then((r) => r.json()).catch((e) => ({ ok: false, error: String(e) }));
+      const GH = global.ZY.GH;
+      if (!GH || !GH.connected()) return { ok: false, error: 'not-connected', summary: 'গিটহাব টোকেন দেওয়া হয়নি' };
+      const j = await GH.workflow(args);
       return j.ok
         ? { ok: true, summary: `ওয়ার্কফ্লো লেখা হলো: ${j.path}`, data: j }
         : { ok: false, error: j.error || 'failed', summary: `ওয়ার্কফ্লো লেখা যায়নি${j.message ? ': ' + j.message : ''}`, data: j };
     },
 
     async github_actions(args) {
-      const j = await fetch(`${API()}/api/github/actions`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ repo: args.repo, workflow: args.workflow, ref: args.ref, files: args.files, timeout_ms: args.timeout_ms }),
-      }).then((r) => r.json()).catch((e) => ({ ok: false, error: String(e) }));
+      const GH = global.ZY.GH;
+      if (!GH || !GH.connected()) return { ok: false, error: 'not-connected', summary: 'গিটহাব টোকেন দেওয়া হয়নি' };
+      const j = await GH.actions(args);
       if (!j.ok) return { ok: false, error: j.error || 'build-failed', summary: `বিল্ড ব্যর্থ${j.conclusion ? ' (' + j.conclusion + ')' : ''}${j.stage ? ' — ' + j.stage : ''}`, data: j };
       const jobs = (j.jobs || []).map((x) => `${x.name}=${x.conclusion}`).join(', ');
       const arts = (j.artifacts || []).map((a) => a.name).join(', ');
@@ -764,5 +984,8 @@
   };
 
   global.ZY = global.ZY || {};
+  // Shared with other modules (GitHub, the agent) so exactly one CORS-free
+  // network path exists in the whole app.
+  Tools._netFetch = netFetch;
   global.ZY.Tools = Tools;
 })(window);

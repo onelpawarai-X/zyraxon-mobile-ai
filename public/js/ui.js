@@ -135,7 +135,7 @@
       /** The media that was sent with a message, shown inside its bubble. */
       _media(atts) {
         if (!atts || !atts.length) return "";
-        const one = (a) => a.kind === "image" ? `<img src="${a.dataUrl}" alt="" />` : a.kind === "video" ? `<video src="${a.dataUrl}" muted playsinline></video>` : `<span class="aud">\u{1F3B5} ${esc(a.name || "\u0985\u09A1\u09BF\u0993")}</span>`;
+        const one = (a) => a.kind === "image" ? `<img src="${a.dataUrl}" alt="" />` : a.kind === "video" ? `<video src="${a.dataUrl}" muted playsinline></video>` : a.kind === "pdf" ? `<span class="aud">\u{1F4C4} ${esc(a.name || "PDF")}</span>` : a.kind === "file" ? `<span class="aud">\u{1F4CE} ${esc(a.name || "\u09AB\u09BE\u0987\u09B2")}</span>` : `<span class="aud">\u{1F3B5} ${esc(a.name || "\u0985\u09A1\u09BF\u0993")}</span>`;
         return `<span class="msg-media">${atts.map(one).join("")}</span>`;
       },
       _chips(tools) {

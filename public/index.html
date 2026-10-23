@@ -156,7 +156,7 @@
           <button class="icon-btn attach-btn" id="btn-attach" data-i18n-title="btn.attach">
             <svg viewBox="0 0 24 24"><path d="M21 12.5V7a2 2 0 0 0-2-2h-3.5M3 11.5V17a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M12 3v13M8 12l4 4 4-4"/></svg>
           </button>
-          <input type="file" id="file-input" accept="image/*,video/*,audio/*" multiple hidden />
+          <input type="file" id="file-input" accept="image/*,video/*,audio/*,application/pdf,.pdf,.txt,.md,.json,.csv" multiple hidden />
         </div>
         <div class="proc-strip" id="proc-strip" hidden>
           <span class="proc-spin" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -260,6 +260,15 @@
             <label class="row"><span data-i18n="set.glass">Glass effect</span><input type="range" id="set-glass" min="0" max="24" step="1" value="14" /></label>
           </div>
           <div class="group">
+            <h4 data-i18n="set.github">GitHub</h4>
+            <label class="row"><span data-i18n="set.gh_token">Access token (repo scope)</span><input type="password" id="set-gh-token" placeholder="ghp_…" autocomplete="off" /></label>
+            <div class="row"><span data-i18n="set.gh_status">Status</span><b id="set-gh-status">—</b></div>
+            <button class="primary-btn" id="set-gh-save" data-i18n="set.gh_save">Save token</button>
+            <button class="ghost-btn" id="set-gh-check" data-i18n="set.gh_check">Check account</button>
+            <button class="ghost-btn" id="set-gh-clear" data-i18n="set.gh_clear">Remove token</button>
+            <p class="hint" data-i18n="set.gh_hint">Publishing a website uses your own account. The token stays on this phone.</p>
+          </div>
+          <div class="group">
             <h4 data-i18n="set.network">Network</h4>
             <label class="row"><span data-i18n="set.api_base">APK / API base URL</span><input type="text" id="set-base" /></label>
             <label class="row"><span data-i18n="set.proxy">SSE transport</span><select id="set-proxy"><option value="proxy" data-i18n="set.proxy_reliable">Proxy (reliable)</option><option value="direct" data-i18n="set.proxy_direct">Direct</option></select></label>
@@ -344,6 +353,7 @@
 <script src="/js/call.js"></script>
 <script src="/js/voice.js"></script>
 <script src="/js/tools.js"></script>
+<script src="/js/github.js"></script>
 <script src="/js/monitor.js"></script>
 <script src="/js/screen.js"></script>
 <script src="/js/agent.js"></script>

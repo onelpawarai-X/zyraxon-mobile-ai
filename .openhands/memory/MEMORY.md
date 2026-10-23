@@ -9,7 +9,7 @@ TTS proxy. Client source is TypeScript in `src/web/*.ts`; `public/js/` is COMPIL
 (esbuild via `scripts/build-web.mjs`, global `window.ZY`) and committed on purpose —
 `android/build.sh` and electron-builder both copy `public/` verbatim. Run
 `npm run build` after editing `src/web`.
-Artifacts, all verified fresh: `android/zyraxon.apk` 48.3MB,
+Artifacts, all verified fresh: `android/zyraxon.apk` ~22MB,
 `ZYRAXON-Setup-1.0.0.exe` 178.2MB, `-mac.zip` 197.6MB, `-1.0.0.AppImage` 206.3MB.
 
 ## Provider facts (expensive to relearn)
@@ -165,7 +165,32 @@ win -> `dist/win-unpacked/resources/public/`.
   don't trust timestamps.
 - Container restarts wipe `$HOME`, the Android SDK, wine and the Python test deps;
   re-verify tool presence at session start.
+- Re-provisioning the Android toolchain after a wipe (verified 2026-10-23):
+  `sudo apt-get install -y openjdk-21-jdk-headless unzip zip`; download
+  `commandlinetools-linux-11076708_latest.zip` to `$HOME/android-sdk/cmdline-tools/latest`;
+  `sdkmanager --sdk_root=$HOME/android-sdk --licenses` then install
+  `platform-tools platforms;android-34 build-tools;36.0.0`; recreate the debug
+  keystore with `keytool -genkeypair -keystore $HOME/.android/debug.keystore
+  -storepass android -keypass android -alias androiddebugkey -keyalg RSA -dname
+  "CN=Android Debug,O=Android,C=US"`. A stopped background `apt-get` (state `T`)
+  holds the dpkg lock forever — kill its exact PIDs.
+
+## The todo contract is enforced client-side, not just prompted
+`Agent.send`'s loop refuses to finish while a todo is open. Two traps: (1) a model
+that marks every row `done` in one turn used to satisfy it with zero real tools run
+— now `todo_write` is excluded from the "something happened" test and a bounded
+nudge demands a real call; (2) the nudge is gated on the board being written *this*
+turn, else a previous turn's leftover todos nag every later chat. See 2026-10-23 log.
+
+## Network helper contract (was a silent, wide bug — see 2026-10-23 log)
+`Tools._netFetch` has TWO backends (Android native bridge, else browser `fetch`) and
+must return ONE shape: `{ ok, status, headers, text, contentType, bytes, viaBridge,
+json() }`. `json()` must return a **Promise** on both paths. The browser path once
+returned a raw `Response`, whose `.text` is a *method* — so `r.text != null` was true
+and `read_url`, `web_search`, `http_request`, `download_file` and the GitHub client
+all parsed `"function text() { [native code] }"`. It failed *silently* (ok:true,
+empty data) and looked like provider flakiness. When changing a helper's contract,
+grep every caller for `await`/`.catch`.
 
 ## Conventions
 All user-facing copy is Bengali. Default character is `girlfriend` (প্রেমিকা).
-

@@ -12,6 +12,36 @@
 
   const API = () => (global.ZY.store.get('base') || location.origin).replace(/\/$/, '');
 
+  // The model provider. Every build can reach it (CORS is open), so it is the
+  // one endpoint that works even when this build has no server of its own.
+  const PROVIDER_BASE = 'https://zyraxonai.lovable.app/api/public/zyraxon/v1';
+  const PROVIDER = {
+    base: PROVIDER_BASE,
+    chat: `${PROVIDER_BASE}/chat/completions`,
+    models: `${PROVIDER_BASE}/models`,
+  };
+
+  /**
+   * Does a ZYRAXON server answer on `origin`? The APK loads its pages from
+   * `https://appassets.androidplatform.net`, which is a static asset host with
+   * no API behind it — so "can I reach a server?" is a real question, not an
+   * assumption, and the answer decides whether chat goes through /api/chat or
+   * straight to the model provider.
+   */
+  async function probeServer(origin) {
+    const base = String(origin || '').replace(/\/$/, '');
+    if (!base) return false;
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 2500);
+      const r = await fetch(`${base}/api/health`, { signal: ctrl.signal, cache: 'no-store' });
+      clearTimeout(t);
+      if (!r.ok) return false;
+      const j = await r.json().catch(() => null);
+      return !!(j && j.ok);
+    } catch { return false; }
+  }
+
   const Platform: any = {
     ready: false,
     data: null,
@@ -58,19 +88,50 @@
     async init() {
       const local = Platform.detect();
       Platform.data = local;
-      // Ask the host what it really is (it knows the shell, arch, fs root).
+      // Which API base actually answers? Priority: what the user typed, then
+      // the server address baked into the APK (set with `setServerBase`), then
+      // this page's own origin. The APK's origin has no API behind it, so the
+      // probe below fails there and the app switches to talking to the model
+      // provider directly instead of posting into the void.
+      const typed = String(global.ZY.store.get('base', '') || '').trim();
+      let baked = '';
       try {
-        const r = await fetch(`${API()}/api/platform`);
-        const j = await r.json();
-        Platform.data = { ...local, host: j };
-        if (!local.isDesktop && j.os) {
-          Platform.data.hostShell = j.defaultShell;
-        }
-      } catch { Platform.data.host = null; }
+        const ns = global.ZY.Native && global.ZY.Native.settings;
+        if (ns && ns.serverBase) baked = String(ns.serverBase() || '').trim();
+      } catch {}
+      const candidate = (typed || baked || location.origin).replace(/\/$/, '');
+      const hasServer = await probeServer(candidate);
+      Platform.data.hasServer = hasServer;
+      Platform.data.apiBase = hasServer ? candidate : '';
+      Platform.data.bakedServerBase = baked;
+      // Ask the host what it really is (it knows the shell, arch, fs root).
+      if (hasServer) {
+        try {
+          const r = await fetch(`${candidate}/api/platform`);
+          const j = await r.json();
+          Platform.data = { ...Platform.data, host: j };
+          if (!local.isDesktop && j.os) {
+            Platform.data.hostShell = j.defaultShell;
+          }
+        } catch { Platform.data.host = null; }
+      } else {
+        Platform.data.host = null;
+      }
       Platform.ready = true;
       document.documentElement.dataset.platform = Platform.data.kind;
       return Platform.data;
     },
+
+    /**
+     * Can this build reach a ZYRAXON server? When it cannot (the APK runs from
+     * a static asset host), every server-only feature must fall back rather
+     * than fail: chat goes straight to the provider, tools use the native
+     * bridge, and speech uses the phone's own engine.
+     */
+    hasServer() { return !!(Platform.data && Platform.data.hasServer); },
+
+    /** The provider endpoints, shared so no module hardcodes them twice. */
+    provider: PROVIDER,
 
     /** A compact Bangla+technical block for the system prompt. */
     describe() {

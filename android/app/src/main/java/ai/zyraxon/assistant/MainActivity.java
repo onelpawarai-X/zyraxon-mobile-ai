@@ -625,6 +625,448 @@ public class MainActivity extends Activity {
             return o.toString();
         }
 
+        /* ---- real network access, free of browser CORS rules ---- */
+
+        /**
+         * Fetch any URL from native code. A WebView is bound by CORS, so many
+         * real endpoints (GitHub's API is the exception, Google's speech
+         * endpoint is not) refuse the page directly. Native code has no such
+         * restriction, so this is how the tools keep working with no server.
+         * Returns { ok, status, headers, body, bytes, truncated }.
+         */
+        @JavascriptInterface
+        public String httpFetch(String json) {
+            JSONObject o = new JSONObject();
+            java.net.HttpURLConnection c = null;
+            try {
+                JSONObject b = new JSONObject(json == null ? "{}" : json);
+                String u = b.optString("url", "");
+                if (!u.startsWith("http://") && !u.startsWith("https://")) {
+                    o.put("error", "http(s) url required");
+                    return o.toString();
+                }
+                String method = b.optString("method", "GET").toUpperCase();
+                int timeout = b.optInt("timeoutMs", 20000);
+                if (timeout <= 0) timeout = 20000;
+                int maxBytes = b.optInt("maxBytes", 400000);
+                if (maxBytes <= 0) maxBytes = 400000;
+
+                c = (java.net.HttpURLConnection) new java.net.URL(u).openConnection();
+                c.setRequestMethod(method);
+                c.setInstanceFollowRedirects(true);
+                c.setConnectTimeout(Math.min(timeout, 30000));
+                c.setReadTimeout(Math.min(timeout, 120000));
+                c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36");
+                c.setRequestProperty("Accept", "*/*");
+                JSONObject hdrs = b.optJSONObject("headers");
+                if (hdrs != null) {
+                    java.util.Iterator<String> it = hdrs.keys();
+                    while (it.hasNext()) {
+                        String k = it.next();
+                        c.setRequestProperty(k, hdrs.optString(k, ""));
+                    }
+                }
+                String body = b.optString("body", "");
+                if (body != null && !body.isEmpty() && !"GET".equals(method) && !"HEAD".equals(method)) {
+                    c.setDoOutput(true);
+                    if (!c.getRequestProperties().containsKey("Content-Type")) {
+                        c.setRequestProperty("Content-Type", "application/json");
+                    }
+                    java.io.OutputStream os = c.getOutputStream();
+                    os.write(body.getBytes("UTF-8"));
+                    os.flush();
+                    os.close();
+                }
+                int code = c.getResponseCode();
+                InputStream in = code >= 400 ? c.getErrorStream() : c.getInputStream();
+                java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+                boolean truncated = false;
+                if (in != null) {
+                    byte[] buf = new byte[32768];
+                    int r;
+                    while ((r = in.read(buf)) > 0) {
+                        if (bos.size() + r > maxBytes) { bos.write(buf, 0, Math.max(0, maxBytes - bos.size())); truncated = true; break; }
+                        bos.write(buf, 0, r);
+                    }
+                    in.close();
+                }
+                byte[] data = bos.toByteArray();
+                JSONObject out = new JSONObject();
+                for (java.util.Map.Entry<String, java.util.List<String>> e : c.getHeaderFields().entrySet()) {
+                    if (e.getKey() == null) continue;
+                    java.util.List<String> v = e.getValue();
+                    if (v != null && !v.isEmpty()) out.put(e.getKey(), v.get(0));
+                }
+                o.put("ok", code >= 200 && code < 400);
+                o.put("status", code);
+                o.put("bytes", data.length);
+                o.put("truncated", truncated);
+                o.put("headers", out);
+                if (b.optBoolean("asDataUrl", false)) {
+                    // Binary must not travel as text: UTF-8 decoding an image
+                    // destroys it. A data URL carries the exact bytes.
+                    String ct = c.getHeaderField("Content-Type");
+                    if (ct == null || ct.isEmpty()) ct = "application/octet-stream";
+                    int semi = ct.indexOf(';');
+                    if (semi > 0) ct = ct.substring(0, semi);
+                    o.put("contentType", ct);
+                    o.put("dataUrl", "data:" + ct + ";base64," + android.util.Base64.encodeToString(data, android.util.Base64.NO_WRAP));
+                } else {
+                    o.put("body", new String(data, "UTF-8"));
+                }
+            } catch (Exception e) {
+                try { o.put("error", "fetch failed: " + e.getMessage()); } catch (Exception ignored) {}
+            } finally {
+                if (c != null) { try { c.disconnect(); } catch (Exception ignored) {} }
+            }
+            return o.toString();
+        }
+
+        /* ---- real speech out, even with no server ---- */
+
+        /**
+         * Google's translate endpoint speaks Bengali (and 80+ other languages)
+         * but sends no CORS headers, so the WebView cannot fetch it directly.
+         * The bridge can: it is native code, and CORS is a browser rule. The
+         * bytes come back as a base64 data URL the WebView plays like any other
+         * audio, so a phone with no Bengali engine voice still talks.
+         */
+        @JavascriptInterface
+        public String ttsFetch(String text, String lang) {
+            JSONObject o = new JSONObject();
+            String q = text == null ? "" : text.trim();
+            if (q.isEmpty()) { try { o.put("error", "q required"); } catch (Exception ignored) {} return o.toString(); }
+            if (q.length() > 200) q = q.substring(0, 200);
+            String tl = lang == null || lang.trim().isEmpty() ? "bn" : lang.trim().toLowerCase();
+            int cut = tl.indexOf('-');
+            if (cut < 0) cut = tl.indexOf('_');
+            if (cut > 0) tl = tl.substring(0, cut);
+            java.net.HttpURLConnection c = null;
+            try {
+                String u = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl="
+                    + java.net.URLEncoder.encode(tl, "UTF-8")
+                    + "&q=" + java.net.URLEncoder.encode(q, "UTF-8");
+                c = (java.net.HttpURLConnection) new java.net.URL(u).openConnection();
+                c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36");
+                c.setRequestProperty("Referer", "https://translate.google.com/");
+                c.setConnectTimeout(8000);
+                c.setReadTimeout(15000);
+                int code = c.getResponseCode();
+                if (code != 200) { o.put("error", "tts http " + code); return o.toString(); }
+                InputStream in = c.getInputStream();
+                java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+                byte[] buf = new byte[16384];
+                int r;
+                while ((r = in.read(buf)) > 0) bos.write(buf, 0, r);
+                in.close();
+                byte[] mp3 = bos.toByteArray();
+                if (mp3.length == 0) { o.put("error", "tts empty"); return o.toString(); }
+                o.put("ok", true);
+                o.put("lang", tl);
+                o.put("bytes", mp3.length);
+                o.put("dataUrl", "data:audio/mpeg;base64," + android.util.Base64.encodeToString(mp3, android.util.Base64.NO_WRAP));
+            } catch (Exception e) {
+                try { o.put("error", "tts failed: " + e.getMessage()); } catch (Exception ignored) {}
+            } finally {
+                if (c != null) { try { c.disconnect(); } catch (Exception ignored) {} }
+            }
+            return o.toString();
+        }
+
+        /* ---- real filesystem, no shell quoting involved ---- */
+
+        /**
+         * One entry point for every file operation the tools need. Doing this in
+         * Java rather than shelling out means paths with spaces, quotes or
+         * Bangla characters work exactly as typed, and there is no command
+         * injection surface. Mirrors the server's /api/fs contract so the JS
+         * layer needs no special case.
+         */
+        @JavascriptInterface
+        public String fsOp(String json) {
+            JSONObject o = new JSONObject();
+            try {
+                JSONObject b = new JSONObject(json == null ? "{}" : json);
+                String op = b.optString("op", "");
+                File target = resolveUserPath(b.optString("path", ""));
+                if (target == null) {
+                    o.put("error", "path required");
+                    return o.toString();
+                }
+                switch (op) {
+                    case "read": {
+                        if (!target.exists()) { o.put("error", "no such file"); break; }
+                        if (target.isDirectory()) { o.put("error", "is a directory — use op:list"); break; }
+                        long size = target.length();
+                        if (size > MAX_READ) { o.put("error", "file too large (" + size + " bytes)"); break; }
+                        byte[] buf = readAll(target);
+                        boolean binary = looksBinary(buf);
+                        o.put("ok", true);
+                        o.put("path", target.getAbsolutePath());
+                        o.put("bytes", size);
+                        o.put("text", binary);
+                        if (binary) {
+                            o.put("dataUrl", "data:" + mimeOf(target.getName()) + ";base64," + android.util.Base64.encodeToString(buf, android.util.Base64.NO_WRAP));
+                        } else {
+                            String all = new String(buf, "UTF-8");
+                            String[] lines = all.split("\n", -1);
+                            int from = Math.max(0, b.optInt("from_line", 1) - 1);
+                            int to = b.optInt("to_line", 0) > 0 ? b.optInt("to_line") : lines.length;
+                            to = Math.min(to, lines.length);
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = from; i < to; i++) { if (i > from) sb.append('\n'); sb.append(lines[i]); }
+                            o.put("lines", lines.length);
+                            o.put("content", clip(sb.toString(), 400000));
+                        }
+                        break;
+                    }
+                    case "write": {
+                        File parent = target.getParentFile();
+                        if (parent != null && !parent.exists()) parent.mkdirs();
+                        boolean existed = target.exists();
+                        java.io.FileOutputStream fos = new java.io.FileOutputStream(target, b.optBoolean("append", false));
+                        fos.write(String.valueOf(b.optString("content", "")).getBytes("UTF-8"));
+                        fos.close();
+                        o.put("ok", true);
+                        o.put("path", target.getAbsolutePath());
+                        o.put("bytes", target.length());
+                        o.put("created", !existed);
+                        o.put("append", b.optBoolean("append", false));
+                        break;
+                    }
+                    case "edit": {
+                        if (!target.exists()) { o.put("error", "no such file"); break; }
+                        String src = new String(readAll(target), "UTF-8");
+                        String find = b.optString("find", "");
+                        if (find.isEmpty()) { o.put("error", "find required"); break; }
+                        int count = src.split(java.util.regex.Pattern.quote(find), -1).length - 1;
+                        if (count == 0) { o.put("ok", false); o.put("error", "text not found"); o.put("occurrences", 0); break; }
+                        boolean all = b.optBoolean("all", false);
+                        if (count > 1 && !all) { o.put("ok", false); o.put("error", "text appears " + count + " times — pass all:true or a longer snippet"); o.put("occurrences", count); break; }
+                        String repl = b.optString("replace", "");
+                        String out = all ? src.replace(find, repl) : replaceFirst(src, find, repl);
+                        java.io.FileOutputStream fos2 = new java.io.FileOutputStream(target, false);
+                        fos2.write(out.getBytes("UTF-8"));
+                        fos2.close();
+                        o.put("ok", true);
+                        o.put("path", target.getAbsolutePath());
+                        o.put("occurrences", count);
+                        o.put("replaced", all ? count : 1);
+                        break;
+                    }
+                    case "list": {
+                        if (!target.exists()) { o.put("error", "no such directory"); break; }
+                        File[] kids = target.listFiles();
+                        JSONArray arr = new JSONArray();
+                        if (kids != null) {
+                            java.util.Arrays.sort(kids, new java.util.Comparator<File>() {
+                                public int compare(File a, File c) {
+                                    if (a.isDirectory() != c.isDirectory()) return a.isDirectory() ? -1 : 1;
+                                    return a.getName().compareToIgnoreCase(c.getName());
+                                }
+                            });
+                            for (int i = 0; i < kids.length && i < 2000; i++) {
+                                File k = kids[i];
+                                JSONObject e = new JSONObject();
+                                e.put("name", k.getName());
+                                e.put("dir", k.isDirectory());
+                                e.put("bytes", k.length());
+                                e.put("mtime", k.lastModified());
+                                arr.put(e);
+                            }
+                        }
+                        o.put("ok", true);
+                        o.put("path", target.getAbsolutePath());
+                        o.put("count", arr.length());
+                        o.put("entries", arr);
+                        break;
+                    }
+                    case "stat": {
+                        if (!target.exists()) { o.put("error", "no such file"); break; }
+                        o.put("ok", true);
+                        o.put("path", target.getAbsolutePath());
+                        o.put("dir", target.isDirectory());
+                        o.put("bytes", target.length());
+                        o.put("mtime", target.lastModified());
+                        break;
+                    }
+                    case "mkdir": {
+                        target.mkdirs();
+                        o.put("ok", target.isDirectory());
+                        o.put("path", target.getAbsolutePath());
+                        break;
+                    }
+                    case "delete": {
+                        o.put("ok", deleteRecursive(target));
+                        o.put("path", target.getAbsolutePath());
+                        break;
+                    }
+                    case "glob": {
+                        String pattern = b.optString("pattern", "*");
+                        java.util.List<File> hits = new java.util.ArrayList<File>();
+                        globInto(target, pattern, hits, 0);
+                        JSONArray arr = new JSONArray();
+                        for (int i = 0; i < hits.size() && i < 1000; i++) {
+                            JSONObject e = new JSONObject();
+                            e.put("path", hits.get(i).getAbsolutePath());
+                            e.put("bytes", hits.get(i).length());
+                            e.put("dir", hits.get(i).isDirectory());
+                            arr.put(e);
+                        }
+                        o.put("ok", true);
+                        o.put("path", target.getAbsolutePath());
+                        o.put("pattern", pattern);
+                        o.put("count", arr.length());
+                        o.put("files", arr);
+                        break;
+                    }
+                    case "grep": {
+                        String query = b.optString("query", "");
+                        if (query.isEmpty()) { o.put("error", "query required"); break; }
+                        boolean regex = b.optBoolean("regex", false);
+                        boolean ci = !b.optBoolean("case_sensitive", false);
+                        java.util.regex.Pattern rx = null;
+                        if (regex) {
+                            int flags = ci ? java.util.regex.Pattern.CASE_INSENSITIVE : 0;
+                            try { rx = java.util.regex.Pattern.compile(query, flags); }
+                            catch (Exception pe) { o.put("error", "bad regex: " + pe.getMessage()); break; }
+                        }
+                        String needle = ci ? query.toLowerCase() : query;
+                        JSONArray arr = new JSONArray();
+                        grepInto(target, rx, needle, arr, 0);
+                        o.put("ok", true);
+                        o.put("path", target.getAbsolutePath());
+                        o.put("query", query);
+                        o.put("count", arr.length());
+                        o.put("matches", arr);
+                        break;
+                    }
+                    default:
+                        o.put("error", "unknown op: " + op);
+                }
+            } catch (Exception e) {
+                try { o.put("error", "fs failed: " + e.getMessage()); } catch (Exception ignored) {}
+            }
+            return o.toString();
+        }
+
+        private static final long MAX_READ = 12L * 1024 * 1024;
+
+        private String mimeOf(String name) {
+            String n = name == null ? "" : name.toLowerCase();
+            if (n.endsWith(".png")) return "image/png";
+            if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
+            if (n.endsWith(".gif")) return "image/gif";
+            if (n.endsWith(".webp")) return "image/webp";
+            if (n.endsWith(".svg")) return "image/svg+xml";
+            if (n.endsWith(".mp4")) return "video/mp4";
+            if (n.endsWith(".webm")) return "video/webm";
+            if (n.endsWith(".mp3")) return "audio/mpeg";
+            if (n.endsWith(".wav")) return "audio/wav";
+            if (n.endsWith(".m4a")) return "audio/mp4";
+            if (n.endsWith(".ogg")) return "audio/ogg";
+            if (n.endsWith(".pdf")) return "application/pdf";
+            if (n.endsWith(".json")) return "application/json";
+            if (n.endsWith(".txt")) return "text/plain";
+            return "application/octet-stream";
+        }
+
+        /** Resolve a tool-supplied path inside the app's own storage. */
+        private File resolveUserPath(String p) {
+            if (p == null || p.trim().isEmpty()) return null;
+            String s = p.trim();
+            File f = new File(s);
+            if (!f.isAbsolute()) f = new File(getFilesDir(), s);
+            return f;
+        }
+
+        private byte[] readAll(File f) throws Exception {
+            java.io.FileInputStream in = new java.io.FileInputStream(f);
+            try {
+                long n = f.length();
+                java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream((int) Math.min(n, 1 << 20));
+                byte[] buf = new byte[65536];
+                int r;
+                while ((r = in.read(buf)) > 0) bos.write(buf, 0, r);
+                return bos.toByteArray();
+            } finally { in.close(); }
+        }
+
+        /** A NUL byte in the first 8 KB is the reliable "this is not text" test. */
+        private boolean looksBinary(byte[] buf) {
+            int n = Math.min(buf.length, 8192);
+            for (int i = 0; i < n; i++) if (buf[i] == 0) return true;
+            return false;
+        }
+
+        private String replaceFirst(String src, String find, String repl) {
+            int at = src.indexOf(find);
+            if (at < 0) return src;
+            return src.substring(0, at) + repl + src.substring(at + find.length());
+        }
+
+        private boolean deleteRecursive(File f) {
+            if (!f.exists()) return false;
+            if (f.isDirectory()) {
+                File[] kids = f.listFiles();
+                if (kids != null) for (File k : kids) deleteRecursive(k);
+            }
+            return f.delete();
+        }
+
+        /** Walk `dir` for names matching a shell-style pattern (`*`, `?`). */
+        private void globInto(File dir, String pattern, java.util.List<File> out, int depth) {
+            if (dir == null || depth > 8 || out.size() >= 1000) return;
+            File[] kids = dir.listFiles();
+            if (kids == null) return;
+            java.util.regex.Pattern rx = globToRegex(pattern);
+            for (File k : kids) {
+                if (out.size() >= 1000) return;
+                if (rx.matcher(k.getName()).matches()) out.add(k);
+                if (k.isDirectory()) globInto(k, pattern, out, depth + 1);
+            }
+        }
+
+        private java.util.regex.Pattern globToRegex(String glob) {
+            StringBuilder sb = new StringBuilder("^");
+            for (char ch : (glob == null ? "*" : glob).toCharArray()) {
+                if (ch == '*') sb.append("[^/]*");
+                else if (ch == '?') sb.append('.');
+                else sb.append(java.util.regex.Pattern.quote(String.valueOf(ch)));
+            }
+            sb.append('$');
+            return java.util.regex.Pattern.compile(sb.toString());
+        }
+
+        /** Walk `dir` for text files containing `needle` (or matching `rx`). */
+        private void grepInto(File dir, java.util.regex.Pattern rx, String needle, JSONArray out, int depth) {
+            if (dir == null || depth > 8 || out.length() >= 500) return;
+            File[] kids = dir.listFiles();
+            if (kids == null) return;
+            for (File k : kids) {
+                if (out.length() >= 500) return;
+                if (k.isDirectory()) { grepInto(k, rx, needle, out, depth + 1); continue; }
+                if (k.length() > 4L * 1024 * 1024) continue;
+                try {
+                    byte[] data = readAll(k);
+                    if (looksBinary(data)) continue;
+                    String[] lines = new String(data, "UTF-8").split("\n", -1);
+                    for (int i = 0; i < lines.length; i++) {
+                        boolean hit = rx != null ? rx.matcher(lines[i]).find()
+                            : (needle.isEmpty() || lines[i].toLowerCase().contains(needle));
+                        if (hit) {
+                            JSONObject m = new JSONObject();
+                            m.put("path", k.getAbsolutePath());
+                            m.put("line", i + 1);
+                            m.put("text", clip(lines[i], 400));
+                            out.put(m);
+                            if (out.length() >= 500) return;
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
         /* ---- permissions: native popup, one tap on Allow ---- */
 
         @JavascriptInterface
@@ -958,8 +1400,22 @@ public class MainActivity extends Activity {
                 o.put("manufacturer", Build.MANUFACTURER);
                 o.put("model", Build.MODEL);
                 o.put("android", Build.VERSION.RELEASE);
+                o.put("release", Build.VERSION.RELEASE);
                 o.put("sdk", Build.VERSION.SDK_INT);
                 o.put("locale", Locale.getDefault().toLanguageTag());
+                try {
+                    android.content.IntentFilter f = new android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED);
+                    android.content.Intent b = registerReceiver(null, f);
+                    if (b != null) {
+                        int lvl = b.getIntExtra("level", -1);
+                        int scale = b.getIntExtra("scale", 100);
+                        if (lvl >= 0 && scale > 0) o.put("battery", (int) Math.round(lvl * 100.0 / scale));
+                        int st = b.getIntExtra("status", -1);
+                        o.put("charging", st == android.os.BatteryManager.BATTERY_STATUS_CHARGING || st == android.os.BatteryManager.BATTERY_STATUS_FULL);
+                    }
+                } catch (Exception ignored) {}
+                android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
+                o.put("screen", dm.widthPixels + "x" + dm.heightPixels + " @" + Math.round(dm.density * 160) + "dpi");
             } catch (Exception ignored) {}
             return o.toString();
         }

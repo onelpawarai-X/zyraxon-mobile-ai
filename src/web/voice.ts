@@ -578,18 +578,33 @@
       TTS._speaking = true; ORB.setState('speaking'); TTS._gate(true);
       const play = (i) => {
         if (i >= pieces.length) { ORB.setLevel(0); TTS._speaking = false; TTS._drain(); return; }
-        const a = new Audio(`${base}/api/tts?tl=${tl}&q=${encodeURIComponent(pieces[i])}`);
-        a.crossOrigin = 'anonymous';
-        // Real audio: measure the actual waveform with an AnalyserNode, so the
-        // orb moves with the true sound, not a decoration.
-        const stopReal = ORB.trackAudio(a);
-        const next = () => { stopReal(); TTS._guardDone(); play(i + 1); };
-        a.onended = next;
-        const fail = () => { stopReal(); TTS._guardDone(); ORB.setLevel(0); TTS._speaking = false; TTS._drain(); };
-        a.onerror = fail;
-        TTS._audio = a;
-        TTS._guardArm(pieces[i]);
-        a.play().catch(fail);
+        // Two ways to get real audio for this sentence: the phone's own bridge
+        // (native code, so Google's no-CORS endpoint is reachable) when there is
+        // no server, otherwise the server's cached proxy.
+        const nat = global.ZY.Native;
+        const viaBridge = !!(nat && nat.app && nat.tts && nat.tts.fetch);
+        const src = viaBridge ? null : `${base}/api/tts?tl=${tl}&q=${encodeURIComponent(pieces[i])}`;
+        const start = (url) => {
+          if (!url) { TTS._guardDone(); play(i + 1); return; }
+          const a = new Audio(url);
+          a.crossOrigin = 'anonymous';
+          // Real audio: measure the actual waveform with an AnalyserNode, so the
+          // orb moves with the true sound, not a decoration.
+          const stopReal = ORB.trackAudio(a);
+          const next = () => { stopReal(); TTS._guardDone(); play(i + 1); };
+          a.onended = next;
+          const fail = () => { stopReal(); TTS._guardDone(); ORB.setLevel(0); TTS._speaking = false; TTS._drain(); };
+          a.onerror = fail;
+          TTS._audio = a;
+          TTS._guardArm(pieces[i]);
+          a.play().catch(fail);
+        };
+        if (viaBridge) {
+          const r = nat.tts.fetch(pieces[i], tl);
+          start(r && r.ok ? r.dataUrl : '');
+        } else {
+          start(src);
+        }
       };
       play(0);
     },

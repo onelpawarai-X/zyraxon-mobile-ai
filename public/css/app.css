@@ -547,6 +547,7 @@ input[type=range]{ background:rgba(255,255,255,.3); }
   display:grid; place-items:center; overflow:hidden; font-size:22px;
 }
 .attach-tray .att img,.attach-tray .att video{ width:100%; height:100%; object-fit:cover; }
+.attach-tray .att .att-ico{ display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:22px; }
 .attach-tray .att .x{ background:rgba(0,0,0,.62); color:#fff; }
 .attach-tray .att.sent{ animation:attSent .45s ease forwards; }
 @keyframes attSent{
