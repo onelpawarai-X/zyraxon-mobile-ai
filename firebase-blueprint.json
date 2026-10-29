@@ -1,0 +1,42 @@
+{
+  "collections": {
+    "users": {
+      "documents": {
+        "{userId}": {
+          "fields": {
+            "displayName": { "type": "string" },
+            "email": { "type": "string" },
+            "photoUrl": { "type": "string?" }
+          },
+          "collections": {
+            "chats": {
+              "documents": {
+                "{chatId}": {
+                  "fields": {
+                    "title": { "type": "string" },
+                    "lastMessage": { "type": "string" },
+                    "updatedAt": { "type": "timestamp" },
+                    "createdAt": { "type": "timestamp" }
+                  },
+                  "collections": {
+                    "messages": {
+                      "documents": {
+                        "{messageId}": {
+                          "fields": {
+                            "text": { "type": "string" },
+                            "sender": { "type": "enum", "values": ["user", "model"] },
+                            "createdAt": { "type": "timestamp" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

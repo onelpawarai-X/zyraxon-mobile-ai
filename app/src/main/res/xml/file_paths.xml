@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-files-path name="zyraxon_files" path="zyraxon/" />
+    <files-path name="zyraxon_internal" path="zyraxon/" />
+    <cache-path name="zyraxon_cache" path="." />
+    <external-path name="zyraxon_ext" path="." />
+</paths>
