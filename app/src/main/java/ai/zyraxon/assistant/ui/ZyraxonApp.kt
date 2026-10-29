@@ -72,6 +72,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -97,8 +100,11 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ai.zyraxon.assistant.ui.components.McpScreen
+import ai.zyraxon.assistant.mcp.McpAuth
 
 @Composable
 fun ZyraxonApp(viewModel: ZyraxonViewModel) {
@@ -249,6 +255,10 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                             modifier = Modifier.fillMaxSize()
                         )
                     }
+
+                    AppTab.MCP -> {
+                        McpTabContent(viewModel = viewModel, panelAlpha = panelAlpha)
+                    }
                 }
             }
 
@@ -280,7 +290,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                     .padding(start = 16.dp, bottom = 4.dp)
             ) {
                 Text(
-                    text = "v3.0.0",
+                    text = "v4.0.0",
                     color = Glass.textMuted,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium
@@ -964,4 +974,133 @@ fun BottomComposer(
         // Quick Action Chips Row
         QuickActionChips(onChipClick = onQuickAction)
     }
+}
+
+/**
+ * The MCP tab: every server, what it can do, and a Connect button that opens the
+ * browser for the OAuth ones. A connected server's tools are already inside the
+ * assistant, so there is nothing else to switch on here.
+ */
+@Composable
+private fun McpTabContent(viewModel: ZyraxonViewModel, panelAlpha: Float) {
+    val connections by viewModel.mcpConnections.collectAsState()
+    val notice by viewModel.mcpNotice.collectAsState()
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        if (notice.isNotBlank()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Glass.fill(0.28f))
+                    .border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
+                    .padding(horizontal = 12.dp, vertical = 9.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    notice,
+                    color = Glass.textSecondary,
+                    fontSize = 11.5.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    "✕",
+                    color = Glass.textMuted,
+                    fontSize = 13.sp,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { viewModel.clearMcpNotice() }
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
+        }
+
+        McpScreen(
+            connections = connections,
+            onConnect = { server ->
+                // GitHub needs a token; ask for it right here rather than sending
+                // the user to Settings.
+                if (server.auth == McpAuth.TOKEN && !server.custom) {
+                    viewModel.pendingTokenServer.value = server
+                } else {
+                    viewModel.connectMcp(server)
+                }
+            },
+            onDisconnect = { viewModel.disconnectMcp(it) },
+            onAddCustom = { url, name, token -> viewModel.addCustomMcp(url, name, token) },
+            onRemoveCustom = { viewModel.removeCustomMcp(it) },
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+
+    val pending by viewModel.pendingTokenServer.collectAsState()
+    pending?.let { server ->
+        McpTokenDialog(
+            serverName = server.name,
+            tokenUrl = server.tokenUrl,
+            hint = server.tokenHint,
+            onOpenTokenPage = { viewModel.openTokenPage(server.tokenUrl) },
+            onDismiss = { viewModel.pendingTokenServer.value = null },
+            onConnect = { token ->
+                viewModel.connectMcp(server, token)
+                viewModel.pendingTokenServer.value = null
+            }
+        )
+    }
+}
+
+/** Collects a personal access token for a server that needs one. */
+@Composable
+private fun McpTokenDialog(
+    serverName: String,
+    tokenUrl: String,
+    hint: String,
+    onOpenTokenPage: () -> Unit,
+    onDismiss: () -> Unit,
+    onConnect: (String) -> Unit
+) {
+    var token by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Glass.sheetFill(0.92f),
+        title = { Text("$serverName কানেক্ট করো", color = Glass.textPrimary, fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
+                Text(
+                    hint.ifBlank { "অ্যাক্সেস টোকেন দাও" },
+                    color = Glass.textMuted,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "টোকেন বানাও →",
+                    color = Glass.pinkFill,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(onClick = onOpenTokenPage)
+                        .padding(vertical = 4.dp)
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = token,
+                    onValueChange = { token = it },
+                    label = { Text("Access token", fontSize = 11.5.sp) },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConnect(token.trim()) }, enabled = token.isNotBlank()) {
+                Text("কানেক্ট", color = Glass.pinkFill, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("বাতিল", color = Glass.textMuted) }
+        }
+    )
 }

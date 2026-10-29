@@ -2,6 +2,9 @@ package ai.zyraxon.assistant.viewmodel
 
 import ai.zyraxon.assistant.DeviceBridge
 import ai.zyraxon.assistant.ai.ToolRegistry
+import ai.zyraxon.assistant.mcp.McpAuth
+import ai.zyraxon.assistant.mcp.McpCatalog
+import ai.zyraxon.assistant.mcp.McpStatus
 import ai.zyraxon.assistant.ai.ZyraxonAiEngine
 import ai.zyraxon.assistant.db.ZyraxonDatabase
 import ai.zyraxon.assistant.db.ZyraxonRepository
@@ -29,6 +32,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -696,6 +700,23 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * is what actually happened — the model reads it back on the next round.
      */
     private suspend fun runTool(name: String, args: JSONObject): JSONObject {
+        // MCP: a name carrying "<serverId>__<tool>" is a tool a connected server
+        // advertised, so it goes straight to that server. The three management
+        // tools below let the assistant connect and inspect servers by itself.
+        if (name.contains("__")) {
+            val result = aiEngine.mcp.callTool(name, args)
+            recordToolExecution(name, result)
+            return result
+        }
+        when (name) {
+            "mcp_connect" -> return runMcpConnect(args)
+            "mcp_list" -> return runMcpList()
+            "mcp_disconnect" -> {
+                val id = args.optString("server")
+                aiEngine.mcp.disconnect(id)
+                return JSONObject().put("ok", true).put("summary", "$id কানেক্ট করা বন্ধ করা হলো")
+            }
+        }
         // Panel tools belong to the UI, not the device.
         when (name) {
             "todo_write" -> {
@@ -730,6 +751,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         }
 
         val result = ToolRegistry.execute(getApplication(), name, args)
+        recordToolExecution(name, result)
+        return result
+    }
+
+    /** Shows a tool on the Tools tab and keeps any picture it produced. */
+    private fun recordToolExecution(name: String, result: JSONObject) {
         val item = ToolExecutionItem(
             name = name,
             description = result.optString("summary"),
@@ -745,11 +772,152 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         result.optString("image_data_url").takeIf { it.isNotBlank() }?.let {
             _screenFrameDataUrl.value = it
         }
-        return result
+    }
+
+    /**
+     * Connects an MCP server the assistant asked for. For the browser-based ones
+     * it opens the consent page and returns immediately — the connection finishes
+     * on its own, and the model sees the new tools on its next turn.
+     */
+    private suspend fun runMcpConnect(args: JSONObject): JSONObject {
+        val requested = args.optString("server").trim().lowercase()
+        val server = when (requested) {
+            "custom" -> {
+                val url = args.optString("url").trim()
+                if (url.isBlank()) {
+                    return JSONObject().put("ok", false).put("summary", "custom সার্ভারের url দরকার")
+                }
+                aiEngine.mcp.addCustomServer(url, args.optString("name"), args.optString("token"))
+            }
+            else -> McpCatalog.find(requested)
+                ?: return JSONObject().put("ok", false)
+                    .put("summary", "অজানা MCP: $requested (canva, cloudflare, supabase, github বা custom)")
+        }
+
+        return if (server.auth == McpAuth.OAUTH) {
+            val url = aiEngine.mcp.beginOAuth(server)
+            openInBrowser(url)
+            JSONObject().put("ok", true)
+                .put("summary", "${server.name}: ব্রাউজারে অনুমতির পাতা খোলা হয়েছে — ব্যবহারকারী Allow চাপলে কানেক্ট হয়ে যাবে")
+                .put("pending_auth", true)
+        } else {
+            val token = args.optString("token").takeIf { it.isNotBlank() }
+            if (server.auth == McpAuth.TOKEN && token == null) {
+                return JSONObject().put("ok", false)
+                    .put("summary", "${server.name} এর জন্য access token দরকার — ব্যবহারকারীর কাছ থেকে নাও")
+            }
+            val conn = aiEngine.mcp.connectWithToken(server, token)
+            JSONObject()
+                .put("ok", conn.status == McpStatus.CONNECTED)
+                .put("summary", if (conn.status == McpStatus.CONNECTED)
+                    "${server.name} কানেক্টেড — ${conn.toolCount}টি টুল পাওয়া গেছে"
+                else "${server.name} কানেক্ট করা যায়নি: ${conn.error}")
+                .put("tools", org.json.JSONArray(conn.tools.map { it.name }))
+        }
+    }
+
+    /** Opens a consent page in the phone's browser. */
+    private fun openInBrowser(url: String) {
+        runCatching {
+            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            getApplication<Application>().startActivity(intent)
+        }
+    }
+
+    private fun runMcpList(): JSONObject {
+        val arr = org.json.JSONArray()
+        for (conn in aiEngine.mcp.connections.value) {
+            arr.put(JSONObject()
+                .put("server", conn.server.id)
+                .put("name", conn.server.name)
+                .put("status", conn.status.name)
+                .put("tool_count", conn.toolCount)
+                .put("tools", org.json.JSONArray(conn.tools.map { it.qualifiedName }))
+                .apply { if (conn.error.isNotBlank()) put("error", conn.error) })
+        }
+        return JSONObject().put("ok", true)
+            .put("summary", "MCP: ${aiEngine.mcp.connectedCount()}টি কানেক্টেড, ${aiEngine.mcp.totalToolCount()}টি টুল")
+            .put("servers", arr)
     }
 
     fun closeCodePanel() {
         _codeBoxOpen.value = false
+    }
+
+    // ---- MCP, driven by the MCP screen ------------------------------------
+
+    val mcpConnections: StateFlow<List<ai.zyraxon.assistant.mcp.McpConnection>> =
+        aiEngine.mcp.connections
+
+    /** Set when a server needs a token; the UI shows the token dialog for it. */
+    val pendingTokenServer = MutableStateFlow<ai.zyraxon.assistant.mcp.McpServer?>(null)
+
+    /** Opens the provider's token page so the user does not have to hunt for it. */
+    fun openTokenPage(url: String) {
+        if (url.isNotBlank()) openInBrowser(url)
+    }
+
+    /** Non-fatal note shown on the MCP screen (progress, or why it failed). */
+    private val _mcpNotice = MutableStateFlow("")
+    val mcpNotice: StateFlow<String> = _mcpNotice.asStateFlow()
+
+    fun clearMcpNotice() {
+        _mcpNotice.value = ""
+    }
+
+    /**
+     * Connects a server from the MCP screen. The browser-based ones open the
+     * consent page and finish on their own; the token-based ones need the token
+     * the dialog already collected.
+     */
+    fun connectMcp(server: ai.zyraxon.assistant.mcp.McpServer, token: String? = null) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                if (server.auth == McpAuth.OAUTH) {
+                    _mcpNotice.value = "${server.name}: অনুমতির পাতা খোলা হচ্ছে…"
+                    val url = aiEngine.mcp.beginOAuth(server) { stage ->
+                        _mcpNotice.value = "${server.name}: $stage"
+                    }
+                    withContext(Dispatchers.Main) { openInBrowser(url) }
+                    _mcpNotice.value =
+                        "${server.name}: ব্রাউজারে Allow চাপো — ফিরে এলে নিজে থেকেই কানেক্ট হয়ে যাবে"
+                } else {
+                    _mcpNotice.value = "${server.name}: কানেক্ট করা হচ্ছে…"
+                    val conn = aiEngine.mcp.connectWithToken(server, token)
+                    _mcpNotice.value = if (conn.status == McpStatus.CONNECTED) {
+                        "${server.name} কানেক্টেড — ${conn.toolCount}টি টুল পাওয়া গেছে ✅"
+                    } else {
+                        "${server.name}: ${conn.error.ifBlank { "কানেক্ট করা যায়নি" }}"
+                    }
+                }
+            } catch (e: Exception) {
+                _mcpNotice.value = "${server.name}: ${e.message.orEmpty()}"
+            }
+        }
+    }
+
+    fun disconnectMcp(serverId: String) {
+        aiEngine.mcp.disconnect(serverId)
+        _mcpNotice.value = "$serverId বিচ্ছিন্ন করা হলো"
+    }
+
+    fun addCustomMcp(url: String, name: String, token: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val server = aiEngine.mcp.addCustomServer(url, name, token)
+            _mcpNotice.value = "${server.name}: কানেক্ট করা হচ্ছে…"
+            val conn = aiEngine.mcp.connectWithToken(server, token.takeIf { it.isNotBlank() })
+            _mcpNotice.value = if (conn.status == McpStatus.CONNECTED) {
+                "${server.name} কানেক্টেড — ${conn.toolCount}টি টুল ✅"
+            } else {
+                "${server.name}: ${conn.error.ifBlank { "কানেক্ট করা যায়নি" }}"
+            }
+        }
+    }
+
+    fun removeCustomMcp(serverId: String) {
+        aiEngine.mcp.removeCustomServer(serverId)
+        _mcpNotice.value = "$serverId মুছে ফেলা হলো"
     }
 
     /** Reads the workspace so the Files panel shows what really exists on disk. */
