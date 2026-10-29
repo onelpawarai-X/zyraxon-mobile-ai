@@ -16,8 +16,8 @@ android {
     applicationId = "com.aistudio.zyraxon.kxqmpz"
     minSdk = 24
     targetSdk = 36
-    versionCode = 8
-    versionName = "6.0.0"
+    versionCode = 9
+    versionName = "6.1.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

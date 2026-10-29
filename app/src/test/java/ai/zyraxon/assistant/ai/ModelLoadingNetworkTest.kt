@@ -1,8 +1,10 @@
 package ai.zyraxon.assistant.ai
 
 import android.content.Context
+import ai.zyraxon.assistant.model.AiModel
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -74,5 +76,42 @@ class ModelLoadingNetworkTest {
 
         assertFalse(ok)
         assertTrue("expected a missing-key message, got: $message", message.contains("কী"))
+    }
+
+    @Test
+    fun failoverOnlyOffersProvidersThatHaveAKeyAndTheirOwnModel() {
+        val engine = ZyraxonAiEngine(context)
+        for (id in listOf("gemini", "anthropic", "groq", "openrouter", "deepseek", "openai", "opencode", "zyraxon")) {
+            engine.setApiKey(id, "")
+        }
+        engine.setApiKey("groq", "gsk_test")
+        engine.setApiKey("deepseek", "sk_test")
+
+        val primary = AiModel(
+            id = "gemini-2.0-flash", name = "gemini-2.0-flash",
+            category = "Google", description = "Gemini", provider = "gemini"
+        )
+        val candidates = engine.failoverCandidatesForTest(primary)
+        val ids = candidates.map { it.provider }
+
+        assertEquals(listOf("groq", "deepseek"), ids)
+        // Each candidate must carry its own provider's model, never the primary's.
+        assertEquals("llama-3.3-70b-versatile", candidates[0].id)
+        assertEquals("deepseek-chat", candidates[1].id)
+        assertTrue("a keyless provider must not be a candidate", !ids.contains("openai"))
+        assertTrue("the primary must not be its own fallback", !ids.contains("gemini"))
+    }
+
+    @Test
+    fun failoverWithNoOtherKeyOffersNothingRatherThanInventing() {
+        val engine = ZyraxonAiEngine(context)
+        for (id in listOf("gemini", "anthropic", "groq", "openrouter", "deepseek", "openai", "opencode", "zyraxon")) {
+            engine.setApiKey(id, "")
+        }
+        val primary = AiModel(
+            id = "gemini-2.0-flash", name = "gemini-2.0-flash",
+            category = "Google", description = "Gemini", provider = "gemini"
+        )
+        assertTrue(engine.failoverCandidatesForTest(primary).isEmpty())
     }
 }

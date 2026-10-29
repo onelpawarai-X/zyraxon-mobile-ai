@@ -592,10 +592,14 @@ class ZyraxonAiEngine(private val context: Context) {
             for (update in mcp.drainResourceUpdates()) {
                 messages.put(JSONObject().put("role", "user").put("content", update))
             }
-            val result = callModelAny(model, messages, tools) { delta ->
+            val result = callModelWithFailover(model, messages, tools, { delta ->
                 producedText = true
                 trySend(delta)
-            }
+            }, { switched ->
+                // Say the switch out loud: answering from a different model than
+                // the one on screen would otherwise be invisible.
+                trySend("\n\n🔁 `$switched` — আগের প্রোভাইডার সীমায় পৌঁছেছে, তাই এখান থেকে চালিয়ে যাচ্ছি।\n\n")
+            })
                 ?: throw IllegalStateException(
                     lastProviderError
                         ?: "কোনো মডেল উত্তর দিতে পারেনি। ইন্টারনেট, এপিআই কী ও মডেল নির্বাচন দেখে আবার চেষ্টা করো।"
@@ -754,6 +758,67 @@ class ZyraxonAiEngine(private val context: Context) {
             it.mergeToolCalls(blocking.toolCalls)
         }
     }
+
+    /**
+     * Tries the chosen model, then quietly moves to the next provider that has a
+     * key when it refuses (quota, rate limit, outage). The user asked for work
+     * that never stops mid-task, so a single provider's limit must not end the
+     * turn. The model actually used is reported through [onSwitch] so the phone
+     * can say what happened instead of silently answering from elsewhere.
+     */
+    private fun callModelWithFailover(
+        model: AiModel,
+        messages: JSONArray,
+        tools: JSONArray,
+        onText: (String) -> Unit,
+        onSwitch: (String) -> Unit
+    ): StreamedTurn? {
+        callModelAny(model, messages, tools, onText)?.let {
+            if (it.text.isNotEmpty() || it.toolCalls.length() > 0) return it
+        }
+        val firstError = lastProviderError
+
+        for (candidate in failoverCandidates(model)) {
+            val attempt = callModelAny(candidate, messages, tools, onText)
+            if (attempt != null && (attempt.text.isNotEmpty() || attempt.toolCalls.length() > 0)) {
+                onSwitch("${model.provider} → ${candidate.provider} (${candidate.id})")
+                return attempt
+            }
+        }
+        // Nothing else could answer either, so the original reason is the honest
+        // one to report — later candidates failed for their own, less relevant
+        // reasons (usually just "no key").
+        lastProviderError = firstError ?: lastProviderError
+        return null
+    }
+
+    /**
+     * The providers to try after the chosen one, fastest first. Only providers
+     * that actually have a key are offered, and each contributes its own seed
+     * model — never another provider's model id, which would 404 everywhere.
+     */
+    private fun failoverCandidates(primary: AiModel): List<AiModel> {
+        val out = mutableListOf<AiModel>()
+        for (spec in ProviderCatalog.specs.sortedBy { it.speedRank }) {
+            if (spec.id == primary.provider) continue
+            if (getApiKey(spec.id).isBlank()) continue
+            val candidateId = spec.seedModels.firstOrNull() ?: continue
+            out.add(
+                AiModel(
+                    id = candidateId,
+                    name = candidateId,
+                    category = spec.category,
+                    description = spec.label,
+                    provider = spec.id
+                )
+            )
+        }
+        return out
+    }
+
+    /** Test seam: the failover order is the part worth asserting without network. */
+    internal fun failoverCandidatesForTest(primary: AiModel): List<AiModel> =
+        failoverCandidates(primary)
 
     private class ModelResult(val text: String, val toolCalls: JSONArray)
 
