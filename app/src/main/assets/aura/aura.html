@@ -40,14 +40,16 @@ body {
     overflow: hidden;
     background: transparent;
     font-family: Arial, sans-serif;
+    /* Prevent any glow from leaking past the WebView edge */
+    clip-path: inset(0);
 }
 
 .aura-stage {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 300px;
-    height: 300px;
+    width: 320px;
+    height: 320px;
     transform: translate(-50%, -50%) scale(var(--aura-size));
     transform-origin: center center;
     display: flex;
@@ -63,14 +65,14 @@ body {
  */
 .atmosphere {
     position: absolute;
-    width: 230px;
-    height: 230px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
     background: var(--hot-pink);
-    filter: blur(48px);
-    opacity: calc(0.34 * var(--aura-glow));
-    -webkit-mask-image: radial-gradient(circle, #000 32%, rgba(0, 0, 0, 0.55) 62%, transparent 82%);
-    mask-image: radial-gradient(circle, #000 32%, rgba(0, 0, 0, 0.55) 62%, transparent 82%);
+    filter: blur(42px);
+    opacity: calc(0.3 * var(--aura-glow));
+    -webkit-mask-image: radial-gradient(circle, #000 20%, rgba(0, 0, 0, 0.4) 50%, transparent 75%);
+    mask-image: radial-gradient(circle, #000 20%, rgba(0, 0, 0, 0.4) 50%, transparent 75%);
     animation: atmosphere calc(5s / var(--aura-speed)) ease-in-out infinite alternate;
 }
 
