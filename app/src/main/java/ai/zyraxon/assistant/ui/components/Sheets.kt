@@ -52,7 +52,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -61,11 +63,15 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -421,6 +427,26 @@ fun ModelSelectionSheet(
                                         fontWeight = FontWeight.Bold,
                                         color = Glass.textPrimary
                                     )
+                                    // Realtime models speak for themselves, so the
+                                    // badge tells the user the phone's TTS will be
+                                    // silent before they pick one.
+                                    if (model.isRealtime) {
+                                        Spacer(modifier = Modifier.size(6.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(Glass.pinkFill.copy(alpha = 0.30f))
+                                                .border(1.dp, Glass.pinkFill, RoundedCornerShape(6.dp))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = "🎙️ " + t("রিয়েলটাইম"),
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Glass.textPrimary
+                                            )
+                                        }
+                                    }
                                     if (model.isFree) {
                                         Spacer(modifier = Modifier.size(6.dp))
                                         Box(
@@ -438,6 +464,17 @@ fun ModelSelectionSheet(
                                         }
                                     }
                                 }
+                                // Category-wise label, so realtime models are easy
+                                // to tell apart from plain text models at a glance.
+                                Text(
+                                    text = if (model.isRealtime) {
+                                        "${model.category} • " + t("সরাসরি কথা বলে")
+                                    } else {
+                                        "${model.category} • " + t("লেখা পড়ে শোনায়")
+                                    },
+                                    fontSize = 10.sp,
+                                    color = if (model.isRealtime) Glass.pinkFill else Glass.cyanFill
+                                )
                                 Text(
                                     text = model.description,
                                     fontSize = 11.5.sp,
@@ -615,6 +652,8 @@ fun SettingsSheet(
             ) {
                 listOf(
                     "voice" to t("🔊 ভয়েস (TTS)"),
+                    "live" to t("📞 লাইভ ভয়েস"),
+                    "ondevice" to t("📴 অন-ডিভাইস মডেল"),
                     "mic" to t("🎙️ মাইক"),
                     "aura" to t("🔮 ওরা ও ব্যাকগ্রাউন্ড"),
                     "providers" to t("🔑 এআই প্রোভাইডার্স"),
@@ -666,6 +705,268 @@ fun SettingsSheet(
                             },
                             onOpenSpecial = { page -> activity?.openSpecialSetting(page) }
                         )
+                    }
+
+                    "live" -> {
+                        // LIVE SPEECH-TO-SPEECH
+                        val liveOn by viewModel.liveVoiceEnabled.collectAsState()
+                        val liveState by viewModel.liveVoiceState.collectAsState()
+                        val liveModel by viewModel.liveVoiceModel.collectAsState()
+                        val liveProvider by viewModel.liveVoiceProvider.collectAsState()
+                        val models by viewModel.availableModels.collectAsState()
+                        val selected by viewModel.selectedModel.collectAsState()
+                        // The realtime models the loaded catalogue actually holds.
+                        // Nothing is listed here that the providers did not send.
+                        val realtimeModels = models.filter { it.isRealtime }
+
+                        Text(
+                            t("লাইভ ভয়েস — স্পিচ-টু-স্পিচ"),
+                            fontWeight = FontWeight.Bold,
+                            color = Glass.textPrimary,
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            t("রিয়েলটাইম মডেল বাছলে মডেল নিজের কণ্ঠে সরাসরি কথা বলে, আর ফোনের TTS বন্ধ থাকে — দুটো কণ্ঠ একসাথে শোনা যায় না। সাধারণ মডেল বাছলে তার লেখা ফোনের TTS পড়ে শোনায়।"),
+                            color = Glass.textSecondary,
+                            fontSize = 11.5.sp
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Live status. The switch follows the model, so this is a
+                        // read-out, not a control.
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(if (liveOn) Glass.cyanFill.copy(alpha = 0.22f) else Glass.rowFill(0.30f))
+                                .border(1.dp, if (liveOn) Glass.cyanFill else Glass.borderSoft, RoundedCornerShape(14.dp))
+                                .padding(14.dp)
+                                .testTag("live_voice_toggle")
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        if (liveOn) t("লাইভ ভয়েস চালু") else t("লাইভ ভয়েস বন্ধ"),
+                                        color = Glass.textPrimary,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp
+                                    )
+                                    Text(
+                                        when (liveState) {
+                                            ai.zyraxon.assistant.voice.LiveVoiceSession.State.CONNECTING -> t("সংযোগ হচ্ছে…")
+                                            ai.zyraxon.assistant.voice.LiveVoiceSession.State.LISTENING -> t("শুনছে…")
+                                            ai.zyraxon.assistant.voice.LiveVoiceSession.State.SPEAKING -> t("বলছে…")
+                                            else -> if (liveOn) t("অপেক্ষায়") else t("রিয়েলটাইম মডেল বাছলে নিজেই চালু হবে")
+                                        },
+                                        color = Glass.textSecondary,
+                                        fontSize = 11.sp
+                                    )
+                                    if (liveOn && liveModel.isNotBlank()) {
+                                        Text(
+                                            "$liveProvider · $liveModel",
+                                            color = Glass.cyanFill,
+                                            fontSize = 10.5.sp
+                                        )
+                                    }
+                                }
+                                Text(if (liveOn) "🎙️" else "🔇", fontSize = 20.sp)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            t("রিয়েলটাইম মডেল (নিজের কণ্ঠে কথা বলে):"),
+                            color = Glass.cyanFill,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        if (realtimeModels.isEmpty()) {
+                            Text(
+                                t("এখন কোনো রিয়েলটাইম মডেল লোড হয়নি। 🔑 এআই প্রোভাইডার্স ট্যাবে Gemini, OpenAI বা Grok-এর কী দিলে তাদের লাইভ মডেল এখানে আসবে।"),
+                                color = Glass.amber,
+                                fontSize = 11.sp
+                            )
+                        } else {
+                            realtimeModels.forEach { m ->
+                                val active = selected.id == m.id
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 3.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (active) Glass.pinkFill.copy(alpha = 0.20f) else Glass.rowFill(0.25f))
+                                        .border(1.dp, if (active) Glass.pinkFill else Glass.borderSoft, RoundedCornerShape(10.dp))
+                                        .clickable { viewModel.setModel(m) }
+                                        .padding(horizontal = 12.dp, vertical = 10.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(m.name, color = Glass.textPrimary, fontSize = 11.5.sp)
+                                            Text(m.provider, color = Glass.textSecondary, fontSize = 10.sp)
+                                        }
+                                        if (active) Icon(Icons.Rounded.Check, contentDescription = "Active", tint = Glass.pinkFill, modifier = Modifier.size(16.dp))
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            t("নিচের স্লাইডারে কণ্ঠ বাছলে রিয়েলটাইম মডেলেও সেই কণ্ঠই ব্যবহার হয়।"),
+                            color = Glass.textMuted,
+                            fontSize = 10.5.sp
+                        )
+                    }
+
+                    "ondevice" -> {
+                        // ON-DEVICE (OFFLINE) MODEL
+                        var installed by remember { mutableStateOf(viewModel.onDeviceModel.installedModels()) }
+                        var busy by remember { mutableStateOf("") }
+                        var progress by remember { mutableStateOf(0f) }
+                        var note by remember { mutableStateOf("") }
+                        var hfToken by remember { mutableStateOf("") }
+                        val scope = rememberCoroutineScope()
+
+                        Text(
+                            t("অন-ডিভাইস মডেল — ইন্টারনেট ছাড়াই উত্তর"),
+                            fontWeight = FontWeight.Bold,
+                            color = Glass.textPrimary,
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            t("মডেল ফাইলটা ফোনেই চলে, কোনো ডেটা বাইরে যায় না। ফাইল বড় (৫০০MB+), তাই একবার ডাউনলোড করে রাখা হয়।"),
+                            color = Glass.textSecondary,
+                            fontSize = 11.5.sp
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            t("ডাউনলোড করা মডেল:"),
+                            color = Glass.cyanFill,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        if (installed.isEmpty()) {
+                            Text(t("এখনো কিছু ডাউনলোড করা হয়নি।"), color = Glass.textSecondary, fontSize = 11.5.sp)
+                        } else {
+                            installed.forEach { f ->
+                                val loaded = viewModel.onDeviceModel.loadedPath == f.absolutePath
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 3.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (loaded) Glass.cyanFill.copy(alpha = 0.20f) else Glass.rowFill(0.25f))
+                                        .border(1.dp, if (loaded) Glass.cyanFill else Glass.borderSoft, RoundedCornerShape(10.dp))
+                                        .clickable {
+                                            viewModel.onDeviceModel.load(f.absolutePath)
+                                            note = t("লোড হয়েছে: ") + f.name
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 10.dp)
+                                ) {
+                                    Column {
+                                        Text(f.name, color = Glass.textPrimary, fontSize = 11.5.sp)
+                                        Text(
+                                            (f.length() / (1024 * 1024)).toString() + " MB" + if (loaded) " • " + t("লোড করা আছে") else "",
+                                            color = Glass.textSecondary,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            t("ডাউনলোডযোগ্য মডেল — সবগুলো টোকেন ছাড়াই নামে:"),
+                            color = Glass.cyanFill,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            t("ছোট থেকে বড় সাজানো। কম RAM-এর ফোনে উপরের হালকা মডেলটা বেছে নাও। কোনো টোকেন লাগে না।"),
+                            color = Glass.textSecondary,
+                            fontSize = 10.5.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        OutlinedTextField(
+                            value = hfToken,
+                            onValueChange = { hfToken = it },
+                            label = { Text(t("Hugging Face টোকেন (ঐচ্ছিক, শুধু গেটেড ফাইলের জন্য)"), fontSize = 11.sp) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 11.sp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        ai.zyraxon.assistant.ai.OnDeviceModel.SUGGESTED.forEach { info ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 3.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Glass.rowFill(0.25f))
+                                    .border(1.dp, Glass.borderSoft, RoundedCornerShape(10.dp))
+                                    .clickable(enabled = busy.isBlank()) {
+                                        busy = info.name
+                                        progress = 0f
+                                        scope.launch {
+                                            val file = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                                viewModel.onDeviceModel.download(info.url, info.fileName, hfToken) { done, total ->
+                                                    if (total > 0) progress = done.toFloat() / total.toFloat()
+                                                }
+                                            }
+                                            installed = viewModel.onDeviceModel.installedModels()
+                                            note = if (file != null) t("ডাউনলোড হয়েছে: ") + file.name
+                                            else t("ডাউনলোড ব্যর্থ — ইন্টারনেট দেখুন")
+                                            busy = ""
+                                        }
+                                    }
+                                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                            ) {
+                                Column {
+                                    Text(info.name, color = Glass.textPrimary, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        "${info.approxMb} MB • " + if (info.requiresToken) t("টোকেন লাগবে") else t("টোকেন ছাড়াই"),
+                                        color = if (info.requiresToken) Glass.amber else Glass.textSecondary,
+                                        fontSize = 10.sp
+                                    )
+                                    if (busy == info.name) {
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        LinearProgressIndicator(
+                                            progress = { progress },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            color = Glass.cyanFill
+                                        )
+                                        Text(
+                                            (progress * 100).toInt().toString() + "%",
+                                            color = Glass.textSecondary,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        if (note.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(note, color = Glass.pinkFill, fontSize = 11.sp)
+                        }
                     }
 
                     "voice" -> {
@@ -778,6 +1079,38 @@ fun SettingsSheet(
                                 color = Glass.amber,
                                 fontSize = 11.sp
                             )
+                        }
+
+                        // A phone with an engine but no Bengali voice reads Bengali
+                        // words as noise. Saying so, and offering the engine's own
+                        // download screen, is the only honest fix.
+                        val voiceMissing by viewModel.voiceDataMissing.collectAsState()
+                        if (ttsOk && voiceMissing) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Glass.amber.copy(alpha = 0.16f))
+                                    .border(1.dp, Glass.amber, RoundedCornerShape(12.dp))
+                                    .clickable { viewModel.openVoiceDataInstall() }
+                                    .padding(12.dp)
+                                    .testTag("download_voice_data")
+                            ) {
+                                Column {
+                                    Text(
+                                        t("বাংলা কণ্ঠ ডাউনলোড করুন"),
+                                        color = Glass.textPrimary,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.5.sp
+                                    )
+                                    Text(
+                                        t("ফোনে বাংলা ভয়েস ডেটা নেই, তাই বাংলা লেখা ঠিকভাবে পড়া যায় না। ট্যাপ করলে Google ইঞ্জিনের ডাউনলোড স্ক্রিন খুলবে।"),
+                                        color = Glass.textSecondary,
+                                        fontSize = 10.5.sp
+                                    )
+                                }
+                            }
                         }
 
                         // The UI language. The tables are assets, so switching

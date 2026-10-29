@@ -34,7 +34,13 @@ data class AiModel(
     val category: String,
     val description: String,
     val provider: String,
-    val isFree: Boolean = true
+    val isFree: Boolean = true,
+    /**
+     * True when this model speaks and listens on a real speech-to-speech socket.
+     * Chosen by [ProviderCatalog.isRealtimeModel] against the provider's own
+     * catalogue, never by a hardcoded list.
+     */
+    val isRealtime: Boolean = false
 )
 
 enum class AppTab(val title: String) {
@@ -58,7 +64,9 @@ data class SystemStatus(
     val micPermissionGranted: Boolean = false,
     val activeLanguage: String = "বাংলা (bn-BD)",
     val latencyMs: Long = 28L,
-    val currentApp: String = "ZYRAXON"
+    val currentApp: String = "ZYRAXON",
+    /** The last real failure the user should see, e.g. a missing live-voice key. */
+    val lastError: String? = null
 )
 
 data class TaskItem(

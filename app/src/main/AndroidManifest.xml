@@ -25,6 +25,9 @@
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Lets the assistant lift the keyguard on a phone that has no PIN set.
+         With a PIN in place Android refuses and the app says so. -->
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
 
     <!-- Android 11+ hides other apps unless they are declared. These are the
          channels ZYRAXON posts to and the browser it opens. -->
@@ -96,6 +99,22 @@
         <service
             android:name="ai.zyraxon.assistant.OverlayChatService"
             android:exported="false" />
+
+        <!-- The admin component that makes `lockNow()` legal. The user activates
+             it once from the system screen the assistant opens. -->
+        <receiver
+            android:name="ai.zyraxon.assistant.lock.ZyraxonDeviceAdmin"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:description="@string/app_name"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
 
         <!-- Lets a shared image be attached to a channel post without exposing
              the app's private storage. -->

@@ -288,6 +288,7 @@ class ZyraxonAiEngine(private val context: Context) {
                     JSONObject()
                         .put("id", m.id).put("name", m.name).put("cat", m.category)
                         .put("desc", m.description).put("prov", m.provider).put("free", m.isFree)
+                        .put("rt", m.isRealtime)
                 )
             }
             prefs.edit().putString("cached_models", arr.toString()).apply()
@@ -309,7 +310,8 @@ class ZyraxonAiEngine(private val context: Context) {
                     AiModel(
                         id = o.getString("id"), name = o.getString("name"),
                         category = o.getString("cat"), description = o.getString("desc"),
-                        provider = o.getString("prov"), isFree = o.getBoolean("free")
+                        provider = o.getString("prov"), isFree = o.getBoolean("free"),
+                        isRealtime = o.optBoolean("rt", false)
                     )
                 )
             }
@@ -355,13 +357,19 @@ class ZyraxonAiEngine(private val context: Context) {
                     source.map { rawId ->
                         val isFree = spec.id == "zyraxon" || spec.id == "opencode" ||
                             rawId.lowercase().contains("free")
+                        val realtime = spec.isRealtimeModel(rawId)
                         AiModel(
                             id = rawId,
                             name = formatModelName(rawId),
                             category = spec.category,
-                            description = "${spec.label} থেকে লাইভ মডেল",
+                            description = if (realtime) {
+                                "${spec.label} — রিয়েলটাইম ভয়েস (সরাসরি কথা বলে)"
+                            } else {
+                                "${spec.label} থেকে লাইভ মডেল"
+                            },
                             provider = spec.id,
-                            isFree = isFree
+                            isFree = isFree,
+                            isRealtime = realtime
                         )
                     }
                 }
@@ -445,6 +453,34 @@ class ZyraxonAiEngine(private val context: Context) {
             context.assets.open("knowledge/zyraxon-system-prompt.md")
                 .bufferedReader(Charsets.UTF_8).use { it.readText() }
         } catch (_: Exception) { "" }
+    }
+
+    /**
+     * The contract for live speech-to-speech models. A live model talks instead
+     * of writing, so it needs different rules: short turns, no markdown, and no
+     * reading of code or paths aloud. Kept as its own file because the two jobs
+     * genuinely differ.
+     */
+    val liveVoiceContract: String by lazy {
+        try {
+            context.assets.open("knowledge/zyraxon-live-voice-prompt.md")
+                .bufferedReader(Charsets.UTF_8).use { it.readText() }
+        } catch (_: Exception) { "" }
+    }
+
+    /**
+     * The system prompt a live session starts with: the live contract, the real
+     * device facts, and the active character. Deliberately shorter than the text
+     * prompt — a live model has to answer in a second, not read a manual.
+     */
+    fun buildLiveVoicePrompt(persona: Persona): String = buildString {
+        append(liveVoiceContract)
+        append("\n\n---\n\n## Where you are running\n")
+        append("- Android phone (APK), Android ").append(Build.VERSION.RELEASE)
+            .append(" (API ").append(Build.VERSION.SDK_INT).append("), ")
+            .append(Build.MANUFACTURER).append(" ").append(Build.MODEL).append("\n")
+        append("- Tools available this turn: ").append(ToolRegistry.names().joinToString(", ")).append("\n")
+        append("\n## Active character (speak as this person)\n").append(persona.systemPrompt).append("\n")
     }
 
     /**

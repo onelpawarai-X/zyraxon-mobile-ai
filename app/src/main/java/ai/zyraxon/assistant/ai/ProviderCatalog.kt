@@ -31,7 +31,25 @@ data class ProviderSpec(
     val speedRank: Int = 50,
     val category: String = label,
     /** Models list is public (no key needed), e.g. OpenRouter's directory. */
-    val catalogIsPublic: Boolean = false
+    val catalogIsPublic: Boolean = false,
+    /**
+     * The socket that carries true speech-to-speech for this provider, or null
+     * when the provider has no such endpoint. Every URL here was probed against
+     * the live service: Gemini's `BidiGenerateContent`, OpenAI's `/v1/realtime`
+     * and xAI's `/v1/realtime` answer; Groq's guessed path returns 404, so it is
+     * null. The user's own server decides which models appear — nothing here is a
+     * hardcoded model list.
+     */
+    val realtimeWsUrl: String? = null,
+    /**
+     * Substrings that mark a model id from *this* provider's own catalogue as a
+     * live speech-to-speech model. This is a naming rule, not a model list: the
+     * ids still come from the provider. Gemini marks live models with `-live-`
+     * or `native-audio`, OpenAI with `realtime`, xAI with `voice`.
+     */
+    val realtimeModelPatterns: List<String> = emptyList(),
+    /** Which wire protocol the realtime socket speaks. */
+    val realtimeProtocol: RealtimeProtocol = RealtimeProtocol.NONE
 ) {
     enum class AuthStyle {
         /** `Authorization: Bearer <key>` */
@@ -44,6 +62,31 @@ data class ProviderSpec(
         QUERY_KEY,
         /** Nothing to send. */
         NONE
+    }
+
+    /** The wire dialects a realtime socket can speak. */
+    enum class RealtimeProtocol {
+        /** No realtime socket. */
+        NONE,
+        /** Gemini `BidiGenerateContent`: `setup`, `realtimeInput`, `serverContent`. */
+        GEMINI,
+        /** OpenAI Realtime: `session.update`, `input_audio_buffer.append`, `response.audio.delta`. */
+        OPENAI
+    }
+
+    /** True when this provider can carry a live, spoken conversation. */
+    val supportsRealtime: Boolean
+        get() = realtimeWsUrl != null && realtimeProtocol != RealtimeProtocol.NONE
+
+    /**
+     * Whether a model id from this provider is a live speech-to-speech model.
+     * Only providers with a real socket qualify, so a name can never promise a
+     * conversation the provider cannot carry.
+     */
+    fun isRealtimeModel(modelId: String): Boolean {
+        if (!supportsRealtime || realtimeModelPatterns.isEmpty()) return false
+        val id = modelId.lowercase()
+        return realtimeModelPatterns.any { id.contains(it) }
     }
 
     /** True when the models list can be read without a key. */
@@ -95,7 +138,13 @@ object ProviderCatalog {
             catalogAuth = ProviderSpec.AuthStyle.QUERY_KEY,
             speedRank = 2,
             category = "Gemini",
-            seedModels = listOf("gemini-2.0-flash", "gemini-2.5-flash")
+            // Live models come from Google's own catalogue; these patterns only
+            // recognise them (`gemini-2.5-flash-native-audio-*`,
+            // `gemini-3.1-flash-live-*`) so the selector can label them.
+            realtimeWsUrl = "wss://generativelanguage.googleapis.com/ws/" +
+                "google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent",
+            realtimeModelPatterns = listOf("native-audio", "-live-", "live-preview"),
+            realtimeProtocol = ProviderSpec.RealtimeProtocol.GEMINI
         ),
         ProviderSpec(
             id = "openai",
@@ -105,7 +154,24 @@ object ProviderCatalog {
             auth = ProviderSpec.AuthStyle.BEARER,
             speedRank = 3,
             category = "OpenAI",
-            seedModels = listOf("gpt-4o-mini", "gpt-4o")
+            // Probed: wss://api.openai.com/v1/realtime answers.
+            realtimeWsUrl = "wss://api.openai.com/v1/realtime",
+            realtimeModelPatterns = listOf("realtime"),
+            realtimeProtocol = ProviderSpec.RealtimeProtocol.OPENAI
+        ),
+        ProviderSpec(
+            id = "xai",
+            label = "Grok (xAI)",
+            modelsUrl = "https://api.x.ai/v1/models",
+            chatUrl = "https://api.x.ai/v1/chat/completions",
+            auth = ProviderSpec.AuthStyle.BEARER,
+            speedRank = 4,
+            category = "Grok",
+            // Probed: wss://api.x.ai/v1/realtime answers 401 (needs a key), so it
+            // is a real socket. xAI's own catalogue names them `grok-voice-*`.
+            realtimeWsUrl = "wss://api.x.ai/v1/realtime",
+            realtimeModelPatterns = listOf("voice"),
+            realtimeProtocol = ProviderSpec.RealtimeProtocol.OPENAI
         ),
         ProviderSpec(
             id = "anthropic",
@@ -115,7 +181,7 @@ object ProviderCatalog {
             chatUrl = "https://api.anthropic.com/v1/chat/completions",
             auth = ProviderSpec.AuthStyle.BEARER_AND_X_API_KEY,
             extraHeaders = mapOf("anthropic-version" to "2023-06-01"),
-            speedRank = 4,
+            speedRank = 5,
             category = "Claude",
             seedModels = listOf("claude-sonnet-4-5", "claude-3-5-haiku-latest")
         ),
@@ -125,7 +191,7 @@ object ProviderCatalog {
             modelsUrl = "https://api.deepseek.com/models",
             chatUrl = "https://api.deepseek.com/chat/completions",
             auth = ProviderSpec.AuthStyle.BEARER,
-            speedRank = 5,
+            speedRank = 6,
             category = "DeepSeek",
             seedModels = listOf("deepseek-chat", "deepseek-reasoner")
         ),
@@ -137,7 +203,7 @@ object ProviderCatalog {
             auth = ProviderSpec.AuthStyle.BEARER,
             // The directory is public, so models load even before a key is set.
             catalogIsPublic = true,
-            speedRank = 6,
+            speedRank = 7,
             category = "OpenRouter"
         ),
         ProviderSpec(
@@ -147,7 +213,7 @@ object ProviderCatalog {
             chatUrl = "https://opencode.ai/zen/v1/chat/completions",
             auth = ProviderSpec.AuthStyle.BEARER_AND_X_API_KEY,
             extraHeaders = mapOf("x-opencode-client" to "cli"),
-            speedRank = 7,
+            speedRank = 8,
             category = "OpenCode"
         )
     )
@@ -225,11 +291,14 @@ object ProviderCatalog {
                 item.optString("name").removePrefix("models/")
             }.trim()
             if (raw.isBlank()) continue
-            // Google returns embedding and other non-chat models too; the chat
-            // endpoint would reject them, so they are not offered as chat models.
+            // Google returns embedding, image, video and speech-only models too;
+            // the chat endpoint would reject them, so they are not offered as
+            // chat models. `-tts` matters here: those speak but cannot hold a
+            // conversation, and the live `native-audio` models do not end in it.
             val lowered = raw.lowercase()
             if (lowered.contains("embedding") || lowered.contains("aqa") ||
-                lowered.contains("imagen") || lowered.contains("veo")
+                lowered.contains("imagen") || lowered.contains("veo") ||
+                lowered.endsWith("-tts") || lowered.contains("-tts-")
             ) continue
             if (ids.none { it == raw }) ids.add(raw)
         }

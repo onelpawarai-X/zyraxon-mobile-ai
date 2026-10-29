@@ -42,6 +42,19 @@ class MainActivity : ComponentActivity() {
         viewModel.applyVoice(gender, rate, pitch)
     }
 
+    /**
+     * Lets the `live_voice` tool open a real live session. It switches to a
+     * realtime model, which is what actually starts speech-to-speech, and
+     * reports whether a session opened so the tool can tell the truth.
+     */
+    fun enableLiveVoice(): Boolean = viewModel.enableLiveVoice()
+
+    /** Lets the `live_voice` tool close the session again. */
+    fun stopLiveVoice() = viewModel.stopLiveVoice()
+
+    /** Lets the `on_device_model` tool reach the local inference engine. */
+    fun onDeviceEngine(): ai.zyraxon.assistant.ai.OnDeviceModel = viewModel.onDeviceModel
+
     /** Raises the system Allow dialog for any permission the panel asks for. */
     fun requestPermission(permission: String) {
         if (permission.isBlank()) return

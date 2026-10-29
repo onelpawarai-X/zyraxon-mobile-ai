@@ -12,8 +12,8 @@ android {
     applicationId = "com.zyraxon.assistant"
     minSdk = 24
     targetSdk = 36
-    versionCode = 10
-    versionName = "6.2.0"
+    versionCode = 12
+    versionName = "6.4.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -94,6 +94,9 @@ dependencies {
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.logging.interceptor)
   implementation(libs.moshi.kotlin)
+  // On-device inference: runs a downloaded model (.task / Gemma) on the phone
+  // itself, with no network at all. Optional at runtime — the app works without it.
+  implementation(libs.mediapipe.tasks.genai)
   implementation(libs.okhttp)
   // implementation(libs.play.services.location)
   implementation(libs.retrofit)

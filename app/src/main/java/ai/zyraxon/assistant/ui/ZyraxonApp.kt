@@ -131,6 +131,8 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     val codeBoxText by viewModel.codeBoxText.collectAsState()
     val filesPanelOpen by viewModel.filesPanelOpen.collectAsState()
     val bgVideoAsset by viewModel.bgVideoAsset.collectAsState()
+    val liveVoiceEnabled by viewModel.liveVoiceEnabled.collectAsState()
+    val liveVoiceState by viewModel.liveVoiceState.collectAsState()
     val workspaceFiles by viewModel.workspaceFiles.collectAsState()
     val auraHue by viewModel.auraHue.collectAsState()
     val auraSize by viewModel.auraSize.collectAsState()
@@ -179,8 +181,14 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                 personaName = selectedPersona.name,
                 personaEmoji = selectedPersona.emoji,
                 modelName = selectedModel.name,
+                liveActive = liveVoiceEnabled,
                 onPersonaClick = { showPersonaSheet = true },
                 onModelClick = { showModelSheet = true },
+                onLiveClick = {
+                    // Speech-to-speech follows the model, so this opens the model
+                    // list instead of pretending a toggle starts a live session.
+                    showModelSheet = true
+                },
                 onSettingsClick = { showSettingsSheet = true },
                 onClearClick = { viewModel.clearChat() }
             )
@@ -334,8 +342,10 @@ fun ZyraxonTopBar(
     personaEmoji: String,
     modelName: String,
     panelAlpha: Float = 0.22f,
+    liveActive: Boolean = false,
     onPersonaClick: () -> Unit,
     onModelClick: () -> Unit,
+    onLiveClick: () -> Unit = {},
     onSettingsClick: () -> Unit,
     onClearClick: () -> Unit
 ) {
@@ -367,7 +377,7 @@ fun ZyraxonTopBar(
                         color = Glass.textPrimary
                     )
                     Text(
-                        text = "online • realtime",
+                        text = if (liveActive) "লাইভ ভয়েস চালু" else "প্রস্তুত",
                         fontSize = 9.sp,
                         color = Glass.green
                     )
@@ -375,11 +385,36 @@ fun ZyraxonTopBar(
             }
         }
 
-        // Right side: Model pill, settings, trash
+        // Right side: Live toggle, model pill, settings, trash
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
+            // Live speech-to-speech toggle. Tapping it opens the live session
+            // straight away; the phone's own voice goes silent while it runs.
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(
+                        if (liveActive) Glass.cyanFill else Glass.fill(panelAlpha)
+                    )
+                    .border(1.dp, Glass.border, RoundedCornerShape(20.dp))
+                    .clickable { onLiveClick() }
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                    .testTag("live_voice_button")
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = if (liveActive) "🔴" else "🎙", fontSize = 12.sp)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "লাইভ",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (liveActive) Glass.textPrimary else Glass.textSecondary
+                    )
+                }
+            }
+
             // Dynamic Model Selector Pill
             Box(
                 modifier = Modifier

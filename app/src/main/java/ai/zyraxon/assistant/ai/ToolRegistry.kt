@@ -2,6 +2,8 @@ package ai.zyraxon.assistant.ai
 
 import ai.zyraxon.assistant.DeviceBridge
 import ai.zyraxon.assistant.MainActivity
+import ai.zyraxon.assistant.ai.OnDeviceModel
+import ai.zyraxon.assistant.lock.DeviceLocker
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -11,6 +13,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import kotlinx.coroutines.flow.collect
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -287,7 +290,24 @@ object ToolRegistry {
                 .put("name", str())
                 .put("html", str())
                 .put("files", JSONObject().put("type", "object"))
-                .put("port", num()), listOf("name")))
+                .put("port", num()), listOf("name"))),
+        "device_lock" to JSONObject()
+            .put("description", "Lock or unlock the phone's screen for real, or set up the permission that makes locking possible. Actions: lock (lock the screen now), unlock (lift the keyguard — only works when the phone has no PIN/pattern/password, otherwise the phone's own lock stays in charge), enroll (open the system screen where the user taps Allow once), status (report whether the admin is active and whether a secure lock exists), secure_lock_settings (open the system screen to set a PIN). Use this when the user asks to lock the phone, or when they say someone is threatening them or trying to take their data — lock at once, then speak.")
+            .put("parameters", S(JSONObject()
+                .put("action", str().put("enum", JSONArray(listOf("lock", "unlock", "enroll", "status", "secure_lock_settings")))),
+                listOf("action"))),
+        "live_voice" to JSONObject()
+            .put("description", "Switch between the two ways you speak. `on` opens a live speech-to-speech session with a live model: the model hears the microphone and answers with its own voice, and the phone's text-to-speech is silenced so only one voice is heard. `off` returns to normal text turns read by the phone's voice. Call `on` when the user asks for a real conversation, the fastest back-and-forth, or a live call; call `off` when they want the normal assistant back.")
+            .put("parameters", S(JSONObject()
+                .put("action", str().put("enum", JSONArray(listOf("on", "off")))), listOf("action"))),
+        "on_device_model" to JSONObject()
+            .put("description", "Run a language model on the phone itself, with no network at all. Actions: list (show which bundles are already downloaded), load (load one by file name so it can answer offline), unload, generate (produce text from the loaded model — use it only when the user asked for offline or private answers), download (fetch a suggested bundle; every suggested bundle is public and needs no token), import (register a .task file already on the phone). Use this when the user asks for offline answers or says their internet is down.")
+            .put("parameters", S(JSONObject()
+                .put("action", str().put("enum", JSONArray(listOf("list", "load", "unload", "generate", "download", "import"))))
+                .put("file", str().put("description", "File name for load, or the path of a .task file for import"))
+                .put("prompt", str().put("description", "The prompt for generate"))
+                .put("token", str().put("description", "Optional Hugging Face read token, only needed for a gated bundle")),
+                listOf("action")))
     ) }
 
     fun schemas(): JSONArray {
@@ -364,6 +384,9 @@ object ToolRegistry {
             "voice_change" -> changeVoice(context, args)
             "channel_post" -> channelPost(context, args)
             "serve_local" -> serveLocal(context, args)
+            "device_lock" -> deviceLock(context, args)
+            "live_voice" -> liveVoice(args)
+            "on_device_model" -> onDeviceModel(context, args)
             else -> err("unknown-tool", "অজানা টুল: $name")
         }
     } catch (e: Exception) {
@@ -1260,6 +1283,160 @@ object ToolRegistry {
 
         val label = if (gender == "female") "মিষ্টি মেয়ের কণ্ঠ" else "গভীর ছেলের কণ্ঠ"
         return ok(gender, "কণ্ঠ বদলানো হয়েছে: $label")
+    }
+
+    /**
+     * Screen lock and unlock. Locking needs the admin the user activated once;
+     * without it the tool reports `needs-enroll` and opens the system screen so a
+     * single "Allow" finishes the job. Unlocking is honest about the one case
+     * Android forbids: a phone with a secure lock cannot be opened by any app.
+     */
+    private fun deviceLock(context: Context, args: JSONObject): JSONObject =
+        when (args.optString("action").lowercase()) {
+            "lock" -> {
+                if (DeviceLocker.lockNow(context)) {
+                    ok("locked", "স্ক্রিন লক করা হয়েছে")
+                } else if (!DeviceLocker.isAdminActive(context)) {
+                    launchOnMain(context, DeviceLocker.enrolIntent(context))
+                    err(
+                        "needs-enroll",
+                        "স্ক্রিন লক করতে আগে অনুমতি দিতে হবে — যে স্ক্রিনটি খুলল, সেখানে Allow চাপুন"
+                    )
+                } else {
+                    err("lock-failed", "স্ক্রিন লক করা যায়নি")
+                }
+            }
+            "unlock" -> {
+                val result = DeviceLocker.unlockScreen(context, MainActivity.instance)
+                when (result) {
+                    DeviceLocker.UnlockResult.ALREADY_UNLOCKED ->
+                        ok("already-unlocked", "স্ক্রিন আগেই খোলা ছিল")
+                    DeviceLocker.UnlockResult.REQUESTED ->
+                        ok("unlocked", "লক খোলার অনুরোধ পাঠানো হয়েছে")
+                    DeviceLocker.UnlockResult.UNLOCK_NEEDS_SECURE_LOCK ->
+                        err(
+                            "secure-lock",
+                            "ফোনে পিন/প্যাটার্ন আছে, তাই অ্যাপ নিজে লক খুলতে পারে না — শুধু ইউজারের পিন দিয়েই খুলবে"
+                        )
+                    DeviceLocker.UnlockResult.FAILED ->
+                        err("unlock-failed", "লক খোলা যায়নি")
+                }
+            }
+            "enroll" -> {
+                val opened = launchOnMain(context, DeviceLocker.enrolIntent(context))
+                if (opened) ok("enroll", "অনুমতির স্ক্রিন খোলা হয়েছে — Allow চাপলেই হবে")
+                else err("no-activity", "অনুমতির স্ক্রিন খোলা যায়নি")
+            }
+            "status" -> ok(
+                JSONObject()
+                    .put("adminActive", DeviceLocker.isAdminActive(context))
+                    .put("secureLock", DeviceLocker.hasSecureLock(context))
+                    .put("screenOn", DeviceLocker.isScreenOn(context))
+                    .put("canSkipLockScreen", DeviceLocker.canSkipLockScreen(context)),
+                if (DeviceLocker.isAdminActive(context)) "লক করার অনুমতি আছে" else "লক করার অনুমতি নেই"
+            )
+            "secure_lock_settings" ->
+                if (launchOnMain(context, DeviceLocker.secureLockSettingsIntent()))
+                    ok("settings", "সিকিউরিটি সেটিংস খোলা হয়েছে")
+                else err("no-activity", "সেটিংস খোলা যায়নি")
+            else -> err("bad-action", "action হবে lock | unlock | enroll | status | secure_lock_settings")
+        }
+
+    /**
+     * Turns the live speech-to-speech session on or off. The ViewModel owns the
+     * session, so this tool only asks it to switch; the voice that answers is the
+     * model's own, and the phone's TTS goes quiet while it is on.
+     */
+    private fun liveVoice(args: JSONObject): JSONObject {
+        val activity = MainActivity.instance
+            ?: return err("no-activity", "লাইভ ভয়েস চালু করা যায়নি")
+        return when (args.optString("action").lowercase()) {
+            "on" -> {
+                if (activity.enableLiveVoice()) {
+                    ok("on", "রিয়েলটাইম মডেলে সরে গিয়ে লাইভ ভয়েস চালু করা হয়েছে")
+                } else {
+                    err("no-realtime-model", "এই মুহূর্তে কোনো রিয়েলটাইম মডেল লোড হয়নি — Settings-এ মডেল লোড করে আবার বলো")
+                }
+            }
+            "off" -> {
+                activity.stopLiveVoice()
+                ok("off", "লাইভ ভয়েস বন্ধ করা হয়েছে")
+            }
+            else -> err("bad-action", "action হবে on অথবা off")
+        }
+    }
+
+    /**
+     * The on-device engine, driven from the tool layer. A bundle must be present
+     * before it can answer, so `list` and `download` are the first steps a model
+     * takes when the user asks for offline answers.
+     */
+    private suspend fun onDeviceModel(context: Context, args: JSONObject): JSONObject {
+        val engine = OnDeviceModel.get(context)
+        return when (args.optString("action").lowercase()) {
+            "list" -> {
+                val installed = engine.installedModels()
+                ok(
+                    JSONObject()
+                        .put("installed", JSONArray(installed.map { it.name }))
+                        .put("loaded", engine.loadedPath?.let { File(it).name } ?: "")
+                        .put(
+                            "suggested",
+                            JSONArray(OnDeviceModel.SUGGESTED.map {
+                                JSONObject().put("name", it.name).put("file", it.fileName)
+                                    .put("approxMb", it.approxMb).put("requiresToken", it.requiresToken)
+                                    .put("licencePage", it.licencePage)
+                            })
+                        ),
+                    if (installed.isEmpty()) "কোনো অন-ডিভাইস মডেল ডাউনলোড করা নেই"
+                    else "${installed.size}টি অন-ডিভাইস মডেল পাওয়া গেছে"
+                )
+            }
+            "load" -> {
+                val name = args.optString("file")
+                val file = engine.installedModels().firstOrNull { it.name == name }
+                    ?: engine.installedModels().firstOrNull()
+                    ?: return err("no-model", "আগে একটি মডেল ডাউনলোড করতে হবে")
+                if (engine.load(file.absolutePath)) ok(file.name, "অন-ডিভাইস মডেল লোড হয়েছে: ${file.name}")
+                else err("load-failed", "মডেল লোড করা যায়নি: ${file.name}")
+            }
+            "unload" -> {
+                engine.unload()
+                ok("unloaded", "অন-ডিভাইস মডেল আনলোড হয়েছে")
+            }
+            "generate" -> {
+                val prompt = args.optString("prompt")
+                if (prompt.isBlank()) return err("no-prompt", "prompt দরকার")
+                if (!engine.isReady()) return err("not-loaded", "আগে একটি মডেল লোড করতে হবে")
+                val text = StringBuilder()
+                engine.generate(prompt).collect { text.append(it) }
+                ok(text.toString(), "অন-ডিভাইস উত্তর")
+            }
+            "download" -> {
+                val info = OnDeviceModel.SUGGESTED.firstOrNull {
+                    it.fileName == args.optString("file") || it.name == args.optString("file")
+                } ?: OnDeviceModel.SUGGESTED.first()
+                val token = args.optString("token")
+                if (info.requiresToken && token.isBlank()) {
+                    return err(
+                        "needs-token",
+                        "এই মডেলটি লাইসেন্স-গেটেড। ${info.licencePage} পেজে শর্ত মেনে নিয়ে একটি read টোকেন দিন।"
+                    )
+                }
+                val file = engine.download(info.url, info.fileName, token)
+                if (file != null) ok(file.name, "ডাউনলোড হয়েছে: ${file.name}")
+                else err("download-failed", "ডাউনলোড ব্যর্থ — টোকেন বা ইন্টারনেট দেখুন")
+            }
+            "import" -> {
+                val path = args.optString("file")
+                val source = File(path)
+                if (!source.isFile) return err("no-file", "ফাইল পাওয়া যায়নি: $path")
+                val target = File(engine.modelsDir(), source.name)
+                source.copyTo(target, overwrite = true)
+                ok(target.name, "ইমপোর্ট হয়েছে: ${target.name}")
+            }
+            else -> err("bad-action", "action হবে list | load | unload | generate | download | import")
+        }
     }
 
     private fun openSettings(context: Context, page: String): JSONObject {

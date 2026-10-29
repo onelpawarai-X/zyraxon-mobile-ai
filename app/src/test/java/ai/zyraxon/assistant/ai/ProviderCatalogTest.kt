@@ -139,11 +139,38 @@ class ProviderCatalogTest {
               {"name":"models/gemini-2.0-flash"},
               {"name":"models/gemini-2.5-flash"},
               {"name":"models/text-embedding-004"},
-              {"name":"models/imagen-3.0-generate"}
+              {"name":"models/imagen-3.0-generate"},
+              {"name":"models/gemini-2.5-flash-preview-tts"}
             ]}
         """.trimIndent()
         val ids = ProviderCatalog.parseModels(spec, body)
         assertEquals(listOf("gemini-2.0-flash", "gemini-2.5-flash"), ids)
+    }
+
+    @Test
+    fun geminiLiveModelsSurviveTheFilterAndAreDetectedAsRealtime() {
+        // The `-tts` filter must not swallow the live models: they are named
+        // `native-audio` and `live`, which is what the provider uses for the
+        // models that actually hold a conversation.
+        val spec = ProviderCatalog.find("gemini")!!
+        val body = """
+            {"models":[
+              {"name":"models/gemini-2.5-flash"},
+              {"name":"models/gemini-2.5-flash-preview-tts"},
+              {"name":"models/gemini-2.5-flash-native-audio-preview-12-2025"},
+              {"name":"models/gemini-3.1-flash-live-preview"}
+            ]}
+        """.trimIndent()
+        val ids = ProviderCatalog.parseModels(spec, body)
+        assertEquals(
+            listOf("gemini-2.5-flash", "gemini-2.5-flash-native-audio-preview-12-2025",
+                "gemini-3.1-flash-live-preview"),
+            ids
+        )
+        assertTrue(spec.isRealtimeModel("gemini-2.5-flash-native-audio-preview-12-2025"))
+        assertTrue(spec.isRealtimeModel("gemini-3.1-flash-live-preview"))
+        assertFalse(spec.isRealtimeModel("gemini-2.5-flash-preview-tts"))
+        assertFalse(spec.isRealtimeModel("gemini-2.5-flash"))
     }
 
     @Test
