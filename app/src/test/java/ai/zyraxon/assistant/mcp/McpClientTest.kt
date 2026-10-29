@@ -42,6 +42,8 @@ class McpClientTest {
     private val initializeCount = AtomicInteger(0)
     /** The last JSON-RPC envelope the fake server received that was a reply. */
     private val lastReply = AtomicReference<JSONObject?>(null)
+    /** Every JSON-RPC method the fake server was asked for, in order. */
+    private val methodsSeen = java.util.concurrent.ConcurrentLinkedQueue<String>()
 
     /**
      * Every client opened by a test, tracked so it can be closed. A client holds a
@@ -464,6 +466,13 @@ class McpClientTest {
         client.setLogLevel("debug")
         val completion = client.complete("ref/prompt", "greet", JSONObject().put("name", "lang").put("value", "বা"))
         assertEquals(2, completion.optJSONObject("completion")?.optJSONArray("values")?.length())
+        // Each call must really have been sent, not answered by a catch-all.
+        for (expected in listOf(
+            "ping", "resources/subscribe", "resources/unsubscribe",
+            "logging/setLevel", "completion/complete"
+        )) {
+            assertTrue("সার্ভারে $expected পৌঁছায়নি", methodsSeen.contains(expected))
+        }
         // All of these reuse the one session.
         assertEquals(1, initializeCount.get())
     }
@@ -638,6 +647,7 @@ class McpClientTest {
         authHeader.set("")
         initializeCount.set(0)
         lastReply.set(null)
+        methodsSeen.clear()
         val dropped = AtomicBoolean(false)
         val textNow = AtomicReference(resourceText)
         // The channel thread owns the writer; a POST thread can ask it to push.
@@ -742,6 +752,7 @@ class McpClientTest {
                 exchange.sendResponseHeaders(404, -1); exchange.close(); return@createContext
             }
 
+            methodsSeen.add(method)
             val result = when (method) {
                 "tools/list" -> JSONObject().put("tools", org.json.JSONArray(tools))
                 "resources/list" -> JSONObject().put("resources", org.json.JSONArray(resources))
