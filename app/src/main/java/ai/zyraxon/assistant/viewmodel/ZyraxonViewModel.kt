@@ -149,6 +149,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private val _auraStyle = MutableStateFlow(prefs.getString("aura_style", "orb") ?: "orb")
     val auraStyle: StateFlow<String> = _auraStyle.asStateFlow()
 
+    // Which WebGL shader, if any, replaces the CSS aura. "none" is the default so
+    // an existing install keeps the look it had; the shaders are opt-in.
+    private val _auraShader = MutableStateFlow(prefs.getString("aura_shader", "none") ?: "none")
+    val auraShader: StateFlow<String> = _auraShader.asStateFlow()
+
     private val _auraSpeed = MutableStateFlow(prefs.getFloat("aura_speed", 1.0f))
     val auraSpeed: StateFlow<Float> = _auraSpeed.asStateFlow()
 
@@ -467,6 +472,20 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         if (style !in allowed) return
         _auraStyle.value = style
         prefs.edit().putString("aura_style", style).apply()
+    }
+
+    /**
+     * Selects the WebGL shader mode, or "none" for the original CSS aura.
+     *
+     * The WebGL layer in aura.html falls back to the CSS aura on its own if the
+     * shader cannot start (no WebGL, compile failure, context loss), so this can
+     * never leave the user with a blank screen.
+     */
+    fun setAuraShader(shader: String) {
+        val allowed = setOf("none", "cosmic", "portal", "cyber", "nebula")
+        if (shader !in allowed) return
+        _auraShader.value = shader
+        prefs.edit().putString("aura_shader", shader).apply()
     }
 
     fun setAuraSize(size: Float) {

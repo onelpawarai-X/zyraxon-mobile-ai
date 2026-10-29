@@ -531,6 +531,7 @@ fun SettingsSheet(
     val auraGlow by viewModel.auraGlow.collectAsState()
     val auraSpeed by viewModel.auraSpeed.collectAsState()
     val auraStyle by viewModel.auraStyle.collectAsState()
+    val auraShader by viewModel.auraShader.collectAsState()
     val panelAlpha by viewModel.panelAlpha.collectAsState()
     val ttsEnabled by viewModel.ttsEnabled.collectAsState()
     val ttsRate by viewModel.ttsRate.collectAsState()
@@ -892,6 +893,37 @@ fun SettingsSheet(
                                 "core" to "কোর"
                             ).forEach { (styleId, label) ->
                                 AuraStyleChip(styleId, label, auraStyle) { viewModel.setAuraStyle(it) }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // The shader modes. Each is a real WebGL scene rendered
+                        // inside the orb, and "ক্লাসিক" hands the aura back to
+                        // the CSS shapes above.
+                        Text("শেডার মোড", color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            listOf(
+                                "none" to "ক্লাসিক",
+                                "cosmic" to "কসমিক",
+                                "portal" to "পোর্টাল"
+                            ).forEach { (shaderId, label) ->
+                                AuraStyleChip(shaderId, label, auraShader) { viewModel.setAuraShader(it) }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            listOf(
+                                "cyber" to "সাইবার গ্রিড",
+                                "nebula" to "নেবুলা"
+                            ).forEach { (shaderId, label) ->
+                                AuraStyleChip(shaderId, label, auraShader) { viewModel.setAuraShader(it) }
                             }
                         }
                         Spacer(modifier = Modifier.height(10.dp))

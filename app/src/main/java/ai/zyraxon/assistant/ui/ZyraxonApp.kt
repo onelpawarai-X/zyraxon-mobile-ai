@@ -118,6 +118,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     val activeTab by viewModel.activeTab.collectAsState()
     val bgMode by viewModel.bgMode.collectAsState()
     val auraStyle by viewModel.auraStyle.collectAsState()
+    val auraShader by viewModel.auraShader.collectAsState()
     val isListening by viewModel.isListening.collectAsState()
     val isSpeaking by viewModel.isSpeaking.collectAsState()
     val audioLevel by viewModel.audioLevel.collectAsState()
@@ -214,6 +215,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                             auraGlow = auraGlow,
                             auraSpeed = auraSpeed,
                             auraStyle = auraStyle,
+                            auraShader = auraShader,
                             panelAlpha = panelAlpha,
                             tasks = tasks,
                             toolExecutions = toolExecutions,
@@ -452,6 +454,7 @@ fun ChatTabContent(
     auraGlow: Float,
     auraSpeed: Float,
     auraStyle: String,
+    auraShader: String,
     panelAlpha: Float,
     tasks: List<TaskItem>,
     toolExecutions: List<ToolExecutionItem>,
@@ -498,6 +501,7 @@ fun ChatTabContent(
                 glow = auraGlow,
                 speed = auraSpeed,
                 auraStyle = auraStyle,
+                auraShader = auraShader,
                 onTap = { transcriptOpen = !transcriptOpen }
             )
 

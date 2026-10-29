@@ -39,24 +39,30 @@ fun AuraWebView(
     glow: Float,
     speed: Float,
     auraStyle: String,
+    auraShader: String,
     onTap: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val webView = remember {
-        WebView(context).apply {
-            setBackgroundColor(Color.TRANSPARENT)
-            settings.javaScriptEnabled = true
-            settings.mediaPlaybackRequiresUserGesture = false
-            isVerticalScrollBarEnabled = false
-            isHorizontalScrollBarEnabled = false
-            overScrollMode = WebView.OVER_SCROLL_NEVER
-        }
+    // The WebView is remembered at the *application* scope, not here. Compose
+    // disposes this composable every time the user leaves the chat tab, and a
+    // WebView destroyed on the way out cannot be brought back — that is exactly
+    // why the aura used to disappear and never return. Keeping the one instance
+    // alive and re-attaching it means the tab switch costs nothing.
+    val webView = remember { AuraWebViewRegistry.webView(context) }
+
+    // One JS call that restores the whole look: hue/size/glow/speed, the CSS
+    // style and the shader mode. Used on load, on every settings change and on
+    // re-attach, so "what the aura should look like" lives in one place.
+    val pushLook = {
+        "window.ZyraxonAuraLook && window.ZyraxonAuraLook($hue, $size, $glow, $speed);" +
+            "window.ZyraxonAuraStyle && window.ZyraxonAuraStyle('$auraStyle');" +
+            "window.ZyraxonAuraShader && window.ZyraxonAuraShader('$auraShader')"
     }
 
-    // Load once. Reloading on every state change would restart the animation and
-    // make the aura visibly stutter.
-    DisposableEffect(Unit) {
+    // The bridge has to be re-armed whenever the page is (re)loaded, and the
+    // current look re-pushed, because a fresh page starts at the defaults.
+    DisposableEffect(webView) {
         webView.addJavascriptInterface(object {
             @android.webkit.JavascriptInterface
             fun onTap() = onTap()
@@ -64,25 +70,32 @@ fun AuraWebView(
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 view.evaluateJavascript(AURA_BRIDGE_JS, null)
+                view.evaluateJavascript(pushLook(), null)
             }
         }
-        webView.loadUrl("file:///android_asset/aura/aura.html")
-        onDispose { webView.destroy() }
+        if (webView.url == null) {
+            // First time only: the page has never been loaded.
+            webView.loadUrl("file:///android_asset/aura/aura.html")
+        } else {
+            // Returning to the tab: the page is already live, so only re-push
+            // state. Reloading would restart the animation and stutter.
+            webView.evaluateJavascript(pushLook(), null)
+        }
+        onDispose {
+            // Detach, never destroy: the next composition re-attaches this view.
+            (webView.parent as? android.view.ViewGroup)?.removeView(webView)
+        }
     }
 
     // Push the user's look-and-feel into the page. The four CSS variables are
     // what aura.html reads, so the design file itself stays untouched.
-    DisposableEffect(hue, size, glow, speed, auraStyle) {
-        webView.evaluateJavascript(
-            "window.ZyraxonAuraLook && window.ZyraxonAuraLook($hue, $size, $glow, $speed);" +
-                "window.ZyraxonAuraStyle && window.ZyraxonAuraStyle('$auraStyle')",
-            null
-        )
+    DisposableEffect(hue, size, glow, speed, auraStyle, auraShader) {
+        webView.evaluateJavascript(pushLook(), null)
         onDispose { }
     }
 
-    // Push live state into the running page. `applyState` is defined by the
-    // injected script below, so a missing page just ignores the call.
+    // Push live state into the running page. `ZyraxonAuraState` is defined by
+    // the injected script, so a page that has not loaded yet just ignores it.
     DisposableEffect(isListening, isSpeaking, audioLevel) {
         val level = audioLevel.coerceIn(0f, 1f)
         webView.evaluateJavascript(
@@ -95,10 +108,47 @@ fun AuraWebView(
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         AndroidView(
             factory = { webView },
+            update = { view ->
+                // Re-attached after a tab switch: the WebView came back, but the
+                // page inside it was never torn down, so re-push and it is live.
+                view.post { view.evaluateJavascript(pushLook(), null) }
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .clipToBounds()
         )
+    }
+}
+
+/**
+ * Holds the single aura WebView for the whole process.
+ *
+ * A WebView is expensive and cannot survive being destroyed, so one instance is
+ * created once and handed back on every recomposition. The engine inside the
+ * page keeps animating while the view is detached, so returning to the chat tab
+ * shows the aura mid-motion instead of a restart.
+ */
+internal object AuraWebViewRegistry {
+    private var instance: WebView? = null
+
+    fun webView(context: android.content.Context): WebView {
+        instance?.let { return it }
+        val created = WebView(context.applicationContext).apply {
+            setBackgroundColor(Color.TRANSPARENT)
+            settings.javaScriptEnabled = true
+            settings.mediaPlaybackRequiresUserGesture = false
+            settings.domStorageEnabled = true
+            isVerticalScrollBarEnabled = false
+            isHorizontalScrollBarEnabled = false
+            overScrollMode = WebView.OVER_SCROLL_NEVER
+        }
+        instance = created
+        return created
+    }
+
+    /** Only for tests: drops the cached view so a fresh one is built. */
+    fun reset() {
+        instance = null
     }
 }
 
@@ -128,6 +178,7 @@ internal const val AURA_BRIDGE_JS = """
     if (size) r.style.setProperty('--aura-size', String(size));
     if (glow) r.style.setProperty('--aura-glow', String(glow));
     if (speed) r.style.setProperty('--aura-speed', String(speed));
+    if (window.ZyraxonShaders) window.ZyraxonShaders.look(hue, glow, speed);
   };
 
   // Which of the designed looks is showing. The attribute is what the CSS above
@@ -137,7 +188,17 @@ internal const val AURA_BRIDGE_JS = """
     document.documentElement.setAttribute('data-aura', String(style));
   };
 
+  // The shader mode. "none" (or empty) restores the CSS aura; the WebGL engine
+  // in aura.html removes the attribute itself if a shader cannot start, so the
+  // aura is never left blank.
+  window.ZyraxonAuraShader = function (shader) {
+    if (!window.ZyraxonShaders) return;
+    window.ZyraxonShaders.resize();
+    window.ZyraxonShaders.set(shader ? String(shader) : 'none');
+  };
+
   window.ZyraxonAuraState = function (listening, speaking, level) {
+    if (window.ZyraxonShaders) window.ZyraxonShaders.state(listening, speaking, level);
     if (!stage || !orb) return;
     // The stage transform is owned by CSS (it carries the centring translate),
     // so the live pulse is applied to the orb's own scale instead of fighting it.

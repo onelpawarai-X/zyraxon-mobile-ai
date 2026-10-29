@@ -113,4 +113,89 @@ class AuraHtmlTest {
             Regex("""<html[^>]*data-aura=""").containsMatchIn(html)
         )
     }
+
+    // --- Shader modes -----------------------------------------------------
+
+    /** All four shader scenes must exist as real fragment-shader bodies. */
+    @Test
+    fun everyShaderModeHasItsOwnScene() {
+        listOf("cosmic", "portal", "cyber", "nebula").forEach { name ->
+            assertTrue(
+                "no fragment shader body for '$name'",
+                Regex("""^\s*$name:\s*\[""", RegexOption.MULTILINE).containsMatchIn(html)
+            )
+        }
+        assertTrue(
+            "the engine must advertise the same four names",
+            Regex("""NAMES\s*=\s*\[[^\]]*'cosmic'[^\]]*'portal'[^\]]*'cyber'[^\]]*'nebula'[^\]]*\]""")
+                .containsMatchIn(html)
+        )
+    }
+
+    /** A shader is only real if it is actually compiled and linked as GLSL. */
+    @Test
+    fun shadersAreCompiledAndLinkedForReal() {
+        listOf(
+            "gl.createShader",
+            "gl.compileShader",
+            "gl.linkProgram",
+            "gl.drawArrays",
+            "gl_FragColor"
+        ).forEach { call ->
+            assertTrue("missing WebGL call: $call", html.contains(call))
+        }
+        assertTrue("a fragment shader must declare precision", html.contains("precision highp float"))
+    }
+
+    /** The aura must never be left blank, whatever the GPU does. */
+    @Test
+    fun theAuraCanNeverBeLeftBlank() {
+        // A lost context has to fall back to the CSS aura instead of a black box.
+        assertTrue(
+            "context loss must be handled",
+            html.contains("webglcontextlost")
+        )
+        // The CSS aura is hidden *only* while a shader is really active, so
+        // removing the attribute brings it straight back.
+        assertTrue(
+            "the CSS aura must be restored when the shader is dropped",
+            html.contains("""removeAttribute('data-shader')""")
+        )
+        // The rule that hides the CSS aura must be guarded by the shader
+        // attribute; an unguarded one would blank the aura for good.
+        val stageRule = Regex("""([^{}]*)\{[^{}]*display:\s*none""").findAll(html)
+            .firstOrNull { it.groupValues[1].contains(".aura-stage") }
+        assertTrue("there must be a rule that hides .aura-stage", stageRule != null)
+        assertTrue(
+            "hiding .aura-stage must be conditional on data-shader, was: ${stageRule?.groupValues?.get(1)}",
+            stageRule!!.groupValues[1].contains("data-shader")
+        )
+    }
+
+    /** The shader is driven by the same four settings as the CSS aura. */
+    @Test
+    fun shaderReadsTheLiveSettingsAndVoice() {
+        listOf("u_hue", "u_glow", "u_level", "u_time").forEach { uniform ->
+            assertTrue("shader ignores $uniform", html.contains(uniform))
+        }
+        // Speed is not a uniform: it scales the clock, so the test has to look
+        // for the multiplication rather than a name that does not exist.
+        assertTrue(
+            "the speed setting must reach the shader clock",
+            Regex("""look\.speed""").containsMatchIn(html)
+        )
+    }
+
+    /** "none" is a real mode: it hands the aura back to the CSS shapes. */
+    @Test
+    fun noneMeansTheCssAura() {
+        assertTrue(
+            "the canvas is only shown for a real shader name",
+            Regex("""data-shader\]:not\(\[data-shader="none"\]\)""").containsMatchIn(html)
+        )
+        assertTrue(
+            "set() must treat none as 'stop the shader'",
+            html.contains("=== 'none'")
+        )
+    }
 }
