@@ -472,7 +472,8 @@ fun ChatTabContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .weight(1f)
+                .padding(top = 80.dp),
             contentAlignment = Alignment.Center
         ) {
             AuraWebView(
