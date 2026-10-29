@@ -21,6 +21,19 @@ Four servers: Canva, Cloudflare, Supabase (OAuth) + GitHub (token).
 - Canva/Cloudflare block non-browser clients → send a desktop Chrome User-Agent.
 - Tools are namespaced `<serverId>__<tool>`. Agent tools: `mcp_connect`, `mcp_list`,
   `mcp_disconnect`.
+- **v5.1.0** added the rest of the protocol: `ping`, `resources/subscribe`,
+  `notifications/resources/updated`, `logging/setLevel`, `completion/complete`,
+  `elicitation/create`, `roots/list`, progress/cancelled. Tools: `mcp_ping`,
+  `mcp_subscribe`, `mcp_complete`, `mcp_log_level`. Three real bugs fixed:
+  (a) `awaitFreshToken` had no `McpAuth.NONE` branch, so a no-auth custom server
+  connected and then failed every call with "permission expired" — the four built-ins are
+  all OAUTH/TOKEN, which is why it hid; (b) `update()` only looked ids up in the catalogue,
+  so a **custom server never appeared** even after connecting; (c) a subscribed resource's
+  refreshed text was cached but never read, so `refreshOneResource` now also queues a note
+  that `ZyraxonAiEngine` injects each round (`drainResourceUpdates`).
+- `McpManager.close()` + `ViewModel.onCleared()` release the SSE channels; without them a
+  screen change leaked a live channel and thread. `McpCatalog.slugId()` is the one id
+  generator (collapse `_` runs + hash) — keep both callers on it.
 
 ## Remote main gets force-pushed from AI Studio — always fetch first
 Twice now a re-export force-pushed `main` and deleted my commits. Before pushing run

@@ -3,9 +3,11 @@ package ai.zyraxon.assistant.mcp
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,6 +46,7 @@ class McpManager(
         private const val KEY_TOOLS = "tools"
         private const val KEY_RESOURCES = "resources"
         private const val KEY_PROMPTS = "prompts"
+        private const val KEY_RESOURCE_TEXT = "resource_text"
         private const val KEY_STATE = "conn_state"
 
         private const val K_ACCESS = "access"
@@ -82,6 +85,9 @@ class McpManager(
      * call from re-initialising the session and losing the server's state.
      */
     private val clients = java.util.concurrent.ConcurrentHashMap<String, McpClient>()
+
+    /** Resource-change notes waiting to be injected into the next model turn. */
+    private val resourceUpdates = java.util.concurrent.ConcurrentLinkedQueue<String>()
 
     init {
         _connections.value = loadConnections()
@@ -132,11 +138,17 @@ class McpManager(
             "notifications/tools/list_changed" -> refreshTools(serverId)
             "notifications/resources/list_changed" -> refreshResources(serverId)
             "notifications/prompts/list_changed" -> refreshPrompts(serverId)
+            // The contents behind a subscribed uri changed; re-read so the next
+            // agent turn sees fresh text rather than the copy read earlier.
+            "notifications/resources/updated" -> refreshOneResource(serverId, params.optString("uri"))
+            "notifications/message" -> Log.i(TAG, "$serverId: log ${params.optString("level")} ${params.optString("data")}")
+            "notifications/progress" -> Log.i(TAG, "$serverId: progress ${params.optString("progressToken")}")
+            "notifications/cancelled" -> Log.i(TAG, "$serverId: cancelled ${params.optString("requestId")}")
             else -> Log.i(TAG, "$serverId: notification $method")
         }
     }
 
-    /** The server asking us to run a model (sampling) or list our roots. */
+    /** The server asking us to run a model (sampling), list roots, or elicit input. */
     private suspend fun onServerRequest(serverId: String, method: String, params: JSONObject): JSONObject =
         when (method) {
             "sampling/createMessage" -> {
@@ -145,11 +157,24 @@ class McpManager(
                 Log.i(TAG, "$serverId: sampling request")
                 runner(params)
             }
-            "roots/list" -> JSONObject().put("roots", JSONArray())
+            // The spec lets a server ask which filesystem roots it may work in. The
+            // assistant's workspace is the one honest answer; an empty list would
+            // tell the server it has nowhere to write.
+            "roots/list" -> JSONObject().put("roots", JSONArray().put(JSONObject()
+                .put("uri", "file://${workspaceRoot().absolutePath}")
+                .put("name", "ZYRAXON workspace")))
+            // Elicitation asks the user for input mid-call. The agent has no modal
+            // surface wired to it, so it answers "declined" — the spec's way of
+            // saying no without breaking the server's request.
+            "elicitation/create" -> JSONObject().put("action", "decline")
             // Ping is the spec's keep-alive; an empty result is the correct answer.
             "ping" -> JSONObject()
             else -> throw McpError("অজানা অনুরোধ: $method")
         }
+
+    /** The workspace the assistant and its MCP servers may read and write. */
+    private fun workspaceRoot(): File =
+        File(context.getExternalFilesDir(null) ?: context.filesDir, "zyraxon").apply { mkdirs() }
 
     private fun refreshTools(serverId: String) {
         finishScope.launch {
@@ -196,6 +221,116 @@ class McpManager(
             }
         }
     }
+
+    /**
+     * Re-reads one subscribed resource. The refreshed text replaces the cached
+     * copy so the next agent turn reads what the server has now, not what it had
+     * when the resource was first listed.
+     */
+    private fun refreshOneResource(serverId: String, uri: String) {
+        if (uri.isBlank()) return
+        finishScope.launch {
+            val conn = connection(serverId) ?: return@launch
+            try {
+                val client = clientFor(conn.server)
+                val result = client.readResource(uri)
+                val shaped = shapeResource(serverId, uri, result)
+                cacheResourceText(serverId, uri, result)
+                // The model is told about the change on its next turn, so a
+                // subscription is worth something instead of silently updating a
+                // cache nothing reads.
+                resourceUpdates.add(
+                    "[MCP] ${conn.server.name} — $uri বদলেছে:\n${shaped.optString("output").take(4000)}"
+                )
+                Log.i(TAG, "$serverId: resource updated — $uri")
+            } catch (e: Exception) {
+                Log.w(TAG, "$serverId: resource update failed — ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Drains the notes about resources that changed since the last turn. The
+     * engine injects them so the model learns about the change without being asked.
+     */
+    fun drainResourceUpdates(): List<String> {
+        val out = mutableListOf<String>()
+        while (true) out.add(resourceUpdates.poll() ?: break)
+        return out
+    }
+
+    /** Subscribes to a resource's changes, when the server supports it. */
+    suspend fun subscribeResource(serverId: String, uri: String): JSONObject =
+        withContext(Dispatchers.IO) {
+            val conn = connection(serverId) ?: return@withContext fail("সার্ভার পাওয়া যায়নি")
+            val client = clientFor(conn.server)
+            if (!client.supportsResourceSubscribe) {
+                return@withContext fail("${conn.server.name} subscribe সাপোর্ট করে না")
+            }
+            runCatching { client.subscribeResource(uri) }
+                .fold(
+                    { ok("$uri-তে সাবস্ক্রাইব করা হয়েছে") },
+                    { fail("সাবস্ক্রাইব ব্যর্থ: ${it.message}") }
+                )
+        }
+
+    suspend fun unsubscribeResource(serverId: String, uri: String): JSONObject =
+        withContext(Dispatchers.IO) {
+            val conn = connection(serverId) ?: return@withContext fail("সার্ভার পাওয়া যায়নি")
+            val client = clientFor(conn.server)
+            runCatching { client.unsubscribeResource(uri) }
+                .fold(
+                    { ok("$uri থেকে আনসাবস্ক্রাইব করা হয়েছে") },
+                    { fail("আনসাবস্ক্রাইব ব্যর্থ: ${it.message}") }
+                )
+        }
+
+    /** Autocompletes a prompt argument or a resource uri through the server. */
+    suspend fun complete(serverId: String, refType: String, refName: String, argName: String, value: String): JSONObject =
+        withContext(Dispatchers.IO) {
+            val conn = connection(serverId) ?: return@withContext fail("সার্ভার পাওয়া যায়নি")
+            val client = clientFor(conn.server)
+            if (!client.supportsCompletion) {
+                return@withContext fail("${conn.server.name} completion সাপোর্ট করে না")
+            }
+            runCatching {
+                client.complete(refType, refName, JSONObject().put("name", argName).put("value", value))
+            }.fold(
+                { result ->
+                    val values = result.optJSONObject("completion")
+                        ?.optJSONArray("values") ?: JSONArray()
+                    JSONObject()
+                        .put("ok", true)
+                        .put("summary", "$argName-এর ${values.length()}টি সাজেশন")
+                        .put("values", values)
+                },
+                { fail("completion ব্যর্থ: ${it.message}") }
+            )
+        }
+
+    /** Pings a server to confirm the session is still alive. */
+    suspend fun ping(serverId: String): JSONObject = withContext(Dispatchers.IO) {
+        val conn = connection(serverId) ?: return@withContext fail("সার্ভার পাওয়া যায়নি")
+        runCatching { clientFor(conn.server).ping() }
+            .fold(
+                { ok("${conn.server.name} সক্রিয়") },
+                { fail("পিং ব্যর্থ: ${it.message}") }
+            )
+    }
+
+    /** Sets a server's log level, so its `notifications/message` volume is tunable. */
+    suspend fun setLogLevel(serverId: String, level: String): JSONObject =
+        withContext(Dispatchers.IO) {
+            val conn = connection(serverId) ?: return@withContext fail("সার্ভার পাওয়া যায়নি")
+            runCatching { clientFor(conn.server).setLogLevel(level) }
+                .fold(
+                    { ok("লগ লেভেল $level সেট করা হয়েছে") },
+                    { fail("লগ লেভেল ব্যর্থ: ${it.message}") }
+                )
+        }
+
+    private fun ok(summary: String) = JSONObject().put("ok", true).put("summary", summary)
+    private fun fail(summary: String) = JSONObject().put("ok", false).put("summary", summary)
 
     // ---- connect (token / none) --------------------------------------------
 
@@ -349,6 +484,18 @@ class McpManager(
         pendingServer = null
     }
 
+    // ---- lifecycle ---------------------------------------------------------
+
+    /**
+     * Closes every session and stops the background scope. Without this the SSE
+     * channels, and the threads behind them, outlive the assistant.
+     */
+    fun close() {
+        clients.values.forEach { runCatching { it.close() } }
+        clients.clear()
+        finishScope.cancel()
+    }
+
     // ---- disconnect --------------------------------------------------------
 
     fun disconnect(serverId: String) {
@@ -376,8 +523,7 @@ class McpManager(
     fun addCustomServer(url: String, name: String, token: String?): McpServer {
         val normalized = normalizeUrl(url)
         val server = McpCatalog.custom(normalized, token).let {
-            if (name.isBlank()) it else it.copy(name = name, id = "custom_" + name.lowercase()
-                .replace(Regex("[^a-z0-9]"), "_").take(28))
+            if (name.isBlank()) it else it.copy(name = name, id = McpCatalog.slugId("custom", name))
         }
         persistServer(server)
         token?.takeIf { it.isNotBlank() }?.let { prefs.edit().putString(patKey(server.id), it).apply() }
@@ -464,7 +610,7 @@ class McpManager(
                 client.updateToken(token)
                 client.ensureConnected()
                 val raw = client.readResource(uri)
-                shapeResource(serverId, uri, raw)
+                shapeResource(serverId, uri, raw).also { cacheResourceText(serverId, uri, raw) }
             } catch (e: McpAuthRequired) {
                 update(serverId) { it.copy(status = McpStatus.NEEDS_AUTH, error = e.message.orEmpty()) }
                 err("$serverId এর অনুমতি শেষ — আবার কানেক্ট করো")
@@ -626,8 +772,12 @@ class McpManager(
      * Without this a connection would silently die an hour after it was made.
      */
     private suspend fun awaitFreshToken(server: McpServer): String? {
+        // A server that needs no auth must not be asked for a token, or every call
+        // after connecting would fail with "permission expired".
+        if (server.auth == McpAuth.NONE) return null
+
         val pat = prefs.getString(patKey(server.id), null)
-        if (server.auth == McpAuth.TOKEN || (pat != null && server.auth == McpAuth.NONE)) return pat
+        if (server.auth == McpAuth.TOKEN) return pat
 
         val access = prefs.getString(accessKey(server.id), null)
         val expires = prefs.getLong(expiresKey(server.id), 0L)
@@ -847,6 +997,21 @@ class McpManager(
         writeCache(KEY_RESOURCES, root)
     }
 
+    /**
+     * Stores the text of one resource, keyed by `<serverId>__<uri>`. This is what a
+     * subscribed resource's refreshed contents land in, and what lets a later turn
+     * quote a resource without a second round trip.
+     */
+    private fun cacheResourceText(serverId: String, uri: String, result: JSONObject) {
+        val root = readCache(KEY_RESOURCE_TEXT)
+        root.put("${serverId}__$uri", shapeResource(serverId, uri, result))
+        writeCache(KEY_RESOURCE_TEXT, root)
+    }
+
+    /** The last-read text of a resource, or null if it was never read. */
+    fun cachedResourceText(qualifiedUri: String): JSONObject? =
+        readCache(KEY_RESOURCE_TEXT).optJSONObject(qualifiedUri)
+
     private fun cachePrompts(serverId: String, prompts: List<McpPrompt>) {
         val root = readCache(KEY_PROMPTS)
         root.put(serverId, JSONArray().apply {
@@ -876,8 +1041,12 @@ class McpManager(
         val updated: List<McpConnection> = when {
             index >= 0 -> current.toMutableList().also { it[index] = transform(it[index]) }
             else -> {
+                // A custom server is in neither the catalogue nor (yet) the list, so
+                // it is also looked up in what was persisted. Without this fallback a
+                // custom server could connect and still never appear.
                 val known = current.firstOrNull { it.server.id == serverId }?.server
                     ?: McpCatalog.find(serverId)
+                    ?: loadServerList().firstOrNull { it.id == serverId }
                     ?: return
                 current + transform(McpConnection(known))
             }

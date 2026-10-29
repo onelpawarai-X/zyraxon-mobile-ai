@@ -719,6 +719,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             "mcp_read_resource" -> return runMcpReadResource(args)
             "mcp_prompts" -> return runMcpPrompts(args)
             "mcp_prompt" -> return runMcpPrompt(args)
+            "mcp_subscribe" -> return runMcpSubscribe(args)
+            "mcp_complete" -> return runMcpComplete(args)
+            "mcp_ping" -> return runMcpPing(args)
+            "mcp_log_level" -> return runMcpLogLevel(args)
             "mcp_disconnect" -> {
                 val id = args.optString("server")
                 aiEngine.mcp.disconnect(id)
@@ -876,15 +880,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private suspend fun runMcpReadResource(args: JSONObject): JSONObject {
-        var uri = args.optString("uri").trim()
-        if (uri.isBlank()) return JSONObject().put("ok", false).put("summary", "uri দরকার")
-        // Accept a bare uri too: find which server owns it when there is no prefix.
-        if (!uri.contains("__")) {
-            val ownerId = aiEngine.mcp.allResources().firstOrNull { it.uri == uri }?.serverId
-                ?: aiEngine.mcp.connections.value
-                    .firstOrNull { it.status == McpStatus.CONNECTED }?.server?.id
-            if (ownerId != null) uri = "${ownerId}__$uri"
-        }
+        val uri = resolveQualifiedUri(args.optString("uri").trim())
+            ?: return JSONObject().put("ok", false).put("summary", "uri দরকার")
         val result = aiEngine.mcp.readResource(uri)
         recordToolExecution("mcp_read_resource", result)
         return result
@@ -919,6 +916,75 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val result = aiEngine.mcp.getPrompt(name, args.optJSONObject("arguments") ?: JSONObject())
         recordToolExecution("mcp_prompt", result)
         return result
+    }
+
+    /** Subscribe/unsubscribe a resource, resolving a bare uri to its server. */
+    private suspend fun runMcpSubscribe(args: JSONObject): JSONObject {
+        val resolved = resolveQualifiedUri(args.optString("uri").trim())
+            ?: return JSONObject().put("ok", false).put("summary", "uri দরকার")
+        val subscribe = args.optString("action", "subscribe") != "unsubscribe"
+        val separator = resolved.indexOf("__")
+        val serverId = resolved.substring(0, separator)
+        val uri = resolved.substring(separator + 2)
+        val result = if (subscribe) {
+            aiEngine.mcp.subscribeResource(serverId, uri)
+        } else {
+            aiEngine.mcp.unsubscribeResource(serverId, uri)
+        }
+        recordToolExecution("mcp_subscribe", result)
+        return result
+    }
+
+    private suspend fun runMcpComplete(args: JSONObject): JSONObject {
+        val server = args.optString("server").trim().lowercase()
+        val argument = args.optString("argument").trim()
+        if (server.isBlank() || argument.isBlank()) {
+            return JSONObject().put("ok", false).put("summary", "server আর argument দরকার")
+        }
+        val kind = if (args.optString("kind").equals("resource", ignoreCase = true)) "ref/resource" else "ref/prompt"
+        val ref = args.optString("ref").trim().ifBlank {
+            // With no explicit ref, offer the first prompt or resource that has this
+            // argument, so the model does not have to look the name up first.
+            if (kind == "ref/resource") aiEngine.mcp.allResources().firstOrNull()?.uri.orEmpty()
+            else aiEngine.mcp.allPrompts().firstOrNull { p -> p.arguments.any { it.name == argument } }?.name.orEmpty()
+        }
+        if (ref.isBlank()) return JSONObject().put("ok", false).put("summary", "কোনো ref পাওয়া যায়নি")
+        val result = aiEngine.mcp.complete(server, kind, ref, argument, args.optString("value"))
+        recordToolExecution("mcp_complete", result)
+        return result
+    }
+
+    private suspend fun runMcpPing(args: JSONObject): JSONObject {
+        val server = args.optString("server").trim().lowercase()
+        if (server.isBlank()) return JSONObject().put("ok", false).put("summary", "server দরকার")
+        val result = aiEngine.mcp.ping(server)
+        recordToolExecution("mcp_ping", result)
+        return result
+    }
+
+    private suspend fun runMcpLogLevel(args: JSONObject): JSONObject {
+        val server = args.optString("server").trim().lowercase()
+        val level = args.optString("level").trim().lowercase()
+        if (server.isBlank() || level.isBlank()) {
+            return JSONObject().put("ok", false).put("summary", "server আর level দরকার")
+        }
+        val result = aiEngine.mcp.setLogLevel(server, level)
+        recordToolExecution("mcp_log_level", result)
+        return result
+    }
+
+    /**
+     * Turns a bare uri into `<serverId>__<uri>`. Returns null when the uri is
+     * blank; an unknown uri falls back to the only connected server, which is the
+     * common case and avoids a pointless failure.
+     */
+    private fun resolveQualifiedUri(raw: String): String? {
+        if (raw.isBlank()) return null
+        if (raw.contains("__")) return raw
+        val ownerId = aiEngine.mcp.allResources().firstOrNull { it.uri == raw }?.serverId
+            ?: aiEngine.mcp.connections.value
+                .firstOrNull { it.status == McpStatus.CONNECTED }?.server?.id
+        return if (ownerId != null) "${ownerId}__$raw" else raw
     }
 
     fun closeCodePanel() {
@@ -1044,5 +1110,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     fun updateAccessibilityStatus(connected: Boolean) {
         _systemStatus.value = _systemStatus.value.copy(accessibilityConnected = connected)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // Every MCP server holds an SSE channel and a thread. Releasing them here
+        // is what stops them outliving the screen.
+        runCatching { aiEngine.mcp.close() }
     }
 }
