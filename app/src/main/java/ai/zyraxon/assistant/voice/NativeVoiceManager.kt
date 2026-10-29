@@ -38,6 +38,18 @@ class NativeVoiceManager(
     private val _ttsAvailable = MutableStateFlow(false)
     val ttsAvailable: StateFlow<Boolean> = _ttsAvailable.asStateFlow()
 
+    /** The voice the engine actually selected, so the UI can prove which one spoke. */
+    private val _activeVoiceName = MutableStateFlow("")
+    val activeVoiceName: StateFlow<String> = _activeVoiceName.asStateFlow()
+
+    /**
+     * True when the language has no offline voice installed. The engine then
+     * spells words out letter by letter, which is the defect the user reported,
+     * so the UI offers the download instead of pretending it spoke.
+     */
+    private val _voiceDataMissing = MutableStateFlow(false)
+    val voiceDataMissing: StateFlow<Boolean> = _voiceDataMissing.asStateFlow()
+
     /** BCP-47 tag used for both recognition and speech. */
     private val _voiceLanguage = MutableStateFlow("bn-BD")
     val voiceLanguage: StateFlow<String> = _voiceLanguage.asStateFlow()
@@ -79,7 +91,7 @@ class NativeVoiceManager(
         ttsReady = true
         _ttsAvailable.value = true
         applyVoiceLanguage(_voiceLanguage.value)
-        applyVoiceSettings(_voiceGender.value, currentRate, currentPitch)
+        applyVoiceSettings(_voiceGender.value, currentRate, currentPitch, _voiceLanguage.value)
         textToSpeech?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) {
                 _isSpeaking.value = true
@@ -101,17 +113,22 @@ class NativeVoiceManager(
         })
     }
 
-    /** Sets the speech language, falling back to English only when unsupported. */
+    /**
+     * Points the engine at a language and reports whether its voice data is
+     * installed. When it is not, the engine falls back to another language and
+     * reads the words letter by letter — the exact defect reported — so
+     * [voiceDataMissing] is raised and the UI offers the download.
+     */
     private fun applyVoiceLanguage(tag: String) {
         if (!ttsReady || textToSpeech == null) return
         val wanted = Locale.forLanguageTag(tag)
         val res = textToSpeech?.setLanguage(wanted)
-        if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
-            if (tag != "en-US") {
-                textToSpeech?.setLanguage(Locale.US)
-            } else {
-                _ttsAvailable.value = false
-            }
+        val missing = res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED
+        _voiceDataMissing.value = missing
+        if (missing && tag != "en-US") {
+            // English is the safest fallback for an unsupported run, but the flag
+            // above already tells the UI that a download is what is really needed.
+            textToSpeech?.setLanguage(Locale.US)
         }
     }
 
@@ -124,7 +141,7 @@ class NativeVoiceManager(
         recognizerIntent?.putExtra(RecognizerIntent.EXTRA_LANGUAGE, tag)
         recognizerIntent?.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, tag)
         applyVoiceLanguage(tag)
-        applyVoiceSettings(_voiceGender.value, currentRate, currentPitch)
+        applyVoiceSettings(_voiceGender.value, currentRate, currentPitch, tag)
         if (continuousListening) {
             try {
                 speechRecognizer?.cancel()
@@ -146,7 +163,7 @@ class NativeVoiceManager(
         val targetRate = if (g == "female") 1.0f else 0.96f
         currentPitch = targetPitch
         currentRate = targetRate
-        applyVoiceSettings(g, targetRate, targetPitch)
+        applyVoiceSettings(g, targetRate, targetPitch, _voiceLanguage.value)
     }
 
     fun setSpeechRate(rate: Float) {
@@ -159,34 +176,47 @@ class NativeVoiceManager(
         textToSpeech?.setPitch(pitch)
     }
 
-    private fun applyVoiceSettings(gender: String, rate: Float, pitch: Float) {
+    /**
+     * Sets the pitch/rate for the requested gender and, for [forLanguage], picks
+     * the matching installed voice.
+     *
+     * The language matters: the engine picks its voice from the language it is
+     * set to, so a voice chosen while Bangla was loaded was silently replaced when
+     * the engine switched to English — which is why the wrong gender spoke. This
+     * takes the language explicitly so the voice is chosen for the run actually
+     * being spoken.
+     */
+    private fun applyVoiceSettings(gender: String, rate: Float, pitch: Float, forLanguage: String) {
         if (!ttsReady || textToSpeech == null) return
         try {
             textToSpeech?.setSpeechRate(rate)
             textToSpeech?.setPitch(pitch)
 
-            val wanted = Locale.forLanguageTag(_voiceLanguage.value)
-            val voices = textToSpeech?.voices.orEmpty()
-                .filter { it.locale.language == wanted.language }
-                .ifEmpty { textToSpeech?.voices.orEmpty().toList() }
-            if (voices.isEmpty()) return
-
-            // Prefer a voice that declares its own gender; otherwise fall back to
-            // the engine's naming convention (f00/m00, *-female, *-male).
-            val byFeature = voices.firstOrNull { v ->
-                if (gender == "female") {
-                    v.features?.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED) != true &&
-                        v.name.lowercase().let { n -> n.contains("female") && !n.contains("male") }
-                } else {
-                    v.name.lowercase().let { n -> n.contains("male") && !n.contains("female") }
-                }
+            val wanted = Locale.forLanguageTag(forLanguage)
+            val all = textToSpeech?.voices.orEmpty().toList()
+            val candidates = all.map { v ->
+                VoiceSelector.Candidate(
+                    name = v.name,
+                    localeTag = v.locale.toLanguageTag(),
+                    isNetwork = v.isNetworkConnectionRequired,
+                    requiresNetwork = v.isNetworkConnectionRequired
+                )
             }
-            val candidate = byFeature ?: voices.firstOrNull { v ->
-                val n = v.name.lowercase()
-                if (gender == "female") n.contains("f00") || n.contains("female")
-                else n.contains("m00") || (n.contains("male") && !n.contains("female"))
+            val chosen = VoiceSelector.pick(candidates, forLanguage, gender)
+                ?: candidates.firstOrNull { it.localeTag.equals(forLanguage, ignoreCase = true) }
+                ?: return
+            val match = all.firstOrNull { it.name == chosen.name }
+            if (match != null) {
+                // The engine resets pitch when the voice changes, so set it after.
+                textToSpeech?.voice = match
+                textToSpeech?.setPitch(pitch)
+                textToSpeech?.setSpeechRate(rate)
+                _activeVoiceName.value = match.name
             }
-            if (candidate != null) textToSpeech?.voice = candidate
+            // A voice for a language with no data installed cannot be spoken; say
+            // so instead of letting the engine spell the words out letter by letter.
+            _voiceDataMissing.value = !VoiceSelector.hasOfflineVoice(candidates, forLanguage) &&
+                wanted.language.isNotBlank()
         } catch (_: Exception) {}
     }
 
@@ -331,6 +361,28 @@ class NativeVoiceManager(
     }
 
     /**
+     * Opens the engine's own "install voice data" screen. Google's engine shows
+     * the language list there and downloads on tap, which is the only way to get
+     * a voice for a language the phone has never spoken.
+     */
+    fun openVoiceDataInstall(tag: String) {
+        try {
+            val intent = Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.putExtra("lang", tag)
+            context.startActivity(intent)
+        } catch (_: Exception) {
+            try {
+                // Some engines only answer to an explicit package.
+                val fallback = context.packageManager
+                    .getLaunchIntentForPackage("com.google.android.tts")
+                fallback?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                if (fallback != null) context.startActivity(fallback)
+            } catch (_: Exception) {}
+        }
+    }
+
+    /**
      * Speaks through the phone's own engine, never a remote voice service. If the
      * device has no usable engine the call is a no-op and [ttsAvailable] is false,
      * so the UI can say so instead of pretending it spoke.
@@ -362,8 +414,8 @@ class NativeVoiceManager(
         // A single-language sentence is the common case and must stay a single
         // utterance, so the engine's own prosody is not interrupted.
         if (segments.size == 1) {
-            applyVoiceSettings(_voiceGender.value, currentRate, currentPitch)
             applyVoiceLanguage(segments[0].bcp47)
+            applyVoiceSettings(_voiceGender.value, currentRate, currentPitch, segments[0].bcp47)
             val res = textToSpeech?.speak(segments[0].text, queueMode, params, "zyraxon_msg")
             _isSpeaking.value = res == TextToSpeech.SUCCESS
             return
@@ -374,7 +426,7 @@ class NativeVoiceManager(
             // The engine picks the voice from the language it is set to, so the
             // switch has to happen before each run, not once at the start.
             applyVoiceLanguage(segment.bcp47)
-            applyVoiceSettings(_voiceGender.value, currentRate, currentPitch)
+            applyVoiceSettings(_voiceGender.value, currentRate, currentPitch, segment.bcp47)
             val mode = if (index == 0) queueMode else TextToSpeech.QUEUE_ADD
             val id = "zyraxon_msg_$index"
             val res = textToSpeech?.speak(segment.text, mode, params, id)

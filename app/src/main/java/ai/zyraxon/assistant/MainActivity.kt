@@ -44,6 +44,15 @@ class MainActivity : ComponentActivity() {
         requestPermissionLauncher.launch(arrayOf(permission))
     }
 
+    /**
+     * Raises one Allow dialog for a whole group (the three Android 13+ media
+     * types, for example), so the user presses Allow once per row, not per type.
+     */
+    fun requestPermissions(permissions: List<String>) {
+        if (permissions.isEmpty()) return
+        requestPermissionLauncher.launch(permissions.toTypedArray())
+    }
+
     /** Opens a settings page the app cannot toggle itself (overlay, battery, Play Protect). */
     fun openSpecialSetting(page: String) {
         val intent = when (page) {
