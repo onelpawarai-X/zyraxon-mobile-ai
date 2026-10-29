@@ -1,10 +1,10 @@
 # ZYRAXON — project memory
 
-## What this repo is (updated 2026-10-28)
+## What this repo is (updated 2026-10-29)
 `onelpawarai-X/zyraxon-mobile-ai` — a **native Kotlin + Jetpack Compose Android app**
 (not the old web app; that codebase and its history were deleted at the user's request).
 `namespace = "com.example"`, `applicationId = com.aistudio.zyraxon.kxqmpz`, `minSdk 24`,
-`targetSdk/compileSdk 36`, versionCode 9 / versionName **6.1.0**. `.aistudio/` and
+`targetSdk/compileSdk 36`, versionCode 10 / versionName **6.2.0**. `.aistudio/` and
 `metadata.json` are AI Studio export artifacts — keep them, the build references their
 signing configs. `README.md` is English and states Android-only.
 
@@ -75,6 +75,10 @@ file").
   `strings classes*.dex | grep -c <toolname>` to prove a tool really shipped.
 
 ## Aura & UI (fixed 2026-10-28)
+- **Six aura styles** (v6.2.0): `orb` (default, the original), `twin`, `vortex`, `bloom`,
+  `helix`, `core`. `data-aura` on `<html>` picks one; each is a real element set, not a
+  recolour. `AuraHtmlTest` (8) guards that every chip in `Sheets.kt` has a matching CSS
+  rule and that its elements exist in the markup — add both together or the test fails.
 - **Never centre the aura page with `height:100vh` + flex.** Android's WebView mis-measures
   `100vh` as the system bars change, which slid the orb up under the toolbar. `aura.html`
   uses absolute `top:50%/left:50%` + `translate(-50%,-50%)`.
@@ -177,8 +181,25 @@ must never claim the post was sent. YouTube has no publish intent — it opens S
 returns `manual: true`. Android 11+ needs the manifest `<queries>` block or those apps are
 invisible; images need the `androidx.core.content.FileProvider`.
 
+## The floating bubble (v6.2.0)
+`floating_bubble` is a real tool (`UI_TOOLS`), not just a settings toggle. The service
+draws an orb over every app; a tap expands a box that pushes text into the **same
+`ZyraxonViewModel`** the main screen uses (`ZyraxonViewModel.active`), so tools, memory and
+voice are identical — do not give the service its own engine.
+- **`Settings.canDrawOverlays` is the gate.** Without it `addView` throws and the service
+  would die, so `onStartCommand` `stopSelf()`s with `START_NOT_STICKY` instead. The
+  settings row, the panel and the tool all open the exact permission row in place.
+- Test gotchas: `shadowOf(windowManager)` returns the *base* `ShadowWindowManager` which
+  has **no** `views` field — cast to `ShadowWindowManagerImpl`. And overlay permission in
+  Robolectric comes from `ShadowSettings.setCanDrawOverlays(bool)`, **not**
+  `denyPermissions(SYSTEM_ALERT_WINDOW)` (which has no effect on it).
+
 ## Release history
-- **v6.1.0** (current): failover between providers. **v6.0.0**: parallel model loading,
+- **v6.2.0** (current, release id 427752198, tag `v6.2.0`): floating bubble
+  (`floating_bubble` tool + `OverlayChatService`), six aura styles, `read_media` by
+  `url` + multi-frame `frames` (2–8). 105 unit tests / 0 failures. Its old schema
+  required `path`, which is why link reads never worked.
+- **v6.1.0**: failover between providers. **v6.0.0**: parallel model loading,
   real key verification, public ZYRAXON catalogue, ZYRAXON/OpenCode key rows, new launcher
   icon. Both have 5 assets each; 87 unit tests / 0 failures.
 - v3.0.0 was deleted and rebuilt once (tag deleted then recreated) — details in the daily log.
