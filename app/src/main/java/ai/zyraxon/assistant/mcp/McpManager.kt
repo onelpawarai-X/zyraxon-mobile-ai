@@ -17,23 +17,33 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Owns every MCP server the assistant knows about: which are connected, what
- * tools each one offers, and the tokens needed to call them.
+ * Owns every MCP server the assistant knows about: which are connected, what each
+ * one offers (tools, resources, prompts), and the tokens needed to reach it.
  *
- * The important promise is the one the user asked for: a connected server's tools
- * are injected into **every** turn automatically, so the model can use them
- * without being told they exist. [allTools] is what the engine reads each round.
+ * Two promises shape the design:
  *
- * State is persisted so a restart keeps the connections. Tokens live in the same
- * private SharedPreferences the rest of the app uses.
+ *  1. A connected server's tools are injected into **every** turn, so the model
+ *     uses them without being told they exist. [allTools] is what the engine reads.
+ *  2. A connection is **kept**, not remade. Each server owns one long-lived
+ *     [McpClient]; a tool call reuses that session instead of re-initialising.
+ *     Re-initialising was the reason tools seemed to disappear.
+ *
+ * Servers that advertise `listChanged` are refreshed from the notification channel,
+ * so a tool added upstream shows up without the user reconnecting.
  */
-class McpManager(private val context: Context) {
+class McpManager(
+    private val context: Context,
+    /** Runs a model for `sampling/createMessage`; supplied by the engine. */
+    private val samplingRunner: (suspend (JSONObject) -> JSONObject)? = null
+) {
 
     companion object {
         private const val TAG = "McpManager"
         private const val PREFS = "zyraxon_mcp"
         private const val KEY_SERVERS = "servers"
         private const val KEY_TOOLS = "tools"
+        private const val KEY_RESOURCES = "resources"
+        private const val KEY_PROMPTS = "prompts"
         private const val KEY_STATE = "conn_state"
 
         private const val K_ACCESS = "access"
@@ -67,6 +77,12 @@ class McpManager(private val context: Context) {
     /** The loopback server currently listening, if a flow is in progress. */
     @Volatile private var pendingServer: McpOAuthServer? = null
 
+    /**
+     * One live client per server, kept across calls. This is what stops a tool
+     * call from re-initialising the session and losing the server's state.
+     */
+    private val clients = java.util.concurrent.ConcurrentHashMap<String, McpClient>()
+
     init {
         _connections.value = loadConnections()
     }
@@ -76,6 +92,12 @@ class McpManager(private val context: Context) {
     /** Every tool from every connected server, in OpenAI function shape. */
     fun allTools(): List<McpTool> =
         _connections.value.filter { it.status == McpStatus.CONNECTED }.flatMap { it.tools }
+
+    fun allResources(): List<McpResource> =
+        _connections.value.filter { it.status == McpStatus.CONNECTED }.flatMap { it.resources }
+
+    fun allPrompts(): List<McpPrompt> =
+        _connections.value.filter { it.status == McpStatus.CONNECTED }.flatMap { it.prompts }
 
     /** The servers, catalogue first, then anything the user added. */
     fun servers(): List<McpServer> =
@@ -88,30 +110,127 @@ class McpManager(private val context: Context) {
 
     fun totalToolCount(): Int = allTools().size
 
+    // ---- the live client ----------------------------------------------------
+
+    /**
+     * The one client for a server, created on first use and reused after. The
+     * session survives across tool calls, which is the whole point.
+     */
+    private fun clientFor(server: McpServer): McpClient =
+        clients.getOrPut(server.id) {
+            McpClient(
+                endpoint = server.url,
+                accessToken = storedToken(server),
+                onNotification = { method, params -> onServerNotification(server.id, method, params) },
+                onRequest = { method, params -> onServerRequest(server.id, method, params) }
+            )
+        }
+
+    /** A server pushing a change means the cached list is stale — refresh it. */
+    private fun onServerNotification(serverId: String, method: String, params: JSONObject) {
+        when (method) {
+            "notifications/tools/list_changed" -> refreshTools(serverId)
+            "notifications/resources/list_changed" -> refreshResources(serverId)
+            "notifications/prompts/list_changed" -> refreshPrompts(serverId)
+            else -> Log.i(TAG, "$serverId: notification $method")
+        }
+    }
+
+    /** The server asking us to run a model (sampling) or list our roots. */
+    private suspend fun onServerRequest(serverId: String, method: String, params: JSONObject): JSONObject =
+        when (method) {
+            "sampling/createMessage" -> {
+                val runner = samplingRunner
+                    ?: throw McpError("sampling সাপোর্ট নেই")
+                Log.i(TAG, "$serverId: sampling request")
+                runner(params)
+            }
+            "roots/list" -> JSONObject().put("roots", JSONArray())
+            // Ping is the spec's keep-alive; an empty result is the correct answer.
+            "ping" -> JSONObject()
+            else -> throw McpError("অজানা অনুরোধ: $method")
+        }
+
+    private fun refreshTools(serverId: String) {
+        finishScope.launch {
+            val conn = connection(serverId) ?: return@launch
+            try {
+                val client = clientFor(conn.server)
+                client.ensureConnected()
+                val tools = parseTools(serverId, conn.server, client.listTools())
+                update(serverId) { it.copy(tools = tools) }
+                cacheTools(serverId, tools)
+                Log.i(TAG, "$serverId: tools refreshed — ${tools.size}")
+            } catch (e: Exception) {
+                Log.w(TAG, "$serverId: tool refresh failed — ${e.message}")
+            }
+        }
+    }
+
+    private fun refreshResources(serverId: String) {
+        finishScope.launch {
+            val conn = connection(serverId) ?: return@launch
+            try {
+                val client = clientFor(conn.server)
+                client.ensureConnected()
+                val resources = parseResources(serverId, conn.server, client)
+                update(serverId) { it.copy(resources = resources) }
+                cacheResources(serverId, resources)
+            } catch (e: Exception) {
+                Log.w(TAG, "$serverId: resource refresh failed — ${e.message}")
+            }
+        }
+    }
+
+    private fun refreshPrompts(serverId: String) {
+        finishScope.launch {
+            val conn = connection(serverId) ?: return@launch
+            try {
+                val client = clientFor(conn.server)
+                client.ensureConnected()
+                val prompts = parsePrompts(serverId, conn.server, client.listPrompts())
+                update(serverId) { it.copy(prompts = prompts) }
+                cachePrompts(serverId, prompts)
+            } catch (e: Exception) {
+                Log.w(TAG, "$serverId: prompt refresh failed — ${e.message}")
+            }
+        }
+    }
+
     // ---- connect (token / none) --------------------------------------------
 
     /**
      * Connects a server that authenticates with a static token, or with nothing
-     * at all. The token is verified immediately by listing tools, so a bad token
-     * fails here instead of silently later.
+     * at all. The token is verified immediately by listing what the server has,
+     * so a bad token fails here instead of silently later.
      */
     suspend fun connectWithToken(server: McpServer, token: String?): McpConnection =
         withContext(Dispatchers.IO) {
             update(server.id) { it.copy(status = McpStatus.CONNECTING, error = "") }
             token?.takeIf { it.isNotBlank() }?.let { prefs.edit().putString(patKey(server.id), it).apply() }
+            // A new token means a new session.
+            clients.remove(server.id)?.close()
 
             try {
-                val tools = fetchTools(server)
+                val client = clientFor(server)
+                client.ensureConnected()
+                val tools = parseTools(server.id, server, client.listTools())
+                val resources = parseResources(server.id, server, client)
+                val prompts = parsePrompts(server.id, server, client.listPrompts())
                 val done = McpConnection(
                     server = server,
                     status = McpStatus.CONNECTED,
                     tools = tools,
+                    resources = resources,
+                    prompts = prompts,
                     account = accountLabel(server, token)
                 )
                 persistServer(server)
                 update(server.id) { done }
                 cacheTools(server.id, tools)
-                Log.i(TAG, "${server.id}: connected, ${tools.size} tools")
+                cacheResources(server.id, resources)
+                cachePrompts(server.id, prompts)
+                Log.i(TAG, "${server.id}: connected — ${tools.size} tools, ${resources.size} resources, ${prompts.size} prompts")
                 done
             } catch (e: Exception) {
                 val failed = McpConnection(
@@ -131,10 +250,8 @@ class McpManager(private val context: Context) {
      * Starts the OAuth flow and returns the URL to open in the browser.
      *
      * The flow then continues in the background: the loopback server waits for the
-     * redirect, the code is exchanged, tools are fetched. The UI observes
-     * [connections] to learn when it finished — nothing else has to be called.
-     *
-     * [onProgress] reports each stage so the screen can say what is happening.
+     * redirect, the code is exchanged, the server's catalogue is fetched. The UI
+     * observes [connections] to learn when it finished.
      */
     suspend fun beginOAuth(
         server: McpServer,
@@ -187,17 +304,26 @@ class McpManager(private val context: Context) {
                         endpoints, client, code, redirectUri, verifier, server.url
                     )
                     storeTokens(server.id, tokens)
-                    val tools = fetchTools(server)
+                    clients.remove(server.id)?.close()
+                    val fresh = clientFor(server)
+                    fresh.ensureConnected()
+                    val tools = parseTools(server.id, server, fresh.listTools())
+                    val resources = parseResources(server.id, server, fresh)
+                    val prompts = parsePrompts(server.id, server, fresh.listPrompts())
                     persistServer(server)
                     update(server.id) {
                         it.copy(
                             status = McpStatus.CONNECTED,
                             tools = tools,
+                            resources = resources,
+                            prompts = prompts,
                             error = "",
                             account = accountLabel(server, tokens.accessToken)
                         )
                     }
                     cacheTools(server.id, tools)
+                    cacheResources(server.id, resources)
+                    cachePrompts(server.id, prompts)
                     Log.i(TAG, "${server.id}: OAuth connected, ${tools.size} tools")
                 } catch (e: Exception) {
                     update(server.id) {
@@ -227,13 +353,21 @@ class McpManager(private val context: Context) {
 
     fun disconnect(serverId: String) {
         cancelPending()
+        clients.remove(serverId)?.close()
         val server = connection(serverId)?.server
         clearAuth(serverId)
-        prefs.edit().remove(toolsKey(serverId)).apply()
+        prefs.edit().remove(toolsKey(serverId)).remove(resourcesKey(serverId))
+            .remove(promptsKey(serverId)).apply()
         if (server?.custom == true) {
             removeCustomServer(serverId)
         } else {
-            update(serverId) { it.copy(status = McpStatus.DISCONNECTED, tools = emptyList(), error = "", account = "") }
+            update(serverId) {
+                it.copy(
+                    status = McpStatus.DISCONNECTED,
+                    tools = emptyList(), resources = emptyList(), prompts = emptyList(),
+                    error = "", account = ""
+                )
+            }
         }
     }
 
@@ -252,8 +386,10 @@ class McpManager(private val context: Context) {
     }
 
     fun removeCustomServer(serverId: String) {
+        clients.remove(serverId)?.close()
         clearAuth(serverId)
-        prefs.edit().remove(toolsKey(serverId)).apply()
+        prefs.edit().remove(toolsKey(serverId)).remove(resourcesKey(serverId))
+            .remove(promptsKey(serverId)).apply()
         val servers = loadServerList().filterNot { it.id == serverId }
         saveServerList(servers)
         _connections.value = _connections.value.filterNot { it.server.id == serverId }
@@ -276,6 +412,8 @@ class McpManager(private val context: Context) {
      * Runs one tool the model asked for. The server is found from the `serverId__`
      * prefix the tool name carries, so a call can never be routed to the wrong
      * server even when two servers expose the same tool name.
+     *
+     * The session is reused, not rebuilt — a tool call is one round trip.
      */
     suspend fun callTool(qualifiedName: String, args: JSONObject): JSONObject =
         withContext(Dispatchers.IO) {
@@ -293,8 +431,9 @@ class McpManager(private val context: Context) {
 
             try {
                 val token = awaitFreshToken(conn.server)
-                val client = McpClient(conn.server.url, token)
-                client.connect()
+                val client = clientFor(conn.server)
+                client.updateToken(token)
+                client.ensureConnected()
                 val raw = client.callTool(toolName, args)
                 update(serverId) { it.copy(lastUsedAt = System.currentTimeMillis()) }
                 shapeResult(serverId, toolName, raw)
@@ -305,6 +444,64 @@ class McpManager(private val context: Context) {
                 err("$serverId/$toolName ব্যর্থ: ${e.message}")
             }
         }
+
+    // ---- resources ---------------------------------------------------------
+
+    /** Reads a resource. [qualifiedUri] is `<serverId>__<uri>`. */
+    suspend fun readResource(qualifiedUri: String): JSONObject =
+        withContext(Dispatchers.IO) {
+            val separator = qualifiedUri.indexOf("__")
+            if (separator <= 0) return@withContext err("রিসোর্স ঠিকানা ভুল: $qualifiedUri")
+            val serverId = qualifiedUri.substring(0, separator)
+            val uri = qualifiedUri.substring(separator + 2)
+
+            val conn = connection(serverId) ?: return@withContext err("$serverId কানেক্টেড নেই")
+            if (conn.status != McpStatus.CONNECTED) return@withContext err("$serverId কানেক্টেড নেই")
+
+            try {
+                val token = awaitFreshToken(conn.server)
+                val client = clientFor(conn.server)
+                client.updateToken(token)
+                client.ensureConnected()
+                val raw = client.readResource(uri)
+                shapeResource(serverId, uri, raw)
+            } catch (e: McpAuthRequired) {
+                update(serverId) { it.copy(status = McpStatus.NEEDS_AUTH, error = e.message.orEmpty()) }
+                err("$serverId এর অনুমতি শেষ — আবার কানেক্ট করো")
+            } catch (e: Exception) {
+                err("$serverId/$uri পড়া যায়নি: ${e.message}")
+            }
+        }
+
+    // ---- prompts -----------------------------------------------------------
+
+    /** Renders a prompt. [qualifiedName] is `<serverId>__<prompt>`. */
+    suspend fun getPrompt(qualifiedName: String, args: JSONObject): JSONObject =
+        withContext(Dispatchers.IO) {
+            val separator = qualifiedName.indexOf("__")
+            if (separator <= 0) return@withContext err("প্রম্পটের নাম ভুল: $qualifiedName")
+            val serverId = qualifiedName.substring(0, separator)
+            val name = qualifiedName.substring(separator + 2)
+
+            val conn = connection(serverId) ?: return@withContext err("$serverId কানেক্টেড নেই")
+            if (conn.status != McpStatus.CONNECTED) return@withContext err("$serverId কানেক্টেড নেই")
+
+            try {
+                val token = awaitFreshToken(conn.server)
+                val client = clientFor(conn.server)
+                client.updateToken(token)
+                client.ensureConnected()
+                val raw = client.getPrompt(name, args)
+                shapePrompt(serverId, name, raw)
+            } catch (e: McpAuthRequired) {
+                update(serverId) { it.copy(status = McpStatus.NEEDS_AUTH, error = e.message.orEmpty()) }
+                err("$serverId এর অনুমতি শেষ — আবার কানেক্ট করো")
+            } catch (e: Exception) {
+                err("$serverId/$name প্রম্পট ব্যর্থ: ${e.message}")
+            }
+        }
+
+    // ---- result shaping ----------------------------------------------------
 
     /**
      * Turns an MCP tool result into the {ok, summary} shape the engine already
@@ -326,9 +523,24 @@ class McpManager(private val context: Context) {
                         imageDataUrl = "data:$mime;base64,$data"
                     }
                 }
+                "audio" -> {
+                    val data = part.optString("data")
+                    if (data.isNotBlank()) {
+                        text.append("[অডিও: ").append(part.optString("mimeType", "audio")).append("]")
+                            .append("\n")
+                    }
+                }
+                // Embedded resource: a server can answer a tool with a document.
                 "resource" -> {
                     val res = part.optJSONObject("resource") ?: continue
                     res.optString("text").takeIf { it.isNotBlank() }?.let { text.append(it).append("\n") }
+                    res.optString("blob").takeIf { it.isNotBlank() }?.let {
+                        text.append("[ব্লব: ").append(res.optString("mimeType", "binary"))
+                            .append(", ").append(it.length).append(" অক্ষর]\n")
+                    }
+                }
+                "resource_link" -> {
+                    text.append("[রিসোর্স: ").append(part.optString("uri")).append("]\n")
                 }
             }
         }
@@ -343,10 +555,71 @@ class McpManager(private val context: Context) {
             .apply { imageDataUrl?.let { put("image_data_url", it) } }
     }
 
+    /** Flattens a `resources/read` answer into text plus any image. */
+    private fun shapeResource(serverId: String, uri: String, raw: JSONObject): JSONObject {
+        val contents = raw.optJSONArray("contents") ?: JSONArray()
+        val text = StringBuilder()
+        var imageDataUrl: String? = null
+
+        for (i in 0 until contents.length()) {
+            val c = contents.optJSONObject(i) ?: continue
+            c.optString("text").takeIf { it.isNotBlank() }?.let { text.append(it).append("\n") }
+            val blob = c.optString("blob")
+            val mime = c.optString("mimeType", "application/octet-stream")
+            if (blob.isNotBlank()) {
+                if (mime.startsWith("image/") && imageDataUrl == null) {
+                    imageDataUrl = "data:$mime;base64,$blob"
+                } else {
+                    text.append("[ব্লব ").append(mime).append(", ").append(blob.length).append(" অক্ষর]\n")
+                }
+            }
+        }
+
+        val body = text.toString().trim().ifBlank { "খালি রিসোর্স" }
+        return JSONObject()
+            .put("ok", true)
+            .put("summary", "$serverId → $uri")
+            .put("output", body.take(20000))
+            .apply { imageDataUrl?.let { put("image_data_url", it) } }
+    }
+
+    /** Flattens a `prompts/get` answer into the prompt text. */
+    private fun shapePrompt(serverId: String, name: String, raw: JSONObject): JSONObject {
+        val messages = raw.optJSONArray("messages") ?: JSONArray()
+        val text = StringBuilder()
+        for (i in 0 until messages.length()) {
+            val m = messages.optJSONObject(i) ?: continue
+            val role = m.optString("role", "user")
+            val content = m.opt("content")
+            val body = when (content) {
+                is JSONObject -> content.optString("text")
+                is JSONArray -> (0 until content.length())
+                    .mapNotNull { content.optJSONObject(it)?.optString("text")?.takeIf { t -> t.isNotBlank() } }
+                    .joinToString("\n")
+                else -> content?.toString().orEmpty()
+            }
+            if (body.isNotBlank()) text.append("[").append(role).append("] ").append(body).append("\n\n")
+        }
+        val description = raw.optString("description")
+        val body = text.toString().trim().ifBlank { description.ifBlank { "খালি প্রম্পট" } }
+        return JSONObject()
+            .put("ok", true)
+            .put("summary", "$serverId → $name")
+            .put("output", body.take(20000))
+    }
+
     private fun err(message: String): JSONObject =
         JSONObject().put("ok", false).put("summary", message)
 
     // ---- token freshness ---------------------------------------------------
+
+    /** The token that is already stored, without refreshing. */
+    private fun storedToken(server: McpServer): String? =
+        if (server.auth == McpAuth.TOKEN) {
+            prefs.getString(patKey(server.id), null)
+        } else {
+            prefs.getString(accessKey(server.id), null) ?: prefs.getString(patKey(server.id), null)
+        }
 
     /**
      * Returns a usable access token, refreshing it first when it has expired.
@@ -386,20 +659,13 @@ class McpManager(private val context: Context) {
         return tokens.accessToken
     }
 
-    // ---- tools fetch -------------------------------------------------------
+    // ---- parsing -----------------------------------------------------------
 
-    private suspend fun fetchTools(server: McpServer): List<McpTool> {
-        val token = if (server.auth == McpAuth.TOKEN) {
-            prefs.getString(patKey(server.id), null)
-        } else {
-            prefs.getString(accessKey(server.id), null) ?: prefs.getString(patKey(server.id), null)
-        }
-        val client = McpClient(server.url, token)
-        client.connect()
-        return client.listTools().mapNotNull { def ->
+    private fun parseTools(serverId: String, server: McpServer, defs: List<JSONObject>): List<McpTool> =
+        defs.mapNotNull { def ->
             val name = def.optString("name").takeIf { it.isNotBlank() } ?: return@mapNotNull null
             McpTool(
-                serverId = server.id,
+                serverId = serverId,
                 serverName = server.name,
                 name = name,
                 description = def.optString("description", def.optString("title")),
@@ -407,7 +673,51 @@ class McpManager(private val context: Context) {
                     .put("type", "object").put("properties", JSONObject())
             )
         }
+
+    private suspend fun parseResources(
+        serverId: String,
+        server: McpServer,
+        client: McpClient
+    ): List<McpResource> {
+        val plain = client.listResources().map { r ->
+            McpResource(
+                serverId = serverId,
+                serverName = server.name,
+                uri = r.optString("uri"),
+                name = r.optString("name", r.optString("uri")),
+                description = r.optString("description"),
+                mimeType = r.optString("mimeType")
+            )
+        }
+        // Templates are surfaced too: the model can fill in the placeholders.
+        val templates = runCatching { client.listResourceTemplates() }.getOrDefault(emptyList()).map { t ->
+            McpResource(
+                serverId = serverId,
+                serverName = server.name,
+                uri = t.optString("uriTemplate"),
+                name = t.optString("name", t.optString("uriTemplate")),
+                description = t.optString("description"),
+                mimeType = t.optString("mimeType"),
+                template = true
+            )
+        }
+        return plain + templates
     }
+
+    private fun parsePrompts(serverId: String, server: McpServer, defs: List<JSONObject>): List<McpPrompt> =
+        defs.mapNotNull { def ->
+            val name = def.optString("name").takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val argsArr = def.optJSONArray("arguments") ?: JSONArray()
+            val args = (0 until argsArr.length()).mapNotNull { i ->
+                val a = argsArr.optJSONObject(i) ?: return@mapNotNull null
+                McpPromptArg(
+                    name = a.optString("name"),
+                    description = a.optString("description"),
+                    required = a.optBoolean("required")
+                )
+            }
+            McpPrompt(serverId, server.name, name, def.optString("description"), args)
+        }
 
     // ---- persistence -------------------------------------------------------
 
@@ -417,6 +727,10 @@ class McpManager(private val context: Context) {
         val states = runCatching { JSONObject(prefs.getString(KEY_STATE, "{}").orEmpty()) }
             .getOrDefault(JSONObject())
         val toolCache = runCatching { JSONObject(prefs.getString(KEY_TOOLS, "{}").orEmpty()) }
+            .getOrDefault(JSONObject())
+        val resourceCache = runCatching { JSONObject(prefs.getString(KEY_RESOURCES, "{}").orEmpty()) }
+            .getOrDefault(JSONObject())
+        val promptCache = runCatching { JSONObject(prefs.getString(KEY_PROMPTS, "{}").orEmpty()) }
             .getOrDefault(JSONObject())
 
         // Catalogue order first, then the user's own servers.
@@ -436,14 +750,16 @@ class McpManager(private val context: Context) {
             McpConnection(
                 server = server,
                 status = effective,
-                tools = parseTools(id, toolCache.optJSONArray(id), server),
+                tools = parseCachedTools(id, toolCache.optJSONArray(id), server),
+                resources = parseCachedResources(id, resourceCache.optJSONArray(id), server),
+                prompts = parseCachedPrompts(id, promptCache.optJSONArray(id), server),
                 error = state?.optString("error").orEmpty(),
                 account = prefs.getString(accountKey(id), "").orEmpty()
             )
         }
     }
 
-    private fun parseTools(serverId: String, arr: JSONArray?, server: McpServer): List<McpTool> {
+    private fun parseCachedTools(serverId: String, arr: JSONArray?, server: McpServer): List<McpTool> {
         if (arr == null) return emptyList()
         return (0 until arr.length()).mapNotNull { i ->
             val o = arr.optJSONObject(i) ?: return@mapNotNull null
@@ -453,6 +769,40 @@ class McpManager(private val context: Context) {
                 name = o.optString("name"),
                 description = o.optString("description"),
                 inputSchema = o.optJSONObject("inputSchema") ?: JSONObject()
+            )
+        }
+    }
+
+    private fun parseCachedResources(serverId: String, arr: JSONArray?, server: McpServer): List<McpResource> {
+        if (arr == null) return emptyList()
+        return (0 until arr.length()).mapNotNull { i ->
+            val o = arr.optJSONObject(i) ?: return@mapNotNull null
+            McpResource(
+                serverId = serverId,
+                serverName = server.name,
+                uri = o.optString("uri"),
+                name = o.optString("name"),
+                description = o.optString("description"),
+                mimeType = o.optString("mimeType"),
+                template = o.optBoolean("template")
+            )
+        }
+    }
+
+    private fun parseCachedPrompts(serverId: String, arr: JSONArray?, server: McpServer): List<McpPrompt> {
+        if (arr == null) return emptyList()
+        return (0 until arr.length()).mapNotNull { i ->
+            val o = arr.optJSONObject(i) ?: return@mapNotNull null
+            val argsArr = o.optJSONArray("arguments") ?: JSONArray()
+            McpPrompt(
+                serverId = serverId,
+                serverName = server.name,
+                name = o.optString("name"),
+                description = o.optString("description"),
+                arguments = (0 until argsArr.length()).mapNotNull { j ->
+                    val a = argsArr.optJSONObject(j) ?: return@mapNotNull null
+                    McpPromptArg(a.optString("name"), a.optString("description"), a.optBoolean("required"))
+                }
             )
         }
     }
@@ -475,15 +825,49 @@ class McpManager(private val context: Context) {
     }
 
     private fun cacheTools(serverId: String, tools: List<McpTool>) {
-        val root = runCatching { JSONObject(prefs.getString(KEY_TOOLS, "{}").orEmpty()) }
-            .getOrDefault(JSONObject())
+        val root = readCache(KEY_TOOLS)
         root.put(serverId, JSONArray().apply {
             tools.forEach { t ->
                 put(JSONObject().put("name", t.name).put("description", t.description)
                     .put("inputSchema", t.inputSchema))
             }
         })
-        prefs.edit().putString(KEY_TOOLS, root.toString()).apply()
+        writeCache(KEY_TOOLS, root)
+    }
+
+    private fun cacheResources(serverId: String, resources: List<McpResource>) {
+        val root = readCache(KEY_RESOURCES)
+        root.put(serverId, JSONArray().apply {
+            resources.forEach { r ->
+                put(JSONObject().put("uri", r.uri).put("name", r.name)
+                    .put("description", r.description).put("mimeType", r.mimeType)
+                    .put("template", r.template))
+            }
+        })
+        writeCache(KEY_RESOURCES, root)
+    }
+
+    private fun cachePrompts(serverId: String, prompts: List<McpPrompt>) {
+        val root = readCache(KEY_PROMPTS)
+        root.put(serverId, JSONArray().apply {
+            prompts.forEach { p ->
+                put(JSONObject().put("name", p.name).put("description", p.description)
+                    .put("arguments", JSONArray().apply {
+                        p.arguments.forEach { a ->
+                            put(JSONObject().put("name", a.name).put("description", a.description)
+                                .put("required", a.required))
+                        }
+                    }))
+            }
+        })
+        writeCache(KEY_PROMPTS, root)
+    }
+
+    private fun readCache(key: String): JSONObject =
+        runCatching { JSONObject(prefs.getString(key, "{}").orEmpty()) }.getOrDefault(JSONObject())
+
+    private fun writeCache(key: String, value: JSONObject) {
+        prefs.edit().putString(key, value.toString()).apply()
     }
 
     private fun update(serverId: String, transform: (McpConnection) -> McpConnection) {
@@ -503,12 +887,11 @@ class McpManager(private val context: Context) {
     }
 
     private fun persistState(serverId: String, conn: McpConnection) {
-        val root = runCatching { JSONObject(prefs.getString(KEY_STATE, "{}").orEmpty()) }
-            .getOrDefault(JSONObject())
+        val root = readCache(KEY_STATE)
         root.put(serverId, JSONObject()
             .put("status", conn.status.name)
             .put("error", conn.error))
-        prefs.edit().putString(KEY_STATE, root.toString()).apply()
+        writeCache(KEY_STATE, root)
         conn.account.takeIf { it.isNotBlank() }?.let {
             prefs.edit().putString(accountKey(serverId), it).apply()
         }
@@ -566,4 +949,6 @@ class McpManager(private val context: Context) {
     private fun patKey(id: String) = "pat_$id"
     private fun accountKey(id: String) = "account_$id"
     private fun toolsKey(id: String) = "tools_$id"
+    private fun resourcesKey(id: String) = "resources_$id"
+    private fun promptsKey(id: String) = "prompts_$id"
 }

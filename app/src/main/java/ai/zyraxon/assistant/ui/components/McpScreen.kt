@@ -72,6 +72,8 @@ fun McpScreen(
 
     val connected = connections.count { it.status == McpStatus.CONNECTED }
     val totalTools = connections.sumOf { it.toolCount }
+    val totalResources = connections.sumOf { it.resourceCount }
+    val totalPrompts = connections.sumOf { it.promptCount }
 
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -84,6 +86,8 @@ fun McpScreen(
                     connected = connected,
                     total = connections.size,
                     tools = totalTools,
+                    resources = totalResources,
+                    prompts = totalPrompts,
                     onAdd = { showAddSheet = true }
                 )
             }
@@ -117,7 +121,14 @@ fun McpScreen(
 }
 
 @Composable
-private fun McpHeader(connected: Int, total: Int, tools: Int, onAdd: () -> Unit) {
+private fun McpHeader(
+    connected: Int,
+    total: Int,
+    tools: Int,
+    resources: Int,
+    prompts: Int,
+    onAdd: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -157,6 +168,8 @@ private fun McpHeader(connected: Int, total: Int, tools: Int, onAdd: () -> Unit)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             McpStat("$connected/$total", "কানেক্টেড", Glass.greenFill)
             McpStat("$tools", "টুল", Glass.cyanFill)
+            if (resources > 0) McpStat("$resources", "রিসোর্স", Glass.violetFill)
+            if (prompts > 0) McpStat("$prompts", "প্রম্পট", Glass.pinkFill)
         }
     }
 }
@@ -324,6 +337,57 @@ private fun McpServerCard(
                         if (connection.toolCount > 14) {
                             Text(
                                 "আরও ${connection.toolCount - 14}টি…",
+                                color = Glass.textDisabled,
+                                fontSize = 10.sp
+                            )
+                        }
+                    }
+                    if (isConnected && connection.resources.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "রিসোর্স (${connection.resourceCount}টি)",
+                            color = Glass.textMuted,
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        connection.resources.take(8).forEach { r ->
+                            Text(
+                                (if (r.template) "◈ " else "· ") + r.name,
+                                color = Glass.textSecondary,
+                                fontSize = 10.5.sp,
+                                maxLines = 1
+                            )
+                        }
+                        if (connection.resourceCount > 8) {
+                            Text(
+                                "আরও ${connection.resourceCount - 8}টি…",
+                                color = Glass.textDisabled,
+                                fontSize = 10.sp
+                            )
+                        }
+                    }
+                    if (isConnected && connection.prompts.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "প্রম্পট টেমপ্লেট (${connection.promptCount}টি)",
+                            color = Glass.textMuted,
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        connection.prompts.take(8).forEach { p ->
+                            Text(
+                                "· ${p.name}",
+                                color = Glass.textSecondary,
+                                fontSize = 10.5.sp,
+                                fontFamily = FontFamily.Monospace,
+                                maxLines = 1
+                            )
+                        }
+                        if (connection.promptCount > 8) {
+                            Text(
+                                "আরও ${connection.promptCount - 8}টি…",
                                 color = Glass.textDisabled,
                                 fontSize = 10.sp
                             )

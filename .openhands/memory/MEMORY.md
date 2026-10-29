@@ -48,8 +48,13 @@ file").
 - `--offline` works for `compileDebugKotlin` / `assembleDebug`. **Unit tests need the
   network the first time** (junit/robolectric must populate the Gradle cache).
 - Release APK: `KEYSTORE_PATH`/`STORE_PASSWORD`/`KEY_PASSWORD` env vars are read by
-  `app/build.gradle.kts`. Keystore `zyraxon-release.jks` (alias `upload`, store+key
-  password `zyraxon2026`); `*.jks` is gitignored. The original keystore password was lost.
+  `app/build.gradle.kts`. **The canonical keystore is `my-upload-key.jks`** (alias
+  `upload`, store+key password `zyraxon2026`), the AI Studio upload key whose cert
+  SHA-256 is `6dcfa05e...`; it signed v3.0.0. `zyraxon-release.jks` (cert `112547e4...`)
+  was generated in a later session on the mistaken belief that the password was lost —
+  v4.0.0 was signed with it, which is why v4.0.0 **cannot** be installed as an update
+  over v3.0.0. Use `my-upload-key.jks` unless the user says otherwise. `*.jks` is
+  gitignored, so both live only in the workspace.
 - Lint blocks `assembleRelease` with `InvalidFragmentVersionForActivityResult` on
   `registerForActivityResult`; fix is the `androidx.fragment:fragment-ktx` dependency even
   though the app uses no fragments.

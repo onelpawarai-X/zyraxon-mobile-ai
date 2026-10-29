@@ -114,9 +114,15 @@ object McpCatalog {
     fun custom(url: String, token: String?): McpServer {
         val host = runCatching { java.net.URI(url).host }.getOrNull() ?: url
         val clean = host.removePrefix("www.").removePrefix("mcp.")
-        val id = "custom_" + clean.replace(Regex("[^a-zA-Z0-9]"), "_").take(28)
+        // Runs of non-alphanumerics collapse to one `_`: a punycode host like
+        // `xn--80ak6aa92e.com` would otherwise produce `xn__80ak...`, and `__` is the
+        // separator used to namespace tools, so the id would split in the wrong place.
+        val slug = clean.replace(Regex("[^a-zA-Z0-9]+"), "_").trim('_').ifBlank { "host" }
+        // Truncating alone can make two hosts share an id, and then each would
+        // overwrite the other's tools, so a short stable hash of the host is kept.
+        val fingerprint = clean.hashCode().toUInt().toString(16).padStart(8, '0')
         return McpServer(
-            id = id,
+            id = "custom_${slug.take(24)}_$fingerprint",
             name = clean,
             tagline = "নিজের MCP সার্ভার",
             emoji = "🔌",
@@ -181,13 +187,49 @@ enum class McpStatus(val label: String) {
     FAILED("ব্যর্থ")
 }
 
+/** A file, document or record a server exposes. Read with `resources/read`. */
+data class McpResource(
+    val serverId: String,
+    val serverName: String,
+    val uri: String,
+    val name: String,
+    val description: String,
+    val mimeType: String,
+    /** A template has placeholders in the uri and cannot be read directly. */
+    val template: Boolean = false
+) {
+    /** `<serverId>__<uri>` so a read routes back to the right server. */
+    val qualifiedUri: String get() = "${serverId}__$uri"
+}
+
+/** A prompt template the server ships. Rendered with `prompts/get`. */
+data class McpPrompt(
+    val serverId: String,
+    val serverName: String,
+    val name: String,
+    val description: String,
+    val arguments: List<McpPromptArg>
+) {
+    val qualifiedName: String get() = "${serverId}__$name"
+}
+
+data class McpPromptArg(
+    val name: String,
+    val description: String,
+    val required: Boolean
+)
+
 data class McpConnection(
     val server: McpServer,
     val status: McpStatus = McpStatus.DISCONNECTED,
     val tools: List<McpTool> = emptyList(),
+    val resources: List<McpResource> = emptyList(),
+    val prompts: List<McpPrompt> = emptyList(),
     val error: String = "",
     val account: String = "",
     val lastUsedAt: Long = 0L
 ) {
     val toolCount: Int get() = tools.size
+    val resourceCount: Int get() = resources.size
+    val promptCount: Int get() = prompts.size
 }

@@ -65,6 +65,21 @@ object ToolRegistry {
         "mcp_disconnect" to JSONObject()
             .put("description", "Disconnect an MCP server and forget its token. Call it when the user asks to remove or disconnect a server.")
             .put("parameters", S(JSONObject().put("server", str()), listOf("server"))),
+        "mcp_resources" to JSONObject()
+            .put("description", "List the files, documents and records the connected MCP servers expose. Call it when the user asks what a server can show you, or before reading a resource whose address you do not know. Entries marked as a template contain placeholders you must fill in.")
+            .put("parameters", S(JSONObject().put("server", str().put("description", "Optional: only this server")), emptyList())),
+        "mcp_read_resource" to JSONObject()
+            .put("description", "Read one MCP resource by its URI and get its real contents. Call mcp_resources first to learn the URI. For a template, fill the placeholders in before reading.")
+            .put("parameters", S(JSONObject().put("uri", str().put("description", "The resource URI, or <server>__<uri>")), listOf("uri"))),
+        "mcp_prompts" to JSONObject()
+            .put("description", "List the prompt templates the connected MCP servers ship, with the arguments each one takes. Call it before mcp_prompt.")
+            .put("parameters", S(JSONObject().put("server", str().put("description", "Optional: only this server")), emptyList())),
+        "mcp_prompt" to JSONObject()
+            .put("description", "Render one MCP prompt template into real text and use it. Call mcp_prompts first for the exact name and its arguments.")
+            .put("parameters", S(JSONObject()
+                .put("name", str().put("description", "The prompt name, or <server>__<name>"))
+                .put("arguments", JSONObject().put("type", "object")
+                    .put("description", "The template's arguments as key/value pairs")), listOf("name"))),
         "code_box" to JSONObject()
             .put("description", "Show or close the live code panel on screen. Open it before writing a file so the user watches it being written, then close it when the file is done.")
             .put("parameters", S(JSONObject()

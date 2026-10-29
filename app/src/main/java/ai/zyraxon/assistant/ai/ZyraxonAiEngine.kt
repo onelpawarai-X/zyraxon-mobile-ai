@@ -35,8 +35,55 @@ class ZyraxonAiEngine(private val context: Context) {
     /**
      * Connected MCP servers contribute their tools to every turn. The engine owns
      * the manager so the injection cannot be forgotten at a call site.
+     *
+     * The sampling runner is passed in here because `sampling/createMessage` means
+     * a server asking *this app* to run a model — the model lives in the engine.
      */
-    val mcp: McpManager = McpManager(context)
+    val mcp: McpManager = McpManager(context, samplingRunner = { params -> runSampling(params) })
+
+    /**
+     * Which model answers a server's sampling request. The ViewModel sets this to
+     * the user's selected model, so sampling uses the same brain as the chat.
+     */
+    @Volatile var samplingModelProvider: (() -> AiModel)? = null
+
+    /**
+     * Answers `sampling/createMessage`: the server wants a completion and supplies
+     * the messages. Returns the MCP `CreateMessageResult` shape, or throws so the
+     * server gets a real error rather than an invented reply.
+     */
+    private suspend fun runSampling(params: JSONObject): JSONObject = withContext(Dispatchers.IO) {
+        val model = samplingModelProvider?.invoke() ?: throw IllegalStateException("কোনো মডেল নির্বাচিত নয়")
+        val incoming = params.optJSONArray("messages") ?: JSONArray()
+        val messages = JSONArray()
+        params.optString("systemPrompt").takeIf { it.isNotBlank() }?.let {
+            messages.put(JSONObject().put("role", "system").put("content", it))
+        }
+        for (i in 0 until incoming.length()) {
+            val m = incoming.optJSONObject(i) ?: continue
+            val role = m.optString("role", "user")
+            val content = m.opt("content")
+            val text = when (content) {
+                is JSONObject -> content.optString("text")
+                is JSONArray -> (0 until content.length())
+                    .mapNotNull { content.optJSONObject(it)?.optString("text")?.takeIf { t -> t.isNotBlank() } }
+                    .joinToString("\n")
+                else -> content?.toString().orEmpty()
+            }
+            if (text.isNotBlank()) {
+                messages.put(JSONObject().put("role", role).put("content", text))
+            }
+        }
+        if (messages.length() == 0) throw IllegalStateException("sampling: কোনো মেসেজ আসেনি")
+
+        val result = callModel(model, messages, JSONArray())
+            ?: throw IllegalStateException("মডেল উত্তর দেয়নি")
+        JSONObject()
+            .put("role", "assistant")
+            .put("content", JSONObject().put("type", "text").put("text", result.text))
+            .put("model", model.id)
+            .put("stopReason", "endTurn")
+    }
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -441,6 +488,22 @@ class ZyraxonAiEngine(private val context: Context) {
                 append("- ").append(s.name).append(" (`").append(s.id).append("`) — ")
                     .append(s.tagline).append(". কানেক্ট করতে বললে ")
                     .append("`mcp_connect` টুল কল করো।\n")
+            }
+        }
+
+        // Resources and prompts are listed by count only: dumping every URI into
+        // the prompt would waste the context the conversation needs.
+        val resources = mcp.allResources()
+        val prompts = mcp.allPrompts()
+        if (resources.isNotEmpty() || prompts.isNotEmpty()) {
+            append("\n## MCP resources and prompts (call the tool to see the details)\n")
+            if (resources.isNotEmpty()) {
+                append("- ").append(resources.size).append("টি রিসোর্স পাওয়া যায় (`mcp_resources` দিয়ে তালিকা, ")
+                    .append("`mcp_read_resource` দিয়ে পড়ো)।\n")
+            }
+            if (prompts.isNotEmpty()) {
+                append("- ").append(prompts.size).append("টি প্রম্পট টেমপ্লেট পাওয়া যায় (`mcp_prompts` দিয়ে তালিকা, ")
+                    .append("`mcp_prompt` দিয়ে রেন্ডার করো)।\n")
             }
         }
 
