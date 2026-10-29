@@ -12,10 +12,12 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -98,11 +100,6 @@ class ZyraxonAiEngine(private val context: Context) {
          * genuinely stuck model from spinning forever.
          */
         private const val MAX_TOOL_ROUNDS = 120
-
-        /** Shared endpoints so the streaming and non-streaming paths cannot drift apart. */
-        private const val OPENCODE_URL = "https://opencode.ai/zen/v1/chat/completions"
-        private const val ZYRAXON_URL = "https://zyraxonai.lovable.app/api/public/zyraxon/v1/chat/completions"
-        private const val GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
 
         val PERSONAS = listOf(
             Persona(
@@ -233,170 +230,157 @@ class ZyraxonAiEngine(private val context: Context) {
     }
 
     /**
-     * Dynamically fetches live models from official OpenCode endpoints.
+     * The headers for a provider call: the catalogue's static ones plus anything
+     * that must be generated per request (OpenCode wants a fresh session id).
      */
-    suspend fun fetchLiveModels(): List<AiModel> = withContext(Dispatchers.IO) {
-        val endpoints = listOf(
-            "https://opencode.ai/zen/v1/models",
-            "https://opencode.ai/inference/openai/v1/models"
-        )
-        // The user's own provider. Its catalogue is public even while the model
-        // line is gated, so it is listed here and used the moment it opens.
-        val zyraxonUrl = "https://zyraxonai.lovable.app/api/public/zyraxon/v1/models"
-        val ocKey = getApiKey("opencode")
+    private fun headersFor(spec: ProviderSpec): Map<String, String> =
+        if (spec.id == "opencode") {
+            spec.extraHeaders + ("x-opencode-session" to generateOpenCodeSession())
+        } else spec.extraHeaders
 
-        val resultList = mutableListOf<AiModel>()
-        val seenIds = mutableSetOf<String>()
+    /**
+     * Loads every provider's live catalogue in parallel and returns them
+     * fastest-first.
+     *
+     * Parallel matters: an unreachable provider must not hold up the rest. The
+     * old code read the providers one after another with a 20-second timeout, so
+     * two dead endpoints left the selector empty for minutes — which is exactly
+     * what the user saw as "no provider's models ever load". Results are pushed
+     * to [onProgress] as each provider answers, so the list fills in at once.
+     */
+    suspend fun fetchLiveModels(onProgress: (List<AiModel>) -> Unit = {}): List<AiModel> =
+        withContext(Dispatchers.IO) {
+            val specs = ProviderCatalog.specs.sortedBy { it.speedRank }
+            val collected = java.util.concurrent.ConcurrentHashMap<String, List<AiModel>>()
 
-        for (ep in endpoints) {
-            try {
-                val reqBuilder = Request.Builder()
-                    .url(ep)
-                    .addHeader("Accept", "application/json")
-                    .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36")
-                    .addHeader("x-opencode-client", "cli")
-
-                if (ocKey.isNotEmpty()) {
-                    reqBuilder.addHeader("Authorization", "Bearer $ocKey")
-                    reqBuilder.addHeader("x-api-key", ocKey)
+            fun snapshot(): List<AiModel> {
+                val out = mutableListOf<AiModel>()
+                val used = mutableSetOf<String>()
+                for (spec in specs) {
+                    for (m in collected[spec.id].orEmpty()) if (used.add(m.id)) out.add(m)
                 }
+                // ZYRAXON is the user's own line. While its gate is shut a model
+                // there only returns the gate notice, so it must not take the
+                // default slot; a working provider leads instead.
+                val zx = out.filter { it.provider == "zyraxon" }
+                if (zx.isEmpty() || zyraxonGateOpen) return out
+                return out.filter { it.provider != "zyraxon" } + zx.sortedBy { zyraxonSpeedRank(it.id) }
+            }
 
-                client.newCall(reqBuilder.build()).execute().use { response ->
-                    if (response.isSuccessful) {
-                        val body = response.body?.string() ?: ""
-                        val json = JSONObject(body)
-                        val dataArray = json.optJSONArray("data")
-                            ?: json.optJSONArray("models")
-
-                        if (dataArray != null && dataArray.length() > 0) {
-                            for (i in 0 until dataArray.length()) {
-                                val item = dataArray.optJSONObject(i) ?: continue
-                                val rawId = item.optString("id", "").trim()
-                                if (rawId.isBlank() || rawId.equals("test", ignoreCase = true)) continue
-
-                                if (seenIds.add(rawId)) {
-                                    val isFree = rawId.endsWith("-free") ||
-                                            item.optBoolean("free", false) ||
-                                            rawId.contains("free") ||
-                                            rawId == "big-pickle"
-
-                                    val cleanName = formatModelName(rawId)
-                                    val desc = if (isFree) {
-                                        "ওপেন কোড সার্ভার সাইট থেকে সরাসরি লাইভ — ফ্রি কোটা"
-                                    } else {
-                                        "ওপেন কোড সার্ভার সাইট থেকে লাইভ মডেল (${item.optString("owned_by", "opencode")})"
-                                    }
-
-                                    resultList.add(
-                                        AiModel(
-                                            id = rawId,
-                                            name = cleanName,
-                                            category = "OpenCode",
-                                            description = desc,
-                                            provider = "opencode",
-                                            isFree = isFree
-                                        )
-                                    )
-                                }
-                            }
+            coroutineScope {
+                specs.forEach { spec ->
+                    launch {
+                        val models = fetchProviderModels(spec)
+                        if (!models.isNullOrEmpty()) {
+                            collected[spec.id] = models
+                            onProgress(snapshot())
                         }
-                    }
-                }
-            } catch (_: Exception) {}
-
-            if (resultList.isNotEmpty()) break
-        }
-
-        // The user's own ZYRAXON line. Fastest models are listed first so the
-        // selector opens on a model that answers quickly.
-        try {
-            val req = Request.Builder()
-                .url(zyraxonUrl)
-                .addHeader("Accept", "application/json")
-                .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36")
-                .build()
-            client.newCall(req).execute().use { response ->
-                if (response.isSuccessful) {
-                    val root = JSONObject(response.body?.string() ?: "{}")
-                    val arr = root.optJSONArray("data")
-                    // The gate says whether the line answers yet. While it is shut,
-                    // a ZYRAXON model would only return the gate notice, so those
-                    // models go last and a working provider keeps the default slot.
-                    val gateOpen = root.optJSONObject("gate")?.optBoolean("open", false) ?: false
-                    if (arr != null) {
-                        val zyraxonModels = mutableListOf<AiModel>()
-                        for (i in 0 until arr.length()) {
-                            val item = arr.optJSONObject(i) ?: continue
-                            val rawId = item.optString("id", "").trim()
-                            if (rawId.isBlank() || !seenIds.add(rawId)) continue
-                            val display = item.optString("display_name").ifBlank {
-                                item.optString("name").ifBlank { formatModelName(rawId) }
-                            }
-                            val desc = item.optString("description").ifBlank { "ZYRAXON মডেল" }
-                            zyraxonModels.add(
-                                AiModel(
-                                    id = rawId,
-                                    name = display,
-                                    category = "ZYRAXON",
-                                    description = desc,
-                                    provider = "zyraxon",
-                                    isFree = true
-                                )
-                            )
-                        }
-                        val ranked = zyraxonModels.sortedBy { zyraxonSpeedRank(it.id) }
-                        if (gateOpen) resultList.addAll(0, ranked) else resultList.addAll(ranked)
                     }
                 }
             }
-        } catch (_: Exception) {}
 
-        // Cache the real, live models so a later offline launch still has a list.
-        // The cache only ever holds models the server actually returned — nothing
-        // is hardcoded here.
-        if (resultList.isNotEmpty()) {
+            val result = snapshot()
+            if (result.isNotEmpty()) {
+                cacheModels(result)
+                result
+            } else {
+                readCachedModels()
+            }
+        }
+
+    /** Stores the real catalogue so a later offline launch still has a list. */
+    private fun cacheModels(models: List<AiModel>) {
+        try {
             val arr = JSONArray()
-            resultList.forEach { m ->
-                val obj = JSONObject()
-                    .put("id", m.id)
-                    .put("name", m.name)
-                    .put("cat", m.category)
-                    .put("desc", m.description)
-                    .put("prov", m.provider)
-                    .put("free", m.isFree)
-                arr.put(obj)
+            models.forEach { m ->
+                arr.put(
+                    JSONObject()
+                        .put("id", m.id).put("name", m.name).put("cat", m.category)
+                        .put("desc", m.description).put("prov", m.provider).put("free", m.isFree)
+                )
             }
             prefs.edit().putString("cached_models", arr.toString()).apply()
-            return@withContext resultList
-        }
-
-        // Offline: replay the last real catalogue the server gave us. If we have
-        // never reached the server there is no model list to invent, so return
-        // empty and let the UI say so — an invented model would be a lie.
-        val cachedStr = prefs.getString("cached_models", null)
-        if (!cachedStr.isNullOrBlank()) {
-            try {
-                val arr = JSONArray(cachedStr)
-                for (i in 0 until arr.length()) {
-                    val obj = arr.getJSONObject(i)
-                    resultList.add(
-                        AiModel(
-                            id = obj.getString("id"),
-                            name = obj.getString("name"),
-                            category = obj.getString("cat"),
-                            description = obj.getString("desc"),
-                            provider = obj.getString("prov"),
-                            isFree = obj.getBoolean("free")
-                        )
-                    )
-                }
-            } catch (_: Exception) {}
-        }
-        resultList
+        } catch (_: Exception) {}
     }
 
     /**
-     * Lower is faster. Derived from each model's published latency profile, so
+     * Replays the last real catalogue. Nothing is invented: if the app has never
+     * reached a provider the list stays empty and the UI says so.
+     */
+    private fun readCachedModels(): List<AiModel> {
+        val cachedStr = prefs.getString("cached_models", null) ?: return emptyList()
+        return try {
+            val arr = JSONArray(cachedStr)
+            val out = mutableListOf<AiModel>()
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                out.add(
+                    AiModel(
+                        id = o.getString("id"), name = o.getString("name"),
+                        category = o.getString("cat"), description = o.getString("desc"),
+                        provider = o.getString("prov"), isFree = o.getBoolean("free")
+                    )
+                )
+            }
+            out
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+    /**
+     * Fetches one provider's live catalogue and turns it into selectable models.
+     * Returns null when the provider cannot be reached or has no key yet, so the
+     * caller can tell "unreachable" apart from "reached, but empty".
+     */
+    private fun fetchProviderModels(spec: ProviderSpec): List<AiModel>? {
+        val key = getApiKey(spec.id)
+        if (spec.needsKeyForCatalog && key.isBlank()) return null
+        return try {
+            val builder = Request.Builder()
+                .url(ProviderCatalog.urlFor(spec, key, forCatalog = true))
+                .addHeader("Accept", "application/json")
+                .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36")
+            ProviderCatalog.applyAuth(builder, spec, key, forCatalog = true)
+            for ((name, value) in headersFor(spec)) builder.addHeader(name, value)
+            client.newBuilder().readTimeout(12, TimeUnit.SECONDS).build()
+                .newCall(builder.build()).execute().use { response ->
+                    val body = response.body?.string().orEmpty()
+                    if (!response.isSuccessful) {
+                        // Remember the provider's own words so the settings screen can
+                        // show why a key did not work, instead of "connected" by guess.
+                        providerErrors[spec.id] =
+                            "${spec.label}: ${ProviderCatalog.parseError(body, response.code)}"
+                        return null
+                    }
+                    if (spec.id == "zyraxon") {
+                        // The gate is the provider's own statement about whether chat
+                        // answers yet; it decides whether these models lead the list.
+                        zyraxonGateOpen = runCatching {
+                            JSONObject(body).optJSONObject("gate")?.optBoolean("open", false) ?: false
+                        }.getOrDefault(false)
+                    }
+                    val ids = ProviderCatalog.parseModels(spec, body)
+                    val source = if (ids.isNotEmpty()) ids else spec.seedModels
+                    source.map { rawId ->
+                        val isFree = spec.id == "zyraxon" || spec.id == "opencode" ||
+                            rawId.lowercase().contains("free")
+                        AiModel(
+                            id = rawId,
+                            name = formatModelName(rawId),
+                            category = spec.category,
+                            description = "${spec.label} থেকে লাইভ মডেল",
+                            provider = spec.id,
+                            isFree = isFree
+                        )
+                    }
+                }
+        } catch (e: Exception) {
+            providerErrors[spec.id] = "${spec.label}: ${e.message ?: "সংযোগ ব্যর্থ"}"
+            null
+        }
+    }
+
+    /** Lower is faster. Derived from each model's published latency profile, so
      * the selector shows the quickest models first.
      */
     private fun zyraxonSpeedRank(id: String): Int = when {
@@ -431,6 +415,38 @@ class ZyraxonAiEngine(private val context: Context) {
     /** The last real reason a provider gave, surfaced instead of a guess. */
     var lastProviderError: String? = null
         private set
+
+    /**
+     * Whether the user's own ZYRAXON line answers chat yet. While the gate is
+     * shut those models are listed last so a working provider leads the selector.
+     */
+    @Volatile
+    private var zyraxonGateOpen: Boolean = false
+
+    /**
+     * Per-provider failure text from the last catalogue fetch, so the settings
+     * screen can show the truth about a key instead of claiming "connected".
+     */
+    private val providerErrors = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+    /** The reason a provider's catalogue could not be read, or null when it worked. */
+    fun providerError(provider: String): String? = providerErrors[provider]
+
+    /**
+     * Checks a key against the provider's own catalogue, and answers with the
+     * model count on success or the provider's exact error on failure. This is
+     * what lets the settings screen show a real "connected" instead of a guess.
+     */
+    suspend fun verifyProviderKey(provider: String): Pair<Boolean, String> =
+        withContext(Dispatchers.IO) {
+            val spec = ProviderCatalog.find(provider)
+                ?: return@withContext false to "অজানা প্রোভাইডার"
+            if (getApiKey(provider).isBlank()) return@withContext false to "কী বসানো হয়নি"
+            val models = fetchProviderModels(spec)
+                ?: return@withContext false to (providerErrors[provider] ?: "সংযোগ করা যায়নি")
+            providerErrors.remove(provider)
+            true to "${spec.label}: ${models.size}টি মডেল পাওয়া গেছে"
+        }
 
     /** The bundled operating contract. One source of truth, shared with the web layer. */
     private val bundledContract: String by lazy {
@@ -656,45 +672,67 @@ class ZyraxonAiEngine(private val context: Context) {
     ): StreamedTurn? {
         val sse = OpenAiSse(client)
         lastProviderError = null
-        if (model.provider == "zyraxon") {
-            val body = JSONObject()
-                .put("model", model.id)
-                .put("messages", messages)
-                .put("tools", tools)
-                .put("tool_choice", "auto")
-                .put("max_tokens", 8000)
-                .put("stream", true)
-            sse.stream(ZYRAXON_URL, getApiKey("zyraxon"), body, emptyMap(), onText)?.let { return it }
-            lastProviderError = sse.lastError
+        val spec = ProviderCatalog.find(model.provider)
+            ?: return callModelStreamingLegacy(model, messages, tools, onText)
+        val key = getApiKey(model.provider)
+        // A key-less public provider is still worth a try; only a provider that
+        // requires a key and has none is skipped, so the caller reports it.
+        if (key.isBlank() && spec.needsKeyForCatalog) {
+            lastProviderError = "${spec.label}: API কী বসানো হয়নি"
+            return null
         }
-        if (model.provider == "opencode") {
-            val body = JSONObject()
-                .put("model", model.id)
-                .put("messages", messages)
-                .put("tools", tools)
-                .put("tool_choice", "auto")
-                .put("max_tokens", 8000)
-                .put("stream", true)
-            val headers = mapOf(
-                "x-opencode-client" to "cli",
-                "x-opencode-session" to generateOpenCodeSession()
-            )
-            sse.stream(OPENCODE_URL, getApiKey("opencode"), body, headers, onText)?.let { return it }
-            lastProviderError = sse.lastError
+        val body = JSONObject()
+            .put("model", model.id)
+            .put("messages", messages)
+            .put("tools", tools)
+            .put("tool_choice", "auto")
+            .put("max_tokens", 8000)
+            .put("stream", true)
+        sse.stream(
+            ProviderCatalog.urlFor(spec, key, forCatalog = false),
+            key,
+            body,
+            headersFor(spec),
+            onText
+        )?.let { return it }
+        lastProviderError = sse.lastError ?: "${spec.label}: সংযোগ ব্যর্থ"
+        return null
+    }
+
+    /**
+     * Routes a model whose provider is not in the catalogue (e.g. an old cached
+     * id from a previous version). Falls back to the provider whose name the id
+     * itself carries, so an unrecognised model never silently does nothing.
+     */
+    private fun callModelStreamingLegacy(
+        model: AiModel,
+        messages: JSONArray,
+        tools: JSONArray,
+        onText: (String) -> Unit
+    ): StreamedTurn? {
+        val sse = OpenAiSse(client)
+        val fallbackId = when {
+            model.provider == "opencode" -> "opencode"
+            model.provider == "gemini" -> "gemini"
+            else -> "zyraxon"
         }
-        val key = getApiKey("gemini")
-        if (model.provider == "gemini" || key.isNotEmpty()) {
-            if (key.isEmpty()) return null
-            val body = JSONObject()
-                .put("model", model.id.removePrefix("models/"))
-                .put("messages", messages)
-                .put("tools", tools)
-                .put("tool_choice", "auto")
-                .put("max_tokens", 8000)
-                .put("stream", true)
-            sse.stream(GEMINI_URL, key, body, emptyMap(), onText)?.let { return it }
-            lastProviderError = sse.lastError
-        }
+        val spec = ProviderCatalog.find(fallbackId) ?: return null
+        val key = getApiKey(fallbackId)
+        val body = JSONObject()
+            .put("model", model.id)
+            .put("messages", messages)
+            .put("tools", tools)
+            .put("tool_choice", "auto")
+            .put("max_tokens", 8000)
+            .put("stream", true)
+        sse.stream(
+            ProviderCatalog.urlFor(spec, key, forCatalog = false),
+            key,
+            body,
+            headersFor(spec),
+            onText
+        )?.let { return it }
+        lastProviderError = sse.lastError ?: "${spec.label}: সংযোগ ব্যর্থ"
         return null
     }
 
@@ -721,98 +759,54 @@ class ZyraxonAiEngine(private val context: Context) {
 
     /**
      * One request to the chosen model. Returns null when nothing answered, so the
-     * caller can report honestly instead of inventing a reply.
+     * caller can report honestly instead of inventing a reply. Every provider goes
+     * through the catalogue, so adding a provider cannot leave the blocking path
+     * behind — that drift is exactly what made models appear not to load.
      */
     private fun callModel(model: AiModel, messages: JSONArray, tools: JSONArray): ModelResult? {
-        if (model.provider == "zyraxon") {
-            zyraxonRequest(model, messages, tools)?.let { return it }
-        }
-        if (model.provider == "opencode") {
-            openCodeRequest(model, messages, tools)?.let { return it }
-        }
-        if (model.provider == "gemini" || getApiKey("gemini").isNotEmpty()) {
-            geminiRequest(model, messages, tools)?.let { return it }
-        }
-        return null
-    }
-
-    private fun zyraxonRequest(model: AiModel, messages: JSONArray, tools: JSONArray): ModelResult? {
+        val spec = ProviderCatalog.find(model.provider) ?: return callModelLegacy(model, messages, tools)
+        val key = getApiKey(model.provider)
+        if (key.isBlank() && spec.needsKeyForCatalog) return null
         return try {
-            val key = getApiKey("zyraxon")
-            val reqObj = JSONObject()
+            val builder = Request.Builder()
+                .url(ProviderCatalog.urlFor(spec, key, forCatalog = false))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 14)")
+            ProviderCatalog.applyAuth(builder, spec, key, forCatalog = false)
+            for ((name, value) in headersFor(spec)) builder.addHeader(name, value)
+            val body = JSONObject()
                 .put("model", model.id)
                 .put("messages", messages)
                 .put("tools", tools)
                 .put("tool_choice", "auto")
                 .put("max_tokens", 8000)
-            val b = Request.Builder()
-                .url(ZYRAXON_URL)
-                .addHeader("Content-Type", "application/json")
-                .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 14)")
-                .post(reqObj.toString().toRequestBody("application/json".toMediaType()))
-            if (key.isNotEmpty()) b.addHeader("Authorization", "Bearer $key")
-            client.newCall(b.build()).execute().use { response ->
-                if (!response.isSuccessful) return null
-                parseCompletion(response.body?.string() ?: "")
+            builder.post(body.toString().toRequestBody("application/json".toMediaType()))
+            client.newCall(builder.build()).execute().use { response ->
+                val raw = response.body?.string().orEmpty()
+                if (!response.isSuccessful) {
+                    lastProviderError = ProviderCatalog.parseError(raw, response.code)
+                    return null
+                }
+                parseCompletion(raw)
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            lastProviderError = e.message
             null
         }
     }
 
-    private fun openCodeRequest(model: AiModel, messages: JSONArray, tools: JSONArray): ModelResult? {
-        return try {
-            val ocKey = getApiKey("opencode")
-            val reqObj = JSONObject()
-                .put("model", model.id)
-                .put("messages", messages)
-                .put("tools", tools)
-                .put("tool_choice", "auto")
-                .put("max_tokens", 8000)
-
-            val b = Request.Builder()
-                .url(OPENCODE_URL)
-                .addHeader("Content-Type", "application/json")
-                .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 14)")
-                .addHeader("x-opencode-client", "cli")
-                .addHeader("x-opencode-session", generateOpenCodeSession())
-                .post(reqObj.toString().toRequestBody("application/json".toMediaType()))
-            if (ocKey.isNotEmpty()) {
-                b.addHeader("Authorization", "Bearer $ocKey")
-                b.addHeader("x-api-key", ocKey)
-            }
-            client.newCall(b.build()).execute().use { response ->
-                if (!response.isSuccessful) return null
-                parseCompletion(response.body?.string() ?: "")
-            }
-        } catch (_: Exception) {
-            null
+    /** Blocking fallback for a model whose provider is not in the catalogue. */
+    private fun callModelLegacy(
+        model: AiModel,
+        messages: JSONArray,
+        tools: JSONArray
+    ): ModelResult? {
+        val fallbackId = when {
+            model.provider == "opencode" -> "opencode"
+            model.provider == "gemini" -> "gemini"
+            else -> "zyraxon"
         }
-    }
-
-    private fun geminiRequest(model: AiModel, messages: JSONArray, tools: JSONArray): ModelResult? {
-        return try {
-            val key = getApiKey("gemini")
-            if (key.isEmpty()) return null
-            val gModel = model.id.removePrefix("models/")
-            val reqObj = JSONObject()
-                .put("model", gModel)
-                .put("messages", messages)
-                .put("tools", tools)
-                .put("tool_choice", "auto")
-                .put("max_tokens", 8000)
-            val b = Request.Builder()
-                .url(GEMINI_URL)
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", "Bearer $key")
-                .post(reqObj.toString().toRequestBody("application/json".toMediaType()))
-            client.newCall(b.build()).execute().use { response ->
-                if (!response.isSuccessful) return null
-                parseCompletion(response.body?.string() ?: "")
-            }
-        } catch (_: Exception) {
-            null
-        }
+        return callModel(model.copy(provider = fallbackId), messages, tools)
     }
 
     private fun parseCompletion(body: String): ModelResult? {

@@ -40,6 +40,8 @@ data class PermissionRow(
     val label: String,
     val why: String,
     val androidPermission: String? = null,
+    /** Every permission that must be granted together for the row to read as done. */
+    val androidPermissions: List<String> = emptyList(),
     val specialAction: String? = null
 )
 
@@ -63,7 +65,23 @@ fun PermissionPanel(
             PermissionRow("camera", "📷 ক্যামেরা", "ছবি ও ভিডিও দেখতে", Manifest.permission.CAMERA),
             PermissionRow("location", "📍 লোকেশন", "ম্যাপ ও স্থানীয় তথ্যের জন্য", Manifest.permission.ACCESS_FINE_LOCATION),
             PermissionRow("notifications", "🔔 নোটিফিকেশন", "ব্যাকগ্রাউন্ডে কাজ চললে জানাতে", Manifest.permission.POST_NOTIFICATIONS),
-            PermissionRow("files", "📁 ফাইল", "ছবি, ভিডিও ও ডকুমেন্ট পড়তে", if (Build.VERSION.SDK_INT >= 33) "android.permission.READ_MEDIA_IMAGES" else Manifest.permission.READ_EXTERNAL_STORAGE),
+            // Android 13+ needs the three media types separately; older versions
+            // only understand READ_EXTERNAL_STORAGE. Declaring the right set for
+            // the running version is what makes "read my photos" actually work.
+            if (Build.VERSION.SDK_INT >= 33)
+                PermissionRow(
+                    "files", "📁 ফাইল ও মিডিয়া", "ছবি, ভিডিও, অডিও ও ডকুমেন্ট পড়তে",
+                    androidPermissions = listOf(
+                        "android.permission.READ_MEDIA_IMAGES",
+                        "android.permission.READ_MEDIA_VIDEO",
+                        "android.permission.READ_MEDIA_AUDIO"
+                    )
+                )
+            else
+                PermissionRow(
+                    "files", "📁 ফাইল ও মিডিয়া", "ছবি, ভিডিও ও ডকুমেন্ট পড়তে",
+                    androidPermission = Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
             PermissionRow("overlay", "🪟 ওভারলে", "অন্য অ্যাপের উপরে কাজ দেখাতে", specialAction = "overlay"),
             PermissionRow("accessibility", "♿ অ্যাক্সেসিবিলিটি", "স্ক্রিন দেখে ট্যাপ করতে — এটাই আসল অটোমেশন", specialAction = "accessibility"),
             PermissionRow("battery", "🔋 ব্যাটারি অপটিমাইজেশন", "ব্যাকগ্রাউন্ডে থেমে না যাওয়ার জন্য", specialAction = "battery")
@@ -98,6 +116,9 @@ fun PermissionPanel(
                 row.key == "accessibility" -> accessibilityOn
                 row.key == "overlay" -> canDrawOverlays(context)
                 row.key == "battery" -> isBatteryUnrestricted(context)
+                row.androidPermissions.isNotEmpty() -> row.androidPermissions.all {
+                    ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+                }
                 row.androidPermission != null ->
                     ContextCompat.checkSelfPermission(context, row.androidPermission) ==
                         PackageManager.PERMISSION_GRANTED

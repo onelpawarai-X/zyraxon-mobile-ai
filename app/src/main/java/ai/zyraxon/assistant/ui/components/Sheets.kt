@@ -180,6 +180,23 @@ fun PersonaSelectionSheet(
  * Centered Dynamic Model Selector Modal (Zero Hardcoded Models).
  * Loads live models from OpenCode server endpoints and supports custom model entries.
  */
+/** A short chip label with an emoji for a provider id, falling back to the id. */
+private fun providerChipLabel(providerId: String): String {
+    val emoji = when (providerId) {
+        "zyraxon" -> "🧠"
+        "opencode" -> "⚡"
+        "gemini" -> "💎"
+        "groq" -> "🚀"
+        "openai" -> "🤖"
+        "anthropic" -> "🎭"
+        "deepseek" -> "🐋"
+        "openrouter" -> "🌐"
+        else -> "🔹"
+    }
+    val label = ai.zyraxon.assistant.ai.ProviderCatalog.find(providerId)?.label ?: providerId
+    return "$emoji $label"
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModelSelectionSheet(
@@ -199,11 +216,11 @@ fun ModelSelectionSheet(
         val matchesSearch = model.name.contains(searchQuery, ignoreCase = true) ||
                 model.id.contains(searchQuery, ignoreCase = true)
         val matchesCategory = when (selectedCategory) {
-            "zyraxon" -> model.provider == "zyraxon"
-            "opencode" -> model.provider == "opencode"
-            "gemini" -> model.provider == "gemini"
+            "all" -> true
             "custom" -> model.category == "Custom"
-            else -> true
+            // Any real provider id filters by that provider, so a newly added
+            // provider appears without another edit here.
+            else -> model.provider == selectedCategory
         }
         matchesSearch && matchesCategory
     }
@@ -319,13 +336,13 @@ fun ModelSelectionSheet(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                listOf(
-                    "all" to "সব মডেল",
-                    "zyraxon" to "🧠 ZYRAXON",
-                    "opencode" to "⚡ OpenCode (লাইভ)",
-                    "gemini" to "💎 Gemini",
-                    "custom" to "✨ কাস্টম"
-                ).forEach { (catId, label) ->
+                // One chip per provider that actually returned models, plus the
+                // two fixed ones. Building it from the loaded list means a
+                // provider with no models never shows an empty tab.
+                val providerChips = availableModels.map { it.provider }.distinct()
+                    .map { id -> id to providerChipLabel(id) }
+                listOf("all" to "সব মডেল") + providerChips + listOf("custom" to "✨ কাস্টম")
+                .forEach { (catId, label) ->
                     val isCatActive = selectedCategory == catId
                     Box(
                         modifier = Modifier
@@ -530,8 +547,11 @@ fun SettingsSheet(
     var activePane by remember { mutableStateOf("voice") }
 
     // Provider Keys local edit states
+    val providerStatus by viewModel.providerStatus.collectAsState()
+    val providerBusy by viewModel.providerBusy.collectAsState()
     var editGeminiKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("gemini")) }
     var editOpenCodeKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("opencode")) }
+    var editZyraxonKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("zyraxon")) }
     var editClaudeKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("anthropic")) }
     var editGroqKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("groq")) }
     var editOpenRouterKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("openrouter")) }
@@ -633,7 +653,10 @@ fun SettingsSheet(
                             context = context,
                             accessibilityOn = systemStatus.accessibilityConnected,
                             onRequestPermission = { row ->
-                                row.androidPermission?.let { activity?.requestPermission(it) }
+                                val perms = row.androidPermissions.ifEmpty {
+                                    listOfNotNull(row.androidPermission)
+                                }
+                                if (perms.isNotEmpty()) activity?.requestPermissions(perms)
                             },
                             onOpenSpecial = { page -> activity?.openSpecialSetting(page) }
                         )
@@ -1016,50 +1039,50 @@ fun SettingsSheet(
                     "providers" -> {
                         // AI PROVIDERS KEYS
                         Text("এআই প্রোভাইডার ও নিজস্ব API Keys", fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
-                        Text("OpenCode ফ্রি — কোনো কী লাগে না। চাইলে নিচের প্রোভাইডারের কী বসাতে পারেন:", color = Glass.textMuted, fontSize = 11.5.sp)
+                        Text("কী সেভ করলে অ্যাপ নিজেই প্রোভাইডারের ক্যাটালগ পড়ে যাচাই করে — সত্যি কানেক্টেড হলে সবুজ, নাহলে আসল কারণ লাল রঙে দেখাবে।", color = Glass.textMuted, fontSize = 11.5.sp)
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        // OpenCode Status
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(Glass.greenFill.copy(alpha = 0.14f))
-                                .border(1.dp, Glass.greenFill, RoundedCornerShape(10.dp))
-                                .padding(10.dp)
+                        // The ZYRAXON line is the user's own provider. Its catalogue
+                        // is public, so its ten models load before any key is set.
+                        ProviderKeyRow(
+                            "ZYRAXON API Key (নিজস্ব লাইন)",
+                            editZyraxonKey, { editZyraxonKey = it },
+                            providerStatus["zyraxon"], "zyraxon" in providerBusy
                         ) {
-                            Text("⚡ OpenCode লাইভ সার্ভার: সংযুক্ত ও সক্রিয় (ফ্রি কোটা রিয়েলটাইম)", color = Glass.greenFill, fontSize = 12.sp)
+                            viewModel.saveProviderKey("zyraxon", editZyraxonKey)
+                        }
+
+                        ProviderKeyRow(
+                            "OpenCode API Key (ফ্রি কোটা)",
+                            editOpenCodeKey, { editOpenCodeKey = it },
+                            providerStatus["opencode"], "opencode" in providerBusy
+                        ) {
+                            viewModel.saveProviderKey("opencode", editOpenCodeKey)
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Gemini Key
-                        ProviderKeyRow("Google Gemini API Key", editGeminiKey, { editGeminiKey = it }) {
+                        ProviderKeyRow("Google Gemini API Key", editGeminiKey, { editGeminiKey = it }, providerStatus["gemini"], "gemini" in providerBusy) {
                             viewModel.saveProviderKey("gemini", editGeminiKey)
                         }
 
-                        // Claude Key
-                        ProviderKeyRow("Anthropic Claude API Key", editClaudeKey, { editClaudeKey = it }) {
+                        ProviderKeyRow("Anthropic Claude API Key", editClaudeKey, { editClaudeKey = it }, providerStatus["anthropic"], "anthropic" in providerBusy) {
                             viewModel.saveProviderKey("anthropic", editClaudeKey)
                         }
 
-                        // Groq Key
-                        ProviderKeyRow("Groq (Llama 3.3) API Key", editGroqKey, { editGroqKey = it }) {
+                        ProviderKeyRow("Groq (দ্রুততম Llama) API Key", editGroqKey, { editGroqKey = it }, providerStatus["groq"], "groq" in providerBusy) {
                             viewModel.saveProviderKey("groq", editGroqKey)
                         }
 
-                        // OpenRouter Key
-                        ProviderKeyRow("OpenRouter API Key", editOpenRouterKey, { editOpenRouterKey = it }) {
+                        ProviderKeyRow("OpenRouter API Key", editOpenRouterKey, { editOpenRouterKey = it }, providerStatus["openrouter"], "openrouter" in providerBusy) {
                             viewModel.saveProviderKey("openrouter", editOpenRouterKey)
                         }
 
-                        // DeepSeek Key
-                        ProviderKeyRow("DeepSeek API Key", editDeepSeekKey, { editDeepSeekKey = it }) {
+                        ProviderKeyRow("DeepSeek API Key", editDeepSeekKey, { editDeepSeekKey = it }, providerStatus["deepseek"], "deepseek" in providerBusy) {
                             viewModel.saveProviderKey("deepseek", editDeepSeekKey)
                         }
 
-                        // OpenAI Key
-                        ProviderKeyRow("OpenAI (GPT-4o) API Key", editOpenAiKey, { editOpenAiKey = it }) {
+                        ProviderKeyRow("OpenAI (GPT-4o) API Key", editOpenAiKey, { editOpenAiKey = it }, providerStatus["openai"], "openai" in providerBusy) {
                             viewModel.saveProviderKey("openai", editOpenAiKey)
                         }
                     }
@@ -1327,6 +1350,8 @@ fun ProviderKeyRow(
     title: String,
     currentValue: String,
     onValueChange: (String) -> Unit,
+    status: String? = null,
+    busy: Boolean = false,
     onSave: () -> Unit
 ) {
     Column(
@@ -1362,10 +1387,30 @@ fun ProviderKeyRow(
             Spacer(modifier = Modifier.width(8.dp))
             Button(
                 onClick = onSave,
+                enabled = !busy,
                 colors = ButtonDefaults.buttonColors(containerColor = Glass.cyanFill)
             ) {
-                Text("সেভ", color = Glass.textOnAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                if (busy) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(14.dp),
+                        color = Glass.textOnAccent,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("সেভ", color = Glass.textOnAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
             }
+        }
+        if (!status.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(6.dp))
+            // Green only when the provider itself answered; a failure shows its
+            // own words in red, so "connected" is never a guess.
+            val ok = status.contains("পাওয়া গেছে") || status.contains("সংযুক্ত")
+            Text(
+                text = status,
+                color = if (ok) Glass.greenFill else Glass.pinkFill,
+                fontSize = 11.sp
+            )
         }
     }
 }

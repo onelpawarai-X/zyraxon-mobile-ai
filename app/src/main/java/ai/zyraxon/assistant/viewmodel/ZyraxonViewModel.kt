@@ -59,6 +59,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private val _isLoadingModels = MutableStateFlow(false)
     val isLoadingModels: StateFlow<Boolean> = _isLoadingModels.asStateFlow()
 
+    /** Per-provider status line: "connected" only after the provider really answered. */
+    private val _providerStatus = MutableStateFlow<Map<String, String>>(emptyMap())
+    val providerStatus: StateFlow<Map<String, String>> = _providerStatus.asStateFlow()
+
+    private val _providerBusy = MutableStateFlow<Set<String>>(emptySet())
+    val providerBusy: StateFlow<Set<String>> = _providerBusy.asStateFlow()
+
     // Nothing is selected until the live catalogue arrives — an invented
     // default would be a model the server may not even offer.
     private val _selectedModel = MutableStateFlow(AiModel("", "মডেল লোড হচ্ছে…", "", "", "", true))
@@ -281,14 +288,28 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         voiceManager.speak(sample)
     }
 
+    /**
+     * Reloads the model list. Results stream in as each provider answers, so the
+     * selector fills immediately instead of staying empty until every provider
+     * has been tried — which is what the user saw as "models never load".
+     */
     fun refreshModels() {
         viewModelScope.launch {
             _isLoadingModels.value = true
             try {
-                val live = aiEngine.fetchLiveModels()
-                _availableModels.value = live
-                if (live.isNotEmpty() && live.none { it.id == _selectedModel.value.id }) {
-                    _selectedModel.value = live[0]
+                val live = aiEngine.fetchLiveModels { partial ->
+                    if (partial.isNotEmpty()) {
+                        _availableModels.value = partial
+                        if (partial.none { it.id == _selectedModel.value.id }) {
+                            _selectedModel.value = partial[0]
+                        }
+                    }
+                }
+                if (live.isNotEmpty()) {
+                    _availableModels.value = live
+                    if (live.none { it.id == _selectedModel.value.id }) {
+                        _selectedModel.value = live[0]
+                    }
                 }
             } catch (_: Exception) {
             } finally {
@@ -446,8 +467,29 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         prefs.edit().putFloat("panel_alpha", _panelAlpha.value).apply()
     }
 
+    /**
+     * Saves a provider key and then proves it works by reading that provider's own
+     * catalogue. The status line says "connected" only after the provider really
+     * answered — a saved key that fails is reported with the provider's own words,
+     * which is what a silent "connected" used to hide.
+     */
     fun saveProviderKey(provider: String, key: String) {
         aiEngine.setApiKey(provider, key)
+        val trimmed = key.trim()
+        if (trimmed.isEmpty()) {
+            _providerStatus.value = _providerStatus.value - provider
+            return
+        }
+        _providerBusy.value = _providerBusy.value + provider
+        // The row must react to the tap immediately, so a placeholder is set
+        // before the network call starts rather than after it returns.
+        _providerStatus.value = _providerStatus.value + (provider to "যাচাই করা হচ্ছে…")
+        viewModelScope.launch {
+            val (ok, message) = aiEngine.verifyProviderKey(provider)
+            _providerStatus.value = _providerStatus.value + (provider to message)
+            _providerBusy.value = _providerBusy.value - provider
+            if (ok) refreshModels()
+        }
     }
 
     fun saveGithubToken(token: String) {
@@ -808,10 +850,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
         return if (server.auth == McpAuth.OAUTH) {
             val url = aiEngine.mcp.beginOAuth(server)
-            openInBrowser(url)
-            JSONObject().put("ok", true)
-                .put("summary", "${server.name}: ব্রাউজারে অনুমতির পাতা খোলা হয়েছে — ব্যবহারকারী Allow চাপলে কানেক্ট হয়ে যাবে")
-                .put("pending_auth", true)
+            val failure = openInBrowser(url)
+            if (failure != null) {
+                JSONObject().put("ok", false).put("summary", failure)
+            } else {
+                JSONObject().put("ok", true)
+                    .put("summary", "${server.name}: ব্রাউজারে অনুমতির পাতা খোলা হয়েছে — ব্যবহারকারী Allow চাপলে কানেক্ট হয়ে যাবে")
+                    .put("pending_auth", true)
+            }
         } else {
             val token = args.optString("token").takeIf { it.isNotBlank() }
             if (server.auth == McpAuth.TOKEN && token == null) {
@@ -828,12 +874,36 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    /** Opens a consent page in the phone's browser. */
-    private fun openInBrowser(url: String) {
-        runCatching {
-            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
+    /**
+     * Opens a consent page in the phone's browser. Returns the real outcome, so
+     * the UI can say "no browser found" instead of showing "waiting…" forever —
+     * a silent failure here is exactly why the page never appeared on the phone.
+     */
+    private fun openInBrowser(url: String): String? {
+        if (url.isBlank()) return "অনুমতির লিঙ্ক তৈরি করা যায়নি"
+        return try {
+            val view = android.content.Intent(
+                android.content.Intent.ACTION_VIEW,
+                android.net.Uri.parse(url)
+            ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            // A chooser makes the browser choice explicit; without it Android 11+
+            // can resolve nothing and throw, which the old code swallowed.
+            val chooser = android.content.Intent.createChooser(view, "অনুমতি দিতে ব্রাউজার বেছে নাও")
                 .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-            getApplication<Application>().startActivity(intent)
+            getApplication<Application>().startActivity(chooser)
+            null
+        } catch (e: Exception) {
+            try {
+                getApplication<Application>().startActivity(
+                    android.content.Intent(
+                        android.content.Intent.ACTION_VIEW,
+                        android.net.Uri.parse(url)
+                    ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+                null
+            } catch (e2: Exception) {
+                "ব্রাউজার খোলা যায়নি: ${e2.message ?: "কোনো ব্রাউজার পাওয়া যায়নি"}"
+            }
         }
     }
 
@@ -1025,9 +1095,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     val url = aiEngine.mcp.beginOAuth(server) { stage ->
                         _mcpNotice.value = "${server.name}: $stage"
                     }
-                    withContext(Dispatchers.Main) { openInBrowser(url) }
-                    _mcpNotice.value =
-                        "${server.name}: ব্রাউজারে Allow চাপো — ফিরে এলে নিজে থেকেই কানেক্ট হয়ে যাবে"
+                    val failure = withContext(Dispatchers.Main) { openInBrowser(url) }
+                    _mcpNotice.value = failure
+                        ?: "${server.name}: ব্রাউজারে Allow চাপো — ফিরে এলে নিজে থেকেই কানেক্ট হয়ে যাবে"
                 } else {
                     _mcpNotice.value = "${server.name}: কানেক্ট করা হচ্ছে…"
                     val conn = aiEngine.mcp.connectWithToken(server, token)
