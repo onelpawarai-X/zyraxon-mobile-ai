@@ -1,5 +1,8 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.i18n.Loc
+import ai.zyraxon.assistant.i18n.setLanguage
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.ai.ZyraxonAiEngine
 import ai.zyraxon.assistant.model.AiModel
 import ai.zyraxon.assistant.model.BgAnimationMode
@@ -101,7 +104,7 @@ fun PersonaSelectionSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "পরিচয় নির্বাচন (Persona)",
+                    text = t("পরিচয় নির্বাচন (Persona)"),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Glass.textPrimary
@@ -245,13 +248,13 @@ fun ModelSelectionSheet(
             ) {
                 Column {
                     Text(
-                        text = "এআই মডেল নির্বাচন (AI Models)",
+                        text = t("এআই মডেল নির্বাচন (AI Models)"),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Glass.textPrimary
                     )
                     Text(
-                        text = "দ্রুত মডেল আগে — সরাসরি লাইভ ক্যাটালগ",
+                        text = t("দ্রুত মডেল আগে — সরাসরি লাইভ ক্যাটালগ"),
                         fontSize = 11.5.sp,
                         color = Glass.textSecondary
                     )
@@ -307,7 +310,7 @@ fun ModelSelectionSheet(
                         decorationBox = { innerTextField ->
                             if (searchQuery.isEmpty()) {
                                 Text(
-                                    "মডেল খুঁজুন (যেমন: Big Pickle, Flash, Mimo)...",
+                                    t("মডেল খুঁজুন (যেমন: Big Pickle, Flash, Mimo)..."),
                                     color = Glass.textMuted,
                                     fontSize = 13.sp
                                 )
@@ -342,7 +345,7 @@ fun ModelSelectionSheet(
                 // provider with no models never shows an empty tab.
                 val providerChips = availableModels.map { it.provider }.distinct()
                     .map { id -> id to providerChipLabel(id) }
-                listOf("all" to "সব মডেল") + providerChips + listOf("custom" to "✨ কাস্টম")
+                listOf("all" to t("সব মডেল")) + providerChips + listOf("custom" to t("✨ কাস্টম"))
                 .forEach { (catId, label) ->
                     val isCatActive = selectedCategory == catId
                     Box(
@@ -379,7 +382,7 @@ fun ModelSelectionSheet(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                "কোনো মডেল পাওয়া যায়নি। সার্ভার সিঙ্ক বোতামে ট্যাপ করুন।",
+                                t("কোনো মডেল পাওয়া যায়নি। সার্ভার সিঙ্ক বোতামে ট্যাপ করুন।"),
                                 color = Glass.textMuted,
                                 fontSize = 13.sp
                             )
@@ -463,7 +466,7 @@ fun ModelSelectionSheet(
                         ) {
                             Icon(Icons.Rounded.Add, contentDescription = "Add")
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("কাস্টম মডেল যুক্ত করুন (Custom Model ID)", fontSize = 12.sp)
+                            Text(t("কাস্টম মডেল যুক্ত করুন (Custom Model ID)"), fontSize = 12.sp)
                         }
                     } else {
                         Column(
@@ -473,7 +476,7 @@ fun ModelSelectionSheet(
                                 .background(Glass.fill(0.30f))
                                 .padding(12.dp)
                         ) {
-                            Text("মডেল ID লিখুন:", color = Glass.textPrimary, fontSize = 12.sp)
+                            Text(t("মডেল ID লিখুন:"), color = Glass.textPrimary, fontSize = 12.sp)
                             Spacer(modifier = Modifier.height(6.dp))
                             BasicTextField(
                                 value = customModelId,
@@ -499,7 +502,7 @@ fun ModelSelectionSheet(
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Glass.cyanFill)
                                 ) {
-                                    Text("যুক্ত ও নির্বাচন করুন", color = Glass.textOnAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text(t("যুক্ত ও নির্বাচন করুন"), color = Glass.textOnAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -585,13 +588,13 @@ fun SettingsSheet(
             ) {
                 Column {
                     Text(
-                        text = "ZYRAXON সেটিংস ও সিস্টেম কন্ট্রোল",
+                        text = t("ZYRAXON সেটিংস ও সিস্টেম কন্ট্রোল"),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Glass.textPrimary
                     )
                     Text(
-                        text = "ভার্সন ২.০.০ — অল ইন ওয়ান পাওয়ার প্যানেল",
+                        text = t("ভার্সন ২.০.০ — অল ইন ওয়ান পাওয়ার প্যানেল"),
                         fontSize = 11.sp,
                         color = Glass.pinkFill
                     )
@@ -611,14 +614,14 @@ fun SettingsSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 listOf(
-                    "voice" to "🔊 ভয়েস (TTS)",
-                    "mic" to "🎙️ মাইক",
-                    "aura" to "🔮 ওরা ও ব্যাকগ্রাউন্ড",
-                    "providers" to "🔑 এআই প্রোভাইডার্স",
+                    "voice" to t("🔊 ভয়েস (TTS)"),
+                    "mic" to t("🎙️ মাইক"),
+                    "aura" to t("🔮 ওরা ও ব্যাকগ্রাউন্ড"),
+                    "providers" to t("🔑 এআই প্রোভাইডার্স"),
                     "github" to "🐙 GitHub",
-                    "perms" to "🛡️ পারমিশন",
-                    "memory" to "🧠 মেমরি",
-                    "skills" to "📖 স্কিল গাইড"
+                    "perms" to t("🛡️ পারমিশন"),
+                    "memory" to t("🧠 মেমরি"),
+                    "skills" to t("📖 স্কিল গাইড")
                 ).forEach { (paneId, label) ->
                     val isActive = activePane == paneId
                     Box(
@@ -667,12 +670,12 @@ fun SettingsSheet(
 
                     "voice" -> {
                         // VOICE (TTS) CONTROLS
-                        Text("ভয়েস সেটিংস ও কণ্ঠের প্রকার (Text-to-Speech)", fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        Text(t("ভয়েস সেটিংস ও কণ্ঠের প্রকার (Text-to-Speech)"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(8.dp))
 
                         val currentGender by viewModel.voiceGender.collectAsState()
 
-                        Text("কণ্ঠ নির্বাচন করুন (Voice Profile):", color = Glass.cyanFill, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Text(t("কণ্ঠ নির্বাচন করুন (Voice Profile):"), color = Glass.cyanFill, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Row(
@@ -700,8 +703,8 @@ fun SettingsSheet(
                                 ) {
                                     Text("👩", fontSize = 26.sp)
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text("মেয়ের কণ্ঠ", color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                    Text("মিষ্টি ও রোমান্টিক", color = Glass.pinkFill, fontSize = 10.5.sp)
+                                    Text(t("মেয়ের কণ্ঠ"), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    Text(t("মিষ্টি ও রোমান্টিক"), color = Glass.pinkFill, fontSize = 10.5.sp)
                                     if (isFemale) {
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Icon(Icons.Rounded.Check, contentDescription = "Active", tint = Glass.pinkFill, modifier = Modifier.size(16.dp))
@@ -730,8 +733,8 @@ fun SettingsSheet(
                                 ) {
                                     Text("👨", fontSize = 26.sp)
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text("ছেলের কণ্ঠ", color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                    Text("গম্ভীর ও স্পষ্ট", color = Glass.cyanFill, fontSize = 10.5.sp)
+                                    Text(t("ছেলের কণ্ঠ"), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    Text(t("গম্ভীর ও স্পষ্ট"), color = Glass.cyanFill, fontSize = 10.5.sp)
                                     if (isMale) {
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Icon(Icons.Rounded.Check, contentDescription = "Active", tint = Glass.cyanFill, modifier = Modifier.size(16.dp))
@@ -746,13 +749,13 @@ fun SettingsSheet(
                         // languages; the choice is saved and restored on launch.
                         val currentLang by viewModel.voiceLanguage.collectAsState()
                         val ttsOk by viewModel.ttsAvailable.collectAsState()
-                        Text("ভাষা (Recognition + Speech):", color = Glass.cyanFill, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Text(t("ভাষা (Recognition + Speech):"), color = Glass.cyanFill, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(6.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            listOf("bn-BD" to "🇧🇩 বাংলা", "en-US" to "🇺🇸 English").forEach { (tag, label) ->
+                            listOf("bn-BD" to t("🇧🇩 বাংলা"), "en-US" to "🇺🇸 English").forEach { (tag, label) ->
                                 val active = currentLang == tag
                                 Box(
                                     modifier = Modifier
@@ -771,10 +774,72 @@ fun SettingsSheet(
                         if (!ttsOk) {
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                "এই ফোনে কোনো স্পিচ ইঞ্জিন নেই — Google Speech Services ইনস্টল করলে কথা বলতে পারবে।",
+                                t("এই ফোনে কোনো স্পিচ ইঞ্জিন নেই — Google Speech Services ইনস্টল করলে কথা বলতে পারবে।"),
                                 color = Glass.amber,
                                 fontSize = 11.sp
                             )
+                        }
+
+                        // The UI language. The tables are assets, so switching
+                        // only swaps the map and rebuilds the tree — no restart
+                        // and no reinstall.
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(t("অ্যাপের ভাষা"), color = Glass.cyanFill, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        val languages = remember { Loc.languages }
+                        var languageFilter by remember { mutableStateOf("") }
+                        BasicTextField(
+                            value = languageFilter,
+                            onValueChange = { languageFilter = it },
+                            singleLine = true,
+                            textStyle = TextStyle(color = Glass.textPrimary, fontSize = 13.sp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Glass.rowFill(0.30f))
+                                .border(1.dp, Glass.borderSoft, RoundedCornerShape(10.dp))
+                                .padding(horizontal = 12.dp, vertical = 10.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        // A plain scrolling Column, not a LazyColumn: this sits
+                        // inside the sheet's own verticalScroll, and a lazy list
+                        // would be measured with an infinite height and crash.
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(190.dp)
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            val shown = languages.filter { language ->
+                                languageFilter.isBlank() ||
+                                    language.name.contains(languageFilter, ignoreCase = true) ||
+                                    language.code.contains(languageFilter, ignoreCase = true)
+                            }
+                            shown.forEach { language ->
+                                val active = Loc.current == language.code
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (active) Glass.pinkFill.copy(alpha = 0.16f) else Glass.rowFill(0.22f))
+                                        .border(1.dp, if (active) Glass.pinkFill else Glass.borderSoft, RoundedCornerShape(10.dp))
+                                        .clickable { setLanguage(context, language.code) }
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        "${language.flag}  ${language.name}",
+                                        color = Glass.textPrimary,
+                                        fontSize = 13.sp,
+                                        fontWeight = if (active) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                    if (active) {
+                                        Icon(Icons.Rounded.Check, contentDescription = "Active", tint = Glass.pinkFill, modifier = Modifier.size(16.dp))
+                                    }
+                                }
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -784,7 +849,7 @@ fun SettingsSheet(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("উত্তরের অডিও শোনানো হবে", color = Glass.textPrimary, fontSize = 13.sp)
+                            Text(t("উত্তরের অডিও শোনানো হবে"), color = Glass.textPrimary, fontSize = 13.sp)
                             Switch(
                                 checked = ttsEnabled,
                                 onCheckedChange = { viewModel.setTtsEnabled(it) },
@@ -793,7 +858,7 @@ fun SettingsSheet(
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("কথা বলার গতি (Speed): ${String.format("%.2f", ttsRate)}x", color = Glass.textSecondary, fontSize = 12.sp)
+                        Text(t("কথা বলার গতি (Speed): {0}x", String.format("%.2f", ttsRate)), color = Glass.textSecondary, fontSize = 12.sp)
                         Slider(
                             value = ttsRate,
                             onValueChange = { viewModel.setTtsRate(it) },
@@ -801,7 +866,7 @@ fun SettingsSheet(
                             colors = SliderDefaults.colors(thumbColor = Glass.pinkFill, activeTrackColor = Glass.pinkFill)
                         )
 
-                        Text("কণ্ঠের পিচ (Pitch): ${String.format("%.2f", ttsPitch)}", color = Glass.textSecondary, fontSize = 12.sp)
+                        Text(t("কণ্ঠের পিচ (Pitch): {0}", String.format("%.2f", ttsPitch)), color = Glass.textSecondary, fontSize = 12.sp)
                         Slider(
                             value = ttsPitch,
                             onValueChange = { viewModel.setTtsPitch(it) },
@@ -817,13 +882,13 @@ fun SettingsSheet(
                         ) {
                             Icon(Icons.Rounded.PlayArrow, contentDescription = "Test")
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("ভয়েস টেস্ট করুন (Test Voice)", color = Glass.textOnAccent, fontWeight = FontWeight.Bold)
+                            Text(t("ভয়েস টেস্ট করুন (Test Voice)"), color = Glass.textOnAccent, fontWeight = FontWeight.Bold)
                         }
                     }
 
                     "mic" -> {
                         // MICROPHONE CONTROLS
-                        Text("মাইক্রোফোন ও লিসেনিং সেটিংস", fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        Text(t("মাইক্রোফোন ও লিসেনিং সেটিংস"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Row(
@@ -832,8 +897,8 @@ fun SettingsSheet(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("সর্বদা শুনবে (Always listening)", color = Glass.textPrimary, fontSize = 13.sp)
-                                Text("অ্যাপ চলাকালীন স্বয়ংক্রিয় লিসেনিং চালু রাখবে", color = Glass.textMuted, fontSize = 11.sp)
+                                Text(t("সর্বদা শুনবে (Always listening)"), color = Glass.textPrimary, fontSize = 13.sp)
+                                Text(t("অ্যাপ চলাকালীন স্বয়ংক্রিয় লিসেনিং চালু রাখবে"), color = Glass.textMuted, fontSize = 11.sp)
                             }
                             Switch(
                                 checked = alwaysListening,
@@ -850,8 +915,8 @@ fun SettingsSheet(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("কথা থামালে অটো-সেন্ড", color = Glass.textPrimary, fontSize = 13.sp)
-                                Text("বাক্য শেষ হলে সরাসরি উত্তর তৈরি হবে", color = Glass.textMuted, fontSize = 11.sp)
+                                Text(t("কথা থামালে অটো-সেন্ড"), color = Glass.textPrimary, fontSize = 13.sp)
+                                Text(t("বাক্য শেষ হলে সরাসরি উত্তর তৈরি হবে"), color = Glass.textMuted, fontSize = 11.sp)
                             }
                             Switch(
                                 checked = autoSend,
@@ -863,21 +928,21 @@ fun SettingsSheet(
 
                     "aura" -> {
                         // AURA & BACKGROUND
-                        Text("ওরা ও ব্যাকগ্রাউন্ড অ্যানিমেশন", fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        Text(t("ওরা ও ব্যাকগ্রাউন্ড অ্যানিমেশন"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // Which designed aura is showing. Each one is a distinct
                         // shape, not just a recolour.
-                        Text("ওরার স্টাইল", color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Text(t("ওরার স্টাইল"), color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(6.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             listOf(
-                                "orb" to "ক্লাসিক",
-                                "twin" to "টুইন রিং",
-                                "vortex" to "ভর্টেক্স"
+                                "orb" to t("ক্লাসিক"),
+                                "twin" to t("টুইন রিং"),
+                                "vortex" to t("ভর্টেক্স")
                             ).forEach { (styleId, label) ->
                                 AuraStyleChip(styleId, label, auraStyle) { viewModel.setAuraStyle(it) }
                             }
@@ -888,9 +953,9 @@ fun SettingsSheet(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             listOf(
-                                "bloom" to "ব্লুম",
-                                "helix" to "হেলিক্স",
-                                "core" to "কোর"
+                                "bloom" to t("ব্লুম"),
+                                "helix" to t("হেলিক্স"),
+                                "core" to t("কোর")
                             ).forEach { (styleId, label) ->
                                 AuraStyleChip(styleId, label, auraStyle) { viewModel.setAuraStyle(it) }
                             }
@@ -900,16 +965,16 @@ fun SettingsSheet(
                         // The shader modes. Each is a real WebGL scene rendered
                         // inside the orb, and "ক্লাসিক" hands the aura back to
                         // the CSS shapes above.
-                        Text("শেডার মোড", color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Text(t("শেডার মোড"), color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(6.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             listOf(
-                                "none" to "ক্লাসিক",
-                                "cosmic" to "কসমিক",
-                                "portal" to "পোর্টাল"
+                                "none" to t("ক্লাসিক"),
+                                "cosmic" to t("কসমিক"),
+                                "portal" to t("পোর্টাল")
                             ).forEach { (shaderId, label) ->
                                 AuraStyleChip(shaderId, label, auraShader) { viewModel.setAuraShader(it) }
                             }
@@ -920,8 +985,8 @@ fun SettingsSheet(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             listOf(
-                                "cyber" to "সাইবার গ্রিড",
-                                "nebula" to "নেবুলা"
+                                "cyber" to t("সাইবার গ্রিড"),
+                                "nebula" to t("নেবুলা")
                             ).forEach { (shaderId, label) ->
                                 AuraStyleChip(shaderId, label, auraShader) { viewModel.setAuraShader(it) }
                             }
@@ -930,19 +995,19 @@ fun SettingsSheet(
 
                         // The aura itself. These four sliders drive the CSS
                         // variables inside aura.html, so the change is instant.
-                        Text("ওরার রঙ", color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Text(t("ওরার রঙ"), color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             listOf(
-                                325 to "গোলাপি",
-                                268 to "বেগুনি",
-                                190 to "আকাশি",
-                                150 to "সবুজ",
-                                20 to "কমলা",
-                                0 to "লাল"
+                                325 to t("গোলাপি"),
+                                268 to t("বেগুনি"),
+                                190 to t("আকাশি"),
+                                150 to t("সবুজ"),
+                                20 to t("কমলা"),
+                                0 to t("লাল")
                             ).forEach { (hueValue, label) ->
                                 val isSelected = kotlin.math.abs(auraHue - hueValue) <= 8
                                 Box(
@@ -974,21 +1039,21 @@ fun SettingsSheet(
                         }
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        Text("ওরার আকার: ${String.format("%.2f", auraSize)}x", color = Glass.textSecondary, fontSize = 12.sp)
+                        Text(t("ওরার আকার: {0}x", String.format("%.2f", auraSize)), color = Glass.textSecondary, fontSize = 12.sp)
                         Slider(
                             value = auraSize,
                             onValueChange = { viewModel.setAuraSize(it) },
                             valueRange = 0.6f..1.5f,
                             colors = SliderDefaults.colors(thumbColor = Glass.pinkFill, activeTrackColor = Glass.pinkFill)
                         )
-                        Text("আভার তীব্রতা: ${String.format("%.2f", auraGlow)}x", color = Glass.textSecondary, fontSize = 12.sp)
+                        Text(t("আভার তীব্রতা: {0}x", String.format("%.2f", auraGlow)), color = Glass.textSecondary, fontSize = 12.sp)
                         Slider(
                             value = auraGlow,
                             onValueChange = { viewModel.setAuraGlow(it) },
                             valueRange = 0.2f..2.0f,
                             colors = SliderDefaults.colors(thumbColor = Glass.pinkFill, activeTrackColor = Glass.pinkFill)
                         )
-                        Text("ঘোরার গতি: ${String.format("%.2f", auraSpeed)}x", color = Glass.textSecondary, fontSize = 12.sp)
+                        Text(t("ঘোরার গতি: {0}x", String.format("%.2f", auraSpeed)), color = Glass.textSecondary, fontSize = 12.sp)
                         Slider(
                             value = auraSpeed,
                             onValueChange = { viewModel.setAuraSpeed(it) },
@@ -997,7 +1062,7 @@ fun SettingsSheet(
                         )
                         Spacer(modifier = Modifier.height(6.dp))
 
-                        Text("প্যানেলের স্বচ্ছতা: ${(panelAlpha * 100).toInt()}%", color = Glass.textSecondary, fontSize = 12.sp)
+                        Text(t("প্যানেলের স্বচ্ছতা: {0}%", (panelAlpha * 100).toInt()), color = Glass.textSecondary, fontSize = 12.sp)
                         Slider(
                             value = panelAlpha,
                             onValueChange = { viewModel.setPanelAlpha(it) },
@@ -1009,11 +1074,11 @@ fun SettingsSheet(
                         // Floating chat bubble over other apps. The row explains
                         // that the system Allow dialog is all that is needed.
                         val overlayOn by viewModel.overlayEnabled.collectAsState()
-                        Text("ফ্লোটিং চ্যাট বাবল", color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Text(t("ফ্লোটিং চ্যাট বাবল"), color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            "চালু করলে অন্য যেকোনো অ্যাপের উপরে ছোট একটি বাবল থাকবে। " +
-                                "ক্লিক করে লিখলে সোজা এই অ্যাসিস্ট্যান্টের কাছে যাবে — অ্যাপের ভিতরে ঢুকতে হবে না।",
+                            t("চালু করলে অন্য যেকোনো অ্যাপের উপরে ছোট একটি বাবল থাকবে। ") +
+                                t("ক্লিক করে লিখলে সোজা এই অ্যাসিস্ট্যান্টের কাছে যাবে — অ্যাপের ভিতরে ঢুকতে হবে না।"),
                             color = Glass.textMuted,
                             fontSize = 11.sp
                         )
@@ -1040,7 +1105,7 @@ fun SettingsSheet(
                                 .padding(12.dp)
                         ) {
                             Text(
-                                text = if (overlayOn) "● চালু আছে — বন্ধ করতে চাপো" else "○ চালু করো (উপর থেকে Allow দিতে হবে)",
+                                text = if (overlayOn) t("● চালু আছে — বন্ধ করতে চাপো") else t("○ চালু করো (উপর থেকে Allow দিতে হবে)"),
                                 color = if (overlayOn) Glass.greenFill else Glass.textPrimary,
                                 fontSize = 12.5.sp
                             )
@@ -1049,18 +1114,18 @@ fun SettingsSheet(
 
                         // The looping clip behind the aura. These are the clips
                         // bundled with the app, so they work with no network.
-                        Text("ব্যাকগ্রাউন্ড ভিডিও", color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Text(t("ব্যাকগ্রাউন্ড ভিডিও"), color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(6.dp))
                         listOf(
-                            "girl.mp4" to "মেয়ে (ওরা)",
-                            "aurora.mp4" to "অরোরা",
-                            "space.mp4" to "স্পেস টানেল",
-                            "hero.mp4" to "টানেল",
-                            "dream.mp4" to "স্বপ্নের মেঘ",
-                            "ink.mp4" to "কালি",
-                            "city.mp4" to "শহরের আলো",
-                            "galaxy-eye.mp4" to "গ্যালাক্সি আই",
-                            "" to "কোনো ভিডিও নয় (শুধু শেডার)"
+                            "girl.mp4" to t("মেয়ে (ওরা)"),
+                            "aurora.mp4" to t("অরোরা"),
+                            "space.mp4" to t("স্পেস টানেল"),
+                            "hero.mp4" to t("টানেল"),
+                            "dream.mp4" to t("স্বপ্নের মেঘ"),
+                            "ink.mp4" to t("কালি"),
+                            "city.mp4" to t("শহরের আলো"),
+                            "galaxy-eye.mp4" to t("গ্যালাক্সি আই"),
+                            "" to t("কোনো ভিডিও নয় (শুধু শেডার)")
                         ).forEach { (asset, label) ->
                             val isSelected = bgVideoAsset == asset
                             Box(
@@ -1080,7 +1145,7 @@ fun SettingsSheet(
                             }
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text("শেডার মোড", color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Text(t("শেডার মোড"), color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(6.dp))
 
                         BgAnimationMode.values().forEach { mode ->
@@ -1113,7 +1178,7 @@ fun SettingsSheet(
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text("কাস্টম ব্যাকগ্রাউন্ড URL (mp4 / gif / image):", color = Glass.textSecondary, fontSize = 12.sp)
+                        Text(t("কাস্টম ব্যাকগ্রাউন্ড URL (mp4 / gif / image):"), color = Glass.textSecondary, fontSize = 12.sp)
                         Spacer(modifier = Modifier.height(4.dp))
                         BasicTextField(
                             value = customBgUrl,
@@ -1133,7 +1198,7 @@ fun SettingsSheet(
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text("অ্যানিমেশন স্পিড: ${String.format("%.1f", animSpeed)}x", color = Glass.textSecondary, fontSize = 12.sp)
+                        Text(t("অ্যানিমেশন স্পিড: {0}x", String.format("%.1f", animSpeed)), color = Glass.textSecondary, fontSize = 12.sp)
                         Slider(
                             value = animSpeed,
                             onValueChange = { viewModel.setAnimSpeed(it) },
@@ -1144,14 +1209,14 @@ fun SettingsSheet(
 
                     "providers" -> {
                         // AI PROVIDERS KEYS
-                        Text("এআই প্রোভাইডার ও নিজস্ব API Keys", fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
-                        Text("কী সেভ করলে অ্যাপ নিজেই প্রোভাইডারের ক্যাটালগ পড়ে যাচাই করে — সত্যি কানেক্টেড হলে সবুজ, নাহলে আসল কারণ লাল রঙে দেখাবে।", color = Glass.textMuted, fontSize = 11.5.sp)
+                        Text(t("এআই প্রোভাইডার ও নিজস্ব API Keys"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        Text(t("কী সেভ করলে অ্যাপ নিজেই প্রোভাইডারের ক্যাটালগ পড়ে যাচাই করে — সত্যি কানেক্টেড হলে সবুজ, নাহলে আসল কারণ লাল রঙে দেখাবে।"), color = Glass.textMuted, fontSize = 11.5.sp)
                         Spacer(modifier = Modifier.height(10.dp))
 
                         // The ZYRAXON line is the user's own provider. Its catalogue
                         // is public, so its ten models load before any key is set.
                         ProviderKeyRow(
-                            "ZYRAXON API Key (নিজস্ব লাইন)",
+                            t("ZYRAXON API Key (নিজস্ব লাইন)"),
                             editZyraxonKey, { editZyraxonKey = it },
                             providerStatus["zyraxon"], "zyraxon" in providerBusy
                         ) {
@@ -1159,7 +1224,7 @@ fun SettingsSheet(
                         }
 
                         ProviderKeyRow(
-                            "OpenCode API Key (ফ্রি কোটা)",
+                            t("OpenCode API Key (ফ্রি কোটা)"),
                             editOpenCodeKey, { editOpenCodeKey = it },
                             providerStatus["opencode"], "opencode" in providerBusy
                         ) {
@@ -1176,7 +1241,7 @@ fun SettingsSheet(
                             viewModel.saveProviderKey("anthropic", editClaudeKey)
                         }
 
-                        ProviderKeyRow("Groq (দ্রুততম Llama) API Key", editGroqKey, { editGroqKey = it }, providerStatus["groq"], "groq" in providerBusy) {
+                        ProviderKeyRow(t("Groq (দ্রুততম Llama) API Key"), editGroqKey, { editGroqKey = it }, providerStatus["groq"], "groq" in providerBusy) {
                             viewModel.saveProviderKey("groq", editGroqKey)
                         }
 
@@ -1195,8 +1260,8 @@ fun SettingsSheet(
 
                     "github" -> {
                         // GITHUB INTEGRATION
-                        Text("গিটহাব ইন্টিগ্রেশন (GitHub Access Token)", fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
-                        Text("ওয়েবসাইট ডিপ্লয় ও কোড সেভ করার জন্য আপনার নিজস্ব গিটহাব টোকেন ব্যবহার করুন।", color = Glass.textMuted, fontSize = 11.5.sp)
+                        Text(t("গিটহাব ইন্টিগ্রেশন (GitHub Access Token)"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        Text(t("ওয়েবসাইট ডিপ্লয় ও কোড সেভ করার জন্য আপনার নিজস্ব গিটহাব টোকেন ব্যবহার করুন।"), color = Glass.textMuted, fontSize = 11.5.sp)
                         Spacer(modifier = Modifier.height(10.dp))
 
                         BasicTextField(
@@ -1217,7 +1282,7 @@ fun SettingsSheet(
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("স্ট্যাটাস: $githubStatus", color = Glass.cyanFill, fontSize = 12.sp)
+                        Text(t("স্ট্যাটাস: {0}", githubStatus), color = Glass.cyanFill, fontSize = 12.sp)
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1226,26 +1291,26 @@ fun SettingsSheet(
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(containerColor = Glass.cyanFill)
                             ) {
-                                Text("টোকেন সেভ করুন", color = Glass.textOnAccent, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                Text(t("টোকেন সেভ করুন"), color = Glass.textOnAccent, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
                             OutlinedButton(
                                 onClick = { viewModel.clearGithubToken(); editGithubToken = "" },
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("টোকেন মুছুন", color = Color.Red, fontSize = 12.sp)
+                                Text(t("টোকেন মুছুন"), color = Color.Red, fontSize = 12.sp)
                             }
                         }
                     }
 
                     "perms" -> {
                         // SYSTEM PERMISSIONS
-                        Text("সিস্টেম পারমিশন ও ব্যাকগ্রাউন্ড সার্ভিস", fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        Text(t("সিস্টেম পারমিশন ও ব্যাকগ্রাউন্ড সার্ভিস"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(10.dp))
 
                         // Accessibility Bridge
                         PermissionRow(
-                            title = "অ্যাক্সেসিবিলিটি সার্ভিস (Touch Bridge)",
-                            desc = "স্ক্রিন রিড ও অটোমেশন কন্ট্রোল",
+                            title = t("অ্যাক্সেসিবিলিটি সার্ভিস (Touch Bridge)"),
+                            desc = t("স্ক্রিন রিড ও অটোমেশন কন্ট্রোল"),
                             granted = systemStatus.accessibilityConnected,
                             onAction = {
                                 val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
@@ -1257,8 +1322,8 @@ fun SettingsSheet(
 
                         // Microphone
                         PermissionRow(
-                            title = "মাইক্রোফোন পারমিশন",
-                            desc = "ভয়েস ইন্টারঅ্যাকশন ও লাইভ লিসেনিং",
+                            title = t("মাইক্রোফোন পারমিশন"),
+                            desc = t("ভয়েস ইন্টারঅ্যাকশন ও লাইভ লিসেনিং"),
                             granted = true,
                             onAction = {
                                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -1271,8 +1336,8 @@ fun SettingsSheet(
 
                         // Camera
                         PermissionRow(
-                            title = "ক্যামেরা পারমিশন",
-                            desc = "ভিজ্যুয়াল রিকগনিশন ও ছবি তোলা",
+                            title = t("ক্যামেরা পারমিশন"),
+                            desc = t("ভিজ্যুয়াল রিকগনিশন ও ছবি তোলা"),
                             granted = true,
                             onAction = {
                                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -1285,8 +1350,8 @@ fun SettingsSheet(
 
                         // KeepAlive Service
                         PermissionRow(
-                            title = "ব্যাকগ্রাউন্ড কিপ-অ্যালাইভ সার্ভিস",
-                            desc = "ব্যাকগ্রাউন্ডে সর্বদা সক্রিয় থাকে",
+                            title = t("ব্যাকগ্রাউন্ড কিপ-অ্যালাইভ সার্ভিস"),
+                            desc = t("ব্যাকগ্রাউন্ডে সর্বদা সক্রিয় থাকে"),
                             granted = systemStatus.keepAliveRunning,
                             onAction = {}
                         )
@@ -1294,8 +1359,8 @@ fun SettingsSheet(
 
                     "memory" -> {
                         // MEMORY MANAGEMENT (LOCAL SQLITE ROOM DB)
-                        Text("লোকাল এসকিউএল মেমরি (Persistent SQL Memory)", fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
-                        Text("ZYRAXON আপনার যেসব তথ্য লোকাল SQLite ডাটাবেজে স্থায়ীভাবে মনে রেখেছে:", color = Glass.textMuted, fontSize = 11.5.sp)
+                        Text(t("লোকাল এসকিউএল মেমরি (Persistent SQL Memory)"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        Text(t("ZYRAXON আপনার যেসব তথ্য লোকাল SQLite ডাটাবেজে স্থায়ীভাবে মনে রেখেছে:"), color = Glass.textMuted, fontSize = 11.5.sp)
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Box(
@@ -1306,13 +1371,13 @@ fun SettingsSheet(
                                 .border(1.dp, Glass.greenFill.copy(alpha = 0.28f), RoundedCornerShape(8.dp))
                                 .padding(horizontal = 10.dp, vertical = 6.dp)
                         ) {
-                            Text("💾 লোকাল এসকিউএল ডাটাবেজে সংরক্ষিত — অ্যাপ বন্ধ বা রিস্টার্ট করলেও চিরতরে স্মৃতি বজায় থাকে।", color = Glass.greenFill, fontSize = 11.sp)
+                            Text(t("💾 লোকাল এসকিউএল ডাটাবেজে সংরক্ষিত — অ্যাপ বন্ধ বা রিস্টার্ট করলেও চিরতরে স্মৃতি বজায় থাকে।"), color = Glass.greenFill, fontSize = 11.sp)
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
 
                         if (memories.isEmpty()) {
-                            Text("এখনো কোনো স্মৃতি সংরক্ষণ করা হয়নি। নিচে নতুন তথ্য সেভ করুন।", color = Glass.textMuted, fontSize = 12.sp)
+                            Text(t("এখনো কোনো স্মৃতি সংরক্ষণ করা হয়নি। নিচে নতুন তথ্য সেভ করুন।"), color = Glass.textMuted, fontSize = 12.sp)
                         } else {
                             memories.forEach { mem ->
                                 Row(
@@ -1340,7 +1405,7 @@ fun SettingsSheet(
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text("নতুন মেমরি সংরক্ষণ করুন:", color = Glass.textPrimary, fontSize = 12.sp)
+                        Text(t("নতুন মেমরি সংরক্ষণ করুন:"), color = Glass.textPrimary, fontSize = 12.sp)
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             BasicTextField(
@@ -1353,7 +1418,7 @@ fun SettingsSheet(
                                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 12.sp),
                                 cursorBrush = SolidColor(Glass.pinkFill),
                                 decorationBox = { inner ->
-                                    if (newMemKey.isEmpty()) Text("কী (Key)", color = Glass.textMuted, fontSize = 11.sp)
+                                    if (newMemKey.isEmpty()) Text(t("কী (Key)"), color = Glass.textMuted, fontSize = 11.sp)
                                     inner()
                                 }
                             )
@@ -1367,7 +1432,7 @@ fun SettingsSheet(
                                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 12.sp),
                                 cursorBrush = SolidColor(Glass.pinkFill),
                                 decorationBox = { inner ->
-                                    if (newMemVal.isEmpty()) Text("মান (Value)", color = Glass.textMuted, fontSize = 11.sp)
+                                    if (newMemVal.isEmpty()) Text(t("মান (Value)"), color = Glass.textMuted, fontSize = 11.sp)
                                     inner()
                                 }
                             )
@@ -1386,29 +1451,29 @@ fun SettingsSheet(
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(containerColor = Glass.pinkFill)
                             ) {
-                                Text("মেমরিতে সেভ করুন", color = Glass.textOnAccent, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                                Text(t("মেমরিতে সেভ করুন"), color = Glass.textOnAccent, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                             }
                             OutlinedButton(
                                 onClick = { viewModel.clearMemories() },
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("সব মেমরি মুছুন", color = Color.Red, fontSize = 11.5.sp)
+                                Text(t("সব মেমরি মুছুন"), color = Color.Red, fontSize = 11.5.sp)
                             }
                         }
                     }
 
                     "skills" -> {
                         // SKILLS & TOOLS GUIDE
-                        Text("ZYRAXON সিস্টেম ক্যাপাবিলিটি ও স্কিল গাইড", fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        Text(t("ZYRAXON সিস্টেম ক্যাপাবিলিটি ও স্কিল গাইড"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(8.dp))
 
                         listOf(
-                            "📱 ফেসবুক মেসেজিং" to "বলুন 'ফেসবুক খোলো' বা যেকোনো মেসেজ সেন্ড কমান্ড।",
-                            "🌐 ওয়েবসাইট নির্মাণ" to "বলুন 'ওয়েবসাইট বানাও' — ZYRAXON সম্পূর্ণ কোড তৈরি ও গিটহাবে পাবলিশ করবে।",
-                            "👁️ স্ক্রিন রিডার" to "অ্যাক্সেসিবিলিটি সার্ভিসের মাধ্যমে স্ক্রিনের সকল লেখা বিশ্লেষণ করে।",
-                            "🔦 টর্চলাইট কন্ট্রোল" to "বলুন 'টর্চ জ্বালাও' অথবা 'টর্চ বন্ধ করো'।",
-                            "📸 ক্যামেরা ও ছবি বিশ্লেষণ" to "বলুন 'ক্যামেরা চালু করো' কিংবা যেকোনো ফটো ক্যাপচার করুন।",
-                            "📶 ওয়াইফাই ও সেটিংস" to "ভয়েস কমান্ডের মাধ্যমে সরাসরি সিস্টেম সেটিংস দ্রুত ওপেন হয়।"
+                            t("📱 ফেসবুক মেসেজিং") to t("বলুন 'ফেসবুক খোলো' বা যেকোনো মেসেজ সেন্ড কমান্ড।"),
+                            t("🌐 ওয়েবসাইট নির্মাণ") to t("বলুন 'ওয়েবসাইট বানাও' — ZYRAXON সম্পূর্ণ কোড তৈরি ও গিটহাবে পাবলিশ করবে।"),
+                            t("👁️ স্ক্রিন রিডার") to t("অ্যাক্সেসিবিলিটি সার্ভিসের মাধ্যমে স্ক্রিনের সকল লেখা বিশ্লেষণ করে।"),
+                            t("🔦 টর্চলাইট কন্ট্রোল") to t("বলুন 'টর্চ জ্বালাও' অথবা 'টর্চ বন্ধ করো'।"),
+                            t("📸 ক্যামেরা ও ছবি বিশ্লেষণ") to t("বলুন 'ক্যামেরা চালু করো' কিংবা যেকোনো ফটো ক্যাপচার করুন।"),
+                            t("📶 ওয়াইফাই ও সেটিংস") to t("ভয়েস কমান্ডের মাধ্যমে সরাসরি সিস্টেম সেটিংস দ্রুত ওপেন হয়।")
                         ).forEach { (title, desc) ->
                             Column(
                                 modifier = Modifier
@@ -1442,7 +1507,7 @@ fun SettingsSheet(
                     fontSize = 11.sp
                 )
                 Text(
-                    text = "মেসেজ সংখ্যা: ${messages.size}",
+                    text = t("মেসেজ সংখ্যা: {0}", messages.size),
                     color = Glass.cyanFill,
                     fontSize = 11.sp
                 )
@@ -1485,7 +1550,7 @@ fun ProviderKeyRow(
                 cursorBrush = SolidColor(Glass.cyanFill),
                 decorationBox = { inner ->
                     if (currentValue.isEmpty()) {
-                        Text("কী বসান (API Key)", color = Glass.textMuted, fontSize = 11.sp)
+                        Text(t("কী বসান (API Key)"), color = Glass.textMuted, fontSize = 11.sp)
                     }
                     inner()
                 }
@@ -1503,7 +1568,7 @@ fun ProviderKeyRow(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text("সেভ", color = Glass.textOnAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(t("সেভ"), color = Glass.textOnAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -1511,7 +1576,7 @@ fun ProviderKeyRow(
             Spacer(modifier = Modifier.height(6.dp))
             // Green only when the provider itself answered; a failure shows its
             // own words in red, so "connected" is never a guess.
-            val ok = status.contains("পাওয়া গেছে") || status.contains("সংযুক্ত")
+            val ok = status.contains(t("পাওয়া গেছে")) || status.contains(t("সংযুক্ত"))
             Text(
                 text = status,
                 color = if (ok) Glass.greenFill else Glass.pinkFill,
@@ -1549,7 +1614,7 @@ fun PermissionRow(
             )
         ) {
             Text(
-                if (granted) "অনুমোদিত ✓" else "অনুমতি দিন",
+                if (granted) t("অনুমোদিত ✓") else t("অনুমতি দিন"),
                 color = if (granted) Glass.greenFill else Glass.textOnAccent,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold

@@ -105,6 +105,21 @@ taken from the server's own `Content-Type`.
 
 ---
 
+## Sixty languages
+
+Every string is written in Bengali in the source and the tables in
+`app/src/main/assets/i18n` map that Bengali text to each language, so a missing
+translation shows readable Bengali instead of a key like `settings_title`. The
+Settings sheet has a searchable language list; picking one swaps the table and
+rebuilds the screens in place, with no restart. The choice is remembered in
+`SharedPreferences` and restored before the first frame on the next launch, and
+the first launch follows the phone's own locale when a table exists for it.
+
+Adding a language means dropping one JSON file into that directory and one entry
+into `languages.json`; no Kotlin changes.
+
+---
+
 ## Getting it
 
 Download `ZYRAXON-v6.2.0.apk` from the
@@ -182,7 +197,7 @@ Output lands in `app/build/outputs/apk/release/`.
 gradle testDebugUnitTest --rerun-tasks
 ```
 
-110 tests, all passing:
+118 tests, all passing:
 
 | Suite | Tests | Covers |
 |---|---|---|
@@ -200,8 +215,9 @@ gradle testDebugUnitTest --rerun-tasks
 | `VisionPayloadTest` | 3 | Image payloads sent to the model |
 | `PackageRobolectricTest` | 1 | Robolectric wiring |
 | `SanityUnitTest` | 1 | Arithmetic sanity |
+| `LocalizationTest` | 8 | The real asset tables: every language answers every key, placeholders survive, and a missing entry falls back to Bengali |
 
-110 tests, 0 failures.
+118 tests, 0 failures.
 
 To confirm a tool actually shipped in a built APK:
 

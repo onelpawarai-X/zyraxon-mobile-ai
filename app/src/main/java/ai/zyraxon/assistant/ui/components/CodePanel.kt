@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.ui.theme.Glass
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -63,14 +64,14 @@ fun CodePanel(
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                text = title.ifBlank { "কোড" },
+                text = title.ifBlank { t("কোড") },
                 color = Glass.textPrimary,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = "বন্ধ",
+                text = t("বন্ধ"),
                 color = Glass.textSecondary,
                 fontSize = 12.sp,
                 modifier = Modifier
@@ -90,7 +91,7 @@ fun CodePanel(
                 .padding(horizontal = 14.dp, vertical = 4.dp)
         ) {
             Text(
-                text = code.ifBlank { "// ফাইল লেখা শুরু হলে এখানে দেখা যাবে" },
+                text = code.ifBlank { t("// ফাইল লেখা শুরু হলে এখানে দেখা যাবে") },
                 color = Glass.textSecondary,
                 fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace,

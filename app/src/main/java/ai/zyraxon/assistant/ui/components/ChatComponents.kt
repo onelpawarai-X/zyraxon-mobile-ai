@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.model.AppTab
 import ai.zyraxon.assistant.model.ChatMessage
 import ai.zyraxon.assistant.model.MessageRole
@@ -191,7 +192,7 @@ fun MessageBubble(
                         ) {
                             Icon(
                                 imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Rounded.VolumeUp,
-                                contentDescription = "শুনুন",
+                                contentDescription = t("শুনুন"),
                                 tint = Glass.cyanFill,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -202,7 +203,7 @@ fun MessageBubble(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.ContentCopy,
-                                contentDescription = "কপি করুন",
+                                contentDescription = t("কপি করুন"),
                                 tint = Glass.textSecondary,
                                 modifier = Modifier.size(14.dp)
                             )
@@ -220,14 +221,14 @@ fun QuickActionChips(
     modifier: Modifier = Modifier
 ) {
     val chips = listOf(
-        "ফেসবুক খোলো",
-        "ওয়েবসাইট বানাও",
-        "স্ক্রিন পড়ো",
-        "ক্যামেরা",
-        "টর্চ জ্বালাও",
-        "ইউটিউব",
-        "কল করো",
-        "ওয়াইফাই"
+        t("ফেসবুক খোলো"),
+        t("ওয়েবসাইট বানাও"),
+        t("স্ক্রিন পড়ো"),
+        t("ক্যামেরা"),
+        t("টর্চ জ্বালাও"),
+        t("ইউটিউব"),
+        t("কল করো"),
+        t("ওয়াইফাই")
     )
 
     Row(

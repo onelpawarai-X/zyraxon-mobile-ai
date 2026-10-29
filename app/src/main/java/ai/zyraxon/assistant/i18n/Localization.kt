@@ -1,9 +1,7 @@
 package ai.zyraxon.assistant.i18n
 
 import android.content.Context
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ProvidableCompositionLocal
-import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.mutableStateOf
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.Locale
@@ -17,9 +15,9 @@ import java.util.Locale
  * shows something readable instead of a key like `settings_title`, and it lets
  * a language be corrected by editing one JSON file.
  *
- * Compose screens read the table through [LocalStrings], so switching language
- * recomposes without restarting the app. Code outside composition (the
- * ViewModel, the engine) uses [Loc.t], which reads the same table.
+ * Compose screens read the table through [t], and the app root is keyed on
+ * [languageCode], so switching language rebuilds every screen without restarting
+ * the app. Code outside composition (the ViewModel, the engine) also calls [t].
  */
 object Loc {
 
@@ -139,17 +137,34 @@ data class Language(val code: String, val name: String, val flag: String)
 /**
  * The table the current composition should read.
  *
- * A composition local rather than a plain object read, so a language change
- * invalidates every composable that displayed a string. That is what makes the
- * switch instant instead of requiring a restart.
+ * A snapshot state rather than a plain field, so the app root can observe it
+ * and rebuild the whole tree when the language changes. Reading the table from
+ * inside a `remember { }` block or a click lambda would otherwise capture the
+ * old strings, which is why [t] is a plain function and the root is keyed on
+ * [languageCode].
  */
-val LocalStrings: ProvidableCompositionLocal<Map<String, String>> =
-    compositionLocalOf { emptyMap() }
+val languageCode = mutableStateOf(Loc.BENGALI)
 
-/** Translates inside a composable, subscribing it to language changes. */
-@Composable
-fun t(key: String): String = LocalStrings.current[key] ?: Loc.t(key)
+/**
+ * Switches the UI language, remembers it for next launch and asks the tree to
+ * rebuild.
+ */
+fun setLanguage(context: Context, code: String) {
+    Loc.load(context, code)
+    languageCode.value = code
+    context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        .edit().putString(PREFS_KEY, code).apply()
+}
 
-/** Translates with positional arguments inside a composable. */
-@Composable
-fun t(key: String, vararg args: Any?): String = Loc.fill(t(key), args)
+/** The language the user last chose, or null when they never chose one. */
+fun savedLanguage(context: Context): String? =
+    context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(PREFS_KEY, null)
+
+private const val PREFS = "zyraxon_ui"
+private const val PREFS_KEY = "language"
+
+/** Translates [key], falling back to the Bengali source when untranslated. */
+fun t(key: String): String = Loc.t(key)
+
+/** Translates [key] with positional arguments. */
+fun t(key: String, vararg args: Any?): String = Loc.t(key, *args)

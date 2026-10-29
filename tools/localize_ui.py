@@ -24,6 +24,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kotlin_strings as K  # noqa: E402
+import translate_ui as T  # noqa: E402  (owns the interpolation tokenizer)
 
 # Calls whose string argument is shown to the user, so it must be translated.
 # Anything else (a key, a tag, a URL) is left alone.
@@ -35,13 +36,23 @@ IMPORT_LINE = "import ai.zyraxon.assistant.i18n.t\n"
 IMPORT_ANCHOR = re.compile(r"^import ", re.MULTILINE)
 
 
+def _expression(source):
+    """The bare Kotlin expression behind a `$name` or `${ … }` interpolation."""
+    text = source.strip()
+    if text.startswith("$"):
+        text = text[1:]
+    if text.startswith("{") and text.endswith("}"):
+        text = text[1:-1]
+    return text.strip()
+
+
 def to_call(literal):
     """The `t(...)` call that replaces [literal]."""
-    key, exprs = K.tokenize(literal.value)
+    key, exprs = T.tokenize(literal.value)
     key_literal = '"' + K.encode(key) + '"'
     if not exprs:
         return "t(%s)" % key_literal
-    args = ", ".join(expr.strip() for expr in exprs)
+    args = ", ".join(_expression(expr) for expr in exprs)
     return "t(%s, %s)" % (key_literal, args)
 
 

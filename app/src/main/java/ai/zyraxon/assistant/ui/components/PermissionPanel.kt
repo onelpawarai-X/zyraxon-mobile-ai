@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.i18n.t
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -61,16 +62,16 @@ fun PermissionPanel(
 
     val rows = remember(refresh, accessibilityOn) {
         listOf(
-            PermissionRow("mic", "🎙️ মাইক্রোফোন", "কথা শোনার জন্য — মাইক সবসময় চালু থাকবে", Manifest.permission.RECORD_AUDIO),
-            PermissionRow("camera", "📷 ক্যামেরা", "ছবি ও ভিডিও দেখতে", Manifest.permission.CAMERA),
-            PermissionRow("location", "📍 লোকেশন", "ম্যাপ ও স্থানীয় তথ্যের জন্য", Manifest.permission.ACCESS_FINE_LOCATION),
-            PermissionRow("notifications", "🔔 নোটিফিকেশন", "ব্যাকগ্রাউন্ডে কাজ চললে জানাতে", Manifest.permission.POST_NOTIFICATIONS),
+            PermissionRow("mic", t("🎙️ মাইক্রোফোন"), t("কথা শোনার জন্য — মাইক সবসময় চালু থাকবে"), Manifest.permission.RECORD_AUDIO),
+            PermissionRow("camera", t("📷 ক্যামেরা"), t("ছবি ও ভিডিও দেখতে"), Manifest.permission.CAMERA),
+            PermissionRow("location", t("📍 লোকেশন"), t("ম্যাপ ও স্থানীয় তথ্যের জন্য"), Manifest.permission.ACCESS_FINE_LOCATION),
+            PermissionRow("notifications", t("🔔 নোটিফিকেশন"), t("ব্যাকগ্রাউন্ডে কাজ চললে জানাতে"), Manifest.permission.POST_NOTIFICATIONS),
             // Android 13+ needs the three media types separately; older versions
             // only understand READ_EXTERNAL_STORAGE. Declaring the right set for
             // the running version is what makes "read my photos" actually work.
             if (Build.VERSION.SDK_INT >= 33)
                 PermissionRow(
-                    "files", "📁 ফাইল ও মিডিয়া", "ছবি, ভিডিও, অডিও ও ডকুমেন্ট পড়তে",
+                    "files", t("📁 ফাইল ও মিডিয়া"), t("ছবি, ভিডিও, অডিও ও ডকুমেন্ট পড়তে"),
                     androidPermissions = listOf(
                         "android.permission.READ_MEDIA_IMAGES",
                         "android.permission.READ_MEDIA_VIDEO",
@@ -79,12 +80,12 @@ fun PermissionPanel(
                 )
             else
                 PermissionRow(
-                    "files", "📁 ফাইল ও মিডিয়া", "ছবি, ভিডিও ও ডকুমেন্ট পড়তে",
+                    "files", t("📁 ফাইল ও মিডিয়া"), t("ছবি, ভিডিও ও ডকুমেন্ট পড়তে"),
                     androidPermission = Manifest.permission.READ_EXTERNAL_STORAGE
                 ),
-            PermissionRow("overlay", "🪟 ওভারলে", "অন্য অ্যাপের উপরে কাজ দেখাতে", specialAction = "overlay"),
-            PermissionRow("accessibility", "♿ অ্যাক্সেসিবিলিটি", "স্ক্রিন দেখে ট্যাপ করতে — এটাই আসল অটোমেশন", specialAction = "accessibility"),
-            PermissionRow("battery", "🔋 ব্যাটারি অপটিমাইজেশন", "ব্যাকগ্রাউন্ডে থেমে না যাওয়ার জন্য", specialAction = "battery")
+            PermissionRow("overlay", t("🪟 ওভারলে"), t("অন্য অ্যাপের উপরে কাজ দেখাতে"), specialAction = "overlay"),
+            PermissionRow("accessibility", t("♿ অ্যাক্সেসিবিলিটি"), t("স্ক্রিন দেখে ট্যাপ করতে — এটাই আসল অটোমেশন"), specialAction = "accessibility"),
+            PermissionRow("battery", t("🔋 ব্যাটারি অপটিমাইজেশন"), t("ব্যাকগ্রাউন্ডে থেমে না যাওয়ার জন্য"), specialAction = "battery")
         )
     }
 
@@ -98,14 +99,14 @@ fun PermissionPanel(
             .padding(14.dp)
     ) {
         Text(
-            "পারমিশন",
+            t("পারমিশন"),
             color = Glass.textPrimary,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            "প্রতিটি লাইনে চাপ দিলে উপরে সিস্টেমের পপ-আপ আসবে — শুধু Allow চাপো, ভিতরে ঢুকতে হবে না।",
+            t("প্রতিটি লাইনে চাপ দিলে উপরে সিস্টেমের পপ-আপ আসবে — শুধু Allow চাপো, ভিতরে ঢুকতে হবে না।"),
             color = Glass.textSecondary,
             fontSize = 11.sp
         )
@@ -153,7 +154,7 @@ fun PermissionPanel(
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = if (granted) "✓ দেওয়া আছে" else "Allow",
+                        text = if (granted) t("✓ দেওয়া আছে") else "Allow",
                         color = if (granted) Glass.greenFill else Glass.pinkFill,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -177,24 +178,24 @@ fun PermissionPanel(
         ) {
             Column {
                 Text(
-                    "⚠️ গুগল প্লে প্রটেক্টর",
+                    t("⚠️ গুগল প্লে প্রটেক্টর"),
                     color = Glass.amber,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(3.dp))
                 Text(
-                    "প্লে প্রটেক্টর কোনো কাজ আটকে দিলে এআই নিজেই এই পেজে গিয়ে স্ক্রিন দেখে ধাপে ধাপে বন্ধ করে দিতে পারে — " +
-                        "কিন্তু সিদ্ধান্তটা তোমার, তাই সে আগে জিজ্ঞেস করবে। বন্ধ করলে ফোনে কোনো অ্যাপ চেক ছাড়াই চলবে। " +
-                        "নিজে করতে চাইলে: Play Store → প্রোফাইল ছবি → Play Protect → ⚙️ সেটিং → " +
-                        "\"Scan apps with Play Protect\" বন্ধ করো।",
+                    t("প্লে প্রটেক্টর কোনো কাজ আটকে দিলে এআই নিজেই এই পেজে গিয়ে স্ক্রিন দেখে ধাপে ধাপে বন্ধ করে দিতে পারে — ") +
+                        t("কিন্তু সিদ্ধান্তটা তোমার, তাই সে আগে জিজ্ঞেস করবে। বন্ধ করলে ফোনে কোনো অ্যাপ চেক ছাড়াই চলবে। ") +
+                        t("নিজে করতে চাইলে: Play Store → প্রোফাইল ছবি → Play Protect → ⚙️ সেটিং → ") +
+                        t("\"Scan apps with Play Protect\" বন্ধ করো।"),
                     color = Glass.amber,
                     fontSize = 10.5.sp,
                     lineHeight = 15.sp
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Play Store খুলে দাও →",
+                    t("Play Store খুলে দাও →"),
                     color = Glass.amber,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,

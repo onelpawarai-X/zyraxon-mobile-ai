@@ -21,3 +21,7 @@ debug.keystore
 *.jks
 *.keystore
 /dist
+
+# Python bytecode from the helper scripts under tools/
+__pycache__/
+*.pyc

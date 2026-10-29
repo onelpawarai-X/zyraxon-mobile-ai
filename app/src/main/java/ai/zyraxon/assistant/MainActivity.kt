@@ -1,5 +1,8 @@
 package ai.zyraxon.assistant
 
+import ai.zyraxon.assistant.i18n.Loc
+import ai.zyraxon.assistant.i18n.languageCode
+import ai.zyraxon.assistant.i18n.savedLanguage
 import ai.zyraxon.assistant.ui.ZyraxonApp
 import ai.zyraxon.assistant.ui.theme.ZyraxonTheme
 import ai.zyraxon.assistant.viewmodel.ZyraxonViewModel
@@ -13,12 +16,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.core.content.ContextCompat
 
 class MainActivity : ComponentActivity() {
 
     private val viewModel: ZyraxonViewModel by viewModels()
-
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -127,6 +131,14 @@ class MainActivity : ComponentActivity() {
         // Request audio & notifications permissions if needed
         checkAndRequestPermissions()
 
+        // The string tables ship as assets, so they are read once here and the
+        // last language the user picked is restored before the first frame.
+        val available = Loc.loadLanguages(this)
+        val initial = savedLanguage(this)?.takeIf { code -> available.any { it.code == code } }
+            ?: Loc.systemDefault(available)
+        Loc.load(this, initial)
+        languageCode.value = initial
+
         // Start background keepalive
         KeepAliveService.start(this)
 
@@ -137,8 +149,14 @@ class MainActivity : ComponentActivity() {
 
         // Set high-performance native Jetpack Compose UI
         setContent {
-            ZyraxonTheme {
-                ZyraxonApp(viewModel = viewModel)
+            // Reading the language state here and keying the tree on it means a
+            // language change rebuilds every screen with the new table, which a
+            // plain function call inside a `remember { }` could not do.
+            val language by languageCode
+            key(language) {
+                ZyraxonTheme {
+                    ZyraxonApp(viewModel = viewModel)
+                }
             }
         }
     }
