@@ -38,6 +38,7 @@ fun AuraWebView(
     size: Float,
     glow: Float,
     speed: Float,
+    auraStyle: String,
     onTap: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -71,9 +72,10 @@ fun AuraWebView(
 
     // Push the user's look-and-feel into the page. The four CSS variables are
     // what aura.html reads, so the design file itself stays untouched.
-    DisposableEffect(hue, size, glow, speed) {
+    DisposableEffect(hue, size, glow, speed, auraStyle) {
         webView.evaluateJavascript(
-            "window.ZyraxonAuraLook && window.ZyraxonAuraLook($hue, $size, $glow, $speed)",
+            "window.ZyraxonAuraLook && window.ZyraxonAuraLook($hue, $size, $glow, $speed);" +
+                "window.ZyraxonAuraStyle && window.ZyraxonAuraStyle('$auraStyle')",
             null
         )
         onDispose { }
@@ -126,6 +128,13 @@ internal const val AURA_BRIDGE_JS = """
     if (size) r.style.setProperty('--aura-size', String(size));
     if (glow) r.style.setProperty('--aura-glow', String(glow));
     if (speed) r.style.setProperty('--aura-speed', String(speed));
+  };
+
+  // Which of the designed looks is showing. The attribute is what the CSS above
+  // keys off, so switching is a single attribute write with no reload.
+  window.ZyraxonAuraStyle = function (style) {
+    if (!style) return;
+    document.documentElement.setAttribute('data-aura', String(style));
   };
 
   window.ZyraxonAuraState = function (listening, speaking, level) {

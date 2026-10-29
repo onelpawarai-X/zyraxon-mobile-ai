@@ -49,7 +49,7 @@ object ToolRegistry {
     private fun bool() = JSONObject().put("type", "boolean")
 
     /** Tools the UI layer owns; the engine routes these to the ViewModel. */
-    val UI_TOOLS = setOf("todo_write", "code_box", "files_panel")
+    val UI_TOOLS = setOf("todo_write", "code_box", "files_panel", "floating_bubble")
 
     private val defs: List<Pair<String, JSONObject>> by lazy { listOf(
         "mcp_connect" to JSONObject()
@@ -111,6 +111,10 @@ object ToolRegistry {
         "files_panel" to JSONObject()
             .put("description", "Open the live file browser so the user can see and open every file you created. Call it after writing files, or when the user asks to see the project.")
             .put("parameters", S(JSONObject().put("path", str()).put("action", str().put("enum", JSONArray(listOf("open", "close")))), emptyList())),
+        "floating_bubble" to JSONObject()
+            .put("description", "Turn the floating chat bubble on or off. When it is on a small orb sits over every other app and the user can talk to you without leaving what they are doing. Call it when the user asks for the bubble, or says they want to reach you from inside another app.")
+            .put("parameters", S(JSONObject()
+                .put("action", str().put("enum", JSONArray(listOf("on", "off")))), listOf("action"))),
         "todo_write" to JSONObject()
             .put("description", "Create or update the live task board. Call it after every tool result. Never give a final answer while a task is unfinished.")
             .put("parameters", S(JSONObject().put("todos", JSONObject().put("type", "array")
@@ -166,9 +170,15 @@ object ToolRegistry {
             .put("description", "Open the camera and take one photo, returning it as an image the model can look at. Use it when the user asks what you see or shows something to the phone.")
             .put("parameters", S(JSONObject().put("facing", str().put("enum", JSONArray(listOf("back", "front")))), emptyList())),
         "read_media" to JSONObject()
-            .put("description", "Read a picture, audio or video file from this phone and hand its bytes to the model. For a video you can also ask for one frame at a given second.")
-            .put("parameters", S(JSONObject().put("path", str()).put("kind", str().put("enum", JSONArray(listOf("image", "audio", "video", "auto"))))
-                .put("at_second", num()), listOf("path"))),
+            .put("description", "Read a picture, audio or video and hand its bytes to the model. Give either a local `path` or a remote `url` — a video URL is downloaded and decoded here, so the model reads it itself instead of you describing it. For a video ask for `at_second` to pick one moment, or `frames` to sample several across the whole clip. For audio you get duration, bitrate and channel count.")
+            .put("parameters", S(JSONObject()
+                .put("path", str().put("description", "Local file path"))
+                .put("url", str().put("description", "Remote http(s) URL to download and read"))
+                .put("kind", str().put("enum", JSONArray(listOf("image", "audio", "video", "auto"))))
+                .put("at_second", num().put("description", "For video: which second to grab"))
+                .put("frames", num().put("description", "For video: sample this many frames evenly across the clip (max 8)"))
+                .put("max_side", num().put("description", "Longest image side in pixels, default 1024")),
+                emptyList())),
         "read_url" to JSONObject()
             .put("description", "Fetch a web page as text. Use it for research and to verify a page really serves the content.")
             .put("parameters", S(JSONObject().put("url", str()).put("max_chars", num()), listOf("url"))),
@@ -488,49 +498,155 @@ object ToolRegistry {
     }
 
     /**
-     * Hands a local picture, audio clip or video frame to the model. Audio and
-     * video frames are described by what the platform can read, and a picture is
-     * returned inline as an image the model can see.
+     * Reads a picture, audio or video for the model.
+     *
+     * A remote `url` is downloaded first, because the user asked to point at a
+     * link and have the model process it itself rather than describe it. A video
+     * can yield one frame (`at_second`) or several sampled evenly across the
+     * clip (`frames`), which is what makes "read this video" real instead of a
+     * single still.
      */
     private fun readMedia(context: Context, args: JSONObject): JSONObject {
-        val path = resolve(context, args.optString("path"))
-        if (!path.exists()) return err("not-found", "ফাইল নেই: ${path.absolutePath}")
+        val url = args.optString("url").trim()
+        val path = args.optString("path").trim()
+        if (url.isBlank() && path.isBlank()) {
+            return err("no-source", "কোন ফাইল বা লিংক দেবে বলোনি")
+        }
+
+        val file: File
+        var downloaded = false
+        if (url.isNotBlank()) {
+            file = downloadToCache(context, url, args.optString("kind", "auto"))
+                ?: return err("download-failed", "লিংক থেকে ফাইল নামানো গেল না: $url")
+            downloaded = true
+        } else {
+            file = resolve(context, path)
+            if (!file.exists()) return err("not-found", "ফাইল নেই: ${file.absolutePath}")
+        }
 
         val kind = args.optString("kind", "auto").let {
-            if (it != "auto") it
-            else when (path.extension.lowercase()) {
-                "jpg", "jpeg", "png", "webp", "gif", "bmp" -> "image"
-                "mp3", "wav", "m4a", "aac", "ogg", "opus", "flac" -> "audio"
-                "mp4", "mkv", "webm", "mov", "3gp", "avi" -> "video"
-                else -> "image"
-            }
+            if (it != "auto") it else kindOf(file)
         }
+        val maxSide = args.optInt("max_side", 1024).coerceIn(256, 2048)
 
         return when (kind) {
             "image" -> {
-                val bitmap = android.graphics.BitmapFactory.decodeFile(path.absolutePath)
+                val bitmap = CameraCapture.decodeFile(file, maxSide)
                     ?: return err("decode-failed", "ছবিটি পড়া গেল না")
-                val dataUrl = CameraCapture.toDataUrl(bitmap)
-                ok("image_url=$dataUrl", "ছবি পড়া হয়েছে: ${path.name}")
+                val dataUrl = CameraCapture.toDataUrl(bitmap, maxSide)
+                val note = if (downloaded) " (লিংক থেকে নামানো)" else ""
+                ok("image_url=$dataUrl", "ছবি পড়া হয়েছে: ${file.name}$note")
                     .put("image_data_url", dataUrl)
             }
             "video" -> {
-                val atSecond = args.optDouble("at_second", 0.0).toLong()
-                val frame = CameraCapture.videoFrame(path, atSecond)
-                    ?: return err("frame-failed", "ভিডিওর ফ্রেম নেওয়া গেল না")
-                val dataUrl = CameraCapture.toDataUrl(frame)
+                val requested = args.optInt("frames", 0)
+                val times = if (requested > 1) {
+                    val duration = videoDurationSeconds(file)
+                    val count = requested.coerceIn(2, 8)
+                    (0 until count).map { i ->
+                        if (duration > 0) (duration * i / (count - 1)) else i.toLong()
+                    }
+                } else {
+                    listOf(args.optDouble("at_second", 0.0).toLong())
+                }
+
+                val frames = times.mapNotNull { second ->
+                    CameraCapture.videoFrame(file, second)?.let { second to it }
+                }
+                if (frames.isEmpty()) return err("frame-failed", "ভিডিওর ফ্রেম নেওয়া গেল না")
+
+                val dataUrls = frames.map { (_, bmp) -> CameraCapture.toDataUrl(bmp, maxSide) }
+                val note = if (downloaded) " (লিংক থেকে নামানো)" else ""
+                val at = frames.joinToString(", ") { "${it.first}s" }
                 ok(
-                    "video=${path.name} size=${path.length()} at=${atSecond}s\nimage_url=$dataUrl",
-                    "ভিডিওর ${atSecond} সেকেন্ডের ফ্রেম পড়া হয়েছে"
-                ).put("image_data_url", dataUrl)
+                    "video=${file.name} size=${file.length()} frames_at=$at\nimage_url=${dataUrls.first()}",
+                    "ভিডিওর ${frames.size}টি ফ্রেম পড়া হয়েছে ($at)$note"
+                ).put("image_data_url", dataUrls.first())
+                    .put("image_data_urls", JSONArray(dataUrls))
             }
             else -> {
                 val meta = android.media.MediaMetadataRetriever().use { r ->
-                    r.setDataSource(path.absolutePath)
-                    val ms = r.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)
-                    "duration_ms=${ms ?: "?"}"
+                    r.setDataSource(file.absolutePath)
+                    fun m(key: Int) = r.extractMetadata(key) ?: "?"
+                    "duration_ms=${m(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)} " +
+                        "bitrate=${m(android.media.MediaMetadataRetriever.METADATA_KEY_BITRATE)} " +
+                        "channels=${m(android.media.MediaMetadataRetriever.METADATA_KEY_NUM_TRACKS)} " +
+                        "mime=${m(android.media.MediaMetadataRetriever.METADATA_KEY_MIMETYPE)}"
                 }
-                ok("audio=${path.name} size=${path.length()} $meta", "অডিও ফাইল পড়া হয়েছে")
+                val note = if (downloaded) " (লিংক থেকে নামানো)" else ""
+                ok("audio=${file.name} size=${file.length()} $meta", "অডিও ফাইল পড়া হয়েছে$note")
+            }
+        }
+    }
+
+    private fun kindOf(file: File): String = when (file.extension.lowercase()) {
+        "jpg", "jpeg", "png", "webp", "gif", "bmp" -> "image"
+        "mp3", "wav", "m4a", "aac", "ogg", "opus", "flac" -> "audio"
+        "mp4", "mkv", "webm", "mov", "3gp", "avi" -> "video"
+        else -> "image"
+    }
+
+    /** Seconds of a video, or 0 when the retriever cannot say. */
+    private fun videoDurationSeconds(file: File): Long = try {
+        android.media.MediaMetadataRetriever().use { r ->
+            r.setDataSource(file.absolutePath)
+            val ms = r.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)
+                ?.toLongOrNull() ?: 0L
+            ms / 1000L
+        }
+    } catch (_: Exception) {
+        0L
+    }
+
+    /**
+     * Downloads a URL into the app cache and returns the file. The extension is
+     * taken from the URL, and from the content type when the URL has none, so the
+     * kind sniffing afterwards sees a real extension.
+     */
+    private fun downloadToCache(context: Context, url: String, kindHint: String): File? = try {
+        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+            requestMethod = "GET"
+            connectTimeout = 15000; readTimeout = 45000
+            instanceFollowRedirects = true
+            setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14)")
+        }
+        if (conn.responseCode !in 200..299) {
+            conn.disconnect()
+            null
+        } else {
+            val ext = extensionFor(url, conn.contentType, kindHint)
+            val dir = File(context.cacheDir, "zyraxon/media").apply { mkdirs() }
+            val out = File(dir, "media_" + System.currentTimeMillis() + "." + ext)
+            conn.inputStream.use { input -> out.outputStream().use { input.copyTo(it) } }
+            conn.disconnect()
+            if (out.length() == 0L) null else out
+        }
+    } catch (_: Exception) {
+        null
+    }
+
+    private fun extensionFor(url: String, contentType: String?, kindHint: String): String {
+        val fromUrl = url.substringBefore('?').substringAfterLast('/')
+            .substringAfterLast('.', "").lowercase()
+        if (fromUrl.length in 2..5 && fromUrl.all { it.isLetterOrDigit() }) return fromUrl
+        val type = contentType?.substringBefore(';')?.trim()?.lowercase().orEmpty()
+        return when {
+            type.contains("mp4") -> "mp4"
+            type.contains("webm") -> "webm"
+            type.contains("mpeg") && type.contains("video") -> "mpeg"
+            type.contains("quicktime") -> "mov"
+            type.contains("png") -> "png"
+            type.contains("webp") -> "webp"
+            type.contains("gif") -> "gif"
+            type.contains("jpeg") || type.contains("jpg") -> "jpg"
+            type.contains("mpeg") || type.contains("mp3") -> "mp3"
+            type.contains("wav") -> "wav"
+            type.contains("ogg") -> "ogg"
+            type.contains("m4a") || type.contains("aac") -> "m4a"
+            else -> when (kindHint) {
+                "video" -> "mp4"
+                "audio" -> "mp3"
+                else -> "jpg"
             }
         }
     }

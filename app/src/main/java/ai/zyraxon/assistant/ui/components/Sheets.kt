@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -529,6 +530,7 @@ fun SettingsSheet(
     val auraSize by viewModel.auraSize.collectAsState()
     val auraGlow by viewModel.auraGlow.collectAsState()
     val auraSpeed by viewModel.auraSpeed.collectAsState()
+    val auraStyle by viewModel.auraStyle.collectAsState()
     val panelAlpha by viewModel.panelAlpha.collectAsState()
     val ttsEnabled by viewModel.ttsEnabled.collectAsState()
     val ttsRate by viewModel.ttsRate.collectAsState()
@@ -863,6 +865,37 @@ fun SettingsSheet(
                         Text("ওরা ও ব্যাকগ্রাউন্ড অ্যানিমেশন", fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(8.dp))
 
+                        // Which designed aura is showing. Each one is a distinct
+                        // shape, not just a recolour.
+                        Text("ওরার স্টাইল", color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            listOf(
+                                "orb" to "ক্লাসিক",
+                                "twin" to "টুইন রিং",
+                                "vortex" to "ভর্টেক্স"
+                            ).forEach { (styleId, label) ->
+                                AuraStyleChip(styleId, label, auraStyle) { viewModel.setAuraStyle(it) }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            listOf(
+                                "bloom" to "ব্লুম",
+                                "helix" to "হেলিক্স",
+                                "core" to "কোর"
+                            ).forEach { (styleId, label) ->
+                                AuraStyleChip(styleId, label, auraStyle) { viewModel.setAuraStyle(it) }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+
                         // The aura itself. These four sliders drive the CSS
                         // variables inside aura.html, so the change is instant.
                         Text("ওরার রঙ", color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
@@ -939,6 +972,47 @@ fun SettingsSheet(
                             valueRange = 0.06f..0.6f,
                             colors = SliderDefaults.colors(thumbColor = Glass.cyanFill, activeTrackColor = Glass.cyanFill)
                         )
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Floating chat bubble over other apps. The row explains
+                        // that the system Allow dialog is all that is needed.
+                        val overlayOn by viewModel.overlayEnabled.collectAsState()
+                        Text("ফ্লোটিং চ্যাট বাবল", color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            "চালু করলে অন্য যেকোনো অ্যাপের উপরে ছোট একটি বাবল থাকবে। " +
+                                "ক্লিক করে লিখলে সোজা এই অ্যাসিস্ট্যান্টের কাছে যাবে — অ্যাপের ভিতরে ঢুকতে হবে না।",
+                            color = Glass.textMuted,
+                            fontSize = 11.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (overlayOn) Glass.greenFill.copy(alpha = 0.20f) else Glass.rowFill(0.30f))
+                                .clickable {
+                                    if (!overlayOn) {
+                                        val ok = android.provider.Settings.canDrawOverlays(context)
+                                        if (!ok) (context as? ai.zyraxon.assistant.MainActivity)
+                                            ?.openSpecialSetting("overlay")
+                                        else {
+                                            viewModel.setOverlayEnabled(true)
+                                            ai.zyraxon.assistant.OverlayChatService.start(context)
+                                        }
+                                    } else {
+                                        viewModel.setOverlayEnabled(false)
+                                        ai.zyraxon.assistant.OverlayChatService.stop(context)
+                                    }
+                                }
+                                .padding(12.dp)
+                        ) {
+                            Text(
+                                text = if (overlayOn) "● চালু আছে — বন্ধ করতে চাপো" else "○ চালু করো (উপর থেকে Allow দিতে হবে)",
+                                color = if (overlayOn) Glass.greenFill else Glass.textPrimary,
+                                fontSize = 12.5.sp
+                            )
+                        }
                         Spacer(modifier = Modifier.height(12.dp))
 
                         // The looping clip behind the aura. These are the clips
@@ -1451,3 +1525,43 @@ fun PermissionRow(
         }
     }
 }
+
+/**
+ * One aura style button. Kept here so the aura pane stays readable; the styles
+ * themselves live in assets/aura/aura.html. It is a RowScope extension because
+ * it fills an equal share of the row it is placed in.
+ */
+@Composable
+private fun RowScope.AuraStyleChip(
+    styleId: String,
+    label: String,
+    selected: String,
+    onPick: (String) -> Unit
+) {
+    val isSelected = selected == styleId
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .clip(RoundedCornerShape(10.dp))
+            .background(
+                if (isSelected) Glass.pinkFill.copy(alpha = 0.22f) else Glass.rowFill(0.30f)
+            )
+            .border(
+                1.dp,
+                if (isSelected) Glass.pinkFill else Glass.borderSoft,
+                RoundedCornerShape(10.dp)
+            )
+            .clickable { onPick(styleId) }
+            .padding(vertical = 9.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            color = if (isSelected) Glass.pinkFill else Glass.textSecondary,
+            fontSize = 10.5.sp,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1
+        )
+    }
+}
+

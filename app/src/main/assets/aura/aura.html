@@ -254,6 +254,111 @@ body {
     50% { transform: translateY(-3px) scale(1.025); }
 }
 
+/*
+ * Styles. `data-aura` on <html> picks one; the default ("orb") is the original
+ * design, untouched. Every style keeps an `.orb` element because the live
+ * listening/speaking pulse is applied to it.
+ */
+html[data-aura="twin"] .ring-one { width: 300px; height: 300px; }
+html[data-aura="twin"] .ring-two { width: 232px; height: 232px; }
+html[data-aura="twin"] .orb { width: 128px; height: 128px; }
+
+html[data-aura="core"] .ring,
+html[data-aura="core"] .atmosphere { display: none; }
+html[data-aura="core"] .orb { width: 150px; height: 150px; }
+
+.vortex,
+.bloom,
+.helix,
+.shock {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    display: none;
+}
+
+/* Vortex: a spiral of light pulled into the core. */
+html[data-aura="vortex"] .ring,
+html[data-aura="vortex"] .atmosphere { display: none; }
+html[data-aura="vortex"] .vortex {
+    display: block;
+    width: 290px;
+    height: 290px;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        hsl(var(--aura-hue) 100% 70% / 0.15) 40deg,
+        var(--pink) 90deg,
+        transparent 150deg,
+        transparent 200deg,
+        hsl(var(--aura-hue) 100% 85% / 0.9) 260deg,
+        transparent 330deg
+    );
+    -webkit-mask: radial-gradient(farthest-side, transparent 22%, #000 55%, transparent 92%);
+    mask: radial-gradient(farthest-side, transparent 22%, #000 55%, transparent 92%);
+    filter: blur(3px) drop-shadow(0 0 8px var(--pink));
+    animation: spin calc(4.5s / var(--aura-speed)) linear infinite;
+}
+html[data-aura="vortex"] .orb { width: 116px; height: 116px; }
+
+/* Bloom: petals of light opening and closing. */
+html[data-aura="bloom"] .ring { display: none; }
+html[data-aura="bloom"] .bloom {
+    display: block;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(
+        circle,
+        hsl(var(--aura-hue) 100% 88% / 0.55) 0%,
+        hsl(var(--aura-hue) 100% 62% / 0.28) 30%,
+        transparent 62%
+    );
+    filter: blur(10px);
+    animation: bloom-pulse calc(6s / var(--aura-speed)) ease-in-out infinite;
+}
+@keyframes bloom-pulse {
+    0%, 100% { transform: scale(0.82) rotate(0deg); opacity: 0.7; }
+    50% { transform: scale(1.14) rotate(24deg); opacity: 1; }
+}
+html[data-aura="bloom"] .orb { width: 132px; height: 132px; }
+
+/* Helix: two counter-rotating light bands. */
+html[data-aura="helix"] .atmosphere { display: none; }
+html[data-aura="helix"] .helix {
+    display: block;
+    width: 268px;
+    height: 268px;
+    background: conic-gradient(
+        from 45deg,
+        transparent 0deg,
+        hsl(var(--aura-hue) 100% 78% / 0.85) 30deg,
+        transparent 70deg,
+        transparent 180deg,
+        hsl(var(--aura-hue) 100% 66% / 0.85) 210deg,
+        transparent 250deg
+    );
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 4px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 4px));
+    filter: drop-shadow(0 0 6px var(--pink));
+    animation: spin calc(3.2s / var(--aura-speed)) linear infinite;
+}
+html[data-aura="helix"] .ring-one { animation-duration: calc(7s / var(--aura-speed)); }
+html[data-aura="helix"] .orb { width: 140px; height: 140px; }
+
+/* Core: one bright heart with shockwaves leaving it. */
+html[data-aura="core"] .shock {
+    display: block;
+    width: 172px;
+    height: 172px;
+    border: 2px solid hsl(var(--aura-hue) 100% 74% / 0.75);
+    animation: shock-out calc(3.4s / var(--aura-speed)) ease-out infinite;
+}
+html[data-aura="core"] .shock2 { animation-delay: calc(1.7s / var(--aura-speed)); }
+@keyframes shock-out {
+    0% { transform: scale(0.55); opacity: 0.9; }
+    100% { transform: scale(2.1); opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .ring,
     .orb,
@@ -268,6 +373,11 @@ body {
 <body>
     <main class="aura-stage" aria-label="Animated AI aura">
         <div class="atmosphere"></div>
+        <div class="bloom"></div>
+        <div class="vortex"></div>
+        <div class="helix"></div>
+        <div class="shock"></div>
+        <div class="shock shock2"></div>
         <div class="ring ring-two"></div>
         <div class="ring ring-one"></div>
         <div class="orb"></div>
