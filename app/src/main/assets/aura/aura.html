@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ZYRAXON Aura</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/*
+ * Everything the user can tune lives here. AuraWebView rewrites these four
+ * values from the saved settings; nothing else in the file needs to change.
+ */
+:root {
+    --aura-hue: 325;
+    --aura-size: 1;
+    --aura-glow: 1;
+    --aura-speed: 1;
+
+    --pink: hsl(var(--aura-hue) 100% 62%);
+    --light-pink: hsl(var(--aura-hue) 100% 81%);
+    --hot-pink: hsl(var(--aura-hue) 100% 52%);
+    --white-pink: hsl(var(--aura-hue) 100% 97%);
+}
+
+/*
+ * The stage is pinned to the middle of the WebView with absolute positioning
+ * rather than flex + 100vh. Android's WebView mis-measures 100vh whenever the
+ * system bars change, which is what pushed the aura off-centre and up under the
+ * toolbar.
+ */
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+    font-family: Arial, sans-serif;
+}
+
+.aura-stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 300px;
+    transform: translate(-50%, -50%) scale(var(--aura-size));
+    transform-origin: center center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    isolation: isolate;
+}
+
+/*
+ * The soft glow used to bleed past the WebView's edge and get sliced off by the
+ * hard boundary, which looked broken. It is now clipped to a circle that fades
+ * out well before the edge, so the light dies naturally instead of being cut.
+ */
+.atmosphere {
+    position: absolute;
+    width: 230px;
+    height: 230px;
+    border-radius: 50%;
+    background: var(--hot-pink);
+    filter: blur(48px);
+    opacity: calc(0.34 * var(--aura-glow));
+    -webkit-mask-image: radial-gradient(circle, #000 32%, rgba(0, 0, 0, 0.55) 62%, transparent 82%);
+    mask-image: radial-gradient(circle, #000 32%, rgba(0, 0, 0, 0.55) 62%, transparent 82%);
+    animation: atmosphere calc(5s / var(--aura-speed)) ease-in-out infinite alternate;
+}
+
+@keyframes atmosphere {
+    from {
+        transform: scale(0.86);
+        opacity: calc(0.22 * var(--aura-glow));
+    }
+    to {
+        transform: scale(1.1);
+        opacity: calc(0.4 * var(--aura-glow));
+    }
+}
+
+.ring {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.ring-one {
+    width: 258px;
+    height: 258px;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        transparent 35deg,
+        hsl(var(--aura-hue) 100% 66% / 0.12) 65deg,
+        hsl(var(--aura-hue) 100% 78%) 100deg,
+        #ffffff 112deg,
+        hsl(var(--aura-hue) 100% 58%) 126deg,
+        hsl(var(--aura-hue) 100% 58% / 0.08) 155deg,
+        transparent 200deg,
+        transparent 270deg,
+        var(--pink) 310deg,
+        transparent 345deg
+    );
+    -webkit-mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - 1.2px),
+        #000 calc(100% - 0.6px)
+    );
+    mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - 1.2px),
+        #000 calc(100% - 0.6px)
+    );
+    filter: drop-shadow(0 0 4px var(--pink));
+    animation: spin calc(12s / var(--aura-speed)) linear infinite;
+}
+
+.ring-two {
+    width: 288px;
+    height: 288px;
+    background: conic-gradient(
+        from 130deg,
+        transparent 0deg,
+        hsl(var(--aura-hue) 100% 74% / 0.12) 45deg,
+        hsl(var(--aura-hue) 100% 69%) 75deg,
+        var(--white-pink) 82deg,
+        var(--pink) 90deg,
+        transparent 120deg,
+        transparent 205deg,
+        var(--light-pink) 245deg,
+        hsl(var(--aura-hue) 100% 62% / 0.12) 270deg,
+        transparent 320deg
+    );
+    -webkit-mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - 1.1px),
+        #000 calc(100% - 0.55px)
+    );
+    mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - 1.1px),
+        #000 calc(100% - 0.55px)
+    );
+    filter: drop-shadow(0 0 3px var(--light-pink));
+    animation: spin-reverse calc(18s / var(--aura-speed)) linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+.orb {
+    position: relative;
+    width: 172px;
+    height: 172px;
+    border-radius: 50%;
+    overflow: hidden;
+    isolation: isolate;
+    background: radial-gradient(
+        circle at 35% 27%,
+        hsl(var(--aura-hue) 100% 97%) 0%,
+        hsl(var(--aura-hue) 100% 86%) 8%,
+        hsl(var(--aura-hue) 100% 70%) 23%,
+        hsl(var(--aura-hue) 100% 58%) 42%,
+        hsl(var(--aura-hue) 100% 35%) 68%,
+        hsl(var(--aura-hue) 100% 13%) 100%
+    );
+    box-shadow:
+        0 0 calc(15px * var(--aura-glow)) hsl(var(--aura-hue) 100% 62% / 0.95),
+        0 0 calc(38px * var(--aura-glow)) hsl(var(--aura-hue) 100% 52% / 0.7),
+        0 0 calc(72px * var(--aura-glow)) hsl(var(--aura-hue) 100% 52% / 0.3),
+        inset 0 0 18px hsl(var(--aura-hue) 100% 97% / 0.6),
+        inset -12px -15px 35px hsl(var(--aura-hue) 100% 11% / 0.65);
+    animation: orb-float calc(5s / var(--aura-speed)) ease-in-out infinite;
+}
+
+.orb::before {
+    content: "";
+    position: absolute;
+    inset: -45%;
+    border-radius: 42%;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        hsl(var(--aura-hue) 100% 97% / 0.95) 45deg,
+        hsl(var(--aura-hue) 100% 71% / 0.85) 85deg,
+        transparent 125deg,
+        hsl(var(--aura-hue) 100% 86% / 0.9) 180deg,
+        hsl(var(--aura-hue) 100% 56% / 0.7) 230deg,
+        transparent 280deg,
+        hsl(var(--aura-hue) 100% 97% / 0.8) 330deg,
+        transparent 360deg
+    );
+    filter: blur(13px);
+    mix-blend-mode: screen;
+    animation: inner-swirl calc(7s / var(--aura-speed)) linear infinite;
+}
+
+.orb::after {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background:
+        radial-gradient(
+            ellipse at 30% 30%,
+            hsl(var(--aura-hue) 100% 100% / 0.88) 0%,
+            hsl(var(--aura-hue) 100% 91% / 0.42) 9%,
+            transparent 29%
+        ),
+        conic-gradient(
+            from 180deg at 55% 50%,
+            transparent 0deg,
+            hsl(var(--aura-hue) 100% 78% / 0.2) 55deg,
+            hsl(var(--aura-hue) 100% 58% / 0.82) 105deg,
+            hsl(var(--aura-hue) 100% 92% / 0.85) 145deg,
+            hsl(var(--aura-hue) 100% 52% / 0.35) 205deg,
+            transparent 270deg,
+            hsl(var(--aura-hue) 100% 66% / 0.75) 320deg,
+            transparent 360deg
+        );
+    filter: blur(9px);
+    mix-blend-mode: screen;
+    animation: inner-swirl-reverse calc(9s / var(--aura-speed)) linear infinite;
+}
+
+@keyframes inner-swirl {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.12); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes inner-swirl-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+@keyframes orb-float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-3px) scale(1.025); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ring,
+    .orb,
+    .orb::before,
+    .orb::after,
+    .atmosphere {
+        animation-duration: 30s;
+    }
+}
+</style>
+</head>
+<body>
+    <main class="aura-stage" aria-label="Animated AI aura">
+        <div class="atmosphere"></div>
+        <div class="ring ring-two"></div>
+        <div class="ring ring-one"></div>
+        <div class="orb"></div>
+    </main>
+</body>
+</html>
