@@ -8,10 +8,10 @@ stopping in the middle.
 **Android only.** ZYRAXON ships as an APK. There is no desktop, Linux or macOS
 build of it, and none is planned.
 
-- **Package:** `com.aistudio.zyraxon.kxqmpz`
+- **Package:** `com.zyraxon.assistant`
 - **Version:** 6.2.0 (versionCode 10)
 - **Minimum Android:** 7.0 (API 24) · **Target:** API 36
-- **Language:** Kotlin + Jetpack Compose, 44 source files
+- **Language:** Kotlin + Jetpack Compose, 45 source files
 - **Tools:** 61 real tools · **Characters:** 6
 
 ---
@@ -182,7 +182,7 @@ Output lands in `app/build/outputs/apk/release/`.
 gradle testDebugUnitTest --rerun-tasks
 ```
 
-105 tests, all passing:
+110 tests, all passing:
 
 | Suite | Tests | Covers |
 |---|---|---|
@@ -198,10 +198,10 @@ gradle testDebugUnitTest --rerun-tasks
 | `SpeechSegmenterTest` | 6 | Splitting mixed Bangla/English text into language runs |
 | `VoiceSelectorTest` | 8 | Native voice selection and fallback |
 | `VisionPayloadTest` | 3 | Image payloads sent to the model |
-| `ExampleRobolectricTest` | 1 | Robolectric wiring |
-| `ExampleUnitTest` | 1 | Arithmetic sanity |
+| `PackageRobolectricTest` | 1 | Robolectric wiring |
+| `SanityUnitTest` | 1 | Arithmetic sanity |
 
-105 tests, 0 failures.
+110 tests, 0 failures.
 
 To confirm a tool actually shipped in a built APK:
 

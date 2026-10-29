@@ -56,7 +56,7 @@ Real result: ${digest}` }
             temperature: 0.4
           };
           const useProxy = global.ZY.store.get("proxy", "proxy") === "proxy" && !!(global.ZY.Platform && global.ZY.Platform.hasServer && global.ZY.Platform.hasServer());
-          const url = useProxy ? "/api/chat" : global.ZY.Platform && global.ZY.Platform.provider ? global.ZY.Platform.provider.chat : "https://zyraxonai.lovable.app/api/public/zyraxon/v1/chat/completions";
+          const url = useProxy ? "/api/chat" : global.ZY.Platform && global.ZY.Platform.provider ? global.ZY.Platform.provider.chat : "/api/public/zyraxon/v1/chat/completions";
           const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
           const j = await r.json();
           const line = (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content || "").trim();

@@ -184,16 +184,7 @@ class ZyraxonAiEngine(private val context: Context) {
         if (!saved.isNullOrBlank()) return saved.trim()
 
         if (provider == "gemini") {
-            try {
-                val env = System.getenv("GEMINI_API_KEY")
-                if (!env.isNullOrBlank()) return env.trim()
-            } catch (_: Exception) {}
-            try {
-                val clazz = Class.forName("com.example.BuildConfig")
-                val field = clazz.getField("GEMINI_API_KEY")
-                val key = field.get(null) as? String
-                if (!key.isNullOrBlank()) return key.trim()
-            } catch (_: Exception) {}
+            return System.getenv("GEMINI_API_KEY").orEmpty().trim()
         }
         return ""
     }

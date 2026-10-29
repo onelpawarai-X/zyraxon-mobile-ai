@@ -5,7 +5,7 @@
     const MUTATING = /^(write_file|edit_file|generate_file|delete_file|publish_website|github_publish|github_workflow|github_actions|open_app|launch_url|tap|swipe|type_text|press_key|clipboard_write|share|notify|download_file|memory_write|todo_write|call_answer|call_hangup|call_dial|call_auto_answer|run_shell)$/;
     const VERIFYING = /^(read_file|read_url|read_media|read_screen|screen_shot|list_dir|find_files|grep_files|list_apps|sys_info|platform_info|process_list|clipboard_read|memory_read|github_account|call_state|geolocate|web_search)$/;
     const SYSTEM_PROMPT_URL = "/knowledge/zyraxon-system-prompt.md";
-    const PROVIDER_CHAT_URL = global.ZY && global.ZY.Platform && global.ZY.Platform.provider ? global.ZY.Platform.provider.chat : "https://zyraxonai.lovable.app/api/public/zyraxon/v1/chat/completions";
+    const PROVIDER_CHAT_URL = global.ZY && global.ZY.Platform && global.ZY.Platform.provider ? global.ZY.Platform.provider.chat : "/api/public/zyraxon/v1/chat/completions";
     const Agent = {
       history: [],
       // OpenAI messages

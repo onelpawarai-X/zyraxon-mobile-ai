@@ -116,19 +116,7 @@ class MainActivity : ComponentActivity() {
         }
 
         @JvmStatic
-        fun getNativeGeminiKey(): String {
-            try {
-                val env = System.getenv("GEMINI_API_KEY")
-                if (!env.isNullOrBlank()) return env.trim()
-            } catch (_: Exception) {}
-            try {
-                val clazz = Class.forName("com.example.BuildConfig")
-                val field = clazz.getField("GEMINI_API_KEY")
-                val key = field.get(null) as? String
-                if (!key.isNullOrBlank()) return key.trim()
-            } catch (_: Exception) {}
-            return ""
-        }
+        fun getNativeGeminiKey(): String = System.getenv("GEMINI_API_KEY").orEmpty().trim()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

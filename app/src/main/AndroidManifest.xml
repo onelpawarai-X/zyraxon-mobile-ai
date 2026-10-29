@@ -58,7 +58,7 @@
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
 
         <activity
-            android:name=".ai.CameraActivity"
+            android:name="ai.zyraxon.assistant.ai.CameraActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 

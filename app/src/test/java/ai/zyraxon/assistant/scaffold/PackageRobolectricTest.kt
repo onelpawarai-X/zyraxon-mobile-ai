@@ -1,5 +1,6 @@
-package com.example
+package ai.zyraxon.assistant.scaffold
 
+import com.zyraxon.assistant.R
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
@@ -10,7 +11,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [36])
-class ExampleRobolectricTest {
+class PackageRobolectricTest {
 
   @Test
   fun `read string from context`() {
