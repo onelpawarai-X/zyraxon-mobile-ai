@@ -17,7 +17,9 @@ import java.util.Locale
  *
  * Compose screens read the table through [t], and the app root is keyed on
  * [languageCode], so switching language rebuilds every screen without restarting
- * the app. Code outside composition (the ViewModel, the engine) also calls [t].
+ * the app. [t] is deliberately a plain function rather than a composable: the UI
+ * also needs it inside `remember { }` blocks and click lambdas, where a
+ * composable cannot be called.
  */
 object Loc {
 
