@@ -199,6 +199,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     val audioLevel: StateFlow<Float> = voiceManager.audioLevel
 
     init {
+        // A server's sampling request runs on whatever model the user picked, so
+        // it is answered by the same brain as the chat rather than a fixed one.
+        aiEngine.samplingModelProvider = { _selectedModel.value }
+
         // Restore voice gender preference
         val savedGender = prefs.getString("voice_gender", "female") ?: "female"
         voiceManager.setVoiceGender(savedGender)
@@ -711,6 +715,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         when (name) {
             "mcp_connect" -> return runMcpConnect(args)
             "mcp_list" -> return runMcpList()
+            "mcp_resources" -> return runMcpResources(args)
+            "mcp_read_resource" -> return runMcpReadResource(args)
+            "mcp_prompts" -> return runMcpPrompts(args)
+            "mcp_prompt" -> return runMcpPrompt(args)
             "mcp_disconnect" -> {
                 val id = args.optString("server")
                 aiEngine.mcp.disconnect(id)
@@ -834,11 +842,83 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 .put("status", conn.status.name)
                 .put("tool_count", conn.toolCount)
                 .put("tools", org.json.JSONArray(conn.tools.map { it.qualifiedName }))
+                .put("resource_count", conn.resourceCount)
+                .put("prompt_count", conn.promptCount)
                 .apply { if (conn.error.isNotBlank()) put("error", conn.error) })
         }
         return JSONObject().put("ok", true)
-            .put("summary", "MCP: ${aiEngine.mcp.connectedCount()}টি কানেক্টেড, ${aiEngine.mcp.totalToolCount()}টি টুল")
+            .put("summary", "MCP: ${aiEngine.mcp.connectedCount()}টি কানেক্টেড, " +
+                "${aiEngine.mcp.totalToolCount()}টি টুল, " +
+                "${aiEngine.mcp.allResources().size}টি রিসোর্স, " +
+                "${aiEngine.mcp.allPrompts().size}টি প্রম্পট")
             .put("servers", arr)
+    }
+
+    /** Lists resources and templates, optionally for one server. */
+    private fun runMcpResources(args: JSONObject): JSONObject {
+        val only = args.optString("server").trim().lowercase()
+        val items = aiEngine.mcp.allResources().filter { only.isBlank() || it.serverId == only }
+        val arr = org.json.JSONArray()
+        for (r in items) {
+            arr.put(JSONObject()
+                .put("server", r.serverId)
+                .put("uri", r.uri)
+                .put("name", r.name)
+                .put("description", r.description)
+                .put("mime_type", r.mimeType)
+                .put("template", r.template))
+        }
+        val summary = if (items.isEmpty()) {
+            if (only.isBlank()) "কোনো MCP রিসোর্স নেই"
+            else "$only কোনো রিসোর্স দেয়নি"
+        } else "${items.size}টি রিসোর্স পাওয়া গেছে"
+        return JSONObject().put("ok", true).put("summary", summary).put("resources", arr)
+    }
+
+    private suspend fun runMcpReadResource(args: JSONObject): JSONObject {
+        var uri = args.optString("uri").trim()
+        if (uri.isBlank()) return JSONObject().put("ok", false).put("summary", "uri দরকার")
+        // Accept a bare uri too: find which server owns it when there is no prefix.
+        if (!uri.contains("__")) {
+            val ownerId = aiEngine.mcp.allResources().firstOrNull { it.uri == uri }?.serverId
+                ?: aiEngine.mcp.connections.value
+                    .firstOrNull { it.status == McpStatus.CONNECTED }?.server?.id
+            if (ownerId != null) uri = "${ownerId}__$uri"
+        }
+        val result = aiEngine.mcp.readResource(uri)
+        recordToolExecution("mcp_read_resource", result)
+        return result
+    }
+
+    /** Lists prompt templates and the arguments each one takes. */
+    private fun runMcpPrompts(args: JSONObject): JSONObject {
+        val only = args.optString("server").trim().lowercase()
+        val items = aiEngine.mcp.allPrompts().filter { only.isBlank() || it.serverId == only }
+        val arr = org.json.JSONArray()
+        for (p in items) {
+            arr.put(JSONObject()
+                .put("server", p.serverId)
+                .put("name", p.name)
+                .put("description", p.description)
+                .put("arguments", org.json.JSONArray(p.arguments.map { a ->
+                    JSONObject().put("name", a.name).put("description", a.description)
+                        .put("required", a.required)
+                })))
+        }
+        val summary = if (items.isEmpty()) "কোনো MCP প্রম্পট নেই" else "${items.size}টি প্রম্পট পাওয়া গেছে"
+        return JSONObject().put("ok", true).put("summary", summary).put("prompts", arr)
+    }
+
+    private suspend fun runMcpPrompt(args: JSONObject): JSONObject {
+        var name = args.optString("name").trim()
+        if (name.isBlank()) return JSONObject().put("ok", false).put("summary", "name দরকার")
+        if (!name.contains("__")) {
+            val owner = aiEngine.mcp.allPrompts().firstOrNull { it.name == name }
+            if (owner != null) name = "${owner.serverId}__$name"
+        }
+        val result = aiEngine.mcp.getPrompt(name, args.optJSONObject("arguments") ?: JSONObject())
+        recordToolExecution("mcp_prompt", result)
+        return result
     }
 
     fun closeCodePanel() {
