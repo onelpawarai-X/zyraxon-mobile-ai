@@ -9,10 +9,10 @@ stopping in the middle.
 build of it, and none is planned.
 
 - **Package:** `com.aistudio.zyraxon.kxqmpz`
-- **Version:** 3.0.0 (versionCode 3)
+- **Version:** 6.2.0 (versionCode 10)
 - **Minimum Android:** 7.0 (API 24) · **Target:** API 36
-- **Language:** Kotlin + Jetpack Compose, 34 source files
-- **Tools:** 49 real tools · **Characters:** 6
+- **Language:** Kotlin + Jetpack Compose, 44 source files
+- **Tools:** 61 real tools · **Characters:** 6
 
 ---
 
@@ -32,20 +32,21 @@ sentence is pronounced properly instead of being spelled out letter by letter.
 
 ### It has hands
 
-49 tools, wired to the real Android APIs:
+61 tools, wired to the real Android APIs:
 
 | Area | Tools |
 |---|---|
 | Task board | `todo_write` |
 | Apps and input | `open_app`, `list_apps`, `tap`, `tap_text`, `swipe`, `type_text`, `press_key` |
 | Seeing | `read_screen`, `screen_shot`, `look_camera`, `read_media` |
+| Media | `read_media` (local path or remote URL, multi-frame video, audio metadata) |
 | Files | `write_file`, `edit_file`, `read_file`, `list_dir`, `find_files`, `grep_files`, `delete_file` |
 | Web | `launch_url`, `verify_url`, `read_url`, `web_search`, `http_request`, `download_file` |
 | Publishing | `publish_github`, `publish_website`, `publish_cloudflare`, `serve_local` |
 | Phone | `notify`, `call_dial`, `call_answer`, `call_hangup`, `clipboard_read`, `clipboard_write`, `share`, `sys_info`, `process_list` |
 | Messaging | `channel_post` (Telegram, WhatsApp, Facebook, Messenger, Instagram, X, Gmail, SMS) |
 | System | `run_shell`, `request_permission`, `open_settings`, `voice_change`, `memory_write`, `memory_read` |
-| UI panels | `code_box`, `files_panel` |
+| UI panels | `code_box`, `files_panel`, `floating_bubble` |
 
 The assistant reads the screen as an actual image, taps by coordinate or by
 visible text, and types into whatever is focused. After each call the real result
@@ -80,17 +81,39 @@ switches the voice. Everything is stored in a local Room database, so memories,
 tasks and conversation history survive the app being closed — and are not lost if
 a cloud provider goes down.
 
+### The aura, and the bubble
+
+The aura is the animated orb behind the chat. It is drawn in a WebView so the
+motion costs almost no CPU, and every knob is real: hue, size, glow, speed, and
+the style. Six styles ship — orb (the original), twin, vortex, bloom, helix and
+core — and the settings pane switches between them live.
+
+`floating_bubble` puts a small orb over every other app, so the user can talk to
+the assistant without coming back to ZYRAXON. It needs the overlay permission,
+which only the user can grant; the tool opens the exact settings row and the
+permission panel's Allow button is one tap.
+
+### Reading media, local or remote
+
+`read_media` takes either a `path` (a file on the phone) or a `url` (anything on
+the web) and hands the result to the model's vision. A picture comes back as an
+image. A video comes back as several stills sampled across the whole clip —
+`frames` controls how many, up to 8 — so a long clip is understood rather than
+judged from one frame; `at_second` still pins one exact moment. Audio returns its
+real duration and size. A link with no file extension works too: the type is
+taken from the server's own `Content-Type`.
+
 ---
 
 ## Getting it
 
-Download `ZYRAXON-v3.0.0.apk` from the
+Download `ZYRAXON-v6.2.0.apk` from the
 [releases page](https://github.com/onelpawarai-X/zyraxon-mobile-ai/releases) and
 install it. Android will warn about installing from outside the Play Store;
 allow it.
 
-**SHA-256 of the v3.0.0 APK:**
-`05df5a4e836c65c7e89a1c6103f72e868e8108f87e9b89b8d506cca75955a91c`
+**SHA-256 of the v6.2.0 APK:**
+`895b2f84ff5d914de7fa142a6c8b9408875dbf36ee6d225a94c092c8f36cb337`
 
 Signed with certificate `CN=ZYRAXON, O=ZYRAXON, C=BD`.
 
@@ -159,16 +182,26 @@ Output lands in `app/build/outputs/apk/release/`.
 gradle testDebugUnitTest --rerun-tasks
 ```
 
-19 tests, all passing:
+105 tests, all passing:
 
 | Suite | Tests | Covers |
 |---|---|---|
 | `OpenAiSseTest` | 4 | The real SSE parser and the advertised tool set |
-| `VisionPayloadTest` | 3 | Image payloads sent to the model |
+| `MediaReadToolTest` | 7 | Real `read_media`: a file on disk, an HTTP-served JPEG by URL, a link with no extension, and the failures |
+| `ToolCatalogueTest` | 5 | Every advertised tool has the OpenAI function shape, unique names, and the bubble tool accepts on/off |
+| `ProviderCatalogTest` | 20 | Provider catalogue parsing and key verification |
+| `ModelLoadingNetworkTest` | 6 | Parallel model loading and per-provider failure reporting |
+| `McpClientTest` | 29 | MCP protocol: handshake, tools, resources, prompts, ping, logging, completion |
+| `OverlayChatServiceTest` | 3 | The floating bubble is really added to the WindowManager, removed on destroy, and the service stops itself when the overlay permission is missing |
+| `AuraHtmlTest` | 8 | The aura CSS: centring, glow masking, the hue variable, and every aura style being real |
 | `SpeechCleaningTest` | 4 | Markdown and emoji stripping before speaking |
 | `SpeechSegmenterTest` | 6 | Splitting mixed Bangla/English text into language runs |
+| `VoiceSelectorTest` | 8 | Native voice selection and fallback |
+| `VisionPayloadTest` | 3 | Image payloads sent to the model |
 | `ExampleRobolectricTest` | 1 | Robolectric wiring |
 | `ExampleUnitTest` | 1 | Arithmetic sanity |
+
+105 tests, 0 failures.
 
 To confirm a tool actually shipped in a built APK:
 
@@ -190,7 +223,7 @@ app/src/main/java/ai/zyraxon/assistant/
 │   ├── ZyraxonAiEngine.kt       Streaming agentic loop, personas, system prompt
 │   ├── OpenAiSse.kt             SSE parsing, tool-call fragment merging
 │   ├── StreamedTurn.kt          One streamed reply, merged
-│   ├── ToolRegistry.kt          49 tool schemas and their implementations
+│   ├── ToolRegistry.kt          61 tool schemas and their implementations
 │   ├── CameraActivity.kt        In-app camera capture
 │   └── CameraCapture.kt         Capture plumbing
 ├── voice/

@@ -75,4 +75,42 @@ class AuraHtmlTest {
     fun respectsReducedMotion() {
         assertTrue(html.contains("prefers-reduced-motion"))
     }
+
+    /**
+     * Every aura style the settings pane offers must be a real style here.
+     * A chip that writes a name no rule matches would look like the app ignored
+     * the tap, which is exactly the kind of thing the user calls "fake".
+     */
+    @Test
+    fun everyOfferedStyleHasARealRule() {
+        listOf("twin", "vortex", "bloom", "helix", "core").forEach { style ->
+            assertTrue(
+                "no CSS rule for aura style '$style'",
+                html.contains("""[data-aura="$style"]""")
+            )
+        }
+    }
+
+    /** The elements the style rules address must exist in the markup. */
+    @Test
+    fun styleElementsArePresentInTheMarkup() {
+        listOf("vortex", "bloom", "helix", "shock").forEach { cls ->
+            assertTrue(
+                "markup has no element for '$cls'",
+                Regex("""class="[^"]*\b$cls\b""").containsMatchIn(html)
+            )
+        }
+    }
+
+    /** The default look must stay the untouched original. */
+    @Test
+    fun theOriginalLookIsStillTheDefault() {
+        assertTrue("orb must still exist", html.contains("class=\"orb\""))
+        assertTrue(html.contains("ring ring-one"))
+        assertTrue(html.contains("ring ring-two"))
+        assertFalse(
+            "the style must be chosen at runtime, not baked into the markup",
+            Regex("""<html[^>]*data-aura=""").containsMatchIn(html)
+        )
+    }
 }

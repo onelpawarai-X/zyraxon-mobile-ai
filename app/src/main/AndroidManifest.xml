@@ -91,6 +91,12 @@
             android:name="ai.zyraxon.assistant.KeepAliveService"
             android:exported="false" />
 
+        <!-- The floating chat bubble the user asked for. It needs the overlay
+             permission, which the settings row requests. -->
+        <service
+            android:name="ai.zyraxon.assistant.OverlayChatService"
+            android:exported="false" />
+
         <!-- Lets a shared image be attached to a channel post without exposing
              the app's private storage. -->
         <provider

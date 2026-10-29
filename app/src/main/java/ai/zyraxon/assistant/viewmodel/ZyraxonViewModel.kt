@@ -144,6 +144,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private val _auraGlow = MutableStateFlow(prefs.getFloat("aura_glow", 1.0f))
     val auraGlow: StateFlow<Float> = _auraGlow.asStateFlow()
 
+    // Which designed aura is showing. Stored by name so a new style can be added
+    // without invalidating what the user already picked.
+    private val _auraStyle = MutableStateFlow(prefs.getString("aura_style", "orb") ?: "orb")
+    val auraStyle: StateFlow<String> = _auraStyle.asStateFlow()
+
     private val _auraSpeed = MutableStateFlow(prefs.getFloat("aura_speed", 1.0f))
     val auraSpeed: StateFlow<Float> = _auraSpeed.asStateFlow()
 
@@ -186,6 +191,15 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     // instead of starting a second one, so the assistant never stops mid-task.
     private val _isGenerating = MutableStateFlow(false)
     val isGenerating: StateFlow<Boolean> = _isGenerating.asStateFlow()
+
+    // The floating chat bubble. Off by default: it needs the overlay permission,
+    // which only the user can grant.
+    private val _overlayEnabled = MutableStateFlow(prefs.getBoolean("overlay_enabled", false))
+    val overlayEnabled: StateFlow<Boolean> = _overlayEnabled.asStateFlow()
+
+    private val _overlayExpanded = MutableStateFlow(false)
+    val overlayExpanded: StateFlow<Boolean> = _overlayExpanded.asStateFlow()
+
     private val pendingInjections = java.util.concurrent.ConcurrentLinkedQueue<String>()
 
     private val _codeBoxOpen = MutableStateFlow(false)
@@ -206,6 +220,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     val audioLevel: StateFlow<Float> = voiceManager.audioLevel
 
     init {
+        active = this
         // A server's sampling request runs on whatever model the user picked, so
         // it is answered by the same brain as the chat rather than a fixed one.
         aiEngine.samplingModelProvider = { _selectedModel.value }
@@ -445,6 +460,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun setAuraHue(hue: Int) {
         _auraHue.value = hue.coerceIn(0, 360)
         prefs.edit().putInt("aura_hue", _auraHue.value).apply()
+    }
+
+    fun setAuraStyle(style: String) {
+        val allowed = setOf("orb", "twin", "vortex", "bloom", "helix", "core")
+        if (style !in allowed) return
+        _auraStyle.value = style
+        prefs.edit().putString("aura_style", style).apply()
     }
 
     fun setAuraSize(size: Float) {
@@ -801,6 +823,25 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 _activeTab.value = AppTab.TOOLS
                 _filesPanelOpen.value = args.optString("action", "open") != "close"
                 return JSONObject().put("ok", true).put("summary", "ফাইল প্যানেল খোলা হয়েছে")
+            }
+            "floating_bubble" -> {
+                val want = args.optString("action", "on") != "off"
+                val ctx = getApplication<Application>()
+                if (want && !android.provider.Settings.canDrawOverlays(ctx)) {
+                    // The overlay permission can only be granted by the user in
+                    // Settings, so point them at the exact row instead of failing.
+                    ai.zyraxon.assistant.MainActivity.instance?.openSpecialSetting("overlay")
+                    return JSONObject()
+                        .put("ok", false)
+                        .put("error", "overlay-permission")
+                        .put("summary", "ওভারলে অনুমতি দরকার — সেটিংস খুলে দিয়েছি, উপরে Allow চাপো")
+                }
+                setOverlayEnabled(want)
+                if (want) ai.zyraxon.assistant.OverlayChatService.start(ctx)
+                else ai.zyraxon.assistant.OverlayChatService.stop(ctx)
+                return JSONObject()
+                    .put("ok", true)
+                    .put("summary", if (want) "ফ্লোটিং বাবল চালু হয়েছে" else "ফ্লোটিং বাবল বন্ধ হয়েছে")
             }
         }
 
@@ -1182,10 +1223,32 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         _systemStatus.value = _systemStatus.value.copy(accessibilityConnected = connected)
     }
 
+    fun setOverlayEnabled(enabled: Boolean) {
+        _overlayEnabled.value = enabled
+        prefs.edit().putBoolean("overlay_enabled", enabled).apply()
+        if (!enabled) _overlayExpanded.value = false
+    }
+
+    fun setOverlayExpanded(expanded: Boolean) {
+        _overlayExpanded.value = expanded
+    }
+
     override fun onCleared() {
         super.onCleared()
+        if (active === this) active = null
         // Every MCP server holds an SSE channel and a thread. Releasing them here
         // is what stops them outliving the screen.
         runCatching { aiEngine.mcp.close() }
+    }
+
+    companion object {
+        /**
+         * The floating bubble lives in a service and has no ViewModel of its own,
+         * so it reaches the running one through here. Null whenever no screen is
+         * alive, which the caller must handle.
+         */
+        @Volatile
+        var active: ZyraxonViewModel? = null
+            private set
     }
 }

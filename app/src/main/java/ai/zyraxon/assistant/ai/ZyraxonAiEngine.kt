@@ -635,9 +635,25 @@ class ZyraxonAiEngine(private val context: Context) {
                 // A picture the tool just produced joins the conversation now, so
                 // the very next round can look at it instead of waiting for the
                 // user to speak again.
-                outcome.optString("image_data_url").takeIf { it.isNotBlank() }?.let { shot ->
-                    messages.put(JSONObject().put("role", "user")
-                        .put("content", userContent("এইমাত্র $name টুল থেকে পাওয়া ছবিটি দেখো।", shot)))
+                val shots = mutableListOf<String>()
+                outcome.optString("image_data_url").takeIf { it.isNotBlank() }?.let { shots.add(it) }
+                outcome.optJSONArray("image_data_urls")?.let { arr ->
+                    for (k in 0 until arr.length()) {
+                        arr.optString(k).takeIf { it.isNotBlank() && it !in shots }?.let { shots.add(it) }
+                    }
+                }
+                if (shots.isNotEmpty()) {
+                    // Every sampled video frame is attached, so a clip is read as a
+                    // sequence of moments rather than a single still.
+                    val parts = JSONArray().apply {
+                        put(JSONObject().put("type", "text")
+                            .put("text", "এইমাত্র $name টুল থেকে পাওয়া ${shots.size}টি ছবি/ফ্রেম দেখো।"))
+                        for (shot in shots.take(8)) {
+                            put(JSONObject().put("type", "image_url")
+                                .put("image_url", JSONObject().put("url", shot)))
+                        }
+                    }
+                    messages.put(JSONObject().put("role", "user").put("content", parts))
                 }
             }
         }
