@@ -40,7 +40,8 @@ data class AiModel(
 enum class AppTab(val title: String) {
     CHAT("চ্যাট"),
     TASKS("টাস্ক"),
-    TOOLS("টুল")
+    TOOLS("টুল"),
+    MCP("MCP")
 }
 
 enum class BgAnimationMode(val displayName: String) {

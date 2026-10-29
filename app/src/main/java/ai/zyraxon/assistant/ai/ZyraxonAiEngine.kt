@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ai
 
+import ai.zyraxon.assistant.mcp.McpManager
 import ai.zyraxon.assistant.model.AiModel
 import ai.zyraxon.assistant.model.ChatMessage
 import ai.zyraxon.assistant.model.MessageRole
@@ -30,6 +31,12 @@ import java.util.concurrent.TimeUnit
 class ZyraxonAiEngine(private val context: Context) {
 
     private val prefs = context.getSharedPreferences("zyraxon_ai_prefs", Context.MODE_PRIVATE)
+
+    /**
+     * Connected MCP servers contribute their tools to every turn. The engine owns
+     * the manager so the injection cannot be forgotten at a call site.
+     */
+    val mcp: McpManager = McpManager(context)
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -394,15 +401,48 @@ class ZyraxonAiEngine(private val context: Context) {
     private fun buildComprehensiveSystemPrompt(
         persona: Persona,
         memoriesContext: String,
-        screenContext: String
+        screenContext: String,
+        mcpTools: List<ai.zyraxon.assistant.mcp.McpTool> = emptyList()
     ): String = buildString {
         append(bundledContract)
         append("\n\n---\n\n## Platform (the truth about where you are running)\n")
         append("- Device: Android phone (APK), Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}), ${Build.MANUFACTURER} ${Build.MODEL}\n")
         append("- This app is Android only. It ships as an APK and nothing else — never propose, plan or build a desktop (Windows EXE, Linux, AppImage, DMG) version of ZYRAXON itself.\n")
         append("- Shell: `sh -c` inside the app sandbox. `run_shell` runs there and returns real stdout/stderr.\n")
-        append("- Tools available this turn: ").append(ToolRegistry.names().joinToString(", ")).append("\n")
+        append("- Tools available this turn: ").append(ToolRegistry.names().joinToString(", "))
+        if (mcpTools.isNotEmpty()) {
+            append(", ").append(mcpTools.joinToString(", ") { it.qualifiedName })
+        }
+        append("\n")
         append("- Call tools through the function-calling interface, never as text.\n")
+
+        // MCP: state which servers are live and what each one can do, so the model
+        // picks the right one instead of guessing at a tool name.
+        append("\n## MCP servers (connected — their tools are already in your tool list)\n")
+        if (mcpTools.isEmpty()) {
+            append("- এই মুহূর্তে কোনো MCP সার্ভার কানেক্টেড নেই।\n")
+        } else {
+            for ((serverId, tools) in mcpTools.groupBy { it.serverId }) {
+                val name = tools.first().serverName
+                append("- **").append(name).append("** (`").append(serverId)
+                    .append("__` প্রিফিক্স): ")
+                    .append(tools.joinToString(", ") { it.name })
+                    .append("\n")
+            }
+        }
+        append("\n## MCP servers (not connected)\n")
+        val allMcp = mcp.servers()
+        val connectedIds = mcpTools.map { it.serverId }.toSet()
+        val offline = allMcp.filterNot { it.id in connectedIds }
+        if (offline.isEmpty()) {
+            append("- সব MCP সার্ভার কানেক্টেড।\n")
+        } else {
+            for (s in offline) {
+                append("- ").append(s.name).append(" (`").append(s.id).append("`) — ")
+                    .append(s.tagline).append(". কানেক্ট করতে বললে ")
+                    .append("`mcp_connect` টুল কল করো।\n")
+            }
+        }
 
         if (screenContext.isNotBlank()) {
             append("\n## The screen right now (automatic — do not tool-call to find out where the user is)\n")
@@ -436,8 +476,14 @@ class ZyraxonAiEngine(private val context: Context) {
         },
         drainInjections: () -> List<String> = { emptyList() }
     ): Flow<String> = channelFlow {
-        val systemPrompt = buildComprehensiveSystemPrompt(persona, memoriesContext, screenContext)
-        val tools = ToolRegistry.schemas()
+        val mcpTools = mcp.allTools()
+        val systemPrompt = buildComprehensiveSystemPrompt(persona, memoriesContext, screenContext, mcpTools)
+        // Built-in device tools first, then every tool a connected MCP server
+        // advertised. They are offered on every turn, so the model reaches for
+        // them without the user having to mention them.
+        val tools = ToolRegistry.schemas().apply {
+            for (tool in mcpTools) put(tool.toOpenAiSchema())
+        }
 
         val messages = JSONArray().apply {
             put(JSONObject().put("role", "system").put("content", systemPrompt))

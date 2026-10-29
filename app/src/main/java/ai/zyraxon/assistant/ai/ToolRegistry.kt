@@ -52,6 +52,19 @@ object ToolRegistry {
     val UI_TOOLS = setOf("todo_write", "code_box", "files_panel")
 
     private val defs: List<Pair<String, JSONObject>> by lazy { listOf(
+        "mcp_connect" to JSONObject()
+            .put("description", "Connect an MCP server so its tools become yours. Call it when the user asks to connect Canva, Cloudflare, Supabase or GitHub, or a server of their own. For canva/cloudflare/supabase this opens the browser where the user taps Allow and the connection finishes by itself. For github pass the personal access token in `token`. After connecting, that server's tools appear in your tool list on the next turn.")
+            .put("parameters", S(JSONObject()
+                .put("server", str().put("description", "canva | cloudflare | supabase | github | custom"))
+                .put("url", str().put("description", "The MCP endpoint URL, only when server is custom"))
+                .put("name", str().put("description", "A label for a custom server"))
+                .put("token", str().put("description", "Access token, required for github")), listOf("server"))),
+        "mcp_list" to JSONObject()
+            .put("description", "List every MCP server, whether it is connected, and exactly which tools each connected one offers. Call it before using an MCP tool so you use a name that really exists.")
+            .put("parameters", S(JSONObject(), emptyList())),
+        "mcp_disconnect" to JSONObject()
+            .put("description", "Disconnect an MCP server and forget its token. Call it when the user asks to remove or disconnect a server.")
+            .put("parameters", S(JSONObject().put("server", str()), listOf("server"))),
         "code_box" to JSONObject()
             .put("description", "Show or close the live code panel on screen. Open it before writing a file so the user watches it being written, then close it when the file is done.")
             .put("parameters", S(JSONObject()

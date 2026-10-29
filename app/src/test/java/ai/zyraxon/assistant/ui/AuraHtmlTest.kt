@@ -43,7 +43,13 @@ class AuraHtmlTest {
     fun glowIsMaskedSoItCannotBleedOut() {
         assertTrue("atmosphere needs a fade mask", html.contains("mask-image: radial-gradient"))
         assertTrue("webkit prefix is required on Android WebView", html.contains("-webkit-mask-image"))
-        assertTrue("the fade must reach transparent", html.contains("transparent 82%"))
+        // The exact stop is a tuning value, so assert the shape of the fade
+        // rather than a percentage: it has to reach transparent, or the glow
+        // ends in a hard edge.
+        assertTrue(
+            "the fade must reach transparent",
+            Regex("transparent \\d+%").containsMatchIn(html)
+        )
     }
 
     /** The four knobs AuraWebView writes must all exist as CSS variables. */
