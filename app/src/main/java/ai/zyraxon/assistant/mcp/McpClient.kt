@@ -125,6 +125,14 @@ class McpClient(
     fun supportsPromptsListChanged(): Boolean =
         serverCapabilities.optJSONObject("prompts")?.optBoolean("listChanged") == true
 
+    /** `resources/subscribe` is optional and advertised per server. */
+    val supportsResourceSubscribe: Boolean
+        get() = serverCapabilities.optJSONObject("resources")?.optBoolean("subscribe") == true
+
+    /** `completion/complete` is optional and advertised per server. */
+    val supportsCompletion: Boolean
+        get() = serverCapabilities.optJSONObject("completions") != null
+
     // ---- session ------------------------------------------------------------
 
     /** Runs `initialize` once and then reuses the session forever. */
@@ -322,6 +330,30 @@ class McpClient(
 
     suspend fun getPrompt(name: String, args: JSONObject): JSONObject =
         call("prompts/get", JSONObject().put("name", name).put("arguments", args))
+
+    /** Keeps the session warm; the spec allows a client to ping at any time. */
+    suspend fun ping(): JSONObject = call("ping", JSONObject())
+
+    /** Asks the server to push `notifications/resources/updated` for this uri. */
+    suspend fun subscribeResource(uri: String): JSONObject =
+        call("resources/subscribe", JSONObject().put("uri", uri))
+
+    suspend fun unsubscribeResource(uri: String): JSONObject =
+        call("resources/unsubscribe", JSONObject().put("uri", uri))
+
+    /**
+     * Asks the server to autocomplete a prompt argument or a resource uri. The
+     * ref names which of the two is being completed, as the spec requires.
+     */
+    suspend fun complete(refType: String, refName: String, argument: JSONObject): JSONObject =
+        call("completion/complete", JSONObject()
+            .put("ref", JSONObject().put("type", refType).put(
+                if (refType == "ref/prompt") "name" else "uri", refName))
+            .put("argument", argument))
+
+    /** Tells the server how chatty to be. Levels are the spec's syslog names. */
+    suspend fun setLogLevel(level: String): JSONObject =
+        call("logging/setLevel", JSONObject().put("level", level))
 
     /** Runs one tool. The raw MCP result is returned so the caller can reshape it. */
     suspend fun callTool(name: String, args: JSONObject): JSONObject =

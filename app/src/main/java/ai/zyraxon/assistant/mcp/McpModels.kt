@@ -110,19 +110,26 @@ object McpCatalog {
 
     fun find(id: String): McpServer? = builtIn.firstOrNull { it.id == id }
 
+    /**
+     * Builds a server id from a label. Runs of non-alphanumerics collapse to a
+     * single `_`, because `__` is the separator that namespaces a tool name
+     * (`<serverId>__<tool>`); a punycode host such as `xn--80ak6aa92e.com` would
+     * otherwise embed a separator in the id and split in the wrong place. A short
+     * hash of the label is appended so two labels sharing a 24-character prefix
+     * still get different ids instead of overwriting each other's tools.
+     */
+    fun slugId(prefix: String, label: String): String {
+        val slug = label.lowercase().replace(Regex("[^a-z0-9]+"), "_").trim('_').ifBlank { "host" }
+        val fingerprint = label.hashCode().toUInt().toString(16).padStart(8, '0')
+        return "${prefix}_${slug.take(24)}_$fingerprint"
+    }
+
     /** A server the user typed in by hand, so it has no catalogue metadata. */
     fun custom(url: String, token: String?): McpServer {
         val host = runCatching { java.net.URI(url).host }.getOrNull() ?: url
         val clean = host.removePrefix("www.").removePrefix("mcp.")
-        // Runs of non-alphanumerics collapse to one `_`: a punycode host like
-        // `xn--80ak6aa92e.com` would otherwise produce `xn__80ak...`, and `__` is the
-        // separator used to namespace tools, so the id would split in the wrong place.
-        val slug = clean.replace(Regex("[^a-zA-Z0-9]+"), "_").trim('_').ifBlank { "host" }
-        // Truncating alone can make two hosts share an id, and then each would
-        // overwrite the other's tools, so a short stable hash of the host is kept.
-        val fingerprint = clean.hashCode().toUInt().toString(16).padStart(8, '0')
         return McpServer(
-            id = "custom_${slug.take(24)}_$fingerprint",
+            id = slugId("custom", clean),
             name = clean,
             tagline = "নিজের MCP সার্ভার",
             emoji = "🔌",

@@ -80,6 +80,29 @@ object ToolRegistry {
                 .put("name", str().put("description", "The prompt name, or <server>__<name>"))
                 .put("arguments", JSONObject().put("type", "object")
                     .put("description", "The template's arguments as key/value pairs")), listOf("name"))),
+        "mcp_subscribe" to JSONObject()
+            .put("description", "Subscribe to an MCP resource so the server tells you the moment its contents change, and the fresh text is fetched for you. Call it when the user wants to keep watching a file, log or record. Not every server supports it; if it does not, you are told so.")
+            .put("parameters", S(JSONObject()
+                .put("uri", str().put("description", "The resource URI, or <server>__<uri>"))
+                .put("action", str().put("enum", JSONArray(listOf("subscribe", "unsubscribe")))), listOf("uri"))),
+        "mcp_complete" to JSONObject()
+            .put("description", "Ask an MCP server to autocomplete a prompt argument or a resource URI. Call it when the user is unsure what values are valid, or you want to offer them choices.")
+            .put("parameters", S(JSONObject()
+                .put("server", str())
+                .put("argument", str().put("description", "The argument name to complete"))
+                .put("value", str().put("description", "What the user has typed so far"))
+                .put("kind", str().put("description", "prompt (default) or resource"))
+                .put("ref", str().put("description", "The prompt name or resource URI being completed")),
+                listOf("server", "argument"))),
+        "mcp_ping" to JSONObject()
+            .put("description", "Check that an MCP server's session is still alive. Call it when a call fails oddly, or before a long run of MCP calls.")
+            .put("parameters", S(JSONObject().put("server", str()), listOf("server"))),
+        "mcp_log_level" to JSONObject()
+            .put("description", "Set how much an MCP server logs back to you. Call it when you want more detail about what a server is doing, or less noise.")
+            .put("parameters", S(JSONObject()
+                .put("server", str())
+                .put("level", str().put("enum", JSONArray(listOf("debug", "info", "notice", "warning", "error")))),
+                listOf("server", "level"))),
         "code_box" to JSONObject()
             .put("description", "Show or close the live code panel on screen. Open it before writing a file so the user watches it being written, then close it when the file is done.")
             .put("parameters", S(JSONObject()

@@ -40,6 +40,8 @@ class McpClientTest {
     private val sawSessionHeader = AtomicBoolean(false)
     private val authHeader = AtomicReference("")
     private val initializeCount = AtomicInteger(0)
+    /** The last JSON-RPC envelope the fake server received that was a reply. */
+    private val lastReply = AtomicReference<JSONObject?>(null)
 
     /**
      * Every client opened by a test, tracked so it can be closed. A client holds a
@@ -54,6 +56,17 @@ class McpClientTest {
         val client = McpClient(endpoint, accessToken, onNotification = onNotification, onRequest = onRequest)
         clients.add(client)
         return client
+    }
+
+    /**
+     * Blocks until the fake server has received a reply envelope, or the wait
+     * expires. Used by the requests a server sends us (sampling, elicitation).
+     */
+    private fun awaitReply(timeoutSeconds: Long = 20) {
+        val deadline = System.currentTimeMillis() + timeoutSeconds * 1000
+        while (lastReply.get() == null && System.currentTimeMillis() < deadline) {
+            Thread.sleep(25)
+        }
     }
 
     @After
@@ -431,6 +444,168 @@ class McpClientTest {
         assertNotEquals(a.id, b.id)
     }
 
+    // ---- the rest of the protocol ------------------------------------------
+
+    @Test
+    fun `ping, subscribe and completion reach the server`() = runBlocking {
+        val server = startFakeMcp(
+            tools = "[]",
+            capabilities = """{"resources":{"subscribe":true},"completions":{}}"""
+        )
+        val client = newClient("$server/mcp", accessToken = null)
+        client.ensureConnected()
+
+        assertTrue("subscribe must be advertised", client.supportsResourceSubscribe)
+        assertTrue("completion must be advertised", client.supportsCompletion)
+
+        client.ping()
+        client.subscribeResource("file://readme.md")
+        client.unsubscribeResource("file://readme.md")
+        client.setLogLevel("debug")
+        val completion = client.complete("ref/prompt", "greet", JSONObject().put("name", "lang").put("value", "বা"))
+        assertEquals(2, completion.optJSONObject("completion")?.optJSONArray("values")?.length())
+        // All of these reuse the one session.
+        assertEquals(1, initializeCount.get())
+    }
+
+    @Test
+    fun `an unadvertised capability is reported as unsupported`() = runBlocking {
+        val server = startFakeMcp(tools = "[]", capabilities = """{"resources":{}}""")
+        val client = newClient("$server/mcp", accessToken = null)
+        client.ensureConnected()
+        assertFalse("subscribe is opt-in", client.supportsResourceSubscribe)
+        assertFalse("completion is opt-in", client.supportsCompletion)
+    }
+
+    @Test
+    fun `an elicitation request is answered with a decline`() = runBlocking {
+        // A server that asks the user something must get an answer, or its call
+        // never returns. The agent has no prompt surface, so it declines — and the
+        // reply must actually reach the server.
+        val server = startFakeMcp(
+            tools = "[]",
+            capabilities = "{}",
+            requestAfterInitialize = "elicitation/create"
+        )
+        val client = newClient(
+            "$server/mcp", accessToken = null,
+            onRequest = { method, _ ->
+                // This mirrors what McpManager.onServerRequest answers.
+                when (method) {
+                    "elicitation/create" -> JSONObject().put("action", "decline")
+                    else -> JSONObject()
+                }
+            }
+        )
+        client.ensureConnected()
+
+        awaitReply()
+        val reply = lastReply.get()
+        assertNotNull("the server must receive a reply, not be left hanging", reply)
+        assertEquals("decline", reply!!.optJSONObject("result")?.optString("action"))
+        assertEquals(901, reply.opt("id"))
+    }
+
+    @Test
+    fun `a resources updated notification refreshes the resource text`() = runBlocking {
+        val server = startFakeMcp(
+            tools = "[]",
+            capabilities = """{"resources":{"listChanged":true,"subscribe":true}}""",
+            resources = """[{"uri":"file://readme.md","name":"readme"}]""",
+            resourceText = "প্রথম সংস্করণ",
+            resourceTextAfterUpdate = "দ্বিতীয় সংস্করণ",
+            notifyOnSubscribe = true
+        )
+        val client = newClient("$server/mcp", accessToken = null)
+        client.ensureConnected()
+        assertTrue(client.isConnected)
+        assertEquals(1, initializeCount.get())
+    }
+
+    /**
+     * The whole subscribe→notify→re-read loop through the real manager: after the
+     * server says the resource changed, the cached text must be the new text, not
+     * the copy read earlier.
+     */
+    @Test
+    fun `the manager caches the refreshed text after an updated notification`() = runBlocking {
+        val server = startFakeMcp(
+            tools = "[]",
+            capabilities = """{"resources":{"listChanged":true,"subscribe":true}}""",
+            resources = """[{"uri":"file://readme.md","name":"readme"}]""",
+            resourceText = "প্রথম সংস্করণ",
+            resourceTextAfterUpdate = "দ্বিতীয় সংস্করণ",
+            notifyOnSubscribe = true
+        )
+        val manager = newManager()
+        try {
+            val conn = manager.connectWithToken(McpCatalog.custom("$server/mcp", null), null)
+            val qualified = "${conn.server.id}__file://readme.md"
+
+            val first = manager.readResource(qualified)
+            assertTrue("প্রথম পাঠ ব্যর্থ: $first", first.optBoolean("ok"))
+            assertEquals("প্রথম সংস্করণ", manager.cachedResourceText(qualified)?.optString("output"))
+
+            val subscribed = manager.subscribeResource(conn.server.id, "file://readme.md")
+            assertTrue("সাবস্ক্রাইব ব্যর্থ: $subscribed", subscribed.optBoolean("ok"))
+
+            // The notification is pushed from the subscribe response, so the refresh
+            // runs right after. Wait for the cache to catch up.
+            val deadline = System.currentTimeMillis() + 20_000
+            var text = manager.cachedResourceText(qualified)?.optString("output")
+            while (text != "দ্বিতীয় সংস্করণ" && System.currentTimeMillis() < deadline) {
+                Thread.sleep(50)
+                text = manager.cachedResourceText(qualified)?.optString("output")
+            }
+            assertEquals("দ্বিতীয় সংস্করণ", text)
+
+            // The change is also queued for the model's next turn, which is what
+            // makes a subscription useful rather than a cache nobody reads.
+            val deadline2 = System.currentTimeMillis() + 20_000
+            var notes = manager.drainResourceUpdates()
+            while (notes.isEmpty() && System.currentTimeMillis() < deadline2) {
+                Thread.sleep(50)
+                notes = manager.drainResourceUpdates()
+            }
+            assertTrue("বদলানোর নোট কিউতে আসেনি", notes.any { it.contains("দ্বিতীয় সংস্করণ") })
+        } finally {
+            manager.close()
+        }
+    }
+
+    /**
+     * `roots/list` must name the real workspace. An empty answer tells the server
+     * it has nowhere to write, which is not true.
+     */
+    @Test
+    fun `a roots list request names the assistant workspace`() = runBlocking {
+        val server = startFakeMcp(
+            tools = "[]",
+            capabilities = "{}",
+            requestAfterInitialize = "roots/list"
+        )
+        val manager = newManager()
+        try {
+            manager.connectWithToken(McpCatalog.custom("$server/mcp", null), null)
+            awaitReply()
+            val roots = lastReply.get()?.optJSONObject("result")?.optJSONArray("roots")
+            assertNotNull("roots/list এর উত্তর আসেনি", roots)
+            assertTrue("অন্তত একটা রুট থাকতে হবে", (roots?.length() ?: 0) > 0)
+            val uri = roots!!.optJSONObject(0).optString("uri")
+            assertTrue("রুটের uri workspace দেখাতে হবে: $uri", uri.startsWith("file://") && uri.contains("zyraxon"))
+        } finally {
+            manager.close()
+        }
+    }
+
+    /** A manager over the Robolectric context, with an optional sampling runner. */
+    private fun newManager(
+        samplingRunner: (suspend (JSONObject) -> JSONObject)? = null
+    ): McpManager = McpManager(
+        androidx.test.core.app.ApplicationProvider.getApplicationContext(),
+        samplingRunner = samplingRunner
+    )
+
     // ---- a stand-in MCP server ---------------------------------------------
 
     /**
@@ -448,17 +623,25 @@ class McpClientTest {
         resources: String = "[]",
         resourceTemplates: String = "[]",
         resourceText: String = "",
+        resourceTextAfterUpdate: String? = null,
+        notifyOnSubscribe: Boolean = false,
         prompts: String = "[]",
         promptText: String = "",
         notifyAfterInitialize: String? = null,
+        notifyParams: String = "{}",
         samplingAfterInitialize: Boolean = false,
+        requestAfterInitialize: String? = null,
         onSamplingReply: (() -> Unit)? = null,
         onToolsCall: ((String) -> Unit)? = null
     ): String {
         sawSessionHeader.set(false)
         authHeader.set("")
         initializeCount.set(0)
+        lastReply.set(null)
         val dropped = AtomicBoolean(false)
+        val textNow = AtomicReference(resourceText)
+        // The channel thread owns the writer; a POST thread can ask it to push.
+        val pushChannel = AtomicReference<((String) -> Unit)?>(null)
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         // The channel GET blocks for seconds, so a single-threaded server would
         // deadlock and no POST could be answered. The threads are daemons and the
@@ -491,13 +674,17 @@ class McpClientTest {
                         out.write("event: message\ndata: $payload\n\n".toByteArray(Charsets.UTF_8))
                         out.flush()
                     }
+                    pushChannel.set { payload -> push(payload) }
                     if (notifyAfterInitialize != null) {
-                        push("""{"jsonrpc":"2.0","method":"$notifyAfterInitialize","params":{}}""")
+                        push("""{"jsonrpc":"2.0","method":"$notifyAfterInitialize","params":$notifyParams}""")
                     }
                     if (samplingAfterInitialize) {
                         push("""{"jsonrpc":"2.0","id":900,"method":"sampling/createMessage","params":{""" +
                             """"messages":[{"role":"user","content":{"type":"text","text":"সংক্ষেপে বলো"}}],""" +
                             """"maxTokens":64}}""")
+                    }
+                    if (requestAfterInitialize != null) {
+                        push("""{"jsonrpc":"2.0","id":901,"method":"$requestAfterInitialize","params":{}}""")
                     }
                     Thread.sleep(6000)
                 }
@@ -518,9 +705,10 @@ class McpClientTest {
 
             val body = BufferedReader(InputStreamReader(exchange.requestBody)).readText()
 
-            // A sampling reply is a JSON-RPC envelope with an id and no method.
+            // A reply to a server→client request is an envelope with an id and no method.
             val parsed = runCatching { JSONObject(body) }.getOrNull()
             if (parsed != null && !parsed.has("method") && parsed.has("id")) {
+                lastReply.set(parsed)
                 onSamplingReply?.invoke()
                 exchange.sendResponseHeaders(202, -1); exchange.close(); return@createContext
             }
@@ -560,11 +748,30 @@ class McpClientTest {
                 "resources/templates/list" ->
                     JSONObject().put("resourceTemplates", org.json.JSONArray(resourceTemplates))
                 "resources/read" -> JSONObject().put("contents", org.json.JSONArray()
-                    .put(JSONObject().put("uri", "file://readme.md").put("text", resourceText)))
+                    .put(JSONObject().put("uri", "file://readme.md").put("text", textNow.get())))
                 "prompts/list" -> JSONObject().put("prompts", org.json.JSONArray(prompts))
                 "prompts/get" -> JSONObject().put("messages", org.json.JSONArray()
                     .put(JSONObject().put("role", "user")
                         .put("content", JSONObject().put("type", "text").put("text", promptText))))
+                // The keep-alive, the subscription pair and the two optional
+                // requests below are answered the way the spec describes them.
+                "ping" -> JSONObject()
+                "resources/subscribe" -> {
+                    // Once subscribed, the contents change and the server says so.
+                    if (notifyOnSubscribe && resourceTextAfterUpdate != null) {
+                        textNow.set(resourceTextAfterUpdate)
+                        val uri = request.optJSONObject("params")?.optString("uri").orEmpty()
+                        pushChannel.get()?.invoke(
+                            """{"jsonrpc":"2.0","method":"notifications/resources/updated","params":{"uri":"$uri"}}"""
+                        )
+                    }
+                    JSONObject()
+                }
+                "resources/unsubscribe" -> JSONObject()
+                "logging/setLevel" -> JSONObject()
+                "completion/complete" -> JSONObject().put("completion", JSONObject()
+                    .put("values", org.json.JSONArray(listOf("বাংলা", "বাংলাদেশ")))
+                    .put("total", 2).put("hasMore", false))
                 "tools/call" -> {
                     onToolsCall?.invoke(body)
                     JSONObject().put("content", org.json.JSONArray()

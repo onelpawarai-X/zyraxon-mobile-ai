@@ -571,6 +571,11 @@ class ZyraxonAiEngine(private val context: Context) {
             for (late in drainInjections()) {
                 messages.put(JSONObject().put("role", "user").put("content", late))
             }
+            // A subscribed resource that changed since the last turn is reported
+            // here, so the model acts on the new content without being asked.
+            for (update in mcp.drainResourceUpdates()) {
+                messages.put(JSONObject().put("role", "user").put("content", update))
+            }
             val result = callModelAny(model, messages, tools) { delta ->
                 producedText = true
                 trySend(delta)
