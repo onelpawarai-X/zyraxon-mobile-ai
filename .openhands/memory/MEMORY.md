@@ -4,7 +4,7 @@
 `onelpawarai-X/zyraxon-mobile-ai` — a **native Kotlin + Jetpack Compose Android app**
 (not the old web app; that codebase and its history were deleted at the user's request).
 `namespace = "com.example"`, `applicationId = com.aistudio.zyraxon.kxqmpz`, `minSdk 24`,
-`targetSdk/compileSdk 36`, versionCode 5 / versionName **4.0.0**. `.aistudio/` and
+`targetSdk/compileSdk 36`, versionCode 9 / versionName **6.1.0**. `.aistudio/` and
 `metadata.json` are AI Studio export artifacts — keep them, the build references their
 signing configs. `README.md` is English and states Android-only.
 
@@ -152,6 +152,23 @@ file").
 stars — the gate reply says so, so a failure there is expected, not a bug. Wired in as
 provider `zyraxon`, fastest-first (pulse, neural, codex, visionary, matrix, cyber, quantum,
 titan, apex, genesis). TTS/STT on that site stay available regardless.
+**Since v6.0.0 its catalogue is marked `catalogIsPublic = true`**, so those 10 models list
+before any key is set; chat still needs the key.
+Note: the container cannot read that host (`curl` code 000, TLS completes but no body) —
+test it from the phone, not from here.
+
+## Provider connection & model loading (fixed 2026-10-29, v6.0.0)
+The long-standing "model selector is empty / connecting does nothing" report was **not** a
+UI bug. The shipped v5.1.0 APK contained no `ProviderCatalog` and no `verifyProviderKey`
+at all — `saveProviderKey` only wrote the key to `SharedPreferences`. **Verify the artifact
+before editing source**: `unzip -o apk -d /tmp/x 'classes*.dex'` then
+`strings /tmp/x/classes*.dex | grep -c ProviderCatalog`.
+Now: `fetchLiveModels()` loads all 8 providers **in parallel** and streams each provider's
+models through a progress callback (never sequential — a dead endpoint used to block the
+rest for 20s each); saving a key verifies against that provider's own catalogue and says
+"connected" only when it truly answered; Settings has ZYRAXON and OpenCode key rows.
+`callModelWithFailover` retries the next **keyed** provider in `speedRank` order on
+quota/limit, each fallback using **its own** seed model id (a foreign id 404s everywhere).
 
 ## Channels: no Android intent can post autonomously
 `channel_post` opens the real app's composer pre-filled (Telegram/WhatsApp/Facebook/
@@ -161,9 +178,8 @@ returns `manual: true`. Android 11+ needs the manifest `<queries>` block or thos
 invisible; images need the `androidx.core.content.FileProvider`.
 
 ## Release history
-- v3.0.0 was **deleted and rebuilt** on 2026-10-28 (release id 426952504 → **427181965**,
-  tag `v3.0.0` deleted then recreated at commit `f9ea6e7`). versionCode 3 → 4.
-- Current `ZYRAXON-v3.0.0.apk` SHA-256
-  `590f49fa90ee47a71d0b77e437c3686c06bd8c1ae94a7bcd4bfbd730479f1dae` (38,515,993 bytes),
-  24 tests / 0 failures. Assets: APK, `zyraxon-v3.0.0-source.zip`, system prompt.
+- **v6.1.0** (current): failover between providers. **v6.0.0**: parallel model loading,
+  real key verification, public ZYRAXON catalogue, ZYRAXON/OpenCode key rows, new launcher
+  icon. Both have 5 assets each; 87 unit tests / 0 failures.
+- v3.0.0 was deleted and rebuilt once (tag deleted then recreated) — details in the daily log.
 - Older detail lives in `.openhands/memory/2026-10-20.md`.
