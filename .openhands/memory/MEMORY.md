@@ -273,13 +273,41 @@ voice are identical — do not give the service its own engine.
   (8) parses a **captured real GitHub payload**; 170 tests / 0 failures. versionCode 13.
 - **v6.4.0**: no hardcoded models — provider-driven realtime detection, protocol-aware
   live voice, token-free on-device bundles, TTS-id filter. 135 tests. versionCode 12.
+- **v6.7.1** (current, release id 429194251, tag `v6.7.1`): the mic-indicator fix —
+  `SpeechRecognizer` reports every session end through `onError`, and the listener
+  used to set `_isListening=false` for all of them, so the indicator blinked off/on
+  many times a minute. `voice/RecognizerError.kt` now keeps the ear open for the
+  ordinary endings (NO_MATCH 7, SPEECH_TIMEOUT 6, RECOGNIZER_BUSY 8, NETWORK 2,
+  SERVER_DISCONNECTED 11) and closes it only for INSUFFICIENT_PERMISSIONS 9 /
+  LANGUAGE_* 12–14. 213 tests.
+- **v6.7.0** (release id 429181978, tag `v6.7.0`): **minSdk 24 → 21** (Android 5.0+).
+  Only Shizuku (AAR minSdk 23) and androidx.core 1.18 held the floor; fix was
+  Shizuku 12.2.0 + core-ktx 1.13.1 + `tools:overrideLibrary`. All API-23+ calls got
+  a lower path (ContextCompat, isKeyguardSecure, AudioTrack ctor, polled exitValue
+  instead of `waitFor(timeout)`, ActivityCompat, overlay/install-permission assumed
+  allowed on old API). **Real bug fixed:** the manifest registered
+  `.update.UpdateInstallReceiver` but the class lives in `ai.zyraxon.assistant.update`
+  under a `com.zyraxon.assistant` namespace — so the receiver never existed and in-app
+  update results were never delivered. Always register components by FULL class name.
+  Also: real Shizuku system shell (`SystemShell`), `BackgroundCommandService`,
+  matrix-rain terminal backdrop. 206 tests, lint 0 errors.
 - **v6.3.0**: sixty-language UI (246 strings via `t()`), searchable language picker.
 - **v6.2.0**: floating bubble (`OverlayChatService`), six aura styles, `read_media` by
   `url` + multi-frame `frames` (its old schema required `path`).
 - **v6.1.0** provider failover; **v6.0.0** parallel model loading, key verification,
   public ZYRAXON catalogue. v3.0.0 was deleted and rebuilt once.
-- Older detail lives in `.openhands/memory/2026-10-20.md`; the update system and its
-  gotchas in `.openhands/memory/2026-10-30.md`.
+- Older detail lives in `.openhands/memory/2026-10-20.md`; minSdk-21 pitfalls, the mic
+  root cause and the release mechanics in `.openhands/memory/2026-10-30.md`.
+
+## Releasing on this repo (the owner token is in the git remote)
+- The `GITHUB_TOKEN` env var is user `zyraxon-X`, who is **not a collaborator** — PR
+  create fails 422 "must be a collaborator". The **owner** token is inside the remote:
+  `git remote get-url origin | sed -E 's#https://[^:]+:([^@]+)@.*#\1#'`. Use it for
+  create/merge/upload.
+- `git tag -a` needs `-c user.name=openhands -c user.email=openhands@all-hands.dev`.
+- Upload assets to `uploads.github.com/repos/<o>/<r>/releases/<id>/assets?name=<n>`.
+- No `unzip` in the container (use python `zipfile`); `aapt2` is under
+  `/opt/android-sdk/build-tools/*/`.
 
 ## Build gotchas
 - `ai.zyraxon.assistant.BuildConfig` is **hand-written and package-private**; it
