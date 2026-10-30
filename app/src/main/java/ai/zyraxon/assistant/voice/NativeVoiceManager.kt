@@ -103,22 +103,8 @@ class NativeVoiceManager(
     private var restartJob: Job? = null
     private var restartAttempts = 0
 
-    /** True between the first and last utterance of one spoken reply. */
-    @Volatile
-    private var speechBurst = false
-
-    /**
-     * True from the moment a reply starts streaming until it is finished.
-     *
-     * This is the fix for the mic churn. A streamed answer arrives sentence by
-     * sentence, with a gap between each one, so the engine's queue empties
-     * mid-answer. Judging "is the reply over" from the engine alone made the mic
-     * reopen in every gap and close again for the next sentence — off, on, off,
-     * on, exactly what the user heard. The ViewModel owns the real boundary, so
-     * it opens the reply here and closes it once at the end.
-     */
-    @Volatile
-    private var replyActive = false
+    /** Decides the single close/open pair around a streamed reply. */
+    private val micGate = MicGate()
 
     var onSpeechRecognized: ((text: String, isFinal: Boolean) -> Unit)? = null
 
@@ -154,10 +140,7 @@ class NativeVoiceManager(
                 // Close the ear once per reply, not once per sentence. A queued
                 // answer fires onStart for every sentence; pausing each time was
                 // the off/on churn the user heard.
-                if (!speechBurst) {
-                    speechBurst = true
-                    pauseForSpeech()
-                }
+                if (micGate.onUtteranceStart()) pauseForSpeech()
             }
 
             override fun onDone(utteranceId: String?) {
@@ -175,13 +158,12 @@ class NativeVoiceManager(
      * may still be streaming, so the ear is only reopened when both are done.
      */
     private fun finishUtterance() {
-        if (textToSpeech?.isSpeaking == true) return
-        if (replyActive) return
-        _isSpeaking.value = false
-        if (speechBurst) {
-            speechBurst = false
-            resumeAfterSpeech()
-        }
+        val engineBusy = textToSpeech?.isSpeaking == true
+        val reopen = micGate.onUtteranceDone(engineBusy)
+        // Keep the "speaking" flag up across the gap between two sentences of the
+        // same reply, so the UI does not flicker to "listening" mid-answer.
+        if (!engineBusy && !micGate.replyActive) _isSpeaking.value = false
+        if (reopen) resumeAfterSpeech()
     }
 
     /**
@@ -192,18 +174,15 @@ class NativeVoiceManager(
      * [endReply] must be called when the reply is finished.
      */
     fun beginReply() {
-        replyActive = true
+        micGate.beginReply()
     }
 
     /** Closes the spoken reply and reopens the ear once the last word has played. */
     fun endReply() {
-        replyActive = false
-        if (textToSpeech?.isSpeaking != true) {
+        val engineBusy = textToSpeech?.isSpeaking == true
+        if (micGate.endReply(engineBusy)) {
             _isSpeaking.value = false
-            if (speechBurst) {
-                speechBurst = false
-                resumeAfterSpeech()
-            }
+            resumeAfterSpeech()
         }
     }
 
@@ -579,7 +558,7 @@ class NativeVoiceManager(
         try {
             textToSpeech?.stop()
         } catch (_: Exception) {}
-        speechBurst = false
+        micGate.reset()
         _isSpeaking.value = false
         resumeAfterSpeech()
     }
