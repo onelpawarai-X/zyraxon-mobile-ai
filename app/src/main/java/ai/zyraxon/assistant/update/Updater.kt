@@ -221,7 +221,12 @@ class Updater(private val context: Context) {
     }
 
     /** True when Android will let this app install a package update itself. */
-    fun canInstall(): Boolean = context.packageManager.canRequestPackageInstalls()
+    fun canInstall(): Boolean =
+        // canRequestPackageInstalls is API 26. On Android 5–7 the unknown-sources
+        // switch is a device-wide setting the user already controls, so a package
+        // install is allowed whenever that switch is on.
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
+            context.packageManager.canRequestPackageInstalls()
 
     /** Opens the "install unknown apps" row for this app, where the switch lives. */
     fun openInstallPermissionSettings() {

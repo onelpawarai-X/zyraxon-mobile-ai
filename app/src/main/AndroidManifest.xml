@@ -2,11 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Shizuku's own AARs declare minSdk 23, but the parts ZYRAXON uses —
+         ShizukuProvider, the binder plumbing and the static Shizuku class — only
+         touch API-21-safe classes (ContentProvider, Context, Bundle, IBinder,
+         Log). Overriding lets the app itself support Android 5.0 while Shizuku
+         still works on the phones that can run it. -->
+    <uses-sdk tools:overrideLibrary="rikka.shizuku.api,rikka.shizuku.provider,rikka.shizuku.shared,rikka.shizuku.aidl" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -14,6 +22,13 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Neither camera nor GPS is required: the app works without them, and
+         saying so keeps it installable on tablets and TVs that have no camera. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <!-- Reading the user's own photos, video and documents. Android 13 split
          READ_EXTERNAL_STORAGE into media types, so all three are declared and the
@@ -94,6 +109,13 @@
             android:name="ai.zyraxon.assistant.KeepAliveService"
             android:exported="false" />
 
+        <!-- Runs one command in the background so it survives the app being
+             closed, with a Stop action in its notification. -->
+        <service
+            android:name="ai.zyraxon.assistant.shell.BackgroundCommandService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
         <!-- The floating chat bubble the user asked for. It needs the overlay
              permission, which the settings row requests. -->
         <service
@@ -118,7 +140,7 @@
 
         <!-- Receives the result of an in-app update install. -->
         <receiver
-            android:name=".update.UpdateInstallReceiver"
+            android:name="ai.zyraxon.assistant.update.UpdateInstallReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="ai.zyraxon.assistant.INSTALL_STATUS" />
@@ -136,6 +158,19 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Shizuku's provider. It receives the Shizuku binder and lets this app
+             run commands as the `shell` user (uid 2000) or as root (uid 0) on a
+             phone where Shizuku runs as root. This is how the app reaches system
+             level without holding a privileged permission of its own, and it is
+             dormant until the user installs and starts Shizuku. -->
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:enabled="true"
+            android:exported="true"
+            android:multiprocess="false"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
     </application>
 

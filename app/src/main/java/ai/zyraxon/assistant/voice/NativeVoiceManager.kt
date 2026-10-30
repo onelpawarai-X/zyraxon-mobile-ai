@@ -100,6 +100,10 @@ class NativeVoiceManager(
     @Volatile
     private var pausedForSpeech = false
 
+    /** Wall-clock deadline until which a recognized phrase is the speaker's echo. */
+    @Volatile
+    private var echoGuardUntilMs = 0L
+
     private var restartJob: Job? = null
     private var restartAttempts = 0
 
@@ -177,9 +181,22 @@ class NativeVoiceManager(
         micGate.beginReply()
     }
 
+    /**
+     * True while the phone's own speaker is talking, plus a short tail after the
+     * last word. The recognizer keeps running for a moment once the engine stops
+     * and hears the speaker's decay — without this tail that echo is a final
+     * result, which is what sent the assistant's own words back into the chat.
+     */
+    fun isSpeakerActive(): Boolean = _isSpeaking.value || System.currentTimeMillis() < echoGuardUntilMs
+
+    private fun armEchoGuard() {
+        echoGuardUntilMs = System.currentTimeMillis() + ECHO_TAIL_MS
+    }
+
     /** Closes the spoken reply and reopens the ear once the last word has played. */
     fun endReply() {
         val engineBusy = textToSpeech?.isSpeaking == true
+        armEchoGuard()
         if (micGate.endReply(engineBusy)) {
             _isSpeaking.value = false
             resumeAfterSpeech()
@@ -566,6 +583,13 @@ class NativeVoiceManager(
     companion object {
         /** How long the speaker rings after the last word before the ear reopens. */
         private const val SPEAKER_TAIL_MS = 350L
+
+        /**
+         * How long after the last word a recognized phrase is treated as the
+         * speaker's own echo. It is longer than [SPEAKER_TAIL_MS] because the
+         * recognizer can deliver a final result slightly after the ear reopens.
+         */
+        private const val ECHO_TAIL_MS = 1_200L
 
         /** Debounce before reopening the microphone, and the backoff ceiling. */
         private const val RESTART_BASE_MS = 300L

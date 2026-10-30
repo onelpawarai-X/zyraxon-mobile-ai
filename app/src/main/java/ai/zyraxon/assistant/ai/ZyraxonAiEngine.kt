@@ -5,6 +5,7 @@ import ai.zyraxon.assistant.model.AiModel
 import ai.zyraxon.assistant.model.ChatMessage
 import ai.zyraxon.assistant.model.MessageRole
 import ai.zyraxon.assistant.model.Persona
+import ai.zyraxon.assistant.shell.ShellRuntime
 import android.content.Context
 import android.content.Intent
 import android.hardware.camera2.CameraManager
@@ -501,7 +502,7 @@ class ZyraxonAiEngine(private val context: Context) {
         append("\n\n---\n\n## Platform (the truth about where you are running)\n")
         append("- Device: Android phone (APK), Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}), ${Build.MANUFACTURER} ${Build.MODEL}\n")
         append("- This app is Android only. It ships as an APK and nothing else — never propose, plan or build a desktop (Windows EXE, Linux, AppImage, DMG) version of ZYRAXON itself.\n")
-        append("- Shell: `sh -c` inside the app sandbox. `run_shell` runs there and returns real stdout/stderr.\n")
+        append("- Shell: three of them, all real. `run_shell` runs in the tool shell (bundled busybox, ~300 commands) inside the tool workspace ").append(ToolRegistry.workspace(context).absolutePath).append(". `terminal_run` runs in the Terminal shell the user watches (`⌘ ZX`) inside ").append(ShellRuntime.home(context).absolutePath).append(". `system_shell` runs ABOVE the app sandbox the way Termux and adb do — `level:\"root\"` is uid 0 (read any app's data, write /system, mount, iptables), `level:\"shell\"` is uid 2000 (pm, am, settings, dumpsys, input), `level:\"auto\"` picks the best level that is live. System level needs the user to have Shizuku running and to have granted ZYRAXON access; until then the tool explains exactly what to do and `run_shell` keeps working. `git clone/pull/status` work through JGit, and `wget https://…` works through a loopback proxy.\n")
         append("- Tools available this turn: ").append(ToolRegistry.names().joinToString(", "))
         if (mcpTools.isNotEmpty()) {
             append(", ").append(mcpTools.joinToString(", ") { it.qualifiedName })

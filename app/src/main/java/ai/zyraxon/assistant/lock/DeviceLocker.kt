@@ -31,7 +31,10 @@ object DeviceLocker {
     /** Whether the phone has a PIN, pattern or password the keyguard enforces. */
     fun hasSecureLock(context: Context): Boolean = try {
         val km = context.getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager
-        km.isDeviceSecure
+        // isDeviceSecure is API 23; before that isKeyguardSecure answered the
+        // same question and is still present, just deprecated.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) km.isDeviceSecure
+        else @Suppress("DEPRECATION") km.isKeyguardSecure
     } catch (_: Throwable) {
         false
     }
@@ -85,7 +88,9 @@ object DeviceLocker {
     fun unlockScreen(context: Context, finishActivity: android.app.Activity? = null): UnlockResult {
         val km = context.getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager
         if (km.isKeyguardLocked.not()) return UnlockResult.ALREADY_UNLOCKED
-        if (km.isDeviceSecure) return UnlockResult.UNLOCK_NEEDS_SECURE_LOCK
+        val secure = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) km.isDeviceSecure
+        else @Suppress("DEPRECATION") km.isKeyguardSecure
+        if (secure) return UnlockResult.UNLOCK_NEEDS_SECURE_LOCK
         return try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && finishActivity != null) {
                 km.requestDismissKeyguard(finishActivity, null)

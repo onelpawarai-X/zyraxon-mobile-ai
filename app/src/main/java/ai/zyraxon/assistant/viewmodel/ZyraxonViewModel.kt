@@ -472,10 +472,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // Connect STT
         voiceManager.onSpeechRecognized = { text, isFinal ->
             // The microphone can hear the phone's own speaker. Anything that
-            // arrives while the assistant is speaking is the assistant's own
-            // voice coming back, so it is dropped rather than sent as a user
-            // message — that echo is what made the app answer itself.
-            if (text.isNotBlank() && !isSpeaking.value && !liveVoice.isActive) {
+            // arrives while the assistant is speaking — or in the short tail
+            // after the last word — is the assistant's own voice coming back, so
+            // it is dropped rather than sent as a user message. That echo is what
+            // made the app answer itself and post its own words into the chat.
+            val echo = isSpeaking.value || voiceManager.isSpeakerActive()
+            if (text.isNotBlank() && !echo && !liveVoice.isActive) {
                 // The user speaking over the assistant is a normal interruption,
                 // not an error: cut the voice and take the new words.
                 if (!isFinal) onUserStartedSpeaking()
@@ -1305,38 +1307,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 _activeTab.value = AppTab.TERMINAL
                 return JSONObject().put("ok", true).put("summary", "টার্মিনাল খোলা হয়েছে")
             }
-            "terminal_run" -> {
-                val cmd = args.optString("command")
-                _activeTab.value = AppTab.TERMINAL
-                val app = getApplication<Application>()
-                val cwd = currentTerminalDir(ShellRuntime.home(app))
-                val git = GitRuntime.runCommand(app, cmd, cwd)
-                val r = if (git != null) {
-                    ShellRuntime.Result(
-                        command = cmd,
-                        code = if (git.ok) 0 else 1,
-                        stdout = if (git.ok) git.message else "",
-                        stderr = if (git.ok) "" else git.message,
-                        timedOut = false,
-                        millis = 0
-                    )
-                } else {
-                    ShellRuntime.run(app, cmd, cwd = cwd, timeoutMs = args.optLong("timeout_ms", 120_000))
-                }
-                val body = listOf(r.stdout.trimEnd(), r.stderr.trimEnd())
-                    .filter { it.isNotEmpty() }.joinToString("\n").ifEmpty { "(no output)" }
-                appendTerminal(TerminalLine(command = cmd, output = body, exitCode = r.code, isError = r.code != 0 || r.timedOut, timedOut = r.timedOut, millis = r.millis))
-                return JSONObject()
-                    .put("ok", r.code == 0 && !r.timedOut)
-                    .put("code", r.code)
-                    .put("stdout", r.stdout)
-                    .put("stderr", r.stderr)
-                    .put("summary", "$ $cmd → exit ${r.code}")
-            }
+            "terminal_run" -> return runInTerminalShell(args)
             "floating_bubble" -> {
                 val want = args.optString("action", "on") != "off"
                 val ctx = getApplication<Application>()
-                if (want && !android.provider.Settings.canDrawOverlays(ctx)) {
+                val overlayAllowed = android.os.Build.VERSION.SDK_INT < 23 ||
+                    android.provider.Settings.canDrawOverlays(ctx)
+                if (want && !overlayAllowed) {
                     // The overlay permission can only be granted by the user in
                     // Settings, so point them at the exact row instead of failing.
                     ai.zyraxon.assistant.MainActivity.instance?.openSpecialSetting("overlay")
@@ -1614,55 +1591,90 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     // ---- Terminal tab ------------------------------------------------------
 
     /**
-     * Runs one line in the terminal's own shell. The user's typed lines and the
-     * assistant's `terminal_run` calls both come through here, so the two are
-     * always in the same shell, at the same working directory, in the same
-     * scrollback. Every result is real output, never a summary.
+     * Runs one line in the Terminal shell. The user's typed lines and the
+     * assistant's `terminal_run` calls both come through here, so the two share
+     * the same shell, working directory and scrollback. Every result is real
+     * output, never a summary.
+     *
+     * This is the *user-facing* shell. `run_shell` is a separate shell with its
+     * own working directory — the assistant has both, and picks.
      */
     fun runTerminal(command: String) {
         val line = command.trim()
         if (line.isEmpty() || _terminalBusy.value) return
         viewModelScope.launch(Dispatchers.IO) {
             _terminalBusy.value = true
-            val app = getApplication<Application>()
-            val ctx = ShellRuntime.home(app)
-            // `cd` is stateful: it changes where the *next* line runs, so it is
-            // applied here rather than left to die with the process it started.
-            val cdTarget = parseCd(line, ctx)
-            if (cdTarget != null) {
-                if (cdTarget.isDirectory) {
-                    _terminalCwd.value = displayPath(ctx, cdTarget)
-                    appendTerminal(TerminalLine(command = line, output = "", exitCode = 0, isError = false))
-                } else {
-                    appendTerminal(TerminalLine(command = line, output = "cd: no such directory: ${cdTarget.path}", exitCode = 1, isError = true))
-                }
+            try {
+                runTerminalLine(line)
+            } finally {
                 _terminalBusy.value = false
-                return@launch
             }
-            // busybox has no git, so a `git` line is served by JGit instead of
-            // failing with "applet not found".
-            runGitLine(app, line)?.let { result ->
-                appendTerminal(result)
-                _terminalBusy.value = false
-                return@launch
-            }
-            val cwd = currentTerminalDir(ctx)
-            val r = ShellRuntime.run(app, line, cwd = cwd, timeoutMs = 120_000)
-            val body = buildString {
-                if (r.stdout.isNotEmpty()) append(r.stdout.trimEnd())
-                if (r.stderr.isNotEmpty()) {
-                    if (isNotEmpty()) append('\n')
-                    append(r.stderr.trimEnd())
-                }
-                if (r.timedOut) {
-                    if (isNotEmpty()) append('\n')
-                    append("[timed out after ${r.millis / 1000}s]")
-                }
-                if (isEmpty()) append("(no output)")
-            }
-            appendTerminal(TerminalLine(command = line, output = body, exitCode = r.code, isError = r.code != 0 || r.timedOut, timedOut = r.timedOut, millis = r.millis))
-            _terminalBusy.value = false
         }
+    }
+
+    /** The body of a terminal line, shared by the user's typing and `terminal_run`. */
+    private suspend fun runTerminalLine(line: String): TerminalLine {
+        val app = getApplication<Application>()
+        val home = ShellRuntime.home(app)
+        // `cd` is stateful: it changes where the *next* line runs, so it is
+        // applied here rather than left to die with the process it started.
+        parseCd(line, home)?.let { target ->
+            val entry = if (target.isDirectory) {
+                _terminalCwd.value = displayPath(home, target)
+                TerminalLine(command = line, output = "", exitCode = 0, isError = false)
+            } else {
+                TerminalLine(
+                    command = line,
+                    output = "cd: no such directory: ${target.path}",
+                    exitCode = 1, isError = true
+                )
+            }
+            appendTerminal(entry)
+            return entry
+        }
+        // busybox has no git, so a `git` line is served by JGit instead of
+        // failing with "applet not found".
+        runGitLine(app, line)?.let { result ->
+            appendTerminal(result)
+            return result
+        }
+        val r = ShellRuntime.run(app, line, cwd = currentTerminalDir(home), timeoutMs = 120_000)
+        val body = buildString {
+            if (r.stdout.isNotEmpty()) append(r.stdout.trimEnd())
+            if (r.stderr.isNotEmpty()) {
+                if (isNotEmpty()) append('\n')
+                append(r.stderr.trimEnd())
+            }
+            if (r.timedOut) {
+                if (isNotEmpty()) append('\n')
+                append("[timed out after ${r.millis / 1000}s]")
+            }
+            if (isEmpty()) append("(no output)")
+        }
+        val entry = TerminalLine(
+            command = line, output = body, exitCode = r.code,
+            isError = r.code != 0 || r.timedOut, timedOut = r.timedOut, millis = r.millis
+        )
+        appendTerminal(entry)
+        return entry
+    }
+
+    /**
+     * `terminal_run` — the assistant driving the shell the user is watching.
+     * Same shell, same cwd, same scrollback as the user's own typing.
+     */
+    private suspend fun runInTerminalShell(args: JSONObject): JSONObject {
+        val line = args.optString("command").trim()
+        if (line.isEmpty()) return JSONObject().put("ok", false).put("summary", "খালি কমান্ড")
+        _activeTab.value = AppTab.TERMINAL
+        val entry = withContext(Dispatchers.IO) { runTerminalLine(line) }
+        return JSONObject()
+            .put("ok", !entry.isError)
+            .put("code", entry.exitCode)
+            .put("stdout", if (entry.isError) "" else entry.output)
+            .put("stderr", if (entry.isError) entry.output else "")
+            .put("shell", "terminal")
+            .put("summary", "$ $line → exit ${entry.exitCode}")
     }
 
     /**

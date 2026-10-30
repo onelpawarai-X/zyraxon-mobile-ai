@@ -57,7 +57,8 @@ class ToolCatalogueTest {
         val names = schemaNames().toSet()
         listOf(
             "read_media", "floating_bubble", "todo_write", "code_box", "files_panel",
-            "open_app", "run_shell", "read_screen", "look_camera", "web_search",
+            "open_app", "run_shell", "system_shell", "terminal_run", "read_screen",
+            "look_camera", "web_search", "background_command",
             "write_file", "publish_website", "memory_write", "notify"
         ).forEach { assertTrue("$it টুল নেই", it in names) }
     }
