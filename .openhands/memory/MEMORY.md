@@ -264,6 +264,18 @@ voice are identical — do not give the service its own engine.
   `denyPermissions(SYSTEM_ALERT_WINDOW)` (which has no effect on it).
 
 ## Release history
+- **v6.9.0** (2026-10-30, PR #10, tag `v6.9.0`): the user's actual ask, after several
+  sessions of the agent working on voice instead. **The top of the screen now holds
+  exactly one control** — a labelled `সেটিংস` pill next to the `ZYRAXON` wordmark.
+  The tab row that still ran across the top (চ্যাট/টাস্ক/টুল/MCP/ZX) is **deleted**;
+  `TabSelector` was its only user and is gone from `ChatComponents.kt`. Everything it
+  held moved into a new **`SessionNavPane`** pane (`Sheets.kt`), which is the **default
+  pane** when Settings opens: the five `AppTab` rows, a "নতুন সেশন" button
+  (`clearChat()` + `setTab(CHAT)`) and the mic switch (`setMicEnabled`). Also dropped
+  the duplicate mic pill from the chat header. 247 tests / 0 failures
+  (`NavigationUiTest` is new: sections reachable, tap switches + dismisses, mic toggles).
+  **Lesson:** when the user says "do THIS", do that one thing first and do not let a
+  neighbouring subsystem absorb the session.
 - **v6.8.0** (2026-10-30, PR #9, tag `v6.8.0`): the v6.7.1 **female-only lock is
   reverted** — the user wants *both* voices. Speech is a real queue now
   (`SpeechChunker` -> `SpeechSegmenter` -> `SpeechQueue`, one run at a time, `onDone`
