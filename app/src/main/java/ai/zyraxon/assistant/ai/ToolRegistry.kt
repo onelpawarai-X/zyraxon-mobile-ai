@@ -6,6 +6,7 @@ import ai.zyraxon.assistant.ai.OnDeviceModel
 import ai.zyraxon.assistant.lock.DeviceLocker
 import ai.zyraxon.assistant.shell.GitRuntime
 import ai.zyraxon.assistant.shell.ShellRuntime
+import ai.zyraxon.assistant.shell.SystemShell
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -224,14 +225,17 @@ object ToolRegistry {
             .put("description", "Delete a file or folder.")
             .put("parameters", S(JSONObject().put("path", str()).put("recursive", bool()), listOf("path"))),
         "run_shell" to JSONObject()
-            .put("description", "Run a real command through the bundled Unix toolbox (busybox sh) and return stdout, stderr and the exit code. Roughly 400 real commands are on PATH: sh, awk, sed, grep, tar, wget, find, xargs, sort, xxd, diff, base64, gzip and the rest. Use this for anything a dedicated tool cannot do.")
+            .put("description", "Run a real command in YOUR OWN tool shell (bundled busybox, ~300 Unix commands) and return stdout, stderr and the exit code. It runs in the tool workspace, invisible to the user. Use this for the work behind the scenes. For a command the user should watch, use terminal_run instead.")
             .put("parameters", S(JSONObject().put("command", str()).put("cwd", str()).put("timeout_ms", num()), listOf("command"))),
         "terminal_run" to JSONObject()
-            .put("description", "Run one line in the Terminal tab's own shell, in the same working directory the user sees. The line and its output appear in the terminal the user is looking at, so the user can watch or take over. Use this when you are working alongside the user at the terminal.")
+            .put("description", "Run one line in the Terminal shell the USER is watching (the ⌘ ZX tab), in the Terminal's own home directory. The line and its output appear in front of them, so they can watch or take over. Use this when working alongside the user, or when they asked for the terminal. Pair with terminal_open first.")
             .put("parameters", S(JSONObject().put("command", str()).put("timeout_ms", num()), listOf("command"))),
         "terminal_open" to JSONObject()
             .put("description", "Bring the Terminal tab to the front so the user watches the commands run in the real terminal instead of reading them in the chat.")
             .put("parameters", S(JSONObject(), emptyList())),
+        "system_shell" to JSONObject()
+            .put("description", "Run a command at SYSTEM level, above the app sandbox — the way Termux and adb do. With `level:\"root\"` it runs as uid 0 (full root: read every app's data, write /system, mount, iptables). With `level:\"shell\"` it runs as uid 2000 (the adb shell user: read most of /data, use pm/am/settings/dumpsys/input). Pass `level:\"auto\"` to use root when the phone is rooted and shell otherwise. It needs the user to have Shizuku running and to have granted ZYRAXON access — if that is missing the tool says exactly what to do, and run_shell still works. Returns the real exit code and real output.")
+            .put("parameters", S(JSONObject().put("command", str()).put("level", str()).put("timeout_ms", num()), listOf("command"))),
         "publish_website" to JSONObject()
             .put("description", "Write a site to local storage and serve it on a public port. Returns a local URL.")
             .put("parameters", S(JSONObject().put("name", str()).put("html", str())
@@ -333,7 +337,7 @@ object ToolRegistry {
 
     fun names(): List<String> = defs.map { it.first }
 
-    /** Where the assistant keeps its own files. */
+    /** Where the assistant keeps its own files: the tool workspace (`…/zyraxon`). */
     fun workspace(context: Context): File =
         File(context.getExternalFilesDir(null) ?: context.filesDir, "zyraxon").apply { mkdirs() }
 
@@ -377,6 +381,7 @@ object ToolRegistry {
             "grep_files" -> grepFiles(context, args)
             "delete_file" -> deleteFile(context, args)
             "run_shell" -> runShell(context, args)
+            "system_shell" -> systemShell(context, args)
             "publish_website" -> publish(context, args, tunnel = false)
             "publish_cloudflare" -> publish(context, args, tunnel = true)
             "publish_github" -> publishGithub(context, args)
@@ -902,6 +907,62 @@ object ToolRegistry {
                 .put("stderr", r.stderr)
                 .put("timed_out", r.timedOut)
                 .put("shell", ShellRuntime.shell(context)),
+            label
+        )
+    }
+
+    /**
+     * `system_shell` — run a command above the app sandbox, as the `shell` user
+     * or as root, through Shizuku. The user grants that access; this only uses
+     * it. When it is not there, the reply says exactly what to do and the normal
+     * `run_shell` still works, so nothing breaks for someone who never enables it.
+     */
+    private fun systemShell(context: Context, args: JSONObject): JSONObject {
+        val command = args.optString("command").trim()
+        if (command.isEmpty()) return err("bad-args", "কমান্ড দাও")
+        val timeout = args.optLong("timeout_ms", 60_000)
+        val requested = args.optString("level", "auto").trim().lowercase()
+        if (!SystemShell.available()) {
+            val hint = if (SystemShell.needsPermission()) {
+                "Shizuku চালু আছে কিন্তু ZYRAXON-কে অনুমতি দেওয়া হয়নি। Settings → সিস্টেম লেভেলে গিয়ে Allow চাপুন।"
+            } else {
+                "Shizuku চলছে না। ফোনে Shizuku ইনস্টল করে চালু করুন (রুট থাকলে Shizuku নিজেই root mode-এ চালান), তারপর Settings → সিস্টেম লেভেল → Allow।"
+            }
+            return ok(
+                JSONObject()
+                    .put("available", false)
+                    .put("code", -1)
+                    .put("stdout", "")
+                    .put("stderr", hint),
+                "সিস্টেম লেভেল এখনো চালু হয়নি — $hint"
+            )
+        }
+        val levels = SystemShell.probe(context)
+        val result = when (requested) {
+            "root" -> SystemShell.run(context, command, SystemShell.Level.ROOT, timeout)
+            "shell" -> SystemShell.run(context, command, SystemShell.Level.SHELL, timeout)
+            else -> SystemShell.runBest(context, command, timeout)
+        } ?: return err("system-shell", "সিস্টেম লেভেলে কমান্ড চালানো যায়নি")
+        val levelLabel = when {
+            levels[SystemShell.Level.ROOT] == true && requested != "shell" -> "root (uid 0)"
+            else -> "system (uid 2000)"
+        }
+        val tail = result.stdout.trim().lines().lastOrNull()?.take(160)
+        val label = buildString {
+            append("$ ${result.command} → exit ${result.code}")
+            append(" · ").append(levelLabel)
+            if (result.timedOut) append(" (timeout ${timeout}ms)")
+            if (!tail.isNullOrBlank()) append(" | ").append(tail)
+        }
+        return ok(
+            JSONObject()
+                .put("available", true)
+                .put("code", result.code)
+                .put("stdout", result.stdout)
+                .put("stderr", result.stderr)
+                .put("timed_out", result.timedOut)
+                .put("level", levelLabel)
+                .put("root", levels[SystemShell.Level.ROOT] == true),
             label
         )
     }

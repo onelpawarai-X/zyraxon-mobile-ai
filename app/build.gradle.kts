@@ -121,6 +121,12 @@ dependencies {
   // otherwise be the one shell that cannot clone a repository.
   implementation(libs.jgit)
   implementation(libs.slf4j.nop)
+  // System-level access the user opts into. Shizuku lets ZYRAXON run commands as
+  // the `shell` user (uid 2000) or as root (uid 0) on a rooted phone, without
+  // the app itself holding any privileged permission. It is the same mechanism
+  // Termux and every other "real shell" app on Android uses.
+  implementation(libs.shizuku.api)
+  implementation(libs.shizuku.provider)
   coreLibraryDesugaring(libs.desugar.jdk.libs.nio)
   // implementation(libs.play.services.location)
   implementation(libs.retrofit)

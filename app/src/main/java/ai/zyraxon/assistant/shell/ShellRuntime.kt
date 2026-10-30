@@ -76,7 +76,12 @@ object ShellRuntime {
 
     fun binDir(context: Context): File = File(toolRoot(context), "bin").apply { mkdirs() }
 
-    /** The working directory the terminal opens in, and where its files live. */
+    /**
+     * The Terminal's own working directory — the shell the user types into. It is
+     * deliberately *separate* from the tool workspace: two shells, two homes, and
+     * the assistant is told about both. Nothing the terminal does can surprise
+     * the file tools, and vice versa.
+     */
     fun home(context: Context): File =
         File(context.getExternalFilesDir(null) ?: context.filesDir, "linux").apply { mkdirs() }
 
@@ -139,7 +144,7 @@ object ShellRuntime {
             "ANDROID_ROOT" to (System.getenv("ANDROID_ROOT") ?: "/system"),
             "ANDROID_DATA" to (System.getenv("ANDROID_DATA") ?: "/data"),
             "LD_LIBRARY_PATH" to context.applicationInfo.nativeLibraryDir
-        )
+        ) + HttpProxy.env()
     }
 
     /** What a finished command produced. */
