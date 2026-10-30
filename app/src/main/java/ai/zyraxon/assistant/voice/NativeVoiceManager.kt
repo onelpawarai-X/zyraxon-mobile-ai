@@ -355,7 +355,15 @@ class NativeVoiceManager(
                 override fun onError(error: Int) {
                     _audioLevel.value = 0f
                     sessionOpen = false
-                    _isListening.value = false
+                    // A pause, a phrase that did not match, a busy engine — the
+                    // recognizer ends a session constantly and reports each end
+                    // here. Those are the normal end of one phrase: the ear stays
+                    // "listening" and the loop just reopens it, so the indicator
+                    // no longer flickers off and on. Only a failure the user must
+                    // fix flips the state, and that is the one that backs off.
+                    if (RecognizerError.needsUserAction(error)) {
+                        _isListening.value = false
+                    }
                     // A restart is only ever scheduled by the loop, never here, so
                     // a recognizer that fails instantly cannot spin.
                     if (micEnabled) scheduleRestart()
