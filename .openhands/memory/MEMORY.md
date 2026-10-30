@@ -264,16 +264,29 @@ voice are identical — do not give the service its own engine.
   `denyPermissions(SYSTEM_ALERT_WINDOW)` (which has no effect on it).
 
 ## Release history
-- **v6.4.0** (2026-10-20, pushed, tag `v6.4.0`, release id 428662148): no hardcoded models
-  — provider-driven realtime detection, protocol-aware live voice, token-free on-device
-  bundles, TTS-id filter. 5 release assets (signed APK, sha256, source zip, system prompt,
-  notes). Merged with AI Studio main via PR #2. **135 unit tests / 0 failures.**
-  versionCode 12 / versionName 6.4.0.
-- **v6.3.0**: sixty-language UI made real — 246 strings through `t()`, searchable language
-  picker, choice persisted; `LocalizationTest` (8). 118 tests / 0 failures.
-- **v6.2.0** (tag `v6.2.0`): floating bubble (`OverlayChatService`), six aura styles,
-  `read_media` by `url` + multi-frame `frames`. 105 tests. Its old schema required `path`,
-  which is why link reads never worked.
-- **v6.1.0** provider failover; **v6.0.0** parallel model loading, key verification, public
-  ZYRAXON catalogue, new launcher icon (87 tests). v3.0.0 was deleted and rebuilt once.
-- Older detail lives in `.openhands/memory/2026-10-20.md`.
+- **v6.5.0** (2026-10-30, current, release id 428853097, tag `v6.5.0`): in-app
+  auto-update (`Updater.kt` + `UpdateInstallReceiver.kt`), Settings `আপডেট` pane,
+  launch banner. **All older tags/releases were deleted.** New signing key; installing
+  over an older build needs one uninstall, then updates are in place. `UpdaterTest`
+  (8) parses a **captured real GitHub payload**; 170 tests / 0 failures. versionCode 13.
+- **v6.4.0**: no hardcoded models — provider-driven realtime detection, protocol-aware
+  live voice, token-free on-device bundles, TTS-id filter. 135 tests. versionCode 12.
+- **v6.3.0**: sixty-language UI (246 strings via `t()`), searchable language picker.
+- **v6.2.0**: floating bubble (`OverlayChatService`), six aura styles, `read_media` by
+  `url` + multi-frame `frames` (its old schema required `path`).
+- **v6.1.0** provider failover; **v6.0.0** parallel model loading, key verification,
+  public ZYRAXON catalogue. v3.0.0 was deleted and rebuilt once.
+- Older detail lives in `.openhands/memory/2026-10-20.md`; the update system and its
+  gotchas in `.openhands/memory/2026-10-30.md`.
+
+## Build gotchas
+- `ai.zyraxon.assistant.BuildConfig` is **hand-written and package-private**; it
+  **shadows** the generated one and has no `VERSION_NAME`. Read the version from
+  `PackageManager.getPackageInfo(...).versionName` (see `Updater.installedVersionName`).
+- `org.json.JSONObject` is not mocked on plain JVM; parse tests need
+  `@RunWith(RobolectricTestRunner::class)`.
+- `assembleRelease --offline` needs `-x lintVitalRelease -x lintVitalAnalyzeRelease`.
+  The signed APK is ~146 MB.
+- Release signing: `zyraxon-release-v2.jks` (alias `upload`, pw `zyraxon2026`), kept in
+  GitHub Actions secrets `ANDROID_KEYSTORE_BASE64` / `_PASSWORD` / `_ALIAS` / `_KEY_PASSWORD`.
+  The pre-v6.5.0 key is gone and unrecoverable.
