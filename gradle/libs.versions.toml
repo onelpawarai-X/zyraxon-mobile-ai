@@ -39,9 +39,15 @@ robolectric = "4.16.1"
 credentials = "1.5.0"
 googleid = "1.1.1"
 mediapipeGenai = "0.10.35"
+jgit = "5.13.3.202401111512-r"
+slf4j = "1.7.36"
+desugarJdkLibsNio = "2.1.5"
 
 
 [libraries]
+jgit = { group = "org.eclipse.jgit", name = "org.eclipse.jgit", version.ref = "jgit" }
+slf4j-nop = { group = "org.slf4j", name = "slf4j-nop", version.ref = "slf4j" }
+desugar-jdk-libs-nio = { group = "com.android.tools", name = "desugar_jdk_libs_nio", version.ref = "desugarJdkLibsNio" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

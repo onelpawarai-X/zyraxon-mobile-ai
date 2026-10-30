@@ -57,6 +57,7 @@ fun TabSelector(
             .clip(RoundedCornerShape(24.dp))
             .background(Glass.rowFill(0.30f))
             .border(1.dp, Glass.cyanFill.copy(alpha = 0.16f), RoundedCornerShape(24.dp))
+            .horizontalScroll(rememberScrollState())
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -78,11 +79,11 @@ fun TabSelector(
                     .clip(RoundedCornerShape(20.dp))
                     .then(bgModifier)
                     .clickable { onTabSelected(tab) }
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                    .padding(horizontal = 14.dp, vertical = 6.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = tab.title,
+                    text = if (tab == AppTab.TERMINAL) "⌘ ZX" else tab.title,
                     color = if (isSelected) Glass.textPrimary else Glass.textSecondary,
                     fontSize = 13.sp,
                     fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
