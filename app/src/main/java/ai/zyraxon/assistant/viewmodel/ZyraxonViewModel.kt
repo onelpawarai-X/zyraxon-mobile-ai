@@ -472,10 +472,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // Connect STT
         voiceManager.onSpeechRecognized = { text, isFinal ->
             // The microphone can hear the phone's own speaker. Anything that
-            // arrives while the assistant is speaking is the assistant's own
-            // voice coming back, so it is dropped rather than sent as a user
-            // message — that echo is what made the app answer itself.
-            if (text.isNotBlank() && !isSpeaking.value && !liveVoice.isActive) {
+            // arrives while the assistant is speaking — or in the short tail
+            // after the last word — is the assistant's own voice coming back, so
+            // it is dropped rather than sent as a user message. That echo is what
+            // made the app answer itself and post its own words into the chat.
+            val echo = isSpeaking.value || voiceManager.isSpeakerActive()
+            if (text.isNotBlank() && !echo && !liveVoice.isActive) {
                 // The user speaking over the assistant is a normal interruption,
                 // not an error: cut the voice and take the new words.
                 if (!isFinal) onUserStartedSpeaking()

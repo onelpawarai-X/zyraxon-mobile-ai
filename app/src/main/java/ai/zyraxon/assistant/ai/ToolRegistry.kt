@@ -4,6 +4,7 @@ import ai.zyraxon.assistant.DeviceBridge
 import ai.zyraxon.assistant.MainActivity
 import ai.zyraxon.assistant.ai.OnDeviceModel
 import ai.zyraxon.assistant.lock.DeviceLocker
+import ai.zyraxon.assistant.shell.BackgroundCommandService
 import ai.zyraxon.assistant.shell.GitRuntime
 import ai.zyraxon.assistant.shell.ShellRuntime
 import ai.zyraxon.assistant.shell.SystemShell
@@ -236,6 +237,9 @@ object ToolRegistry {
         "system_shell" to JSONObject()
             .put("description", "Run a command at SYSTEM level, above the app sandbox — the way Termux and adb do. With `level:\"root\"` it runs as uid 0 (full root: read every app's data, write /system, mount, iptables). With `level:\"shell\"` it runs as uid 2000 (the adb shell user: read most of /data, use pm/am/settings/dumpsys/input). Pass `level:\"auto\"` to use root when the phone is rooted and shell otherwise. It needs the user to have Shizuku running and to have granted ZYRAXON access — if that is missing the tool says exactly what to do, and run_shell still works. Returns the real exit code and real output.")
             .put("parameters", S(JSONObject().put("command", str()).put("level", str()).put("timeout_ms", num()), listOf("command"))),
+        "background_command" to JSONObject()
+            .put("description", "Run one command in a background service so it keeps running after the user closes the app — for long jobs like a big download, a clone or a build. It shows a notification with a Stop button. Use `action:\"start\"` with a command, or `action:\"stop\"` to end the running one, or `action:\"status\"` to see whether one is running and how it ended.")
+            .put("parameters", S(JSONObject().put("action", str()).put("command", str()), listOf("action"))),
         "publish_website" to JSONObject()
             .put("description", "Write a site to local storage and serve it on a public port. Returns a local URL.")
             .put("parameters", S(JSONObject().put("name", str()).put("html", str())
@@ -382,6 +386,7 @@ object ToolRegistry {
             "delete_file" -> deleteFile(context, args)
             "run_shell" -> runShell(context, args)
             "system_shell" -> systemShell(context, args)
+            "background_command" -> backgroundCommand(context, args)
             "publish_website" -> publish(context, args, tunnel = false)
             "publish_cloudflare" -> publish(context, args, tunnel = true)
             "publish_github" -> publishGithub(context, args)
@@ -909,6 +914,38 @@ object ToolRegistry {
                 .put("shell", ShellRuntime.shell(context)),
             label
         )
+    }
+
+    /**
+     * `background_command` — a command that outlives the app. Long jobs go here
+     * so closing the app does not kill them, and the user can stop the running
+     * one with the notification's button or `action:"stop"`.
+     */
+    private fun backgroundCommand(context: Context, args: JSONObject): JSONObject {
+        return when (args.optString("action", "status").trim().lowercase()) {
+            "start" -> {
+                val command = args.optString("command").trim()
+                if (command.isEmpty()) return err("bad-args", "কমান্ড দাও")
+                BackgroundCommandService.start(context, command)
+                ok(
+                    JSONObject().put("running", true).put("command", command),
+                    "ব্যাকগ্রাউন্ডে চালু: $command — অ্যাপ বন্ধ করলেও চলবে, নোটিফিকেশনের বাটনে বন্ধ করা যাবে"
+                )
+            }
+            "stop" -> {
+                BackgroundCommandService.stop(context)
+                ok(JSONObject().put("running", false), "ব্যাকগ্রাউন্ড কমান্ড বন্ধ করা হয়েছে")
+            }
+            else -> ok(
+                JSONObject()
+                    .put("running", BackgroundCommandService.running)
+                    .put("command", BackgroundCommandService.lastCommand)
+                    .put("exit", BackgroundCommandService.lastExit)
+                    .put("output", BackgroundCommandService.lastOutput),
+                if (BackgroundCommandService.running) "একটা কমান্ড চলছে"
+                else "এখন কোনো ব্যাকগ্রাউন্ড কমান্ড চলছে না"
+            )
+        }
     }
 
     /**
