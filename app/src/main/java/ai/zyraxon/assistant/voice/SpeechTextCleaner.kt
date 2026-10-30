@@ -9,6 +9,10 @@ object SpeechTextCleaner {
 
     fun clean(text: String): String {
         var out = text
+        // The engine injects a status line for every tool it runs ("⚙️ `type_text`
+        // → ...") into the reply stream so the user can watch the work happen.
+        // It is shown, never spoken: reading tool names aloud is noise.
+        out = out.replace(Regex("(?m)^[ \\t]*\\u2699\\uFE0F?.*$"), " ")
         out = out.replace(Regex("```[\\s\\S]*?```"), " ")
         out = out.replace(Regex("`([^`]*)`"), "$1")
         out = out.replace(Regex("!?\\[[^\\]]*\\]\\([^)]*\\)"), " ")

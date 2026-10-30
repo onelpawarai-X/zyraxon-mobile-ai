@@ -12,6 +12,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -129,8 +131,14 @@ object ToolRegistry {
                     .put("status", str().put("enum", JSONArray(listOf("pending", "in_progress", "done")))), listOf("id", "title", "status")))),
                 listOf("todos"))),
         "open_app" to JSONObject()
-            .put("description", "Open a real app installed on this phone, by package name or by its visible name.")
+            .put("description", "Open a real app installed on this phone. Pass `name` with the app the user named (ইউটিউব, ফেসবুক, ক্যামেরা, WhatsApp, সেটিংস…) or `package`. Never ask the user which app when they already said its name — pass that name straight here.")
             .put("parameters", S(JSONObject().put("package", str()).put("name", str()), emptyList())),
+        "youtube_play" to JSONObject()
+            .put("description", "Play a song or video on YouTube. Call this for any request like 'ইউটিউবে <গান/ভিডিও> চালাও/প্লে করো' — it opens YouTube at the search results for that exact query, so the music is one tap away. Never reply with a question when the user already named what to play.")
+            .put("parameters", S(JSONObject().put("query", str()), listOf("query"))),
+        "network_status" to JSONObject()
+            .put("description", "The real connection state right now: whether the phone is online, whether it is on Wi-Fi or mobile data, and the Wi-Fi network name. Call this before answering anything about Wi-Fi, internet, or connection — never guess.")
+            .put("parameters", S(JSONObject(), emptyList())),
         "list_apps" to JSONObject()
             .put("description", "List every app installed on this phone (label and package). Use it when you do not know a package name.")
             .put("parameters", S(JSONObject(), emptyList())),
@@ -279,8 +287,8 @@ object ToolRegistry {
             .put("description", "Hang up the current call.")
             .put("parameters", S(JSONObject(), emptyList())),
         "call_dial" to JSONObject()
-            .put("description", "Place a call to a number.")
-            .put("parameters", S(JSONObject().put("number", str()), listOf("number"))),
+            .put("description", "Place a real call. Pass `number` for a phone number, or `name` for a saved contact (মা, বাবা, রহিম…). Call this whenever the user says to call someone — never just say you are calling.")
+            .put("parameters", S(JSONObject().put("number", str()).put("name", str()), emptyList())),
         "request_permission" to JSONObject()
             .put("description", "Open the system dialog that lets the user grant a permission with one tap. Use it when a tool fails for a missing permission. name is one of: camera, microphone, location, accessibility, overlay, notifications, files.")
             .put("parameters", S(JSONObject().put("name", str()), listOf("name"))),
@@ -349,12 +357,26 @@ object ToolRegistry {
         val p = (path ?: "").trim()
         if (p.isEmpty()) return workspace(context)
         val f = File(p)
-        return if (f.isAbsolute) f else File(workspace(context), p)
+        if (!f.isAbsolute) return File(workspace(context), p)
+        // The model often reaches for a desktop-style path ("/home/user/site",
+        // "/tmp/x.html") that does not exist in the app sandbox and cannot be
+        // created there. Writing to it fails with EACCES and the user is told
+        // "ফাইল লেখা যায়নি". A path outside our own storage is mapped into the
+        // workspace instead, so the write always lands somewhere real.
+        val allowed = context.getExternalFilesDir(null)?.absolutePath
+            ?: context.filesDir.absolutePath
+        val inAppStorage = f.absolutePath.startsWith(context.filesDir.absolutePath) ||
+            (allowed.isNotEmpty() && f.absolutePath.startsWith(allowed))
+        if (inAppStorage) return f
+        val relative = p.trimStart('/', '\\')
+        return File(workspace(context), relative)
     }
 
     suspend fun execute(context: Context, name: String, args: JSONObject): JSONObject = try {
         when (name) {
             "open_app" -> openApp(context, args)
+            "youtube_play" -> youtubePlay(context, args)
+            "network_status" -> networkStatus(context)
             "list_apps" -> ok(DeviceBridge.listApps(context).take(6000), "ইনস্টল করা অ্যাপের তালিকা")
             "launch_url" -> launchUrl(context, args)
             "verify_url" -> verifyUrl(args)
@@ -396,7 +418,7 @@ object ToolRegistry {
             "call_state" -> ok(DeviceBridge.callState(), "কলের অবস্থা")
             "call_answer" -> ok(DeviceBridge.answerCall(context), "কল রিসিভ")
             "call_hangup" -> ok(DeviceBridge.hangUpCall(context), "কল কেটে দেওয়া")
-            "call_dial" -> ok(DeviceBridge.dial(context, args.optString("number")), "কল করা হয়েছে")
+            "call_dial" -> callDial(context, args)
             "request_permission" -> requestPermission(context, args.optString("name"))
             "open_settings" -> openSettings(context, args.optString("page"))
             "voice_change" -> changeVoice(context, args)
@@ -419,13 +441,107 @@ object ToolRegistry {
 
     private fun openApp(context: Context, args: JSONObject): JSONObject {
         val target = args.optString("package").ifBlank { args.optString("name") }
-        if (target.isBlank()) return err("no-target", "কোন অ্যাপ খুলব বলোনি")
-        val resolved = DeviceBridge.resolvePackage(context, target)
-        if (resolved.isNullOrBlank()) {
+            .ifBlank { args.optString("app") }
+        if (target.isBlank()) {
+            return err("no-target", "কোন অ্যাপ খুলব বলোনি — অ্যাপের নাম বা প্যাকেজ দাও")
+        }
+        // The model rarely knows a package name, and asking the user "which app?"
+        // when they already named one (ইউটিউব, ফেসবুক, ক্যামেরা…) is the defect
+        // this table removes. Common names resolve without a list_apps round.
+        var resolved = DeviceBridge.resolvePackage(context, target)
+        if (resolved.isBlank()) {
+            resolved = KNOWN_APPS[target.trim().lowercase()]
+                ?.takeIf { context.packageManager.getLaunchIntentForPackage(it) != null }
+                ?: ""
+        }
+        if (resolved.isBlank()) {
             return err("app-not-installed", "এই ফোনে \"$target\" ইনস্টল করা নেই")
         }
         DeviceBridge.openApp(context, resolved)
         return ok(resolved, "\"$target\" খোলা হয়েছে")
+    }
+
+    /**
+     * Plays a song or video on YouTube: builds a real search URL and opens it, so
+     * the result page loads without a single tap. The user says "ইউটিউবে অমুক গান
+     * প্লে করো" and expects the music, not a question.
+     */
+    private fun youtubePlay(context: Context, args: JSONObject): JSONObject {
+        val query = args.optString("query").ifBlank { args.optString("text") }
+            .ifBlank { args.optString("name") }
+        if (query.isBlank()) return err("no-query", "কী প্লে করব বলোনি")
+        val encoded = java.net.URLEncoder.encode(query, "UTF-8")
+        val url = "https://www.youtube.com/results?search_query=$encoded"
+        // The YouTube app opens a search result page; the browser does the same
+        // when the app is absent. Either way the music is one tap away, which is
+        // the honest result — nothing pretends the song is already playing.
+        val intent = if (context.packageManager.getLaunchIntentForPackage(YOUTUBE_PACKAGE) != null) {
+            Intent(Intent.ACTION_VIEW, Uri.parse(url)).setPackage(YOUTUBE_PACKAGE)
+        } else {
+            Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        }.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            context.startActivity(intent)
+            ok(JSONObject().put("url", url), "ইউটিউবে \"$query\" খোলা হয়েছে")
+        } catch (e: Exception) {
+            err((e.message ?: e.toString()), "ইউটিউব খোলা যায়নি: $query")
+        }
+    }
+
+    /**
+     * The real connection state, read from the system. Asking the assistant "what
+     * is my Wi-Fi status?" used to get an invented answer; this returns the facts
+     * so it can report them instead.
+     */
+    private fun networkStatus(context: Context): JSONObject {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        val out = JSONObject()
+        val net = cm?.activeNetwork
+        val caps = net?.let { cm.getNetworkCapabilities(it) }
+        val wifi = caps?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+        val cellular = caps?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
+        val ethernet = caps?.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) == true
+        val connected = caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+        out.put("connected", connected)
+        out.put("transport", when {
+            wifi -> "wifi"; cellular -> "cellular"; ethernet -> "ethernet"; else -> "none"
+        })
+        out.put("wifi", wifi)
+        out.put("cellular", cellular)
+        out.put("wifiEnabled", runCatching {
+            (context.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager).isWifiEnabled
+        }.getOrDefault(false))
+        val name = runCatching {
+            val wm = context.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
+            @Suppress("DEPRECATION")
+            wm.connectionInfo?.ssid?.trim('"')
+        }.getOrNull()
+        out.put("ssid", if (name.isNullOrBlank() || name == "<unknown ssid>") "" else name)
+        val label = when {
+            !connected -> "ইন্টারনেট নেই"
+            wifi -> "ওয়াই-ফাই চালু" + (if (!name.isNullOrBlank() && name != "<unknown ssid>") " ($name)" else "")
+            cellular -> "মোবাইল ডেটা চালু"
+            else -> "সংযোগ আছে"
+        }
+        return ok(out, label)
+    }
+
+    private fun callDial(context: Context, args: JSONObject): JSONObject {
+        val number = args.optString("number").trim()
+        if (number.isNotBlank()) {
+            return if (DeviceBridge.dial(context, number)) ok(number, "কল করা হচ্ছে: $number")
+            else err("dial-failed", "কল করা যায়নি: $number")
+        }
+        val name = args.optString("name").ifBlank { args.optString("contact") }.trim()
+        if (name.isBlank()) return err("no-target", "কাকে কল করব বলোনি")
+        // A spoken name is looked up in the contact book, so "মা-কে কল করো" places
+        // a real call instead of the assistant announcing a call it never made.
+        val found = DeviceBridge.numberForName(context, name)
+        if (found.isBlank()) {
+            return err("contact-not-found", "কনট্যাক্টে \"$name\" পাওয়া যায়নি — নম্বরটা বলে দাও")
+        }
+        return if (DeviceBridge.dial(context, found)) ok(found, "কল করা হচ্ছে: $name")
+        else err("dial-failed", "কল করা যায়নি: $name")
     }
 
     private fun launchUrl(context: Context, args: JSONObject): JSONObject {
@@ -1616,4 +1732,34 @@ object ToolRegistry {
         latch.await(3, TimeUnit.SECONDS)
         return launched
     }
+
+    private const val YOUTUBE_PACKAGE = "com.google.android.youtube"
+
+    /**
+     * Common app names the user says in Bangla or English, mapped to the package
+     * that ships them. `open_app` consults this before giving up, so a named app
+     * is opened without a "which app did you mean?" round-trip.
+     */
+    private val KNOWN_APPS: Map<String, String> = mapOf(
+        "youtube" to YOUTUBE_PACKAGE, "ইউটিউব" to YOUTUBE_PACKAGE, "ইউটিউবে" to YOUTUBE_PACKAGE,
+        "youtube music" to "com.google.android.apps.youtube.music",
+        "facebook" to "com.facebook.katana", "ফেসবুক" to "com.facebook.katana",
+        "messenger" to "com.facebook.orca", "মেসেঞ্জার" to "com.facebook.orca",
+        "whatsapp" to "com.whatsapp", "হোয়াটসঅ্যাপ" to "com.whatsapp", "হোয়াটসঅ্যাপে" to "com.whatsapp",
+        "instagram" to "com.instagram.android", "ইনস্টাগ্রাম" to "com.instagram.android",
+        "telegram" to "org.telegram.messenger", "টেলিগ্রাম" to "org.telegram.messenger",
+        "chrome" to "com.android.chrome", "ক্রোম" to "com.android.chrome",
+        "gmail" to "com.google.android.gm", "জিমেইল" to "com.google.android.gm",
+        "maps" to "com.google.android.apps.maps", "গুগল ম্যাপ" to "com.google.android.apps.maps",
+        "play store" to "com.android.vending", "প্লে স্টোর" to "com.android.vending",
+        "settings" to "com.android.settings", "সেটিংস" to "com.android.settings",
+        "camera" to "com.android.camera", "ক্যামেরা" to "com.android.camera",
+        "gallery" to "com.google.android.apps.photos", "গ্যালারি" to "com.google.android.apps.photos",
+        "calculator" to "com.google.android.calculator", "ক্যালকুলেটর" to "com.google.android.calculator",
+        "clock" to "com.google.android.deskclock", "ঘড়ি" to "com.google.android.deskclock",
+        "phone" to "com.google.android.dialer", "dialer" to "com.google.android.dialer", "ফোন" to "com.google.android.dialer",
+        "x" to "com.twitter.android", "twitter" to "com.twitter.android", "টুইটার" to "com.twitter.android",
+        "spotify" to "com.spotify.music", "স্পটিফাই" to "com.spotify.music",
+        "netflix" to "com.netflix.mediaclient", "নেটফ্লিক্স" to "com.netflix.mediaclient"
+    )
 }

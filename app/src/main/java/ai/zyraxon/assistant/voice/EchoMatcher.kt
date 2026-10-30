@@ -20,15 +20,27 @@ object EchoMatcher {
      * Short fragments are never treated as echo — a genuine "হ্যাঁ" or "okay"
      * must still reach the assistant — so at least two content words must match.
      */
-    fun isOwnSpeech(heard: String, reply: String?): Boolean {
+    fun isOwnSpeech(heard: String, reply: String?): Boolean =
+        isOwnSpeech(heard, reply, strict = false)
+
+    /**
+     * [strict] is used while the phone's speaker is still ringing. Then the bar
+     * is deliberately higher: a phrase that shares even one content word with the
+     * reply is treated as echo, and anything shorter than three content words is
+     * too, because the assistant's own voice is what the ear is hearing. A real
+     * interruption is a full new sentence, so it still gets through.
+     */
+    fun isOwnSpeech(heard: String, reply: String?, strict: Boolean): Boolean {
         if (reply.isNullOrBlank()) return false
         val heardWords = words(heard)
-        if (heardWords.size < 2) return false
+        if (heardWords.isEmpty()) return false
+        if (!strict && heardWords.size < 2) return false
+        if (strict && heardWords.size < 3) return true
         val replyLower = reply.lowercase()
         val overlap = heardWords.count { replyLower.contains(it) }
         // Half the words matching is enough: a recognizer rarely transcribes the
         // speaker's own voice verbatim, but the content words land.
-        return overlap * 2 >= heardWords.size
+        return if (strict) overlap >= 1 else overlap * 2 >= heardWords.size
     }
 
     private fun words(text: String): List<String> =

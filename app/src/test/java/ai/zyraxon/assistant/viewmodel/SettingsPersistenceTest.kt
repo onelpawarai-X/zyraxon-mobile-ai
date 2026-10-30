@@ -159,6 +159,37 @@ class SettingsPersistenceTest {
     }
 
     @Test
+    fun `the live voice preference survives a restart`() {
+        // The preference used to be written but never read back, so the model's
+        // own speech-to-speech voice worked once and then never returned.
+        val first = newViewModel()
+        first.setLiveVoicePreferred(true)
+
+        assertTrue("লাইভ ভয়েস পছন্দ সেভ হয়নি", newViewModel().liveVoicePreferred.value)
+    }
+
+    @Test
+    fun `a partial catalogue never replaces the saved model`() {
+        // Providers answer one at a time, so a partial list is missing most of
+        // the catalogue. Adopting from it discarded the user's saved model the
+        // moment their own provider had not replied yet.
+        val vm = newViewModel()
+        val saved = AiModel(
+            id = "gemini-flash-latest", name = "Gemini Flash",
+            category = "Gemini", description = "Gemini", provider = "gemini", isFree = true
+        )
+        vm.setModel(saved)
+
+        // A partial list that does not include the saved model yet.
+        vm.adoptDefaultIfUnset(
+            listOf(AiModel("llama-3.3-70b-versatile", "Llama", "Groq", "Groq", "groq", true)),
+            complete = false
+        )
+        assertEquals("আংশিক তালিকায় সেভ করা মডেল বদলে গেছে",
+            "gemini-flash-latest", vm.selectedModel.value.id)
+    }
+
+    @Test
     fun `the background mode survives a restart`() {
         val first = newViewModel()
         first.setBgMode(ai.zyraxon.assistant.model.BgAnimationMode.entries.first { it != first.bgMode.value })

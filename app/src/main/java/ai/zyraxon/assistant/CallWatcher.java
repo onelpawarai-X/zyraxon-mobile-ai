@@ -160,6 +160,25 @@ final class CallWatcher {
         return false;
     }
 
+    /**
+     * The phone number for a contact name the user spoke, or "" when no contact
+     * matches. Lets "মা-কে কল করো" place a real call instead of the assistant
+     * saying it is calling and doing nothing.
+     */
+    static String numberForName(Context ctx, String name) {
+        if (name == null || name.trim().isEmpty()) return "";
+        if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) return "";
+        try {
+            Uri uri = Uri.withAppendedPath(android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_FILTER_URI, Uri.encode(name.trim()));
+            android.database.Cursor c = ctx.getContentResolver().query(uri,
+                    new String[]{android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER}, null, null, null);
+            if (c != null) {
+                try { if (c.moveToFirst()) return c.getString(0); } finally { c.close(); }
+            }
+        } catch (Exception ignored) {}
+        return "";
+    }
+
     /** Best-effort caller name from the contact book. */
     private static String lookupName(Context ctx, String num) {
         if (num == null || num.isEmpty()) return "";

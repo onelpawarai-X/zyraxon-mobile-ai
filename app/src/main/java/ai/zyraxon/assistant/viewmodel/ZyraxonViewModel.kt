@@ -24,6 +24,8 @@ import ai.zyraxon.assistant.model.ToolExecutionItem
 import ai.zyraxon.assistant.model.WorkspaceFile
 import ai.zyraxon.assistant.shell.GitRuntime
 import ai.zyraxon.assistant.shell.ShellRuntime
+import ai.zyraxon.assistant.shell.SystemShell
+import ai.zyraxon.assistant.shell.TermuxRuntime
 import ai.zyraxon.assistant.ai.OnDeviceModel
 import ai.zyraxon.assistant.ai.ProviderCatalog
 import ai.zyraxon.assistant.ai.ProviderSpec
@@ -196,20 +198,32 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * live one. A realtime model whose live session cannot open falls back to the
      * phone's voice rather than going silent.
      */
-    private val _liveVoicePreferred = MutableStateFlow(false)
+    private val _liveVoicePreferred = MutableStateFlow(prefs.getBoolean("live_voice_preferred", false))
     val liveVoicePreferred: StateFlow<Boolean> = _liveVoicePreferred.asStateFlow()
 
     private val _autoSend = MutableStateFlow(prefs.getBoolean("auto_send", true))
     val autoSend: StateFlow<Boolean> = _autoSend.asStateFlow()
 
     /**
-     * True once the user picks a voice themselves in Settings. Until then the
-     * character decides the voice; after that the user's pick is kept.
+     * True once the user picks a voice themselves, in Settings or through the
+     * `voice_change` tool. Until then the character decides the voice; after that
+     * the user's pick is kept — including across a restart. Without this a male
+     * choice was silently replaced by the default character's female voice on the
+     * next launch, which is the "I only ever hear the female voice" report.
      */
     private val _voiceChosenByUser = MutableStateFlow(prefs.getBoolean("voice_chosen_by_user", false))
 
     private val _customBgUrl = MutableStateFlow(prefs.getString("custom_bg_url", "") ?: "")
     val customBgUrl: StateFlow<String> = _customBgUrl.asStateFlow()
+
+    /**
+     * The Settings pane the user was last on, kept in preferences so it survives
+     * a restart. Without it the sheet reopened on the first tab every time, which
+     * read as the app forgetting the section the user was working in.
+     */
+    var settingsPane: String
+        get() = prefs.getString("settings_pane", "session") ?: "session"
+        set(value) = prefs.edit().putString("settings_pane", value).apply()
 
     private val _animSpeed = MutableStateFlow(prefs.getFloat("anim_speed", 1.0f))
     val animSpeed: StateFlow<Float> = _animSpeed.asStateFlow()
@@ -453,11 +467,33 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // it is answered by the same brain as the chat rather than a fixed one.
         aiEngine.samplingModelProvider = { _selectedModel.value }
 
-        // Restore the user's own voice choice, defaulting to the female tone.
-        val savedGender = prefs.getString("voice_gender", "female") ?: "female"
-        voiceManager.setVoiceGender(savedGender)
+        // The voice is restored from the user's own choice when they have made
+        // one, and from the saved character otherwise. Reading the saved gender
+        // back is what stops a male choice being reset to the default female
+        // voice on the next launch.
         _voiceChosenByUser.value = prefs.getBoolean("voice_chosen_by_user", false)
+        val savedGender = if (_voiceChosenByUser.value) {
+            prefs.getString("voice_gender", null)
+        } else {
+            null
+        }
+        voiceManager.setVoiceGender(savedGender ?: genderForPersona(_selectedPersona.value))
         prefs.getString("voice_language", null)?.let { voiceManager.setVoiceLanguage(it) }
+
+        // A downloaded on-device model is reloaded on launch. Without this the
+        // file sat in app storage unused: the user downloaded it, and the next
+        // start forgot which bundle was loaded, so every turn went to the cloud
+        // and the local model looked broken.
+        restoreOnDeviceModel()
+
+        // The live speech-to-speech session is reopened when the user left it on
+        // and the restored model is a realtime one. Without this the preference
+        // was saved but never honoured again, so the model's own voice worked
+        // once and then never came back — the "speech-to-speech does not work"
+        // report.
+        if (_liveVoicePreferred.value && _selectedModel.value.isRealtime) {
+            viewModelScope.launch { startLiveVoice() }
+        }
 
         // Observe messages from SQLite Room Database
         viewModelScope.launch {
@@ -498,26 +534,28 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         }
 
         // Connect STT
-        voiceManager.onSpeechRecognized = { text, isFinal ->
-            // The microphone can hear the phone's own speaker. Anything that
-            // arrives while the assistant is speaking — or in the short tail
-            // after the last word — is the assistant's own voice coming back, so
-            // it is dropped rather than sent as a user message. That echo is what
-            // made the app answer itself and post its own words into the chat.
-            val echo = isSpeaking.value || voiceManager.isSpeakerActive()
-            // A second net for the same defect: the engine's own voice can reach
-            // the recognizer a beat after the guard window closes. If the words
-            // match what was just spoken back to the user, they are the reply —
-            // never a new user turn — so they are dropped even then.
-            val repeatsReply = looksLikeOwnSpeech(text)
-            if (text.isNotBlank() && !echo && !repeatsReply && !liveVoice.isActive) {
-                // The user speaking over the assistant is a normal interruption,
-                // not an error: cut the voice and take the new words.
-                if (!isFinal) onUserStartedSpeaking()
+        voiceManager.onSpeechRecognized = stt@{ text, isFinal ->
+            // The assistant's own voice is filtered by *text*, never by muting
+            // the microphone. Muting for the whole reply is what stopped the user
+            // cutting in: they had to wait for the last word. Now the ear stays
+            // open, and only a phrase that really is the reply coming back is
+            // dropped — so a genuine interruption lands mid-answer.
+            val speakerActive = voiceManager.isSpeakerActive()
+            val repeatsReply = looksLikeOwnSpeech(text, speakerActive)
+            if (text.isBlank() || repeatsReply || liveVoice.isActive) return@stt
+            if (!isFinal) {
+                // A partial only ever *interrupts*: it stops the assistant so the
+                // user can finish their sentence, and it is shown in the box. It
+                // is never sent on its own, because a partial during speech is
+                // usually a fragment of the reply itself.
+                onUserStartedSpeaking()
                 _inputText.value = text
-                if (isFinal && _autoSend.value) {
-                    sendMessage(text)
-                }
+                return@stt
+            }
+            _inputText.value = text
+            if (_autoSend.value) {
+                onUserStartedSpeaking()
+                sendMessage(text)
             }
         }
 
@@ -537,9 +575,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * lapses, so the text itself is compared: if most of what was heard already
      * appears in the reply the user just heard, it is the reply coming back.
      */
-    private fun looksLikeOwnSpeech(heard: String): Boolean {
+    private fun looksLikeOwnSpeech(heard: String, strict: Boolean = false): Boolean {
         val reply = _messages.value.lastOrNull { it.role == MessageRole.ASSISTANT }?.text
-        return ai.zyraxon.assistant.voice.EchoMatcher.isOwnSpeech(heard, reply)
+        return ai.zyraxon.assistant.voice.EchoMatcher.isOwnSpeech(heard, reply, strict)
     }
 
     private fun currentTimeString(): String {
@@ -553,6 +591,36 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private fun restoreSavedPersona(): Persona {
         val id = prefs.getString("selected_persona_id", null)
         return ZyraxonAiEngine.PERSONAS.firstOrNull { it.id == id } ?: ZyraxonAiEngine.PERSONAS[0]
+    }
+
+    /**
+     * The voice that belongs to a character. The boyfriend speaks male; every
+     * other character speaks female. Kept in one place so the startup path and
+     * the switch path can never disagree about which voice a character uses.
+     */
+    private fun genderForPersona(persona: Persona): String =
+        if (persona.id == "boyfriend") "male" else "female"
+
+    /**
+     * Reloads the on-device bundle the user last loaded, off the main thread. A
+     * large `.task` takes a few seconds to map into memory, so the app is not
+     * blocked; a failure simply leaves the cloud path in charge.
+     */
+    private fun restoreOnDeviceModel() {
+        val path = prefs.getString("on_device_model_path", null) ?: return
+        if (path.isBlank()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { onDeviceModel.load(path) }
+        }
+    }
+
+    /**
+     * Records which on-device bundle is in use (or clears it), so the next launch
+     * reloads the same one. Called from the on-device panel after a load/unload.
+     */
+    fun rememberOnDeviceModel(path: String?) {
+        if (path.isNullOrBlank()) prefs.edit().remove("on_device_model_path").apply()
+        else prefs.edit().putString("on_device_model_path", path).apply()
     }
 
     /**
@@ -582,16 +650,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /**
-     * Applies the voice the user picked in Settings. Both voices must work: the
-     * male one for "প্রেমিক" and the female one for everything else. The chosen
-     * gender is remembered so the next launch speaks with the same voice.
+     * Applies a voice the user picked in Settings, as a preview. The character
+     * still owns the voice — boyfriend mode is always male and every other mode
+     * female — so this pick lasts until the next character switch or launch. That
+     * is deliberate: the user asked for the character to decide the voice.
      */
     fun setVoiceGender(gender: String) {
         val g = if (gender.lowercase() == "male") "male" else "female"
         voiceManager.setVoiceGender(g)
         prefs.edit().putString("voice_gender", g).apply()
-        // The user made this choice deliberately, so a later persona change must
-        // not quietly override it.
+        // The user made this choice deliberately, so a later character switch must
+        // not quietly override it, and the next launch speaks with the same voice.
         _voiceChosenByUser.value = true
         prefs.edit().putBoolean("voice_chosen_by_user", true).apply()
         val sample = if (g == "female") "হ্যালো সোনা! এটি মিষ্টি মেয়ের কণ্ঠ।"
@@ -611,12 +680,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 val live = aiEngine.fetchLiveModels { partial ->
                     if (partial.isNotEmpty()) {
                         _availableModels.value = partial
-                        adoptDefaultIfUnset(partial)
+                        // A partial list holds only the providers that have
+                        // answered so far. Adopting from it would replace the
+                        // user's saved model the moment their provider had not
+                        // replied yet, which is what made a chosen model revert
+                        // on every launch.
+                        adoptDefaultIfUnset(partial, complete = false)
                     }
                 }
                 if (live.isNotEmpty()) {
                     _availableModels.value = live
-                    adoptDefaultIfUnset(live)
+                    adoptDefaultIfUnset(live, complete = true)
                 }
             } catch (_: Exception) {
             } finally {
@@ -629,11 +703,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * Picks the first catalogue model only when nothing was restored from the last
      * session. A saved choice is never overwritten by the refresh, which is what
      * made the model revert to the top of the list on every launch.
+     *
+     * [complete] is true only for the finished catalogue. The "saved id is gone"
+     * branch needs the whole list: a provider that has not answered yet is not
+     * the same as a provider that has retired the id, and treating the first as
+     * the second discarded the user's choice.
      */
-    internal fun adoptDefaultIfUnset(models: List<AiModel>) {
+    internal fun adoptDefaultIfUnset(models: List<AiModel>, complete: Boolean = true) {
+        if (models.isEmpty()) return
         val current = _selectedModel.value
         if (current.id.isBlank()) {
-            setModel(models[0])
+            if (complete) setModel(models[0])
             return
         }
         val match = models.firstOrNull { it.id == current.id }
@@ -643,10 +723,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             if (match.name != current.name) _selectedModel.value = match
             return
         }
-        // The saved id is gone from the catalogue — Google retires ids such as
-        // gemini-2.5-flash, and the endpoint then answers 404 forever. Staying on
-        // it is why "the model does not respond": nothing to call is left. The
-        // first model from the same provider is adopted and saved in its place.
+        if (!complete) return
+        // The saved id is gone from the finished catalogue — Google retires ids
+        // such as gemini-2.5-flash, and the endpoint then answers 404 forever.
+        // Staying on it is why "the model does not respond": nothing to call is
+        // left. The first model from the same provider is adopted and saved.
         val replacement = models.firstOrNull { it.provider == current.provider } ?: models.first()
         setModel(replacement)
     }
@@ -679,12 +760,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun setPersona(persona: Persona) {
         _selectedPersona.value = persona
         prefs.edit().putString("selected_persona_id", persona.id).apply()
-        // Both voices must work, and the character picks which one suits it: the
-        // boyfriend speaks male, every other character speaks female. The user's
-        // explicit choice in Settings still wins, so once they have chosen a
-        // voice a later persona change does not overwrite it.
+        // The character picks the voice, but only until the user chooses one
+        // themselves: boyfriend mode speaks male, every other character female,
+        // and an explicit pick in Settings (or `voice_change`) then wins and is
+        // remembered. Both voices must work, and the user's own choice must not
+        // be overwritten by a later character switch.
         if (!_voiceChosenByUser.value) {
-            val g = if (persona.id == "boyfriend") "male" else "female"
+            val g = genderForPersona(persona)
             voiceManager.setVoiceGender(g)
             prefs.edit().putString("voice_gender", g).apply()
         }
@@ -726,10 +808,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun applyVoice(gender: String? = null, rate: Float? = null, pitch: Float? = null) {
         gender?.let { g ->
             // Both voices are real, so the requested one is applied as asked —
-            // the assistant can switch its own voice with `voice_change`.
+            // the assistant can switch its own voice with `voice_change` — and the
+            // pick is remembered so it survives a restart instead of snapping back
+            // to the character's default.
             val chosen = if (g.lowercase() == "male") "male" else "female"
             voiceManager.setVoiceGender(chosen)
             prefs.edit().putString("voice_gender", chosen).apply()
+            _voiceChosenByUser.value = true
+            prefs.edit().putBoolean("voice_chosen_by_user", true).apply()
         }
         rate?.let { setTtsRate(it.coerceIn(0.5f, 2.0f)) }
         pitch?.let { setTtsPitch(it.coerceIn(0.5f, 2.0f)) }
@@ -1182,14 +1268,25 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             repository.saveMessage(userMsg)
             var fullReply = ""
             val spokenBuffer = StringBuilder()
+            var lastUiUpdate = 0L
             // One spoken reply: the ear closes here and reopens once, in the
             // finally block. Without this pair the mic reopened in every gap
             // between streamed sentences, which is the on/off churn the user heard.
             val speakingReply = shouldUsePhoneTts()
             if (speakingReply) voiceManager.beginReply()
             try {
-                // Fetch SQL memories to inject into AI prompt so it NEVER forgets!
-                val memoriesContext = repository.getMemoriesPromptContext()
+                // Everything the turn needs is gathered off the main thread. The
+                // screen read walks the whole accessibility tree (up to 400
+                // nodes) and the database reads hit disk; doing that on the main
+                // thread delayed the request before it was even sent, which is
+                // most of why a simple turn felt slow.
+                val baseMemories = repository.getMemoriesPromptContext()
+                // Facts from months ago that share a subject with this turn are
+                // pulled in alongside the recent ones, so an old preference comes
+                // back the moment the same thing is mentioned again.
+                val recalledFacts = repository.recallMemories(prompt)
+                val memoriesContext = if (recalledFacts.isBlank()) baseMemories
+                    else baseMemories + "\n" + recalledFacts
                 // Long-term recall: turns from weeks ago that match what the user
                 // just said come back with this turn, so an old conversation is
                 // remembered without resending the whole transcript every time.
@@ -1200,6 +1297,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 // Recalled old turns lead, then the newest turns, both trimmed to
                 // fit the engine's twelve-turn window so nothing is dropped.
                 val history = ContextWindow.assemble(recalled, recent)
+                val screen = withContext(Dispatchers.IO) { screenContext() }
 
                 aiEngine.streamAiResponse(
                     prompt = prompt,
@@ -1207,7 +1305,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     persona = _selectedPersona.value,
                     model = _selectedModel.value,
                     memoriesContext = memoriesContext,
-                    screenContext = screenContext(),
+                    screenContext = screen,
                     imageDataUrl = _screenFrameDataUrl.value,
                     onToolCall = { name, args -> runTool(name, args) },
                     drainInjections = {
@@ -1217,14 +1315,22 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     }
                 ).collect { chunk ->
                     fullReply += chunk
-                    _messages.value = _messages.value.map { msg ->
-                        if (msg.id == assistantMsgId) {
-                            msg.copy(
-                                text = fullReply,
-                                isStreaming = true
-                            )
-                        } else {
-                            msg
+                    // The UI is only repainted a few times a second. Rebuilding
+                    // the whole message list for every token made a long answer
+                    // quadratic — the app froze mid-reply. The full text is still
+                    // kept for the database and for speech.
+                    val now = System.currentTimeMillis()
+                    if (now - lastUiUpdate >= UI_UPDATE_MS) {
+                        lastUiUpdate = now
+                        _messages.value = _messages.value.map { msg ->
+                            if (msg.id == assistantMsgId) {
+                                msg.copy(
+                                    text = fullReply,
+                                    isStreaming = true
+                                )
+                            } else {
+                                msg
+                            }
                         }
                     }
                     // Speak each finished sentence the moment it lands, so the voice
@@ -1296,9 +1402,20 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * background.
      */
     private fun screenContext(): String {
+        // The foreground app and the screen text are read live, not from the
+        // snapshot the UI last pushed. That snapshot only refreshes while this
+        // app is on screen, so asking "what am I doing?" from *outside* the app
+        // answered with the old screen ("তুমি আমার অ্যাপে আছো") — the defect the
+        // user hit. The accessibility service can read the real frame any time.
         val label = DeviceBridge.foregroundLabel()
-        val where = if (label.isBlank()) "" else "ব্যবহারকারী এখন \"$label\" অ্যাপে আছেন (${DeviceBridge.foregroundPackage()})।"
-        val snapshot = _screenTextSnapshot.value.take(2000)
+        val pkg = DeviceBridge.foregroundPackage()
+        val live = runCatching { DeviceBridge.readScreen() }.getOrNull().orEmpty()
+        val snapshot = live.ifBlank { _screenTextSnapshot.value }.take(2500)
+        val where = when {
+            label.isNotBlank() -> "ব্যবহারকারী এখন \"$label\" অ্যাপে আছেন ($pkg)।"
+            pkg.isNotBlank() -> "ব্যবহারকারীর সামনের অ্যাপ: $pkg।"
+            else -> ""
+        }
         val text = if (snapshot.isBlank()) "" else "\nস্ক্রিনে এখন যা দেখা যাচ্ছে:\n$snapshot"
         return where + text
     }
@@ -1727,7 +1844,24 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             appendTerminal(result)
             return result
         }
-        val r = ShellRuntime.run(app, line, cwd = currentTerminalDir(home), timeoutMs = 120_000)
+        // A `termux` / `termux-install` line installs and drives the real Termux
+        // userland at system level. That is the only way to get the genuine
+        // Termux system — bash, apt, dpkg, git, python, clang — onto a modern
+        // Android app, and at shell/root level it is strictly more powerful than
+        // the app's own sandbox.
+        if (isTermuxCommand(line)) {
+            return runTermuxLine(app, line)
+        }
+        // A live entry is appended first and its output grows as the command
+        // prints, so the terminal behaves like a real one — progress appears
+        // while the command runs instead of after it exits.
+        val lineId = UUID.randomUUID().toString()
+        appendTerminal(TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
+        val streamed = StringBuilder()
+        val r = ShellRuntime.runStreaming(app, line, cwd = currentTerminalDir(home), timeoutMs = 120_000) { _, text ->
+            synchronized(streamed) { streamed.append(text).append('\n') }
+            updateTerminalLine(lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
+        }
         val body = buildString {
             if (r.stdout.isNotEmpty()) append(r.stdout.trimEnd())
             if (r.stderr.isNotEmpty()) {
@@ -1741,11 +1875,147 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             if (isEmpty()) append("(no output)")
         }
         val entry = TerminalLine(
-            command = line, output = body, exitCode = r.code,
+            id = lineId, command = line, output = body, exitCode = r.code,
             isError = r.code != 0 || r.timedOut, timedOut = r.timedOut, millis = r.millis
         )
-        appendTerminal(entry)
+        updateTerminalLine(lineId) { entry }
         return entry
+    }
+
+    /** Replaces one terminal entry in place, used to grow a running command's output. */
+    private fun updateTerminalLine(id: String, transform: (TerminalLine) -> TerminalLine) {
+        updateActiveSession { session ->
+            session.copy(lines = session.lines.map { if (it.id == id) transform(it) else it })
+        }
+    }
+
+    // ---- the real Termux system -------------------------------------------
+
+    /**
+     * Recognises the lines that belong to the Termux runtime rather than the
+     * bundled busybox: `termux-install`, `termux`, `termux-setup`, `pkg`, `apt`,
+     * `proot-distro` and the shell names Termux itself provides.
+     */
+    private fun isTermuxCommand(line: String): Boolean {
+        val first = line.trim().split(Regex("\\s+")).firstOrNull() ?: return false
+        return first in setOf(
+            "termux", "termux-install", "termux-setup", "termux-status",
+            "pkg", "apt", "apt-get", "dpkg", "proot-distro", "pd",
+            "termux-ubuntu", "termux-debian", "pwsh", "powershell"
+        ) || line.trim().startsWith("termux ")
+    }
+
+    /**
+     * Runs one Termux line. Installing is a separate, explicit command because it
+     * downloads ~35 MB and must not happen behind the user's back; every other
+     * line goes into the installed guest.
+     */
+    private suspend fun runTermuxLine(app: Application, line: String): TerminalLine {
+        val lineId = UUID.randomUUID().toString()
+        appendTerminal(TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
+        val streamed = StringBuilder()
+        val push: (String, String) -> Unit = { _, text ->
+            synchronized(streamed) { streamed.append(text).append('\n') }
+            updateTerminalLine(lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
+        }
+
+        val status = buildString {
+            append("Shizuku: ").append(if (SystemShell.available()) "চালু" else "বন্ধ")
+            append(" · Termux: ").append(if (TermuxRuntime.isInstalled(app)) "ইনস্টল করা" else "ইনস্টল করা হয়নি")
+            append("\n\n")
+            append("কমান্ড:\n")
+            append("  termux-install          — আসল Termux সিস্টেম ইনস্টল করে (bash, apt, dpkg, git, python)\n")
+            append("  termux <কমান্ড>          — Termux-এর ভিতরে কমান্ড চালায়\n")
+            append("  termux-status           — ইনস্টল অবস্থা দেখায়\n")
+            append("  termux-ubuntu           — proot-distro দিয়ে Ubuntu বসায় (apt পূর্ণ)\n")
+            append("  termux-debian           — proot-distro দিয়ে Debian বসায়\n")
+            append("  pwsh                     — PowerShell ৭ (Ubuntu-র ভিতরে)\n")
+        }
+
+        val result = when {
+            line == "termux-status" -> TerminalLine(
+                command = line, output = status, exitCode = 0, isError = false
+            )
+
+            line == "termux-install" -> {
+                push("out", "আসল Termux সিস্টেম ইনস্টল করছি…")
+                val ok = TermuxRuntime.install(app) { msg -> push("out", msg) }
+                TerminalLine(
+                    id = lineId,
+                    command = line,
+                    output = streamed.toString().trimEnd('\n') +
+                        if (ok) "\n\n✔ Termux প্রস্তুত। এখন `termux <কমান্ড>` চালান।"
+                        else "\n\n✖ ইনস্টল সম্পূর্ণ হয়নি। Shizuku চালু আছে কিনা দেখুন।",
+                    exitCode = if (ok) 0 else 1,
+                    isError = !ok
+                )
+            }
+
+            !TermuxRuntime.isInstalled(app) -> TerminalLine(
+                id = lineId,
+                command = line,
+                output = "Termux ইনস্টল করা নেই। আগে চালান:\n  termux-install\n\n$status",
+                exitCode = 1, isError = true
+            )
+
+            line.startsWith("termux-ubuntu") -> runTermuxGuest(app, lineId, streamed, push,
+                "pkg install -y proot-distro && proot-distro install ubuntu && proot-distro login ubuntu")
+
+            line.startsWith("termux-debian") -> runTermuxGuest(app, lineId, streamed, push,
+                "pkg install -y proot-distro && proot-distro install debian && proot-distro login debian")
+
+            line.startsWith("pwsh") || line.startsWith("powershell") -> runTermuxGuest(app, lineId, streamed, push,
+                "pkg install -y proot-distro && proot-distro install ubuntu 2>/dev/null; " +
+                    "proot-distro login ubuntu -- /bin/bash -lc " +
+                    "\"command -v pwsh >/dev/null 2>&1 || " +
+                    "(apt-get update && apt-get install -y wget && " +
+                    "wget -q https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-linux-arm64.tar.gz -O /tmp/ps.tar.gz && " +
+                    "mkdir -p /opt/microsoft/powershell/7 && tar zxf /tmp/ps.tar.gz -C /opt/microsoft/powershell/7 && " +
+                    "ln -sf /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh); pwsh\"")
+
+            else -> {
+                val cmd = line.removePrefix("termux").trim().ifEmpty { "bash -l" }
+                runTermuxGuest(app, lineId, streamed, push, cmd)
+            }
+        }
+        // The entry is finalised in place, so the running cursor stops and the
+        // exit code is shown under the output that already streamed in.
+        updateTerminalLine(lineId) { result }
+        return result
+    }
+
+    /** Runs a command inside the installed guest, streaming its output live. */
+    private suspend fun runTermuxGuest(
+        app: Application,
+        lineId: String,
+        streamed: StringBuilder,
+        push: (String, String) -> Unit,
+        command: String
+    ): TerminalLine {
+        val r = TermuxRuntime.runStreaming(app, command) { stream, text -> push(stream, text) }
+        if (r == null) {
+            return TerminalLine(
+                command = command,
+                output = "সিস্টেম অ্যাক্সেস নেই। Shizuku চালু করে ZYRAXON-কে অনুমতি দিন।",
+                exitCode = 1, isError = true
+            )
+        }
+        val body = buildString {
+            if (r.stdout.isNotBlank()) append(r.stdout.trimEnd())
+            if (r.stderr.isNotBlank()) {
+                if (isNotEmpty()) append('\n')
+                append(r.stderr.trimEnd())
+            }
+            if (r.timedOut) {
+                if (isNotEmpty()) append('\n')
+                append("[timed out after ${r.millis / 1000}s]")
+            }
+            if (isEmpty()) append("(no output)")
+        }
+        return TerminalLine(
+            id = lineId, command = command, output = body, exitCode = r.code,
+            isError = r.code != 0 || r.timedOut, timedOut = r.timedOut, millis = r.millis
+        )
     }
 
     /**
@@ -2024,6 +2294,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     companion object {
+        /** How often the streaming reply repaints the chat while it arrives. */
+        private const val UI_UPDATE_MS = 60L
+
         /**
          * The floating bubble lives in a service and has no ViewModel of its own,
          * so it reaches the running one through here. Null whenever no screen is

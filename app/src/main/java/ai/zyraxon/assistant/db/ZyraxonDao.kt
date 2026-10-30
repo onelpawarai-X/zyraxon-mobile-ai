@@ -29,9 +29,10 @@ interface ZyraxonDao {
     @Query(
         "SELECT * FROM chat_messages WHERE text LIKE '%' || :a || '%' " +
             "OR text LIKE '%' || :b || '%' OR text LIKE '%' || :c || '%' " +
+            "OR text LIKE '%' || :d || '%' " +
             "ORDER BY createdAt DESC LIMIT :limit"
     )
-    suspend fun searchMessages(a: String, b: String, c: String, limit: Int): List<ChatMessageEntity>
+    suspend fun searchMessages(a: String, b: String, c: String, d: String, limit: Int): List<ChatMessageEntity>
 
     // Memories (Persistent SQLite Memory Store)
     @Query("SELECT * FROM memories ORDER BY updatedAt DESC")

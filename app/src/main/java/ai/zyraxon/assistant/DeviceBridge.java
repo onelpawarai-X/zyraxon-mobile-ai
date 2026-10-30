@@ -77,6 +77,9 @@ public final class DeviceBridge {
 
     public static boolean dial(Context ctx, String number) { return CallWatcher.dial(ctx, number); }
 
+    /** Phone number for a contact name, or "" when none matches. */
+    public static String numberForName(Context ctx, String name) { return CallWatcher.numberForName(ctx, name); }
+
     /** Post a real notification, so the user sees the assistant act. */
     public static void notify(Context ctx, String title, String body) {
         try {
