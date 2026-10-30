@@ -11,10 +11,21 @@ package ai.zyraxon.assistant.voice
 object SpeechChunker {
 
     /** A clause must be at least this long before a comma can release it. */
-    private const val CLAUSE_MIN = 60
+    private const val CLAUSE_MIN = 42
 
     /** The comma must not be so early that it releases a two-word fragment. */
-    private const val COMMA_MIN = 20
+    private const val COMMA_MIN = 16
+
+    /**
+     * How long a run may grow with no punctuation before it is released at a word
+     * boundary. A model that writes one long sentence would otherwise stay silent
+     * until its full stop, which is the "not real-time" the user reported; this
+     * starts the voice a few words in instead.
+     */
+    private const val WORD_RELEASE_MIN = 48
+
+    /** The word boundary must not sit so early that it releases a fragment. */
+    private const val WORD_CUT_MIN = 24
 
     /**
      * Removes and returns the next piece worth speaking from [buffer], or an
@@ -36,6 +47,17 @@ object SpeechChunker {
             if (comma >= COMMA_MIN) {
                 val ready = buffer.substring(0, comma + 1)
                 buffer.delete(0, comma + 1)
+                return ready
+            }
+        }
+        // No punctuation yet and the run is getting long: release it at the last
+        // whole word, so the voice keeps pace instead of waiting for a full stop
+        // that may be a whole sentence away.
+        if (buffer.length >= WORD_RELEASE_MIN) {
+            val space = buffer.lastIndexOf(' ')
+            if (space >= WORD_CUT_MIN) {
+                val ready = buffer.substring(0, space + 1)
+                buffer.delete(0, space + 1)
                 return ready
             }
         }

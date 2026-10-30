@@ -565,6 +565,13 @@ class ZyraxonAiEngine(private val context: Context) {
             append("\n## The user's durable memory (local DB)\n")
             append(memoriesContext).append("\n")
         }
+        // Long-term memory is only as good as the model's habit of writing to it.
+        // Stating the rule here — and that the whole transcript stays in SQLite
+        // for `memory_read` to search — is what makes a fact from months ago come
+        // back when the same subject is raised again.
+        append("\n## Remembering (mandatory)\n")
+        append("- When the user tells you a durable fact — their name, a preference, a person, a project, a plan, a date, anything worth recalling months later — call `memory_write` with a short `key` and the `value` in the same turn. Do not wait to be asked.\n")
+        append("- Every past conversation is kept in the local database. When the user refers to something from before, or asks whether you remember, call `memory_read` with a `query` before answering; never say you have forgotten without checking first.\n")
     }
 
     /**
@@ -824,6 +831,10 @@ class ZyraxonAiEngine(private val context: Context) {
             if (it.text.isNotEmpty() || it.toolCalls.length() > 0) return it
         }
         val firstError = lastProviderError
+        // A request the server rejected (bad model id, missing thought_signature)
+        // is rejected the same way everywhere, so failover is skipped and the
+        // real reason is reported at once instead of after minutes of retries.
+        if (!ProviderCatalog.isRetryableError(firstError)) return null
 
         for (candidate in failoverCandidates(model)) {
             val attempt = callModelAny(candidate, messages, tools, onText)

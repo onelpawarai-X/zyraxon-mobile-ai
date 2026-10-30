@@ -19,6 +19,7 @@ import ai.zyraxon.assistant.model.Persona
 import ai.zyraxon.assistant.model.SystemStatus
 import ai.zyraxon.assistant.model.TaskItem
 import ai.zyraxon.assistant.model.TerminalLine
+import ai.zyraxon.assistant.model.TerminalSession
 import ai.zyraxon.assistant.model.ToolExecutionItem
 import ai.zyraxon.assistant.model.WorkspaceFile
 import ai.zyraxon.assistant.shell.GitRuntime
@@ -195,11 +196,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * live one. A realtime model whose live session cannot open falls back to the
      * phone's voice rather than going silent.
      */
-    private val _liveVoicePreferred = MutableStateFlow(prefs.getBoolean("live_voice_preferred", false))
+    private val _liveVoicePreferred = MutableStateFlow(false)
     val liveVoicePreferred: StateFlow<Boolean> = _liveVoicePreferred.asStateFlow()
 
     private val _autoSend = MutableStateFlow(prefs.getBoolean("auto_send", true))
     val autoSend: StateFlow<Boolean> = _autoSend.asStateFlow()
+
+    /**
+     * True once the user picks a voice themselves in Settings. Until then the
+     * character decides the voice; after that the user's pick is kept.
+     */
+    private val _voiceChosenByUser = MutableStateFlow(prefs.getBoolean("voice_chosen_by_user", false))
 
     private val _customBgUrl = MutableStateFlow(prefs.getString("custom_bg_url", "") ?: "")
     val customBgUrl: StateFlow<String> = _customBgUrl.asStateFlow()
@@ -398,19 +405,39 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     val filesPanelOpen: StateFlow<Boolean> = _filesPanelOpen.asStateFlow()
 
     // ---- Terminal tab -------------------------------------------------------
-    // One scrollback of real command lines and their real output, shared by the
-    // user typing and by the assistant calling `terminal_run`. The assistant and
-    // the user are literally looking at the same shell.
+    // Several shells can be open at once. Each session keeps its own scrollback
+    // and its own working directory, so switching away and back never loses the
+    // place the user was at. The sidebar lists them.
 
+    private val _terminalSessions = MutableStateFlow(
+        listOf(TerminalSession(id = UUID.randomUUID().toString(), title = "shell 1"))
+    )
+    val terminalSessions: StateFlow<List<TerminalSession>> = _terminalSessions.asStateFlow()
+
+    private val _activeTerminalId = MutableStateFlow(_terminalSessions.value.first().id)
+    val activeTerminalId: StateFlow<String> = _activeTerminalId.asStateFlow()
+
+    /**
+     * The scrollback of the session on screen, and its working directory. Both
+     * are kept as their own flows and refreshed whenever the sessions or the
+     * active id change, so a reader always sees the current shell's state
+     * without having to collect a derived flow.
+     */
     private val _terminalLines = MutableStateFlow<List<TerminalLine>>(emptyList())
     val terminalLines: StateFlow<List<TerminalLine>> = _terminalLines.asStateFlow()
 
     private val _terminalBusy = MutableStateFlow(false)
     val terminalBusy: StateFlow<Boolean> = _terminalBusy.asStateFlow()
 
-    /** The directory the next command runs in, shown in the terminal prompt. */
     private val _terminalCwd = MutableStateFlow("~")
     val terminalCwd: StateFlow<String> = _terminalCwd.asStateFlow()
+
+    /** Re-publishes the active session's scrollback and directory. */
+    private fun syncActiveTerminal() {
+        val active = _terminalSessions.value.firstOrNull { it.id == _activeTerminalId.value }
+        _terminalLines.value = active?.lines ?: emptyList()
+        _terminalCwd.value = active?.cwd ?: "~"
+    }
 
     /** Files the assistant has written, shown in the Files panel. */
     private val _workspaceFiles = MutableStateFlow<List<WorkspaceFile>>(emptyList())
@@ -426,9 +453,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // it is answered by the same brain as the chat rather than a fixed one.
         aiEngine.samplingModelProvider = { _selectedModel.value }
 
-        // Restore voice gender preference
+        // Restore the user's own voice choice, defaulting to the female tone.
         val savedGender = prefs.getString("voice_gender", "female") ?: "female"
         voiceManager.setVoiceGender(savedGender)
+        _voiceChosenByUser.value = prefs.getBoolean("voice_chosen_by_user", false)
         prefs.getString("voice_language", null)?.let { voiceManager.setVoiceLanguage(it) }
 
         // Observe messages from SQLite Room Database
@@ -477,7 +505,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             // it is dropped rather than sent as a user message. That echo is what
             // made the app answer itself and post its own words into the chat.
             val echo = isSpeaking.value || voiceManager.isSpeakerActive()
-            if (text.isNotBlank() && !echo && !liveVoice.isActive) {
+            // A second net for the same defect: the engine's own voice can reach
+            // the recognizer a beat after the guard window closes. If the words
+            // match what was just spoken back to the user, they are the reply —
+            // never a new user turn — so they are dropped even then.
+            val repeatsReply = looksLikeOwnSpeech(text)
+            if (text.isNotBlank() && !echo && !repeatsReply && !liveVoice.isActive) {
                 // The user speaking over the assistant is a normal interruption,
                 // not an error: cut the voice and take the new words.
                 if (!isFinal) onUserStartedSpeaking()
@@ -496,6 +529,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
         // Fetch Live Models on startup
         refreshModels()
+    }
+
+    /**
+     * True when a recognized phrase is really the assistant's own last words,
+     * not the user's. The speaker's echo can arrive just after the time guard
+     * lapses, so the text itself is compared: if most of what was heard already
+     * appears in the reply the user just heard, it is the reply coming back.
+     */
+    private fun looksLikeOwnSpeech(heard: String): Boolean {
+        val reply = _messages.value.lastOrNull { it.role == MessageRole.ASSISTANT }?.text
+        return ai.zyraxon.assistant.voice.EchoMatcher.isOwnSpeech(heard, reply)
     }
 
     private fun currentTimeString(): String {
@@ -537,12 +581,21 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         prefs.edit().putString("voice_language", tag).apply()
     }
 
+    /**
+     * Applies the voice the user picked in Settings. Both voices must work: the
+     * male one for "প্রেমিক" and the female one for everything else. The chosen
+     * gender is remembered so the next launch speaks with the same voice.
+     */
     fun setVoiceGender(gender: String) {
         val g = if (gender.lowercase() == "male") "male" else "female"
         voiceManager.setVoiceGender(g)
         prefs.edit().putString("voice_gender", g).apply()
-        // Provide audio preview of selected voice
-        val sample = if (g == "female") "হ্যালো সোনা! এটি মিষ্টি মেয়ের কণ্ঠ।" else "নমস্কার! এটি গভীর স্পষ্ট ছেলের কণ্ঠ।"
+        // The user made this choice deliberately, so a later persona change must
+        // not quietly override it.
+        _voiceChosenByUser.value = true
+        prefs.edit().putBoolean("voice_chosen_by_user", true).apply()
+        val sample = if (g == "female") "হ্যালো সোনা! এটি মিষ্টি মেয়ের কণ্ঠ।"
+        else "নমস্কার! এটি গভীর স্পষ্ট ছেলের কণ্ঠ।"
         voiceManager.speak(sample)
     }
 
@@ -577,18 +630,25 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * session. A saved choice is never overwritten by the refresh, which is what
      * made the model revert to the top of the list on every launch.
      */
-    private fun adoptDefaultIfUnset(models: List<AiModel>) {
+    internal fun adoptDefaultIfUnset(models: List<AiModel>) {
         val current = _selectedModel.value
         if (current.id.isBlank()) {
-            _selectedModel.value = models[0]
+            setModel(models[0])
             return
         }
-        // A saved model keeps its place; its friendly name is refreshed from the
-        // catalogue when the provider is reachable.
         val match = models.firstOrNull { it.id == current.id }
-        if (match != null && match.name != current.name) {
-            _selectedModel.value = match
+        if (match != null) {
+            // A saved model keeps its place; its friendly name is refreshed from
+            // the catalogue when the provider is reachable.
+            if (match.name != current.name) _selectedModel.value = match
+            return
         }
+        // The saved id is gone from the catalogue — Google retires ids such as
+        // gemini-2.5-flash, and the endpoint then answers 404 forever. Staying on
+        // it is why "the model does not respond": nothing to call is left. The
+        // first model from the same provider is adopted and saved in its place.
+        val replacement = models.firstOrNull { it.provider == current.provider } ?: models.first()
+        setModel(replacement)
     }
 
     fun addCustomModel(id: String, name: String) {
@@ -619,9 +679,15 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun setPersona(persona: Persona) {
         _selectedPersona.value = persona
         prefs.edit().putString("selected_persona_id", persona.id).apply()
-        // A male character speaking with the sweet female voice would break the
-        // illusion instantly, so the voice follows the character.
-        applyVoice(gender = if (persona.id == "boyfriend") "male" else "female")
+        // Both voices must work, and the character picks which one suits it: the
+        // boyfriend speaks male, every other character speaks female. The user's
+        // explicit choice in Settings still wins, so once they have chosen a
+        // voice a later persona change does not overwrite it.
+        if (!_voiceChosenByUser.value) {
+            val g = if (persona.id == "boyfriend") "male" else "female"
+            voiceManager.setVoiceGender(g)
+            prefs.edit().putString("voice_gender", g).apply()
+        }
         val greeting = ChatMessage(
             role = MessageRole.ASSISTANT,
             text = persona.greeting,
@@ -659,10 +725,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      */
     fun applyVoice(gender: String? = null, rate: Float? = null, pitch: Float? = null) {
         gender?.let { g ->
-            // voiceManager owns the voice state and publishes it; there is no
-            // second copy to keep in sync.
-            voiceManager.setVoiceGender(g)
-            prefs.edit().putString("voice_gender", g).apply()
+            // Both voices are real, so the requested one is applied as asked —
+            // the assistant can switch its own voice with `voice_change`.
+            val chosen = if (g.lowercase() == "male") "male" else "female"
+            voiceManager.setVoiceGender(chosen)
+            prefs.edit().putString("voice_gender", chosen).apply()
         }
         rate?.let { setTtsRate(it.coerceIn(0.5f, 2.0f)) }
         pitch?.let { setTtsPitch(it.coerceIn(0.5f, 2.0f)) }
@@ -681,12 +748,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun testVoice() {
-        val sample = if (voiceGender.value == "female") {
-            "হ্যালো সোনা! আমি ZYRAXON। মিষ্টি মেয়ের কণ্ঠে তোমার সব কথা শুনতে প্রস্তুত।"
-        } else {
-            "নমস্কার! আমি ZYRAXON। গম্ভীর স্পষ্ট ছেলের কণ্ঠে আপনাকে তথ্য দিতে প্রস্তুত।"
-        }
-        voiceManager.speak(sample)
+        voiceManager.speak("হ্যালো সোনা! আমি ZYRAXON। মিষ্টি মেয়ের কণ্ঠে তোমার সব কথা শুনতে প্রস্তুত।")
     }
 
     fun setAlwaysListening(enabled: Boolean) {
@@ -934,8 +996,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     /**
      * Turns the model's own speech-to-speech voice on or off for the chosen
-     * realtime model. Off hands the voice back to the phone's text-to-speech, so
-     * a realtime model the user cannot connect still speaks in the normal way.
+     * realtime model. Off hands the voice back to the phone's text-to-speech.
      */
     fun setLiveVoicePreferred(enabled: Boolean) {
         _liveVoicePreferred.value = enabled
@@ -1308,6 +1369,34 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 return JSONObject().put("ok", true).put("summary", "টার্মিনাল খোলা হয়েছে")
             }
             "terminal_run" -> return runInTerminalShell(args)
+            "memory_write" -> {
+                val key = args.optString("key").trim()
+                val value = args.optString("value").trim()
+                if (key.isBlank() || value.isBlank()) {
+                    return JSONObject().put("ok", false).put("summary", "মনে রাখতে key আর value দুটোই দরকার")
+                }
+                repository.saveMemory(key, value)
+                return JSONObject().put("ok", true)
+                    .put("summary", "মনে রাখা হলো — $key: $value")
+            }
+            "memory_read" -> {
+                val query = args.optString("query").trim()
+                val durable = repository.getMemoriesPromptContext()
+                val recalled = if (query.isNotBlank()) {
+                    repository.recallRelevant(query, limit = 12)
+                        .joinToString("\n") { "${it.role}: ${it.text}" }
+                } else ""
+                val body = buildString {
+                    if (durable.isNotBlank()) append(durable)
+                    if (recalled.isNotBlank()) {
+                        if (isNotEmpty()) append("\n\n")
+                        append("পুরনো কথোপকথন থেকে:\n").append(recalled)
+                    }
+                }
+                return JSONObject().put("ok", true)
+                    .put("summary", "স্মৃতি পড়া হলো")
+                    .put("data", body.ifBlank { "এখনো কিছু মনে রাখা হয়নি" })
+            }
             "floating_bubble" -> {
                 val want = args.optString("action", "on") != "off"
                 val ctx = getApplication<Application>()
@@ -1620,7 +1709,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // applied here rather than left to die with the process it started.
         parseCd(line, home)?.let { target ->
             val entry = if (target.isDirectory) {
-                _terminalCwd.value = displayPath(home, target)
+                updateActiveSession { it.copy(cwd = displayPath(home, target)) }
                 TerminalLine(command = line, output = "", exitCode = 0, isError = false)
             } else {
                 TerminalLine(
@@ -1695,16 +1784,55 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun appendTerminal(entry: TerminalLine) {
-        _terminalLines.value = (_terminalLines.value + entry).takeLast(400)
+        updateActiveSession { it.copy(lines = (it.lines + entry).takeLast(400)) }
     }
 
     fun clearTerminal() {
-        _terminalLines.value = emptyList()
+        updateActiveSession { it.copy(lines = emptyList()) }
+    }
+
+    /** Opens a fresh shell and switches to it. */
+
+    /** Opens a fresh shell and switches to it. */
+    fun newTerminalSession() {
+        val n = _terminalSessions.value.size + 1
+        val session = TerminalSession(id = UUID.randomUUID().toString(), title = "shell $n")
+        _terminalSessions.value = _terminalSessions.value + session
+        _activeTerminalId.value = session.id
+        syncActiveTerminal()
+    }
+
+    fun selectTerminalSession(id: String) {
+        if (_terminalSessions.value.any { it.id == id }) {
+            _activeTerminalId.value = id
+            syncActiveTerminal()
+        }
+    }
+
+    /** Closes a shell. The last one is never closed — there is always a shell. */
+    fun closeTerminalSession(id: String) {
+        val remaining = _terminalSessions.value.filterNot { it.id == id }
+        if (remaining.isEmpty()) {
+            _terminalSessions.value = listOf(TerminalSession(id = UUID.randomUUID().toString(), title = "shell 1"))
+            _activeTerminalId.value = _terminalSessions.value.first().id
+            syncActiveTerminal()
+            return
+        }
+        _terminalSessions.value = remaining
+        if (_activeTerminalId.value == id) _activeTerminalId.value = remaining.last().id
+        syncActiveTerminal()
+    }
+
+    /** Replaces the active session with [transform]'s result, leaving the rest be. */
+    private fun updateActiveSession(transform: (TerminalSession) -> TerminalSession) {
+        val id = _activeTerminalId.value
+        _terminalSessions.value = _terminalSessions.value.map { if (it.id == id) transform(it) else it }
+        syncActiveTerminal()
     }
 
     /** The real directory the next command runs in. */
     private fun currentTerminalDir(home: java.io.File): java.io.File {
-        val shown = _terminalCwd.value
+        val shown = _terminalSessions.value.firstOrNull { it.id == _activeTerminalId.value }?.cwd ?: "~"
         return when {
             shown == "~" -> home
             // The displayed path is home-relative (`~/sub/dir`), so it has to be
@@ -1788,6 +1916,29 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun disconnectMcp(serverId: String) {
         aiEngine.mcp.disconnect(serverId)
         _mcpNotice.value = "$serverId বিচ্ছিন্ন করা হলো"
+    }
+
+    /**
+     * Aborts a browser consent flow the user walked away from. Without this the
+     * card sat on "কানেক্ট হচ্ছে…" forever after the browser was closed, and
+     * there was no way back to the initial Connect button.
+     */
+    fun cancelMcp(server: ai.zyraxon.assistant.mcp.McpServer) {
+        aiEngine.mcp.cancelPending()
+        aiEngine.mcp.disconnect(server.id)
+        _mcpNotice.value = "${server.name}: বাতিল করা হলো"
+    }
+
+    /**
+     * The user opened a browser to grant access, then closed the browser without
+     * finishing. Coming back to the app means that flow is dead, so it is
+     * abandoned here: otherwise the card stayed on "কানেক্ট হচ্ছে…" forever and
+     * there was no way back to the Connect button.
+     */
+    fun onAppReturnedToForeground() {
+        if (!aiEngine.mcp.isAwaitingRedirect()) return
+        aiEngine.mcp.cancelPending()
+        _mcpNotice.value = "কানেক্ট করার ফ্লো বাতিল হলো — আবার কানেক্ট চাপো"
     }
 
     fun addCustomMcp(url: String, name: String, token: String) {

@@ -12,9 +12,11 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +31,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.ContentCopy
@@ -93,6 +96,7 @@ fun TabSelector(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MessageBubble(
     message: ChatMessage,
@@ -153,21 +157,28 @@ fun MessageBubble(
                 )
                 .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
-            // Text Body
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    text = message.text,
-                    color = if (isUser) Glass.textPrimary else Glass.textPrimary,
-                    fontSize = 14.5.sp,
-                    lineHeight = 21.sp
-                )
-                if (message.isStreaming) {
-                    Spacer(modifier = Modifier.width(3.dp))
-                    Box(
-                        modifier = Modifier
-                            .size(width = 3.dp, height = 16.dp)
-                            .background(Glass.cyanFill.copy(alpha = cursorAlpha))
+            // Text Body. Selectable, so a word or the whole answer can be picked
+            // the way Termux does it; a long press copies the whole message.
+            SelectionContainer {
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = message.text,
+                        color = if (isUser) Glass.textPrimary else Glass.textPrimary,
+                        fontSize = 14.5.sp,
+                        lineHeight = 21.sp,
+                        modifier = Modifier.combinedClickable(
+                            onClick = {},
+                            onLongClick = { onCopy(message.text) }
+                        )
                     )
+                    if (message.isStreaming) {
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(width = 3.dp, height = 16.dp)
+                                .background(Glass.cyanFill.copy(alpha = cursorAlpha))
+                        )
+                    }
                 }
             }
 

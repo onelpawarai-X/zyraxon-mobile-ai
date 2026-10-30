@@ -195,6 +195,17 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * The user may have left for a browser (an MCP consent page) and come back
+     * without finishing. Clearing that pending flow here is what frees the
+     * "কানেক্ট হচ্ছে…" card, so the Connect button comes back instead of the
+     * screen waiting forever.
+     */
+    override fun onResume() {
+        super.onResume()
+        viewModel.onAppReturnedToForeground()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         if (instance == this) {

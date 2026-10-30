@@ -233,4 +233,34 @@ class ProviderCatalogTest {
         assertNotNull(ProviderCatalog.forModelProvider("groq"))
         assertNull(ProviderCatalog.forModelProvider("does-not-exist"))
     }
+
+    @Test
+    fun aRejectedRequestIsNotRetriedButAnAvailabilityProblemIs() {
+        // A missing thought_signature or a retired model id fails on every
+        // provider, so retrying it only makes the user wait minutes for the same
+        // error. Quota, overload and dropped connections are worth another try.
+        assertFalse(ProviderCatalog.isRetryableError(
+            "Function call is missing a thought_signature in functionCall parts."
+        ))
+        assertFalse(ProviderCatalog.isRetryableError(
+            "This model models/gemini-2.5-flash is no longer available to new users."
+        ))
+        assertFalse(ProviderCatalog.isRetryableError("Request contains an invalid argument."))
+        assertTrue(ProviderCatalog.isRetryableError("You exceeded your current quota"))
+        assertTrue(ProviderCatalog.isRetryableError("This model is currently experiencing high demand."))
+        assertTrue(ProviderCatalog.isRetryableError("timeout"))
+        assertTrue(ProviderCatalog.isRetryableError(null))
+    }
+
+    @Test
+    fun geminiShipsLiveSeedModelsNotRetiredIds() {
+        // The old seed was gemini-2.5-flash, which Google now answers with 404 for
+        // new users; the seeds must be ids Google still serves.
+        val seeds = ProviderCatalog.find("gemini")!!.seedModels
+        assertTrue("gemini-এর সিড মডেল থাকা দরকার", seeds.isNotEmpty())
+        assertTrue(
+            "বাতিল হওয়া মডেল আইড সিডে থাকা যাবে না",
+            seeds.none { it == "gemini-2.5-flash" || it == "gemini-2.0-flash" }
+        )
+    }
 }

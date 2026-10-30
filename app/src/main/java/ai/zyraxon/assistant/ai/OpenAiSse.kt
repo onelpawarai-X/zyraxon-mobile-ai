@@ -42,8 +42,15 @@ class OpenAiSse(private val client: OkHttpClient) {
             .build()
 
         return try {
+            // A bounded *idle* timeout, not an infinite one. `readTimeout(0)`
+            // meant "wait forever", so a model that opened the socket and then
+            // said nothing held the turn for minutes — the stall the user saw.
+            // OkHttp resets this timer on every chunk that arrives, so a reply
+            // that keeps streaming never trips it, while a silent endpoint is
+            // given up on quickly and the caller can try the next provider.
             client.newBuilder()
-                .readTimeout(0, TimeUnit.MILLISECONDS)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(READ_IDLE_TIMEOUT_MS, TimeUnit.MILLISECONDS)
                 .build()
                 .newCall(request).execute().use { response ->
                     if (!response.isSuccessful) {
@@ -59,7 +66,7 @@ class OpenAiSse(private val client: OkHttpClient) {
                     readEvents(BufferedReader(InputStreamReader(source.inputStream())), onText)
                 }
         } catch (e: Exception) {
-            lastError = e.message
+            lastError = e.message ?: "সংযোগ বিচ্ছিন্ন"
             null
         }
     }
@@ -113,5 +120,15 @@ class OpenAiSse(private val client: OkHttpClient) {
         }
         if (data.isNotEmpty()) consume(data.toString(), turn, onText)
         return turn
+    }
+
+    companion object {
+        /**
+         * How long the stream may sit silent before the turn is abandoned. A
+         * real reply emits chunks continuously, so a gap this long means the
+         * endpoint is not going to answer; the failover then tries the next
+         * provider instead of leaving the user staring at a frozen cursor.
+         */
+        private const val READ_IDLE_TIMEOUT_MS = 45_000L
     }
 }

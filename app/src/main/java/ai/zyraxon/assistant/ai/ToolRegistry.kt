@@ -285,7 +285,7 @@ object ToolRegistry {
             .put("description", "Open the system dialog that lets the user grant a permission with one tap. Use it when a tool fails for a missing permission. name is one of: camera, microphone, location, accessibility, overlay, notifications, files.")
             .put("parameters", S(JSONObject().put("name", str()), listOf("name"))),
         "voice_change" to JSONObject()
-            .put("description", "Switch your own speaking voice. gender is \"female\" or \"male\", rate is speed (0.5-2.0, default 1.0) and pitch is tone (0.5-2.0). Use it when the character changes — a boyfriend character speaks with the male voice, a girlfriend with the female one — or when the user asks for a different voice. The change takes effect on your next sentence.")
+            .put("description", "Adjust your own speaking voice. Both a male and a female voice are installed and both work, so 'male' and 'female' each select the real one. rate is speed (0.5-2.0, default 1.0) and pitch is tone (0.5-2.0). Use it when the user asks for a different gender, speed or tone. The change takes effect on your next sentence.")
             .put("parameters", S(JSONObject()
                 .put("gender", str().put("enum", JSONArray(listOf("female", "male"))))
                 .put("rate", num()).put("pitch", num()), listOf("gender"))),
@@ -313,7 +313,7 @@ object ToolRegistry {
                 .put("action", str().put("enum", JSONArray(listOf("lock", "unlock", "enroll", "status", "secure_lock_settings")))),
                 listOf("action"))),
         "live_voice" to JSONObject()
-            .put("description", "Switch between the two ways you speak. `on` opens a live speech-to-speech session with a live model: the model hears the microphone and answers with its own voice, and the phone's text-to-speech is silenced so only one voice is heard. `off` returns to normal text turns read by the phone's voice. Call `on` when the user asks for a real conversation, the fastest back-and-forth, or a live call; call `off` when they want the normal assistant back.")
+            .put("description", "Switch between the two ways you speak. `on` opens a live speech-to-speech session with a realtime model: the model hears the microphone and answers with its own voice, and the phone's text-to-speech is silenced so only one voice is heard. `off` returns to normal text turns read by the phone's voice. Call `on` when the user asks for a real conversation, the fastest back-and-forth, or a live call; call `off` when they want the normal assistant back.")
             .put("parameters", S(JSONObject()
                 .put("action", str().put("enum", JSONArray(listOf("on", "off")))), listOf("action"))),
         "on_device_model" to JSONObject()
@@ -1467,9 +1467,10 @@ object ToolRegistry {
         }
 
     /**
-     * Turns the live speech-to-speech session on or off. The ViewModel owns the
-     * session, so this tool only asks it to switch; the voice that answers is the
-     * model's own, and the phone's TTS goes quiet while it is on.
+     * Switches between the two ways ZYRAXON speaks. `on` opens a live
+     * speech-to-speech session with a realtime model, whose own voice answers and
+     * silences the phone's text-to-speech so only one voice is heard; `off` goes
+     * back to text turns read aloud by the phone's voice.
      */
     private fun liveVoice(args: JSONObject): JSONObject {
         val activity = MainActivity.instance
@@ -1479,7 +1480,10 @@ object ToolRegistry {
                 if (activity.enableLiveVoice()) {
                     ok("on", "রিয়েলটাইম মডেলে সরে গিয়ে লাইভ ভয়েস চালু করা হয়েছে")
                 } else {
-                    err("no-realtime-model", "এই মুহূর্তে কোনো রিয়েলটাইম মডেল লোড হয়নি — Settings-এ মডেল লোড করে আবার বলো")
+                    err(
+                        "no-realtime-model",
+                        "এই মুহূর্তে কোনো রিয়েলটাইম মডেল লোড হয়নি — Settings-এ মডেল লোড করে আবার বলো"
+                    )
                 }
             }
             "off" -> {

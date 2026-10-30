@@ -6,7 +6,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import ai.zyraxon.assistant.ui.ZyraxonTopBar
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -14,8 +13,10 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * Renders the real top bar, so a broken live-voice button fails here rather than
- * on the phone. The bar is stateless, which is why it can be driven directly.
+ * The top bar is deliberately minimal: the settings gear is the only control on
+ * it. The user asked for every other button — persona, microphone, model picker,
+ * live voice, clear — to move inside Settings, so this asserts they are gone from
+ * the bar rather than merely testing what remains.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [36])
@@ -25,74 +26,27 @@ class LiveVoiceUiTest {
     val compose = createComposeRule()
 
     @Test
-    fun `the live voice button is on screen and reports taps`() {
-        var taps = 0
+    fun `the settings gear is the only control on the top bar`() {
+        var settings = 0
         compose.setContent {
-            ZyraxonTopBar(
-                personaName = "প্রেমিকা",
-                personaEmoji = "💖",
-                modelName = "gemini",
-                liveActive = false,
-                onPersonaClick = {},
-                onModelClick = {},
-                onLiveClick = { taps++ },
-                onSettingsClick = {},
-                onClearClick = {}
-            )
+            ZyraxonTopBar(onSettingsClick = { settings++ })
         }
 
-        compose.onNodeWithTag("live_voice_button").assertIsDisplayed()
-        compose.onNodeWithTag("live_voice_button").performClick()
+        compose.onNodeWithTag("settings_button").assertIsDisplayed()
+        compose.onNodeWithTag("settings_button").performClick()
         compose.waitForIdle()
-        assertEquals("লাইভ বাটনের ট্যাপ ধরা পড়েনি", 1, taps)
+        assertEquals("সেটিং বাটনের ট্যাপ ধরা পড়েনি", 1, settings)
     }
 
     @Test
-    fun `the mic switch is on screen and reports taps`() {
-        var taps = 0
+    fun `the old persona, model, mic and live buttons are gone`() {
         compose.setContent {
-            ZyraxonTopBar(
-                personaName = "প্রেমিকা",
-                personaEmoji = "💖",
-                modelName = "gemini",
-                liveActive = false,
-                micOn = true,
-                onPersonaClick = {},
-                onModelClick = {},
-                onMicToggle = { taps++ },
-                onSettingsClick = {},
-                onClearClick = {}
-            )
+            ZyraxonTopBar(onSettingsClick = {})
         }
 
-        compose.onNodeWithTag("mic_toggle_button").assertIsDisplayed()
-        compose.onNodeWithTag("mic_toggle_button").performClick()
-        compose.waitForIdle()
-        assertEquals("মাইক বাটনের ট্যাপ ধরা পড়েনি", 1, taps)
-    }
-
-    @Test
-    fun `the persona and model pills still work next to the live button`() {
-        var persona = 0
-        var model = 0
-        compose.setContent {
-            ZyraxonTopBar(
-                personaName = "প্রেমিকা",
-                personaEmoji = "💖",
-                modelName = "gemini",
-                liveActive = true,
-                onPersonaClick = { persona++ },
-                onModelClick = { model++ },
-                onLiveClick = {},
-                onSettingsClick = {},
-                onClearClick = {}
-            )
-        }
-
-        compose.onNodeWithTag("persona_button").performClick()
-        compose.onNodeWithTag("model_picker_button").performClick()
-        compose.waitForIdle()
-        assertTrue("পার্সোনা বাটন কাজ করছে না", persona == 1)
-        assertTrue("মডেল বাটন কাজ করছে না", model == 1)
+        compose.onNodeWithTag("persona_button").assertDoesNotExist()
+        compose.onNodeWithTag("model_picker_button").assertDoesNotExist()
+        compose.onNodeWithTag("mic_toggle_button").assertDoesNotExist()
+        compose.onNodeWithTag("live_voice_button").assertDoesNotExist()
     }
 }
