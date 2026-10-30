@@ -1486,7 +1486,10 @@ fun SettingsSheet(
                                 .background(if (overlayOn) Glass.greenFill.copy(alpha = 0.20f) else Glass.rowFill(0.30f))
                                 .clickable {
                                     if (!overlayOn) {
-                                        val ok = android.provider.Settings.canDrawOverlays(context)
+                                        // canDrawOverlays is API 23; before that the
+                                        // platform always allows overlays.
+                                        val ok = android.os.Build.VERSION.SDK_INT < 23 ||
+                                            android.provider.Settings.canDrawOverlays(context)
                                         if (!ok) (context as? ai.zyraxon.assistant.MainActivity)
                                             ?.openSpecialSetting("overlay")
                                         else {

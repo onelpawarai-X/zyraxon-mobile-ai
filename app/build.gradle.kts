@@ -10,7 +10,7 @@ android {
 
   defaultConfig {
     applicationId = "com.zyraxon.assistant"
-    minSdk = 24
+    minSdk = 21
     targetSdk = 36
     versionCode = 15
     versionName = "6.7.0"

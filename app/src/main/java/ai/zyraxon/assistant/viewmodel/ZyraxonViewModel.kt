@@ -1311,7 +1311,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             "floating_bubble" -> {
                 val want = args.optString("action", "on") != "off"
                 val ctx = getApplication<Application>()
-                if (want && !android.provider.Settings.canDrawOverlays(ctx)) {
+                val overlayAllowed = android.os.Build.VERSION.SDK_INT < 23 ||
+                    android.provider.Settings.canDrawOverlays(ctx)
+                if (want && !overlayAllowed) {
                     // The overlay permission can only be granted by the user in
                     // Settings, so point them at the exact row instead of failing.
                     ai.zyraxon.assistant.MainActivity.instance?.openSpecialSetting("overlay")

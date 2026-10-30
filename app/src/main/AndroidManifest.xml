@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Shizuku's own AARs declare minSdk 23, but the parts ZYRAXON uses —
+         ShizukuProvider, the binder plumbing and the static Shizuku class — only
+         touch API-21-safe classes (ContentProvider, Context, Bundle, IBinder,
+         Log). Overriding lets the app itself support Android 5.0 while Shizuku
+         still works on the phones that can run it. -->
+    <uses-sdk tools:overrideLibrary="rikka.shizuku.api,rikka.shizuku.provider,rikka.shizuku.shared,rikka.shizuku.aidl" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -15,6 +22,13 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Neither camera nor GPS is required: the app works without them, and
+         saying so keeps it installable on tablets and TVs that have no camera. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <!-- Reading the user's own photos, video and documents. Android 13 split
          READ_EXTERNAL_STORAGE into media types, so all three are declared and the
@@ -126,7 +140,7 @@
 
         <!-- Receives the result of an in-app update install. -->
         <receiver
-            android:name=".update.UpdateInstallReceiver"
+            android:name="ai.zyraxon.assistant.update.UpdateInstallReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="ai.zyraxon.assistant.INSTALL_STATUS" />

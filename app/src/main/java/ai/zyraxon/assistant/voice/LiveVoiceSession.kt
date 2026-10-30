@@ -3,9 +3,11 @@ package ai.zyraxon.assistant.voice
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.AudioTrack
 import android.media.MediaRecorder
+import android.os.Build
 import android.util.Base64
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -357,6 +359,7 @@ class LiveVoiceSession(
 
     // ---- audio -------------------------------------------------------------
 
+    @android.annotation.SuppressLint("MissingPermission")
     private fun startMic() {
         if (micJob != null) return
         micJob = scope.launch(Dispatchers.IO) {
@@ -416,24 +419,39 @@ class LiveVoiceSession(
         val minBuf = AudioTrack.getMinBufferSize(
             OUT_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT
         )
+        val bufBytes = maxOf(minBuf * 4, 4096)
         val audioTrack = try {
-            AudioTrack.Builder()
-                .setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ASSISTANT)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                        .build()
+            // AudioTrack.Builder is API 23; the constructor below is the same
+            // stream on Android 5–6 and is still what the platform maps it to.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                AudioTrack.Builder()
+                    .setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_ASSISTANT)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                            .build()
+                    )
+                    .setAudioFormat(
+                        AudioFormat.Builder()
+                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                            .setSampleRate(OUT_RATE)
+                            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                            .build()
+                    )
+                    .setBufferSizeInBytes(bufBytes)
+                    .setTransferMode(AudioTrack.MODE_STREAM)
+                    .build()
+            } else {
+                @Suppress("DEPRECATION")
+                AudioTrack(
+                    AudioManager.STREAM_MUSIC,
+                    OUT_RATE,
+                    AudioFormat.CHANNEL_OUT_MONO,
+                    AudioFormat.ENCODING_PCM_16BIT,
+                    bufBytes,
+                    AudioTrack.MODE_STREAM
                 )
-                .setAudioFormat(
-                    AudioFormat.Builder()
-                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                        .setSampleRate(OUT_RATE)
-                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                        .build()
-                )
-                .setBufferSizeInBytes(maxOf(minBuf * 4, 4096))
-                .setTransferMode(AudioTrack.MODE_STREAM)
-                .build()
+            }
         } catch (e: Throwable) {
             onError?.invoke(e.message ?: "স্পিকার খোলা যায়নি")
             return

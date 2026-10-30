@@ -1,9 +1,11 @@
 package ai.zyraxon.assistant;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import androidx.core.content.ContextCompat;
 import android.net.Uri;
 import android.os.Build;
 import android.telecom.TelecomManager;
@@ -40,7 +42,7 @@ final class CallWatcher {
     private CallWatcher() {}
 
     static boolean permissionsOk(Context c) {
-        return c.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED;
+        return ContextCompat.checkSelfPermission(c, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED;
     }
 
     /** Start listening for call state. Safe to call repeatedly. */
@@ -91,6 +93,7 @@ final class CallWatcher {
     }
 
     /** Accept the incoming call. Returns true when the call was really answered. */
+    @SuppressLint("MissingPermission")
     @SuppressWarnings({"deprecation", "unchecked"})
     static boolean answer(Context ctx) {
         if (Build.VERSION.SDK_INT >= 26) {
@@ -120,6 +123,7 @@ final class CallWatcher {
     }
 
     /** Hang up the current call. */
+    @SuppressLint("MissingPermission")
     @SuppressWarnings({"deprecation"})
     static boolean hangUp(Context ctx) {
         if (Build.VERSION.SDK_INT >= 28) {
@@ -160,7 +164,7 @@ final class CallWatcher {
     private static String lookupName(Context ctx, String num) {
         if (num == null || num.isEmpty()) return "";
         try {
-            if (ctx.checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) return "";
+            if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) return "";
             Uri uri = Uri.withAppendedPath(android.provider.ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(num));
             android.database.Cursor c = ctx.getContentResolver().query(uri,
                     new String[]{android.provider.ContactsContract.PhoneLookup.DISPLAY_NAME}, null, null, null);

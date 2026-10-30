@@ -1382,7 +1382,7 @@ object ToolRegistry {
         }
         if (perms.isEmpty()) return err("unknown-permission", "কোন পারমিশন দরকার সেটা বলো")
         MainActivity.instance?.let { act ->
-            act.runOnUiThread { act.requestPermissions(perms, 9101) }
+            act.runOnUiThread { androidx.core.app.ActivityCompat.requestPermissions(act, perms, 9101) }
             return ok(n, "পারমিশন ডায়ালগ আসছে — Allow চাপলেই হবে")
         }
         return err("no-activity", "পারমিশন ডায়ালগ দেখানো যায়নি")

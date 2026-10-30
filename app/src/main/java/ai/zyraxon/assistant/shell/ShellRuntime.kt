@@ -101,8 +101,9 @@ object ShellRuntime {
             // busybox installs its own applets; letting it do that is more
             // reliable than making the links by hand, and it knows its own list.
             runCatching {
-                ProcessBuilder(bb.absolutePath, "--install", "-s", bin.absolutePath)
-                    .redirectErrorStream(true).start().waitFor(30, TimeUnit.SECONDS)
+                val install = ProcessBuilder(bb.absolutePath, "--install", "-s", bin.absolutePath)
+                    .redirectErrorStream(true).start()
+                awaitProcess(install, 30_000)
             }
             // `--install` skips anything already present, so a partly built farm
             // is completed here before the marker claims the job is done. A
@@ -120,11 +121,25 @@ object ShellRuntime {
         ready = true
     }
 
+    /**
+     * Waits for a process with a timeout. `Process.waitFor(long, TimeUnit)` is
+     * API 26, and this app runs from Android 5, so the wait is a poll of
+     * `exitValue()` — the one method present on every version.
+     */
+    private fun awaitProcess(p: Process, timeoutMs: Long): Boolean {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        while (System.currentTimeMillis() < deadline) {
+            try { p.exitValue(); return true } catch (_: IllegalThreadStateException) {}
+            try { Thread.sleep(20) } catch (_: InterruptedException) { return false }
+        }
+        return try { p.exitValue(); true } catch (_: IllegalThreadStateException) { false }
+    }
+
     /** The applet names this busybox provides, asked of busybox itself. */
     private fun runApplets(bb: File): List<String> = runCatching {
         val p = ProcessBuilder(bb.absolutePath, "--list").redirectErrorStream(true).start()
         val text = p.inputStream.bufferedReader().use { it.readText() }
-        p.waitFor(10, TimeUnit.SECONDS)
+        awaitProcess(p, 10_000)
         text.lines().map { it.trim() }.filter { it.isNotEmpty() }
     }.getOrDefault(emptyList())
 
@@ -188,7 +203,7 @@ object ShellRuntime {
             val tOut = Thread { p.inputStream.bufferedReader().use { out.append(it.readText()) } }
             val tErr = Thread { p.errorStream.bufferedReader().use { err.append(it.readText()) } }
             tOut.start(); tErr.start()
-            val finished = p.waitFor(timeoutMs, TimeUnit.MILLISECONDS)
+            val finished = awaitProcess(p, timeoutMs)
             if (!finished) p.destroy()
             tOut.join(2_000); tErr.join(2_000)
             Result(
