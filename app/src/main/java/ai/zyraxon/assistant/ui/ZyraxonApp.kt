@@ -18,6 +18,7 @@ import ai.zyraxon.assistant.ui.components.PersonaSelectionSheet
 import ai.zyraxon.assistant.ui.components.QuickActionChips
 import ai.zyraxon.assistant.ui.components.SettingsSheet
 import ai.zyraxon.assistant.ui.components.TabSelector
+import ai.zyraxon.assistant.ui.components.TerminalScreen
 import ai.zyraxon.assistant.ui.theme.Glass
 import ai.zyraxon.assistant.update.UpdateState
 import ai.zyraxon.assistant.viewmodel.ZyraxonViewModel
@@ -132,6 +133,9 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     val codeBoxTitle by viewModel.codeBoxTitle.collectAsState()
     val codeBoxText by viewModel.codeBoxText.collectAsState()
     val filesPanelOpen by viewModel.filesPanelOpen.collectAsState()
+    val terminalLines by viewModel.terminalLines.collectAsState()
+    val terminalBusy by viewModel.terminalBusy.collectAsState()
+    val terminalCwd by viewModel.terminalCwd.collectAsState()
     val bgVideoAsset by viewModel.bgVideoAsset.collectAsState()
     val liveVoiceEnabled by viewModel.liveVoiceEnabled.collectAsState()
     val liveVoiceState by viewModel.liveVoiceState.collectAsState()
@@ -168,6 +172,27 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
             .fillMaxSize()
             .background(Color(0xFF05060F))
     ) {
+        // The Terminal is a full-screen takeover: it covers the aura, the chat and
+        // the tab bar, so nothing of the app shows through while a real shell is
+        // open. The ✕ in its header is the only way back to the main menu, and it
+        // leaves the session — scrollback and working directory — untouched.
+        if (activeTab == AppTab.TERMINAL) {
+            TerminalScreen(
+                lines = terminalLines,
+                cwd = terminalCwd,
+                busy = terminalBusy,
+                onRun = { viewModel.runTerminal(it) },
+                onClear = { viewModel.clearTerminal() },
+                onClose = { viewModel.setTab(AppTab.CHAT) },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .imePadding()
+            )
+            return@Box
+        }
+
         // 1. Looping video behind everything. The aura HTML is transparent, so
         //    the clip shows through exactly as the user asked.
         VideoBackground(
@@ -305,6 +330,9 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                     AppTab.MCP -> {
                         McpTabContent(viewModel = viewModel, panelAlpha = panelAlpha)
                     }
+
+                    // The terminal returns above, before this scaffold is built.
+                    AppTab.TERMINAL -> Unit
                 }
             }
 

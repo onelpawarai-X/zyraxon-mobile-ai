@@ -12,8 +12,8 @@ android {
     applicationId = "com.zyraxon.assistant"
     minSdk = 24
     targetSdk = 36
-    versionCode = 13
-    versionName = "6.5.0"
+    versionCode = 14
+    versionName = "6.6.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -49,15 +49,34 @@ android {
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
+    // JGit is built on `java.nio.file`, which is API 26+. The app supports API
+    // 24, so those classes are desugared rather than left to crash on older
+    // phones the moment `git clone` is typed.
+    isCoreLibraryDesugaringEnabled = true
   }
   buildFeatures {
     compose = true
     buildConfig = true
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
+  // Robolectric loads its native runtime into a shared temp directory. Parallel
+  // forks race on it (`FileSystemAlreadyExistsException`), so the suite runs in
+  // one fork. Correctness over speed: 188 tests still finish in under a minute.
+  tasks.withType<Test>().configureEach { maxParallelForks = 1 }
   dependenciesInfo {
     includeInApk = false
     includeInBundle = true
+  }
+
+  // The terminal ships a static busybox per ABI under jniLibs. Android only lets
+  // an app execute a binary that lives in the native library directory, so these
+  // must be extracted to disk rather than mapped straight from the APK, and they
+  // must not be stripped or AGP would rewrite the ELF header busybox needs.
+  packaging {
+    jniLibs {
+      useLegacyPackaging = true
+      keepDebugSymbols += "**/libbusybox.so"
+    }
   }
 }
 
@@ -98,6 +117,11 @@ dependencies {
   // itself, with no network at all. Optional at runtime — the app works without it.
   implementation(libs.mediapipe.tasks.genai)
   implementation(libs.okhttp)
+  // Real `git clone` in the terminal. busybox has no git, so the terminal would
+  // otherwise be the one shell that cannot clone a repository.
+  implementation(libs.jgit)
+  implementation(libs.slf4j.nop)
+  coreLibraryDesugaring(libs.desugar.jdk.libs.nio)
   // implementation(libs.play.services.location)
   implementation(libs.retrofit)
   testImplementation(libs.androidx.compose.ui.test.junit4)

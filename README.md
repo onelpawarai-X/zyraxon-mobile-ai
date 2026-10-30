@@ -61,7 +61,7 @@ sentence is pronounced properly instead of being spelled out letter by letter.
 
 ### It has hands
 
-64 tools, wired to the real Android APIs:
+66 tools, wired to the real Android APIs:
 
 | Area | Tools |
 |---|---|
@@ -74,10 +74,10 @@ sentence is pronounced properly instead of being spelled out letter by letter.
 | Publishing | `publish_github`, `publish_website`, `publish_cloudflare`, `serve_local` |
 | Phone | `notify`, `call_dial`, `call_answer`, `call_hangup`, `clipboard_read`, `clipboard_write`, `share`, `sys_info`, `process_list` |
 | Messaging | `channel_post` (Telegram, WhatsApp, Facebook, Messenger, Instagram, X, Gmail, SMS) |
-| System | `run_shell`, `request_permission`, `open_settings`, `voice_change`, `memory_write`, `memory_read` |
+| System | `run_shell`, `terminal_run`, `request_permission`, `open_settings`, `voice_change`, `memory_write`, `memory_read` |
 | Voice and device | `live_voice` (follows the chosen model: realtime model = speech-to-speech, text model = read-aloud), `device_lock` (lock, unlock, enrol, status) |
 | Offline | `on_device_model` (list, download, load, run a local model) |
-| UI panels | `code_box`, `files_panel`, `floating_bubble` |
+| UI panels | `code_box`, `files_panel`, `floating_bubble`, `terminal_open` |
 
 The assistant reads the screen as an actual image, taps by coordinate or by
 visible text, and types into whatever is focused. After each call the real result
@@ -85,24 +85,50 @@ is injected back into its context and it decides the next step.
 
 ### The shell it uses
 
-`run_shell` is real. It runs through `ProcessBuilder("sh", "-c", command)` — the
-Android system shell (`/system/bin/sh`, an mksh), not `cmd.exe` and not
-PowerShell. Each call returns the real exit code, stdout and stderr, with a 60
-second default timeout and output caps of 30,000 and 8,000 characters.
+`run_shell` is real. It runs through the app's own bundled shell — a static
+busybox — not `cmd.exe` and not PowerShell. Each call returns the real exit code,
+stdout and stderr, with a 60 second default timeout and output caps of 30,000 and
+8,000 characters.
 
 It runs **as the app**, in the app's own sandbox, under the app's own user ID.
 There is no root and no `su`. So the honest description is: the assistant can run
-any `sh` command, within the permissions the app has been granted. It cannot
+any shell command, within the permissions the app has been granted. It cannot
 change `/system`, read another app's private data, or touch anything privileged
 unless the device is rooted.
 
 | | |
 |---|---|
-| Shell | `sh -c` (mksh) |
+| Shell | bundled busybox `sh` (~400 applets), falling back to `/system/bin/sh` |
 | User | the app's own UID — no root |
-| Working directory | `/storage/emulated/0/Android/data/com.zyraxon.assistant/files/zyraxon` |
+| Working directory | `/storage/emulated/0/Android/data/com.zyraxon.assistant/files/linux` |
 | Timeout | 60 s default, process killed after |
 | Returns | exit code, stdout, stderr |
+
+### The Terminal tab
+
+There is a real terminal inside the app, opened from the **ZX** button on the tab
+bar. It is a full-screen shell: type a line, it runs, the output stays in the
+scrollback. The assistant and the user drive the **same** shell at the same
+working directory, so either can take over from the other mid-task.
+
+busybox is bundled as a static binary for all four Android ABIs
+(`arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`) in `jniLibs`, so it needs no root
+and no separate install. On first use it installs its own applets into an
+internal-storage `bin/` directory — internal, because Android's external storage
+is FUSE and refuses the symlinks the applet farm is made of.
+
+`git` is the one thing busybox does not ship, so `git clone`, `git pull` and
+`git status` are served by JGit — a complete, pure-Java git. Clone a repository
+straight into `~`:
+
+```sh
+git clone https://github.com/onelpawarai-X/zyraxon-mobile-ai
+```
+
+JGit is built on `java.nio.file`, which is API 26+, so core-library desugaring is
+enabled and those classes are rewritten at build time. The app still runs on
+API 24. Everything else — `awk`, `sed`, `grep`, `tar`, `wget`, `curl`, `find`,
+`sort`, `base64`, `md5sum` — is a busybox applet, already on `PATH`.
 
 ### It does not stop halfway
 
@@ -290,7 +316,7 @@ Output lands in `app/build/outputs/apk/release/`.
 gradle testDebugUnitTest --rerun-tasks
 ```
 
-133 tests, all passing:
+191 tests, all passing:
 
 | Suite | Tests | Covers |
 |---|---|---|
@@ -299,26 +325,44 @@ gradle testDebugUnitTest --rerun-tasks
 | `ToolCatalogueTest` | 5 | Every advertised tool has the OpenAI function shape, unique names, and the bubble tool accepts on/off |
 | `ProviderCatalogTest` | 21 | Provider catalogue parsing, the TTS-model filter, and per-provider realtime detection |
 | `ModelLoadingNetworkTest` | 6 | Parallel model loading and per-provider failure reporting |
+| `ContextWindowTest` | 4 | History trimming and long-term recall |
 | `McpClientTest` | 29 | MCP protocol: handshake, tools, resources, prompts, ping, logging, completion |
+| `UpdaterTest` | 8 | Reading the real GitHub release payload and comparing versions |
 | `OverlayChatServiceTest` | 3 | The floating bubble is really added to the WindowManager, removed on destroy, and the service stops itself when the overlay permission is missing |
+| `ShellRuntimeTest` | 9 | The bundled busybox really executes: stdout, stderr, exit codes, timeouts, and the applet farm on `PATH` |
+| `GitRuntimeTest` | 7 | Real `git clone`, `pull` and `status` against a repository built in the test, plus the line dispatcher |
+| `TerminalViewModelTest` | 5 | A typed line runs and lands in the scrollback, `cd` survives past the line, and a bad command is flagged |
+| `SettingsPersistenceTest` | 5 | A setting changed, then the ViewModel rebuilt: the value is still there |
+| `MicGateTest` | 7 | The mic opens once and stays open; the user can hold it closed |
+| `SpeechChunkerTest` | 5 | Sentence chunking for read-aloud |
+| `SpeechToneTest` | 5 | Tone and pitch applied per persona |
 | `AuraHtmlTest` | 13 | The aura CSS: centring, glow masking, the hue variable, and every aura style being real |
 | `SpeechCleaningTest` | 4 | Markdown and emoji stripping before speaking |
 | `SpeechSegmenterTest` | 6 | Splitting mixed Bangla/English text into language runs |
 | `VoiceSelectorTest` | 8 | Native voice selection and fallback |
 | `VisionPayloadTest` | 3 | Image payloads sent to the model |
-| `PackageRobolectricTest` | 1 | Robolectric wiring |
-| `SanityUnitTest` | 1 | Arithmetic sanity |
-| `LocalizationTest` | 8 | The real asset tables: every language answers every key, placeholders survive, and a missing entry falls back to Bengali |
+| `LiveVoiceUiTest` | 3 | The rendered top bar: the live-voice button is on screen, reports taps, and does not displace the persona or model pills |
 | `AdvancedToolsTest` | 12 | Live-voice and on-device-model tools: argument validation, the token-free bundle list, per-provider realtime detection (Groq excluded), and the two prompt contracts staying distinct |
-| `LiveVoiceUiTest` | 2 | The rendered top bar: the live-voice button is on screen, reports taps, and does not displace the persona or model pills |
+| `LocalizationTest` | 8 | The real asset tables: every language answers every key, placeholders survive, and a missing entry falls back to Bengali |
+| `PackageRobolectricTest`, `ExampleRobolectricTest`, `ExampleUnitTest`, `SanityUnitTest` | 4 | Robolectric wiring and arithmetic sanity |
 
-133 tests, 0 failures.
+191 tests, 0 failures.
+
+The shell tests are not mocked. Robolectric's JVM is x86_64 Linux, one of the four
+ABIs busybox is packaged for, so the binary the phone would run is the one the
+tests run — real commands, real exit codes.
 
 To confirm a tool actually shipped in a built APK:
 
 ```bash
 unzip -o -q app-release.apk -d /tmp/apk "classes*.dex"
 strings /tmp/apk/classes*.dex | grep -c voice_change
+```
+
+To confirm the terminal's binaries really shipped:
+
+```bash
+unzip -l app-release.apk | grep busybox
 ```
 
 ---

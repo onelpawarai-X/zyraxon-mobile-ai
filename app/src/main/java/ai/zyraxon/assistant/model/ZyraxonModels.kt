@@ -47,7 +47,8 @@ enum class AppTab(val title: String) {
     CHAT("চ্যাট"),
     TASKS("টাস্ক"),
     TOOLS("টুল"),
-    MCP("MCP")
+    MCP("MCP"),
+    TERMINAL("ZX")
 }
 
 enum class BgAnimationMode(val displayName: String) {
@@ -104,4 +105,18 @@ data class MemoryItem(
     val key: String,
     val value: String,
     val timestamp: String = ""
+)
+
+/**
+ * One entry in the Terminal scrollback: the prompt and the line the user or the
+ * assistant typed, then whatever the shell really printed.
+ */
+data class TerminalLine(
+    val id: String = UUID.randomUUID().toString(),
+    val command: String,
+    val output: String,
+    val exitCode: Int,
+    val isError: Boolean,
+    val timedOut: Boolean = false,
+    val millis: Long = 0
 )

@@ -4,6 +4,8 @@ import ai.zyraxon.assistant.DeviceBridge
 import ai.zyraxon.assistant.MainActivity
 import ai.zyraxon.assistant.ai.OnDeviceModel
 import ai.zyraxon.assistant.lock.DeviceLocker
+import ai.zyraxon.assistant.shell.GitRuntime
+import ai.zyraxon.assistant.shell.ShellRuntime
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -52,7 +54,7 @@ object ToolRegistry {
     private fun bool() = JSONObject().put("type", "boolean")
 
     /** Tools the UI layer owns; the engine routes these to the ViewModel. */
-    val UI_TOOLS = setOf("todo_write", "code_box", "files_panel", "floating_bubble")
+    val UI_TOOLS = setOf("todo_write", "code_box", "files_panel", "floating_bubble", "terminal_open", "terminal_run")
 
     private val defs: List<Pair<String, JSONObject>> by lazy { listOf(
         "mcp_connect" to JSONObject()
@@ -222,8 +224,14 @@ object ToolRegistry {
             .put("description", "Delete a file or folder.")
             .put("parameters", S(JSONObject().put("path", str()).put("recursive", bool()), listOf("path"))),
         "run_shell" to JSONObject()
-            .put("description", "Run a real command on this phone through sh -c and return stdout, stderr and the exit code.")
+            .put("description", "Run a real command through the bundled Unix toolbox (busybox sh) and return stdout, stderr and the exit code. Roughly 400 real commands are on PATH: sh, awk, sed, grep, tar, wget, find, xargs, sort, xxd, diff, base64, gzip and the rest. Use this for anything a dedicated tool cannot do.")
             .put("parameters", S(JSONObject().put("command", str()).put("cwd", str()).put("timeout_ms", num()), listOf("command"))),
+        "terminal_run" to JSONObject()
+            .put("description", "Run one line in the Terminal tab's own shell, in the same working directory the user sees. The line and its output appear in the terminal the user is looking at, so the user can watch or take over. Use this when you are working alongside the user at the terminal.")
+            .put("parameters", S(JSONObject().put("command", str()).put("timeout_ms", num()), listOf("command"))),
+        "terminal_open" to JSONObject()
+            .put("description", "Bring the Terminal tab to the front so the user watches the commands run in the real terminal instead of reading them in the chat.")
+            .put("parameters", S(JSONObject(), emptyList())),
         "publish_website" to JSONObject()
             .put("description", "Write a site to local storage and serve it on a public port. Returns a local URL.")
             .put("parameters", S(JSONObject().put("name", str()).put("html", str())
@@ -373,7 +381,7 @@ object ToolRegistry {
             "publish_cloudflare" -> publish(context, args, tunnel = true)
             "publish_github" -> publishGithub(context, args)
             "sys_info" -> ok(sysInfo(context), "ডিভাইসের তথ্য")
-            "platform_info" -> ok("Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}), ${Build.MANUFACTURER} ${Build.MODEL}, shell: sh -c", "প্ল্যাটফর্ম")
+            "platform_info" -> ok(ShellRuntime.describe(context), "প্ল্যাটফর্ম")
             "process_list" -> runShell(context, JSONObject().put("command", "ps -A 2>/dev/null || ps"))
             "call_state" -> ok(DeviceBridge.callState(), "কলের অবস্থা")
             "call_answer" -> ok(DeviceBridge.answerCall(context), "কল রিসিভ")
@@ -863,21 +871,39 @@ object ToolRegistry {
     private fun runShell(context: Context, args: JSONObject): JSONObject {
         val cmd = args.optString("command")
         val cwd = resolve(context, args.optString("cwd").ifBlank { null })
-        return try {
-            val pb = ProcessBuilder("sh", "-c", cmd)
-            pb.directory(cwd)
-            pb.redirectErrorStream(false)
-            val p = pb.start()
-            val out = p.inputStream.bufferedReader().use { it.readText() }
-            val errOut = p.errorStream.bufferedReader().use { it.readText() }
-            val finished = p.waitFor(args.optLong("timeout_ms", 60_000), TimeUnit.MILLISECONDS)
-            if (!finished) p.destroy()
-            val code = if (finished) p.exitValue() else -1
-            ok(JSONObject().put("code", code).put("stdout", out.take(30000)).put("stderr", errOut.take(8000)),
-                "$ $cmd → exit $code" + (out.trim().lines().lastOrNull()?.take(160)?.let { " | $it" } ?: ""))
-        } catch (e: Exception) {
-            err((e.message ?: e.toString()), "কমান্ড চালানো যায়নি")
+        val timeout = args.optLong("timeout_ms", 60_000)
+        // busybox has no git, so a `git` line is served by JGit here too —
+        // otherwise `git clone` would fail with "applet not found".
+        GitRuntime.runCommand(context, cmd, cwd)?.let { g ->
+            return ok(
+                JSONObject()
+                    .put("code", if (g.ok) 0 else 1)
+                    .put("stdout", if (g.ok) g.message else "")
+                    .put("stderr", if (g.ok) "" else g.message)
+                    .put("timed_out", false)
+                    .put("shell", "jgit"),
+                "$ ${cmd.trim()} → ${if (g.ok) "ok" else "failed"}"
+            )
         }
+        val r = ShellRuntime.run(context, cmd, cwd = cwd, timeoutMs = timeout)
+        if (r.code == -1 && r.stderr.isEmpty() && r.stdout.isEmpty()) {
+            return err("failed", "কমান্ড চালানো যায়নি: $cmd")
+        }
+        val tail = r.stdout.trim().lines().lastOrNull()?.take(160)
+        val label = buildString {
+            append("$ ${r.command} → exit ${r.code}")
+            if (r.timedOut) append(" (timeout ${timeout}ms)")
+            if (!tail.isNullOrBlank()) append(" | $tail")
+        }
+        return ok(
+            JSONObject()
+                .put("code", r.code)
+                .put("stdout", r.stdout)
+                .put("stderr", r.stderr)
+                .put("timed_out", r.timedOut)
+                .put("shell", ShellRuntime.shell(context)),
+            label
+        )
     }
 
     /**

@@ -264,6 +264,8 @@ voice are identical — do not give the service its own engine.
   `denyPermissions(SYSTEM_ALERT_WINDOW)` (which has no effect on it).
 
 ## Release history
+- **v6.6.0** (PR #6, branch `feat/terminal-and-git`, not yet released): a real Terminal tab
+  (`⌘ ZX`) plus `git clone/pull/status` via JGit. 191 tests / 0 failures. versionCode 14.
 - **v6.5.0** (2026-10-30, current, release id 428853097, tag `v6.5.0`): in-app
   auto-update (`Updater.kt` + `UpdateInstallReceiver.kt`), Settings `আপডেট` pane,
   launch banner. **All older tags/releases were deleted.** New signing key; installing

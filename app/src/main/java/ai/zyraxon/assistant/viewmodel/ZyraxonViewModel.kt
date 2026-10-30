@@ -18,8 +18,11 @@ import ai.zyraxon.assistant.model.MessageRole
 import ai.zyraxon.assistant.model.Persona
 import ai.zyraxon.assistant.model.SystemStatus
 import ai.zyraxon.assistant.model.TaskItem
+import ai.zyraxon.assistant.model.TerminalLine
 import ai.zyraxon.assistant.model.ToolExecutionItem
 import ai.zyraxon.assistant.model.WorkspaceFile
+import ai.zyraxon.assistant.shell.GitRuntime
+import ai.zyraxon.assistant.shell.ShellRuntime
 import ai.zyraxon.assistant.ai.OnDeviceModel
 import ai.zyraxon.assistant.ai.ProviderCatalog
 import ai.zyraxon.assistant.ai.ProviderSpec
@@ -94,7 +97,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     private val _activeTab = MutableStateFlow(
         runCatching { AppTab.valueOf(prefs.getString("active_tab", "") ?: "") }
+            // The terminal is a full-screen takeover, so a restart always lands on
+            // the chat rather than dropping the user into a shell they did not ask
+            // for. The scrollback itself is still there when they open it again.
             .getOrDefault(AppTab.CHAT)
+            .takeIf { it != AppTab.TERMINAL } ?: AppTab.CHAT
     )
     val activeTab: StateFlow<AppTab> = _activeTab.asStateFlow()
 
@@ -389,6 +396,21 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     val codeBoxText: StateFlow<String> = _codeBoxText.asStateFlow()
     private val _filesPanelOpen = MutableStateFlow(false)
     val filesPanelOpen: StateFlow<Boolean> = _filesPanelOpen.asStateFlow()
+
+    // ---- Terminal tab -------------------------------------------------------
+    // One scrollback of real command lines and their real output, shared by the
+    // user typing and by the assistant calling `terminal_run`. The assistant and
+    // the user are literally looking at the same shell.
+
+    private val _terminalLines = MutableStateFlow<List<TerminalLine>>(emptyList())
+    val terminalLines: StateFlow<List<TerminalLine>> = _terminalLines.asStateFlow()
+
+    private val _terminalBusy = MutableStateFlow(false)
+    val terminalBusy: StateFlow<Boolean> = _terminalBusy.asStateFlow()
+
+    /** The directory the next command runs in, shown in the terminal prompt. */
+    private val _terminalCwd = MutableStateFlow("~")
+    val terminalCwd: StateFlow<String> = _terminalCwd.asStateFlow()
 
     /** Files the assistant has written, shown in the Files panel. */
     private val _workspaceFiles = MutableStateFlow<List<WorkspaceFile>>(emptyList())
@@ -1279,6 +1301,38 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 _filesPanelOpen.value = args.optString("action", "open") != "close"
                 return JSONObject().put("ok", true).put("summary", "ফাইল প্যানেল খোলা হয়েছে")
             }
+            "terminal_open" -> {
+                _activeTab.value = AppTab.TERMINAL
+                return JSONObject().put("ok", true).put("summary", "টার্মিনাল খোলা হয়েছে")
+            }
+            "terminal_run" -> {
+                val cmd = args.optString("command")
+                _activeTab.value = AppTab.TERMINAL
+                val app = getApplication<Application>()
+                val cwd = currentTerminalDir(ShellRuntime.home(app))
+                val git = GitRuntime.runCommand(app, cmd, cwd)
+                val r = if (git != null) {
+                    ShellRuntime.Result(
+                        command = cmd,
+                        code = if (git.ok) 0 else 1,
+                        stdout = if (git.ok) git.message else "",
+                        stderr = if (git.ok) "" else git.message,
+                        timedOut = false,
+                        millis = 0
+                    )
+                } else {
+                    ShellRuntime.run(app, cmd, cwd = cwd, timeoutMs = args.optLong("timeout_ms", 120_000))
+                }
+                val body = listOf(r.stdout.trimEnd(), r.stderr.trimEnd())
+                    .filter { it.isNotEmpty() }.joinToString("\n").ifEmpty { "(no output)" }
+                appendTerminal(TerminalLine(command = cmd, output = body, exitCode = r.code, isError = r.code != 0 || r.timedOut, timedOut = r.timedOut, millis = r.millis))
+                return JSONObject()
+                    .put("ok", r.code == 0 && !r.timedOut)
+                    .put("code", r.code)
+                    .put("stdout", r.stdout)
+                    .put("stderr", r.stderr)
+                    .put("summary", "$ $cmd → exit ${r.code}")
+            }
             "floating_bubble" -> {
                 val want = args.optString("action", "on") != "off"
                 val ctx = getApplication<Application>()
@@ -1555,6 +1609,116 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     fun closeCodePanel() {
         _codeBoxOpen.value = false
+    }
+
+    // ---- Terminal tab ------------------------------------------------------
+
+    /**
+     * Runs one line in the terminal's own shell. The user's typed lines and the
+     * assistant's `terminal_run` calls both come through here, so the two are
+     * always in the same shell, at the same working directory, in the same
+     * scrollback. Every result is real output, never a summary.
+     */
+    fun runTerminal(command: String) {
+        val line = command.trim()
+        if (line.isEmpty() || _terminalBusy.value) return
+        viewModelScope.launch(Dispatchers.IO) {
+            _terminalBusy.value = true
+            val app = getApplication<Application>()
+            val ctx = ShellRuntime.home(app)
+            // `cd` is stateful: it changes where the *next* line runs, so it is
+            // applied here rather than left to die with the process it started.
+            val cdTarget = parseCd(line, ctx)
+            if (cdTarget != null) {
+                if (cdTarget.isDirectory) {
+                    _terminalCwd.value = displayPath(ctx, cdTarget)
+                    appendTerminal(TerminalLine(command = line, output = "", exitCode = 0, isError = false))
+                } else {
+                    appendTerminal(TerminalLine(command = line, output = "cd: no such directory: ${cdTarget.path}", exitCode = 1, isError = true))
+                }
+                _terminalBusy.value = false
+                return@launch
+            }
+            // busybox has no git, so a `git` line is served by JGit instead of
+            // failing with "applet not found".
+            runGitLine(app, line)?.let { result ->
+                appendTerminal(result)
+                _terminalBusy.value = false
+                return@launch
+            }
+            val cwd = currentTerminalDir(ctx)
+            val r = ShellRuntime.run(app, line, cwd = cwd, timeoutMs = 120_000)
+            val body = buildString {
+                if (r.stdout.isNotEmpty()) append(r.stdout.trimEnd())
+                if (r.stderr.isNotEmpty()) {
+                    if (isNotEmpty()) append('\n')
+                    append(r.stderr.trimEnd())
+                }
+                if (r.timedOut) {
+                    if (isNotEmpty()) append('\n')
+                    append("[timed out after ${r.millis / 1000}s]")
+                }
+                if (isEmpty()) append("(no output)")
+            }
+            appendTerminal(TerminalLine(command = line, output = body, exitCode = r.code, isError = r.code != 0 || r.timedOut, timedOut = r.timedOut, millis = r.millis))
+            _terminalBusy.value = false
+        }
+    }
+
+    /**
+     * Serves `git clone/pull/status` through JGit. Returns null for any other
+     * line so the real shell gets it.
+     */
+    private fun runGitLine(app: Application, line: String): TerminalLine? {
+        val cwd = currentTerminalDir(ShellRuntime.home(app))
+        val started = System.currentTimeMillis()
+        val outcome = GitRuntime.runCommand(app, line, cwd) ?: return null
+        return TerminalLine(
+            command = line,
+            output = outcome.message,
+            exitCode = if (outcome.ok) 0 else 1,
+            isError = !outcome.ok,
+            millis = System.currentTimeMillis() - started
+        )
+    }
+
+    private fun appendTerminal(entry: TerminalLine) {
+        _terminalLines.value = (_terminalLines.value + entry).takeLast(400)
+    }
+
+    fun clearTerminal() {
+        _terminalLines.value = emptyList()
+    }
+
+    /** The real directory the next command runs in. */
+    private fun currentTerminalDir(home: java.io.File): java.io.File {
+        val shown = _terminalCwd.value
+        return when {
+            shown == "~" -> home
+            // The displayed path is home-relative (`~/sub/dir`), so it has to be
+            // resolved against home before it can be used as a directory.
+            shown.startsWith("~/") ->
+                java.io.File(home, shown.removePrefix("~/")).takeIf { it.isDirectory } ?: home
+            else -> java.io.File(shown).takeIf { it.isDirectory } ?: home
+        }
+    }
+
+    /** Recognises a bare `cd <dir>` so the change survives past this line. */
+    private fun parseCd(line: String, home: java.io.File): java.io.File? {
+        val t = line.trim()
+        if (t != "cd" && !t.startsWith("cd ")) return null
+        val rest = t.removePrefix("cd").trim()
+        return when {
+            rest.isEmpty() || rest == "~" -> home
+            rest.startsWith("/") -> java.io.File(rest)
+            else -> java.io.File(currentTerminalDir(home), rest.removePrefix("./"))
+        }
+    }
+
+    private fun displayPath(home: java.io.File, dir: java.io.File): String {
+        val h = home.absolutePath
+        val p = dir.canonicalFile.absolutePath
+        return if (p == h) "~" else if (p.startsWith("$h/")) "~" + p.removePrefix(h) else p
     }
 
     // ---- MCP, driven by the MCP screen ------------------------------------
