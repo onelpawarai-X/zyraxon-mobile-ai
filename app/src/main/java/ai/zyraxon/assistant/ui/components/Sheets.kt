@@ -727,10 +727,41 @@ fun SettingsSheet(
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            t("রিয়েলটাইম মডেল বাছলে মডেল নিজের কণ্ঠে সরাসরি কথা বলে, আর ফোনের TTS বন্ধ থাকে — দুটো কণ্ঠ একসাথে শোনা যায় না। সাধারণ মডেল বাছলে তার লেখা ফোনের TTS পড়ে শোনায়।"),
+                            t("চালু থাকলে রিয়েলটাইম মডেল নিজের কণ্ঠে সরাসরি কথা বলে, আর ফোনের TTS বন্ধ থাকে। বন্ধ থাকলে মডেলের লেখা ফোনের TTS পড়ে শোনায় — তাই লাইভ সংযোগ না হলেও কথা শোনা যায়।"),
                             color = Glass.textSecondary,
                             fontSize = 11.5.sp
                         )
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // The live voice switch. Off hands the voice back to the
+                        // phone's own TTS, so a realtime model that cannot open a
+                        // socket still speaks normally instead of going silent.
+                        val preferred by viewModel.liveVoicePreferred.collectAsState()
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Glass.rowFill(0.30f))
+                                .border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(t("মডেলের নিজের কণ্ঠ ব্যবহার করো"), color = Glass.textPrimary, fontSize = 13.sp)
+                                Text(
+                                    t("বন্ধ থাকলে ফোনের TTS পড়ে শোনায় (সবসময় কাজ করে)"),
+                                    color = Glass.textMuted,
+                                    fontSize = 11.sp
+                                )
+                            }
+                            Switch(
+                                checked = preferred,
+                                onCheckedChange = { viewModel.setLiveVoicePreferred(it) },
+                                colors = SwitchDefaults.colors(checkedThumbColor = Glass.textPrimary, checkedTrackColor = Glass.cyanFill)
+                            )
+                        }
+
                         Spacer(modifier = Modifier.height(12.dp))
 
                         // Live status. The switch follows the model, so this is a
@@ -1230,8 +1261,8 @@ fun SettingsSheet(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(t("সর্বদা শুনবে (Always listening)"), color = Glass.textPrimary, fontSize = 13.sp)
-                                Text(t("অ্যাপ চলাকালীন স্বয়ংক্রিয় লিসেনিং চালু রাখবে"), color = Glass.textMuted, fontSize = 11.sp)
+                                Text(t("মাইক চালু রাখো (Always listening)"), color = Glass.textPrimary, fontSize = 13.sp)
+                                Text(t("বন্ধ করলে আপনি নিজেই মাইক বন্ধ রাখতে পারবেন; চালু করলে সবসময় শুনবে"), color = Glass.textMuted, fontSize = 11.sp)
                             }
                             Switch(
                                 checked = alwaysListening,
@@ -1255,6 +1286,28 @@ fun SettingsSheet(
                                 checked = autoSend,
                                 onCheckedChange = { viewModel.setAutoSend(it) },
                                 colors = SwitchDefaults.colors(checkedThumbColor = Glass.textPrimary, checkedTrackColor = Glass.cyanFill)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                        // A second, larger microphone switch, so the user can mute
+                        // from inside Settings as well as from the top bar.
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(if (alwaysListening) Glass.greenFill.copy(alpha = 0.18f) else Glass.rowFill(0.30f))
+                                .border(1.dp, if (alwaysListening) Glass.greenFill else Glass.borderSoft, RoundedCornerShape(14.dp))
+                                .clickable { viewModel.setMicEnabled(!alwaysListening) }
+                                .padding(14.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                if (alwaysListening) t("🎙️ মাইক চালু — বন্ধ করতে চাপুন") else t("🔇 মাইক বন্ধ — চালু করতে চাপুন"),
+                                color = Glass.textPrimary,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 13.sp
                             )
                         }
                     }

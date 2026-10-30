@@ -19,7 +19,9 @@ object VoiceSelector {
     )
 
     /** Language subtag of a BCP-47 tag, lower-cased ("bn-BD" -> "bn"). */
-    private fun language(tag: String): String = tag.substringBefore('-').lowercase()
+    fun languageOf(tag: String): String = tag.substringBefore('-').lowercase()
+
+    private fun language(tag: String): String = languageOf(tag)
 
     /** Google's engine marks gender in the voice name as "#female"/"#male". */
     private fun declaresGender(name: String, gender: String): Boolean {
@@ -39,9 +41,11 @@ object VoiceSelector {
      * Picks the best voice, or null when none is installed for the language so
      * the caller can fall back to the engine default instead of guessing.
      *
-     * Order of preference: an offline voice that states the gender, then any
-     * offline voice for the language, then a network voice. A voice for the wrong
-     * gender is never returned — silence is better than the wrong person.
+     * Order of preference: an offline voice that states the wanted gender, then a
+     * gender-neutral offline voice for the language, then anything for the
+     * language. A voice that states the *opposite* gender is never chosen — the
+     * old code fell through to `pool.firstOrNull()`, which is how a request for a
+     * male voice came back with the female one and the user heard only a woman.
      */
     fun pick(candidates: List<Candidate>, bcp47: String, gender: String): Candidate? {
         if (candidates.isEmpty()) return null
@@ -55,9 +59,14 @@ object VoiceSelector {
         val byGender = pool.filter {
             declaresGender(it.name, gender) && !contradicts(it.name, gender)
         }
+        val neutral = pool.filter {
+            !declaresGender(it.name, "male") && !declaresGender(it.name, "female")
+        }
         // Exact region first, then any region of the same language.
         val exactRegion = byGender.filter { it.localeTag.equals(bcp47, ignoreCase = true) }
-        return exactRegion.firstOrNull() ?: byGender.firstOrNull()
+        return exactRegion.firstOrNull()
+            ?: byGender.firstOrNull()
+            ?: neutral.firstOrNull()
             ?: pool.firstOrNull()
     }
 

@@ -106,4 +106,38 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
         }
         return sb.toString().trim()
     }
+
+    /**
+     * Everything worth remembering from a long time ago, pulled out of the full
+     * transcript for the words the user just used.
+     *
+     * The short-term window is the last few turns; this is the other half — a
+     * conversation from weeks ago comes back when the same subject comes up,
+     * which is what "মাসের পর মাস আগের কথা মনে থাকতে হবে" asks for. The whole
+     * history stays in SQLite; only the matching turns are offered to the model.
+     */
+    suspend fun recallRelevant(topic: String, limit: Int = 12): List<ChatMessage> {
+        val words = topic.lowercase()
+            .split(Regex("[^\\p{L}\\p{N}]+"))
+            .filter { it.length >= 4 }
+            .distinct()
+            .take(3)
+        if (words.isEmpty()) return emptyList()
+        val a = words.getOrElse(0) { "" }
+        val b = words.getOrElse(1) { a }
+        val c = words.getOrElse(2) { a }
+        return dao.searchMessages(a, b, c, limit).asReversed().map { entity ->
+            ChatMessage(
+                id = entity.id,
+                role = when (entity.role) {
+                    "USER" -> MessageRole.USER
+                    "SYSTEM" -> MessageRole.SYSTEM
+                    else -> MessageRole.ASSISTANT
+                },
+                text = entity.text,
+                timestamp = entity.timestamp,
+                modelName = entity.modelName
+            )
+        }
+    }
 }

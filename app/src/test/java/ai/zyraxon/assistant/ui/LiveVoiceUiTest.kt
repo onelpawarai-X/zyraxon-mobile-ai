@@ -48,6 +48,30 @@ class LiveVoiceUiTest {
     }
 
     @Test
+    fun `the mic switch is on screen and reports taps`() {
+        var taps = 0
+        compose.setContent {
+            ZyraxonTopBar(
+                personaName = "প্রেমিকা",
+                personaEmoji = "💖",
+                modelName = "gemini",
+                liveActive = false,
+                micOn = true,
+                onPersonaClick = {},
+                onModelClick = {},
+                onMicToggle = { taps++ },
+                onSettingsClick = {},
+                onClearClick = {}
+            )
+        }
+
+        compose.onNodeWithTag("mic_toggle_button").assertIsDisplayed()
+        compose.onNodeWithTag("mic_toggle_button").performClick()
+        compose.waitForIdle()
+        assertEquals("মাইক বাটনের ট্যাপ ধরা পড়েনি", 1, taps)
+    }
+
+    @Test
     fun `the persona and model pills still work next to the live button`() {
         var persona = 0
         var model = 0

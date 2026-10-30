@@ -21,6 +21,18 @@ interface ZyraxonDao {
     @Query("DELETE FROM chat_messages")
     suspend fun clearAllMessages()
 
+    /**
+     * Past turns that mention any of the given words, newest first. Used to
+     * recall a conversation from weeks ago: the whole transcript stays in the
+     * database, but only the matching parts are worth sending to the model.
+     */
+    @Query(
+        "SELECT * FROM chat_messages WHERE text LIKE '%' || :a || '%' " +
+            "OR text LIKE '%' || :b || '%' OR text LIKE '%' || :c || '%' " +
+            "ORDER BY createdAt DESC LIMIT :limit"
+    )
+    suspend fun searchMessages(a: String, b: String, c: String, limit: Int): List<ChatMessageEntity>
+
     // Memories (Persistent SQLite Memory Store)
     @Query("SELECT * FROM memories ORDER BY updatedAt DESC")
     fun getAllMemories(): Flow<List<MemoryEntity>>

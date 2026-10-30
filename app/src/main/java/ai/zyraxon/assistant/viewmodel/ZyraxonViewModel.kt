@@ -2,6 +2,7 @@ package ai.zyraxon.assistant.viewmodel
 
 import ai.zyraxon.assistant.DeviceBridge
 import ai.zyraxon.assistant.ai.ToolRegistry
+import ai.zyraxon.assistant.ai.ContextWindow
 import ai.zyraxon.assistant.mcp.McpAuth
 import ai.zyraxon.assistant.mcp.McpCatalog
 import ai.zyraxon.assistant.mcp.McpStatus
@@ -24,6 +25,7 @@ import ai.zyraxon.assistant.ai.ProviderCatalog
 import ai.zyraxon.assistant.ai.ProviderSpec
 import ai.zyraxon.assistant.voice.LiveVoiceSession
 import ai.zyraxon.assistant.voice.NativeVoiceManager
+import ai.zyraxon.assistant.voice.SpeechChunker
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
@@ -65,7 +67,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     /** The optional on-device engine: no network, runs a downloaded model. */
     val onDeviceModel = OnDeviceModel.get(application)
 
-    private val _selectedPersona = MutableStateFlow(ZyraxonAiEngine.PERSONAS[0])
+    private val _selectedPersona = MutableStateFlow(restoreSavedPersona())
     val selectedPersona: StateFlow<Persona> = _selectedPersona.asStateFlow()
 
     private val _availableModels = MutableStateFlow<List<AiModel>>(emptyList())
@@ -81,15 +83,22 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private val _providerBusy = MutableStateFlow<Set<String>>(emptySet())
     val providerBusy: StateFlow<Set<String>> = _providerBusy.asStateFlow()
 
-    // Nothing is selected until the live catalogue arrives — an invented
-    // default would be a model the server may not even offer.
-    private val _selectedModel = MutableStateFlow(AiModel("", "মডেল লোড হচ্ছে…", "", "", "", true))
+    // The selection is restored from the last session, so a restart comes back to
+    // the model the user picked instead of jumping to whatever the catalogue
+    // happens to list first.
+    private val _selectedModel = MutableStateFlow(restoreSavedModel())
     val selectedModel: StateFlow<AiModel> = _selectedModel.asStateFlow()
 
-    private val _activeTab = MutableStateFlow(AppTab.CHAT)
+    private val _activeTab = MutableStateFlow(
+        runCatching { AppTab.valueOf(prefs.getString("active_tab", "") ?: "") }
+            .getOrDefault(AppTab.CHAT)
+    )
     val activeTab: StateFlow<AppTab> = _activeTab.asStateFlow()
 
-    private val _bgMode = MutableStateFlow(BgAnimationMode.LIVING_PINK_AURA)
+    private val _bgMode = MutableStateFlow(
+        runCatching { BgAnimationMode.valueOf(prefs.getString("bg_mode", "") ?: "") }
+            .getOrDefault(BgAnimationMode.LIVING_PINK_AURA)
+    )
     val bgMode: StateFlow<BgAnimationMode> = _bgMode.asStateFlow()
 
     /**
@@ -139,7 +148,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private val _ttsPitch = MutableStateFlow(prefs.getFloat("tts_pitch", 1.25f))
     val ttsPitch: StateFlow<Float> = _ttsPitch.asStateFlow()
 
-    private val _alwaysListening = MutableStateFlow(prefs.getBoolean("always_listening", false))
+    /**
+     * The user's microphone switch. True means the mic stays open for as long as
+     * the app runs; false means it stays shut until the user opens it again.
+     * Default true, because the user asked for a microphone that is simply on.
+     */
+    private val _alwaysListening = MutableStateFlow(prefs.getBoolean("always_listening", true))
     val alwaysListening: StateFlow<Boolean> = _alwaysListening.asStateFlow()
 
     /**
@@ -163,6 +177,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     /** The provider the open realtime session belongs to, for the status line. */
     private val _liveVoiceProvider = MutableStateFlow("")
     val liveVoiceProvider: StateFlow<String> = _liveVoiceProvider.asStateFlow()
+
+    /**
+     * Whether the user wants the model's own speech-to-speech voice when they
+     * pick a realtime model. Off by default: the phone's text-to-speech is the
+     * voice that always works, so it stays in charge until the user asks for the
+     * live one. A realtime model whose live session cannot open falls back to the
+     * phone's voice rather than going silent.
+     */
+    private val _liveVoicePreferred = MutableStateFlow(prefs.getBoolean("live_voice_preferred", false))
+    val liveVoicePreferred: StateFlow<Boolean> = _liveVoicePreferred.asStateFlow()
 
     private val _autoSend = MutableStateFlow(prefs.getBoolean("auto_send", true))
     val autoSend: StateFlow<Boolean> = _autoSend.asStateFlow()
@@ -318,7 +342,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
         // Connect STT
         voiceManager.onSpeechRecognized = { text, isFinal ->
-            if (text.isNotBlank()) {
+            // The microphone can hear the phone's own speaker. Anything that
+            // arrives while the assistant is speaking is the assistant's own
+            // voice coming back, so it is dropped rather than sent as a user
+            // message — that echo is what made the app answer itself.
+            if (text.isNotBlank() && !isSpeaking.value && !liveVoice.isActive) {
                 // The user speaking over the assistant is a normal interruption,
                 // not an error: cut the voice and take the new words.
                 if (!isFinal) onUserStartedSpeaking()
@@ -329,12 +357,48 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             }
         }
 
+        // The microphone follows the user's saved choice: on from the first
+        // frame when they left it on, off when they left it off.
+        if (_alwaysListening.value && _systemStatus.value.micPermissionGranted) {
+            voiceManager.startListening()
+        }
+
         // Fetch Live Models on startup
         refreshModels()
     }
 
     private fun currentTimeString(): String {
         return SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
+    }
+
+    /**
+     * The character the user last chose. Restored before the first frame so the
+     * greeting and the voice come back as the user left them.
+     */
+    private fun restoreSavedPersona(): Persona {
+        val id = prefs.getString("selected_persona_id", null)
+        return ZyraxonAiEngine.PERSONAS.firstOrNull { it.id == id } ?: ZyraxonAiEngine.PERSONAS[0]
+    }
+
+    /**
+     * The model the user last chose. The id and provider are enough to rebuild a
+     * usable model; the real name and realtime flag are refreshed from the live
+     * catalogue when it arrives.
+     */
+    private fun restoreSavedModel(): AiModel {
+        val id = prefs.getString("selected_model_id", null)
+        if (id.isNullOrBlank()) return AiModel("", "মডেল লোড হচ্ছে…", "", "", "", true)
+        val name = prefs.getString("selected_model_name", id) ?: id
+        val provider = prefs.getString("selected_model_provider", "") ?: ""
+        val spec = ProviderCatalog.find(provider)
+        return AiModel(
+            id = id,
+            name = name,
+            category = spec?.category ?: "Restored",
+            description = spec?.label ?: provider,
+            provider = provider,
+            isRealtime = spec?.isRealtimeModel(id) ?: false
+        )
     }
 
     fun setVoiceLanguage(tag: String) {
@@ -363,21 +427,36 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 val live = aiEngine.fetchLiveModels { partial ->
                     if (partial.isNotEmpty()) {
                         _availableModels.value = partial
-                        if (partial.none { it.id == _selectedModel.value.id }) {
-                            _selectedModel.value = partial[0]
-                        }
+                        adoptDefaultIfUnset(partial)
                     }
                 }
                 if (live.isNotEmpty()) {
                     _availableModels.value = live
-                    if (live.none { it.id == _selectedModel.value.id }) {
-                        _selectedModel.value = live[0]
-                    }
+                    adoptDefaultIfUnset(live)
                 }
             } catch (_: Exception) {
             } finally {
                 _isLoadingModels.value = false
             }
+        }
+    }
+
+    /**
+     * Picks the first catalogue model only when nothing was restored from the last
+     * session. A saved choice is never overwritten by the refresh, which is what
+     * made the model revert to the top of the list on every launch.
+     */
+    private fun adoptDefaultIfUnset(models: List<AiModel>) {
+        val current = _selectedModel.value
+        if (current.id.isBlank()) {
+            _selectedModel.value = models[0]
+            return
+        }
+        // A saved model keeps its place; its friendly name is refreshed from the
+        // catalogue when the provider is reachable.
+        val match = models.firstOrNull { it.id == current.id }
+        if (match != null && match.name != current.name) {
+            _selectedModel.value = match
         }
     }
 
@@ -394,7 +473,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             isFree = true
         )
         _availableModels.value = listOf(customModel) + _availableModels.value.filter { it.id != cleanId }
-        _selectedModel.value = customModel
+        setModel(customModel)
     }
 
     fun onInputChange(text: String) {
@@ -403,10 +482,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     fun setTab(tab: AppTab) {
         _activeTab.value = tab
+        prefs.edit().putString("active_tab", tab.name).apply()
     }
 
     fun setPersona(persona: Persona) {
         _selectedPersona.value = persona
+        prefs.edit().putString("selected_persona_id", persona.id).apply()
         // A male character speaking with the sweet female voice would break the
         // illusion instantly, so the voice follows the character.
         applyVoice(gender = if (persona.id == "boyfriend") "male" else "female")
@@ -427,6 +508,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     fun setBgMode(mode: BgAnimationMode) {
         _bgMode.value = mode
+        prefs.edit().putString("bg_mode", mode.name).apply()
     }
 
     fun setBgVideoAsset(asset: String) {
@@ -477,8 +559,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun setAlwaysListening(enabled: Boolean) {
-        _alwaysListening.value = enabled
-        prefs.edit().putBoolean("always_listening", enabled).apply()
+        setMicEnabled(enabled)
     }
 
     fun setAutoSend(enabled: Boolean) {
@@ -639,19 +720,35 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun toggleListening() {
-        if (isListening.value) {
-            voiceManager.stopListening()
-        } else {
+        setMicEnabled(!_alwaysListening.value)
+    }
+
+    /**
+     * Opens or closes the microphone for the whole session. This is the one
+     * switch the user owns: when it is on the mic stays open — it only closes
+     * for the moment the assistant is speaking — and when it is off it stays
+     * closed until the user turns it back on. The choice is saved, so a restart
+     * comes back with the mic exactly as the user left it.
+     */
+    fun setMicEnabled(enabled: Boolean) {
+        _alwaysListening.value = enabled
+        prefs.edit().putBoolean("always_listening", enabled).apply()
+        if (enabled) {
             voiceManager.startListening()
+        } else {
+            voiceManager.stopSpeaking()
+            voiceManager.stopListening()
         }
     }
 
     /**
-     * Opens the microphone and leaves it open. The user asked for a mic that is
-     * never off, so there is no toggle on the aura — speech simply keeps flowing.
+     * Opens the microphone and leaves it open, when the user has it switched on.
+     * Called once the permission is granted; it is a no-op while the user has the
+     * mic switched off, so a restart never overrides their choice.
      */
     fun startAlwaysOnListening() {
         if (!_systemStatus.value.micPermissionGranted) return
+        if (!_alwaysListening.value) return
         voiceManager.startListening()
     }
 
@@ -690,11 +787,31 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      */
     fun setModel(model: AiModel) {
         _selectedModel.value = model
-        if (model.isRealtime) {
+        prefs.edit()
+            .putString("selected_model_id", model.id)
+            .putString("selected_model_name", model.name)
+            .putString("selected_model_provider", model.provider)
+            .apply()
+        if (model.isRealtime && _liveVoicePreferred.value) {
             _liveVoiceModel.value = model.id
             _liveVoiceProvider.value = model.provider
             startLiveVoice()
         } else if (_liveVoiceEnabled.value) {
+            stopLiveVoice()
+        }
+    }
+
+    /**
+     * Turns the model's own speech-to-speech voice on or off for the chosen
+     * realtime model. Off hands the voice back to the phone's text-to-speech, so
+     * a realtime model the user cannot connect still speaks in the normal way.
+     */
+    fun setLiveVoicePreferred(enabled: Boolean) {
+        _liveVoicePreferred.value = enabled
+        prefs.edit().putBoolean("live_voice_preferred", enabled).apply()
+        if (enabled) {
+            startLiveVoice()
+        } else {
             stopLiveVoice()
         }
     }
@@ -719,7 +836,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val current = _selectedModel.value
         val target = if (current.isRealtime) current else _availableModels.value.firstOrNull { it.isRealtime }
         if (target == null) return false
-        setModel(target)
+        setLiveVoicePreferred(true)
+        if (_selectedModel.value.id != target.id) setModel(target)
         return _liveVoiceEnabled.value
     }
 
@@ -752,17 +870,18 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // The phone's engine is cut off here in case it was mid-sentence; the
         // live model is the voice for as long as this session runs.
         voiceManager.stopSpeaking()
-        liveVoice.onState = { _liveVoiceState.value = it }
+        liveVoice.onState = { state ->
+            _liveVoiceState.value = state
+            // A turn ended: close the open transcript bubble and persist it, so
+            // the next thing either side says starts a fresh message instead of
+            // being appended to the previous one.
+            if (state == LiveVoiceSession.State.LISTENING) closeLiveTranscript()
+        }
         liveVoice.onUserTranscript = { text ->
-            _messages.value = _messages.value + ChatMessage(
-                role = MessageRole.USER, text = text, timestamp = currentTimeString()
-            )
+            appendLiveTranscript(MessageRole.USER, text, "")
         }
         liveVoice.onModelTranscript = { text ->
-            _messages.value = _messages.value + ChatMessage(
-                role = MessageRole.ASSISTANT, text = text, timestamp = currentTimeString(),
-                modelName = model.name
-            )
+            appendLiveTranscript(MessageRole.ASSISTANT, text, model.name)
         }
         liveVoice.onError = { message ->
             _systemStatus.value = _systemStatus.value.copy(lastError = message)
@@ -784,6 +903,47 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     /** One screen frame for the live model, so it sees what the user sees. */
     fun pushLiveScreenFrame(jpegBase64: String) {
         if (liveVoice.isActive) liveVoice.sendScreenFrame(jpegBase64)
+    }
+
+    /**
+     * Appends one live-voice transcript chunk to the chat.
+     *
+     * The live model sends its transcript in fragments and it also *hears its own
+     * voice*, so naively appending every chunk produced a chat box filling with
+     * the assistant's own words. Fragments from the same speaker are merged into
+     * the message that is still open, and a chunk that repeats the previous text
+     * (the model hearing itself) is dropped.
+     */
+    private fun appendLiveTranscript(role: MessageRole, text: String, modelName: String) {
+        val clean = text.trim()
+        if (clean.isBlank()) return
+        val last = _messages.value.lastOrNull()
+        if (last != null && last.role == role && last.isStreaming) {
+            if (clean == last.text.trim() || last.text.trim().endsWith(clean)) return
+            val merged = last.copy(text = last.text + clean, isStreaming = true)
+            _messages.value = _messages.value.dropLast(1) + merged
+            return
+        }
+        if (last != null && last.role == role && clean == last.text.trim()) return
+        _messages.value = _messages.value + ChatMessage(
+            role = role,
+            text = clean,
+            timestamp = currentTimeString(),
+            isStreaming = true,
+            modelName = modelName
+        )
+    }
+
+    /**
+     * Marks the open live-voice bubble finished and writes it to the database, so
+     * a live turn is remembered exactly like a typed one.
+     */
+    private fun closeLiveTranscript() {
+        val last = _messages.value.lastOrNull() ?: return
+        if (!last.isStreaming) return
+        val finished = last.copy(isStreaming = false)
+        _messages.value = _messages.value.dropLast(1) + finished
+        viewModelScope.launch { repository.saveMessage(finished) }
     }
 
     fun sendMessage(overridePrompt: String? = null) {
@@ -830,13 +990,28 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             repository.saveMessage(userMsg)
             var fullReply = ""
             val spokenBuffer = StringBuilder()
+            // One spoken reply: the ear closes here and reopens once, in the
+            // finally block. Without this pair the mic reopened in every gap
+            // between streamed sentences, which is the on/off churn the user heard.
+            val speakingReply = shouldUsePhoneTts()
+            if (speakingReply) voiceManager.beginReply()
             try {
                 // Fetch SQL memories to inject into AI prompt so it NEVER forgets!
                 val memoriesContext = repository.getMemoriesPromptContext()
+                // Long-term recall: turns from weeks ago that match what the user
+                // just said come back with this turn, so an old conversation is
+                // remembered without resending the whole transcript every time.
+                val recalled = repository.recallRelevant(prompt, limit = ContextWindow.RECALL_LIMIT)
+                val recalledIds = recalled.map { it.id }.toSet()
+                val recent = _messages.value
+                    .filter { it.id != assistantMsgId && it.id !in recalledIds }
+                // Recalled old turns lead, then the newest turns, both trimmed to
+                // fit the engine's twelve-turn window so nothing is dropped.
+                val history = ContextWindow.assemble(recalled, recent)
 
                 aiEngine.streamAiResponse(
                     prompt = prompt,
-                    history = _messages.value.filter { it.id != assistantMsgId },
+                    history = history,
                     persona = _selectedPersona.value,
                     model = _selectedModel.value,
                     memoriesContext = memoriesContext,
@@ -864,12 +1039,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     // keeps pace with the text instead of waiting for the whole answer.
                     if (shouldUsePhoneTts()) {
                         spokenBuffer.append(chunk)
-                        val boundary = spokenBuffer.indexOfLast { it in "\n।!?;." }
-                        if (boundary >= 0) {
-                            val ready = spokenBuffer.substring(0, boundary + 1)
-                            spokenBuffer.delete(0, boundary + 1)
-                            if (ready.isNotBlank()) voiceManager.speakQueued(ready)
-                        }
+                        val ready = SpeechChunker.take(spokenBuffer)
+                        if (ready.isNotBlank()) voiceManager.speakQueued(ready)
                     }
                 }
             } catch (e: Exception) {
@@ -877,6 +1048,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 fullReply = if (fullReply.isBlank()) reason else fullReply
             } finally {
                 _isGenerating.value = false
+                // Speak the leftover sentence, then hand the microphone back
+                // exactly once, after the engine has finished the last word.
+                if (speakingReply && spokenBuffer.isNotBlank()) {
+                    voiceManager.speakQueued(spokenBuffer.toString())
+                }
+                if (speakingReply) voiceManager.endReply()
             }
 
             if (fullReply.isBlank()) {
@@ -899,14 +1076,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
             // Persist Complete Assistant Response to SQLite Room
             repository.saveMessage(finalMsg)
-
-            // Speak whatever is left after the final sentence boundary.
-            if (shouldUsePhoneTts() && spokenBuffer.isNotBlank()) {
-                voiceManager.speakQueued(spokenBuffer.toString())
-            }
         }
     }
 
+    /**
+     * Feeds one screen frame to the live model, so it can see what the user sees.
+     */
     fun onScreenFrame(base64Jpeg: String) {
         if (base64Jpeg.isBlank()) return
         _screenFrameDataUrl.value = "data:image/jpeg;base64,$base64Jpeg"
