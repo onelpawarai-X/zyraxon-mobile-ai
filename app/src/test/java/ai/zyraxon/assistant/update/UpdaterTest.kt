@@ -85,4 +85,28 @@ class UpdaterTest {
         assertFalse(Updater.isNewer(Version(6, 4, 0), Version(6, 4, 0)))
         assertFalse(Updater.isNewer(Version(6, 3, 9), Version(6, 4, 0)))
     }
+
+    /**
+     * The real GitHub payload for the v6.5.0 release, captured from the live API.
+     * A hand-trimmed mock would pass even if GitHub's shape drifted; this cannot.
+     */
+    @Test
+    fun `the real v6_5_0 release payload parses and offers the APK`() {
+        val json = javaClass.classLoader!!
+            .getResourceAsStream("latest_release_live.json")!!
+            .bufferedReader().use { it.readText() }
+
+        val release = Updater.parseLatest(json)!!
+        assertEquals("v6.5.0", release.tag)
+        assertEquals(Version(6, 5, 0), release.version)
+        assertEquals("ZYRAXON-v6.5.0.apk", release.apk?.name)
+        assertTrue(release.apk!!.url.endsWith("/download/v6.5.0/ZYRAXON-v6.5.0.apk"))
+        assertTrue(release.apk.size > 100_000_000)
+
+        // The build on the phone is 6.5.0, so this release must NOT be offered as
+        // an update — the exact "already latest" case the settings pane shows.
+        assertFalse(Updater.isNewer(release.version, Version(6, 5, 0)))
+        // And 6.4.0 must be offered it.
+        assertTrue(Updater.isNewer(release.version, Version(6, 4, 0)))
+    }
 }
