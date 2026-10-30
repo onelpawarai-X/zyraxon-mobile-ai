@@ -264,6 +264,14 @@ voice are identical — do not give the service its own engine.
   `denyPermissions(SYSTEM_ALERT_WINDOW)` (which has no effect on it).
 
 ## Release history
+- **v6.8.0** (2026-10-30, PR #9, tag `v6.8.0`): the v6.7.1 **female-only lock is
+  reverted** — the user wants *both* voices. Speech is a real queue now
+  (`SpeechChunker` -> `SpeechSegmenter` -> `SpeechQueue`, one run at a time, `onDone`
+  gates the next), which fixes the mic flicker and the cut-off-after-a-word bug.
+  `live_voice` (model-native S2S) is enabled again. 244 tests / 0 failures.
+  **Lesson:** this user reverses decisions. v6.7.1 removed the male voice *at their
+  request*; v6.8.0 restores it *at their request*. Check `git log`/HEAD before
+  trusting an older session's "the user asked for X".
 - **v6.6.0** (PR #6, branch `feat/terminal-and-git`, not yet released): a real Terminal tab
   (`⌘ ZX`) plus `git clone/pull/status` via JGit. 191 tests / 0 failures. versionCode 14.
 - **v6.5.0** (2026-10-30, current, release id 428853097, tag `v6.5.0`): in-app
