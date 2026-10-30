@@ -5,6 +5,7 @@ import ai.zyraxon.assistant.i18n.setLanguage
 import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.ai.ZyraxonAiEngine
 import ai.zyraxon.assistant.model.AiModel
+import ai.zyraxon.assistant.model.AppTab
 import ai.zyraxon.assistant.model.BgAnimationMode
 import ai.zyraxon.assistant.model.Persona
 import ai.zyraxon.assistant.update.UpdateState
@@ -612,7 +613,7 @@ fun SettingsSheet(
     val memories by viewModel.memories.collectAsState()
     val messages by viewModel.messages.collectAsState()
 
-    var activePane by remember { mutableStateOf("voice") }
+    var activePane by remember { mutableStateOf("session") }
 
     // Checking for a new release as soon as Settings opens is what makes the
     // আপডেট pane useful the first time it is visited; the launch check has
@@ -681,6 +682,7 @@ fun SettingsSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 listOf(
+                    "session" to t("🧭 নেভিগেশন"),
                     "persona" to t("🎭 পরিচয়"),
                     "model" to t("🧩 মডেল"),
                     "updates" to t("⬆️ আপডেট"),
@@ -724,6 +726,8 @@ fun SettingsSheet(
                     .verticalScroll(rememberScrollState())
             ) {
                 when (activePane) {
+                    "session" -> SessionNavPane(viewModel = viewModel, onDismiss = onDismiss)
+
                     "persona" -> {
                         val selectedPersona by viewModel.selectedPersona.collectAsState()
                         Text(
@@ -1821,6 +1825,132 @@ fun SettingsSheet(
                 )
             }
         }
+    }
+}
+
+/**
+ * The নেভিগেশন pane. Every control that used to sit in a row at the top of the
+ * screen lives here now: the five sections, a fresh-session button and the
+ * microphone switch. The top of the app is left to a single Settings gear, so
+ * the screen belongs to the aura and the conversation.
+ */
+@Composable
+fun SessionNavPane(viewModel: ZyraxonViewModel, onDismiss: () -> Unit) {
+    val activeTab by viewModel.activeTab.collectAsState()
+    val alwaysListening by viewModel.alwaysListening.collectAsState()
+    val messages by viewModel.messages.collectAsState()
+
+    Text(
+        t("সেকশন"),
+        fontWeight = FontWeight.Bold,
+        color = Glass.textPrimary,
+        fontSize = 14.sp
+    )
+    Spacer(modifier = Modifier.height(6.dp))
+    Text(
+        t("যে অংশে যেতে চান সেটি বেছে নিন। উপরে কোনো বাটন নেই — সব এখানে।"),
+        color = Glass.textSecondary,
+        fontSize = 11.5.sp
+    )
+    Spacer(modifier = Modifier.height(10.dp))
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        AppTab.values().forEach { tab ->
+            val selected = tab == activeTab
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(if (selected) Glass.pinkFill else Glass.rowFill(0.30f))
+                    .border(
+                        1.dp,
+                        if (selected) Glass.pinkFill else Glass.borderSoft,
+                        RoundedCornerShape(14.dp)
+                    )
+                    .clickable {
+                        viewModel.setTab(tab)
+                        if (tab != AppTab.TERMINAL) onDismiss()
+                    }
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (tab == AppTab.TERMINAL) t("⌘ ZX — সিস্টেম শেল") else tab.title,
+                    color = if (selected) Glass.textOnAccent else Glass.textPrimary,
+                    fontSize = 13.5.sp,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                )
+                if (selected) {
+                    Text(t("চালু আছে"), color = Glass.textOnAccent, fontSize = 11.sp)
+                }
+            }
+        }
+    }
+
+    Spacer(modifier = Modifier.height(18.dp))
+    Text(
+        t("নতুন সেশন"),
+        fontWeight = FontWeight.Bold,
+        color = Glass.textPrimary,
+        fontSize = 14.sp
+    )
+    Spacer(modifier = Modifier.height(6.dp))
+    Text(
+        t("চ্যাট ইতিহাস মুছে একেবারে নতুন করে শুরু করুন।"),
+        color = Glass.textSecondary,
+        fontSize = 11.5.sp
+    )
+    Spacer(modifier = Modifier.height(10.dp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Glass.rowFill(0.30f))
+            .border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
+            .clickable {
+                viewModel.clearChat()
+                viewModel.setTab(AppTab.CHAT)
+                onDismiss()
+            }
+            .padding(horizontal = 14.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            t("🆕 নতুন সেশন শুরু করো"),
+            color = Glass.textPrimary,
+            fontSize = 13.5.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+        Text(t("{0} টি বার্তা", messages.size), color = Glass.textMuted, fontSize = 11.sp)
+    }
+
+    Spacer(modifier = Modifier.height(18.dp))
+    Text(
+        t("মাইক"),
+        fontWeight = FontWeight.Bold,
+        color = Glass.textPrimary,
+        fontSize = 14.sp
+    )
+    Spacer(modifier = Modifier.height(10.dp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(if (alwaysListening) Glass.greenFill.copy(alpha = 0.18f) else Glass.rowFill(0.30f))
+            .border(1.dp, if (alwaysListening) Glass.greenFill else Glass.borderSoft, RoundedCornerShape(14.dp))
+            .clickable { viewModel.setMicEnabled(!alwaysListening) }
+            .padding(horizontal = 14.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            if (alwaysListening) t("🎙️ মাইক চালু — বন্ধ করতে চাপুন") else t("🔇 মাইক বন্ধ — চালু করতে চাপুন"),
+            color = Glass.textPrimary,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 13.sp
+        )
     }
 }
 

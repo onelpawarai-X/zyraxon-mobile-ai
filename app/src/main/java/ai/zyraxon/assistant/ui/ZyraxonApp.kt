@@ -15,7 +15,6 @@ import ai.zyraxon.assistant.ui.components.LivingAuraSphere
 import ai.zyraxon.assistant.ui.components.MessageBubble
 import ai.zyraxon.assistant.ui.components.QuickActionChips
 import ai.zyraxon.assistant.ui.components.SettingsSheet
-import ai.zyraxon.assistant.ui.components.TabSelector
 import ai.zyraxon.assistant.ui.components.TerminalScreen
 import ai.zyraxon.assistant.ui.theme.Glass
 import ai.zyraxon.assistant.update.UpdateState
@@ -228,7 +227,8 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                 .navigationBarsPadding()
                 .imePadding()
         ) {
-            // Top Bar — the only control on it is the Settings gear.
+            // Top Bar — a single Settings button, nothing else. Every other control
+            // lives inside the Settings sheet, in its own section.
             ZyraxonTopBar(
                 onSettingsClick = { showSettingsSheet = true }
             )
@@ -242,19 +242,6 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                     onDownload = { viewModel.downloadUpdate() },
                     onOpenPermission = { viewModel.openInstallPermission() },
                     onDismiss = { viewModel.dismissUpdateBanner() }
-                )
-            }
-
-            // Mode Tabs (চ্যাট, টাস্ক, টুল)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                TabSelector(
-                    selectedTab = activeTab,
-                    onTabSelected = { viewModel.setTab(it) }
                 )
             }
 
@@ -472,24 +459,41 @@ fun ZyraxonTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.End,
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
-            onClick = onSettingsClick,
+        Text(
+            text = "ZYRAXON",
+            color = Glass.textPrimary,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
+        // The one control the user asked to keep up here. A labelled pill, not a
+        // bare icon, so it is unmistakably the Settings door.
+        Row(
             modifier = Modifier
-                .size(38.dp)
-                .clip(CircleShape)
-                .background(Glass.rowFill(0.24f))
-                .border(1.dp, Glass.borderSoft, CircleShape)
-                .testTag("settings_button")
+                .clip(RoundedCornerShape(20.dp))
+                .background(Glass.rowFill(0.28f))
+                .border(1.dp, Glass.borderSoft, RoundedCornerShape(20.dp))
+                .clickable { onSettingsClick() }
+                .padding(horizontal = 12.dp, vertical = 7.dp)
+                .testTag("settings_button"),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = Icons.Rounded.Settings,
                 contentDescription = "Settings",
                 tint = Glass.textPrimary,
-                modifier = Modifier.size(19.dp)
+                modifier = Modifier.size(17.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = t("সেটিংস"),
+                color = Glass.textPrimary,
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.SemiBold
             )
         }
     }
@@ -621,30 +625,6 @@ fun ChatTabContent(
                     .padding(horizontal = 8.dp, vertical = 3.dp)
             )
             Spacer(modifier = Modifier.weight(1f))
-            // An explicit microphone switch. The user asked for one button that
-            // holds the mic off; a tap here is the same switch as the transcript
-            // over the aura, so either one works and the two never disagree.
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(if (micOn) Glass.greenFill.copy(alpha = 0.18f) else Glass.rowFill(0.35f))
-                    .border(1.dp, if (micOn) Glass.greenFill else Glass.borderSoft, RoundedCornerShape(10.dp))
-                    .clickable { onMicToggle() }
-                    .padding(horizontal = 10.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (micOn) "🎙️" else "🔇",
-                    fontSize = 12.sp
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = if (micOn) t("মাইক চালু") else t("মাইক বন্ধ"),
-                    color = if (micOn) Glass.greenFill else Glass.textSecondary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
         }
 
         if (transcriptOpen) {
