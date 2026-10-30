@@ -11,12 +11,33 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Locale
 
+/**
+ * The phone's own microphone and voice.
+ *
+ * Two behaviours matter here and both were wrong before:
+ *
+ *  - **The microphone stays on.** It used to be cancelled and restarted for
+ *    every spoken sentence, and restarted again on every recognizer error, so
+ *    the mic flicked off and on dozens of times a minute. Now there is one
+ *    continuous loop: the ear closes once while the assistant speaks and opens
+ *    once when it finishes, and a restart is debounced so a failing recognizer
+ *    cannot spin. [micEnabled] is the user's switch and it is the only thing
+ *    that turns the microphone off.
+ *
+ *  - **The right voice speaks.** An engine holds one language at a time, so a
+ *    sentence that mixes Bangla and English is spoken run by run with the voice
+ *    switched between runs, and the voice is reset — never left on the previous
+ *    language — when the new language has no installed voice. That leftover
+ *    voice was why an English word came out letter by letter.
+ */
 class NativeVoiceManager(
     private val context: Context,
     private val scope: CoroutineScope
@@ -63,8 +84,27 @@ class NativeVoiceManager(
     private var currentRate = 1.0f
     private var currentPitch = 1.28f
 
-    // Master continuous listening flag: when user clicks Aura, mic stays active
-    private var continuousListening = false
+    /**
+     * The user's own switch. True means the microphone should be open; the loop
+     * below reopens it whenever it closes for any other reason. Nothing else may
+     * change this.
+     */
+    @Volatile
+    private var micEnabled = false
+
+    /** True while a recognizer session is actually open. */
+    @Volatile
+    private var sessionOpen = false
+
+    /** Set while the recognizer is deliberately silenced for the assistant's voice. */
+    @Volatile
+    private var pausedForSpeech = false
+
+    private var restartJob: Job? = null
+    private var restartAttempts = 0
+
+    /** Decides the single close/open pair around a streamed reply. */
+    private val micGate = MicGate()
 
     var onSpeechRecognized: ((text: String, isFinal: Boolean) -> Unit)? = null
 
@@ -72,6 +112,8 @@ class NativeVoiceManager(
         initTts()
         initStt()
     }
+
+    // ---- text to speech ----------------------------------------------------
 
     private fun initTts() {
         // com.google.android.tts carries the Bangla voice; the AOSP engine often
@@ -95,34 +137,60 @@ class NativeVoiceManager(
         textToSpeech?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) {
                 _isSpeaking.value = true
-                // Close the ear while the mouth is open. A recognizer that stays
-                // live during playback hears the assistant's own voice, feeds it
-                // back as a user message, and the pair talk to each other forever.
-                pauseForSpeech()
+                // Close the ear once per reply, not once per sentence. A queued
+                // answer fires onStart for every sentence; pausing each time was
+                // the off/on churn the user heard.
+                if (micGate.onUtteranceStart()) pauseForSpeech()
             }
 
             override fun onDone(utteranceId: String?) {
-                _isSpeaking.value = false
-                resumeAfterSpeech()
+                finishUtterance()
             }
 
             override fun onError(utteranceId: String?) {
-                _isSpeaking.value = false
-                resumeAfterSpeech()
+                finishUtterance()
             }
         })
     }
 
     /**
+     * A sentence finished. The engine may have more queued, and the reply itself
+     * may still be streaming, so the ear is only reopened when both are done.
+     */
+    private fun finishUtterance() {
+        val engineBusy = textToSpeech?.isSpeaking == true
+        val reopen = micGate.onUtteranceDone(engineBusy)
+        // Keep the "speaking" flag up across the gap between two sentences of the
+        // same reply, so the UI does not flicker to "listening" mid-answer.
+        if (!engineBusy && !micGate.replyActive) _isSpeaking.value = false
+        if (reopen) resumeAfterSpeech()
+    }
+
+    /**
+     * Opens a spoken reply. Called once when a reply starts streaming, so the ear
+     * stays shut across the gaps between sentences instead of flicking on in each
+     * one. The pause itself happens when the first word is actually spoken — a
+     * reply that spends a while on tools never holds the microphone shut.
+     * [endReply] must be called when the reply is finished.
+     */
+    fun beginReply() {
+        micGate.beginReply()
+    }
+
+    /** Closes the spoken reply and reopens the ear once the last word has played. */
+    fun endReply() {
+        val engineBusy = textToSpeech?.isSpeaking == true
+        if (micGate.endReply(engineBusy)) {
+            _isSpeaking.value = false
+            resumeAfterSpeech()
+        }
+    }
+
+    /**
      * Points the engine at a language and reports whether its voice data is
-     * installed. When it is not, the engine falls back to another language and
-     * reads the words letter by letter — the exact defect reported — so
-     * [voiceDataMissing] is raised and the UI offers the download.
-     *
-     * Bengali is tried under every tag an engine might file it under before the
-     * language is called missing. A phone that has `bn-IN` but not `bn-BD` used
-     * to be judged "no Bengali" and dropped to English, which read Bengali words
-     * as noise; now the working tag is used instead.
+     * installed. Bengali is tried under every tag an engine might file it under
+     * before the language is called missing, so a phone with `bn-IN` but not
+     * `bn-BD` still speaks Bangla instead of dropping to English.
      */
     private fun applyVoiceLanguage(tag: String) {
         if (!ttsReady || textToSpeech == null) return
@@ -145,15 +213,13 @@ class NativeVoiceManager(
 
         _voiceDataMissing.value = !resolved
         if (!resolved) {
-            // English is the safest fallback for an unsupported run, but the flag
-            // above already tells the UI that a download is what is really needed.
             textToSpeech?.setLanguage(Locale.US)
         }
     }
 
     /**
-     * Switches both recognition and speech to a language. Recognition restarts so
-     * the new locale takes effect on the next utterance.
+     * Switches both recognition and speech to a language. Recognition restarts
+     * so the new locale takes effect on the next utterance.
      */
     fun setVoiceLanguage(tag: String) {
         _voiceLanguage.value = tag
@@ -161,11 +227,11 @@ class NativeVoiceManager(
         recognizerIntent?.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, tag)
         applyVoiceLanguage(tag)
         applyVoiceSettings(_voiceGender.value, currentRate, currentPitch, tag)
-        if (continuousListening) {
-            try {
-                speechRecognizer?.cancel()
-            } catch (_: Exception) {}
-            restartListeningDelay()
+        if (micEnabled) {
+            // One clean restart for the new locale; the loop takes over from here.
+            try { speechRecognizer?.cancel() } catch (_: Exception) {}
+            sessionOpen = false
+            scheduleRestart(immediate = true)
         }
     }
 
@@ -178,8 +244,8 @@ class NativeVoiceManager(
     fun setVoiceGender(gender: String) {
         val g = if (gender.lowercase() == "male") "male" else "female"
         _voiceGender.value = g
-        val targetPitch = if (g == "female") 1.28f else 0.86f
-        val targetRate = if (g == "female") 1.0f else 0.96f
+        val targetPitch = if (g == "female") 1.28f else 0.82f
+        val targetRate = if (g == "female") 1.0f else 0.95f
         currentPitch = targetPitch
         currentRate = targetRate
         applyVoiceSettings(g, targetRate, targetPitch, _voiceLanguage.value)
@@ -199,11 +265,10 @@ class NativeVoiceManager(
      * Sets the pitch/rate for the requested gender and, for [forLanguage], picks
      * the matching installed voice.
      *
-     * The language matters: the engine picks its voice from the language it is
-     * set to, so a voice chosen while Bangla was loaded was silently replaced when
-     * the engine switched to English — which is why the wrong gender spoke. This
-     * takes the language explicitly so the voice is chosen for the run actually
-     * being spoken.
+     * When the language has no voice that states the wanted gender, the engine's
+     * own default for that language is used — the voice is cleared first, so it
+     * can never fall back to the *previous* run's voice, which is what made an
+     * English word come out of the Bangla voice letter by letter.
      */
     private fun applyVoiceSettings(gender: String, rate: Float, pitch: Float, forLanguage: String) {
         if (!ttsReady || textToSpeech == null) return
@@ -222,22 +287,27 @@ class NativeVoiceManager(
                 )
             }
             val chosen = VoiceSelector.pick(candidates, forLanguage, gender)
-                ?: candidates.firstOrNull { it.localeTag.equals(forLanguage, ignoreCase = true) }
-                ?: return
-            val match = all.firstOrNull { it.name == chosen.name }
+            val match = chosen?.let { c -> all.firstOrNull { it.name == c.name } }
             if (match != null) {
-                // The engine resets pitch when the voice changes, so set it after.
                 textToSpeech?.voice = match
-                textToSpeech?.setPitch(pitch)
-                textToSpeech?.setSpeechRate(rate)
                 _activeVoiceName.value = match.name
+            } else if (candidates.any { VoiceSelector.languageOf(it.localeTag) == wanted.language }) {
+                // A voice exists for the language but not for the gender. Clear
+                // the explicit choice so the engine picks its own voice for this
+                // language instead of keeping the last one.
+                textToSpeech?.voice = null
+                _activeVoiceName.value = ""
             }
-            // A voice for a language with no data installed cannot be spoken; say
-            // so instead of letting the engine spell the words out letter by letter.
+            // The engine resets pitch when the voice changes, so set it after.
+            textToSpeech?.setPitch(pitch)
+            textToSpeech?.setSpeechRate(rate)
+
             _voiceDataMissing.value = !VoiceSelector.hasOfflineVoice(candidates, forLanguage) &&
                 wanted.language.isNotBlank()
         } catch (_: Exception) {}
     }
+
+    // ---- speech recognition ------------------------------------------------
 
     private fun initStt() {
         if (!SpeechRecognizer.isRecognitionAvailable(context)) return
@@ -245,10 +315,12 @@ class NativeVoiceManager(
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
             setRecognitionListener(object : RecognitionListener {
                 override fun onReadyForSpeech(params: Bundle?) {
+                    sessionOpen = true
                     _isListening.value = true
                 }
 
                 override fun onBeginningOfSpeech() {
+                    sessionOpen = true
                     _isListening.value = true
                 }
 
@@ -265,36 +337,36 @@ class NativeVoiceManager(
 
                 override fun onError(error: Int) {
                     _audioLevel.value = 0f
-                    // If in continuous mode and not cancelled by user, smoothly restart listening
-                    if (continuousListening) {
-                        restartListeningDelay()
-                    } else {
-                        _isListening.value = false
-                    }
+                    sessionOpen = false
+                    _isListening.value = false
+                    // A restart is only ever scheduled by the loop, never here, so
+                    // a recognizer that fails instantly cannot spin.
+                    if (micEnabled) scheduleRestart()
                 }
 
                 override fun onResults(results: Bundle?) {
                     _audioLevel.value = 0f
-                    val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                    if (!matches.isNullOrEmpty()) {
-                        val text = matches[0]
-                        onSpeechRecognized?.invoke(text, true)
+                    sessionOpen = false
+                    // Anything the recognizer heard while the assistant was
+                    // speaking is the assistant's own voice, not the user's.
+                    if (!_isSpeaking.value) {
+                        val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        matches?.firstOrNull()?.takeIf { it.isNotBlank() }
+                            ?.let { onSpeechRecognized?.invoke(it, true) }
                     }
-
-                    // Keep listening if in continuous listening mode
-                    if (continuousListening) {
-                        restartListeningDelay()
+                    if (micEnabled) {
+                        restartAttempts = 0
+                        scheduleRestart()
                     } else {
                         _isListening.value = false
                     }
                 }
 
                 override fun onPartialResults(partialResults: Bundle?) {
+                    if (_isSpeaking.value) return
                     val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                    if (!matches.isNullOrEmpty()) {
-                        val text = matches[0]
-                        onSpeechRecognized?.invoke(text, false)
-                    }
+                    matches?.firstOrNull()?.takeIf { it.isNotBlank() }
+                        ?.let { onSpeechRecognized?.invoke(it, false) }
                 }
 
                 override fun onEvent(eventType: Int, params: Bundle?) {}
@@ -313,71 +385,80 @@ class NativeVoiceManager(
     }
 
     /**
-     * Silences recognition while the assistant speaks. The microphone is not
-     * "turned off" from the user's point of view — it reopens on the last syllable
-     * — but it cannot hear the phone's own speaker, which is what caused the
-     * assistant to answer itself in a loop.
+     * Silences recognition while the assistant speaks, so the microphone cannot
+     * hear the phone's own speaker and feed the reply back as a user message.
      */
     private fun pauseForSpeech() {
-        try {
-            speechRecognizer?.cancel()
-        } catch (_: Exception) {}
+        pausedForSpeech = true
+        restartJob?.cancel()
+        restartJob = null
+        try { speechRecognizer?.cancel() } catch (_: Exception) {}
+        sessionOpen = false
         _audioLevel.value = 0f
-    }
-
-    /** Reopens the ear once the assistant has finished the whole utterance. */
-    private fun resumeAfterSpeech() {
-        if (!continuousListening) return
-        // A short tail: the speaker keeps ringing for a moment after onDone, and
-        // that tail is exactly the kind of noise the recognizer would latch onto.
-        scope.launch(Dispatchers.Main) {
-            kotlinx.coroutines.delay(450)
-            if (continuousListening && !_isSpeaking.value) {
-                recognizerIntent?.let {
-                    try {
-                        speechRecognizer?.startListening(it)
-                        _isListening.value = true
-                    } catch (_: Exception) {}
-                }
-            }
-        }
-    }
-
-    private fun restartListeningDelay() {
-        if (!continuousListening) return
-        scope.launch(Dispatchers.Main) {
-            try {
-                kotlinx.coroutines.delay(200)
-                if (continuousListening) {
-                    recognizerIntent?.let {
-                        speechRecognizer?.startListening(it)
-                        _isListening.value = true
-                    }
-                }
-            } catch (_: Exception) {}
-        }
-    }
-
-    fun startListening() {
-        continuousListening = true
-        try {
-            recognizerIntent?.let {
-                speechRecognizer?.startListening(it)
-                _isListening.value = true
-            }
-        } catch (_: Exception) {
-            _isListening.value = false
-        }
-    }
-
-    fun stopListening() {
-        continuousListening = false
-        try {
-            speechRecognizer?.stopListening()
-        } catch (_: Exception) {}
         _isListening.value = false
-        _audioLevel.value = 0f
     }
+
+    /** Reopens the ear once the assistant has finished the whole reply. */
+    private fun resumeAfterSpeech() {
+        pausedForSpeech = false
+        if (!micEnabled) return
+        // A short tail: the speaker keeps ringing for a moment after the last
+        // word, and that tail is what the recognizer would otherwise latch onto.
+        scheduleRestart(delayMs = SPEAKER_TAIL_MS)
+    }
+
+    /**
+     * Opens the microphone again, with a debounce and a backoff. The debounce
+     * collapses the several "restart" calls that one turn can produce into a
+     * single open; the backoff stops a recognizer that fails immediately from
+     * being restarted in a tight loop.
+     */
+    private fun scheduleRestart(immediate: Boolean = false, delayMs: Long = 0L) {
+        if (!micEnabled || pausedForSpeech || _isSpeaking.value) return
+        if (sessionOpen) return
+        restartJob?.cancel()
+        val backoff = if (immediate) 0L else minOf(RESTART_BASE_MS shl restartAttempts, RESTART_MAX_MS)
+        restartJob = scope.launch(Dispatchers.Main) {
+            delay(maxOf(delayMs, backoff))
+            if (!micEnabled || pausedForSpeech || _isSpeaking.value || sessionOpen) return@launch
+            val intent = recognizerIntent ?: return@launch
+            try {
+                speechRecognizer?.startListening(intent)
+                sessionOpen = true
+                _isListening.value = true
+                restartAttempts++
+            } catch (_: Exception) {
+                sessionOpen = false
+                _isListening.value = false
+            }
+        }
+    }
+
+    /**
+     * The user's switch. `true` keeps the microphone open for as long as the app
+     * runs; `false` closes it and leaves it closed. Nothing else turns it on.
+     */
+    fun setMicEnabled(enabled: Boolean) {
+        if (enabled == micEnabled) return
+        micEnabled = enabled
+        if (enabled) {
+            restartAttempts = 0
+            scheduleRestart(immediate = true)
+        } else {
+            restartJob?.cancel()
+            restartJob = null
+            try { speechRecognizer?.stopListening() } catch (_: Exception) {}
+            sessionOpen = false
+            _isListening.value = false
+            _audioLevel.value = 0f
+        }
+    }
+
+    val microphoneEnabled: Boolean get() = micEnabled
+
+    fun startListening() = setMicEnabled(true)
+
+    fun stopListening() = setMicEnabled(false)
 
     /**
      * Opens the engine's own "install voice data" screen. Google's engine shows
@@ -392,7 +473,6 @@ class NativeVoiceManager(
             context.startActivity(intent)
         } catch (_: Exception) {
             try {
-                // Some engines only answer to an explicit package.
                 val fallback = context.packageManager
                     .getLaunchIntentForPackage("com.google.android.tts")
                 fallback?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -400,6 +480,8 @@ class NativeVoiceManager(
             } catch (_: Exception) {}
         }
     }
+
+    // ---- speaking ----------------------------------------------------------
 
     /**
      * Speaks through the phone's own engine, never a remote voice service. If the
@@ -413,9 +495,10 @@ class NativeVoiceManager(
     }
 
     /**
-     * Speaks [clean] run by run, switching the engine's language at each boundary.
-     * Without this an English word inside a Bangla sentence is spelled out letter
-     * by letter, which is the single most noticeable voice defect there is.
+     * Speaks [clean] run by run, switching the engine's language and tone at each
+     * boundary. Without the switch an English word inside a Bangla sentence is
+     * spelled out letter by letter, which is the single most noticeable voice
+     * defect there is.
      */
     private fun speakRuns(clean: String, queueMode: Int) {
         if (!(ttsReady && textToSpeech != null)) {
@@ -425,33 +508,34 @@ class NativeVoiceManager(
         val segments = SpeechSegmenter.split(clean)
         if (segments.isEmpty()) return
 
-        val params = Bundle().apply {
-            putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "zyraxon_msg")
-            putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC)
-        }
-
-        // A single-language sentence is the common case and must stay a single
-        // utterance, so the engine's own prosody is not interrupted.
-        if (segments.size == 1) {
-            applyVoiceLanguage(segments[0].bcp47)
-            applyVoiceSettings(_voiceGender.value, currentRate, currentPitch, segments[0].bcp47)
-            val res = textToSpeech?.speak(segments[0].text, queueMode, params, "zyraxon_msg")
-            _isSpeaking.value = res == TextToSpeech.SUCCESS
-            return
+        val utterances = segments.mapIndexed { index, segment ->
+            val tone = SpeechTone.of(segment.text)
+            SpeechUtterance(
+                text = segment.text,
+                bcp47 = segment.bcp47,
+                pitch = (currentPitch * tone.pitchFactor).coerceIn(0.4f, 2.0f),
+                rate = (currentRate * tone.rateFactor).coerceIn(0.4f, 2.0f),
+                id = "zyraxon_msg_$index"
+            )
         }
 
         var anyAccepted = false
-        segments.forEachIndexed { index, segment ->
-            // The engine picks the voice from the language it is set to, so the
+        utterances.forEachIndexed { index, utterance ->
+            // The engine picks its voice from the language it is set to, so the
             // switch has to happen before each run, not once at the start.
-            applyVoiceLanguage(segment.bcp47)
-            applyVoiceSettings(_voiceGender.value, currentRate, currentPitch, segment.bcp47)
+            applyVoiceLanguage(utterance.bcp47)
+            applyVoiceSettings(_voiceGender.value, utterance.rate, utterance.pitch, utterance.bcp47)
+
             val mode = if (index == 0) queueMode else TextToSpeech.QUEUE_ADD
-            val id = "zyraxon_msg_$index"
-            val res = textToSpeech?.speak(segment.text, mode, params, id)
+            val res = textToSpeech?.speak(utterance.text, mode, utteranceParams(), utterance.id)
             if (res == TextToSpeech.SUCCESS) anyAccepted = true
         }
         _isSpeaking.value = anyAccepted
+    }
+
+    private fun utteranceParams(): Bundle = Bundle().apply {
+        putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "zyraxon_msg")
+        putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC)
     }
 
     /**
@@ -474,6 +558,17 @@ class NativeVoiceManager(
         try {
             textToSpeech?.stop()
         } catch (_: Exception) {}
+        micGate.reset()
         _isSpeaking.value = false
+        resumeAfterSpeech()
+    }
+
+    companion object {
+        /** How long the speaker rings after the last word before the ear reopens. */
+        private const val SPEAKER_TAIL_MS = 350L
+
+        /** Debounce before reopening the microphone, and the backoff ceiling. */
+        private const val RESTART_BASE_MS = 300L
+        private const val RESTART_MAX_MS = 4000L
     }
 }

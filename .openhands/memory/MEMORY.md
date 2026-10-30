@@ -127,17 +127,18 @@ file").
 - Injected `$GITHUB_TOKEN` = account **zyraxon-X**: only `pull` on the release repo, so
   push / release-create / release-delete all return **403**. Writable repo:
   `zyraxon-X/lore-crafter-delight`.
-- The user's PAT (admin on the release repo) is stored in the **bare backup clones**
-  (`/workspace/backup/*.git` `remote.origin.url`). Read it with
-  `git --git-dir=/workspace/backup/zyraxon-mobile-ai.git config --get remote.origin.url`.
-  Shell variables (`$PAT`) do **not** persist across tool calls — re-read it each time.
-  Push form `https://onelpawarai-X:$PAT@github.com/...`; never leave it in `.git/config`.
-- The user's PAT = account **onelpawarai-X**, `admin: true` on the release repo — needed for
-  push, tag, release create and **delete**. Push form:
+- The user's own PAT is admin on the release repo (account **onelpawarai-X**). A fresh one
+  is pasted in the chat each session — do **not** store its value. `gh auth login
+  --with-token` + `gh auth setup-git` is enough: the credential helper then serves it and
+  the remote stays tokenless. Push form if you must inline it:
   `git push "https://onelpawarai-X:$PAT@github.com/..."` (always `user:token@`; a bare token
-  makes git prompt and hang). Never leave it in `.git/config` — `git remote set-url` after.
-- Backups of the pre-rewrite repos are bare clones at `/workspace/backup/`
-  (`zyraxonairr.git`, `zyraxon-mobile-ai.git`). Outside the workspace, not committed.
+  makes git prompt and hang). Never leave it in `.git/config`.
+- Older PATs live in the bare backup clones at `/workspace/backup/*.git`
+  (`git --git-dir=... config --get remote.origin.url`); `$PAT` does not persist across tool
+  calls, so re-read it each time. Backups are outside the workspace, not committed.
+- **No emulator in this container**: `/dev/kvm` is absent and there is no `emulator`
+  binary, so Android runtime verification is impossible. Ship-side proof is the unit suite
+  plus `assembleDebug`; the phone is the only place to confirm runtime behaviour.
 
 ## Realtime + agentic behaviour
 - `OpenAiSse.kt` streams `data:` deltas over OkHttp; `StreamedTurn.mergeToolCalls`
@@ -170,6 +171,37 @@ file").
   `NativeVoiceManager` is the **single owner** of voice state — do not add a second
   `_voiceGender` in the ViewModel (that was a real compile error). Persona drives it:
   `boyfriend` -> male, otherwise female.
+
+## Voice/mic/memory/settings pass (PR #3, 2026-10-30, branch `fix/voice-mic-persistence`)
+Nine complaints fixed in one pass; 162 unit tests / 0 failures; `assembleDebug` OK.
+- **Mic churn (the loudest symptom)**: a streamed reply fires `onStart` once *per sentence*,
+  so `pauseForSpeech()` ran per sentence — off/on dozens of times a minute. The rule now
+  lives in `voice/MicGate.kt`, a pure state machine: `beginReply()` / `onUtteranceStart()`
+  / `onUtteranceDone(engineBusy)` / `endReply(engineBusy)` / `reset()`. One reply = one
+  close + one open regardless of sentence count. `MicGateTest` plays a 3- and a 10-sentence
+  reply and asserts exactly 1/1. The ViewModel owns the boundary: `beginReply()` before the
+  stream, `endReply()` in the `finally`.
+- **User-owned mic switch**: `mic_toggle_button` in the top bar + a larger one in Settings.
+  `setMicEnabled()` is the only thing that turns the mic off for good, and it persists.
+- **Long-term memory was silently dead**: recalled turns were prepended to the *entire*
+  recent transcript, and the engine's `takeLast(12)` then trimmed them away — a memory the
+  DB had just found never reached the model. Fix: `ai/ContextWindow.kt`
+  (`ENGINE_LIMIT=12`, `RECALL_LIMIT=4`, `RECENT_LIMIT=8`); `ContextWindowTest` proves a
+  recalled turn survives a 40-turn transcript. Keep the engine and the ViewModel on the same
+  constant or the bug returns.
+- **Only the female voice was ever heard**: `VoiceSelector.pick()` ended in
+  `pool.firstOrNull()`, so a male request could return the female voice. Now the fallback
+  order is gendered → gender-neutral → nothing; the opposite gender is never returned.
+- **Settings lost on restart**: covered by `SettingsPersistenceTest`, which builds the real
+  `ZyraxonViewModel` twice against the same SharedPreferences (no mocks).
+- **Realtime voice is now opt-in**: `live_voice_preferred` defaults **false** and applies
+  only to realtime models, so a socket that will not open no longer leaves the assistant
+  silent — the phone's TTS reads the text.
+- **Real-time + tone**: `SpeechChunker.take()` releases at the *first* sentence end (it used
+  to wait for the last, which held the first sentence back); `SpeechTone` gives each
+  sentence a small pitch/rate shift.
+- Test note: `SettingsPersistenceTest` and `LiveVoiceUiTest` are Robolectric; the ViewModel
+  test constructs the real Room DB, so it is slower than the pure-logic tests.
 
 ## Prompt rules the user settled
 - **Language: mirror the user.** Bangla in → Bangla out, English in → English out; once the

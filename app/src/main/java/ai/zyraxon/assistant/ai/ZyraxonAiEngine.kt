@@ -88,7 +88,10 @@ class ZyraxonAiEngine(private val context: Context) {
     }
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
+        // A short connect timeout matters more than a long one: a provider that
+        // cannot be reached in eight seconds is not going to answer usefully, and
+        // waiting fifteen seconds per provider is what made a reply feel stuck.
+        .connectTimeout(8, TimeUnit.SECONDS)
         .readTimeout(35, TimeUnit.SECONDS)
         .writeTimeout(15, TimeUnit.SECONDS)
         .build()
@@ -593,7 +596,7 @@ class ZyraxonAiEngine(private val context: Context) {
 
         val messages = JSONArray().apply {
             put(JSONObject().put("role", "system").put("content", systemPrompt))
-            for (msg in history.takeLast(12)) {
+            for (msg in history.takeLast(ContextWindow.ENGINE_LIMIT)) {
                 if (msg.role == MessageRole.SYSTEM) continue
                 put(JSONObject().put("role", if (msg.role == MessageRole.USER) "user" else "assistant")
                     .put("content", msg.text))

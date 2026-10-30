@@ -133,6 +133,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     val bgVideoAsset by viewModel.bgVideoAsset.collectAsState()
     val liveVoiceEnabled by viewModel.liveVoiceEnabled.collectAsState()
     val liveVoiceState by viewModel.liveVoiceState.collectAsState()
+    val alwaysListening by viewModel.alwaysListening.collectAsState()
     val workspaceFiles by viewModel.workspaceFiles.collectAsState()
     val auraHue by viewModel.auraHue.collectAsState()
     val auraSize by viewModel.auraSize.collectAsState()
@@ -182,6 +183,8 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                 personaEmoji = selectedPersona.emoji,
                 modelName = selectedModel.name,
                 liveActive = liveVoiceEnabled,
+                micOn = alwaysListening,
+                onMicToggle = { viewModel.setMicEnabled(!alwaysListening) },
                 onPersonaClick = { showPersonaSheet = true },
                 onModelClick = { showModelSheet = true },
                 onLiveClick = {
@@ -218,6 +221,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                             messages = messages,
                             isListening = isListening,
                             isSpeaking = isSpeaking,
+                            micOn = alwaysListening,
                             audioLevel = audioLevel,
                             auraHue = auraHue,
                             auraSize = auraSize,
@@ -343,9 +347,11 @@ fun ZyraxonTopBar(
     modelName: String,
     panelAlpha: Float = 0.22f,
     liveActive: Boolean = false,
+    micOn: Boolean = true,
     onPersonaClick: () -> Unit,
     onModelClick: () -> Unit,
     onLiveClick: () -> Unit = {},
+    onMicToggle: () -> Unit = {},
     onSettingsClick: () -> Unit,
     onClearClick: () -> Unit
 ) {
@@ -385,13 +391,36 @@ fun ZyraxonTopBar(
             }
         }
 
-        // Right side: Live toggle, model pill, settings, trash
+        // Right side: mic switch, Live toggle, model pill, settings, trash
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            // Live speech-to-speech toggle. Tapping it opens the live session
-            // straight away; the phone's own voice goes silent while it runs.
+            // The microphone switch the user asked for: tap to mute the mic and
+            // leave it muted; tap again to open it for the rest of the session.
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (micOn) Glass.greenFill else Glass.fill(panelAlpha))
+                    .border(1.dp, if (micOn) Glass.greenFill else Glass.border, RoundedCornerShape(20.dp))
+                    .clickable { onMicToggle() }
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                    .testTag("mic_toggle_button")
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = if (micOn) "🎙️" else "🔇", fontSize = 12.sp)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (micOn) t("মাইক চালু") else t("মাইক বন্ধ"),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (micOn) Glass.textPrimary else Glass.textSecondary
+                    )
+                }
+            }
+
+            // Live speech-to-speech toggle. Tapping it opens the model list, since
+            // the live session follows the chosen realtime model.
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
@@ -484,6 +513,7 @@ fun ChatTabContent(
     messages: List<ChatMessage>,
     isListening: Boolean,
     isSpeaking: Boolean,
+    micOn: Boolean = true,
     audioLevel: Float,
     auraHue: Int,
     auraSize: Float,
@@ -542,7 +572,8 @@ fun ChatTabContent(
             )
 
             // Live transcript floats over the aura, so the user sees their words
-            // land the moment they speak them.
+            // land the moment they speak them. It also shows whether the mic is
+            // on or muted, so the user never has to guess.
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -551,11 +582,13 @@ fun ChatTabContent(
             ) {
                 Text(
                     text = when {
+                        !micOn -> t("🔇 মাইক বন্ধ")
                         isListening -> t("শুনছি…")
                         isSpeaking -> t("ZYRAXON বলছে…")
-                        else -> t("মাইক সবসময় চালু")
+                        else -> t("মাইক চালু")
                     },
                     color = when {
+                        !micOn -> Color(0x99FFFFFF)
                         isListening -> Color(0xFF7DF9FF)
                         isSpeaking -> Color(0xFFFF8AD8)
                         else -> Color(0x99FFFFFF)
