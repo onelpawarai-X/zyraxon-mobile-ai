@@ -74,17 +74,18 @@ fun TerminalScreen(
     var input by remember { mutableStateOf("") }
     var history by remember { mutableStateOf(listOf<String>()) }
     var historyIndex by remember { mutableStateOf(-1) }
+    var backdrop by remember { mutableStateOf(true) }
     val scroll = rememberScrollState()
 
     LaunchedEffect(lines.size, busy) {
         scroll.animateScrollTo(scroll.maxValue)
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(TerminalBg)
-    ) {
+    Box(modifier = modifier.fillMaxSize().background(TerminalBg)) {
+        if (backdrop) {
+            MatrixRainBackground(Modifier.fillMaxSize())
+        }
+        Column(modifier = Modifier.fillMaxSize()) {
         // Header — the ✕ is the only way out, back to the app's main menu.
         Row(
             modifier = Modifier
@@ -108,6 +109,17 @@ fun TerminalScreen(
                 fontFamily = FontFamily.Monospace
             )
             Spacer(Modifier.weight(1f))
+            Text(
+                text = if (backdrop) "matrix" else "plain",
+                color = TerminalDim,
+                fontSize = 11.sp,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .clickable { backdrop = !backdrop }
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+            Spacer(Modifier.width(4.dp))
             Text(
                 text = "clear",
                 color = TerminalDim,
@@ -240,6 +252,7 @@ fun TerminalScreen(
                 fontSize = 10.sp,
                 fontFamily = FontFamily.Monospace
             )
+        }
         }
     }
 }

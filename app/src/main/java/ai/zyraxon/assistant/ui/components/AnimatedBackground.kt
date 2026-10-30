@@ -252,3 +252,52 @@ private fun DrawScope.drawTwinklingStars(stars: List<Star>, pulse: Float) {
         )
     }
 }
+
+private data class MatrixColumn(val xRatio: Float, val speed: Float, val offset: Float, val length: Int)
+
+/**
+ * The Terminal's backdrop: a dark matrix of falling green glyphs, drawn behind
+ * the scrollback. It is decorative only — a Canvas with no input — so the shell
+ * underneath stays fully usable while it runs.
+ */
+@Composable
+fun MatrixRainBackground(modifier: Modifier = Modifier) {
+    val transition = rememberInfiniteTransition(label = "matrix")
+    val phase by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(6000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "phase"
+    )
+    val columns = remember {
+        val rnd = Random(7)
+        List(22) {
+            MatrixColumn(
+                xRatio = (it + 0.5f) / 22f,
+                speed = 0.6f + rnd.nextFloat() * 0.9f,
+                offset = rnd.nextFloat(),
+                length = 6 + rnd.nextInt(10)
+            )
+        }
+    }
+    Canvas(modifier = modifier) {
+        val colWidth = size.width / 22f
+        val glyph = 14f
+        columns.forEach { column ->
+            val headY = ((column.offset + phase * column.speed) % 1.2f) * size.height - size.height * 0.2f
+            for (k in 0 until column.length) {
+                val y = headY - k * glyph
+                if (y < -glyph || y > size.height) continue
+                val fade = 1f - k.toFloat() / column.length
+                drawRect(
+                    color = Color(0xFF00FF66).copy(alpha = 0.16f * fade * fade),
+                    topLeft = Offset(column.xRatio * size.width, y),
+                    size = androidx.compose.ui.geometry.Size(colWidth * 0.5f, glyph * 0.7f)
+                )
+            }
+        }
+    }
+}
