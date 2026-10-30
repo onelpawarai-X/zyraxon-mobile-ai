@@ -2,6 +2,7 @@ package ai.zyraxon.assistant.ui.components
 
 import ai.zyraxon.assistant.model.TerminalLine
 import ai.zyraxon.assistant.model.TerminalSession
+import ai.zyraxon.assistant.shell.AnsiText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -410,15 +411,36 @@ private fun TerminalEntry(line: TerminalLine) {
             lineHeight = 17.sp
         )
         if (line.output.isNotEmpty()) {
+            // The output is parsed for the colour codes a real tool prints, so
+            // `ls --color` and `git status` look the way they do in any terminal
+            // instead of showing raw escape bytes.
             Text(
-                text = line.output,
-                color = if (line.isError) TerminalError else TerminalText,
+                text = buildAnnotatedString {
+                    for (span in AnsiText.spans(line.output)) {
+                        val style = SpanStyle(
+                            color = span.color?.let { Color(it) }
+                                ?: if (line.isError) TerminalError else TerminalText,
+                            fontWeight = if (span.bold) FontWeight.Bold else null
+                        )
+                        withStyle(style) { append(span.text) }
+                    }
+                },
                 fontSize = 12.sp,
                 fontFamily = FontFamily.Monospace,
                 lineHeight = 17.sp
             )
         }
-        if (line.exitCode != 0 || line.timedOut) {
+        if (line.running) {
+            // A blinking block marks a command that is still printing, exactly
+            // like a real terminal's cursor — the output above keeps growing.
+            Text(
+                text = "▊",
+                color = TerminalCyan,
+                fontSize = 12.sp,
+                fontFamily = FontFamily.Monospace
+            )
+        }
+        if (!line.running && (line.exitCode != 0 || line.timedOut)) {
             Text(
                 text = if (line.timedOut) "exit: timeout" else "exit: ${line.exitCode}",
                 color = TerminalError,

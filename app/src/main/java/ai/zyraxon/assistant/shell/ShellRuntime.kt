@@ -220,6 +220,76 @@ object ShellRuntime {
         }
     }
 
+    /**
+     * Runs one line and reports output **as it arrives**, line by line, instead of
+     * waiting for the process to exit. This is what a real terminal does: a
+     * long-running command shows its progress live rather than a spinner. The
+     * final [Result] is returned when the process ends.
+     *
+     * [onChunk] is called from the reading threads, so a caller that touches UI
+     * state must post it to the main thread itself.
+     */
+    fun runStreaming(
+        context: Context,
+        command: String,
+        cwd: File? = null,
+        timeoutMs: Long = 60_000,
+        extraEnv: Map<String, String> = emptyMap(),
+        onChunk: (stream: String, text: String) -> Unit
+    ): Result {
+        ensureReady(context)
+        val dir = (cwd ?: home(context)).apply { mkdirs() }
+        val started = System.currentTimeMillis()
+        return try {
+            val pb = ProcessBuilder(shellArgs(context) + listOf("-c", command))
+            pb.directory(dir)
+            pb.environment().putAll(environment(context))
+            pb.environment().putAll(extraEnv)
+            pb.redirectErrorStream(false)
+            val p = pb.start()
+            val out = StringBuilder()
+            val err = StringBuilder()
+            // A reader thread pumps each stream and hands every line up as it is
+            // read, so `onChunk` sees progress while the command is still running.
+            val tOut = Thread { pump(p.inputStream.bufferedReader(), out, "out", onChunk) }
+            val tErr = Thread { pump(p.errorStream.bufferedReader(), err, "err", onChunk) }
+            tOut.start(); tErr.start()
+            val finished = awaitProcess(p, timeoutMs)
+            if (!finished) p.destroy()
+            tOut.join(2_000); tErr.join(2_000)
+            Result(
+                command = command,
+                code = if (finished) p.exitValue() else -1,
+                stdout = out.toString().take(120_000),
+                stderr = err.toString().take(40_000),
+                timedOut = !finished,
+                millis = System.currentTimeMillis() - started
+            )
+        } catch (e: Exception) {
+            Result(command, -1, "", e.message ?: e.toString(), false,
+                System.currentTimeMillis() - started)
+        }
+    }
+
+    /** Reads a stream line by line, appending to [sink] and calling [onChunk]. */
+    private fun pump(
+        reader: java.io.BufferedReader,
+        sink: StringBuilder,
+        stream: String,
+        onChunk: (String, String) -> Unit
+    ) {
+        try {
+            reader.use {
+                var line: String?
+                while (true) {
+                    line = it.readLine() ?: break
+                    synchronized(sink) { sink.append(line).append('\n') }
+                    runCatching { onChunk(stream, line) }
+                }
+            }
+        } catch (_: Exception) {}
+    }
+
     /** A one-line description of the toolbox, for `platform_info`. */
     fun describe(context: Context): String {
         val bb = command(context)
