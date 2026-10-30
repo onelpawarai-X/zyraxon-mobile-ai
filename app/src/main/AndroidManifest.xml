@@ -116,6 +116,15 @@
             </intent-filter>
         </receiver>
 
+        <!-- Receives the result of an in-app update install. -->
+        <receiver
+            android:name=".update.UpdateInstallReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="ai.zyraxon.assistant.INSTALL_STATUS" />
+            </intent-filter>
+        </receiver>
+
         <!-- Lets a shared image be attached to a channel post without exposing
              the app's private storage. -->
         <provider

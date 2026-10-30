@@ -19,6 +19,7 @@ import ai.zyraxon.assistant.ui.components.QuickActionChips
 import ai.zyraxon.assistant.ui.components.SettingsSheet
 import ai.zyraxon.assistant.ui.components.TabSelector
 import ai.zyraxon.assistant.ui.theme.Glass
+import ai.zyraxon.assistant.update.UpdateState
 import ai.zyraxon.assistant.viewmodel.ZyraxonViewModel
 import android.content.Context
 import android.content.Intent
@@ -59,6 +60,7 @@ import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.FlashlightOn
 import androidx.compose.material.icons.rounded.OpenInBrowser
@@ -146,6 +148,21 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     var showSettingsSheet by remember { mutableStateOf(false) }
     var newTaskText by remember { mutableStateOf("") }
 
+    val updateState by viewModel.updateState.collectAsState()
+    val updateDismissed by viewModel.updateBannerDismissed.collectAsState()
+
+    // One check when the app opens, so a new release is offered without the user
+    // having to go looking for it. It is silent: being offline must not raise an
+    // error banner at launch.
+    LaunchedEffect(Unit) { viewModel.checkForUpdates(silent = true) }
+
+    val showUpdateBanner = !updateDismissed && (
+        updateState is UpdateState.Available ||
+            updateState is UpdateState.Downloading ||
+            updateState is UpdateState.Downloaded ||
+            updateState is UpdateState.NeedsPermission
+        )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -195,6 +212,18 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                 onSettingsClick = { showSettingsSheet = true },
                 onClearClick = { viewModel.clearChat() }
             )
+
+            // Update banner. Shown right under the top bar when a newer release
+            // exists, with a close button so the user can put it away.
+            if (showUpdateBanner) {
+                UpdateBanner(
+                    state = updateState,
+                    onInstall = { viewModel.installUpdate() },
+                    onDownload = { viewModel.downloadUpdate() },
+                    onOpenPermission = { viewModel.openInstallPermission() },
+                    onDismiss = { viewModel.dismissUpdateBanner() }
+                )
+            }
 
             // Mode Tabs (চ্যাট, টাস্ক, টুল)
             Box(
@@ -301,13 +330,14 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                 )
             }
 
-            // Bottom-left Version Badge (v2.0.0)
+            // Bottom-left Version Badge — the real installed version, not a
+            // hardcoded string that drifts from the build.
             Box(
                 modifier = Modifier
                     .padding(start = 16.dp, bottom = 4.dp)
             ) {
                 Text(
-                    text = "v4.0.0",
+                    text = "v${viewModel.currentVersionName}",
                     color = Glass.textMuted,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium
@@ -339,6 +369,81 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
         }
     }
 }
+
+/**
+ * The launch banner. It names the release, walks through download then install,
+ * and can be closed. Closing only hides it for this run; the next launch offers
+ * it again, so a dismissed update is never lost.
+ */
+@Composable
+fun UpdateBanner(
+    state: UpdateState,
+    onInstall: () -> Unit,
+    onDownload: () -> Unit,
+    onOpenPermission: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Glass.greenFill.copy(alpha = 0.16f))
+            .border(1.dp, Glass.greenFill, RoundedCornerShape(14.dp))
+            .padding(start = 14.dp, end = 6.dp, top = 10.dp, bottom = 10.dp)
+            .testTag("update_banner"),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                when (state) {
+                    is UpdateState.Available -> t("🎉 নতুন আপডেট পাওয়া গেছে — {0}", state.release.tag)
+                    is UpdateState.Downloading -> t("⬇️ আপডেট ডাউনলোড হচ্ছে... {0}%", (state.progress * 100).toInt())
+                    is UpdateState.Downloaded -> t("✅ ডাউনলোড শেষ — ইনস্টল করুন")
+                    is UpdateState.NeedsPermission -> t("🔓 ইনস্টল করতে অনুমতি দরকার")
+                    else -> t("🎉 নতুন আপডেট পাওয়া গেছে")
+                },
+                color = Glass.textPrimary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp
+            )
+            Text(
+                t("অ্যাপ আপডেট হবে — চ্যাট, মেমরি ও সেটিংস থাকবে"),
+                color = Glass.textMuted,
+                fontSize = 11.sp
+            )
+        }
+        when (state) {
+            is UpdateState.Available -> TextButton(
+                onClick = onDownload,
+                modifier = Modifier.testTag("update_banner_install")
+            ) {
+                Text(t("ডাউনলোড"), color = Glass.greenFill, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            }
+            is UpdateState.Downloaded -> TextButton(
+                onClick = onInstall,
+                modifier = Modifier.testTag("update_banner_install")
+            ) {
+                Text(t("ইনস্টল"), color = Glass.greenFill, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            }
+            is UpdateState.NeedsPermission -> TextButton(
+                onClick = onOpenPermission,
+                modifier = Modifier.testTag("update_banner_install")
+            ) {
+                Text(t("অনুমতি"), color = Glass.greenFill, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            }
+            else -> Unit
+        }
+        IconButton(onClick = onDismiss, modifier = Modifier.testTag("update_banner_close")) {
+            Icon(
+                Icons.Rounded.Close,
+                contentDescription = t("বন্ধ করুন"),
+                tint = Glass.textMuted
+            )
+        }
+    }
+}
+
 
 @Composable
 fun ZyraxonTopBar(

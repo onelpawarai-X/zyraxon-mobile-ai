@@ -26,6 +26,9 @@ import ai.zyraxon.assistant.ai.ProviderSpec
 import ai.zyraxon.assistant.voice.LiveVoiceSession
 import ai.zyraxon.assistant.voice.NativeVoiceManager
 import ai.zyraxon.assistant.voice.SpeechChunker
+import ai.zyraxon.assistant.update.Updater
+import ai.zyraxon.assistant.update.UpdateRelease
+import ai.zyraxon.assistant.update.UpdateState
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
@@ -233,6 +236,110 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     private val _githubStatus = MutableStateFlow(if (aiEngine.getGithubToken().isNotEmpty()) "টোকেন সেভ করা আছে" else "টোকেন নেই")
     val githubStatus: StateFlow<String> = _githubStatus.asStateFlow()
+
+    // ---- in-app updates ----------------------------------------------------
+
+    private val updater = Updater(application)
+
+    private val _updateState = MutableStateFlow<UpdateState>(UpdateState.Idle)
+    val updateState: StateFlow<UpdateState> = _updateState.asStateFlow()
+
+    /** The release being offered, kept so Download and Install can use it. */
+    private var pendingRelease: UpdateRelease? = null
+
+    /** True once a check has answered, so the banner never flashes on every start. */
+    private val _updateChecked = MutableStateFlow(false)
+    val updateChecked: StateFlow<Boolean> = _updateChecked.asStateFlow()
+
+    // A dismissed release stays dismissed until the app is restarted, so the
+    // banner does not come back every time the user closes and reopens it.
+    private val _updateBannerDismissed = MutableStateFlow(false)
+    val updateBannerDismissed: StateFlow<Boolean> = _updateBannerDismissed.asStateFlow()
+
+    val currentVersionName: String = Updater.installedVersionName(application)
+
+    /** Whether Android will let this app install an update itself. */
+    fun canInstallUpdates(): Boolean = updater.canInstall()
+
+    /** Opens the "install unknown apps" row so the user can allow in-app installs. */
+    fun openInstallPermission() = updater.openInstallPermissionSettings()
+
+    fun dismissUpdateBanner() {
+        _updateBannerDismissed.value = true
+    }
+
+    /**
+     * Asks GitHub for the newest release. Called once when the app opens, and
+     * again whenever the user taps Check for updates in Settings.
+     */
+    fun checkForUpdates(silent: Boolean = false) {
+        val current = _updateState.value
+        if (current is UpdateState.Checking || current is UpdateState.Downloading) return
+        _updateState.value = UpdateState.Checking
+        viewModelScope.launch {
+            updater.check().fold(
+                onSuccess = { release ->
+                    pendingRelease = release
+                    _updateState.value = when {
+                        release == null -> UpdateState.UpToDate(currentVersionName)
+                        release.apk == null -> UpdateState.NoApk(release)
+                        else -> UpdateState.Available(release)
+                    }
+                    if (release != null) _updateBannerDismissed.value = false
+                },
+                onFailure = { error ->
+                    // A failed check is silent on launch — being offline is not an
+                    // error worth a banner — but a manual check reports it.
+                    _updateState.value = if (silent) {
+                        UpdateState.Idle
+                    } else {
+                        UpdateState.Failed(error.message ?: "চেক করা গেল না")
+                    }
+                }
+            )
+            _updateChecked.value = true
+        }
+    }
+
+    /** Downloads the offered release, streaming progress into [updateState]. */
+    fun downloadUpdate() {
+        val release = pendingRelease
+            ?: (_updateState.value as? UpdateState.Available)?.release
+            ?: return
+        if (_updateState.value is UpdateState.Downloading) return
+        _updateState.value = UpdateState.Downloading(0f)
+        viewModelScope.launch {
+            updater.download(release) { progress ->
+                _updateState.value = UpdateState.Downloading(progress)
+            }.fold(
+                onSuccess = { apk ->
+                    _updateState.value = UpdateState.Downloaded(release, apk.absolutePath)
+                },
+                onFailure = { error ->
+                    _updateState.value = UpdateState.Failed(error.message ?: "ডাউনলোড ব্যর্থ")
+                }
+            )
+        }
+    }
+
+    /** Installs a downloaded update in place. Asks for the permission if needed. */
+    fun installUpdate() {
+        val state = _updateState.value
+        val path = (state as? UpdateState.Downloaded)?.apkPath ?: return
+        val file = java.io.File(path)
+        if (!file.exists()) {
+            _updateState.value = UpdateState.Failed("ডাউনলোড করা ফাইল পাওয়া গেল না")
+            return
+        }
+        if (!updater.canInstall()) {
+            updater.openInstallPermissionSettings()
+            _updateState.value = UpdateState.NeedsPermission(state.release)
+            return
+        }
+        runCatching { updater.install(file) }.onFailure { error ->
+            _updateState.value = UpdateState.Failed(error.message ?: "ইনস্টল শুরু করা গেল না")
+        }
+    }
 
     // Tasks & Memories from SQLite Room Database
     private val _tasks = MutableStateFlow<List<TaskItem>>(emptyList())

@@ -7,6 +7,7 @@ import ai.zyraxon.assistant.ai.ZyraxonAiEngine
 import ai.zyraxon.assistant.model.AiModel
 import ai.zyraxon.assistant.model.BgAnimationMode
 import ai.zyraxon.assistant.model.Persona
+import ai.zyraxon.assistant.update.UpdateState
 import ai.zyraxon.assistant.ui.theme.Glass
 import ai.zyraxon.assistant.viewmodel.ZyraxonViewModel
 import android.content.Context
@@ -63,6 +64,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -589,6 +591,11 @@ fun SettingsSheet(
 
     var activePane by remember { mutableStateOf("voice") }
 
+    // Checking for a new release as soon as Settings opens is what makes the
+    // আপডেট pane useful the first time it is visited; the launch check has
+    // usually already answered, and checkForUpdates ignores a duplicate call.
+    LaunchedEffect(Unit) { viewModel.checkForUpdates(silent = true) }
+
     // Provider Keys local edit states
     val providerStatus by viewModel.providerStatus.collectAsState()
     val providerBusy by viewModel.providerBusy.collectAsState()
@@ -651,6 +658,7 @@ fun SettingsSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 listOf(
+                    "updates" to t("⬆️ আপডেট"),
                     "voice" to t("🔊 ভয়েস (TTS)"),
                     "live" to t("📞 লাইভ ভয়েস"),
                     "ondevice" to t("📴 অন-ডিভাইস মডেল"),
@@ -692,6 +700,8 @@ fun SettingsSheet(
                     .verticalScroll(rememberScrollState())
             ) {
                 when (activePane) {
+                    "updates" -> UpdatePane(viewModel = viewModel)
+
                     "perms" -> {
                         val activity = context as? ai.zyraxon.assistant.MainActivity
                         PermissionPanel(
@@ -1901,6 +1911,195 @@ fun SettingsSheet(
         }
     }
 }
+
+/**
+ * The আপডেট pane. It reads the newest release from GitHub and walks the user
+ * through download then install. The install replaces the running app in place,
+ * so chats, memories and settings are all kept — nothing is uninstalled.
+ */
+@Composable
+fun UpdatePane(viewModel: ZyraxonViewModel) {
+    val state by viewModel.updateState.collectAsState()
+
+    Text(
+        t("অ্যাপ আপডেট (In-app Update)"),
+        fontWeight = FontWeight.Bold,
+        color = Glass.textPrimary,
+        fontSize = 14.sp
+    )
+    Spacer(modifier = Modifier.height(6.dp))
+    Text(
+        t("নতুন রিলিজ আপলোড হলে এখানেই দেখা যাবে। ইনস্টল করলে পুরনো অ্যাপটিই আপডেট হবে — চ্যাট, মেমরি ও সেটিংস মুছবে না, আলাদা অ্যাপ বসবে না।"),
+        color = Glass.textMuted,
+        fontSize = 11.5.sp
+    )
+    Spacer(modifier = Modifier.height(4.dp))
+    Text(
+        t("বর্তমান ভার্সন: {0}", viewModel.currentVersionName),
+        color = Glass.cyanFill,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.SemiBold
+    )
+    Spacer(modifier = Modifier.height(14.dp))
+
+    // A release card. Rendered for every state that has a release to show, so the
+    // tag, notes and the one action button always look the same.
+    val release = when (val s = state) {
+        is UpdateState.Available -> s.release
+        is UpdateState.NoApk -> s.release
+        is UpdateState.Downloading -> null
+        is UpdateState.Downloaded -> s.release
+        is UpdateState.NeedsPermission -> s.release
+        else -> null
+    }
+
+    if (release != null) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(Glass.greenFill.copy(alpha = 0.14f))
+                .border(1.dp, Glass.greenFill, RoundedCornerShape(14.dp))
+                .padding(14.dp)
+        ) {
+            Text(
+                t("✨ নতুন আপডেট পাওয়া গেছে — {0}", release.tag),
+                color = Glass.textPrimary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.5.sp
+            )
+            if (release.notes.isNotBlank()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    release.notes.take(600),
+                    color = Glass.textSecondary,
+                    fontSize = 11.5.sp
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+
+    when (val s = state) {
+        UpdateState.Idle -> {
+            Text(t("নতুন আপডেট আছে কি না জানতে চেক করুন।"), color = Glass.textSecondary, fontSize = 12.sp)
+            Spacer(modifier = Modifier.height(12.dp))
+            UpdateButton(t("আপডেট চেক করুন"), enabled = true) {
+                viewModel.checkForUpdates()
+            }
+        }
+
+        UpdateState.Checking -> {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    color = Glass.cyanFill,
+                    strokeWidth = 2.dp
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(t("চেক করা হচ্ছে..."), color = Glass.textSecondary, fontSize = 12.sp)
+            }
+        }
+
+        is UpdateState.UpToDate -> {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.Check, contentDescription = null, tint = Glass.greenFill, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(t("আপনি সর্বশেষ ভার্সনই ব্যবহার করছেন (v{0})।", s.installed), color = Glass.greenFill, fontSize = 12.5.sp)
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            UpdateButton(t("আবার চেক করুন"), enabled = true) {
+                viewModel.checkForUpdates()
+            }
+        }
+
+        is UpdateState.Available -> {
+            UpdateButton(t("⬇️ ডাউনলোড ও ইনস্টল"), enabled = true) {
+                viewModel.downloadUpdate()
+            }
+        }
+
+        is UpdateState.NoApk -> {
+            Text(
+                t("এই রিলিজে ইনস্টল করার মতো APK নেই।"),
+                color = Glass.textMuted,
+                fontSize = 12.sp
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            UpdateButton(t("আবার চেক করুন"), enabled = true) {
+                viewModel.checkForUpdates()
+            }
+        }
+
+        is UpdateState.Downloading -> {
+            LinearProgressIndicator(
+                progress = { s.progress },
+                modifier = Modifier.fillMaxWidth(),
+                color = Glass.cyanFill,
+                trackColor = Glass.rowFill(0.3f)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                t("ডাউনলোড হচ্ছে... {0}%", (s.progress * 100).toInt()),
+                color = Glass.textSecondary,
+                fontSize = 12.sp
+            )
+        }
+
+        is UpdateState.Downloaded -> {
+            Text(
+                t("ডাউনলোড শেষ। এখন ইনস্টল করলে অ্যাপটি আপডেট হয়ে যাবে।"),
+                color = Glass.greenFill,
+                fontSize = 12.5.sp
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            UpdateButton(t("✅ ইনস্টল করুন"), enabled = true) {
+                viewModel.installUpdate()
+            }
+        }
+
+        is UpdateState.NeedsPermission -> {
+            Text(
+                t("ইনস্টল করতে Android-কে অনুমতি দিতে হবে। সেটিংস খুলে ZYRAXON-কে \"এই সোর্স থেকে অ্যাপ ইনস্টল\" চালু করুন, তারপর আবার ইনস্টল চাপুন।"),
+                color = Glass.textSecondary,
+                fontSize = 12.sp
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            UpdateButton(t("অনুমতি সেটিংস খুলুন"), enabled = true) {
+                viewModel.openInstallPermission()
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            UpdateButton(t("আবার ইনস্টল চেষ্টা করুন"), enabled = true) {
+                viewModel.installUpdate()
+            }
+        }
+
+        is UpdateState.Failed -> {
+            Text(s.message, color = Color(0xFFFF6B6B), fontSize = 12.sp)
+            Spacer(modifier = Modifier.height(12.dp))
+            UpdateButton(t("আবার চেষ্টা করুন"), enabled = true) {
+                viewModel.checkForUpdates()
+            }
+        }
+    }
+}
+
+@Composable
+private fun UpdateButton(label: String, enabled: Boolean, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.fillMaxWidth().testTag("update_action_button"),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Glass.cyanFill,
+            contentColor = Glass.textOnAccent
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Text(label, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+    }
+}
+
 
 @Composable
 fun ProviderKeyRow(
