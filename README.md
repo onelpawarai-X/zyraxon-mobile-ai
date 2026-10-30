@@ -9,10 +9,10 @@ stopping in the middle.
 build of it, and none is planned.
 
 - **Package:** `com.zyraxon.assistant`
-- **Version:** 6.5.0 (versionCode 13)
-- **Minimum Android:** 7.0 (API 24) · **Target:** API 36
+- **Version:** 6.7.0 (versionCode 15)
+- **Minimum Android:** 5.0 (API 21) · **Target:** API 36
 - **Language:** Kotlin + Jetpack Compose, 45 source files
-- **Tools:** 61 real tools · **Characters:** 6
+- **Tools:** 68 real tools · **Characters:** 6
 
 ---
 
@@ -127,7 +127,7 @@ git clone https://github.com/onelpawarai-X/zyraxon-mobile-ai
 
 JGit is built on `java.nio.file`, which is API 26+, so core-library desugaring is
 enabled and those classes are rewritten at build time. The app still runs on
-API 24. Everything else — `awk`, `sed`, `grep`, `tar`, `wget`, `curl`, `find`,
+API 21. Everything else — `awk`, `sed`, `grep`, `tar`, `wget`, `curl`, `find`,
 `sort`, `base64`, `md5sum` — is a busybox applet, already on `PATH`.
 
 ### It does not stop halfway
@@ -316,7 +316,7 @@ Output lands in `app/build/outputs/apk/release/`.
 gradle testDebugUnitTest --rerun-tasks
 ```
 
-191 tests, all passing:
+206 tests, all passing:
 
 | Suite | Tests | Covers |
 |---|---|---|
