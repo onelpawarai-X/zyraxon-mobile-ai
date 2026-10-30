@@ -9,7 +9,7 @@ stopping in the middle.
 build of it, and none is planned.
 
 - **Package:** `com.zyraxon.assistant`
-- **Version:** 6.8.0 (versionCode 17)
+- **Version:** 6.9.0 (versionCode 18)
 - **Minimum Android:** 5.0 (API 21) · **Target:** API 36
 - **Language:** Kotlin + Jetpack Compose, 45 source files
 - **Tools:** 68 real tools · **Characters:** 6

@@ -1,7 +1,6 @@
 package ai.zyraxon.assistant.ui.components
 
 import ai.zyraxon.assistant.i18n.t
-import ai.zyraxon.assistant.model.AppTab
 import ai.zyraxon.assistant.model.ChatMessage
 import ai.zyraxon.assistant.model.MessageRole
 import ai.zyraxon.assistant.ui.theme.Glass
@@ -48,53 +47,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-@Composable
-fun TabSelector(
-    selectedTab: AppTab,
-    onTabSelected: (AppTab) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(24.dp))
-            .background(Glass.rowFill(0.30f))
-            .border(1.dp, Glass.cyanFill.copy(alpha = 0.16f), RoundedCornerShape(24.dp))
-            .horizontalScroll(rememberScrollState())
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        AppTab.values().forEach { tab ->
-            val isSelected = tab == selectedTab
-            val bgModifier = if (isSelected) {
-                Modifier.background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(Glass.violetFill, Glass.pinkFill)
-                    ),
-                    shape = RoundedCornerShape(20.dp)
-                )
-            } else {
-                Modifier.background(Color.Transparent)
-            }
-
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .then(bgModifier)
-                    .clickable { onTabSelected(tab) }
-                    .padding(horizontal = 14.dp, vertical = 6.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = if (tab == AppTab.TERMINAL) "⌘ ZX" else tab.title,
-                    color = if (isSelected) Glass.textPrimary else Glass.textSecondary,
-                    fontSize = 13.sp,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
-                )
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
