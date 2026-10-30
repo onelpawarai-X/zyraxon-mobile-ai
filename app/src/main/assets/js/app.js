@@ -87,7 +87,7 @@
       async loadModels(forceRefresh = false) {
         let list = [];
         const hasSrv = !!(global.ZY.Platform && global.ZY.Platform.hasServer && global.ZY.Platform.hasServer());
-        const modelsUrl = global.ZY.Platform && global.ZY.Platform.provider ? global.ZY.Platform.provider.models : "https://zyraxonai.lovable.app/api/public/zyraxon/v1/models";
+        const modelsUrl = global.ZY.Platform && global.ZY.Platform.provider ? global.ZY.Platform.provider.models : "/api/public/zyraxon/v1/models";
         if (global.ZY.PROVIDERS) {
           try {
             list = await global.ZY.PROVIDERS.models(forceRefresh);

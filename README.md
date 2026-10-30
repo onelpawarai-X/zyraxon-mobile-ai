@@ -8,10 +8,10 @@ stopping in the middle.
 **Android only.** ZYRAXON ships as an APK. There is no desktop, Linux or macOS
 build of it, and none is planned.
 
-- **Package:** `com.aistudio.zyraxon.kxqmpz`
+- **Package:** `com.zyraxon.assistant`
 - **Version:** 6.2.0 (versionCode 10)
 - **Minimum Android:** 7.0 (API 24) · **Target:** API 36
-- **Language:** Kotlin + Jetpack Compose, 44 source files
+- **Language:** Kotlin + Jetpack Compose, 45 source files
 - **Tools:** 61 real tools · **Characters:** 6
 
 ---
@@ -32,7 +32,7 @@ sentence is pronounced properly instead of being spelled out letter by letter.
 
 ### It has hands
 
-61 tools, wired to the real Android APIs:
+64 tools, wired to the real Android APIs:
 
 | Area | Tools |
 |---|---|
@@ -46,6 +46,8 @@ sentence is pronounced properly instead of being spelled out letter by letter.
 | Phone | `notify`, `call_dial`, `call_answer`, `call_hangup`, `clipboard_read`, `clipboard_write`, `share`, `sys_info`, `process_list` |
 | Messaging | `channel_post` (Telegram, WhatsApp, Facebook, Messenger, Instagram, X, Gmail, SMS) |
 | System | `run_shell`, `request_permission`, `open_settings`, `voice_change`, `memory_write`, `memory_read` |
+| Voice and device | `live_voice` (follows the chosen model: realtime model = speech-to-speech, text model = read-aloud), `device_lock` (lock, unlock, enrol, status) |
+| Offline | `on_device_model` (list, download, load, run a local model) |
 | UI panels | `code_box`, `files_panel`, `floating_bubble` |
 
 The assistant reads the screen as an actual image, taps by coordinate or by
@@ -65,6 +67,47 @@ irreversible.
 
 You can also interrupt mid-task. New words are drained into the running loop, so
 the assistant folds your instruction into the plan instead of abandoning it.
+
+### It answers with its own voice
+
+Speech-to-speech follows the model you pick, not a separate switch. Every model
+comes from its provider's own live catalogue — nothing is hardcoded. A model the
+provider marks as a live, realtime model (Gemini's `*-native-audio-*` and
+`*-live-*`, OpenAI's `*realtime*`, xAI's `grok-voice-*`) is badged 🎙️ রিয়েলটাইম
+in the selector and, when chosen, opens a real WebSocket session: the microphone
+streams up, the model's own voice streams back, and the phone's text-to-speech
+goes silent so the two voices never overlap. A plain text model is badged as
+text and has its replies read aloud by the phone's own TTS instead.
+
+Two real wire protocols are implemented. Gemini speaks `BidiGenerateContent`;
+OpenAI and xAI speak the OpenAI Realtime event stream. Each was probed against
+the live service — Gemini and OpenAI complete a WebSocket handshake with `101
+Switching Protocols`, xAI answers on `/v1/realtime` — and Groq, whose guessed
+path returns `404`, is deliberately never labelled realtime. The socket URL,
+protocol and key all come from the selected model's own provider, so a Grok
+voice model is served by xAI and a Gemini live model by Google. The live model
+also receives screen frames, so it can comment on what is on screen while you
+talk. Both transcripts are requested, which is why the chat timeline fills in
+with the same words you hear.
+
+### It works with no network
+
+`on_device_model` runs a MediaPipe `.task` bundle from local storage, so answers
+keep coming with the radio off. Bundles are downloaded into the app's own
+directory, loaded once, and streamed token by token. The suggested bundles are
+all public — SmolLM 135M, TinyLlama 1.1B, Qwen2.5 1.5B, DeepSeek-R1 Distill
+Qwen 1.5B, Qwen3 4B and Phi-4 mini — and each was verified to download without
+any Hugging Face token (a ranged GET returns `206`). The licence-gated Gemma
+repositories, which answer `401`, are not in the list. The token field stays for
+a gated file a user adds by hand, but no suggested download needs it.
+
+### It can lock the phone
+
+`device_lock` locks the screen for real through the device-admin API — the
+keyguard comes up, not a dark overlay. Enrolment happens on the system's own
+"Allow" screen, so the app never has to be opened to grant it. Unlocking is
+reported honestly: Android refuses it while a PIN or pattern is set, and the
+tool says so rather than claiming success.
 
 ### It changes its own voice
 
@@ -102,6 +145,21 @@ image. A video comes back as several stills sampled across the whole clip —
 judged from one frame; `at_second` still pins one exact moment. Audio returns its
 real duration and size. A link with no file extension works too: the type is
 taken from the server's own `Content-Type`.
+
+---
+
+## Sixty languages
+
+Every string is written in Bengali in the source and the tables in
+`app/src/main/assets/i18n` map that Bengali text to each language, so a missing
+translation shows readable Bengali instead of a key like `settings_title`. The
+Settings sheet has a searchable language list; picking one swaps the table and
+rebuilds the screens in place, with no restart. The choice is remembered in
+`SharedPreferences` and restored before the first frame on the next launch, and
+the first launch follows the phone's own locale when a table exists for it.
+
+Adding a language means dropping one JSON file into that directory and one entry
+into `languages.json`; no Kotlin changes.
 
 ---
 
@@ -182,26 +240,29 @@ Output lands in `app/build/outputs/apk/release/`.
 gradle testDebugUnitTest --rerun-tasks
 ```
 
-105 tests, all passing:
+133 tests, all passing:
 
 | Suite | Tests | Covers |
 |---|---|---|
 | `OpenAiSseTest` | 4 | The real SSE parser and the advertised tool set |
 | `MediaReadToolTest` | 7 | Real `read_media`: a file on disk, an HTTP-served JPEG by URL, a link with no extension, and the failures |
 | `ToolCatalogueTest` | 5 | Every advertised tool has the OpenAI function shape, unique names, and the bubble tool accepts on/off |
-| `ProviderCatalogTest` | 20 | Provider catalogue parsing and key verification |
+| `ProviderCatalogTest` | 21 | Provider catalogue parsing, the TTS-model filter, and per-provider realtime detection |
 | `ModelLoadingNetworkTest` | 6 | Parallel model loading and per-provider failure reporting |
 | `McpClientTest` | 29 | MCP protocol: handshake, tools, resources, prompts, ping, logging, completion |
 | `OverlayChatServiceTest` | 3 | The floating bubble is really added to the WindowManager, removed on destroy, and the service stops itself when the overlay permission is missing |
-| `AuraHtmlTest` | 8 | The aura CSS: centring, glow masking, the hue variable, and every aura style being real |
+| `AuraHtmlTest` | 13 | The aura CSS: centring, glow masking, the hue variable, and every aura style being real |
 | `SpeechCleaningTest` | 4 | Markdown and emoji stripping before speaking |
 | `SpeechSegmenterTest` | 6 | Splitting mixed Bangla/English text into language runs |
 | `VoiceSelectorTest` | 8 | Native voice selection and fallback |
 | `VisionPayloadTest` | 3 | Image payloads sent to the model |
-| `ExampleRobolectricTest` | 1 | Robolectric wiring |
-| `ExampleUnitTest` | 1 | Arithmetic sanity |
+| `PackageRobolectricTest` | 1 | Robolectric wiring |
+| `SanityUnitTest` | 1 | Arithmetic sanity |
+| `LocalizationTest` | 8 | The real asset tables: every language answers every key, placeholders survive, and a missing entry falls back to Bengali |
+| `AdvancedToolsTest` | 12 | Live-voice and on-device-model tools: argument validation, the token-free bundle list, per-provider realtime detection (Groq excluded), and the two prompt contracts staying distinct |
+| `LiveVoiceUiTest` | 2 | The rendered top bar: the live-voice button is on screen, reports taps, and does not displace the persona or model pills |
 
-105 tests, 0 failures.
+133 tests, 0 failures.
 
 To confirm a tool actually shipped in a built APK:
 

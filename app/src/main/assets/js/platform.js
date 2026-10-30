@@ -2,7 +2,7 @@
   (function(global) {
     "use strict";
     const API = () => (global.ZY.store.get("base") || location.origin).replace(/\/$/, "");
-    const PROVIDER_BASE = "https://zyraxonai.lovable.app/api/public/zyraxon/v1";
+    const PROVIDER_BASE = "/api/public/zyraxon/v1";
     const PROVIDER = {
       base: PROVIDER_BASE,
       chat: `${PROVIDER_BASE}/chat/completions`,

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The single policy ZYRAXON asks for. force-lock lets the assistant lock the
+  screen on the user's spoken order; nothing else is declared, so activating the
+  admin grants no wipe, no password reset and no keylogging.
+-->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <force-lock />
+    </uses-policies>
+</device-admin>

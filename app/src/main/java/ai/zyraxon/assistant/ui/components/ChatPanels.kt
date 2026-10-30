@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.model.TaskItem
 import ai.zyraxon.assistant.model.ToolExecutionItem
 import ai.zyraxon.assistant.model.WorkspaceFile
@@ -75,13 +76,13 @@ fun ChatPanels(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            PanelTab("✅ টুডু", tasks.count { !it.isCompleted }, tasks.size, openPanel == "todo", Pink, panelAlpha) {
+            PanelTab(t("✅ টুডু"), tasks.count { !it.isCompleted }, tasks.size, openPanel == "todo", Pink, panelAlpha) {
                 openPanel = if (openPanel == "todo") null else "todo"
             }
-            PanelTab("🛠️ টুল", toolExecutions.size, toolExecutions.size, openPanel == "tool", Cyan, panelAlpha) {
+            PanelTab(t("🛠️ টুল"), toolExecutions.size, toolExecutions.size, openPanel == "tool", Cyan, panelAlpha) {
                 openPanel = if (openPanel == "tool") null else "tool"
             }
-            PanelTab("📁 ফাইল", files.size, files.size, openPanel == "files", Glass.violet, panelAlpha) {
+            PanelTab(t("📁 ফাইল"), files.size, files.size, openPanel == "files", Glass.violet, panelAlpha) {
                 openPanel = if (openPanel == "files") null else "files"
             }
         }
@@ -127,7 +128,7 @@ private fun RowScope.PanelTab(
 @Composable
 private fun TodoPanelBody(tasks: List<TaskItem>) {
     if (tasks.isEmpty()) {
-        EmptyHint("এখনো কোনো টুডু নেই — কাজ শুরু করলে এখানে ধাপে ধাপে দেখা যাবে")
+        EmptyHint(t("এখনো কোনো টুডু নেই — কাজ শুরু করলে এখানে ধাপে ধাপে দেখা যাবে"))
         return
     }
     LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 170.dp)) {
@@ -157,7 +158,7 @@ private fun TodoPanelBody(tasks: List<TaskItem>) {
 @Composable
 private fun ToolPanelBody(items: List<ToolExecutionItem>) {
     if (items.isEmpty()) {
-        EmptyHint("টুল কল এখনো হয়নি — কাজ করলে এখানে কী চলছে দেখা যাবে")
+        EmptyHint(t("টুল কল এখনো হয়নি — কাজ করলে এখানে কী চলছে দেখা যাবে"))
         return
     }
     LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 170.dp)) {
@@ -200,7 +201,7 @@ private fun FilesPanelBody(
     onPublish: (WorkspaceFile) -> Unit
 ) {
     if (files.isEmpty()) {
-        EmptyHint("কোনো ফাইল নেই — কোড বা সাইট বানালে এখানে জমা হবে")
+        EmptyHint(t("কোনো ফাইল নেই — কোড বা সাইট বানালে এখানে জমা হবে"))
         return
     }
     LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 190.dp)) {
@@ -220,11 +221,11 @@ private fun FilesPanelBody(
                     )
                     Text(file.sizeLabel, color = TextFaint, fontSize = 10.sp)
                 }
-                MiniButton("খোলো", Cyan) { onOpen(file.path) }
+                MiniButton(t("খোলো"), Cyan) { onOpen(file.path) }
                 Spacer(Modifier.width(5.dp))
-                MiniButton("প্রকাশ", Pink) { onPublish(file) }
+                MiniButton(t("প্রকাশ"), Pink) { onPublish(file) }
                 Spacer(Modifier.width(5.dp))
-                MiniButton("মুছো", Glass.red) { onDelete(file.path) }
+                MiniButton(t("মুছো"), Glass.red) { onDelete(file.path) }
             }
         }
     }

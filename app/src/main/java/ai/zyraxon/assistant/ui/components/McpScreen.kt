@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.mcp.McpAuth
 import ai.zyraxon.assistant.mcp.McpConnection
 import ai.zyraxon.assistant.mcp.McpServer
@@ -142,13 +143,13 @@ private fun McpHeader(
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "MCP সার্ভার",
+                    t("MCP সার্ভার"),
                     color = Glass.textPrimary,
                     fontSize = 19.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    "কানেক্টেড সার্ভারের টুল অটোমেটিক এসিস্ট্যান্টে যোগ হয়",
+                    t("কানেক্টেড সার্ভারের টুল অটোমেটিক এসিস্ট্যান্টে যোগ হয়"),
                     color = Glass.textMuted,
                     fontSize = 11.5.sp
                 )
@@ -160,16 +161,16 @@ private fun McpHeader(
                     .clickable(onClick = onAdd)
                     .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
-                Text("+ যোগ", color = Color.White, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                Text(t("+ যোগ"), color = Color.White, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
             }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            McpStat("$connected/$total", "কানেক্টেড", Glass.greenFill)
-            McpStat("$tools", "টুল", Glass.cyanFill)
-            if (resources > 0) McpStat("$resources", "রিসোর্স", Glass.violetFill)
-            if (prompts > 0) McpStat("$prompts", "প্রম্পট", Glass.pinkFill)
+            McpStat("$connected/$total", t("কানেক্টেড"), Glass.greenFill)
+            McpStat("$tools", t("টুল"), Glass.cyanFill)
+            if (resources > 0) McpStat("$resources", t("রিসোর্স"), Glass.violetFill)
+            if (prompts > 0) McpStat("$prompts", t("প্রম্পট"), Glass.pinkFill)
         }
     }
 }
@@ -289,7 +290,7 @@ private fun McpServerCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    if (expanded) "কী কী পারবে ▾" else "কী কী পারবে ▸",
+                    if (expanded) t("কী কী পারবে ▾") else t("কী কী পারবে ▸"),
                     color = Glass.textSecondary,
                     fontSize = 11.5.sp,
                     fontWeight = FontWeight.Medium,
@@ -297,7 +298,7 @@ private fun McpServerCard(
                 )
                 if (isConnected) {
                     Text(
-                        "${connection.toolCount} টুল",
+                        t("{0} টুল", connection.toolCount),
                         color = Glass.greenFill,
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.SemiBold
@@ -319,7 +320,7 @@ private fun McpServerCard(
                     if (isConnected && connection.tools.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "সার্ভার থেকে পাওয়া টুল",
+                            t("সার্ভার থেকে পাওয়া টুল"),
                             color = Glass.textMuted,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.SemiBold
@@ -336,7 +337,7 @@ private fun McpServerCard(
                         }
                         if (connection.toolCount > 14) {
                             Text(
-                                "আরও ${connection.toolCount - 14}টি…",
+                                t("আরও {0}টি…", connection.toolCount - 14),
                                 color = Glass.textDisabled,
                                 fontSize = 10.sp
                             )
@@ -345,7 +346,7 @@ private fun McpServerCard(
                     if (isConnected && connection.resources.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "রিসোর্স (${connection.resourceCount}টি)",
+                            t("রিসোর্স ({0}টি)", connection.resourceCount),
                             color = Glass.textMuted,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.SemiBold
@@ -361,7 +362,7 @@ private fun McpServerCard(
                         }
                         if (connection.resourceCount > 8) {
                             Text(
-                                "আরও ${connection.resourceCount - 8}টি…",
+                                t("আরও {0}টি…", connection.resourceCount - 8),
                                 color = Glass.textDisabled,
                                 fontSize = 10.sp
                             )
@@ -370,7 +371,7 @@ private fun McpServerCard(
                     if (isConnected && connection.prompts.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "প্রম্পট টেমপ্লেট (${connection.promptCount}টি)",
+                            t("প্রম্পট টেমপ্লেট ({0}টি)", connection.promptCount),
                             color = Glass.textMuted,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.SemiBold
@@ -387,7 +388,7 @@ private fun McpServerCard(
                         }
                         if (connection.promptCount > 8) {
                             Text(
-                                "আরও ${connection.promptCount - 8}টি…",
+                                t("আরও {0}টি…", connection.promptCount - 8),
                                 color = Glass.textDisabled,
                                 fontSize = 10.sp
                             )
@@ -401,7 +402,7 @@ private fun McpServerCard(
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (isConnected) {
                 McpButton(
-                    label = "বিচ্ছিন্ন করো",
+                    label = t("বিচ্ছিন্ন করো"),
                     accent = Glass.red,
                     modifier = Modifier.weight(1f),
                     onClick = onDisconnect
@@ -409,9 +410,9 @@ private fun McpServerCard(
             } else {
                 McpButton(
                     label = when {
-                        isBusy -> "অপেক্ষা করো…"
-                        server.auth == McpAuth.OAUTH -> "কানেক্ট (ব্রাউজারে)"
-                        else -> "কানেক্ট"
+                        isBusy -> t("অপেক্ষা করো…")
+                        server.auth == McpAuth.OAUTH -> t("কানেক্ট (ব্রাউজারে)")
+                        else -> t("কানেক্ট")
                     },
                     accent = Glass.pinkFill,
                     modifier = Modifier.weight(1f),
@@ -421,7 +422,7 @@ private fun McpServerCard(
             }
             if (server.custom) {
                 McpButton(
-                    label = "মুছে ফেলো",
+                    label = t("মুছে ফেলো"),
                     accent = Glass.textMuted,
                     modifier = Modifier.width(96.dp),
                     onClick = onRemove
@@ -434,11 +435,11 @@ private fun McpServerCard(
 @Composable
 private fun StatusPill(connection: McpConnection) {
     val (label, color) = when (connection.status) {
-        McpStatus.CONNECTED -> "কানেক্টেড" to Glass.greenFill
-        McpStatus.CONNECTING -> "কানেক্ট হচ্ছে" to Glass.amber
-        McpStatus.NEEDS_AUTH -> "অনুমতি দাও" to Glass.amber
-        McpStatus.FAILED -> "ব্যর্থ" to Glass.red
-        McpStatus.DISCONNECTED -> "বন্ধ" to Glass.textMuted
+        McpStatus.CONNECTED -> t("কানেক্টেড") to Glass.greenFill
+        McpStatus.CONNECTING -> t("কানেক্ট হচ্ছে") to Glass.amber
+        McpStatus.NEEDS_AUTH -> t("অনুমতি দাও") to Glass.amber
+        McpStatus.FAILED -> t("ব্যর্থ") to Glass.red
+        McpStatus.DISCONNECTED -> t("বন্ধ") to Glass.textMuted
     }
     Box(
         modifier = Modifier
@@ -492,21 +493,21 @@ private fun AddCustomServerDialog(
         onDismissRequest = onDismiss,
         containerColor = Glass.sheetFill(0.92f),
         title = {
-            Text("নিজের MCP সার্ভার", color = Glass.textPrimary, fontWeight = FontWeight.Bold)
+            Text(t("নিজের MCP সার্ভার"), color = Glass.textPrimary, fontWeight = FontWeight.Bold)
         },
         text = {
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 Text(
-                    "যেকোনো MCP সার্ভারের ঠিকানা দাও। টোকেন ছাড়া চললে খালি রাখো।",
+                    t("যেকোনো MCP সার্ভারের ঠিকানা দাও। টোকেন ছাড়া চললে খালি রাখো।"),
                     color = Glass.textMuted,
                     fontSize = 12.sp
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                McpField(url, { url = it }, "সার্ভার URL", "https://example.com/mcp")
+                McpField(url, { url = it }, t("সার্ভার URL"), "https://example.com/mcp")
                 Spacer(modifier = Modifier.height(9.dp))
-                McpField(name, { name = it }, "নাম (ইচ্ছা হলে)", "My Server")
+                McpField(name, { name = it }, t("নাম (ইচ্ছা হলে)"), "My Server")
                 Spacer(modifier = Modifier.height(9.dp))
-                McpField(token, { token = it }, "অ্যাক্সেস টোকেন (ইচ্ছা হলে)", "••••••", secret = true)
+                McpField(token, { token = it }, t("অ্যাক্সেস টোকেন (ইচ্ছা হলে)"), "••••••", secret = true)
             }
         },
         confirmButton = {
@@ -514,11 +515,11 @@ private fun AddCustomServerDialog(
                 onClick = { if (url.isNotBlank()) onAdd(url.trim(), name.trim(), token.trim()) },
                 enabled = url.isNotBlank()
             ) {
-                Text("যোগ করো", color = Glass.pinkFill, fontWeight = FontWeight.Bold)
+                Text(t("যোগ করো"), color = Glass.pinkFill, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("বাতিল", color = Glass.textMuted) }
+            TextButton(onClick = onDismiss) { Text(t("বাতিল"), color = Glass.textMuted) }
         }
     )
 }

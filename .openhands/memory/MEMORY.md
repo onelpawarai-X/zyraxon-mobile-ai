@@ -3,10 +3,35 @@
 ## What this repo is (updated 2026-10-29)
 `onelpawarai-X/zyraxon-mobile-ai` — a **native Kotlin + Jetpack Compose Android app**
 (not the old web app; that codebase and its history were deleted at the user's request).
-`namespace = "com.example"`, `applicationId = com.aistudio.zyraxon.kxqmpz`, `minSdk 24`,
-`targetSdk/compileSdk 36`, versionCode 10 / versionName **6.2.0**. `.aistudio/` and
+`namespace = "com.zyraxon.assistant"` and `applicationId = "com.zyraxon.assistant"`, `minSdk 24`,
+`targetSdk/compileSdk 36`, versionCode 12 / versionName **6.4.0**. `.aistudio/` and
 `metadata.json` are AI Studio export artifacts — keep them, the build references their
 signing configs. `README.md` is English and states Android-only.
+
+## Models: nothing is hardcoded (v6.4.0, 2026-10-20)
+The user's standing rule: the app carries **no model list**. Every model comes from its
+provider's own catalogue at runtime; code holds only *detection rules* (the first-run
+`seedModels` are an offline fallback, nothing more).
+- Speech-to-speech follows the **chosen model**, not a switch. `AiModel.isRealtime` is set
+  in `ProviderCatalog.parseModels`; picking a realtime model is what opens the socket.
+  `enableLiveVoice()` / `stopLiveVoice()` replaced the removed `setLiveVoiceEnabled`.
+- Two real protocols, kept distinct: Gemini `BidiGenerateContent` vs OpenAI/xAI Realtime.
+  Voice names differ per protocol, so the gender-to-name map is per-protocol.
+- **Verify a realtime endpoint with a raw TLS WebSocket handshake, never `curl -I`** —
+  curl only proves the path exists. Gemini and `api.openai.com/v1/realtime` upgrade with
+  `101`; `api.x.ai/v1/realtime` gives `400` (real path, bad key);
+  `api.groq.com/openai/v1/realtime` gives `404`, so Groq is never labelled realtime.
+  curl can return HTTP 000 for Gemini while a raw socket succeeds — do not trust it.
+- `parseModels` drops Gemini's TTS-only ids (`-tts`), which cannot chat; the live models are
+  `native-audio` / `-live-` and survive. A test pins both halves.
+- Catalogue order is by provider `speedRank` (fastest first); ZYRAXON is held at the end
+  while its gate is shut. ZYRAXON's public catalogue really answers with 10 `zyraxon-*`
+  models plus a `gate` object — fetch it with `curl --http1.1 --max-time 110` (it streams
+  slowly; a short `-m` can report HTTP 000).
+- On-device bundles must be **token-free**: the suggested ones are public and verified with
+  a ranged GET (`206`) — SmolLM-135M, TinyLlama-1.1B, Qwen2.5-1.5B,
+  DeepSeek-R1-Distill-Qwen-1.5B, Qwen3-4B, Phi-4-mini. Gemma is licence-gated (`401`) and
+  is **not** offered.
 
 ## MCP servers (added 2026-10-29, v4.0.0)
 `ai.zyraxon.assistant.mcp`: `McpModels` (catalog + tool schema), `McpClient` (JSON-RPC over
@@ -21,19 +46,14 @@ Four servers: Canva, Cloudflare, Supabase (OAuth) + GitHub (token).
 - Canva/Cloudflare block non-browser clients → send a desktop Chrome User-Agent.
 - Tools are namespaced `<serverId>__<tool>`. Agent tools: `mcp_connect`, `mcp_list`,
   `mcp_disconnect`.
-- **v5.1.0** added the rest of the protocol: `ping`, `resources/subscribe`,
-  `notifications/resources/updated`, `logging/setLevel`, `completion/complete`,
-  `elicitation/create`, `roots/list`, progress/cancelled. Tools: `mcp_ping`,
-  `mcp_subscribe`, `mcp_complete`, `mcp_log_level`. Three real bugs fixed:
-  (a) `awaitFreshToken` had no `McpAuth.NONE` branch, so a no-auth custom server
-  connected and then failed every call with "permission expired" — the four built-ins are
-  all OAUTH/TOKEN, which is why it hid; (b) `update()` only looked ids up in the catalogue,
-  so a **custom server never appeared** even after connecting; (c) a subscribed resource's
-  refreshed text was cached but never read, so `refreshOneResource` now also queues a note
-  that `ZyraxonAiEngine` injects each round (`drainResourceUpdates`).
-- `McpManager.close()` + `ViewModel.onCleared()` release the SSE channels; without them a
-  screen change leaked a live channel and thread. `McpCatalog.slugId()` is the one id
-  generator (collapse `_` runs + hash) — keep both callers on it.
+- **v5.1.0** completed the protocol (ping, resources/subscribe, logging/setLevel,
+  completion/complete, elicitation, roots, progress/cancelled). Three bugs worth not
+  reintroducing: `awaitFreshToken` needs an `McpAuth.NONE` branch or a no-auth server
+  connects then fails every call; `update()` must also look up custom servers, not just the
+  catalogue; and a refreshed subscribed resource must be drained into the next agent round.
+- `McpManager.close()` + `ViewModel.onCleared()` release the SSE channels — without them a
+  screen change leaks a live channel and thread. `McpCatalog.slugId()` is the one id
+  generator; keep both callers on it.
 
 ## Remote main gets force-pushed from AI Studio — always fetch first
 Twice now a re-export force-pushed `main` and deleted my commits. Before pushing run
@@ -158,8 +178,10 @@ provider `zyraxon`, fastest-first (pulse, neural, codex, visionary, matrix, cybe
 titan, apex, genesis). TTS/STT on that site stay available regardless.
 **Since v6.0.0 its catalogue is marked `catalogIsPublic = true`**, so those 10 models list
 before any key is set; chat still needs the key.
-Note: the container cannot read that host (`curl` code 000, TLS completes but no body) —
-test it from the phone, not from here.
+The container **can** read that host after all (verified 2026-10-20): a plain `curl -m 25`
+returns HTTP 000 because the response streams slowly, but
+`curl -s --http1.1 --max-time 110` returns the full 5.6 KB body. Do not conclude the host is
+unreachable from a short-timeout curl.
 
 ## Provider connection & model loading (fixed 2026-10-29, v6.0.0)
 The long-standing "model selector is empty / connecting does nothing" report was **not** a
@@ -195,12 +217,14 @@ voice are identical — do not give the service its own engine.
   `denyPermissions(SYSTEM_ALERT_WINDOW)` (which has no effect on it).
 
 ## Release history
-- **v6.2.0** (current, release id 427752198, tag `v6.2.0`): floating bubble
-  (`floating_bubble` tool + `OverlayChatService`), six aura styles, `read_media` by
-  `url` + multi-frame `frames` (2–8). 105 unit tests / 0 failures. Its old schema
-  required `path`, which is why link reads never worked.
-- **v6.1.0**: failover between providers. **v6.0.0**: parallel model loading,
-  real key verification, public ZYRAXON catalogue, ZYRAXON/OpenCode key rows, new launcher
-  icon. Both have 5 assets each; 87 unit tests / 0 failures.
-- v3.0.0 was deleted and rebuilt once (tag deleted then recreated) — details in the daily log.
+- **v6.4.0** (in this tree, not yet pushed): no hardcoded models — provider-driven realtime
+  detection, protocol-aware live voice, token-free on-device bundles, TTS-id filter.
+  **133 unit tests / 0 failures.**
+- **v6.3.0**: sixty-language UI made real — 246 strings through `t()`, searchable language
+  picker, choice persisted; `LocalizationTest` (8). 118 tests / 0 failures.
+- **v6.2.0** (tag `v6.2.0`): floating bubble (`OverlayChatService`), six aura styles,
+  `read_media` by `url` + multi-frame `frames`. 105 tests. Its old schema required `path`,
+  which is why link reads never worked.
+- **v6.1.0** provider failover; **v6.0.0** parallel model loading, key verification, public
+  ZYRAXON catalogue, new launcher icon (87 tests). v3.0.0 was deleted and rebuilt once.
 - Older detail lives in `.openhands/memory/2026-10-20.md`.

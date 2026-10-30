@@ -1,5 +1,8 @@
 package ai.zyraxon.assistant
 
+import ai.zyraxon.assistant.i18n.Loc
+import ai.zyraxon.assistant.i18n.languageCode
+import ai.zyraxon.assistant.i18n.savedLanguage
 import ai.zyraxon.assistant.ui.ZyraxonApp
 import ai.zyraxon.assistant.ui.theme.ZyraxonTheme
 import ai.zyraxon.assistant.viewmodel.ZyraxonViewModel
@@ -13,12 +16,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.core.content.ContextCompat
 
 class MainActivity : ComponentActivity() {
 
     private val viewModel: ZyraxonViewModel by viewModels()
-
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -37,6 +41,19 @@ class MainActivity : ComponentActivity() {
     fun applyVoice(gender: String?, rate: Float?, pitch: Float?) {
         viewModel.applyVoice(gender, rate, pitch)
     }
+
+    /**
+     * Lets the `live_voice` tool open a real live session. It switches to a
+     * realtime model, which is what actually starts speech-to-speech, and
+     * reports whether a session opened so the tool can tell the truth.
+     */
+    fun enableLiveVoice(): Boolean = viewModel.enableLiveVoice()
+
+    /** Lets the `live_voice` tool close the session again. */
+    fun stopLiveVoice() = viewModel.stopLiveVoice()
+
+    /** Lets the `on_device_model` tool reach the local inference engine. */
+    fun onDeviceEngine(): ai.zyraxon.assistant.ai.OnDeviceModel = viewModel.onDeviceModel
 
     /** Raises the system Allow dialog for any permission the panel asks for. */
     fun requestPermission(permission: String) {
@@ -116,19 +133,7 @@ class MainActivity : ComponentActivity() {
         }
 
         @JvmStatic
-        fun getNativeGeminiKey(): String {
-            try {
-                val env = System.getenv("GEMINI_API_KEY")
-                if (!env.isNullOrBlank()) return env.trim()
-            } catch (_: Exception) {}
-            try {
-                val clazz = Class.forName("com.example.BuildConfig")
-                val field = clazz.getField("GEMINI_API_KEY")
-                val key = field.get(null) as? String
-                if (!key.isNullOrBlank()) return key.trim()
-            } catch (_: Exception) {}
-            return ""
-        }
+        fun getNativeGeminiKey(): String = System.getenv("GEMINI_API_KEY").orEmpty().trim()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -138,6 +143,14 @@ class MainActivity : ComponentActivity() {
 
         // Request audio & notifications permissions if needed
         checkAndRequestPermissions()
+
+        // The string tables ship as assets, so they are read once here and the
+        // last language the user picked is restored before the first frame.
+        val available = Loc.loadLanguages(this)
+        val initial = savedLanguage(this)?.takeIf { code -> available.any { it.code == code } }
+            ?: Loc.systemDefault(available)
+        Loc.load(this, initial)
+        languageCode.value = initial
 
         // Start background keepalive
         KeepAliveService.start(this)
@@ -149,8 +162,14 @@ class MainActivity : ComponentActivity() {
 
         // Set high-performance native Jetpack Compose UI
         setContent {
-            ZyraxonTheme {
-                ZyraxonApp(viewModel = viewModel)
+            // Reading the language state here and keying the tree on it means a
+            // language change rebuilds every screen with the new table, which a
+            // plain function call inside a `remember { }` could not do.
+            val language by languageCode
+            key(language) {
+                ZyraxonTheme {
+                    ZyraxonApp(viewModel = viewModel)
+                }
             }
         }
     }

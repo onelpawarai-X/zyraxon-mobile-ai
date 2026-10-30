@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.model.AppTab
 import ai.zyraxon.assistant.model.ChatMessage
 import ai.zyraxon.assistant.model.TaskItem
@@ -118,6 +119,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     val activeTab by viewModel.activeTab.collectAsState()
     val bgMode by viewModel.bgMode.collectAsState()
     val auraStyle by viewModel.auraStyle.collectAsState()
+    val auraShader by viewModel.auraShader.collectAsState()
     val isListening by viewModel.isListening.collectAsState()
     val isSpeaking by viewModel.isSpeaking.collectAsState()
     val audioLevel by viewModel.audioLevel.collectAsState()
@@ -129,6 +131,8 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     val codeBoxText by viewModel.codeBoxText.collectAsState()
     val filesPanelOpen by viewModel.filesPanelOpen.collectAsState()
     val bgVideoAsset by viewModel.bgVideoAsset.collectAsState()
+    val liveVoiceEnabled by viewModel.liveVoiceEnabled.collectAsState()
+    val liveVoiceState by viewModel.liveVoiceState.collectAsState()
     val workspaceFiles by viewModel.workspaceFiles.collectAsState()
     val auraHue by viewModel.auraHue.collectAsState()
     val auraSize by viewModel.auraSize.collectAsState()
@@ -177,8 +181,14 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                 personaName = selectedPersona.name,
                 personaEmoji = selectedPersona.emoji,
                 modelName = selectedModel.name,
+                liveActive = liveVoiceEnabled,
                 onPersonaClick = { showPersonaSheet = true },
                 onModelClick = { showModelSheet = true },
+                onLiveClick = {
+                    // Speech-to-speech follows the model, so this opens the model
+                    // list instead of pretending a toggle starts a live session.
+                    showModelSheet = true
+                },
                 onSettingsClick = { showSettingsSheet = true },
                 onClearClick = { viewModel.clearChat() }
             )
@@ -214,6 +224,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                             auraGlow = auraGlow,
                             auraSpeed = auraSpeed,
                             auraStyle = auraStyle,
+                            auraShader = auraShader,
                             panelAlpha = panelAlpha,
                             tasks = tasks,
                             toolExecutions = toolExecutions,
@@ -224,7 +235,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                             onOpenFile = { viewModel.openWorkspaceFile(it) },
                             onPublishFile = { file ->
                                 viewModel.sendMessage(
-                                    "এই ফাইলটি ওয়েবসাইট হিসেবে প্রকাশ করো: ${file.relative}"
+                                    t("এই ফাইলটি ওয়েবসাইট হিসেবে প্রকাশ করো: {0}", file.relative)
                                 )
                             },
                             onRefreshFiles = { viewModel.refreshWorkspaceFiles() },
@@ -331,8 +342,10 @@ fun ZyraxonTopBar(
     personaEmoji: String,
     modelName: String,
     panelAlpha: Float = 0.22f,
+    liveActive: Boolean = false,
     onPersonaClick: () -> Unit,
     onModelClick: () -> Unit,
+    onLiveClick: () -> Unit = {},
     onSettingsClick: () -> Unit,
     onClearClick: () -> Unit
 ) {
@@ -364,7 +377,7 @@ fun ZyraxonTopBar(
                         color = Glass.textPrimary
                     )
                     Text(
-                        text = "online • realtime",
+                        text = if (liveActive) "লাইভ ভয়েস চালু" else "প্রস্তুত",
                         fontSize = 9.sp,
                         color = Glass.green
                     )
@@ -372,11 +385,36 @@ fun ZyraxonTopBar(
             }
         }
 
-        // Right side: Model pill, settings, trash
+        // Right side: Live toggle, model pill, settings, trash
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
+            // Live speech-to-speech toggle. Tapping it opens the live session
+            // straight away; the phone's own voice goes silent while it runs.
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(
+                        if (liveActive) Glass.cyanFill else Glass.fill(panelAlpha)
+                    )
+                    .border(1.dp, Glass.border, RoundedCornerShape(20.dp))
+                    .clickable { onLiveClick() }
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                    .testTag("live_voice_button")
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = if (liveActive) "🔴" else "🎙", fontSize = 12.sp)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "লাইভ",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (liveActive) Glass.textPrimary else Glass.textSecondary
+                    )
+                }
+            }
+
             // Dynamic Model Selector Pill
             Box(
                 modifier = Modifier
@@ -452,6 +490,7 @@ fun ChatTabContent(
     auraGlow: Float,
     auraSpeed: Float,
     auraStyle: String,
+    auraShader: String,
     panelAlpha: Float,
     tasks: List<TaskItem>,
     toolExecutions: List<ToolExecutionItem>,
@@ -498,6 +537,7 @@ fun ChatTabContent(
                 glow = auraGlow,
                 speed = auraSpeed,
                 auraStyle = auraStyle,
+                auraShader = auraShader,
                 onTap = { transcriptOpen = !transcriptOpen }
             )
 
@@ -511,9 +551,9 @@ fun ChatTabContent(
             ) {
                 Text(
                     text = when {
-                        isListening -> "শুনছি…"
-                        isSpeaking -> "ZYRAXON বলছে…"
-                        else -> "মাইক সবসময় চালু"
+                        isListening -> t("শুনছি…")
+                        isSpeaking -> t("ZYRAXON বলছে…")
+                        else -> t("মাইক সবসময় চালু")
                     },
                     color = when {
                         isListening -> Color(0xFF7DF9FF)
@@ -547,7 +587,7 @@ fun ChatTabContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = if (transcriptOpen) "▼ কথোপকথন" else "▲ কথোপকথন",
+                text = if (transcriptOpen) t("▼ কথোপকথন") else t("▲ কথোপকথন"),
                 color = Glass.textSecondary,
                 fontSize = 11.sp,
                 modifier = Modifier
@@ -610,13 +650,13 @@ fun TasksTabContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "টাস্ক ও করণীয় তালিকা",
+                        text = t("টাস্ক ও করণীয় তালিকা"),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = Glass.textPrimary
                     )
                     Text(
-                        text = "$completedCount/$totalCount সম্পন্ন",
+                        text = t("{0}/{1} সম্পন্ন", completedCount, totalCount),
                         fontSize = 12.sp,
                         color = Glass.pink,
                         fontWeight = FontWeight.Bold
@@ -659,7 +699,7 @@ fun TasksTabContent(
                 keyboardActions = KeyboardActions(onDone = { onAddTask() }),
                 decorationBox = { inner ->
                     if (newTaskText.isEmpty()) {
-                        Text("নতুন টাস্ক লিখুন...", color = Glass.textMuted, fontSize = 13.sp)
+                        Text(t("নতুন টাস্ক লিখুন..."), color = Glass.textMuted, fontSize = 13.sp)
                     }
                     inner()
                 }
@@ -744,13 +784,13 @@ fun ToolsTabContent(
             .verticalScroll(rememberScrollState())
     ) {
         Text(
-            text = "সিস্টেম টুল ও অটোমেশন কন্ট্রোল",
+            text = t("সিস্টেম টুল ও অটোমেশন কন্ট্রোল"),
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             color = Glass.textPrimary
         )
         Text(
-            text = "এক ট্যাপে ডিভাইস হার্ডওয়্যার ও সিস্টেম অ্যাকশন চালু করুন",
+            text = t("এক ট্যাপে ডিভাইস হার্ডওয়্যার ও সিস্টেম অ্যাকশন চালু করুন"),
             fontSize = 12.sp,
             color = Glass.textSecondary
         )
@@ -761,57 +801,57 @@ fun ToolsTabContent(
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ToolActionCard(
-                    title = "টর্চলাইট",
-                    desc = "ফ্ল্যাশলাইট অন/অফ",
+                    title = t("টর্চলাইট"),
+                    desc = t("ফ্ল্যাশলাইট অন/অফ"),
                     icon = Icons.Rounded.FlashlightOn,
                     color = Color(0xFFFBBF24),
-                    onClick = { onTriggerTool("টর্চ জ্বালানো বা বন্ধ করো") },
+                    onClick = { onTriggerTool(t("টর্চ জ্বালানো বা বন্ধ করো")) },
                     modifier = Modifier.weight(1f)
                 )
                 ToolActionCard(
-                    title = "ক্যামেরা",
-                    desc = "ক্যামেরা ও ফটো ক্যাপচার",
+                    title = t("ক্যামেরা"),
+                    desc = t("ক্যামেরা ও ফটো ক্যাপচার"),
                     icon = Icons.Rounded.CameraAlt,
                     color = Glass.cyan,
-                    onClick = { onTriggerTool("ক্যামেরা ওপেন করো") },
+                    onClick = { onTriggerTool(t("ক্যামেরা ওপেন করো")) },
                     modifier = Modifier.weight(1f)
                 )
             }
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ToolActionCard(
-                    title = "ফেসবুক",
-                    desc = "ফেসবুক মেসেজিং অ্যাপ",
+                    title = t("ফেসবুক"),
+                    desc = t("ফেসবুক মেসেজিং অ্যাপ"),
                     icon = Icons.Rounded.OpenInBrowser,
                     color = Color(0xFF3B82F6),
-                    onClick = { onTriggerTool("ফেসবুক খোলো") },
+                    onClick = { onTriggerTool(t("ফেসবুক খোলো")) },
                     modifier = Modifier.weight(1f)
                 )
                 ToolActionCard(
-                    title = "ওয়াইফাই সেটিংস",
-                    desc = "ওয়াইফাই ও নেটওয়ার্ক কনফিগ",
+                    title = t("ওয়াইফাই সেটিংস"),
+                    desc = t("ওয়াইফাই ও নেটওয়ার্ক কনফিগ"),
                     icon = Icons.Rounded.Wifi,
                     color = Glass.green,
-                    onClick = { onTriggerTool("ওয়াইফাই সেটিংস ওপেন করো") },
+                    onClick = { onTriggerTool(t("ওয়াইফাই সেটিংস ওপেন করো")) },
                     modifier = Modifier.weight(1f)
                 )
             }
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ToolActionCard(
-                    title = "ওয়েবসাইট বিল্ডার",
-                    desc = "HTML/CSS কোড তৈরি",
+                    title = t("ওয়েবসাইট বিল্ডার"),
+                    desc = t("HTML/CSS কোড তৈরি"),
                     icon = Icons.Rounded.Security,
                     color = Glass.pink,
-                    onClick = { onTriggerTool("একটি সুন্দর পোর্টফোলিও ওয়েবসাইট বানাও") },
+                    onClick = { onTriggerTool(t("একটি সুন্দর পোর্টফোলিও ওয়েবসাইট বানাও")) },
                     modifier = Modifier.weight(1f)
                 )
                 ToolActionCard(
-                    title = "স্ক্রিন রিডার",
-                    desc = "স্ক্রিনের লেখা পাঠ",
+                    title = t("স্ক্রিন রিডার"),
+                    desc = t("স্ক্রিনের লেখা পাঠ"),
                     icon = Icons.Rounded.Phone,
                     color = Color(0xFFA855F7),
-                    onClick = { onTriggerTool("আমার স্ক্রিন পড়ে শোনাও") },
+                    onClick = { onTriggerTool(t("আমার স্ক্রিন পড়ে শোনাও")) },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -821,7 +861,7 @@ fun ToolsTabContent(
 
         // Tool Execution History
         Text(
-            text = "টুল এক্সিকিউশন লগ",
+            text = t("টুল এক্সিকিউশন লগ"),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = Glass.textPrimary
@@ -938,7 +978,7 @@ fun BottomComposer(
                     decorationBox = { innerTextField ->
                         if (text.isEmpty()) {
                             Text(
-                                text = "বলা বা লেখা...",
+                                text = t("বলা বা লেখা..."),
                                 color = Glass.textMuted,
                                 fontSize = 14.sp
                             )
@@ -1068,17 +1108,17 @@ private fun McpTokenDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = Glass.sheetFill(0.92f),
-        title = { Text("$serverName কানেক্ট করো", color = Glass.textPrimary, fontWeight = FontWeight.Bold) },
+        title = { Text(t("{0} কানেক্ট করো", serverName), color = Glass.textPrimary, fontWeight = FontWeight.Bold) },
         text = {
             Column {
                 Text(
-                    hint.ifBlank { "অ্যাক্সেস টোকেন দাও" },
+                    hint.ifBlank { t("অ্যাক্সেস টোকেন দাও") },
                     color = Glass.textMuted,
                     fontSize = 12.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "টোকেন বানাও →",
+                    t("টোকেন বানাও →"),
                     color = Glass.pinkFill,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -1100,11 +1140,11 @@ private fun McpTokenDialog(
         },
         confirmButton = {
             TextButton(onClick = { onConnect(token.trim()) }, enabled = token.isNotBlank()) {
-                Text("কানেক্ট", color = Glass.pinkFill, fontWeight = FontWeight.Bold)
+                Text(t("কানেক্ট"), color = Glass.pinkFill, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("বাতিল", color = Glass.textMuted) }
+            TextButton(onClick = onDismiss) { Text(t("বাতিল"), color = Glass.textMuted) }
         }
     )
 }

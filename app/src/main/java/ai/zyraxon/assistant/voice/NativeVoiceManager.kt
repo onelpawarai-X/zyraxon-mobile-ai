@@ -118,14 +118,33 @@ class NativeVoiceManager(
      * installed. When it is not, the engine falls back to another language and
      * reads the words letter by letter — the exact defect reported — so
      * [voiceDataMissing] is raised and the UI offers the download.
+     *
+     * Bengali is tried under every tag an engine might file it under before the
+     * language is called missing. A phone that has `bn-IN` but not `bn-BD` used
+     * to be judged "no Bengali" and dropped to English, which read Bengali words
+     * as noise; now the working tag is used instead.
      */
     private fun applyVoiceLanguage(tag: String) {
         if (!ttsReady || textToSpeech == null) return
         val wanted = Locale.forLanguageTag(tag)
-        val res = textToSpeech?.setLanguage(wanted)
-        val missing = res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED
-        _voiceDataMissing.value = missing
-        if (missing && tag != "en-US") {
+        val candidates = if (wanted.language == "bn") {
+            listOf(wanted, Locale.forLanguageTag("bn-IN"), Locale.forLanguageTag("bn"))
+        } else {
+            listOf(wanted)
+        }
+
+        var resolved = false
+        for (candidate in candidates) {
+            val res = textToSpeech?.setLanguage(candidate)
+            val ok = res != TextToSpeech.LANG_MISSING_DATA && res != TextToSpeech.LANG_NOT_SUPPORTED
+            if (ok) {
+                resolved = true
+                break
+            }
+        }
+
+        _voiceDataMissing.value = !resolved
+        if (!resolved) {
             // English is the safest fallback for an unsupported run, but the flag
             // above already tells the UI that a download is what is really needed.
             textToSpeech?.setLanguage(Locale.US)

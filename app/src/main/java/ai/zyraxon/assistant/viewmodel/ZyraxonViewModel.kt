@@ -19,6 +19,10 @@ import ai.zyraxon.assistant.model.SystemStatus
 import ai.zyraxon.assistant.model.TaskItem
 import ai.zyraxon.assistant.model.ToolExecutionItem
 import ai.zyraxon.assistant.model.WorkspaceFile
+import ai.zyraxon.assistant.ai.OnDeviceModel
+import ai.zyraxon.assistant.ai.ProviderCatalog
+import ai.zyraxon.assistant.ai.ProviderSpec
+import ai.zyraxon.assistant.voice.LiveVoiceSession
 import ai.zyraxon.assistant.voice.NativeVoiceManager
 import android.app.Application
 import android.content.Context
@@ -49,6 +53,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     val aiEngine = ZyraxonAiEngine(application)
     val voiceManager = NativeVoiceManager(application, viewModelScope)
+
+    /**
+     * Speech-to-speech with a live model. While it runs the model's own voice is
+     * the only voice: [speak] and the streaming reader both check
+     * [LiveVoiceSession.isActive] so the phone's TTS stays silent, because two
+     * voices answering at once is exactly the defect this mode must not have.
+     */
+    val liveVoice = LiveVoiceSession(application, viewModelScope)
+
+    /** The optional on-device engine: no network, runs a downloaded model. */
+    val onDeviceModel = OnDeviceModel.get(application)
 
     private val _selectedPersona = MutableStateFlow(ZyraxonAiEngine.PERSONAS[0])
     val selectedPersona: StateFlow<Persona> = _selectedPersona.asStateFlow()
@@ -107,6 +122,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     val voiceGender: StateFlow<String> = voiceManager.voiceGender
     val ttsAvailable: StateFlow<Boolean> = voiceManager.ttsAvailable
     val voiceLanguage: StateFlow<String> = voiceManager.voiceLanguage
+    val voiceDataMissing: StateFlow<Boolean> = voiceManager.voiceDataMissing
+
+    /** Opens the engine's own screen that downloads a voice for this language. */
+    fun openVoiceDataInstall() {
+        voiceManager.openVoiceDataInstall(voiceLanguage.value)
+    }
 
     // Settings States
     private val _ttsEnabled = MutableStateFlow(prefs.getBoolean("tts_enabled", true))
@@ -120,6 +141,28 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     private val _alwaysListening = MutableStateFlow(prefs.getBoolean("always_listening", false))
     val alwaysListening: StateFlow<Boolean> = _alwaysListening.asStateFlow()
+
+    /**
+     * Whether a live spoken session is open. This is now derived from the model
+     * the user picked: choosing a realtime model opens it, choosing a text model
+     * closes it. There is no separate switch to keep in sync.
+     */
+    private val _liveVoiceEnabled = MutableStateFlow(false)
+    val liveVoiceEnabled: StateFlow<Boolean> = _liveVoiceEnabled.asStateFlow()
+
+    private val _liveVoiceState = MutableStateFlow(LiveVoiceSession.State.IDLE)
+    val liveVoiceState: StateFlow<LiveVoiceSession.State> = _liveVoiceState.asStateFlow()
+
+    /**
+     * The realtime model that is currently open, or blank when the selected model
+     * is a text model. Set from [setModel], never typed by the user.
+     */
+    private val _liveVoiceModel = MutableStateFlow("")
+    val liveVoiceModel: StateFlow<String> = _liveVoiceModel.asStateFlow()
+
+    /** The provider the open realtime session belongs to, for the status line. */
+    private val _liveVoiceProvider = MutableStateFlow("")
+    val liveVoiceProvider: StateFlow<String> = _liveVoiceProvider.asStateFlow()
 
     private val _autoSend = MutableStateFlow(prefs.getBoolean("auto_send", true))
     val autoSend: StateFlow<Boolean> = _autoSend.asStateFlow()
@@ -148,6 +191,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     // without invalidating what the user already picked.
     private val _auraStyle = MutableStateFlow(prefs.getString("aura_style", "orb") ?: "orb")
     val auraStyle: StateFlow<String> = _auraStyle.asStateFlow()
+
+    // Which WebGL shader, if any, replaces the CSS aura. "none" is the default so
+    // an existing install keeps the look it had; the shaders are opt-in.
+    private val _auraShader = MutableStateFlow(prefs.getString("aura_shader", "none") ?: "none")
+    val auraShader: StateFlow<String> = _auraShader.asStateFlow()
 
     private val _auraSpeed = MutableStateFlow(prefs.getFloat("aura_speed", 1.0f))
     val auraSpeed: StateFlow<Float> = _auraSpeed.asStateFlow()
@@ -372,13 +420,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             repository.saveMessage(greeting)
         }
-        if (_ttsEnabled.value) {
+        if (shouldUsePhoneTts()) {
             voiceManager.speak(persona.greeting)
         }
-    }
-
-    fun setModel(model: AiModel) {
-        _selectedModel.value = model
     }
 
     fun setBgMode(mode: BgAnimationMode) {
@@ -467,6 +511,20 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         if (style !in allowed) return
         _auraStyle.value = style
         prefs.edit().putString("aura_style", style).apply()
+    }
+
+    /**
+     * Selects the WebGL shader mode, or "none" for the original CSS aura.
+     *
+     * The WebGL layer in aura.html falls back to the CSS aura on its own if the
+     * shader cannot start (no WebGL, compile failure, context loss), so this can
+     * never leave the user with a blank screen.
+     */
+    fun setAuraShader(shader: String) {
+        val allowed = setOf("none", "cosmic", "portal", "cyber", "nebula")
+        if (shader !in allowed) return
+        _auraShader.value = shader
+        prefs.edit().putString("aura_shader", shader).apply()
     }
 
     fun setAuraSize(size: Float) {
@@ -606,14 +664,126 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         if (isSpeaking.value) voiceManager.stopSpeaking()
     }
 
+    /**
+     * True when the phone's own text-to-speech must stay silent: the user turned
+     * it off, or a live speech-to-speech model is the voice right now.
+     */
+    private fun shouldUsePhoneTts(): Boolean = _ttsEnabled.value && !liveVoice.isActive
+
     fun speak(text: String) {
-        if (_ttsEnabled.value) {
+        if (shouldUsePhoneTts()) {
             voiceManager.speak(text)
         }
     }
 
     fun stopSpeaking() {
         voiceManager.stopSpeaking()
+    }
+
+    // ---- live speech-to-speech ---------------------------------------------
+
+    /**
+     * Called when the user picks a model. If it is a realtime model, the live
+     * socket opens and the phone's TTS goes quiet; if it is a text model, any
+     * open socket is closed and the TTS reads replies again. This is the switch
+     * the user asked for — it follows the model, not a separate toggle.
+     */
+    fun setModel(model: AiModel) {
+        _selectedModel.value = model
+        if (model.isRealtime) {
+            _liveVoiceModel.value = model.id
+            _liveVoiceProvider.value = model.provider
+            startLiveVoice()
+        } else if (_liveVoiceEnabled.value) {
+            stopLiveVoice()
+        }
+    }
+
+    /**
+     * Turns the live session off without changing the chosen model. The
+     * `live_voice` tool calls this for `off`.
+     */
+    fun stopLiveVoice() {
+        liveVoice.stop()
+        _liveVoiceEnabled.value = false
+    }
+
+    /**
+     * Switches to a realtime model and opens the live session. The `live_voice`
+     * tool calls this for `on`. When the user has already picked a realtime
+     * model it is reused; otherwise the fastest realtime model from the loaded
+     * catalogue is chosen. If none is loaded, the tool is told so plainly rather
+     * than pretending a session started.
+     */
+    fun enableLiveVoice(): Boolean {
+        val current = _selectedModel.value
+        val target = if (current.isRealtime) current else _availableModels.value.firstOrNull { it.isRealtime }
+        if (target == null) return false
+        setModel(target)
+        return _liveVoiceEnabled.value
+    }
+
+    /**
+     * Opens the live session for the selected realtime model. The socket URL,
+     * wire protocol and key all come from that model's own provider, so a Grok
+     * voice model is served by xAI and a Gemini live model by Google.
+     */
+    fun startLiveVoice() {
+        val model = _selectedModel.value
+        if (!model.isRealtime) return
+        val spec = ProviderCatalog.find(model.provider)
+        val wsUrl = spec?.realtimeWsUrl
+        if (spec == null || wsUrl == null) {
+            _systemStatus.value = _systemStatus.value.copy(
+                lastError = "এই প্রোভাইডারে রিয়েলটাইম ভয়েস নেই"
+            )
+            return
+        }
+        val key = aiEngine.getApiKey(spec.id)
+        if (key.isBlank()) {
+            _systemStatus.value = _systemStatus.value.copy(
+                lastError = "লাইভ ভয়েসের জন্য Settings-এ ${spec.label} কী দিন"
+            )
+            return
+        }
+        _liveVoiceEnabled.value = true
+        _liveVoiceModel.value = model.id
+        _liveVoiceProvider.value = spec.id
+        // The phone's engine is cut off here in case it was mid-sentence; the
+        // live model is the voice for as long as this session runs.
+        voiceManager.stopSpeaking()
+        liveVoice.onState = { _liveVoiceState.value = it }
+        liveVoice.onUserTranscript = { text ->
+            _messages.value = _messages.value + ChatMessage(
+                role = MessageRole.USER, text = text, timestamp = currentTimeString()
+            )
+        }
+        liveVoice.onModelTranscript = { text ->
+            _messages.value = _messages.value + ChatMessage(
+                role = MessageRole.ASSISTANT, text = text, timestamp = currentTimeString(),
+                modelName = model.name
+            )
+        }
+        liveVoice.onError = { message ->
+            _systemStatus.value = _systemStatus.value.copy(lastError = message)
+        }
+        val protocol = when (spec.realtimeProtocol) {
+            ProviderSpec.RealtimeProtocol.OPENAI -> LiveVoiceSession.Protocol.OPENAI
+            else -> LiveVoiceSession.Protocol.GEMINI
+        }
+        liveVoice.start(
+            apiKey = key,
+            wsUrl = wsUrl,
+            protocol = protocol,
+            model = model.id,
+            systemInstruction = aiEngine.buildLiveVoicePrompt(_selectedPersona.value),
+            voiceName = LiveVoiceSession.voiceFor(protocol, voiceManager.currentGender)
+        )
+    }
+
+    /** One screen frame for the live model, so it sees what the user sees. */
+    fun pushLiveScreenFrame(jpegBase64: String) {
+        if (liveVoice.isActive) liveVoice.sendScreenFrame(jpegBase64)
     }
 
     fun sendMessage(overridePrompt: String? = null) {
@@ -692,7 +862,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     }
                     // Speak each finished sentence the moment it lands, so the voice
                     // keeps pace with the text instead of waiting for the whole answer.
-                    if (_ttsEnabled.value) {
+                    if (shouldUsePhoneTts()) {
                         spokenBuffer.append(chunk)
                         val boundary = spokenBuffer.indexOfLast { it in "\n।!?;." }
                         if (boundary >= 0) {
@@ -731,7 +901,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             repository.saveMessage(finalMsg)
 
             // Speak whatever is left after the final sentence boundary.
-            if (_ttsEnabled.value && spokenBuffer.isNotBlank()) {
+            if (shouldUsePhoneTts() && spokenBuffer.isNotBlank()) {
                 voiceManager.speakQueued(spokenBuffer.toString())
             }
         }
@@ -740,6 +910,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun onScreenFrame(base64Jpeg: String) {
         if (base64Jpeg.isBlank()) return
         _screenFrameDataUrl.value = "data:image/jpeg;base64,$base64Jpeg"
+        // A live model can look at the frame itself, so the same picture that the
+        // screen panel shows is also offered to the session.
+        if (liveVoice.isActive) liveVoice.sendScreenFrame(base64Jpeg)
     }
 
     fun onScreenText(text: String) {
