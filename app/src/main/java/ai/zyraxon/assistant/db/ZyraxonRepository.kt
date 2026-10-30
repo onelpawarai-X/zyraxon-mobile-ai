@@ -118,7 +118,9 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
      */
     suspend fun recallRelevant(topic: String, limit: Int = 12): List<ChatMessage> {
         val words = topic.lowercase()
-            .split(Regex("[^\\p{L}\\p{N}]+"))
+            // \p{M} keeps the Bengali combining marks, so "ভালোবাসি" stays one
+            // word instead of breaking into letters and matching nothing.
+            .split(Regex("[^\\p{L}\\p{M}\\p{N}]+"))
             .filter { it.length >= 4 }
             .distinct()
             .take(3)

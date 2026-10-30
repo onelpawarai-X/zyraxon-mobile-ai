@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.sp
 fun McpScreen(
     connections: List<McpConnection>,
     onConnect: (McpServer) -> Unit,
+    onCancel: (McpServer) -> Unit,
     onDisconnect: (String) -> Unit,
     onAddCustom: (String, String, String) -> Unit,
     onRemoveCustom: (String) -> Unit,
@@ -101,6 +102,7 @@ fun McpScreen(
                         expanded = if (expanded == conn.server.id) null else conn.server.id
                     },
                     onConnect = { onConnect(conn.server) },
+                    onCancel = { onCancel(conn.server) },
                     onDisconnect = { onDisconnect(conn.server.id) },
                     onRemove = { onRemoveCustom(conn.server.id) }
                 )
@@ -203,6 +205,7 @@ private fun McpServerCard(
     expanded: Boolean,
     onToggleExpand: () -> Unit,
     onConnect: () -> Unit,
+    onCancel: () -> Unit,
     onDisconnect: () -> Unit,
     onRemove: () -> Unit
 ) {
@@ -410,14 +413,16 @@ private fun McpServerCard(
             } else {
                 McpButton(
                     label = when {
-                        isBusy -> t("অপেক্ষা করো…")
+                        isBusy -> t("বাতিল করো")
                         server.auth == McpAuth.OAUTH -> t("কানেক্ট (ব্রাউজারে)")
                         else -> t("কানেক্ট")
                     },
-                    accent = Glass.pinkFill,
+                    accent = if (isBusy) Glass.amber else Glass.pinkFill,
                     modifier = Modifier.weight(1f),
-                    enabled = !isBusy,
-                    onClick = onConnect
+                    // While a browser redirect is pending the same button becomes
+                    // Cancel, so a flow the user abandoned can always be stopped
+                    // instead of leaving the card stuck on "কানেক্ট হচ্ছে…".
+                    onClick = if (isBusy) onCancel else onConnect
                 )
             }
             if (server.custom) {

@@ -120,3 +120,15 @@ data class TerminalLine(
     val timedOut: Boolean = false,
     val millis: Long = 0
 )
+
+/**
+ * One terminal session: its own scrollback and its own working directory. The
+ * sidebar lists these, so a user can keep several shells open at once and come
+ * back to an earlier one without losing where they were.
+ */
+data class TerminalSession(
+    val id: String,
+    val title: String,
+    val lines: List<TerminalLine> = emptyList(),
+    val cwd: String = "~"
+)

@@ -9,7 +9,7 @@ stopping in the middle.
 build of it, and none is planned.
 
 - **Package:** `com.zyraxon.assistant`
-- **Version:** 6.7.1 (versionCode 16)
+- **Version:** 6.8.0 (versionCode 17)
 - **Minimum Android:** 5.0 (API 21) · **Target:** API 36
 - **Language:** Kotlin + Jetpack Compose, 45 source files
 - **Tools:** 68 real tools · **Characters:** 6
@@ -58,6 +58,23 @@ Text-to-speech and speech-to-text both use the phone's own engine. The bundled
 engine reads "asterisk asterisk" out loud), and `SpeechSegmenter` splits mixed
 Bangla/English text into language runs so an English word inside a Bengali
 sentence is pronounced properly instead of being spelled out letter by letter.
+
+Speech follows the words as they stream, not the whole reply at the end.
+`SpeechChunker` releases a finished sentence, a clause after a comma, or — when
+the model writes one long run — a piece at the last whole word, so the voice
+starts a few words in rather than waiting for a full stop that may be a sentence
+away. Each released piece is then split into language runs, and `SpeechQueue`
+hands exactly one run to the engine at a time, waiting for its `onDone` before
+the next. The engine holds one language and one voice at a time, so speaking the
+runs one by one is what stops the voice being cut off after a word or two — the
+defect the user heard as the microphone flicking off and on. `SpeechTone` adds a
+small pitch and rate shift from the punctuation and a handful of cue words, so a
+warm line, an excited one and a serious one do not all sound the same.
+
+The microphone is a single switch, saved across restarts. A tap on the transcript
+over the aura, or on the labelled mic button beside the transcript header, holds
+the mic closed until it is tapped again; there is no automatic churn while the
+assistant speaks.
 
 ### It has hands
 
@@ -187,10 +204,12 @@ tool says so rather than claiming success.
 
 ### It changes its own voice
 
-The `voice_change` tool switches between the male and female voice and adjusts
-rate and pitch, so the assistant can match the character it is playing. The
-girlfriend and friend characters use the female voice; the boyfriend character
-uses the male one. The choice is saved and follows the character.
+Both voices are installed and both work. The `voice_change` tool switches between
+the male and female voice and adjusts rate and pitch, so the assistant can match
+the character it is playing, and Settings has the same pair of cards — tapping one
+previews it at once. The girlfriend and friend characters use the female voice;
+the boyfriend character uses the male one. A voice the user picks in Settings wins
+over the character, and the choice is saved and restored on the next launch.
 
 ### Six characters
 

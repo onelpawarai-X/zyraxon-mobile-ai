@@ -144,7 +144,12 @@ object ProviderCatalog {
             realtimeWsUrl = "wss://generativelanguage.googleapis.com/ws/" +
                 "google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent",
             realtimeModelPatterns = listOf("native-audio", "-live-", "live-preview"),
-            realtimeProtocol = ProviderSpec.RealtimeProtocol.GEMINI
+            realtimeProtocol = ProviderSpec.RealtimeProtocol.GEMINI,
+            // Google retires model ids for new users (gemini-2.5-flash now
+            // answers 404 "no longer available to new users"), so the first-run
+            // seeds are the aliases Google keeps pointing at the current fast
+            // model. The live catalogue replaces these as soon as it loads.
+            seedModels = listOf("gemini-flash-latest", "gemini-flash-lite-latest")
         ),
         ProviderSpec(
             id = "openai",
@@ -298,6 +303,10 @@ object ProviderCatalog {
             val lowered = raw.lowercase()
             if (lowered.contains("embedding") || lowered.contains("aqa") ||
                 lowered.contains("imagen") || lowered.contains("veo") ||
+                lowered.contains("lyria") || lowered.contains("whisper") ||
+                lowered.contains("-image") || lowered.contains("image-") ||
+                lowered.contains("banana") || lowered.contains("robotics") ||
+                lowered.contains("transcribe") || lowered.contains("computer-use") ||
                 lowered.endsWith("-tts") || lowered.contains("-tts-")
             ) continue
             if (ids.none { it == raw }) ids.add(raw)
@@ -309,6 +318,27 @@ object ProviderCatalog {
      * Pulls the provider's own error text out of a failure body, so the user is
      * told the real reason (a bad key, a quota) rather than a generic message.
      */
+    /**
+     * True when a failed request is worth trying again — or worth trying on
+     * another provider — rather than a request the server will keep rejecting.
+     *
+     * A rejected *request* (an invalid model id, a missing thought_signature, a
+     * bad tool schema) fails the same way on every provider, so retrying it just
+     * burns minutes while the user watches a frozen cursor. Only genuine
+     * availability problems — quota, rate limit, overload, timeout, dropped
+     * connection — are retried.
+     */
+    fun isRetryableError(message: String?): Boolean {
+        val m = message?.lowercase() ?: return true
+        val permanent = listOf(
+            "invalid_argument", "invalid argument", "not_found", "not found",
+            "no longer available", "permission_denied", "unauthenticated",
+            "api key not valid", "api_key_invalid", "unsupported", "does not exist",
+            "missing a thought_signature", "invalid api key"
+        )
+        return permanent.none { m.contains(it) }
+    }
+
     fun parseError(body: String, code: Int): String {
         val fallback = "HTTP $code"
         if (body.isBlank()) return fallback

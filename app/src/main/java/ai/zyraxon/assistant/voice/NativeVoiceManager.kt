@@ -85,6 +85,21 @@ class NativeVoiceManager(
     private var currentPitch = 1.28f
 
     /**
+     * The voice actually loaded into the engine, remembered so it is not
+     * re-selected for every sentence. Assigning `TextToSpeech.voice` stops the
+     * utterance that is playing — doing that once per streamed sentence is why
+     * the voice cut out after a word or two and never finished the answer.
+     */
+    private var appliedVoiceKey: String? = null
+
+    /**
+     * The BCP-47 tag the engine is currently set to. `setLanguage` also stops the
+     * utterance that is playing, so it is called only when the language really
+     * changes — otherwise every streamed sentence would cut the previous one off.
+     */
+    private var appliedLanguageTag: String? = null
+
+    /**
      * The user's own switch. True means the microphone should be open; the loop
      * below reopens it whenever it closes for any other reason. Nothing else may
      * change this.
@@ -109,6 +124,17 @@ class NativeVoiceManager(
 
     /** Decides the single close/open pair around a streamed reply. */
     private val micGate = MicGate()
+
+    /**
+     * Speech waiting to be spoken, drained one piece at a time. A piece is only
+     * handed to the engine when the previous one has finished, because switching
+     * the engine's language or voice stops whatever is currently playing — doing
+     * that for every run up front cut the answer off after a word or two.
+     */
+    private val speechQueue = SpeechQueue()
+
+    /** Bumped by [stopSpeaking], so ids from an abandoned queue are never reused. */
+    private var speechGeneration = 0
 
     var onSpeechRecognized: ((text: String, isFinal: Boolean) -> Unit)? = null
 
@@ -148,27 +174,41 @@ class NativeVoiceManager(
             }
 
             override fun onDone(utteranceId: String?) {
-                finishUtterance()
+                finishUtterance(utteranceId)
             }
 
             override fun onError(utteranceId: String?) {
-                finishUtterance()
+                finishUtterance(utteranceId)
             }
         })
     }
 
     /**
-     * A sentence finished. The engine may have more queued, and the reply itself
-     * may still be streaming, so the ear is only reopened when both are done.
+     * One utterance finished. The internal queue is drained one piece at a time,
+     * each with its own voice switch, so a piece still waiting is what keeps the
+     * engine "busy": the ear reopens only once the queue is empty, the engine is
+     * idle, and the reply has stopped streaming.
      */
-    private fun finishUtterance() {
-        val engineBusy = textToSpeech?.isSpeaking == true
-        val reopen = micGate.onUtteranceDone(engineBusy)
+    private fun finishUtterance(utteranceId: String?) {
+        speechQueue.onFinished(utteranceId)
+        // Hand the next piece to the engine before judging whether we are busy,
+        // so a queued sentence is never mistaken for the end of the reply.
+        pumpNext()
+        val busy = engineBusy()
+        val reopen = micGate.onUtteranceDone(busy)
         // Keep the "speaking" flag up across the gap between two sentences of the
         // same reply, so the UI does not flicker to "listening" mid-answer.
-        if (!engineBusy && !micGate.replyActive) _isSpeaking.value = false
+        if (!busy && !micGate.replyActive) _isSpeaking.value = false
         if (reopen) resumeAfterSpeech()
     }
+
+    /**
+     * True while a piece is being spoken or more speech is still waiting. This is
+     * judged from our own queue rather than `TextToSpeech.isSpeaking`, whose value
+     * at the instant `onDone` fires is racy — trusting it could leave the ear shut
+     * after the last word, which reads as the microphone never coming back.
+     */
+    private fun engineBusy(): Boolean = !speechQueue.isEmpty()
 
     /**
      * Opens a spoken reply. Called once when a reply starts streaming, so the ear
@@ -195,9 +235,9 @@ class NativeVoiceManager(
 
     /** Closes the spoken reply and reopens the ear once the last word has played. */
     fun endReply() {
-        val engineBusy = textToSpeech?.isSpeaking == true
+        val busy = engineBusy()
         armEchoGuard()
-        if (micGate.endReply(engineBusy)) {
+        if (micGate.endReply(busy)) {
             _isSpeaking.value = false
             resumeAfterSpeech()
         }
@@ -211,6 +251,10 @@ class NativeVoiceManager(
      */
     private fun applyVoiceLanguage(tag: String) {
         if (!ttsReady || textToSpeech == null) return
+        // `setLanguage` interrupts whatever is being spoken, so a run that is
+        // already in the wanted language is left untouched. Without this every
+        // streamed sentence reset the engine and the reply stopped mid-word.
+        if (tag == appliedLanguageTag) return
         val wanted = Locale.forLanguageTag(tag)
         val candidates = if (wanted.language == "bn") {
             listOf(wanted, Locale.forLanguageTag("bn-IN"), Locale.forLanguageTag("bn"))
@@ -228,6 +272,10 @@ class NativeVoiceManager(
             }
         }
 
+        appliedLanguageTag = tag
+        // The voice is re-picked for the new language, so the cache must not
+        // claim the old one is still loaded.
+        appliedVoiceKey = null
         _voiceDataMissing.value = !resolved
         if (!resolved) {
             textToSpeech?.setLanguage(Locale.US)
@@ -290,9 +338,6 @@ class NativeVoiceManager(
     private fun applyVoiceSettings(gender: String, rate: Float, pitch: Float, forLanguage: String) {
         if (!ttsReady || textToSpeech == null) return
         try {
-            textToSpeech?.setSpeechRate(rate)
-            textToSpeech?.setPitch(pitch)
-
             val wanted = Locale.forLanguageTag(forLanguage)
             val all = textToSpeech?.voices.orEmpty().toList()
             val candidates = all.map { v ->
@@ -305,17 +350,28 @@ class NativeVoiceManager(
             }
             val chosen = VoiceSelector.pick(candidates, forLanguage, gender)
             val match = chosen?.let { c -> all.firstOrNull { it.name == c.name } }
-            if (match != null) {
-                textToSpeech?.voice = match
-                _activeVoiceName.value = match.name
-            } else if (candidates.any { VoiceSelector.languageOf(it.localeTag) == wanted.language }) {
-                // A voice exists for the language but not for the gender. Clear
-                // the explicit choice so the engine picks its own voice for this
-                // language instead of keeping the last one.
-                textToSpeech?.voice = null
-                _activeVoiceName.value = ""
+
+            // The voice is only reassigned when it really changes. Assigning it
+            // stops whatever is currently being spoken, so re-selecting the same
+            // voice for every sentence of a streamed reply cut the speech off
+            // after a word or two — the exact defect the user reported.
+            val voiceKey = match?.name ?: ""
+            if (voiceKey != appliedVoiceKey) {
+                if (match != null) {
+                    textToSpeech?.voice = match
+                    _activeVoiceName.value = match.name
+                } else if (candidates.any { VoiceSelector.languageOf(it.localeTag) == wanted.language }) {
+                    // A voice exists for the language but not for the gender.
+                    // Clear the explicit choice so the engine picks its own voice
+                    // for this language instead of keeping the last one.
+                    textToSpeech?.voice = null
+                    _activeVoiceName.value = ""
+                }
+                appliedVoiceKey = voiceKey
             }
-            // The engine resets pitch when the voice changes, so set it after.
+
+            // The engine resets pitch/rate when the voice changes, so they are
+            // (re)applied after any switch — and always, since tone varies by run.
             textToSpeech?.setPitch(pitch)
             textToSpeech?.setSpeechRate(rate)
 
@@ -373,8 +429,11 @@ class NativeVoiceManager(
                     _audioLevel.value = 0f
                     sessionOpen = false
                     // Anything the recognizer heard while the assistant was
-                    // speaking is the assistant's own voice, not the user's.
-                    if (!_isSpeaking.value) {
+                    // speaking — or in the tail just after — is the assistant's
+                    // own voice, not the user's. [isSpeakerActive] covers both the
+                    // engine and the echo tail, so the reply cannot be posted back
+                    // into the chat as if the user had said it.
+                    if (!isSpeakerActive()) {
                         val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                         matches?.firstOrNull()?.takeIf { it.isNotBlank() }
                             ?.let { onSpeechRecognized?.invoke(it, true) }
@@ -388,7 +447,11 @@ class NativeVoiceManager(
                 }
 
                 override fun onPartialResults(partialResults: Bundle?) {
-                    if (_isSpeaking.value) return
+                    // Same guard as the final result. Partials arrive in the gap
+                    // between two spoken sentences, when the engine is briefly
+                    // idle; without the echo check those fragments were typed into
+                    // the composer and then auto-sent as a user message.
+                    if (isSpeakerActive()) return
                     val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                     matches?.firstOrNull()?.takeIf { it.isNotBlank() }
                         ?.let { onSpeechRecognized?.invoke(it, false) }
@@ -516,46 +579,81 @@ class NativeVoiceManager(
     fun speak(text: String) {
         val clean = cleanForSpeech(text)
         if (clean.isBlank()) return
-        speakRuns(clean, TextToSpeech.QUEUE_FLUSH)
+        // A fresh reply replaces anything already queued or playing.
+        stopEngineOnly()
+        enqueue(clean)
     }
 
     /**
-     * Speaks [clean] run by run, switching the engine's language and tone at each
-     * boundary. Without the switch an English word inside a Bangla sentence is
-     * spelled out letter by letter, which is the single most noticeable voice
-     * defect there is.
+     * Cuts the engine off and clears the queue without touching the microphone
+     * state. Used when a new reply starts so it is heard from its first word.
      */
-    private fun speakRuns(clean: String, queueMode: Int) {
+    private fun stopEngineOnly() {
+        try { textToSpeech?.stop() } catch (_: Exception) {}
+        speechGeneration++
+        speechQueue.clear()
+    }
+
+    /**
+     * Splits [clean] into one-language runs, turns each into an utterance with its
+     * own tone, and appends them to the speech queue. Nothing is handed to the
+     * engine here: [pumpNext] speaks them one at a time, because switching the
+     * engine's language or voice stops whatever is playing — doing that for every
+     * run up front cut the answer off after a word or two.
+     */
+    private fun enqueue(clean: String) {
         if (!(ttsReady && textToSpeech != null)) {
             _isSpeaking.value = false
             return
         }
+        val generation = speechGeneration
         val segments = SpeechSegmenter.split(clean)
         if (segments.isEmpty()) return
+        val base = speechQueue.size
+        speechQueue.enqueue(
+            segments.mapIndexed { index, segment ->
+                val tone = SpeechTone.of(segment.text)
+                SpeechUtterance(
+                    text = segment.text,
+                    bcp47 = segment.bcp47,
+                    pitch = (currentPitch * tone.pitchFactor).coerceIn(0.4f, 2.0f),
+                    rate = (currentRate * tone.rateFactor).coerceIn(0.4f, 2.0f),
+                    id = "zyraxon_${generation}_${base + index}"
+                )
+            }
+        )
+        pumpNext()
+    }
 
-        val utterances = segments.mapIndexed { index, segment ->
-            val tone = SpeechTone.of(segment.text)
-            SpeechUtterance(
-                text = segment.text,
-                bcp47 = segment.bcp47,
-                pitch = (currentPitch * tone.pitchFactor).coerceIn(0.4f, 2.0f),
-                rate = (currentRate * tone.rateFactor).coerceIn(0.4f, 2.0f),
-                id = "zyraxon_msg_$index"
-            )
+    /**
+     * Hands exactly one queued piece to the engine, with its language and voice
+     * set first — safe here because nothing is playing between pieces. The rest
+     * wait for the engine's own onDone, which calls back into here.
+     */
+    private fun pumpNext() {
+        if (!(ttsReady && textToSpeech != null)) {
+            speechQueue.clear()
+            _isSpeaking.value = false
+            return
         }
-
-        var anyAccepted = false
-        utterances.forEachIndexed { index, utterance ->
-            // The engine picks its voice from the language it is set to, so the
-            // switch has to happen before each run, not once at the start.
-            applyVoiceLanguage(utterance.bcp47)
-            applyVoiceSettings(_voiceGender.value, utterance.rate, utterance.pitch, utterance.bcp47)
-
-            val mode = if (index == 0) queueMode else TextToSpeech.QUEUE_ADD
-            val res = textToSpeech?.speak(utterance.text, mode, utteranceParams(), utterance.id)
-            if (res == TextToSpeech.SUCCESS) anyAccepted = true
+        val utterance = speechQueue.takeNext() ?: return
+        // Set the language and voice while the engine is idle, then speak. The
+        // switch can no longer cut off a previous piece, which is what stopped the
+        // voice after a word or two.
+        applyVoiceLanguage(utterance.bcp47)
+        applyVoiceSettings(_voiceGender.value, utterance.rate, utterance.pitch, utterance.bcp47)
+        val res = try {
+            textToSpeech?.speak(utterance.text, TextToSpeech.QUEUE_ADD, utteranceParams(), utterance.id)
+        } catch (_: Exception) {
+            TextToSpeech.ERROR
         }
-        _isSpeaking.value = anyAccepted
+        if (res == TextToSpeech.SUCCESS) {
+            speechQueue.markSpoken(utterance.id)
+            _isSpeaking.value = true
+        } else {
+            // This piece could not be spoken; try the next without spinning.
+            pumpNext()
+        }
     }
 
     private fun utteranceParams(): Bundle = Bundle().apply {
@@ -576,13 +674,11 @@ class NativeVoiceManager(
     fun speakQueued(text: String) {
         val clean = cleanForSpeech(text)
         if (clean.isEmpty()) return
-        speakRuns(clean, TextToSpeech.QUEUE_ADD)
+        enqueue(clean)
     }
 
     fun stopSpeaking() {
-        try {
-            textToSpeech?.stop()
-        } catch (_: Exception) {}
+        stopEngineOnly()
         micGate.reset()
         _isSpeaking.value = false
         resumeAfterSpeech()

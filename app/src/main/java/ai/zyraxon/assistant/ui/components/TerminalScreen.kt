@@ -1,6 +1,7 @@
 package ai.zyraxon.assistant.ui.components
 
 import ai.zyraxon.assistant.model.TerminalLine
+import ai.zyraxon.assistant.model.TerminalSession
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -60,14 +61,23 @@ private val TerminalCyan = Color(0xFF4FD6E8)
  * assistant runs lines through the very same scrollback. The ✕ in the header
  * returns to the app's main menu without killing the session, so scrollback and
  * working directory are still there when the user comes back.
+ *
+ * A sidebar on the left lists the open shells. The user can add one, switch
+ * between them and close them, and each keeps its own scrollback and working
+ * directory — so several tasks can run at once without mixing their output.
  */
 @Composable
 fun TerminalScreen(
+    sessions: List<TerminalSession>,
+    activeId: String,
     lines: List<TerminalLine>,
     cwd: String,
     busy: Boolean,
     onRun: (String) -> Unit,
     onClear: () -> Unit,
+    onNewSession: () -> Unit,
+    onSelectSession: (String) -> Unit,
+    onCloseSession: (String) -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -75,15 +85,27 @@ fun TerminalScreen(
     var history by remember { mutableStateOf(listOf<String>()) }
     var historyIndex by remember { mutableStateOf(-1) }
     var backdrop by remember { mutableStateOf(true) }
+    var sidebar by remember { mutableStateOf(false) }
     val scroll = rememberScrollState()
 
-    LaunchedEffect(lines.size, busy) {
+    LaunchedEffect(lines.size, busy, activeId) {
         scroll.animateScrollTo(scroll.maxValue)
     }
 
     Box(modifier = modifier.fillMaxSize().background(TerminalBg)) {
         if (backdrop) {
             MatrixRainBackground(Modifier.fillMaxSize())
+        }
+        Row(modifier = Modifier.fillMaxSize()) {
+        if (sidebar) {
+            TerminalSidebar(
+                sessions = sessions,
+                activeId = activeId,
+                onNewSession = onNewSession,
+                onSelectSession = onSelectSession,
+                onCloseSession = onCloseSession,
+                onCloseSidebar = { sidebar = false }
+            )
         }
         Column(modifier = Modifier.fillMaxSize()) {
         // Header — the ✕ is the only way out, back to the app's main menu.
@@ -102,6 +124,17 @@ fun TerminalScreen(
             )
             Spacer(Modifier.width(8.dp))
             Text(
+                text = "☰",
+                color = TerminalText,
+                fontSize = 14.sp,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .clickable { sidebar = !sidebar }
+                    .padding(horizontal = 8.dp, vertical = 2.dp)
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
                 text = "ZYRAXON TERMINAL",
                 color = TerminalText,
                 fontSize = 12.sp,
@@ -109,6 +142,18 @@ fun TerminalScreen(
                 fontFamily = FontFamily.Monospace
             )
             Spacer(Modifier.weight(1f))
+            Text(
+                text = "+",
+                color = TerminalPrompt,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .clickable { onNewSession() }
+                    .padding(horizontal = 9.dp, vertical = 1.dp)
+            )
+            Spacer(Modifier.width(4.dp))
             Text(
                 text = if (backdrop) "matrix" else "plain",
                 color = TerminalDim,
@@ -254,6 +299,101 @@ fun TerminalScreen(
             )
         }
         }
+        }
+    }
+}
+
+/**
+ * The left sidebar: every open shell as a row, the active one highlighted, and
+ * an ✕ to close each. Closing the last shell opens a fresh one instead, so the
+ * terminal is never left without somewhere to type.
+ */
+@Composable
+private fun TerminalSidebar(
+    sessions: List<TerminalSession>,
+    activeId: String,
+    onNewSession: () -> Unit,
+    onSelectSession: (String) -> Unit,
+    onCloseSession: (String) -> Unit,
+    onCloseSidebar: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .width(168.dp)
+            .fillMaxSize()
+            .background(TerminalChrome)
+            .padding(vertical = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "SHELLS",
+                color = TerminalDim,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = FontFamily.Monospace
+            )
+            Spacer(Modifier.weight(1f))
+            Text(
+                text = "‹",
+                color = TerminalText,
+                fontSize = 15.sp,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .clickable { onCloseSidebar() }
+                    .padding(horizontal = 6.dp)
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+        for (session in sessions) {
+            val active = session.id == activeId
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(if (active) TerminalBg else TerminalChrome)
+                    .clickable { onSelectSession(session.id) }
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (active) "▸ " else "  ",
+                    color = TerminalPrompt,
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+                Text(
+                    text = session.title,
+                    color = if (active) TerminalText else TerminalDim,
+                    fontSize = 12.sp,
+                    fontFamily = FontFamily.Monospace,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "✕",
+                    color = TerminalDim,
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable { onCloseSession(session.id) }
+                        .padding(horizontal = 4.dp)
+                )
+            }
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = "+  new shell",
+            color = TerminalPrompt,
+            fontSize = 12.sp,
+            fontFamily = FontFamily.Monospace,
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .clickable { onNewSession() }
+                .padding(horizontal = 10.dp, vertical = 6.dp)
+        )
     }
 }
 

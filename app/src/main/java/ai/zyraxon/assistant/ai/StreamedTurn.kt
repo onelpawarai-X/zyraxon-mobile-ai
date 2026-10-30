@@ -24,6 +24,12 @@ class StreamedTurn {
             d.optString("id").takeIf { it.isNotBlank() }?.let { slot.put("id", it) }
             slot.optString("type").takeIf { it.isNotBlank() }?.let { slot.put("type", it) }
                 ?: slot.put("type", "function")
+            // Gemini 3.x stamps a thought_signature on every function-call part
+            // and rejects the next turn with HTTP 400 INVALID_ARGUMENT
+            // ("Function call is missing a thought_signature") when it is not
+            // echoed back. It rides inside the tool-call delta, so it has to be
+            // kept verbatim through the merge or the whole tool round dies.
+            d.optJSONObject("extra_content")?.let { slot.put("extra_content", it) }
             val fn = d.optJSONObject("function") ?: continue
             val slotFn = slot.optJSONObject("function") ?: JSONObject().also { slot.put("function", it) }
             fn.optString("name").takeIf { it.isNotBlank() }?.let { slotFn.put("name", it) }

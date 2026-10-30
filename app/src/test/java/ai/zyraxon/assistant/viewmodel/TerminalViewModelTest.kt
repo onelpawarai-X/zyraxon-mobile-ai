@@ -86,4 +86,38 @@ class TerminalViewModelTest {
         assertTrue(produced.first().output, produced.first().output.contains("a,b,"))
         assertFalse(produced.first().isError)
     }
+
+    @Test
+    fun `a new shell keeps its own scrollback and working directory`() {
+        val vm = newViewModel()
+        run(vm, "echo first-shell")
+        run(vm, "mkdir -p work")
+        run(vm, "cd work")
+        assertEquals("~/work", vm.terminalCwd.value)
+
+        // Open a second shell: it starts clean and at home, not in the first
+        // shell's directory.
+        vm.newTerminalSession()
+        assertEquals(2, vm.terminalSessions.value.size)
+        assertEquals("~", vm.terminalCwd.value)
+        assertTrue("নতুন শেল খালি নয়", vm.terminalLines.value.isEmpty())
+
+        // Switch back: the first shell still shows its output and its directory.
+        val firstId = vm.terminalSessions.value.first().id
+        vm.selectTerminalSession(firstId)
+        assertEquals("~/work", vm.terminalCwd.value)
+        assertTrue(
+            "পুরনো শেলের আউটপুট হারিয়ে গেছে",
+            vm.terminalLines.value.any { it.output.contains("first-shell") }
+        )
+    }
+
+    @Test
+    fun `closing the last shell opens a fresh one instead of leaving none`() {
+        val vm = newViewModel()
+        val only = vm.terminalSessions.value.first().id
+        vm.closeTerminalSession(only)
+        assertEquals("শেষ শেল বন্ধ হয়ে খালি হয়ে গেছে", 1, vm.terminalSessions.value.size)
+        assertTrue(vm.activeTerminalId.value.isNotBlank())
+    }
 }

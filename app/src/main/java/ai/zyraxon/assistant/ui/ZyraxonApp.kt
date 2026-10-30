@@ -13,8 +13,6 @@ import ai.zyraxon.assistant.ui.components.VideoBackground
 import ai.zyraxon.assistant.ui.components.CodePanel
 import ai.zyraxon.assistant.ui.components.LivingAuraSphere
 import ai.zyraxon.assistant.ui.components.MessageBubble
-import ai.zyraxon.assistant.ui.components.ModelSelectionSheet
-import ai.zyraxon.assistant.ui.components.PersonaSelectionSheet
 import ai.zyraxon.assistant.ui.components.QuickActionChips
 import ai.zyraxon.assistant.ui.components.SettingsSheet
 import ai.zyraxon.assistant.ui.components.TabSelector
@@ -136,6 +134,8 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     val terminalLines by viewModel.terminalLines.collectAsState()
     val terminalBusy by viewModel.terminalBusy.collectAsState()
     val terminalCwd by viewModel.terminalCwd.collectAsState()
+    val terminalSessions by viewModel.terminalSessions.collectAsState()
+    val activeTerminalId by viewModel.activeTerminalId.collectAsState()
     val bgVideoAsset by viewModel.bgVideoAsset.collectAsState()
     val liveVoiceEnabled by viewModel.liveVoiceEnabled.collectAsState()
     val liveVoiceState by viewModel.liveVoiceState.collectAsState()
@@ -147,8 +147,6 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     val auraSpeed by viewModel.auraSpeed.collectAsState()
     val panelAlpha by viewModel.panelAlpha.collectAsState()
 
-    var showPersonaSheet by remember { mutableStateOf(false) }
-    var showModelSheet by remember { mutableStateOf(false) }
     var showSettingsSheet by remember { mutableStateOf(false) }
     var newTaskText by remember { mutableStateOf("") }
 
@@ -178,11 +176,16 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
         // leaves the session — scrollback and working directory — untouched.
         if (activeTab == AppTab.TERMINAL) {
             TerminalScreen(
+                sessions = terminalSessions,
+                activeId = activeTerminalId,
                 lines = terminalLines,
                 cwd = terminalCwd,
                 busy = terminalBusy,
                 onRun = { viewModel.runTerminal(it) },
                 onClear = { viewModel.clearTerminal() },
+                onNewSession = { viewModel.newTerminalSession() },
+                onSelectSession = { viewModel.selectTerminalSession(it) },
+                onCloseSession = { viewModel.closeTerminalSession(it) },
                 onClose = { viewModel.setTab(AppTab.CHAT) },
                 modifier = Modifier
                     .fillMaxSize()
@@ -193,20 +196,27 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
             return@Box
         }
 
-        // 1. Looping video behind everything. The aura HTML is transparent, so
-        //    the clip shows through exactly as the user asked.
-        VideoBackground(
-            assetName = bgVideoAsset,
+        // 1. The animated shader sits behind everything, always. It used to be
+        //    skipped whenever a video was chosen, so a clip that could not decode
+        //    left the screen black with no animation at all — the "no animation"
+        //    the user reported. Keeping it underneath means there is always a
+        //    living background, and the video simply covers it when it plays.
+        AnimatedBackground(
+            mode = bgMode,
+            audioLevel = audioLevel,
+            isSpeaking = isSpeaking,
             modifier = Modifier.fillMaxSize()
         )
 
-        // 1b. Shader fallback, kept for the modes that have no video.
-        if (bgVideoAsset.isBlank()) {
-            AnimatedBackground(
-                mode = bgMode,
-                audioLevel = audioLevel,
-                isSpeaking = isSpeaking,
-                modifier = Modifier.fillMaxSize()
+        // 1b. The looping clip on top, when one is chosen and it actually plays.
+        //     If it cannot be prepared or errors out, it reports back and is
+        //     dropped so the shader underneath shows through.
+        var videoBroken by remember { mutableStateOf(false) }
+        if (!videoBroken) {
+            VideoBackground(
+                assetName = bgVideoAsset,
+                modifier = Modifier.fillMaxSize(),
+                onFailed = { videoBroken = true }
             )
         }
 
@@ -218,24 +228,9 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                 .navigationBarsPadding()
                 .imePadding()
         ) {
-            // Top Bar
+            // Top Bar — the only control on it is the Settings gear.
             ZyraxonTopBar(
-                panelAlpha = panelAlpha,
-                personaName = selectedPersona.name,
-                personaEmoji = selectedPersona.emoji,
-                modelName = selectedModel.name,
-                liveActive = liveVoiceEnabled,
-                micOn = alwaysListening,
-                onMicToggle = { viewModel.setMicEnabled(!alwaysListening) },
-                onPersonaClick = { showPersonaSheet = true },
-                onModelClick = { showModelSheet = true },
-                onLiveClick = {
-                    // Speech-to-speech follows the model, so this opens the model
-                    // list instead of pretending a toggle starts a live session.
-                    showModelSheet = true
-                },
-                onSettingsClick = { showSettingsSheet = true },
-                onClearClick = { viewModel.clearChat() }
+                onSettingsClick = { showSettingsSheet = true }
             )
 
             // Update banner. Shown right under the top bar when a newer release
@@ -287,7 +282,12 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                             tasks = tasks,
                             toolExecutions = toolExecutions,
                             files = workspaceFiles,
-                            onCopyText = { clipboardManager.setText(AnnotatedString(it)) },
+                            onCopyText = {
+                                clipboardManager.setText(AnnotatedString(it))
+                                android.widget.Toast.makeText(
+                                    context, t("কপি হয়েছে"), android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                            },
                             onSpeakText = { viewModel.speak(it) },
                             onDeleteFile = { viewModel.deleteWorkspaceFile(it) },
                             onOpenFile = { viewModel.openWorkspaceFile(it) },
@@ -297,6 +297,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                                 )
                             },
                             onRefreshFiles = { viewModel.refreshWorkspaceFiles() },
+                            onMicToggle = { viewModel.toggleListening() },
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -373,22 +374,8 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
             }
         }
 
-        // Sheets
-        if (showPersonaSheet) {
-            PersonaSelectionSheet(
-                selectedPersona = selectedPersona,
-                onSelectPersona = { viewModel.setPersona(it) },
-                onDismiss = { showPersonaSheet = false }
-            )
-        }
-
-        if (showModelSheet) {
-            ModelSelectionSheet(
-                viewModel = viewModel,
-                onDismiss = { showModelSheet = false }
-            )
-        }
-
+        // Sheets. Persona and model selection now live inside Settings, so only
+        // the Settings sheet is opened from here.
         if (showSettingsSheet) {
             SettingsSheet(
                 viewModel = viewModel,
@@ -473,170 +460,37 @@ fun UpdateBanner(
 }
 
 
+/**
+ * The top bar holds exactly one control: the gear that opens Settings. Every
+ * other switch — persona, microphone, model, live voice, clear chat — lives
+ * inside Settings as a section, so the top of the screen stays clean.
+ */
 @Composable
 fun ZyraxonTopBar(
-    personaName: String,
-    personaEmoji: String,
-    modelName: String,
-    panelAlpha: Float = 0.22f,
-    liveActive: Boolean = false,
-    micOn: Boolean = true,
-    onPersonaClick: () -> Unit,
-    onModelClick: () -> Unit,
-    onLiveClick: () -> Unit = {},
-    onMicToggle: () -> Unit = {},
-    onSettingsClick: () -> Unit,
-    onClearClick: () -> Unit
+    onSettingsClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 14.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Persona Chip (💖 প্রেমিকা • online)
-        Box(
+        IconButton(
+            onClick = onSettingsClick,
             modifier = Modifier
-                .clip(RoundedCornerShape(20.dp))
-                .background(Glass.fill(panelAlpha))
-                .border(1.dp, Glass.border, RoundedCornerShape(20.dp))
-                .clickable { onPersonaClick() }
-                .padding(horizontal = 12.dp, vertical = 6.dp)
-                .testTag("persona_button")
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(Glass.rowFill(0.24f))
+                .border(1.dp, Glass.borderSoft, CircleShape)
+                .testTag("settings_button")
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = personaEmoji, fontSize = 15.sp)
-                Spacer(modifier = Modifier.width(6.dp))
-                Column {
-                    Text(
-                        text = personaName,
-                        fontSize = 12.5.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Glass.textPrimary
-                    )
-                    Text(
-                        text = if (liveActive) "লাইভ ভয়েস চালু" else "প্রস্তুত",
-                        fontSize = 9.sp,
-                        color = Glass.green
-                    )
-                }
-            }
-        }
-
-        // Right side: mic switch, Live toggle, model pill, settings, trash
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            // The microphone switch the user asked for: tap to mute the mic and
-            // leave it muted; tap again to open it for the rest of the session.
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(if (micOn) Glass.greenFill else Glass.fill(panelAlpha))
-                    .border(1.dp, if (micOn) Glass.greenFill else Glass.border, RoundedCornerShape(20.dp))
-                    .clickable { onMicToggle() }
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
-                    .testTag("mic_toggle_button")
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = if (micOn) "🎙️" else "🔇", fontSize = 12.sp)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = if (micOn) t("মাইক চালু") else t("মাইক বন্ধ"),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (micOn) Glass.textPrimary else Glass.textSecondary
-                    )
-                }
-            }
-
-            // Live speech-to-speech toggle. Tapping it opens the model list, since
-            // the live session follows the chosen realtime model.
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(
-                        if (liveActive) Glass.cyanFill else Glass.fill(panelAlpha)
-                    )
-                    .border(1.dp, Glass.border, RoundedCornerShape(20.dp))
-                    .clickable { onLiveClick() }
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
-                    .testTag("live_voice_button")
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = if (liveActive) "🔴" else "🎙", fontSize = 12.sp)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "লাইভ",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (liveActive) Glass.textPrimary else Glass.textSecondary
-                    )
-                }
-            }
-
-            // Dynamic Model Selector Pill
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Glass.fill(panelAlpha))
-                    .border(1.dp, Glass.border, RoundedCornerShape(20.dp))
-                    .clickable { onModelClick() }
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
-                    .testTag("model_picker_button")
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(7.dp)
-                            .clip(CircleShape)
-                            .background(Glass.cyanFill)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = if (modelName.length > 15) modelName.take(13) + "…" else modelName,
-                        fontSize = 11.5.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Glass.textPrimary
-                    )
-                }
-            }
-
-            // Settings Button
-            IconButton(
-                onClick = onSettingsClick,
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(Glass.rowFill(panelAlpha))
-                    .testTag("settings_button")
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Settings,
-                    contentDescription = "Settings",
-                    tint = Glass.textPrimary,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-
-            // Clear Chat Button
-            IconButton(
-                onClick = onClearClick,
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(Glass.rowFill(panelAlpha))
-                    .testTag("clear_chat_button")
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Delete,
-                    contentDescription = "Clear Chat",
-                    tint = Glass.red,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
+            Icon(
+                imageVector = Icons.Rounded.Settings,
+                contentDescription = "Settings",
+                tint = Glass.textPrimary,
+                modifier = Modifier.size(19.dp)
+            )
         }
     }
 }
@@ -664,6 +518,7 @@ fun ChatTabContent(
     onOpenFile: (String) -> Unit,
     onPublishFile: (WorkspaceFile) -> Unit,
     onRefreshFiles: () -> Unit,
+    onMicToggle: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -706,19 +561,23 @@ fun ChatTabContent(
 
             // Live transcript floats over the aura, so the user sees their words
             // land the moment they speak them. It also shows whether the mic is
-            // on or muted, so the user never has to guess.
+            // on or muted, so the user never has to guess. Tapping it is the
+            // user's own switch: it holds the mic closed until they open it again.
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 10.dp),
+                    .padding(bottom = 10.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .clickable { onMicToggle() }
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = when {
-                        !micOn -> t("🔇 মাইক বন্ধ")
-                        isListening -> t("শুনছি…")
+                        !micOn -> t("🔇 মাইক বন্ধ — চালু করতে ট্যাপ করো")
+                        isListening -> t("🎙️ শুনছি… — বন্ধ করতে ট্যাপ করো")
                         isSpeaking -> t("ZYRAXON বলছে…")
-                        else -> t("মাইক চালু")
+                        else -> t("মাইক চালু — বন্ধ করতে ট্যাপ করো")
                     },
                     color = when {
                         !micOn -> Color(0x99FFFFFF)
@@ -761,6 +620,31 @@ fun ChatTabContent(
                     .clickable { transcriptOpen = !transcriptOpen }
                     .padding(horizontal = 8.dp, vertical = 3.dp)
             )
+            Spacer(modifier = Modifier.weight(1f))
+            // An explicit microphone switch. The user asked for one button that
+            // holds the mic off; a tap here is the same switch as the transcript
+            // over the aura, so either one works and the two never disagree.
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(if (micOn) Glass.greenFill.copy(alpha = 0.18f) else Glass.rowFill(0.35f))
+                    .border(1.dp, if (micOn) Glass.greenFill else Glass.borderSoft, RoundedCornerShape(10.dp))
+                    .clickable { onMicToggle() }
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (micOn) "🎙️" else "🔇",
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = if (micOn) t("মাইক চালু") else t("মাইক বন্ধ"),
+                    color = if (micOn) Glass.greenFill else Glass.textSecondary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
 
         if (transcriptOpen) {
@@ -1237,6 +1121,7 @@ private fun McpTabContent(viewModel: ZyraxonViewModel, panelAlpha: Float) {
                     viewModel.connectMcp(server)
                 }
             },
+            onCancel = { server -> viewModel.cancelMcp(server) },
             onDisconnect = { viewModel.disconnectMcp(it) },
             onAddCustom = { url, name, token -> viewModel.addCustomMcp(url, name, token) },
             onRemoveCustom = { viewModel.removeCustomMcp(it) },

@@ -46,4 +46,22 @@ class SpeechChunkerTest {
     fun `an empty buffer releases nothing`() {
         assertEquals("", SpeechChunker.take(StringBuilder()))
     }
+
+    @Test
+    fun `a long run with no punctuation is released at a word boundary`() {
+        // One long sentence with no comma or full stop: the voice must still start
+        // before the whole thing is written, or it is not real-time.
+        val long = "আমি এখন তোমার জন্য অনেক বড় একটা কাজ করছি যেটা শেষ করতে অনেক সময় লাগবে এবং"
+        val buffer = StringBuilder(long)
+        val ready = SpeechChunker.take(buffer)
+        assertTrue("যতিচিহ্ন ছাড়াও কথা শুরু হওয়া উচিত", ready.isNotBlank())
+        assertTrue("শব্দ-সীমায় কাটা উচিত, মাঝ-শব্দে নয়", ready.endsWith(" "))
+        assertEquals(long.substring(ready.length), buffer.toString())
+    }
+
+    @Test
+    fun `a short run with no punctuation still waits`() {
+        val buffer = StringBuilder("আমি এখন")
+        assertEquals("", SpeechChunker.take(buffer))
+    }
 }

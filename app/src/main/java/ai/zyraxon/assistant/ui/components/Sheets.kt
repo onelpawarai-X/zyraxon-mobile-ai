@@ -124,66 +124,75 @@ fun PersonaSelectionSheet(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            ZyraxonAiEngine.PERSONAS.forEach { persona ->
-                val isSelected = persona.id == selectedPersona.id
-                Box(
+            PersonaList(selectedPersona = selectedPersona, onSelectPersona = onSelectPersona)
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+    }
+}
+
+/**
+ * The persona cards, shared by the standalone sheet and the Settings section, so
+ * "প্রেমিকা" lives in exactly one place whichever way the user reaches it.
+ */
+@Composable
+fun PersonaList(
+    selectedPersona: Persona,
+    onSelectPersona: (Persona) -> Unit
+) {
+    ZyraxonAiEngine.PERSONAS.forEach { persona ->
+        val isSelected = persona.id == selectedPersona.id
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 5.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(if (isSelected) Glass.pinkFill.copy(alpha = 0.20f) else Glass.rowFill(0.30f))
+                .border(
+                    width = 1.dp,
+                    color = if (isSelected) Glass.pinkFill else Glass.borderSoft,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .clickable { onSelectPersona(persona) }
+                .padding(14.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = persona.emoji, fontSize = 28.sp)
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(if (isSelected) Glass.pinkFill.copy(alpha = 0.20f) else Glass.rowFill(0.30f))
-                        .border(
-                            width = 1.dp,
-                            color = if (isSelected) Glass.pinkFill else Glass.borderSoft,
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .clickable {
-                            onSelectPersona(persona)
-                            onDismiss()
-                        }
-                        .padding(14.dp)
+                        .weight(1f)
+                        .padding(horizontal = 12.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = persona.emoji, fontSize = 28.sp)
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 12.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = persona.name,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Glass.textPrimary
-                                )
-                                Spacer(modifier = Modifier.size(6.dp))
-                                Text(
-                                    text = "• ${persona.title}",
-                                    fontSize = 12.sp,
-                                    color = Glass.cyanFill
-                                )
-                            }
-                            Text(
-                                text = persona.description,
-                                fontSize = 12.sp,
-                                color = Glass.textSecondary
-                            )
-                        }
-                        if (isSelected) {
-                            Icon(
-                                imageVector = Icons.Rounded.Check,
-                                contentDescription = "Selected",
-                                tint = Glass.pinkFill
-                            )
-                        }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = persona.name,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Glass.textPrimary
+                        )
+                        Spacer(modifier = Modifier.size(6.dp))
+                        Text(
+                            text = "• ${persona.title}",
+                            fontSize = 12.sp,
+                            color = Glass.cyanFill
+                        )
                     }
+                    Text(
+                        text = persona.description,
+                        fontSize = 12.sp,
+                        color = Glass.textSecondary
+                    )
+                }
+                if (isSelected) {
+                    Icon(
+                        imageVector = Icons.Rounded.Check,
+                        contentDescription = "Selected",
+                        tint = Glass.pinkFill
+                    )
                 }
             }
-            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
@@ -215,6 +224,27 @@ fun ModelSelectionSheet(
     viewModel: ZyraxonViewModel,
     onDismiss: () -> Unit
 ) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = Glass.sheetFill(0.30f),
+        dragHandle = null
+    ) {
+        ModelListPane(viewModel = viewModel, onPicked = onDismiss, showClose = true)
+    }
+}
+
+/**
+ * The model picker's body, shared by the standalone sheet and the Settings
+ * "মডেল" section, so both show exactly the same live catalogue.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ModelListPane(
+    viewModel: ZyraxonViewModel,
+    onPicked: () -> Unit,
+    showClose: Boolean = false
+) {
     val selectedModel by viewModel.selectedModel.collectAsState()
     val availableModels by viewModel.availableModels.collectAsState()
     val isLoading by viewModel.isLoadingModels.collectAsState()
@@ -237,17 +267,11 @@ fun ModelSelectionSheet(
         matchesSearch && matchesCategory
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = Glass.sheetFill(0.30f),
-        dragHandle = null
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp)
-        ) {
             // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -282,7 +306,7 @@ fun ModelSelectionSheet(
                             Icon(Icons.Rounded.Refresh, contentDescription = "Sync", tint = Glass.cyanFill)
                         }
                     }
-                    IconButton(onClick = onDismiss) {
+                    IconButton(onClick = onPicked) {
                         Icon(Icons.Rounded.Close, contentDescription = "Close", tint = Glass.textMuted)
                     }
                 }
@@ -413,7 +437,7 @@ fun ModelSelectionSheet(
                             )
                             .clickable {
                                 viewModel.setModel(model)
-                                onDismiss()
+                                onPicked()
                             }
                             .padding(12.dp)
                     ) {
@@ -536,7 +560,7 @@ fun ModelSelectionSheet(
                                     onClick = {
                                         if (customModelId.isNotBlank()) {
                                             viewModel.addCustomModel(customModelId, customModelId)
-                                            onDismiss()
+                                            onPicked()
                                         }
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Glass.cyanFill)
@@ -549,7 +573,6 @@ fun ModelSelectionSheet(
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-        }
     }
 }
 
@@ -658,9 +681,10 @@ fun SettingsSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 listOf(
+                    "persona" to t("🎭 পরিচয়"),
+                    "model" to t("🧩 মডেল"),
                     "updates" to t("⬆️ আপডেট"),
                     "voice" to t("🔊 ভয়েস (TTS)"),
-                    "live" to t("📞 লাইভ ভয়েস"),
                     "ondevice" to t("📴 অন-ডিভাইস মডেল"),
                     "mic" to t("🎙️ মাইক"),
                     "aura" to t("🔮 ওরা ও ব্যাকগ্রাউন্ড"),
@@ -700,6 +724,29 @@ fun SettingsSheet(
                     .verticalScroll(rememberScrollState())
             ) {
                 when (activePane) {
+                    "persona" -> {
+                        val selectedPersona by viewModel.selectedPersona.collectAsState()
+                        Text(
+                            t("পরিচয় নির্বাচন (Persona)"),
+                            fontWeight = FontWeight.Bold,
+                            color = Glass.textPrimary,
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            t("যে পরিচয় বাছবেন, তার কণ্ঠ ও কথা বলার ভঙ্গি সেই অনুযায়ী হবে।"),
+                            color = Glass.textSecondary,
+                            fontSize = 11.5.sp
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        PersonaList(
+                            selectedPersona = selectedPersona,
+                            onSelectPersona = { viewModel.setPersona(it) }
+                        )
+                    }
+
+                    "model" -> ModelListPane(viewModel = viewModel, onPicked = {})
+
                     "updates" -> UpdatePane(viewModel = viewModel)
 
                     "perms" -> {
@@ -718,159 +765,15 @@ fun SettingsSheet(
                     }
 
                     "live" -> {
-                        // LIVE SPEECH-TO-SPEECH
-                        val liveOn by viewModel.liveVoiceEnabled.collectAsState()
-                        val liveState by viewModel.liveVoiceState.collectAsState()
-                        val liveModel by viewModel.liveVoiceModel.collectAsState()
-                        val liveProvider by viewModel.liveVoiceProvider.collectAsState()
-                        val models by viewModel.availableModels.collectAsState()
-                        val selected by viewModel.selectedModel.collectAsState()
-                        // The realtime models the loaded catalogue actually holds.
-                        // Nothing is listed here that the providers did not send.
-                        val realtimeModels = models.filter { it.isRealtime }
-
+                        // Model-native speech-to-speech is switched off on the
+                        // user's request: the phone's own TTS is the voice, and
+                        // the realtime socket is not opened at all.
                         Text(
-                            t("লাইভ ভয়েস — স্পিচ-টু-স্পিচ"),
-                            fontWeight = FontWeight.Bold,
-                            color = Glass.textPrimary,
-                            fontSize = 14.sp
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            t("চালু থাকলে রিয়েলটাইম মডেল নিজের কণ্ঠে সরাসরি কথা বলে, আর ফোনের TTS বন্ধ থাকে। বন্ধ থাকলে মডেলের লেখা ফোনের TTS পড়ে শোনায় — তাই লাইভ সংযোগ না হলেও কথা শোনা যায়।"),
+                            t("মডেলের নিজের স্পিচ-টু-স্পিচ বন্ধ করা হয়েছে। এখন ফোনের ভয়েস (TTS) দিয়েই কথা বলা হয়।"),
                             color = Glass.textSecondary,
-                            fontSize = 11.5.sp
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // The live voice switch. Off hands the voice back to the
-                        // phone's own TTS, so a realtime model that cannot open a
-                        // socket still speaks normally instead of going silent.
-                        val preferred by viewModel.liveVoicePreferred.collectAsState()
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(Glass.rowFill(0.30f))
-                                .border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
-                                .padding(horizontal = 14.dp, vertical = 10.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(t("মডেলের নিজের কণ্ঠ ব্যবহার করো"), color = Glass.textPrimary, fontSize = 13.sp)
-                                Text(
-                                    t("বন্ধ থাকলে ফোনের TTS পড়ে শোনায় (সবসময় কাজ করে)"),
-                                    color = Glass.textMuted,
-                                    fontSize = 11.sp
-                                )
-                            }
-                            Switch(
-                                checked = preferred,
-                                onCheckedChange = { viewModel.setLiveVoicePreferred(it) },
-                                colors = SwitchDefaults.colors(checkedThumbColor = Glass.textPrimary, checkedTrackColor = Glass.cyanFill)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Live status. The switch follows the model, so this is a
-                        // read-out, not a control.
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(if (liveOn) Glass.cyanFill.copy(alpha = 0.22f) else Glass.rowFill(0.30f))
-                                .border(1.dp, if (liveOn) Glass.cyanFill else Glass.borderSoft, RoundedCornerShape(14.dp))
-                                .padding(14.dp)
-                                .testTag("live_voice_toggle")
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text(
-                                        if (liveOn) t("লাইভ ভয়েস চালু") else t("লাইভ ভয়েস বন্ধ"),
-                                        color = Glass.textPrimary,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 13.sp
-                                    )
-                                    Text(
-                                        when (liveState) {
-                                            ai.zyraxon.assistant.voice.LiveVoiceSession.State.CONNECTING -> t("সংযোগ হচ্ছে…")
-                                            ai.zyraxon.assistant.voice.LiveVoiceSession.State.LISTENING -> t("শুনছে…")
-                                            ai.zyraxon.assistant.voice.LiveVoiceSession.State.SPEAKING -> t("বলছে…")
-                                            else -> if (liveOn) t("অপেক্ষায়") else t("রিয়েলটাইম মডেল বাছলে নিজেই চালু হবে")
-                                        },
-                                        color = Glass.textSecondary,
-                                        fontSize = 11.sp
-                                    )
-                                    if (liveOn && liveModel.isNotBlank()) {
-                                        Text(
-                                            "$liveProvider · $liveModel",
-                                            color = Glass.cyanFill,
-                                            fontSize = 10.5.sp
-                                        )
-                                    }
-                                }
-                                Text(if (liveOn) "🎙️" else "🔇", fontSize = 20.sp)
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            t("রিয়েলটাইম মডেল (নিজের কণ্ঠে কথা বলে):"),
-                            color = Glass.cyanFill,
-                            fontSize = 12.5.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        if (realtimeModels.isEmpty()) {
-                            Text(
-                                t("এখন কোনো রিয়েলটাইম মডেল লোড হয়নি। 🔑 এআই প্রোভাইডার্স ট্যাবে Gemini, OpenAI বা Grok-এর কী দিলে তাদের লাইভ মডেল এখানে আসবে।"),
-                                color = Glass.amber,
-                                fontSize = 11.sp
-                            )
-                        } else {
-                            realtimeModels.forEach { m ->
-                                val active = selected.id == m.id
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 3.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(if (active) Glass.pinkFill.copy(alpha = 0.20f) else Glass.rowFill(0.25f))
-                                        .border(1.dp, if (active) Glass.pinkFill else Glass.borderSoft, RoundedCornerShape(10.dp))
-                                        .clickable { viewModel.setModel(m) }
-                                        .padding(horizontal = 12.dp, vertical = 10.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(m.name, color = Glass.textPrimary, fontSize = 11.5.sp)
-                                            Text(m.provider, color = Glass.textSecondary, fontSize = 10.sp)
-                                        }
-                                        if (active) Icon(Icons.Rounded.Check, contentDescription = "Active", tint = Glass.pinkFill, modifier = Modifier.size(16.dp))
-                                    }
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            t("নিচের স্লাইডারে কণ্ঠ বাছলে রিয়েলটাইম মডেলেও সেই কণ্ঠই ব্যবহার হয়।"),
-                            color = Glass.textMuted,
-                            fontSize = 10.5.sp
+                            fontSize = 12.sp
                         )
                     }
-
                     "ondevice" -> {
                         // ON-DEVICE (OFFLINE) MODEL
                         var installed by remember { mutableStateOf(viewModel.onDeviceModel.installedModels()) }
@@ -1020,11 +923,13 @@ fun SettingsSheet(
                         Text(t("কণ্ঠ নির্বাচন করুন (Voice Profile):"), color = Glass.cyanFill, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(6.dp))
 
+                        // Both voices are real and either one works. Tapping a
+                        // card previews it immediately, so the user hears the
+                        // difference instead of guessing from the label.
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            // Female Voice Option
                             val isFemale = currentGender == "female"
                             Box(
                                 modifier = Modifier
@@ -1045,7 +950,7 @@ fun SettingsSheet(
                                 ) {
                                     Text("👩", fontSize = 26.sp)
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text(t("মেয়ের কণ্ঠ"), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    Text(t("মেয়ের কণ্ঠ"), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     Text(t("মিষ্টি ও রোমান্টিক"), color = Glass.pinkFill, fontSize = 10.5.sp)
                                     if (isFemale) {
                                         Spacer(modifier = Modifier.height(4.dp))
@@ -1054,7 +959,6 @@ fun SettingsSheet(
                                 }
                             }
 
-                            // Male Voice Option
                             val isMale = currentGender == "male"
                             Box(
                                 modifier = Modifier
@@ -1084,6 +988,11 @@ fun SettingsSheet(
                                 }
                             }
                         }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            t("ছেলের ও মেয়ের — দুটো কণ্ঠই কাজ করে। ট্যাপ করলেই শুনতে পাবে।"),
+                            color = Glass.textMuted, fontSize = 10.5.sp
+                        )
 
                         Spacer(modifier = Modifier.height(12.dp))
 

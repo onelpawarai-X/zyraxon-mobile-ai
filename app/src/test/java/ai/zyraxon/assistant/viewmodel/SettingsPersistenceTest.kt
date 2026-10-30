@@ -45,6 +45,48 @@ class SettingsPersistenceTest {
     }
 
     @Test
+    fun `a model id the provider retired is replaced, not kept`() {
+        // Google retires ids (gemini-2.5-flash now answers 404 for new users).
+        // A saved id that is gone from the catalogue must not be kept, or every
+        // turn fails against a model that no longer exists.
+        val vm = newViewModel()
+        val retired = AiModel(
+            id = "gemini-2.5-flash", name = "Gemini Flash",
+            category = "Gemini", description = "Gemini", provider = "gemini", isFree = true
+        )
+        vm.setModel(retired)
+
+        val live = listOf(
+            AiModel("gemini-flash-latest", "Gemini Flash", "Gemini", "Gemini", "gemini", true),
+            AiModel("gemini-flash-lite-latest", "Gemini Lite", "Gemini", "Gemini", "gemini", true)
+        )
+        vm.adoptDefaultIfUnset(live)
+
+        assertEquals("বাতিল মডেল বদলানো হয়নি",
+            "gemini-flash-latest", vm.selectedModel.value.id)
+        // The replacement is persisted, so the next launch does not restore the
+        // dead id again.
+        assertEquals("নতুন মডেল সেভ হয়নি",
+            "gemini-flash-latest", newViewModel().selectedModel.value.id)
+    }
+
+    @Test
+    fun `a saved model that is still offered keeps its place`() {
+        val vm = newViewModel()
+        val saved = AiModel(
+            id = "gemini-flash-latest", name = "পুরনো নাম",
+            category = "Gemini", description = "Gemini", provider = "gemini", isFree = true
+        )
+        vm.setModel(saved)
+        vm.adoptDefaultIfUnset(listOf(
+            AiModel("gemini-flash-latest", "Gemini Flash", "Gemini", "Gemini", "gemini", true)
+        ))
+        assertEquals("gemini-flash-latest", vm.selectedModel.value.id)
+        assertEquals("ক্যাটালগের নাম দিয়ে রিফ্রেশ হয়নি",
+            "Gemini Flash", vm.selectedModel.value.name)
+    }
+
+    @Test
     fun `the chosen persona survives a restart`() {
         val first = newViewModel()
         val persona = ZyraxonAiEngine.PERSONAS.first { it.id != first.selectedPersona.value.id }
@@ -75,11 +117,59 @@ class SettingsPersistenceTest {
     }
 
     @Test
-    fun `the voice gender survives a restart`() {
+    fun `the chosen voice survives a restart`() {
         val first = newViewModel()
+        // Both voices must work, so a male request really applies the male voice
+        // and that choice is kept across a restart instead of resetting.
         first.applyVoice(gender = "male")
+        assertEquals("পুরুষ কণ্ঠ প্রয়োগ হয়নি", "male", first.voiceManager.currentGender)
 
         val second = newViewModel()
-        assertEquals("কণ্ঠের লিঙ্গ সেভ হয়নি", "male", second.voiceManager.currentGender)
+        assertEquals("কণ্ঠ রিস্টার্টে হারিয়ে গেছে", "male", second.voiceManager.currentGender)
+    }
+
+    @Test
+    fun `the default voice is female`() {
+        assertEquals("ডিফল্ট কণ্ঠ মেয়ের হওয়া উচিত", "female", newViewModel().voiceManager.currentGender)
+    }
+
+    @Test
+    fun `voice speed and pitch survive a restart`() {
+        val first = newViewModel()
+        first.setTtsRate(1.4f)
+        first.setTtsPitch(0.9f)
+
+        val second = newViewModel()
+        assertEquals("গতি সেভ হয়নি", 1.4f, second.ttsRate.value, 0.0001f)
+        assertEquals("পিচ সেভ হয়নি", 0.9f, second.ttsPitch.value, 0.0001f)
+    }
+
+    @Test
+    fun `the auto send choice survives a restart`() {
+        val first = newViewModel()
+        first.setAutoSend(false)
+        assertFalse("অটো-সেন্ড সেভ হয়নি", newViewModel().autoSend.value)
+    }
+
+    @Test
+    fun `the voice language survives a restart`() {
+        val first = newViewModel()
+        first.setVoiceLanguage("en-US")
+        assertEquals("ভাষা সেভ হয়নি", "en-US", newViewModel().voiceManager.voiceLanguage.value)
+    }
+
+    @Test
+    fun `the background mode survives a restart`() {
+        val first = newViewModel()
+        first.setBgMode(ai.zyraxon.assistant.model.BgAnimationMode.entries.first { it != first.bgMode.value })
+        val chosen = first.bgMode.value
+        assertEquals("ব্যাকগ্রাউন্ড মোড সেভ হয়নি", chosen, newViewModel().bgMode.value)
+    }
+
+    @Test
+    fun `the aura style survives a restart`() {
+        val first = newViewModel()
+        first.setAuraStyle("vortex")
+        assertEquals("ওরা স্টাইল সেভ হয়নি", "vortex", newViewModel().auraStyle.value)
     }
 }
