@@ -9,10 +9,39 @@ stopping in the middle.
 build of it, and none is planned.
 
 - **Package:** `com.zyraxon.assistant`
-- **Version:** 6.2.0 (versionCode 10)
+- **Version:** 6.5.0 (versionCode 13)
 - **Minimum Android:** 7.0 (API 24) · **Target:** API 36
 - **Language:** Kotlin + Jetpack Compose, 45 source files
 - **Tools:** 61 real tools · **Characters:** 6
+
+---
+
+## Read this first: the responsibility is yours
+
+ZYRAXON has real hands. It opens other apps, reads the screen, taps and types,
+writes files, and runs commands. That is the whole point of it — and it is also
+why what you point it at is **your decision and your responsibility**. The app
+does not judge the task and does not decide what is allowed. You do.
+
+**Google Play Protect.** Play Protect scans apps and can block or disable one
+that drives the device the way ZYRAXON does. If you want ZYRAXON to do
+everything it is built to do, you may have to turn Play Protect off yourself:
+
+- Open **Play Store → profile → Play Protect → ⚙ settings** and turn scanning off,
+  or open the Play Protect warning for this app and choose **Install anyway**.
+- The assistant can walk you to that screen for you (`open_settings("play_protect")`),
+  but it cannot flip the switch. Only you can, and it will ask you rather than
+  claim it did.
+
+Once you have taken that decision, ZYRAXON will use everything its tools allow.
+That is the trade: you take the responsibility, and the assistant stops holding
+back.
+
+**What this does not change.** ZYRAXON still runs as an ordinary Android app in
+its own sandbox, under its own user ID, with no root. Turning Play Protect off
+removes Google's scanning — it does not remove Android's permission model. The
+assistant works inside the permissions the app has been granted, and asks you for
+the ones it has not.
 
 ---
 
@@ -53,6 +82,27 @@ sentence is pronounced properly instead of being spelled out letter by letter.
 The assistant reads the screen as an actual image, taps by coordinate or by
 visible text, and types into whatever is focused. After each call the real result
 is injected back into its context and it decides the next step.
+
+### The shell it uses
+
+`run_shell` is real. It runs through `ProcessBuilder("sh", "-c", command)` — the
+Android system shell (`/system/bin/sh`, an mksh), not `cmd.exe` and not
+PowerShell. Each call returns the real exit code, stdout and stderr, with a 60
+second default timeout and output caps of 30,000 and 8,000 characters.
+
+It runs **as the app**, in the app's own sandbox, under the app's own user ID.
+There is no root and no `su`. So the honest description is: the assistant can run
+any `sh` command, within the permissions the app has been granted. It cannot
+change `/system`, read another app's private data, or touch anything privileged
+unless the device is rooted.
+
+| | |
+|---|---|
+| Shell | `sh -c` (mksh) |
+| User | the app's own UID — no root |
+| Working directory | `/storage/emulated/0/Android/data/com.zyraxon.assistant/files/zyraxon` |
+| Timeout | 60 s default, process killed after |
+| Returns | exit code, stdout, stderr |
 
 ### It does not stop halfway
 
@@ -306,6 +356,14 @@ assistant's rules live.
 
 ## Known limits
 
+- **PowerShell is not bundled, and cannot be.** The shell is Android's own `sh`
+  (mksh). PowerShell is not a part of Android, and Microsoft ships no officially
+  supported Android target for it — the supported platforms are Windows, Linux
+  and macOS. Dropping a `pwsh` binary into the app would not work either: since
+  Android 10 (API 29) an app may not execute a binary from its own writable
+  storage (the W^X rule), and bundling the .NET runtime would add well over
+  100 MB to an APK that is already ~146 MB. `sh` is the honest, supported shell
+  for an Android app, and it is the one the assistant uses.
 - The voice has not been heard on a physical device by the author of these notes.
   Verification so far is at the code level: unit tests, compilation, APK
   contents, signature. Install it and try it.
