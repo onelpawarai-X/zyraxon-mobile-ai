@@ -56,19 +56,44 @@ object LinuxRuntime {
         return null
     }
 
-    /** The asset directory holding this device's payload. */
-    fun assetDir(context: Context): String {
-        val abi = android.os.Build.SUPPORTED_ABIS.firstOrNull() ?: "arm64-v8a"
-        return "linux/${arch(abi)}"
+    /**
+     * The asset directory holding this device's payload, or null when the APK
+     * ships nothing this device can run.
+     *
+     * The APK declares four ABIs but only two payloads are vendored, so a device
+     * that lists a 32-bit ABI first must not be sent to a folder that does not
+     * exist. Each of the device's ABIs is tried in order and the first one with a
+     * real payload wins; when none does the caller explains that instead of
+     * failing later with a confusing "no packages found".
+     */
+    fun assetDir(context: Context): String? {
+        val abis = android.os.Build.SUPPORTED_ABIS
+        return pickAssetDir(abis) { folder -> hasPayload(context, folder) }
+    }
+
+    /** The selection rule, kept pure so it can be checked without an APK. */
+    internal fun pickAssetDir(abis: Array<String>, exists: (String) -> Boolean): String? {
+        for (abi in abis) {
+            val folder = arch(abi) ?: continue
+            if (exists(folder)) return "linux/$folder"
+        }
+        return null
+    }
+
+    /** True when the APK actually carries a payload for this architecture folder. */
+    private fun hasPayload(context: Context, folder: String): Boolean = try {
+        context.assets.list("linux/$folder/debs").orEmpty().any { it.endsWith(".deb") }
+    } catch (_: Exception) {
+        false
     }
 
     /** The package name for an Android ABI, matching the vendored asset folders. */
-    fun arch(abi: String): String = when {
+    fun arch(abi: String): String? = when {
         abi.startsWith("arm64") -> "aarch64"
-        abi.startsWith("armeabi") -> "arm"
         abi.startsWith("x86_64") -> "x86_64"
+        abi.startsWith("armeabi") -> "arm"
         abi.startsWith("x86") -> "i686"
-        else -> "aarch64"
+        else -> null
     }
 
     /**
@@ -106,6 +131,10 @@ object LinuxRuntime {
         log("সিস্টেম লেভেল: ${level.label}")
 
         val assets = assetDir(context)
+        if (assets == null) {
+            log("এই ডিভাইসের আর্কিটেকচারের (${android.os.Build.SUPPORTED_ABIS.joinToString()}) জন্য ZYRAXON Linux পেলোড APK-তে নেই।")
+            return false
+        }
         val stage = File(context.cacheDir, "linux-stage").apply { mkdirs() }
         log("প্যাকেজ: $assets (APK-তে বান্ডল করা)")
 
