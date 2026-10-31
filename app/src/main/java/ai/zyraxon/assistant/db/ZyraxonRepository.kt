@@ -121,14 +121,19 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
             // \p{M} keeps the Bengali combining marks, so "ভালোবাসি" stays one
             // word instead of breaking into letters and matching nothing.
             .split(Regex("[^\\p{L}\\p{M}\\p{N}]+"))
-            .filter { it.length >= 4 }
+            // Three characters, not four: "গান", "নাম", "কোড", "ঘর" are real
+            // subjects and were being dropped, which is why an old conversation
+            // about them never came back. Short function words are excluded by a
+            // stop list instead of by length alone.
+            .filter { it.length >= 3 && it !in STOP_WORDS }
             .distinct()
-            .take(3)
+            .take(4)
         if (words.isEmpty()) return emptyList()
         val a = words.getOrElse(0) { "" }
         val b = words.getOrElse(1) { a }
         val c = words.getOrElse(2) { a }
-        return dao.searchMessages(a, b, c, limit).asReversed().map { entity ->
+        val d = words.getOrElse(3) { a }
+        return dao.searchMessages(a, b, c, d, limit).asReversed().map { entity ->
             ChatMessage(
                 id = entity.id,
                 role = when (entity.role) {
@@ -141,5 +146,40 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
                 modelName = entity.modelName
             )
         }
+    }
+
+    /**
+     * Facts written with `memory_write`, matched against the words the user just
+     * used. The memories list is small, so it is filtered here rather than in SQL:
+     * a durable fact that shares a subject with the current turn is pulled in even
+     * when its key does not literally contain the word.
+     */
+    suspend fun recallMemories(topic: String, limit: Int = 8): String {
+        val list = dao.getMemoriesList()
+        if (list.isEmpty()) return ""
+        val words = topic.lowercase()
+            .split(Regex("[^\\p{L}\\p{M}\\p{N}]+"))
+            .filter { it.length >= 3 && it !in STOP_WORDS }
+            .distinct()
+        if (words.isEmpty()) return ""
+        val hits = list.filter { m ->
+            val hay = (m.key + " " + m.value).lowercase()
+            words.any { hay.contains(it) }
+        }.take(limit)
+        if (hits.isEmpty()) return ""
+        return hits.joinToString("\n") { "• ${it.key}: ${it.value}" }
+    }
+
+    companion object {
+        /**
+         * Words that appear in almost every sentence and would make recall match
+         * the whole transcript. Kept short: this is a precision filter, not NLP.
+         */
+        private val STOP_WORDS = setOf(
+            "আমার", "আমি", "তুমি", "তোমার", "করে", "করো", "করো", "করা", "হবে", "হলো",
+            "একটা", "একটি", "কিছু", "কেন", "কেমন", "কোথায়", "কখন", "কত", "এই", "ওই",
+            "আর", "না", "নেই", "হ্যাঁ", "ঠিক", "আছে", "ছিল", "the", "and", "you", "for",
+            "with", "that", "this", "what", "how", "can", "please", "make", "give"
+        )
     }
 }

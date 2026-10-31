@@ -67,6 +67,7 @@ fun McpScreen(
     onDisconnect: (String) -> Unit,
     onAddCustom: (String, String, String) -> Unit,
     onRemoveCustom: (String) -> Unit,
+    onClose: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showAddSheet by remember { mutableStateOf(false) }
@@ -90,7 +91,8 @@ fun McpScreen(
                     tools = totalTools,
                     resources = totalResources,
                     prompts = totalPrompts,
-                    onAdd = { showAddSheet = true }
+                    onAdd = { showAddSheet = true },
+                    onClose = onClose
                 )
             }
 
@@ -130,7 +132,8 @@ private fun McpHeader(
     tools: Int,
     resources: Int,
     prompts: Int,
-    onAdd: () -> Unit
+    onAdd: () -> Unit,
+    onClose: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -164,6 +167,19 @@ private fun McpHeader(
                     .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 Text(t("+ যোগ"), color = Color.White, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            // Leaving the MCP screen had no visible way out — the user had to
+            // know the system back gesture. This is the missing close control.
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Glass.rowFill(0.30f))
+                    .border(1.dp, Glass.borderSoft, RoundedCornerShape(12.dp))
+                    .clickable(onClick = onClose)
+                    .padding(horizontal = 10.dp, vertical = 8.dp)
+            ) {
+                Text("✕", color = Glass.textPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
         }
 

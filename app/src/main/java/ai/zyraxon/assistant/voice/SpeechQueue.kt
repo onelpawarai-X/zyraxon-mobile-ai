@@ -44,6 +44,12 @@ class SpeechQueue {
     }
 
     /**
+     * True while [id] is the piece the engine is speaking. The speech watchdog
+     * uses this to tell a stalled engine from one that finished normally.
+     */
+    fun isAwaiting(id: String): Boolean = activeId == id
+
+    /**
      * The piece with [id] finished. Only the piece that is actually active is
      * cleared, so a stale callback from an interrupted utterance cannot free the
      * queue early and let two voices overlap.

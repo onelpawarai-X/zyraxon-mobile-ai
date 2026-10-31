@@ -111,16 +111,20 @@ class NativeVoiceManager(
     @Volatile
     private var sessionOpen = false
 
-    /** Set while the recognizer is deliberately silenced for the assistant's voice. */
-    @Volatile
-    private var pausedForSpeech = false
-
     /** Wall-clock deadline until which a recognized phrase is the speaker's echo. */
     @Volatile
     private var echoGuardUntilMs = 0L
 
     private var restartJob: Job? = null
     private var restartAttempts = 0
+
+    /**
+     * Fires when the engine never calls back for a piece it accepted — a stalled
+     * or crashed TTS service, or an utterance that was silently dropped. Without
+     * it the queue waits forever and the assistant stops mid-answer, which is the
+     * "she speaks and then stops" report.
+     */
+    private var speechWatchdog: Job? = null
 
     /** Decides the single close/open pair around a streamed reply. */
     private val micGate = MicGate()
@@ -167,10 +171,12 @@ class NativeVoiceManager(
         textToSpeech?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) {
                 _isSpeaking.value = true
-                // Close the ear once per reply, not once per sentence. A queued
-                // answer fires onStart for every sentence; pausing each time was
-                // the off/on churn the user heard.
-                if (micGate.onUtteranceStart()) pauseForSpeech()
+                // The ear is deliberately NOT closed here. Closing it for the
+                // whole reply is what stopped the user interrupting: they could
+                // say nothing until the last word. The microphone stays open and
+                // the assistant's own voice is filtered out by text instead
+                // (`EchoMatcher`), so a genuine interruption still gets through.
+                micGate.onUtteranceStart()
             }
 
             override fun onDone(utteranceId: String?) {
@@ -190,6 +196,7 @@ class NativeVoiceManager(
      * idle, and the reply has stopped streaming.
      */
     private fun finishUtterance(utteranceId: String?) {
+        cancelSpeechWatchdog()
         speechQueue.onFinished(utteranceId)
         // Hand the next piece to the engine before judging whether we are busy,
         // so a queued sentence is never mistaken for the end of the reply.
@@ -348,7 +355,14 @@ class NativeVoiceManager(
                     requiresNetwork = v.isNetworkConnectionRequired
                 )
             }
+            // Prefer a voice that states the wanted gender. When this language has
+            // no such voice, fall back to any voice *for this language* rather than
+            // leaving the engine on the previous language's voice: that leftover
+            // voice is what read English words letter by letter and spoke Bangla in
+            // the wrong gender. Only when the language has no voice at all does the
+            // engine's own default stand.
             val chosen = VoiceSelector.pick(candidates, forLanguage, gender)
+                ?: VoiceSelector.pickAny(candidates, forLanguage)
             val match = chosen?.let { c -> all.firstOrNull { it.name == c.name } }
 
             // The voice is only reassigned when it really changes. Assigning it
@@ -357,22 +371,22 @@ class NativeVoiceManager(
             // after a word or two — the exact defect the user reported.
             val voiceKey = match?.name ?: ""
             if (voiceKey != appliedVoiceKey) {
-                if (match != null) {
-                    textToSpeech?.voice = match
-                    _activeVoiceName.value = match.name
-                } else if (candidates.any { VoiceSelector.languageOf(it.localeTag) == wanted.language }) {
-                    // A voice exists for the language but not for the gender.
-                    // Clear the explicit choice so the engine picks its own voice
-                    // for this language instead of keeping the last one.
-                    textToSpeech?.voice = null
-                    _activeVoiceName.value = ""
-                }
+                textToSpeech?.voice = match
+                _activeVoiceName.value = match?.name ?: ""
                 appliedVoiceKey = voiceKey
             }
 
+            // When no installed voice for this language states the wanted gender,
+            // the gender is carried by pitch instead. Bangla usually has only one
+            // neutral voice while English has a female one, so without this the
+            // Bangla words came out male and the English words female.
+            val hasGenderedVoice = match != null &&
+                VoiceSelector.statesGender(match.name, gender)
+            val effectivePitch = VoiceSelector.pitchFor(gender, pitch, hasGenderedVoice)
+
             // The engine resets pitch/rate when the voice changes, so they are
             // (re)applied after any switch — and always, since tone varies by run.
-            textToSpeech?.setPitch(pitch)
+            textToSpeech?.setPitch(effectivePitch)
             textToSpeech?.setSpeechRate(rate)
 
             _voiceDataMissing.value = !VoiceSelector.hasOfflineVoice(candidates, forLanguage) &&
@@ -389,12 +403,10 @@ class NativeVoiceManager(
             setRecognitionListener(object : RecognitionListener {
                 override fun onReadyForSpeech(params: Bundle?) {
                     sessionOpen = true
-                    _isListening.value = true
                 }
 
                 override fun onBeginningOfSpeech() {
                     sessionOpen = true
-                    _isListening.value = true
                 }
 
                 override fun onRmsChanged(rmsdB: Float) {
@@ -413,13 +425,10 @@ class NativeVoiceManager(
                     sessionOpen = false
                     // A pause, a phrase that did not match, a busy engine — the
                     // recognizer ends a session constantly and reports each end
-                    // here. Those are the normal end of one phrase: the ear stays
-                    // "listening" and the loop just reopens it, so the indicator
-                    // no longer flickers off and on. Only a failure the user must
-                    // fix flips the state, and that is the one that backs off.
-                    if (RecognizerError.needsUserAction(error)) {
-                        _isListening.value = false
-                    }
+                    // here. Those are the normal end of one phrase, so the
+                    // listening state is *not* touched: it belongs to the user's
+                    // switch, not to any one recognizer session. Flipping it here
+                    // is what made the indicator flicker off and on.
                     // A restart is only ever scheduled by the loop, never here, so
                     // a recognizer that fails instantly cannot spin.
                     if (micEnabled) scheduleRestart()
@@ -428,30 +437,24 @@ class NativeVoiceManager(
                 override fun onResults(results: Bundle?) {
                     _audioLevel.value = 0f
                     sessionOpen = false
-                    // Anything the recognizer heard while the assistant was
-                    // speaking — or in the tail just after — is the assistant's
-                    // own voice, not the user's. [isSpeakerActive] covers both the
-                    // engine and the echo tail, so the reply cannot be posted back
-                    // into the chat as if the user had said it.
-                    if (!isSpeakerActive()) {
-                        val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                        matches?.firstOrNull()?.takeIf { it.isNotBlank() }
-                            ?.let { onSpeechRecognized?.invoke(it, true) }
-                    }
+                    // Everything the recognizer hears is passed up, including while
+                    // the assistant is talking: the caller filters the assistant's
+                    // own voice out by comparing the text (`EchoMatcher`), and that
+                    // is what lets a real interruption through instead of muting
+                    // the user until the reply ends.
+                    val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                    matches?.firstOrNull()?.takeIf { it.isNotBlank() }
+                        ?.let { onSpeechRecognized?.invoke(it, true) }
                     if (micEnabled) {
                         restartAttempts = 0
                         scheduleRestart()
-                    } else {
-                        _isListening.value = false
                     }
                 }
 
                 override fun onPartialResults(partialResults: Bundle?) {
-                    // Same guard as the final result. Partials arrive in the gap
-                    // between two spoken sentences, when the engine is briefly
-                    // idle; without the echo check those fragments were typed into
-                    // the composer and then auto-sent as a user message.
-                    if (isSpeakerActive()) return
+                    // Partials are delivered during the assistant's speech too, so
+                    // the user can cut in mid-answer; the caller drops the ones
+                    // that are really the assistant's own voice coming back.
                     val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                     matches?.firstOrNull()?.takeIf { it.isNotBlank() }
                         ?.let { onSpeechRecognized?.invoke(it, false) }
@@ -472,23 +475,8 @@ class NativeVoiceManager(
         }
     }
 
-    /**
-     * Silences recognition while the assistant speaks, so the microphone cannot
-     * hear the phone's own speaker and feed the reply back as a user message.
-     */
-    private fun pauseForSpeech() {
-        pausedForSpeech = true
-        restartJob?.cancel()
-        restartJob = null
-        try { speechRecognizer?.cancel() } catch (_: Exception) {}
-        sessionOpen = false
-        _audioLevel.value = 0f
-        _isListening.value = false
-    }
-
     /** Reopens the ear once the assistant has finished the whole reply. */
     private fun resumeAfterSpeech() {
-        pausedForSpeech = false
         if (!micEnabled) return
         // A short tail: the speaker keeps ringing for a moment after the last
         // word, and that tail is what the recognizer would otherwise latch onto.
@@ -502,22 +490,30 @@ class NativeVoiceManager(
      * being restarted in a tight loop.
      */
     private fun scheduleRestart(immediate: Boolean = false, delayMs: Long = 0L) {
-        if (!micEnabled || pausedForSpeech || _isSpeaking.value) return
+        // The mic is reopened even while the assistant is speaking, so the user
+        // can cut in at any moment. The assistant's own words are filtered by
+        // text, so an open ear does not feed the reply back into the chat.
+        if (!micEnabled) return
         if (sessionOpen) return
         restartJob?.cancel()
         val backoff = if (immediate) 0L else minOf(RESTART_BASE_MS shl restartAttempts, RESTART_MAX_MS)
         restartJob = scope.launch(Dispatchers.Main) {
             delay(maxOf(delayMs, backoff))
-            if (!micEnabled || pausedForSpeech || _isSpeaking.value || sessionOpen) return@launch
+            if (!micEnabled || sessionOpen) return@launch
             val intent = recognizerIntent ?: return@launch
+            // Every attempt counts, not only a successful one. A recognizer that
+            // refuses to start (a busy engine, a denied permission) used to leave
+            // the counter at zero, so the backoff never grew and the loop hammered
+            // it every 300 ms — the on/off churn the user heard.
+            restartAttempts = minOf(restartAttempts + 1, 6)
             try {
                 speechRecognizer?.startListening(intent)
                 sessionOpen = true
-                _isListening.value = true
-                restartAttempts++
             } catch (_: Exception) {
                 sessionOpen = false
-                _isListening.value = false
+                // A failed start is retried after the backoff, and the listening
+                // state is left alone: it is the user's switch, not this session.
+                scheduleRestart()
             }
         }
     }
@@ -525,12 +521,15 @@ class NativeVoiceManager(
     /**
      * The user's switch. `true` keeps the microphone open for as long as the app
      * runs; `false` closes it and leaves it closed. Nothing else turns it on.
+     * The listening state is exactly this switch, so the UI shows what the user
+     * chose instead of the recognizer's per-phrase churn.
      */
     fun setMicEnabled(enabled: Boolean) {
         if (enabled == micEnabled) return
         micEnabled = enabled
         if (enabled) {
             restartAttempts = 0
+            _isListening.value = true
             scheduleRestart(immediate = true)
         } else {
             restartJob?.cancel()
@@ -590,6 +589,7 @@ class NativeVoiceManager(
      */
     private fun stopEngineOnly() {
         try { textToSpeech?.stop() } catch (_: Exception) {}
+        cancelSpeechWatchdog()
         speechGeneration++
         speechQueue.clear()
     }
@@ -650,10 +650,39 @@ class NativeVoiceManager(
         if (res == TextToSpeech.SUCCESS) {
             speechQueue.markSpoken(utterance.id)
             _isSpeaking.value = true
+            armSpeechWatchdog(utterance)
         } else {
             // This piece could not be spoken; try the next without spinning.
             pumpNext()
         }
+    }
+
+    /**
+     * A piece the engine accepted must finish. The engine normally answers with
+     * onDone, but a stalled service, a killed engine process or a dropped
+     * utterance leaves the queue waiting and the answer stops mid-sentence. The
+     * watchdog estimates how long the piece should take and, if no callback has
+     * arrived by then, drops it and moves to the next one so speech continues.
+     */
+    private fun armSpeechWatchdog(utterance: SpeechUtterance) {
+        speechWatchdog?.cancel()
+        val words = utterance.text.count { it == ' ' } + 1
+        // ~2.4 words/second at rate 1, scaled by the rate, with a 4s floor and an
+        // 8s cushion on top so a slow but healthy engine is never cut short.
+        val spokenMs = (words / (2.4f * utterance.rate) * 1000f).toLong()
+        val budget = (spokenMs + 8_000L).coerceAtLeast(6_000L)
+        speechWatchdog = scope.launch {
+            delay(budget)
+            if (speechQueue.isAwaiting(utterance.id)) {
+                speechQueue.onFinished(utterance.id)
+                finishUtterance(utterance.id)
+            }
+        }
+    }
+
+    private fun cancelSpeechWatchdog() {
+        speechWatchdog?.cancel()
+        speechWatchdog = null
     }
 
     private fun utteranceParams(): Bundle = Bundle().apply {

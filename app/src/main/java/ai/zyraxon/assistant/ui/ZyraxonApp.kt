@@ -316,7 +316,11 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                     }
 
                     AppTab.MCP -> {
-                        McpTabContent(viewModel = viewModel, panelAlpha = panelAlpha)
+                        McpTabContent(
+                            viewModel = viewModel,
+                            panelAlpha = panelAlpha,
+                            onClose = { viewModel.setTab(AppTab.CHAT) }
+                        )
                     }
 
                     // The terminal returns above, before this scaffold is built.
@@ -1056,7 +1060,7 @@ fun BottomComposer(
  * assistant, so there is nothing else to switch on here.
  */
 @Composable
-private fun McpTabContent(viewModel: ZyraxonViewModel, panelAlpha: Float) {
+private fun McpTabContent(viewModel: ZyraxonViewModel, panelAlpha: Float, onClose: () -> Unit = {}) {
     val connections by viewModel.mcpConnections.collectAsState()
     val notice by viewModel.mcpNotice.collectAsState()
 
@@ -1105,6 +1109,7 @@ private fun McpTabContent(viewModel: ZyraxonViewModel, panelAlpha: Float) {
             onDisconnect = { viewModel.disconnectMcp(it) },
             onAddCustom = { url, name, token -> viewModel.addCustomMcp(url, name, token) },
             onRemoveCustom = { viewModel.removeCustomMcp(it) },
+            onClose = onClose,
             modifier = Modifier.fillMaxSize()
         )
     }

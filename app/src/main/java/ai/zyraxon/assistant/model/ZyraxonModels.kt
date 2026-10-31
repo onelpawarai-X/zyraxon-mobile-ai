@@ -118,7 +118,9 @@ data class TerminalLine(
     val exitCode: Int,
     val isError: Boolean,
     val timedOut: Boolean = false,
-    val millis: Long = 0
+    val millis: Long = 0,
+    /** True while the command is still running, so the UI shows a live cursor. */
+    val running: Boolean = false
 )
 
 /**

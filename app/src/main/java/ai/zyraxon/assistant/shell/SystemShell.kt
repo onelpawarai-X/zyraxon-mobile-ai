@@ -168,6 +168,77 @@ object SystemShell {
         return if (r.ok) r.stdout else null
     }
 
+    /**
+     * Runs a command at system level and reports output **as it arrives**, so a
+     * long install or build shows live progress in the Terminal instead of a
+     * spinner. The reader threads call [onChunk], so a caller that touches UI
+     * state must post it to the main thread itself.
+     */
+    fun runStreaming(
+        context: Context,
+        command: String,
+        level: Level = Level.SHELL,
+        timeoutMs: Long = 600_000,
+        onChunk: (stream: String, text: String) -> Unit
+    ): Result? {
+        if (!available()) return null
+        val started = System.currentTimeMillis()
+        return try {
+            val binder: IBinder = Shizuku.getBinder() ?: return null
+            val service = IShizukuService.Stub.asInterface(binder)
+            val env = arrayOf(
+                "PATH=/sbin:/system/sbin:/system/bin:/system/xbin:/vendor/bin",
+                "HOME=/",
+                "ANDROID_ROOT=/system",
+                "ANDROID_DATA=/data",
+                "TMPDIR=/data/local/tmp"
+            )
+            val process = service.newProcess(arrayOf("sh", "-c", command), env, null)
+            val out = StringBuilder()
+            val err = StringBuilder()
+            val outStream = ParcelFileDescriptor.AutoCloseInputStream(process.inputStream)
+            val errStream = ParcelFileDescriptor.AutoCloseInputStream(process.errorStream)
+            val tOut = Thread { pump(outStream.bufferedReader(), out, "out", onChunk) }
+            val tErr = Thread { pump(errStream.bufferedReader(), err, "err", onChunk) }
+            tOut.start(); tErr.start()
+            val finished = process.waitForTimeout(timeoutMs, "MILLISECONDS")
+            val code = if (finished) process.exitValue() else -1
+            if (!finished) runCatching { process.destroy() }
+            tOut.join(2_000); tErr.join(2_000)
+            Result(
+                command = command,
+                code = code,
+                stdout = out.toString().take(200_000),
+                stderr = err.toString().take(60_000),
+                timedOut = !finished,
+                uid = if (level == Level.ROOT) 0 else 2000,
+                millis = System.currentTimeMillis() - started
+            )
+        } catch (e: Throwable) {
+            Result(command, -1, "", e.message ?: e.toString(), false, -1,
+                System.currentTimeMillis() - started)
+        }
+    }
+
+    /** Reads a stream line by line, appending to [sink] and calling [onChunk]. */
+    private fun pump(
+        reader: BufferedReader,
+        sink: StringBuilder,
+        stream: String,
+        onChunk: (String, String) -> Unit
+    ) {
+        try {
+            reader.use {
+                var line: String?
+                while (true) {
+                    line = it.readLine() ?: break
+                    synchronized(sink) { sink.append(line).append('\n') }
+                    runCatching { onChunk(stream, line) }
+                }
+            }
+        } catch (_: Exception) {}
+    }
+
     /** Quotes a path for the remote `sh`. */
     private fun shellQuote(s: String): String = "'" + s.replace("'", "'\\''") + "'"
 

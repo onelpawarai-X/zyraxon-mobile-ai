@@ -71,6 +71,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -613,7 +614,10 @@ fun SettingsSheet(
     val memories by viewModel.memories.collectAsState()
     val messages by viewModel.messages.collectAsState()
 
-    var activePane by remember { mutableStateOf("session") }
+    // The pane the user was last on is remembered across app restarts, so
+    // reopening Settings returns to the same section instead of snapping back to
+    // the first tab — the "settings reset themselves" complaint.
+    var activePane by rememberSaveable { mutableStateOf(viewModel.settingsPane) }
 
     // Checking for a new release as soon as Settings opens is what makes the
     // আপডেট pane useful the first time it is visited; the launch check has
@@ -701,7 +705,10 @@ fun SettingsSheet(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(if (isActive) Glass.pinkFill else Glass.rowFill(0.30f))
-                            .clickable { activePane = paneId }
+                            .clickable {
+                                activePane = paneId
+                                viewModel.settingsPane = paneId
+                            }
                             .padding(horizontal = 12.dp, vertical = 8.dp)
                     ) {
                         Text(
@@ -821,8 +828,18 @@ fun SettingsSheet(
                                         .background(if (loaded) Glass.cyanFill.copy(alpha = 0.20f) else Glass.rowFill(0.25f))
                                         .border(1.dp, if (loaded) Glass.cyanFill else Glass.borderSoft, RoundedCornerShape(10.dp))
                                         .clickable {
-                                            viewModel.onDeviceModel.load(f.absolutePath)
-                                            note = t("লোড হয়েছে: ") + f.name
+                                            note = t("লোড হচ্ছে: ") + f.name
+                                            scope.launch {
+                                                val ok = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                                    viewModel.onDeviceModel.load(f.absolutePath)
+                                                }
+                                                // Remember the loaded bundle so the next
+                                                // launch reloads it instead of silently
+                                                // falling back to the cloud.
+                                                viewModel.rememberOnDeviceModel(if (ok) f.absolutePath else null)
+                                                note = if (ok) t("লোড হয়েছে: ") + f.name
+                                                else t("লোড ব্যর্থ: ") + f.name
+                                            }
                                         }
                                         .padding(horizontal = 12.dp, vertical = 10.dp)
                                 ) {

@@ -1,342 +1,184 @@
 # ZYRAXON — project memory
 
-## What this repo is (updated 2026-10-29)
-`onelpawarai-X/zyraxon-mobile-ai` — a **native Kotlin + Jetpack Compose Android app**
-(not the old web app; that codebase and its history were deleted at the user's request).
-`namespace = "com.zyraxon.assistant"` and `applicationId = "com.zyraxon.assistant"`, `minSdk 24`,
-`targetSdk/compileSdk 36`, versionCode 12 / versionName **6.4.0**. `.aistudio/` and
-`metadata.json` are AI Studio export artifacts — keep them, the build references their
-signing configs. `README.md` is English and states Android-only.
+## What this repo is
+`onelpawarai-X/zyraxon-mobile-ai` — native Kotlin + Jetpack Compose Android app.
+`namespace`/`applicationId = com.zyraxon.assistant`, minSdk 21, target/compileSdk 36.
+`.aistudio/` + `metadata.json` are AI Studio export artifacts — keep them (the build
+references their signing configs), but `metadata.json` holds a *stale* `com.aistudio.*`
+id; the real app is `com.zyraxon.assistant`. README + release notes are English;
+**ZYRAXON itself is Android-only** (its tools may build other OSes for other projects).
+UI is **white glass** — use `ui/theme/Glass.kt` tokens, never a raw dark colour.
 
-## Models: nothing is hardcoded (v6.4.0, 2026-10-20)
-The user's standing rule: the app carries **no model list**. Every model comes from its
-provider's own catalogue at runtime; code holds only *detection rules* (the first-run
-`seedModels` are an offline fallback, nothing more).
-- Speech-to-speech follows the **chosen model**, not a switch. `AiModel.isRealtime` is set
-  in `ProviderCatalog.parseModels`; picking a realtime model is what opens the socket.
-  `enableLiveVoice()` / `stopLiveVoice()` replaced the removed `setLiveVoiceEnabled`.
-- Two real protocols, kept distinct: Gemini `BidiGenerateContent` vs OpenAI/xAI Realtime.
-  Voice names differ per protocol, so the gender-to-name map is per-protocol.
-- **Verify a realtime endpoint with a raw TLS WebSocket handshake, never `curl -I`** —
-  curl only proves the path exists. Gemini and `api.openai.com/v1/realtime` upgrade with
-  `101`; `api.x.ai/v1/realtime` gives `400` (real path, bad key);
-  `api.groq.com/openai/v1/realtime` gives `404`, so Groq is never labelled realtime.
-  curl can return HTTP 000 for Gemini while a raw socket succeeds — do not trust it.
-- `parseModels` drops Gemini's TTS-only ids (`-tts`), which cannot chat; the live models are
-  `native-audio` / `-live-` and survive. A test pins both halves.
-- Catalogue order is by provider `speedRank` (fastest first); ZYRAXON is held at the end
-  while its gate is shut. ZYRAXON's public catalogue really answers with 10 `zyraxon-*`
-  models plus a `gate` object — fetch it with `curl --http1.1 --max-time 110` (it streams
-  slowly; a short `-m` can report HTTP 000).
-- On-device bundles must be **token-free**: the suggested ones are public and verified with
-  a ranged GET (`206`) — SmolLM-135M, TinyLlama-1.1B, Qwen2.5-1.5B,
-  DeepSeek-R1-Distill-Qwen-1.5B, Qwen3-4B, Phi-4-mini. Gemma is licence-gated (`401`) and
-  is **not** offered.
+## Standing user rules
+- **Language: mirror the user.** Bangla in → Bangla out, English in → English out; one
+  stray word does not switch a set session language.
+- **Decide small things yourself; stop only for big ones.** Pick defaults for names,
+  app choice, ordering and move on. Ask one short question only when the answer is
+  unknowable, irreversible, or touches identity/money/accounts. An open todo is a pause,
+  never an ending (`MAX_TOOL_ROUNDS` = 120).
+- **Do the one thing the user said, first.** A neighbouring subsystem must not absorb
+  the session (v6.9.0 lesson).
+- **This user reverses decisions.** Check `git log`/HEAD before trusting an older
+  session's "the user asked for X" (v6.7.1 locked female-only, v6.8.0 reverted it).
+- Play Protect: never write "the AI can never do this" — it walks the settings screen.
+- No emulator in this container (no `/dev/kvm`), so runtime proof is the unit suite +
+  `assembleDebug`; the phone is the only place to confirm runtime behaviour.
 
-## MCP servers (added 2026-10-29, v4.0.0)
-`ai.zyraxon.assistant.mcp`: `McpModels` (catalog + tool schema), `McpClient` (JSON-RPC over
-streamable HTTP), `McpOAuth` (RFC 9728 discovery, DCR, PKCE), `McpOAuthServer` (loopback
-listener), `McpManager` (persist/connect/call). UI is the **MCP** tab (`McpScreen.kt`).
-Four servers: Canva, Cloudflare, Supabase (OAuth) + GitHub (token).
-- **All three OAuth servers reject a custom app scheme** and need a loopback redirect, hence
-  the local server. It must **loop**, not serve once: the browser asks for `/favicon.ico`
-  right after the redirect and a single-shot server mistakes that for the callback.
-- **No client id ships.** Each install registers dynamically (DCR). Supabase's AS lives on
-  `api.supabase.com`, not the MCP host, so discovery must follow RFC 9728.
-- Canva/Cloudflare block non-browser clients → send a desktop Chrome User-Agent.
-- Tools are namespaced `<serverId>__<tool>`. Agent tools: `mcp_connect`, `mcp_list`,
-  `mcp_disconnect`.
-- **v5.1.0** completed the protocol (ping, resources/subscribe, logging/setLevel,
-  completion/complete, elicitation, roots, progress/cancelled). Three bugs worth not
-  reintroducing: `awaitFreshToken` needs an `McpAuth.NONE` branch or a no-auth server
-  connects then fails every call; `update()` must also look up custom servers, not just the
-  catalogue; and a refreshed subscribed resource must be drained into the next agent round.
-- `McpManager.close()` + `ViewModel.onCleared()` release the SSE channels — without them a
-  screen change leaks a live channel and thread. `McpCatalog.slugId()` is the one id
-  generator; keep both callers on it.
-
-## Remote main gets force-pushed from AI Studio — always fetch first
-Once a re-export force-pushed `main` and deleted my commits. Before pushing run
-`git fetch` and compare. If histories are unrelated (no merge-base) do **not** rebase — use
-`git merge origin/main --allow-unrelated-histories` on a `release/*` branch, resolve add/add
-conflicts with `git checkout --ours` (the local line is the evolved superset since the
-force-push), then push the branch, open a PR, and merge it. That keeps every file from both
-sides and pushes nothing destructively. **Done for v6.4.0 (PR #2, 2026-10-20): 32 add/add
-conflicts, all resolved to ours; the merge commit let `main` move forward without a
-force-push.**
-- `metadata.json` here is the *stale AI Studio v3.0.0 descriptor* (`applicationId
-  com.aistudio.zyraxon.kxqmpz`) — the real build is `com.zyraxon.assistant`, so ignore that
-  field when reading it.
-- The two `com.example.*` scaffold tests from AI Studio reference the old `R`/`BuildConfig`;
-  their imports must point at `com.zyraxon.assistant` or `compileDebugUnitTestKotlin` fails
-  with `Unresolved reference 'R'` (fixed after the merge). Unit tests then run **135**.
-
-## Toolchain: gone between sessions, must be reinstalled (2026-10-28)
-`/opt` was **empty** at session start — no JDK, no Gradle, no Android SDK. Recipe (~6 min,
-run in background and poll):
-- `sudo apt-get install -y openjdk-21-jdk-headless unzip zip` → `/usr/lib/jvm/java-21-openjdk-amd64`
-- **Gradle 9.3.1** at `/opt/gradle` — AGP 9.1.1 hard-fails below it ("Minimum supported
-  Gradle version is 9.3.1"); 8.13 does NOT work.
-- SDK at `/opt/android-sdk`: `commandlinetools-linux-11076708_latest.zip`, then
-  `sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"`. AGP also wants
-`platforms;android-36.1`. **The license prompt hangs** non-interactively — write
-`/opt/android-sdk/licenses/android-sdk-license` by hand (needs `sudo`, then `chmod -R 777`
-`/opt/android-sdk`, or the install fails with "Failed to read or create install properties
-file").
-- `apt-get update` needs **sudo**; plain `openhands` gets "List directory
-  /var/lib/apt/lists/partial is missing".
-
-## Build & test
-- Build with system `gradle`, **not** `./gradlew` (there is no `gradlew` or wrapper jar).
-- `--offline` works for `compileDebugKotlin` / `assembleDebug`. **Unit tests need the
-  network the first time** (junit/robolectric must populate the Gradle cache).
-- Release APK: `KEYSTORE_PATH`/`STORE_PASSWORD`/`KEY_PASSWORD` env vars are read by
-  `app/build.gradle.kts`. **The canonical keystore is `my-upload-key.jks`** (alias
-  `upload`, store+key password `zyraxon2026`), the AI Studio upload key whose cert
-  SHA-256 is `6dcfa05e...`; it signed v3.0.0. `zyraxon-release.jks` (cert `112547e4...`)
-  was generated in a later session on the mistaken belief that the password was lost —
-  v4.0.0 was signed with it, which is why v4.0.0 **cannot** be installed as an update
-  over v3.0.0. Use `my-upload-key.jks` unless the user says otherwise. `*.jks` is
-  gitignored, so both live only in the workspace.
-- Lint blocks `assembleRelease` with `InvalidFragmentVersionForActivityResult` on
-  `registerForActivityResult`; fix is the `androidx.fragment:fragment-ktx` dependency even
-  though the app uses no fragments.
-- Verify a build with `apksigner verify --print-certs` then
-  `strings classes*.dex | grep -c <toolname>` to prove a tool really shipped.
-
-## Aura & UI (fixed 2026-10-28)
-- **Six aura styles** (v6.2.0): `orb` (default, the original), `twin`, `vortex`, `bloom`,
-  `helix`, `core`. `data-aura` on `<html>` picks one; each is a real element set, not a
-  recolour. `AuraHtmlTest` (8) guards that every chip in `Sheets.kt` has a matching CSS
-  rule and that its elements exist in the markup — add both together or the test fails.
-- **Never centre the aura page with `height:100vh` + flex.** Android's WebView mis-measures
-  `100vh` as the system bars change, which slid the orb up under the toolbar. `aura.html`
-  uses absolute `top:50%/left:50%` + `translate(-50%,-50%)`.
-- **A large `blur()` on a circle wider than the WebView bleeds past the edge and gets
-  sliced.** `.atmosphere` is `blur(48px)` + a radial `mask-image` fading to transparent at
-  82%. Do not restore the `@media (max-width:420px) { scale(0.84) }` rule — a 360dp
-  WebView always matched it and the transform fought the centring.
-- `aura.html` exposes `--aura-hue/-size/-glow/-speed`; `AuraWebView` writes them through
-  `window.ZyraxonAuraLook(...)`. All colours are `hsl(var(--aura-hue) ...)` — no hard-coded
-  pink — which is what makes the colour slider work. `AuraHtmlTest` guards all of this.
-- The UI is **white glass**, not black: use `ui/theme/Glass.kt` (`fill(alpha)`, `sheetFill`,
-  `rowFill`, near-black text tokens). The old panels were `0xD90B0A1E`. `panelAlpha` is a
-  user setting. New panels must use `Glass.*`, never a raw dark `Color(0x...)`.
+## Toolchain & build (reinstalled most sessions)
+`/opt` is often empty at session start. Recipe (~6 min, background + poll):
+openjdk-21-jdk-headless; **Gradle 9.3.1** at `/opt/gradle` (AGP 9.1.1 hard-fails below);
+SDK at `/opt/android-sdk` via commandlinetools + `sdkmanager "platform-tools"
+"platforms;android-36" "build-tools;36.0.0"` (also `platforms;android-36.1`). The licence
+prompt hangs non-interactively — write `/opt/android-sdk/licenses/android-sdk-license`
+by hand (needs sudo). `apt-get update` needs sudo.
+- Build with system `gradle`, **not** `./gradlew` (no wrapper). `--offline` works for
+  `compileDebugKotlin`/`assembleDebug`; unit tests need network the first time.
+- Working dirs used by prior sessions: `GRADLE_USER_HOME=/tmp/gradle-home`,
+  `/tmp/gradle-dist/gradle-9.3.1/bin/gradle`.
+- Release signing: canonical keystore `my-upload-key.jks` (alias `upload`,
+  store+key `zyraxon2026`, cert `6dcfa05e...`). `zyraxon-release.jks` (`112547e4...`) is
+  a later mistake — builds signed with it cannot update over the canonical ones.
+- Lint blocks `assembleRelease` on `InvalidFragmentVersionForActivityResult`; fix is the
+  `androidx.fragment:fragment-ktx` dependency.
+- **Verify the artifact, not the source:** `unzip -o apk 'classes*.dex' -d /tmp/x` then
+  `strings /tmp/x/classes*.dex | grep -c <symbol>` — this caught v5.1.0 shipping no
+  `ProviderCatalog` at all.
 
 ## Credentials
 - Injected `$GITHUB_TOKEN` = account **zyraxon-X**: only `pull` on the release repo, so
-  push / release-create / release-delete all return **403**. Writable repo:
-  `zyraxon-X/lore-crafter-delight`.
-- The user's own PAT is admin on the release repo (account **onelpawarai-X**). A fresh one
-  is pasted in the chat each session — do **not** store its value. `gh auth login
-  --with-token` + `gh auth setup-git` is enough: the credential helper then serves it and
-  the remote stays tokenless. Push form if you must inline it:
-  `git push "https://onelpawarai-X:$PAT@github.com/..."` (always `user:token@`; a bare token
-  makes git prompt and hang). Never leave it in `.git/config`.
-- Older PATs live in the bare backup clones at `/workspace/backup/*.git`
-  (`git --git-dir=... config --get remote.origin.url`); `$PAT` does not persist across tool
-  calls, so re-read it each time. Backups are outside the workspace, not committed.
-- **No emulator in this container**: `/dev/kvm` is absent and there is no `emulator`
-  binary, so Android runtime verification is impossible. Ship-side proof is the unit suite
-  plus `assembleDebug`; the phone is the only place to confirm runtime behaviour.
+  push/release/PR-edit via `gh` return **403 "Resource not accessible by integration"**.
+  Writable repo: `zyraxon-X/lore-crafter-delight`.
+- The user pastes their own **classic PAT** (`ghp_…`, account **onelpawarai-X**, admin on
+  the release repo) each session — do **not** store its value. `gh auth login --with-token`
+  + `gh auth setup-git` makes the credential helper serve it. Push form if inline:
+  `https://onelpawarai-X:$PAT@github.com/...` (`user:token@`; a bare token makes git hang).
+  **PR edits need the classic PAT too:** `TOK=$(git remote get-url origin | sed -E
+  's#https://[^:]+:([^@]+)@.*#\1#')` then `curl -X PATCH -H "Authorization: Bearer $TOK"
+  .../pulls/<n> -d @pr.json`. `gh pr edit` is blocked for the app token.
+- Older PATs live in bare backups at `/workspace/backup/*.git`.
 
-## Realtime + agentic behaviour
-- `OpenAiSse.kt` streams `data:` deltas over OkHttp; `StreamedTurn.mergeToolCalls`
-  concatenates split `tool_calls` arguments by index (OpenAI sends them in fragments).
-- `ZyraxonAiEngine.streamAiResponse` is a `channelFlow` agentic loop that feeds each tool
-  result back into `messages`. Mid-task injection: `drainInjections` is drained at the top
-  of every round from a `ConcurrentLinkedQueue`.
-- `sendMessage()` sets `_isGenerating = true` **before** `viewModelScope.launch`; setting it
-  inside the coroutine raced and let two quick messages start competing turns.
-- **No empty/hallucinated replies:** `OpenAiSse.lastError` captures the provider's own error
-  text and `ZyraxonAiEngine.lastProviderError` re-throws it, so the phone repeats the real
-  reason. Do **not** buffer the SSE body to read errors — only the non-2xx body is read
-  whole, buffering kills real-time streaming.
-
-## Voice: native STT/TTS only
-- Phone's own engine only; a remote `translate.google.com/translate_tts` fallback was
-  removed on the user's explicit instruction. `ttsAvailable` is false when no engine exists
-  so the UI warns instead of pretending. Preferred engine `com.google.android.tts` (carries
-  the Bangla voice; AOSP usually does not). STT is `SpeechRecognizer` +
-  `EXTRA_PARTIAL_RESULTS` for live transcription.
-- **Letter-by-letter bug** ("login" -> "el-o-ji-ai-en"): one sentence in one call, and an
-  engine holds **one language at a time**, so the Bangla voice spells English words out.
-  Fix: `voice/SpeechSegmenter.kt` splits cleaned text into same-language runs and
-  `NativeVoiceManager.speakRuns()` switches language per run. A single-language sentence
-  stays ONE utterance so prosody is not chopped. Guarded by `SpeechSegmenterTest` (6).
-- `SpeechTextCleaner` strips code fences, inline code, markdown, bullets and emoji before
-  speaking, else the engine says "asterisk asterisk". `SpeechCleaningTest` (4).
-- `voice_change` tool -> `MainActivity.applyVoice()` -> `ZyraxonViewModel.applyVoice()`.
-  `MainActivity.viewModel` is private, so that public door exists for tools.
-  `NativeVoiceManager` is the **single owner** of voice state — do not add a second
-  `_voiceGender` in the ViewModel (that was a real compile error). Persona drives it:
-  `boyfriend` -> male, otherwise female.
-
-## Voice/mic/memory/settings pass (PR #3, 2026-10-30, branch `fix/voice-mic-persistence`)
-Nine complaints fixed in one pass; 162 unit tests / 0 failures; `assembleDebug` OK.
-- **Mic churn (the loudest symptom)**: a streamed reply fires `onStart` once *per sentence*,
-  so `pauseForSpeech()` ran per sentence — off/on dozens of times a minute. The rule now
-  lives in `voice/MicGate.kt`, a pure state machine: `beginReply()` / `onUtteranceStart()`
-  / `onUtteranceDone(engineBusy)` / `endReply(engineBusy)` / `reset()`. One reply = one
-  close + one open regardless of sentence count. `MicGateTest` plays a 3- and a 10-sentence
-  reply and asserts exactly 1/1. The ViewModel owns the boundary: `beginReply()` before the
-  stream, `endReply()` in the `finally`.
-- **User-owned mic switch**: `mic_toggle_button` in the top bar + a larger one in Settings.
-  `setMicEnabled()` is the only thing that turns the mic off for good, and it persists.
-- **Long-term memory was silently dead**: recalled turns were prepended to the *entire*
-  recent transcript, and the engine's `takeLast(12)` then trimmed them away — a memory the
-  DB had just found never reached the model. Fix: `ai/ContextWindow.kt`
-  (`ENGINE_LIMIT=12`, `RECALL_LIMIT=4`, `RECENT_LIMIT=8`); `ContextWindowTest` proves a
-  recalled turn survives a 40-turn transcript. Keep the engine and the ViewModel on the same
-  constant or the bug returns.
-- **Only the female voice was ever heard**: `VoiceSelector.pick()` ended in
-  `pool.firstOrNull()`, so a male request could return the female voice. Now the fallback
-  order is gendered → gender-neutral → nothing; the opposite gender is never returned.
-- **Settings lost on restart**: covered by `SettingsPersistenceTest`, which builds the real
-  `ZyraxonViewModel` twice against the same SharedPreferences (no mocks).
-- **Realtime voice is now opt-in**: `live_voice_preferred` defaults **false** and applies
-  only to realtime models, so a socket that will not open no longer leaves the assistant
-  silent — the phone's TTS reads the text.
-- **Real-time + tone**: `SpeechChunker.take()` releases at the *first* sentence end (it used
-  to wait for the last, which held the first sentence back); `SpeechTone` gives each
-  sentence a small pitch/rate shift.
-- Test note: `SettingsPersistenceTest` and `LiveVoiceUiTest` are Robolectric; the ViewModel
-  test constructs the real Room DB, so it is slower than the pure-logic tests.
-
-## Prompt rules the user settled
-- **Language: mirror the user.** Bangla in → Bangla out, English in → English out; once the
-  session language is set one stray word does not switch it. (The user first said "always
-  Bangla", then corrected to mirroring. Mirroring is the answer.)
-- **Decide small things yourself; stop only for big ones.** Pick defaults for file names,
-  app choice, ordering and move on; ask one short question only when the answer is
-  unknowable, irreversible, or touches identity/money/accounts. An open todo is a pause,
-  never an ending; the AI never stops while one is open (`MAX_TOOL_ROUNDS` = 120).
-- **Play Protect: never write "the AI can never do this".** It walks the settings screen
-  itself (`open_settings("play_protect")` → `screen_shot` → `tap`) and asks for permission
-  when it cannot. A refusal-style block was explicitly rejected.
-- **Android-only for ZYRAXON itself**; its tools may build Linux/macOS/Windows/Android apps
-  for *other* projects via GitHub Actions/shell. README and release notes are in English.
+## Models: nothing is hardcoded
+The app carries **no model list** — every model comes from its provider's catalogue at
+runtime; code holds only detection rules (`seedModels` are an offline fallback).
+- `ProviderCatalog.parseModels` sets `AiModel.isRealtime`; picking a realtime model opens
+  the live socket. Two protocols stay distinct: Gemini `BidiGenerateContent` vs
+  OpenAI/xAI Realtime; voice names differ per protocol.
+- **Verify a realtime endpoint with a raw TLS WebSocket handshake, never `curl -I`.**
+  Gemini and `api.openai.com/v1/realtime` upgrade `101`; `api.x.ai/v1/realtime` `400`
+  (real path, bad key); `api.groq.com/openai/v1/realtime` `404` (never labelled realtime).
+- `parseModels` drops Gemini's TTS-only `-tts` ids; live ones are `native-audio`/`-live-`.
+- Catalogue order = provider `speedRank`, fastest first. ZYRAXON is held at the end while
+  its gate is shut.
+- On-device bundles must be **token-free** (verified by ranged GET `206`): SmolLM-135M,
+  TinyLlama-1.1B, Qwen2.5-1.5B, DeepSeek-R1-Distill-Qwen-1.5B, Qwen3-4B, Phi-4-mini.
+  Gemma is licence-gated (`401`) and not offered.
+- `fetchLiveModels()` loads all providers **in parallel** with a progress callback (never
+  sequential). `adoptDefaultIfUnset(models, complete)` may only substitute a model from
+  the **finished** catalogue — adopting from a partial one discarded the user's choice.
+- `callModelWithFailover` retries the next **keyed** provider in `speedRank` order on
+  quota/limit, each fallback using **its own** seed model id.
 
 ## The user's own provider (gated on purpose)
-`zyraxonai.lovable.app/api/public/zyraxon/v1/models` is live and returns 10 models, but
-`/chat/completions` is **switched off** until `onelpawarai-X/ZYRAXON-AI` reaches 100,000
-stars — the gate reply says so, so a failure there is expected, not a bug. Wired in as
-provider `zyraxon`, fastest-first (pulse, neural, codex, visionary, matrix, cyber, quantum,
-titan, apex, genesis). TTS/STT on that site stay available regardless.
-**Since v6.0.0 its catalogue is marked `catalogIsPublic = true`**, so those 10 models list
-before any key is set; chat still needs the key.
-The container **can** read that host after all (verified 2026-10-20): a plain `curl -m 25`
-returns HTTP 000 because the response streams slowly, but
-`curl -s --http1.1 --max-time 110` returns the full 5.6 KB body. Do not conclude the host is
-unreachable from a short-timeout curl.
+`zyraxonai.lovable.app/api/public/zyraxon/v1/models` returns 10 models, but
+`/chat/completions` is **switched off** until `onelpawarai-X/ZYRAXON-AI` hits 100,000
+stars — a failure there is expected, not a bug. Provider id `zyraxon`. Since v6.0.0 its
+catalogue is `catalogIsPublic = true`, so the 10 models list before any key is set.
+The container **can** read that host: a short `curl -m 25` returns HTTP 000 because the
+body streams slowly; `curl -s --http1.1 --max-time 110` returns the full body.
 
-## Provider connection & model loading (fixed 2026-10-29, v6.0.0)
-The long-standing "model selector is empty / connecting does nothing" report was **not** a
-UI bug. The shipped v5.1.0 APK contained no `ProviderCatalog` and no `verifyProviderKey`
-at all — `saveProviderKey` only wrote the key to `SharedPreferences`. **Verify the artifact
-before editing source**: `unzip -o apk -d /tmp/x 'classes*.dex'` then
-`strings /tmp/x/classes*.dex | grep -c ProviderCatalog`.
-Now: `fetchLiveModels()` loads all 8 providers **in parallel** and streams each provider's
-models through a progress callback (never sequential — a dead endpoint used to block the
-rest for 20s each); saving a key verifies against that provider's own catalogue and says
-"connected" only when it truly answered; Settings has ZYRAXON and OpenCode key rows.
-`callModelWithFailover` retries the next **keyed** provider in `speedRank` order on
-quota/limit, each fallback using **its own** seed model id (a foreign id 404s everywhere).
+## Voice (STT/TTS) — the area that keeps regressing
+Phone's own engine only; a remote `translate.google.com/translate_tts` fallback was
+removed on the user's instruction. Preferred engine `com.google.android.tts` (carries the
+Bangla voice). `NativeVoiceManager` is the **single owner** of voice state — do not add a
+second `_voiceGender` in the ViewModel (real compile error once).
+- **Mic indicator**: the listening state belongs to the **user's switch** alone.
+  `onReadyForSpeech`/`onError`/`onResults` must NOT flip `_isListening`; only
+  `setMicEnabled` does. Every start attempt grows the backoff (a failed start used to
+  leave the counter at 0 and hammer every 300 ms — the off/on churn). `RecognizerError`
+  keeps the ear open for ordinary endings (NO_MATCH 7, SPEECH_TIMEOUT 6, RECOGNIZER_BUSY
+  8, NETWORK 2, SERVER_DISCONNECTED 11).
+- **Echo**: filter the assistant's own voice **by text** (`EchoMatcher.isOwnSpeech`,
+  `strict` while the speaker rings), never by muting the mic for the whole reply — muting
+  blocked real interruption. A partial only ever *interrupts*; it is never auto-sent.
+- **Both voices**: `_voiceChosenByUser` (pref `voice_chosen_by_user`) is load-bearing —
+  `setVoiceGender`/`applyVoice` set it, `setPersona` sets the voice only when it is false,
+  and the constructor reads `voice_gender` back when true. Deleting it caused BOTH
+  "only the female voice" and "my choice resets". `VoiceSelector.pick` order is
+  gendered → gender-neutral → nothing; it never returns the opposite gender. When no
+  voice states the wanted gender, gender is carried by pitch (female 1.28/1.00, male
+  0.82/0.95).
+- **Letter-by-letter bug** ("login" → "el-o-ji-ai-en"): an engine holds one language at a
+  time, so the Bangla voice spells English words. `SpeechSegmenter` splits cleaned text
+  into same-language runs; `speakRuns()` switches language per run; a single-language
+  sentence stays ONE utterance so prosody is not chopped. Voice selection must fall back
+  to *any* voice for the language (a leftover previous-language voice spelled English out).
+- **Real-time + tone**: `SpeechChunker.take()` releases at the first sentence end and, for
+  a long unpunctuated run, at a word boundary. Constants were lowered in v6.10.0
+  (CLAUSE_MIN 42→30, COMMA_MIN 16→12, WORD_RELEASE_MIN 48→32, WORD_CUT_MIN 24→16).
+  `SpeechTone` adds a small pitch/rate shift per sentence. Pipeline: `SpeechChunker` →
+  `SpeechSegmenter` → `SpeechQueue` (one run at a time, `onDone` gates the next; a
+  watchdog drops a stalled piece so speech continues).
+- `SpeechTextCleaner` strips code fences, inline code, markdown, bullets, emoji and the
+  `⚙️` tool-status lines before speaking.
+- **Live speech-to-speech** follows the chosen model: `_liveVoicePreferred` must be
+  initialised from pref `live_voice_preferred` and the session reopened on launch when
+  the saved model `isRealtime` — writing the pref without reading it made the model's own
+  voice work once and never return. Phone TTS is the fallback whenever no live session is
+  active (`shouldUsePhoneTts()`).
 
-## Channels: no Android intent can post autonomously
-`channel_post` opens the real app's composer pre-filled (Telegram/WhatsApp/Facebook/
-Messenger/Instagram/X via `ACTION_SEND` + `setPackage`; Gmail/SMS via `ACTION_SENDTO`). It
-must never claim the post was sent. YouTube has no publish intent — it opens Studio and
-returns `manual: true`. Android 11+ needs the manifest `<queries>` block or those apps are
-invisible; images need the `androidx.core.content.FileProvider`.
+## Realtime + agentic behaviour
+- `OpenAiSse` streams `data:` deltas over OkHttp; `mergeToolCalls` concatenates split
+  `tool_calls` args by index. `lastError` captures the provider's own error text so the
+  phone repeats the real reason. Do **not** buffer the SSE body — it kills streaming.
+- `ZyraxonAiEngine.streamAiResponse` is a `channelFlow` agentic loop feeding each tool
+  result back into `messages`; `drainInjections` is drained per round.
+- `sendMessage()` sets `_isGenerating = true` **before** `viewModelScope.launch`.
+- **Latency**: gather the turn's inputs (DB reads, `screenContext()` = full
+  accessibility-tree walk) off the main thread with `withContext(Dispatchers.IO)`; repaint
+  the streaming reply at most every `UI_UPDATE_MS = 60` ms, not per token.
+- Long-term memory: `ai/ContextWindow.kt` (`ENGINE_LIMIT=12`, `RECALL_LIMIT=4`,
+  `RECENT_LIMIT=8`) — recalled turns must lead the history or the engine's `takeLast(12)`
+  trims them away. Keep engine and ViewModel on the same constant.
+- Settings persistence is guarded by `SettingsPersistenceTest`, which builds the real
+  ViewModel twice against the same SharedPreferences (no mocks). **Run the suite before
+  trusting a previous session's work** — a red test here was the alarm for v6.10.0.
 
-## The floating bubble (v6.2.0)
-`floating_bubble` is a real tool (`UI_TOOLS`), not just a settings toggle. The service
-draws an orb over every app; a tap expands a box that pushes text into the **same
-`ZyraxonViewModel`** the main screen uses (`ZyraxonViewModel.active`), so tools, memory and
-voice are identical — do not give the service its own engine.
-- **`Settings.canDrawOverlays` is the gate.** Without it `addView` throws and the service
-  would die, so `onStartCommand` `stopSelf()`s with `START_NOT_STICKY` instead. The
-  settings row, the panel and the tool all open the exact permission row in place.
-- Test gotchas: `shadowOf(windowManager)` returns the *base* `ShadowWindowManager` which
-  has **no** `views` field — cast to `ShadowWindowManagerImpl`. And overlay permission in
-  Robolectric comes from `ShadowSettings.setCanDrawOverlays(bool)`, **not**
-  `denyPermissions(SYSTEM_ALERT_WINDOW)` (which has no effect on it).
+## Phone integration notes
+- **Channels**: no Android intent posts autonomously. `channel_post` opens the real app's
+  composer pre-filled (Telegram/WhatsApp/Facebook/Messenger/Instagram/X via `ACTION_SEND`
+  + `setPackage`; Gmail/SMS via `ACTION_SENDTO`) and must never claim it was sent. Android
+  11+ needs the manifest `<queries>` block or those apps are invisible; images need
+  `FileProvider`.
+- **Floating bubble**: `floating_bubble` is a real tool; the service pushes text into the
+  **same `ZyraxonViewModel`** (`ZyraxonViewModel.active`) — do not give it its own engine.
+  `Settings.canDrawOverlays` is the gate (else `addView` throws; `stopSelf()` instead).
+  Robolectric: cast `shadowOf(windowManager)` to `ShadowWindowManagerImpl` (the base has
+  no `views`); overlay permission comes from `ShadowSettings.setCanDrawOverlays(bool)`.
+- **Aura**: six styles via `data-aura` on `<html>` (`orb` default, `twin`, `vortex`,
+  `bloom`, `helix`, `core`); `AuraHtmlTest` guards that every Settings chip has CSS +
+  markup. Never centre with `height:100vh` + flex (WebView mis-measures it); use absolute
+  `top/left:50%` + `translate(-50%,-50%)`.
+- **MCP** (`ai.zyraxon.assistant.mcp`): OAuth servers reject a custom scheme and need a
+  loopback redirect that **loops** (the browser fetches `/favicon.ico` right after the
+  redirect). No client id ships — DCR per install. Tools are `<serverId>__<tool>`.
+  `McpManager.close()` + `ViewModel.onCleared()` release SSE channels.
+- Terminal: `SystemShell.runStreaming` streams stdout+stderr on separate threads line by
+  line; real Termux can be installed/driven at system level via Shizuku.
 
 ## Release history
-- **v6.9.0** (2026-10-30, PR #10, tag `v6.9.0`): the user's actual ask, after several
-  sessions of the agent working on voice instead. **The top of the screen now holds
-  exactly one control** — a labelled `সেটিংস` pill next to the `ZYRAXON` wordmark.
-  The tab row that still ran across the top (চ্যাট/টাস্ক/টুল/MCP/ZX) is **deleted**;
-  `TabSelector` was its only user and is gone from `ChatComponents.kt`. Everything it
-  held moved into a new **`SessionNavPane`** pane (`Sheets.kt`), which is the **default
-  pane** when Settings opens: the five `AppTab` rows, a "নতুন সেশন" button
-  (`clearChat()` + `setTab(CHAT)`) and the mic switch (`setMicEnabled`). Also dropped
-  the duplicate mic pill from the chat header. 247 tests / 0 failures
-  (`NavigationUiTest` is new: sections reachable, tap switches + dismisses, mic toggles).
-  **Lesson:** when the user says "do THIS", do that one thing first and do not let a
-  neighbouring subsystem absorb the session.
-- **v6.8.0** (2026-10-30, PR #9, tag `v6.8.0`): the v6.7.1 **female-only lock is
-  reverted** — the user wants *both* voices. Speech is a real queue now
-  (`SpeechChunker` -> `SpeechSegmenter` -> `SpeechQueue`, one run at a time, `onDone`
-  gates the next), which fixes the mic flicker and the cut-off-after-a-word bug.
-  `live_voice` (model-native S2S) is enabled again. 244 tests / 0 failures.
-  **Lesson:** this user reverses decisions. v6.7.1 removed the male voice *at their
-  request*; v6.8.0 restores it *at their request*. Check `git log`/HEAD before
-  trusting an older session's "the user asked for X".
-- **v6.6.0** (PR #6, branch `feat/terminal-and-git`, not yet released): a real Terminal tab
-  (`⌘ ZX`) plus `git clone/pull/status` via JGit. 191 tests / 0 failures. versionCode 14.
-- **v6.5.0** (2026-10-30, current, release id 428853097, tag `v6.5.0`): in-app
-  auto-update (`Updater.kt` + `UpdateInstallReceiver.kt`), Settings `আপডেট` pane,
-  launch banner. **All older tags/releases were deleted.** New signing key; installing
-  over an older build needs one uninstall, then updates are in place. `UpdaterTest`
-  (8) parses a **captured real GitHub payload**; 170 tests / 0 failures. versionCode 13.
-- **v6.4.0**: no hardcoded models — provider-driven realtime detection, protocol-aware
-  live voice, token-free on-device bundles, TTS-id filter. 135 tests. versionCode 12.
-- **v6.7.1** (current, release id 429194251, tag `v6.7.1`): the mic-indicator fix —
-  `SpeechRecognizer` reports every session end through `onError`, and the listener
-  used to set `_isListening=false` for all of them, so the indicator blinked off/on
-  many times a minute. `voice/RecognizerError.kt` now keeps the ear open for the
-  ordinary endings (NO_MATCH 7, SPEECH_TIMEOUT 6, RECOGNIZER_BUSY 8, NETWORK 2,
-  SERVER_DISCONNECTED 11) and closes it only for INSUFFICIENT_PERMISSIONS 9 /
-  LANGUAGE_* 12–14. 213 tests.
-- **v6.7.0** (release id 429181978, tag `v6.7.0`): **minSdk 24 → 21** (Android 5.0+).
-  Only Shizuku (AAR minSdk 23) and androidx.core 1.18 held the floor; fix was
-  Shizuku 12.2.0 + core-ktx 1.13.1 + `tools:overrideLibrary`. All API-23+ calls got
-  a lower path (ContextCompat, isKeyguardSecure, AudioTrack ctor, polled exitValue
-  instead of `waitFor(timeout)`, ActivityCompat, overlay/install-permission assumed
-  allowed on old API). **Real bug fixed:** the manifest registered
-  `.update.UpdateInstallReceiver` but the class lives in `ai.zyraxon.assistant.update`
-  under a `com.zyraxon.assistant` namespace — so the receiver never existed and in-app
-  update results were never delivered. Always register components by FULL class name.
-  Also: real Shizuku system shell (`SystemShell`), `BackgroundCommandService`,
-  matrix-rain terminal backdrop. 206 tests, lint 0 errors.
-- **v6.3.0**: sixty-language UI (246 strings via `t()`), searchable language picker.
-- **v6.2.0**: floating bubble (`OverlayChatService`), six aura styles, `read_media` by
-  `url` + multi-frame `frames` (its old schema required `path`).
-- **v6.1.0** provider failover; **v6.0.0** parallel model loading, key verification,
-  public ZYRAXON catalogue. v3.0.0 was deleted and rebuilt once.
-- Older detail lives in `.openhands/memory/2026-10-20.md`; minSdk-21 pitfalls, the mic
-  root cause and the release mechanics in `.openhands/memory/2026-10-30.md`.
-
-## Releasing on this repo (the owner token is in the git remote)
-- The `GITHUB_TOKEN` env var is user `zyraxon-X`, who is **not a collaborator** — PR
-  create fails 422 "must be a collaborator". The **owner** token is inside the remote:
-  `git remote get-url origin | sed -E 's#https://[^:]+:([^@]+)@.*#\1#'`. Use it for
-  create/merge/upload.
-- `git tag -a` needs `-c user.name=openhands -c user.email=openhands@all-hands.dev`.
-- Upload assets to `uploads.github.com/repos/<o>/<r>/releases/<id>/assets?name=<n>`.
-- No `unzip` in the container (use python `zipfile`); `aapt2` is under
-  `/opt/android-sdk/build-tools/*/`.
-
-## Build gotchas
-- `ai.zyraxon.assistant.BuildConfig` is **hand-written and package-private**; it
-  **shadows** the generated one and has no `VERSION_NAME`. Read the version from
-  `PackageManager.getPackageInfo(...).versionName` (see `Updater.installedVersionName`).
-- `org.json.JSONObject` is not mocked on plain JVM; parse tests need
-  `@RunWith(RobolectricTestRunner::class)`.
-- `assembleRelease --offline` needs `-x lintVitalRelease -x lintVitalAnalyzeRelease`.
-  The signed APK is ~146 MB.
-- Release signing: `zyraxon-release-v2.jks` (alias `upload`, pw `zyraxon2026`), kept in
-  GitHub Actions secrets `ANDROID_KEYSTORE_BASE64` / `_PASSWORD` / `_ALIAS` / `_KEY_PASSWORD`.
-  The pre-v6.5.0 key is gone and unrecoverable.
+- **v6.10.0** (2026-10-30, PR #11, branch `fix/terminal-termux-live`): voice stays on
+  (mic state = user switch; backoff grows per attempt), no echo/auto-send, TTS back and
+  the model's own S2S reopens on launch, both voices work (`_voiceChosenByUser` restored),
+  no letter-by-letter English, faster turns (IO off the main thread), settings/model
+  survive restart, terminal streaming/ANSI/Termux, new tools `youtube_play`,
+  `network_status`, `call_dial` by contact name. 253 tests / 0 failures.
+- **v6.9.0**: top of screen = one `সেটিংস` pill; the tab row moved into a `SessionNavPane`
+  pane (the default Settings pane). 247 tests.
+- **v6.8.0**: female-only lock reverted (both voices wanted); speech became a real queue.
+- **v6.7.1**: mic-indicator fix via `RecognizerError`. **v6.7.0**: minSdk 24→21; real
+  Shizuku system shell. **v6.6.0**: Terminal tab + JGit. **v6.5.0**: in-app auto-update.
+  **v6.4.0**: no hardcoded models. **v6.3.0**: 60-language UI. **v6.2.0**: floating
+  bubble, six aura styles, `read_media` by url. **v6.1.0**: provider failover.
+  **v6.0.0**: parallel model loading, real key verification, public ZYRAXON catalogue.
+  v3.0.0 was deleted and rebuilt once.
+- Detailed history: `.openhands/memory/2026-10-20.md` and `.openhands/memory/2026-10-30.md`.

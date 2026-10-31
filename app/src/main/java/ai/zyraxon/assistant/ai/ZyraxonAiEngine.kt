@@ -51,6 +51,14 @@ class ZyraxonAiEngine(private val context: Context) {
     @Volatile var samplingModelProvider: (() -> AiModel)? = null
 
     /**
+     * True when the user has switched the phone-side model off. When a local model
+     * is loaded it would otherwise answer every turn; this lets the user keep it
+     * loaded but send their turns to the hosted providers instead.
+     */
+    private val _onDeviceDisabled: Boolean
+        get() = prefs.getBoolean("on_device_disabled", false)
+
+    /**
      * Answers `sampling/createMessage`: the server wants a completion and supplies
      * the messages. Returns the MCP `CreateMessageResult` shape, or throws so the
      * server gets a real error rather than an invented reply.
@@ -595,6 +603,22 @@ class ZyraxonAiEngine(private val context: Context) {
     ): Flow<String> = channelFlow {
         val mcpTools = mcp.allTools()
         val systemPrompt = buildComprehensiveSystemPrompt(persona, memoriesContext, screenContext, mcpTools)
+        // An on-device model, when one is loaded, answers the whole turn itself:
+        // no network, no tools. It cannot run the phone tools, so phone-side work
+        // is left to the hosted path below.
+        val local = OnDeviceModel.get(context)
+        if (local.isReady() && !_onDeviceDisabled) {
+            if (prompt.isNotBlank()) {
+                var localText = ""
+                local.generate(prompt, systemPrompt).collect { delta ->
+                    localText += delta
+                    trySend(delta)
+                }
+                if (localText.isNotBlank()) return@channelFlow
+                // The local model produced nothing — fall through to the hosted
+                // providers rather than leaving the user with an empty reply.
+            }
+        }
         // Built-in device tools first, then every tool a connected MCP server
         // advertised. They are offered on every turn, so the model reaches for
         // them without the user having to mention them.
