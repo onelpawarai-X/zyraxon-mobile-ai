@@ -24,9 +24,37 @@ class LinuxRuntimeTest {
     }
 
     @Test
-    fun `an unknown abi falls back to arm64 rather than an empty path`() {
-        // Most phones are arm64; guessing wrong must still land on a real folder.
-        assertEquals("aarch64", LinuxRuntime.arch("mips"))
+    fun `an unknown abi has no folder rather than a wrong one`() {
+        // Returning a folder that does not exist reads as "no packages found",
+        // which hides the real cause. Null lets the caller say what is missing.
+        assertEquals(null, LinuxRuntime.arch("mips"))
+    }
+
+    @Test
+    fun `a device that lists a 32-bit abi first still gets the arm64 payload`() {
+        // The APK declares four ABIs but only two payloads are vendored. A phone
+        // whose first ABI is armeabi-v7a must fall through to a payload that is
+        // really there instead of being sent to an absent `arm` folder.
+        val vendored = setOf("aarch64", "x86_64")
+        val chosen = LinuxRuntime.pickAssetDir(
+            arrayOf("armeabi-v7a", "arm64-v8a", "armeabi")
+        ) { it in vendored }
+
+        assertEquals("linux/aarch64", chosen)
+    }
+
+    @Test
+    fun `no vendored payload yields null so the caller can explain`() {
+        val chosen = LinuxRuntime.pickAssetDir(arrayOf("armeabi-v7a", "x86")) { false }
+
+        assertEquals(null, chosen)
+    }
+
+    @Test
+    fun `the device's own abi wins when its payload is vendored`() {
+        val chosen = LinuxRuntime.pickAssetDir(arrayOf("x86_64", "arm64-v8a")) { true }
+
+        assertEquals("linux/x86_64", chosen)
     }
 
     // ---- deriving the prefix the payload was built for ----------------------
