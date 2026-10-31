@@ -1,3 +1,24 @@
+
+## Release descriptions must be English (2026-10-30)
+The user's rule: **README and release notes are English** (the app UI is the
+translated part). Six releases (v6.7.0, v6.7.1, v6.8.0, v6.9.0, v6.12.0,
+v6.13.0) shipped with Bengali names and bodies; all were rewritten in English
+with `gh release edit --title ... --notes-file ...`. Audit any new release:
+`gh release view <tag> --json body -q .body | grep -P '[\x{0980}-\x{09FF}]'`.
+
+## v6.13.3 — the runtime strings are translated now (2026-10-30)
+The `assets/i18n` tables only ever saw strings in the `ui` package. Model
+descriptions, persona greetings, provider labels, GitHub-token status, update
+errors and the tool log were plain Bengali literals in `ZyraxonAiEngine`,
+`ZyraxonViewModel`, `ZyraxonModels` and `ProviderCatalog`, so they stayed
+Bengali in all 60 languages. Wrapped in `t(...)`; tables **331 → 409 keys**.
+`tools/translate_missing.py` (+ `tools/runtime_keys.json`) tops a table up
+without re-translating everything — but it is a mechanical MT: it injected
+zero-width spaces (`Cyber \u200b\u200bNeon Grid`) and read some labels too
+literally (`টাস্ক` → "the task", `দার্শনিক` → "the philosopher", `পিংক লিভিং
+ওরা` → "They are Pink Living"). Always audit the English table by hand after
+a run. Add keys *before* running it, or a shipped APK can miss them.
+Released as **v6.13.3** (versionCode 25, 312 tests).
 # ZYRAXON — project memory
 
 ## What this repo is
