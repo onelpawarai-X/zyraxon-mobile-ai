@@ -107,7 +107,8 @@
 
         <service
             android:name="ai.zyraxon.assistant.KeepAliveService"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
         <!-- Runs one command in the background so it survives the app being
              closed, with a Stop action in its notification. -->
