@@ -580,6 +580,16 @@ class ZyraxonAiEngine(private val context: Context) {
         append("\n## Remembering (mandatory)\n")
         append("- When the user tells you a durable fact — their name, a preference, a person, a project, a plan, a date, anything worth recalling months later — call `memory_write` with a short `key` and the `value` in the same turn. Do not wait to be asked.\n")
         append("- Every past conversation is kept in the local database. When the user refers to something from before, or asks whether you remember, call `memory_read` with a `query` before answering; never say you have forgotten without checking first.\n")
+
+        // The language rule is repeated here, after the character, because the
+        // last instruction is the one a model follows. Without it a character
+        // whose description reads "Bengali" in English drifted into English
+        // answers — the user's complaint that the assistant replied in English
+        // to a Bangla message.
+        append("\n## ভাষা (সবচেয়ে জরুরি নিয়ম)\n")
+        append("- ইউজার যে ভাষায় লিখেছে, ঠিক সেই ভাষায় উত্তর দাও। বাংলা লিখলে উত্তর **শুধু বাংলায়**; ইংরেজি লিখলে ইংরেজিতে।\n")
+        append("- ইউজার বাংলায় লিখলে উত্তরও বাংলা হবে — একটিও বাক্য ইংরেজিতে নয়, এবং কোনো ইংরেজি শব্দ আলাদা করে বানান করে বলা যাবে না।\n")
+        append("- এই নিয়ম চরিত্রের বর্ণনার উপরে। চরিত্র যেভাবেই বর্ণিত হোক, উত্তর দেবে ইউজারের ভাষায়।\n")
     }
 
     /**

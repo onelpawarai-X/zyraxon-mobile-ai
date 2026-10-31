@@ -146,6 +146,25 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     val voiceLanguage: StateFlow<String> = voiceManager.voiceLanguage
     val voiceDataMissing: StateFlow<Boolean> = voiceManager.voiceDataMissing
 
+    /** The real voice the ZYRAXON website used, straight from its own header. */
+    val remoteVoiceName: StateFlow<String> = voiceManager.remoteVoiceName
+
+    /** The last voice error ("ইন্টারনেট সংযোগ নেই", "ভয়েস সার্ভিস 502"…). */
+    val voiceError: StateFlow<String> = voiceManager.voiceError
+
+    /** "website" while the online voice speaks, "phone" while the engine does. */
+    val voiceSource: StateFlow<String> = voiceManager.voiceSource
+
+    /**
+     * Whether the ZYRAXON website's voice is used. It is the default because it
+     * carries both Bangla genders, four tones and 322 voices, where the phone's
+     * engine has one voice per language and no emotion. Turning it off keeps the
+     * phone's engine as the only voice, for a phone that is offline or a user who
+     * prefers the installed voice. The choice persists.
+     */
+    private val _useRemoteVoice = MutableStateFlow(prefs.getBoolean("use_remote_voice", true))
+    val useRemoteVoice: StateFlow<Boolean> = _useRemoteVoice.asStateFlow()
+
     /** Opens the engine's own screen that downloads a voice for this language. */
     fun openVoiceDataInstall() {
         voiceManager.openVoiceDataInstall(voiceLanguage.value)
@@ -479,6 +498,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         }
         voiceManager.setVoiceGender(savedGender ?: genderForPersona(_selectedPersona.value))
         prefs.getString("voice_language", null)?.let { voiceManager.setVoiceLanguage(it) }
+        // The ZYRAXON website's voice is the default; a user who turned it off
+        // gets the phone's engine back exactly as they left it.
+        voiceManager.setUseRemoteVoice(_useRemoteVoice.value)
 
         // A downloaded on-device model is reloaded on launch. Without this the
         // file sat in app storage unused: the user downloaded it, and the next
@@ -801,6 +823,21 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /**
+     * Chooses between the ZYRAXON website's voice and the phone's engine. Both
+     * keep working either way; this only decides which one speaks.
+     */
+    fun setUseRemoteVoice(enabled: Boolean) {
+        _useRemoteVoice.value = enabled
+        prefs.edit().putBoolean("use_remote_voice", enabled).apply()
+        voiceManager.setUseRemoteVoice(enabled)
+        // Speak a line so the change is heard immediately instead of at the next
+        // reply — the point of the switch is to hear the difference.
+        if (enabled) {
+            voiceManager.speak(if (voiceGender.value == "male") "নমস্কার! এটি ZYRAXON-এর নিজের কণ্ঠ।" else "হ্যালো সোনা! এটি ZYRAXON-এর নিজের কণ্ঠ।")
+        }
+    }
+
+    /**
      * Applies a voice change requested by the assistant itself. Every field is
      * optional, so a tool call can adjust only the pitch, or only the gender,
      * without resetting what the user already chose.
@@ -1041,8 +1078,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /**
-     * True when the phone's own text-to-speech must stay silent: the user turned
-     * it off, or a live speech-to-speech model is the voice right now.
+     * True when the assistant should read its reply aloud: the user has speech on
+     * and a live speech-to-speech model is not the voice right now. The voice used
+     * is the ZYRAXON website's unless the user turned it off, in which case the
+     * phone's own engine speaks.
      */
     private fun shouldUsePhoneTts(): Boolean = _ttsEnabled.value && !liveVoice.isActive
 
@@ -2291,6 +2330,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // Every MCP server holds an SSE channel and a thread. Releasing them here
         // is what stops them outliving the screen.
         runCatching { aiEngine.mcp.close() }
+        // The voice player holds an OkHttp client and a MediaPlayer; both must go
+        // with the screen or the audio keeps playing after the app is closed.
+        runCatching { voiceManager.shutdown() }
     }
 
     companion object {

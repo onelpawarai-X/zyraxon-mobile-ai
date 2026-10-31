@@ -75,11 +75,43 @@ class NativeVoiceManager(
     private val _voiceLanguage = MutableStateFlow("bn-BD")
     val voiceLanguage: StateFlow<String> = _voiceLanguage.asStateFlow()
 
+    /**
+     * The real voice the website used for the last sentence, from its
+     * `X-ZYRAXON-Voice` header. Shown in Settings so the voice in use is a fact,
+     * not an assumption.
+     */
+    private val _remoteVoiceName = MutableStateFlow("")
+    val remoteVoiceName: StateFlow<String> = _remoteVoiceName.asStateFlow()
+
+    /** The last voice error, so the UI can say why instead of going silent. */
+    private val _voiceError = MutableStateFlow("")
+    val voiceError: StateFlow<String> = _voiceError.asStateFlow()
+
+    /** "website" while the online voice speaks, "phone" while the engine does. */
+    private val _voiceSource = MutableStateFlow("website")
+    val voiceSource: StateFlow<String> = _voiceSource.asStateFlow()
+
     private var speechRecognizer: SpeechRecognizer? = null
     private var recognizerIntent: Intent? = null
 
     private var textToSpeech: TextToSpeech? = null
     private var ttsReady = false
+
+    /**
+     * The ZYRAXON website's own voice. It is the voice the assistant speaks with
+     * whenever it is switched on and the phone is online, because the phone's
+     * engine has one voice per language and no emotion, while the website has 322
+     * voices, both Bangla genders, and four tones. The phone's engine stays as the
+     * fallback so the assistant is never silent.
+     */
+    private val remoteVoice = RemoteTtsPlayer(context, scope) { text -> speakOnPhone(text) }
+
+    /**
+     * True when the website's voice should be used. The user owns this switch and
+     * it persists; a phone with no network falls back to the engine regardless.
+     */
+    @Volatile
+    private var useRemoteVoice = true
 
     private var currentRate = 1.0f
     private var currentPitch = 1.28f
@@ -143,8 +175,46 @@ class NativeVoiceManager(
     var onSpeechRecognized: ((text: String, isFinal: Boolean) -> Unit)? = null
 
     init {
+        remoteVoice.onVoiceResolved = { name ->
+            _remoteVoiceName.value = name
+            _voiceError.value = ""
+        }
+        remoteVoice.onError = { message -> _voiceError.value = message }
+        remoteVoice.onSpeakingChanged = { speaking ->
+            _isSpeaking.value = speaking
+            if (speaking) {
+                _voiceSource.value = "website"
+                micGate.onUtteranceStart()
+            } else if (micGate.onUtteranceDone(false)) {
+                resumeAfterSpeech()
+            }
+        }
         initTts()
         initStt()
+    }
+
+    /**
+     * Switches between the website's voice and the phone's engine. Both are real
+     * and both are kept working; the choice is the user's and it persists.
+     */
+    fun setUseRemoteVoice(enabled: Boolean) {
+        useRemoteVoice = enabled
+        if (!enabled) remoteVoice.stop()
+    }
+
+    val isUsingRemoteVoice: Boolean get() = useRemoteVoice
+
+    /**
+     * Speaks [text] through the phone's engine only. This is the fallback path
+     * for the website's player, so it must never route back to the website — that
+     * would be an endless loop of the two voices handing the same line over.
+     */
+    private fun speakOnPhone(text: String) {
+        _voiceSource.value = "phone"
+        val clean = cleanForSpeech(text)
+        if (clean.isBlank()) return
+        stopEngineOnly()
+        enqueue(clean)
     }
 
     // ---- text to speech ----------------------------------------------------
@@ -211,11 +281,11 @@ class NativeVoiceManager(
 
     /**
      * True while a piece is being spoken or more speech is still waiting. This is
-     * judged from our own queue rather than `TextToSpeech.isSpeaking`, whose value
+     * judged from our own queues rather than `TextToSpeech.isSpeaking`, whose value
      * at the instant `onDone` fires is racy — trusting it could leave the ear shut
      * after the last word, which reads as the microphone never coming back.
      */
-    private fun engineBusy(): Boolean = !speechQueue.isEmpty()
+    private fun engineBusy(): Boolean = !speechQueue.isEmpty() || remoteVoice.hasPending()
 
     /**
      * Opens a spoken reply. Called once when a reply starts streaming, so the ear
@@ -242,12 +312,19 @@ class NativeVoiceManager(
 
     /** Closes the spoken reply and reopens the ear once the last word has played. */
     fun endReply() {
-        val busy = engineBusy()
         armEchoGuard()
-        if (micGate.endReply(busy)) {
+        if (micGate.endReply(engineBusy())) {
             _isSpeaking.value = false
             resumeAfterSpeech()
         }
+    }
+
+    /** Releases the remote voice player. Called when the ViewModel is cleared. */
+    fun shutdown() {
+        remoteVoice.shutdown()
+        try { textToSpeech?.shutdown() } catch (_: Exception) {}
+        textToSpeech = null
+        ttsReady = false
     }
 
     /**
@@ -571,16 +648,61 @@ class NativeVoiceManager(
     // ---- speaking ----------------------------------------------------------
 
     /**
-     * Speaks through the phone's own engine, never a remote voice service. If the
-     * device has no usable engine the call is a no-op and [ttsAvailable] is false,
-     * so the UI can say so instead of pretending it spoke.
+     * Speaks [text]. The ZYRAXON website's voice is used whenever it is switched
+     * on, and the phone's own engine only when it is not — the phone's engine is
+     * never the first choice because it has one voice per language and no emotion.
+     *
+     * The website answers with `audio/mpeg` and starts sending the first sentence
+     * while the rest is still being made, so playback begins on the first bytes
+     * instead of waiting for the whole file.
      */
     fun speak(text: String) {
         val clean = cleanForSpeech(text)
         if (clean.isBlank()) return
+        if (useRemoteVoice) {
+            _voiceSource.value = "website"
+            speakRemote(clean, replace = true)
+            return
+        }
         // A fresh reply replaces anything already queued or playing.
         stopEngineOnly()
         enqueue(clean)
+    }
+
+    /**
+     * Appends one finished sentence so a long answer is heard while it is still
+     * arriving, instead of waiting for the last word. Used by the streaming reply.
+     */
+    fun speakQueued(text: String) {
+        val clean = cleanForSpeech(text)
+        if (clean.isBlank()) return
+        if (useRemoteVoice) {
+            speakRemote(clean, replace = false)
+            return
+        }
+        enqueue(clean)
+    }
+
+    /**
+     * Hands [clean] to the website's voice, one language at a time.
+     *
+     * The endpoint's voice is chosen by locale, and one voice reads only one
+     * language. An English word inside a Bangla sentence would be spelled out
+     * letter by letter by the Bangla voice — the exact defect the phone engine had
+     * — so the sentence is split into same-language runs first and each run is
+     * requested with its own locale. A single-language sentence stays one request,
+     * which keeps the prosody whole.
+     */
+    private fun speakRemote(clean: String, replace: Boolean) {
+        val segments = SpeechSegmenter.split(clean)
+        if (segments.isEmpty()) return
+        segments.forEachIndexed { index, segment ->
+            if (index == 0 && replace) {
+                remoteVoice.speak(segment.text, segment.bcp47, _voiceGender.value)
+            } else {
+                remoteVoice.enqueue(segment.text, segment.bcp47, _voiceGender.value)
+            }
+        }
     }
 
     /**
@@ -696,17 +818,8 @@ class NativeVoiceManager(
      */
     private fun cleanForSpeech(text: String): String = SpeechTextCleaner.clean(text)
 
-    /**
-     * Appends one finished sentence to the speech queue instead of cutting off
-     * what is already playing, so a long answer is heard while it is still arriving.
-     */
-    fun speakQueued(text: String) {
-        val clean = cleanForSpeech(text)
-        if (clean.isEmpty()) return
-        enqueue(clean)
-    }
-
     fun stopSpeaking() {
+        remoteVoice.stop()
         stopEngineOnly()
         micGate.reset()
         _isSpeaking.value = false

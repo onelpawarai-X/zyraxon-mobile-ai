@@ -134,6 +134,23 @@ class SettingsPersistenceTest {
     }
 
     @Test
+    fun `the website voice is the default`() {
+        assertTrue("ওয়েবসাইটের কণ্ঠ ডিফল্ট হওয়া উচিত", newViewModel().useRemoteVoice.value)
+    }
+
+    @Test
+    fun `turning the website voice off survives a restart`() {
+        val first = newViewModel()
+        first.setUseRemoteVoice(false)
+        assertFalse("ওয়েবসাইটের কণ্ঠ বন্ধ হয়নি", first.useRemoteVoice.value)
+        assertFalse("ম্যানেজারে সেটিং পৌঁছায়নি", first.voiceManager.isUsingRemoteVoice)
+
+        val second = newViewModel()
+        assertFalse("কণ্ঠের উৎস রিস্টার্টে ফিরে এসেছে", second.useRemoteVoice.value)
+        assertFalse("রিস্টার্টে ম্যানেজারে প্রয়োগ হয়নি", second.voiceManager.isUsingRemoteVoice)
+    }
+
+    @Test
     fun `voice speed and pitch survive a restart`() {
         val first = newViewModel()
         first.setTtsRate(1.4f)

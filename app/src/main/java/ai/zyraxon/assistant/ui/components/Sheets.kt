@@ -1017,6 +1017,68 @@ fun SettingsSheet(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
+                        // Where the voice comes from. The ZYRAXON website carries
+                        // both Bangla genders and four tones, so it is the default;
+                        // the phone's engine stays available for offline use.
+                        val useRemote by viewModel.useRemoteVoice.collectAsState()
+                        val remoteName by viewModel.remoteVoiceName.collectAsState()
+                        val voiceErr by viewModel.voiceError.collectAsState()
+                        Text(t("কণ্ঠের উৎস (Voice source):"), color = Glass.cyanFill, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (useRemote) Glass.pinkFill.copy(alpha = 0.18f) else Glass.rowFill(0.30f))
+                                    .border(1.dp, if (useRemote) Glass.pinkFill else Glass.borderSoft, RoundedCornerShape(12.dp))
+                                    .clickable { viewModel.setUseRemoteVoice(true) }
+                                    .padding(12.dp)
+                                    .testTag("voice_source_remote")
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                                    Text("🌐", fontSize = 24.sp)
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(t("ওয়েবসাইটের কণ্ঠ"), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
+                                    Text(t("রিয়েল-টাইম, ৩২২ কণ্ঠ, ৭৫ ভাষা"), color = Glass.pinkFill, fontSize = 10.sp)
+                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (!useRemote) Glass.cyanFill.copy(alpha = 0.18f) else Glass.rowFill(0.30f))
+                                    .border(1.dp, if (!useRemote) Glass.cyanFill else Glass.borderSoft, RoundedCornerShape(12.dp))
+                                    .clickable { viewModel.setUseRemoteVoice(false) }
+                                    .padding(12.dp)
+                                    .testTag("voice_source_phone")
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                                    Text("📱", fontSize = 24.sp)
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(t("ফোনের কণ্ঠ"), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
+                                    Text(t("অফলাইনেও কাজ করে"), color = Glass.cyanFill, fontSize = 10.sp)
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            when {
+                                voiceErr.isNotBlank() -> t("⚠️ $voiceErr — ফোনের কণ্ঠে পড়া হচ্ছে।")
+                                useRemote && remoteName.isNotBlank() -> t("🎙️ এখন বলছে: $remoteName")
+                                useRemote -> t("🎙️ ওয়েবসাইটের কণ্ঠ প্রস্তুত (প্রথম বাক্য এলেই কণ্ঠের নাম দেখা যাবে)।")
+                                else -> t("🎙️ ফোনের নিজের ইঞ্জিন কথা বলছে।")
+                            },
+                            color = if (voiceErr.isNotBlank()) Glass.amber else Glass.textMuted,
+                            fontSize = 10.5.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+
                         // The phone's own recogniser and engine read these two
                         // languages; the choice is saved and restored on launch.
                         val currentLang by viewModel.voiceLanguage.collectAsState()
