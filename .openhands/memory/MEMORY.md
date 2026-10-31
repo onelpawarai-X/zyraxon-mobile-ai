@@ -178,7 +178,39 @@ release was **v6.9.0** while the fixes sat in **v6.10.0/v6.11.0**, never release
 `curl -s .../releases?per_page=1` before debugging a symptom, and bump
 `versionCode`/`versionName` in `app/build.gradle.kts` when shipping.
 
+## The engine, not the prompt, ends a turn (2026-10-31, PR #14)
+The most important lesson of the project. The user kept reporting "একটা কাজ করার পরে
+পরের ধাপে যায় না" and asked for a better system prompt. A prompt rule only
+*detects* a stop; the turn actually ends in `ZyraxonAiEngine` when the model returns
+text with no tool call. Fixes belong in the engine and the tools, with the prompt
+only describing the rule.
+- **`SCREEN_CHANGING_TOOLS`** (`open_app`, `youtube_play`, `launch_url`,
+  `open_settings`, `call_dial`, `channel_post`, `device_lock`) — the guard that
+  injects the fresh screen after an action used to be
+  `isScreenTool(name) || name == "open_app"`, so `youtube_play` opened the results
+  and stopped: the model never received that screen. Any new screen-changing tool
+  **must** be added to that set.
+- **`ContinuationPolicy`** (pure, `ContinuationPolicyTest`) — consulted before the
+  turn ends; a failure report, a bare promise, or a silent stop right after the
+  screen changed forces another round (max 4 nudges). `nudges` and
+  `lastActionWasScreenChange` are locals in the loop; the flag is cleared **before**
+  this round's calls run (clearing it at the top of the loop is wrong — the check
+  reads it after the round).
+- **`write_file` retries into the workspace** on a failed write instead of failing
+  the job.
+
+## Voice: the mic stays open while the assistant speaks (PR #14)
+`scheduleRestart` used to *defer* the reopen for the whole reply — that is why the
+mic looked off whenever the assistant talked. Removed. Own-voice is dropped by text
+(`SttDecision` + `EchoMatcher`), so the ear can stay open and an interruption still
+lands. The floor (`IDLE_RESTART_FLOOR_MS = 450`) + exponential backoff only space out
+rebuilds; they never close the ear. The `live` settings pane (deleted in v6.8.0) is
+restored from `5270365^`.
+
 ## Release history
+- **PR #14** (branch `fix/voice-lang-multistep-website`, 2026-10-31): engine-level
+  continuation, `SCREEN_CHANGING_TOOLS`, `write_file` fallback, mic stays open during
+  speech, live-voice pane restored, faster `SpeechChunker`. 310 unit tests / 0 failures.
 - **v6.12.0** (2026-10-30, PR #13, branch `feat/website-voice-realtime`): the terminal's
   full Linux userland is now **bundled in the APK** (`assets/linux/<abi>/`, ~355 MB,
   both ABIs) and installed offline — no network, no second download. `LinuxRuntime`
