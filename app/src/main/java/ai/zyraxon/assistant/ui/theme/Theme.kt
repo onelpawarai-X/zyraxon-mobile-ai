@@ -6,33 +6,32 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-val VoidBlack = Color(0xFF05060F)
-val DarkNavy = Color(0xFF0B0E1E)
-val GlassSurface = Color(0xE613172E)
-val GlassSurfaceLight = Color(0xB31E2342)
-val NeonCyan = Color(0xFF00F0FF)
-val ElectricBlue = Color(0xFF38BDF8)
-val NeonMagenta = Color(0xFFD946EF)
-val HotPink = Color(0xFFEC4899)
-val DeepViolet = Color(0xFF8B5CF6)
-val TextPrimary = Color(0xFFF8FAFC)
-val TextSecondary = Color(0xFF94A3B8)
-val TextMuted = Color(0xFF64748B)
-val BorderGlow = Color(0x3338BDF8)
+val VoidBlack = Color(0xFF050000)
+val DarkBlood = Color(0xFF1A0000)
+val BloodRed = Color(0xFF8B0000)
+val BloodPink = Color(0xFFFF1744)
+val DeepBlood = Color(0xFF4A0000)
+val GlassSurface = Color(0xCC1A0000)
+val GlassSurfaceLight = Color(0x992E0000)
+
+val TextPrimary = Color(0xFFFFEBEB)
+val TextSecondary = Color(0xFFFF9999)
+val TextMuted = Color(0xFF8B4444)
+val BorderGlow = Color(0x66FF1744)
 
 private val DarkColorScheme = darkColorScheme(
-    primary = NeonCyan,
-    onPrimary = VoidBlack,
-    primaryContainer = DeepViolet,
+    primary = BloodPink,
+    onPrimary = Color.White,
+    primaryContainer = BloodRed,
     onPrimaryContainer = Color.White,
-    secondary = NeonMagenta,
+    secondary = BloodRed,
     onSecondary = Color.White,
-    secondaryContainer = Color(0xFF3B185F),
-    onSecondaryContainer = Color(0xFFF5D0FE),
-    tertiary = ElectricBlue,
+    secondaryContainer = DeepBlood,
+    onSecondaryContainer = TextPrimary,
+    tertiary = BloodPink,
     background = VoidBlack,
     onBackground = TextPrimary,
-    surface = DarkNavy,
+    surface = DarkBlood,
     onSurface = TextPrimary,
     surfaceVariant = GlassSurface,
     onSurfaceVariant = TextSecondary
