@@ -177,6 +177,19 @@ The recurring trap that made the user re-report already-fixed symptoms: the newe
 release was **v6.9.0** while the fixes sat in **v6.10.0/v6.11.0**, never released. Always
 `curl -s .../releases?per_page=1` before debugging a symptom, and bump
 `versionCode`/`versionName` in `app/build.gradle.kts` when shipping.
+**It happened again with PR #14**: the fixes merged to `main`, but the version was left
+at `versionCode=21 / 6.12.0`, so the user installed an APK that still *said* 6.12.0 and
+concluded nothing had changed. A merged fix is invisible until the version is bumped
+**and** a GitHub release with the signed APK is published. Bump the version in the same
+PR as the fix, or the fix ships as a no-op.
+- Release flow that works: bump → `assembleRelease` with the canonical keystore
+  (`zyraxon-release-v2.jks`, alias `upload`) → verify `versionCode`/`versionName` and
+  the cert SHA-256 (`5a03b61c…`) with `aapt2 dump badging` + `apksigner verify` →
+  merge PR → `gh release create <tag> --target main <apk> <apk>.sha256`.
+- `apksigner`/`aapt2` are under `$ANDROID_HOME/build-tools/<ver>/`, not on `PATH`.
+- The release APK is ~455 MB (two bundled Linux runtimes), so `adb install` on a
+  KVM-less emulator takes many minutes — verify by `dumpsys package … | grep versionName`
+  after it returns, not by eyeballing the UI.
 
 ## The engine, not the prompt, ends a turn (2026-10-31, PR #14)
 The most important lesson of the project. The user kept reporting "একটা কাজ করার পরে
@@ -208,6 +221,11 @@ rebuilds; they never close the ear. The `live` settings pane (deleted in v6.8.0)
 restored from `5270365^`.
 
 ## Release history
+- **v6.13.0** (2026-10-31, PR #15, tag `v6.13.0`): the fixes from PR #14 finally
+  **shipped**. PR #14 merged but left the version at 6.12.0, so the user's installed
+  APK still reported the old number. This release is only a version bump
+  (`versionCode` 21→22, `versionName` 6.12.0→6.13.0) — no code change. Cert SHA-256
+  `5a03b61c…` matches v6.12.0, so it installs in place. 310 tests / 0 failures.
 - **PR #14** (branch `fix/voice-lang-multistep-website`, 2026-10-31): engine-level
   continuation, `SCREEN_CHANGING_TOOLS`, `write_file` fallback, mic stays open during
   speech, live-voice pane restored, faster `SpeechChunker`. 310 unit tests / 0 failures.
