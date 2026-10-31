@@ -172,6 +172,27 @@ second `_voiceGender` in the ViewModel (real compile error once).
   line. The full userland is now **bundled in the APK** and installed offline through
   `LinuxRuntime` at system level via Shizuku (see v6.12.0 below).
 
+## The app died seconds after launch: KeepAliveService (v6.13.2)
+**The single most user-visible bug of the project, and it was invisible in the source.**
+`MainActivity.onCreate()` → `KeepAliveService.start()` → `startForegroundService()`.
+Android gives such a service ~5 s to call `startForeground()` or it kills the **whole
+process**: `RemoteServiceException: Context.startForegroundService() did not then call
+Service.startForeground()`. On a cold start the main thread is still building the first
+Compose frame, so the deadline was missed **every** launch — the app died ~13 s after the
+first frame. This is what the user described as "মাইক বারেবারে বন্ধ-চালু হয়" and
+"সাধারণ কাজ দিলেও এত সময় লাগে": it was never the voice, it was the process dying.
+- **`startService()`, not `startForegroundService()`.** The only caller is MainActivity,
+  which is in the foreground, so a plain background service is legal and carries no
+  deadline. The service still calls `startForeground()` in `onStartCommand`, where a
+  refusal is harmless (`stopSelf()` + `START_NOT_STICKY`).
+- The manifest also lacked `android:foregroundServiceType`, which makes `startForeground`
+  itself throw on API 34+; add `dataSync` (permission already declared).
+- **`catch (Exception ignored)` around `startForeground` hid this for a long time.**
+  A swallowed failure there is fatal, not cosmetic.
+- How it was found: `adb logcat | grep -iE "FATAL|ANR in <pkg>|startForeground"` after a
+  real launch. The unit tests could never see it — it is a platform lifecycle rule.
+  **Verify launch behaviour on the emulator, not just that the build succeeds.**
+
 ## Releasing: check the published tag, not the branch
 The recurring trap that made the user re-report already-fixed symptoms: the newest
 release was **v6.9.0** while the fixes sat in **v6.10.0/v6.11.0**, never released. Always
@@ -221,6 +242,11 @@ rebuilds; they never close the ear. The `live` settings pane (deleted in v6.8.0)
 restored from `5270365^`.
 
 ## Release history
+- **v6.13.2** (2026-10-31, PR #16, tag `v6.13.2`): the launch crash fix. The app was
+  being killed by the platform seconds after opening (see the KeepAliveService section
+  above). `versionCode` 23→24. **This is the release that finally behaves.** 310 tests.
+- **v6.13.1**: version bump only, superseded within the hour by v6.13.2 (it did not fix
+  the crash, because `startForegroundService()` still carried the 5 s deadline).
 - **v6.13.0** (2026-10-31, PR #15, tag `v6.13.0`): the fixes from PR #14 finally
   **shipped**. PR #14 merged but left the version at 6.12.0, so the user's installed
   APK still reported the old number. This release is only a version bump
