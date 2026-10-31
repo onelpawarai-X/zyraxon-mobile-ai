@@ -922,11 +922,11 @@ fun ToolsTabContent(
                     Text(text = item.icon, fontSize = 20.sp)
                     Spacer(modifier = Modifier.width(10.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = item.name, color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        Text(text = item.description, color = Glass.textSecondary, fontSize = 11.5.sp)
+                        Text(text = t(item.name), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text(text = t(item.description), color = Glass.textSecondary, fontSize = 11.5.sp)
                     }
                     Column(horizontalAlignment = Alignment.End) {
-                        Text(text = item.status, color = Glass.green, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(text = t(item.status), color = Glass.green, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         Text(text = item.timestamp, color = Glass.textMuted, fontSize = 9.5.sp)
                     }
                 }

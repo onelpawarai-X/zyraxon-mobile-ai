@@ -166,7 +166,7 @@ the assistant folds your instruction into the plan instead of abandoning it.
 Speech-to-speech follows the model you pick, not a separate switch. Every model
 comes from its provider's own live catalogue — nothing is hardcoded. A model the
 provider marks as a live, realtime model (Gemini's `*-native-audio-*` and
-`*-live-*`, OpenAI's `*realtime*`, xAI's `grok-voice-*`) is badged 🎙️ রিয়েলটাইম
+`*-live-*`, OpenAI's `*realtime*`, xAI's `grok-voice-*`) is badged 🎙️ realtime
 in the selector and, when chosen, opens a real WebSocket session: the microphone
 streams up, the model's own voice streams back, and the phone's text-to-speech
 goes silent so the two voices never overlap. A plain text model is badged as

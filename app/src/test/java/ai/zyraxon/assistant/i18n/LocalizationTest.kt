@@ -94,6 +94,27 @@ class LocalizationTest {
         assertFalse(english == french)
     }
 
+    @Test
+    fun `every language carries the whole key set`() {
+        val expected = readKeys(Loc.BENGALI).toSet()
+        Loc.loadLanguages(context).forEach { language ->
+            val actual = readKeys(language.code).toSet()
+            val missing = expected - actual
+            assertTrue("${language.code} is missing $missing", missing.isEmpty())
+        }
+    }
+
+    @Test
+    fun `runtime display strings are translated too`() {
+        // These come from the model/view-model rather than from a `t(...)` call
+        // in the UI package, so they are the ones most likely to be forgotten.
+        val runtime = listOf("চ্যাট", "প্রেমিকা", "রোমান্টিক সঙ্গিনী", "টোকেন নেই", "মডেল লোড হচ্ছে…", "সম্পন্ন")
+        Loc.load(context, "en")
+        runtime.forEach { key ->
+            assertFalse("english left '$key' untranslated", Loc.t(key) == key)
+        }
+    }
+
     private fun readKeys(code: String): List<String> {
         val json = context.assets.open("i18n/$code.json").bufferedReader().use { it.readText() }
         val root = org.json.JSONObject(json)

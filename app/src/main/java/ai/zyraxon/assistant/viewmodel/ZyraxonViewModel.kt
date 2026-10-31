@@ -3,6 +3,7 @@ package ai.zyraxon.assistant.viewmodel
 import ai.zyraxon.assistant.DeviceBridge
 import ai.zyraxon.assistant.ai.ToolRegistry
 import ai.zyraxon.assistant.ai.ContextWindow
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.mcp.McpAuth
 import ai.zyraxon.assistant.mcp.McpCatalog
 import ai.zyraxon.assistant.mcp.McpStatus
@@ -528,7 +529,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 if (stored.isEmpty()) {
                     val initialGreeting = ChatMessage(
                         role = MessageRole.ASSISTANT,
-                        text = _selectedPersona.value.greeting,
+                        text = t(_selectedPersona.value.greeting),
                         timestamp = currentTimeString(),
                         modelName = _selectedModel.value.name
                     )
@@ -819,7 +820,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         }
         val greeting = ChatMessage(
             role = MessageRole.ASSISTANT,
-            text = persona.greeting,
+            text = t(persona.greeting),
             timestamp = currentTimeString(),
             modelName = _selectedModel.value.name
         )
@@ -828,7 +829,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             repository.saveMessage(greeting)
         }
         if (shouldUsePhoneTts()) {
-            voiceManager.speak(persona.greeting)
+            voiceManager.speak(t(persona.greeting))
         }
     }
 
@@ -1051,7 +1052,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             repository.clearMessages()
             val resetGreeting = ChatMessage(
                 role = MessageRole.ASSISTANT,
-                text = _selectedPersona.value.greeting,
+                text = t(_selectedPersona.value.greeting),
                 timestamp = currentTimeString(),
                 modelName = _selectedModel.value.name
             )
