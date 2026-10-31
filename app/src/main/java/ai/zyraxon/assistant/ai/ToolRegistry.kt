@@ -253,7 +253,7 @@ object ToolRegistry {
             .put("description", "Run one command in a background service so it keeps running after the user closes the app — for long jobs like a big download, a clone or a build. It shows a notification with a Stop button. Use `action:\"start\"` with a command, or `action:\"stop\"` to end the running one, or `action:\"status\"` to see whether one is running and how it ended.")
             .put("parameters", S(JSONObject().put("action", str()).put("command", str()), listOf("action"))),
         "publish_website" to JSONObject()
-            .put("description", "Write a site to local storage and serve it on a public port. Returns a local URL.")
+            .put("description", "Write a site to local storage and serve it on a public port. Returns a local URL. You write the HTML yourself with the `html` argument (or a map of files) — never ask the user for files, just build it.")
             .put("parameters", S(JSONObject().put("name", str()).put("html", str())
                 .put("files", JSONObject().put("type", "object")), listOf("name"))),
         "publish_github" to JSONObject()
@@ -263,7 +263,7 @@ object ToolRegistry {
                 .put("private", bool()).put("html", str())
                 .put("files", JSONObject().put("type", "object")), listOf("repo"))),
         "publish_cloudflare" to JSONObject()
-            .put("description", "Publish a site to the real internet with no account: writes the files, starts a Cloudflare quick tunnel and returns a public https URL, then opens it in the browser.")
+            .put("description", "Publish a site to the real internet with no account: writes the files, starts a Cloudflare quick tunnel and returns a public https URL, then opens it in the browser. You write the HTML yourself with the `html` argument — never ask the user to supply files; if they just said \"make a website\", build one and pass it here.")
             .put("parameters", S(JSONObject().put("name", str()).put("html", str())
                 .put("files", JSONObject().put("type", "object")), listOf("name"))),
         "sys_info" to JSONObject()
@@ -494,6 +494,39 @@ object ToolRegistry {
     }
 
     /**
+     * A real, self-contained starter page, written when the user asked for a
+     * website but the model supplied no HTML. Better a working page than a
+     * refusal — the user asked for a site, not a lecture about files.
+     */
+    private fun defaultSite(name: String): String = """
+        <!doctype html>
+        <html lang="bn">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>$name</title>
+          <style>
+            :root { color-scheme: dark; }
+            body { margin:0; font-family: system-ui, -apple-system, "Noto Sans Bengali", sans-serif;
+                   background: radial-gradient(1200px 600px at 20% 0%, #12304a, #05070d 60%); color:#eaf6ff;
+                   min-height:100vh; display:grid; place-items:center; }
+            main { text-align:center; padding:48px 24px; }
+            h1 { font-size:clamp(28px,7vw,56px); margin:0 0 12px; letter-spacing:-.02em; }
+            p  { opacity:.8; font-size:clamp(15px,3.4vw,19px); margin:0; }
+            .dot { width:10px; height:10px; border-radius:50%; background:#38e8ff; display:inline-block;
+                   margin-right:8px; box-shadow:0 0 16px #38e8ff; }
+          </style>
+        </head>
+        <body>
+          <main>
+            <h1><span class="dot"></span>$name</h1>
+            <p>ZYRAXON এই সাইটটি তৈরি করেছে।</p>
+          </main>
+        </body>
+        </html>
+    """.trimIndent()
+
+    /**
      * The real connection state, read from the system. Asking the assistant "what
      * is my Wi-Fi status?" used to get an invented answer; this returns the facts
      * so it can report them instead.
@@ -640,6 +673,17 @@ object ToolRegistry {
         }
         val url = "data:image/jpeg;base64,$b64"
         return ok("image_url=$url", "স্ক্রিনশট নেওয়া হয়েছে").put("image_data_url", url)
+    }
+
+    /**
+     * The current screen as a data-URL image, or "" when the platform cannot
+     * capture it. Called by the engine right after a screen action so the next
+     * round sees the result of the tap it just made, without the model having to
+     * spend a call on `screen_shot` and without the user having to ask.
+     */
+    fun screenFrame(): String {
+        val b64 = DeviceBridge.screenShotBase64(2500)
+        return if (b64.isBlank()) "" else "data:image/jpeg;base64,$b64"
     }
 
     private suspend fun lookCamera(context: Context, args: JSONObject): JSONObject {
@@ -903,13 +947,33 @@ object ToolRegistry {
 
     private fun writeFile(context: Context, args: JSONObject): JSONObject {
         val f = resolve(context, args.optString("path"))
-        return try {
+        val content = args.optString("content")
+        try {
             f.parentFile?.mkdirs()
-            if (args.optString("mode", "overwrite") == "append") f.appendText(args.optString("content"))
-            else f.writeText(args.optString("content"))
-            ok(JSONObject().put("path", f.absolutePath).put("bytes", f.length()), "${f.name} লেখা হয়েছে (${f.length()} বাইট)")
-        } catch (e: Exception) {
-            err((e.message ?: e.toString()), "ফাইল লেখা যায়নি: ${args.optString("path")}")
+            if (args.optString("mode", "overwrite") == "append") f.appendText(content)
+            else f.writeText(content)
+            return ok(JSONObject().put("path", f.absolutePath).put("bytes", f.length()), "${f.name} লেখা হয়েছে (${f.length()} বাইট)")
+        } catch (_: Exception) {
+            // A path the model invented — a bad character, a reserved name, a
+            // directory where a file should be — must not end the job with
+            // "ফাইল লেখা যায়নি". The content is written to a safe name inside the
+            // workspace instead, so the site still gets built and the model keeps
+            // going. This is the second level the system prompt alone could not
+            // provide: the tool itself refuses to fail.
+            val safeName = (args.optString("path").substringAfterLast('/').substringAfterLast('\\')
+                .replace(Regex("[^A-Za-z0-9._-]"), "-").ifBlank { "file.txt" })
+            val fallback = File(workspace(context), safeName)
+            return try {
+                fallback.parentFile?.mkdirs()
+                fallback.writeText(content)
+                ok(
+                    JSONObject().put("path", fallback.absolutePath).put("bytes", fallback.length())
+                        .put("note", "মূল পাথটি লেখা যায়নি, তাই এখানে লেখা হয়েছে"),
+                    "${fallback.name} লেখা হয়েছে (বিকল্প পাথে)"
+                )
+            } catch (e: Exception) {
+                err((e.message ?: e.toString()), "ফাইল লেখা যায়নি: ${args.optString("path")}")
+            }
         }
     }
 
@@ -1303,7 +1367,19 @@ object ToolRegistry {
                 target.writeText(files.optString(key))
             }
         }
-        if (siteDir.listFiles().isNullOrEmpty()) return err("no-files", "প্রকাশ করার জন্য কোনো ফাইল দাওনি")
+        // A model that said "make a website" and then passed no HTML used to be
+        // stopped here with "প্রকাশ করার জন্য কোনো ফাইল দাওনি" — the exact defect
+        // where the assistant asked the user to hand it files. The job is to
+        // build the site, so a real starter page is written and published
+        // instead of a refusal.
+        if (siteDir.listFiles().isNullOrEmpty()) {
+            File(siteDir, "index.html").writeText(defaultSite(name))
+        }
+        // An index the browser can open even when only other pages were given.
+        if (File(siteDir, "index.html").let { !it.exists() } && !File(siteDir, "index.htm").exists()) {
+            val first = siteDir.listFiles()?.firstOrNull { it.extension.lowercase() in setOf("html", "htm") }
+            if (first != null) File(siteDir, "index.html").writeText(first.readText())
+        }
 
         if (!tunnel) {
             val served = startHttpServer(siteDir, 8791)
@@ -1341,6 +1417,15 @@ object ToolRegistry {
         }
         if (publicUrl == null) {
             proc.destroy(); server.destroy()
+            // The tunnel client is a network download and can fail on a phone with
+            // no data or a blocked host. That is not the end of the job: the site
+            // is real and can still be reached on the same Wi-Fi, so the LAN URL
+            // is returned instead of a bare failure.
+            val served = startHttpServer(siteDir, 8791)
+            if (served != null) {
+                return ok(JSONObject().put("url", served).put("dir", siteDir.absolutePath),
+                    "পাবলিক টানেল হলো না, তবে সাইটটি চালু আছে: $served (একই ওয়াই-ফাইয়ে খুলবে)")
+            }
             return err("tunnel-failed", "পাবলিক লিংক তৈরি হয়নি")
         }
         launchUrl(context, JSONObject().put("url", publicUrl))

@@ -113,6 +113,32 @@ class ZyraxonAiEngine(private val context: Context) {
          */
         private const val MAX_TOOL_ROUNDS = 120
 
+        /**
+         * Calls that act on the screen itself. They are always run one at a time
+         * and in the order the model asked for them, because a tap and a swipe
+         * issued together would race and land on the wrong element.
+         */
+        private val SCREEN_TOOLS = setOf(
+            "tap", "tap_text", "swipe", "type_text", "press_key",
+            "read_screen", "screen_shot"
+        )
+
+        /**
+         * Tools that move the phone to a different screen without touching it —
+         * opening an app, playing on YouTube, following a link, opening a settings
+         * page, dialing. After any of these the model must see the new screen to
+         * choose the next step; the fresh frame is captured and injected.
+         *
+         * `youtube_play` and `launch_url` were missing here, which is exactly why
+         * "ইউটিউবে গান চালাও" opened the results and then stopped: the model never
+         * received the results screen, so it could not tap the first video. The
+         * system prompt alone could not fix that — the information never arrived.
+         */
+        private val SCREEN_CHANGING_TOOLS = setOf(
+            "open_app", "youtube_play", "launch_url", "open_settings",
+            "call_dial", "channel_post", "device_lock"
+        )
+
         val PERSONAS = listOf(
             Persona(
                 id = "lover",
@@ -609,7 +635,10 @@ class ZyraxonAiEngine(private val context: Context) {
         onToolCall: suspend (name: String, args: JSONObject) -> JSONObject = { _, _ ->
             JSONObject().put("ok", false).put("summary", "টুল চালানোর অনুমতি নেই")
         },
-        drainInjections: () -> List<String> = { emptyList() }
+        drainInjections: () -> List<String> = { emptyList() },
+        openTodos: () -> List<String> = { emptyList() },
+        screenNow: suspend () -> String = { "" },
+        screenFrame: suspend () -> String = { "" }
     ): Flow<String> = channelFlow {
         val mcpTools = mcp.allTools()
         val systemPrompt = buildComprehensiveSystemPrompt(persona, memoriesContext, screenContext, mcpTools)
@@ -652,6 +681,12 @@ class ZyraxonAiEngine(private val context: Context) {
         // feed the results back, and let it continue until it stops calling tools.
         var round = 0
         var producedText = false
+        // How many times this turn has been pushed to take the next step, and
+        // whether the previous round moved the phone to a new screen. Both feed
+        // `ContinuationPolicy`, which is what refuses to let a one-step stop end
+        // the turn.
+        var nudges = 0
+        var lastActionWasScreenChange = false
         while (round < MAX_TOOL_ROUNDS) {
             round++
             // A message the user spoke or typed mid-task joins the conversation
@@ -663,6 +698,16 @@ class ZyraxonAiEngine(private val context: Context) {
             // here, so the model acts on the new content without being asked.
             for (update in mcp.drainResourceUpdates()) {
                 messages.put(JSONObject().put("role", "user").put("content", update))
+            }
+            // The open todo board is restated every round. A model that drifts —
+            // answering as if the job were done while rows are still open — is
+            // pulled back to the one rule that matters: an open row is unfinished
+            // work, and finishing work is the whole reason you exist.
+            val open = openTodos()
+            if (open.isNotEmpty()) {
+                messages.put(JSONObject().put("role", "user").put("content",
+                    "⚠️ এখনো অসম্পূর্ণ কাজ (todo):\n" + open.joinToString("\n") { "- $it" } +
+                        "\nএই কাজ শেষ না হওয়া পর্যন্ত তুমি থামবে না। পরের ধাপ নিজেই বেছে নাও এবং টুল কল করো।"))
             }
             val result = callModelWithFailover(model, messages, tools, { delta ->
                 producedText = true
@@ -678,6 +723,21 @@ class ZyraxonAiEngine(private val context: Context) {
                 )
 
             if (result.toolCalls.length() == 0) {
+                // The model returned text with no tool call. That is not
+                // automatically the end of the turn: a failure report, a bare
+                // promise, or a silent stop right after the screen changed is
+                // "one step short", and the engine pushes it to take the next step
+                // itself. This is the real fix for "একটা কাজ করার পরে পরের ধাপে
+                // যায় না" — a system-prompt rule alone cannot do it, because the
+                // turn ends here unless the engine refuses to end it.
+                val reply = result.text.toString()
+                if (ContinuationPolicy.shouldContinue(reply, lastActionWasScreenChange, nudges)) {
+                    nudges++
+                    messages.put(JSONObject().put("role", "assistant").put("content", reply))
+                    messages.put(JSONObject().put("role", "user")
+                        .put("content", ContinuationPolicy.nudge(reply)))
+                    continue
+                }
                 if (producedText) return@channelFlow
                 throw IllegalStateException("মডেলটি খালি উত্তর দিয়েছে। আবার বলো।")
             }
@@ -685,24 +745,69 @@ class ZyraxonAiEngine(private val context: Context) {
             messages.put(JSONObject().put("role", "assistant").put("content", result.text.toString())
                 .put("tool_calls", result.toolCalls))
 
-            for (i in 0 until result.toolCalls.length()) {
+            // Parse every call in this turn first, so independent ones can run at
+            // the same time. Opening three apps, or reading two files, used to
+            // happen strictly one after another — each waiting for the previous
+            // result before it even started. That serial wait is a large part of
+            // why a simple job felt slow.
+            val parsed = (0 until result.toolCalls.length()).mapNotNull { i ->
                 val call = result.toolCalls.getJSONObject(i)
-                val fn = call.optJSONObject("function") ?: continue
+                val fn = call.optJSONObject("function") ?: return@mapNotNull null
                 val name = fn.optString("name")
+                if (name.isBlank()) return@mapNotNull null
                 val rawArgs = fn.optString("arguments", "{}")
                 val args = try { JSONObject(rawArgs) } catch (_: Exception) { JSONObject() }
+                Triple(call.optString("id", "call_$round$i"), name, args)
+            }
 
-                val outcome = onToolCall(name, args)
+            // Cleared here, before this round's calls run, so the flag read by the
+            // next round's "no tool call" check describes only this round.
+            lastActionWasScreenChange = false
+            // A call that needs the screen in front of it must run alone and in
+            // order: two taps racing each other would land on the wrong screen.
+            // A call that only reads or writes data can run beside its siblings.
+            val sequential = parsed.filter { isScreenTool(it.second) }
+            val parallel = parsed.filterNot { isScreenTool(it.second) }
+
+            val outcomes = mutableMapOf<String, JSONObject>()
+
+            if (parallel.isNotEmpty()) {
+                coroutineScope {
+                    val jobs = parallel.map { (id, name, args) ->
+                        launch {
+                            val outcome = onToolCall(name, args)
+                            synchronized(outcomes) { outcomes[id] = outcome }
+                        }
+                    }
+                    jobs.forEach { it.join() }
+                }
+            }
+            for ((id, name, args) in sequential) {
+                outcomes[id] = onToolCall(name, args)
+            }
+
+            for ((id, name, args) in parsed) {
+                val outcome = outcomes[id] ?: continue
                 // Show what the tool actually returned, so the user watches the
                 // work happen instead of staring at a frozen cursor.
                 val summary = outcome.optString("summary").take(200)
                 trySend("\n\n⚙️ `$name` → ${summary.ifBlank { "সম্পন্ন" }}\n\n")
 
+                // A tool that failed must not end the turn. The result carries the
+                // real error back to the model, which is told in plain words that a
+                // failure is a step, not a stop — try another way. Without this the
+                // assistant reported "ফাইল লেখা যায়নি" and gave up, which is the
+                // complaint that it cannot finish anything.
+                val ok = outcome.optBoolean("ok", true)
+                val content = if (ok) outcome.toString() else outcome.toString() +
+                    "\n\nএই কলটি ব্যর্থ হয়েছে। এটা থামার কারণ নয়। ভিন্ন পথে আবার চেষ্টা করো — " +
+                    "অন্য টুল, অন্য আর্গুমেন্ট, অন্য পদ্ধতি। সফল না হওয়া পর্যন্ত চালিয়ে যাও।"
+
                 messages.put(JSONObject()
                     .put("role", "tool")
-                    .put("tool_call_id", call.optString("id", "call_$round$i"))
+                    .put("tool_call_id", id)
                     .put("name", name)
-                    .put("content", outcome.toString()))
+                    .put("content", content))
 
                 // A picture the tool just produced joins the conversation now, so
                 // the very next round can look at it instead of waiting for the
@@ -728,6 +833,38 @@ class ZyraxonAiEngine(private val context: Context) {
                     messages.put(JSONObject().put("role", "user").put("content", parts))
                 }
             }
+
+            // A screen action just happened — a tap, a swipe, a key, an app that
+            // was opened, a link followed, a song started on YouTube. The whole
+            // point of driving another app is to see what happened next, and the
+            // model cannot decide the next step from the action it already sent.
+            // The fresh frame is captured here and handed to the very next round,
+            // so YouTube's search results (and every other app's next screen) come
+            // back into the conversation on their own. The model does not have to
+            // remember to ask, which is what left it stuck one step short of
+            // pressing play.
+            if (parsed.any { isScreenTool(it.second) || it.second in SCREEN_CHANGING_TOOLS }) {
+                lastActionWasScreenChange = true
+                val frame = try { screenNow() } catch (_: Exception) { "" }
+                val shot = try { screenFrame() } catch (_: Exception) { "" }
+                if (frame.isNotBlank() || shot.isNotBlank()) {
+                    val text = buildString {
+                        append("📱 অ্যাকশনের পরে বর্তমান স্ক্রিন (নিজে থেকেই নেওয়া)। ")
+                        append("এটা দেখে নিজেই ঠিক করো পরের ধাপ কী — ব্যবহারকারীকে জিজ্ঞাসা কোরো না।\n")
+                        if (frame.isNotBlank()) append("\n$frame")
+                    }
+                    if (shot.isNotBlank()) {
+                        val parts = JSONArray().apply {
+                            put(JSONObject().put("type", "text").put("text", text))
+                            put(JSONObject().put("type", "image_url")
+                                .put("image_url", JSONObject().put("url", shot)))
+                        }
+                        messages.put(JSONObject().put("role", "user").put("content", parts))
+                    } else {
+                        messages.put(JSONObject().put("role", "user").put("content", text))
+                    }
+                }
+            }
         }
 
         // Reaching here means the round budget ran out with tools still pending.
@@ -736,6 +873,13 @@ class ZyraxonAiEngine(private val context: Context) {
         trySend("\n\n⚠️ অনেক ধাপ কাজ করার পরও কাজ শেষ হয়নি। \"চালিয়ে যাও\" বললে ঠিক এখান থেকেই আবার শুরু করব।")
     }.flowOn(Dispatchers.IO)
 
+
+    /**
+     * True for the calls that must touch the screen alone, in order. Two taps or
+     * two swipes racing each other land on the wrong element, so these never run
+     * in parallel with anything.
+     */
+    private fun isScreenTool(name: String): Boolean = name in SCREEN_TOOLS
 
     /**
      * A plain string when there is no image, and the OpenAI content-parts array

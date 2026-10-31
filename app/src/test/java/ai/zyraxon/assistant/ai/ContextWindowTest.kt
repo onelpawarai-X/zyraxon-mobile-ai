@@ -67,4 +67,33 @@ class ContextWindowTest {
 
         assertEquals(5, window.size)
     }
+
+    @Test
+    fun `the digest keeps months-old turns with their dates and roles`() {
+        val recalled = listOf(
+            ChatMessage(id = "u1", role = MessageRole.USER, text = "আমার বিড়ালের নাম টম", timestamp = "10:00 AM"),
+            ChatMessage(id = "a1", role = MessageRole.ASSISTANT, text = "মনে রাখলাম", timestamp = "10:01 AM")
+        )
+
+        val digest = ContextWindow.digest(recalled)
+
+        assertTrue("ব্যবহারকারীর পুরনো কথা নেই", digest.contains("আমার বিড়ালের নাম টম"))
+        assertTrue("তারিখ হারিয়ে গেছে", digest.contains("10:00 AM"))
+        assertTrue("ভূমিকা আলাদা হয়নি", digest.contains("ব্যবহারকারী"))
+        assertTrue("সহকারীর কথা নেই", digest.contains("তুমি"))
+    }
+
+    @Test
+    fun `the digest is empty when nothing was recalled`() {
+        assertEquals("", ContextWindow.digest(emptyList()))
+    }
+
+    @Test
+    fun `the digest never grows past its budget`() {
+        val recalled = (1..200).map { turn("old$it", "খুব লম্বা পুরনো কথা ".repeat(10) + it) }
+
+        val digest = ContextWindow.digest(recalled, maxChars = 2000)
+
+        assertTrue("ডাইজেস্ট বাজেট ছাড়িয়েছে: ${digest.length}", digest.length <= 2000)
+    }
 }

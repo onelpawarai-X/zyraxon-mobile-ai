@@ -11,10 +11,10 @@ package ai.zyraxon.assistant.voice
 object SpeechChunker {
 
     /** A clause must be at least this long before a comma can release it. */
-    private const val CLAUSE_MIN = 30
+    private const val CLAUSE_MIN = 24
 
     /** The comma must not be so early that it releases a two-word fragment. */
-    private const val COMMA_MIN = 12
+    private const val COMMA_MIN = 10
 
     /**
      * How long a run may grow with no punctuation before it is released at a word
@@ -23,10 +23,10 @@ object SpeechChunker {
      * starts the voice a few words in instead. Kept short so the voice follows the
      * words closely, but never so short that a single word is spoken alone.
      */
-    private const val WORD_RELEASE_MIN = 32
+    private const val WORD_RELEASE_MIN = 24
 
     /** The word boundary must not sit so early that it releases a fragment. */
-    private const val WORD_CUT_MIN = 16
+    private const val WORD_CUT_MIN = 12
 
     /**
      * Removes and returns the next piece worth speaking from [buffer], or an

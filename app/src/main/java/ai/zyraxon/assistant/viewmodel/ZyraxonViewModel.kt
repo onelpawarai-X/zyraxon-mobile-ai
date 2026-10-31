@@ -32,6 +32,7 @@ import ai.zyraxon.assistant.ai.ProviderSpec
 import ai.zyraxon.assistant.voice.LiveVoiceSession
 import ai.zyraxon.assistant.voice.NativeVoiceManager
 import ai.zyraxon.assistant.voice.SpeechChunker
+import ai.zyraxon.assistant.voice.SttDecision
 import ai.zyraxon.assistant.update.Updater
 import ai.zyraxon.assistant.update.UpdateRelease
 import ai.zyraxon.assistant.update.UpdateState
@@ -125,6 +126,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     /** True when the last screen read came back as text (no screenshot API). */
     private val _screenTextSnapshot = MutableStateFlow("")
     val screenTextSnapshot: StateFlow<String> = _screenTextSnapshot.asStateFlow()
+
+    /** Short-lived cache for the accessibility tree walk; see [screenContext]. */
+    @Volatile private var screenCacheText = ""
+    @Volatile private var screenCacheAtMs = 0L
 
     /** The looping clip behind the aura. Empty means "no video, use the shader". */
     private val _bgVideoAsset = MutableStateFlow(prefs.getString("bg_video_asset", "girl.mp4") ?: "girl.mp4")
@@ -559,31 +564,40 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         voiceManager.onSpeechRecognized = stt@{ text, isFinal ->
             // The assistant's own voice is filtered by *text*, never by muting
             // the microphone. Muting for the whole reply is what stopped the user
-            // cutting in: they had to wait for the last word. Now the ear stays
-            // open, and only a phrase that really is the reply coming back is
-            // dropped — so a genuine interruption lands mid-answer.
+            // cutting in: they had to wait for the last word. The rule itself
+            // lives in SttDecision so it can be tested without a phone.
+            // The live session has its own mic and transcripts; the phone's
+            // recognizer must not also feed the chat.
+            if (liveVoice.isActive) return@stt
             val speakerActive = voiceManager.isSpeakerActive()
             val repeatsReply = looksLikeOwnSpeech(text, speakerActive)
-            if (text.isBlank() || repeatsReply || liveVoice.isActive) return@stt
-            if (!isFinal) {
-                // A partial only ever *interrupts*: it stops the assistant so the
-                // user can finish their sentence, and it is shown in the box. It
-                // is never sent on its own, because a partial during speech is
-                // usually a fragment of the reply itself.
-                onUserStartedSpeaking()
-                _inputText.value = text
-                return@stt
-            }
-            _inputText.value = text
-            if (_autoSend.value) {
-                onUserStartedSpeaking()
-                sendMessage(text)
+            when (SttDecision.decide(text, isFinal, speakerActive, repeatsReply)) {
+                SttDecision.Action.IGNORE -> return@stt
+                SttDecision.Action.INTERRUPT -> {
+                    // A partial only ever interrupts: it stops the assistant so
+                    // the user can finish their sentence, and it is shown in the
+                    // box. It is never sent on its own.
+                    onUserStartedSpeaking()
+                    _inputText.value = text
+                    return@stt
+                }
+                SttDecision.Action.SUBMIT -> {
+                    _inputText.value = text
+                    if (_autoSend.value) {
+                        onUserStartedSpeaking()
+                        sendMessage(text)
+                    }
+                }
             }
         }
 
         // The microphone follows the user's saved choice: on from the first
-        // frame when they left it on, off when they left it off.
-        if (_alwaysListening.value && _systemStatus.value.micPermissionGranted) {
+        // frame when they left it on, off when they left it off. A live
+        // speech-to-speech session takes the mic instead, so the phone's
+        // recognizer stays out of the way until that session ends.
+        if (_alwaysListening.value && _systemStatus.value.micPermissionGranted &&
+            !(_liveVoicePreferred.value && _selectedModel.value.isRealtime)
+        ) {
             voiceManager.startListening()
         }
 
@@ -743,6 +757,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             // A saved model keeps its place; its friendly name is refreshed from
             // the catalogue when the provider is reachable.
             if (match.name != current.name) _selectedModel.value = match
+            return
+        }
+        // A custom model the user added by hand never appears in any catalogue, and
+        // a saved model whose provider is not in the catalogue (a restored one, or
+        // a provider that has since been removed) cannot be judged gone. Both are
+        // kept and re-listed instead of being replaced — silently swapping the
+        // user's choice for the first catalogue model is the "my model resets on
+        // every launch" report.
+        val providerKnown = models.any { it.provider == current.provider }
+        if (current.provider == "custom" || !providerKnown) {
+            _availableModels.value = (listOf(current) + _availableModels.value.filter { it.id != current.id })
             return
         }
         if (!complete) return
@@ -1049,6 +1074,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun setMicEnabled(enabled: Boolean) {
         _alwaysListening.value = enabled
         prefs.edit().putBoolean("always_listening", enabled).apply()
+        // A live speech-to-speech session owns the microphone. Starting the phone's
+        // recognizer on top of it would steal the mic back and the live model would
+        // go deaf, so while a session is open only the stored choice is updated —
+        // the recognizer is opened when the session ends.
+        if (liveVoice.isActive) return
         if (enabled) {
             voiceManager.startListening()
         } else {
@@ -1065,6 +1095,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun startAlwaysOnListening() {
         if (!_systemStatus.value.micPermissionGranted) return
         if (!_alwaysListening.value) return
+        if (liveVoice.isActive) return
         voiceManager.startListening()
     }
 
@@ -1140,6 +1171,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun stopLiveVoice() {
         liveVoice.stop()
         _liveVoiceEnabled.value = false
+        // The live session owned the microphone; hand it back to the phone's
+        // recognizer exactly as the user left it. Without this the ear stayed shut
+        // after a live call and the app looked deaf.
+        if (_alwaysListening.value && _systemStatus.value.micPermissionGranted) {
+            voiceManager.startListening()
+        }
     }
 
     /**
@@ -1187,6 +1224,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // The phone's engine is cut off here in case it was mid-sentence; the
         // live model is the voice for as long as this session runs.
         voiceManager.stopSpeaking()
+        // Release the phone's recognizer first. Android gives the microphone to
+        // one client at a time, so while the always-on recognizer held it the
+        // live session's own AudioRecord could not open — the socket connected
+        // but no audio ever went up, which is why speech-to-speech "did nothing".
+        // The user's switch is untouched: the ear is reopened when the session ends.
+        voiceManager.stopListening()
         liveVoice.onState = { state ->
             _liveVoiceState.value = state
             // A turn ended: close the open transcript bubble and persist it, so
@@ -1323,20 +1366,27 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 // nodes) and the database reads hit disk; doing that on the main
                 // thread delayed the request before it was even sent, which is
                 // most of why a simple turn felt slow.
-                val baseMemories = repository.getMemoriesPromptContext()
                 // Facts from months ago that share a subject with this turn are
                 // pulled in alongside the recent ones, so an old preference comes
-                // back the moment the same thing is mentioned again.
-                val recalledFacts = repository.recallMemories(prompt)
-                val memoriesContext = if (recalledFacts.isBlank()) baseMemories
-                    else baseMemories + "\n" + recalledFacts
-                // Long-term recall: turns from weeks ago that match what the user
-                // just said come back with this turn, so an old conversation is
-                // remembered without resending the whole transcript every time.
-                val recalled = repository.recallRelevant(prompt, limit = ContextWindow.RECALL_LIMIT)
+                // back the moment the same thing is mentioned again. Both come
+                // from one read of the memories table.
+                val memoriesContext = repository.memoryContextFor(prompt)
+                // Long-term recall, in one pass. The wider sweep (24) is a
+                // superset of the narrow one, so asking the database twice was
+                // pure latency on every turn — the whole reason a simple reply
+                // felt slow. The first few matches lead the window; all of them
+                // feed the digest.
+                val longMemory = repository.recallRelevant(prompt, limit = ContextWindow.RECALL_LIMIT_LONG)
+                val recalled = longMemory.takeLast(ContextWindow.RECALL_LIMIT)
                 val recalledIds = recalled.map { it.id }.toSet()
                 val recent = _messages.value
                     .filter { it.id != assistantMsgId && it.id !in recalledIds }
+                // Months-old memory: the wider sweep of the transcript is folded
+                // into the prompt as a dated digest, so a detail from long ago is
+                // in front of the model even when it falls outside the short window.
+                val memoryDigest = ContextWindow.digest(longMemory)
+                val memoriesWithHistory = if (memoryDigest.isBlank()) memoriesContext
+                    else memoriesContext + "\n\nআগের কথোপকথন থেকে প্রাসঙ্গিক অংশ:\n" + memoryDigest
                 // Recalled old turns lead, then the newest turns, both trimmed to
                 // fit the engine's twelve-turn window so nothing is dropped.
                 val history = ContextWindow.assemble(recalled, recent)
@@ -1347,7 +1397,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     history = history,
                     persona = _selectedPersona.value,
                     model = _selectedModel.value,
-                    memoriesContext = memoriesContext,
+                    memoriesContext = memoriesWithHistory,
                     screenContext = screen,
                     imageDataUrl = _screenFrameDataUrl.value,
                     onToolCall = { name, args -> runTool(name, args) },
@@ -1355,7 +1405,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                         val out = mutableListOf<String>()
                         while (true) out.add(pendingInjections.poll() ?: break)
                         out
-                    }
+                    },
+                    // The engine re-reads these every round: the open todo rows so
+                    // it cannot drift into a final answer with work still pending,
+                    // and the live screen after a tap so it chooses the next step
+                    // itself instead of stopping one step short.
+                    openTodos = { _tasks.value.filter { !it.isCompleted }.map { it.text } },
+                    // A screen action forces a fresh read: the cached frame from
+                    // before the tap is the one thing that is definitely stale.
+                    screenNow = { withContext(Dispatchers.IO) { screenContext(force = true) } },
+                    screenFrame = { withContext(Dispatchers.IO) { ToolRegistry.screenFrame() } }
                 ).collect { chunk ->
                     fullReply += chunk
                     // The UI is only repainted a few times a second. Rebuilding
@@ -1444,12 +1503,21 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * tool call to find out. The accessibility service keeps this current in the
      * background.
      */
-    private fun screenContext(): String {
+    private fun screenContext(force: Boolean = false): String {
         // The foreground app and the screen text are read live, not from the
         // snapshot the UI last pushed. That snapshot only refreshes while this
         // app is on screen, so asking "what am I doing?" from *outside* the app
         // answered with the old screen ("তুমি আমার অ্যাপে আছো") — the defect the
         // user hit. The accessibility service can read the real frame any time.
+        //
+        // Walking the whole tree costs a few hundred milliseconds, and a turn that
+        // does not touch the screen asked for it twice. A short cache keeps the
+        // per-turn read cheap; a screen action forces a fresh read, because after
+        // a tap the old frame is exactly the wrong answer.
+        val now = System.currentTimeMillis()
+        if (!force && now - screenCacheAtMs < SCREEN_CACHE_MS && screenCacheText.isNotBlank()) {
+            return screenCacheText
+        }
         val label = DeviceBridge.foregroundLabel()
         val pkg = DeviceBridge.foregroundPackage()
         val live = runCatching { DeviceBridge.readScreen() }.getOrNull().orEmpty()
@@ -1460,7 +1528,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             else -> ""
         }
         val text = if (snapshot.isBlank()) "" else "\nস্ক্রিনে এখন যা দেখা যাচ্ছে:\n$snapshot"
-        return where + text
+        val result = where + text
+        screenCacheText = result
+        screenCacheAtMs = now
+        return result
     }
 
     /**
@@ -2324,6 +2395,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     companion object {
         /** How often the streaming reply repaints the chat while it arrives. */
         private const val UI_UPDATE_MS = 60L
+
+        /** How long a screen read is reused. Long enough to serve one turn's two
+         * asks, short enough that a screen the user just changed is re-read. */
+        private const val SCREEN_CACHE_MS = 2_000L
 
         /**
          * The floating bubble lives in a service and has no ViewModel of its own,
