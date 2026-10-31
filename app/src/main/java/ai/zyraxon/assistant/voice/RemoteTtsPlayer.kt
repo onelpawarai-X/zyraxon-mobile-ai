@@ -8,6 +8,8 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -15,6 +17,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 /**
@@ -48,6 +51,23 @@ class RemoteTtsPlayer(
     private var player: MediaPlayer? = null
     private var pumpJob: Job? = null
 
+    /**
+     * Downloads one piece ahead so the next one is a file, ready the instant the
+     * current one ends. Without this the voice waited ~0.4 s between sentences —
+     * the round trip to fetch the next piece's first byte — and that gap is what
+     * made a streamed answer feel stitched rather than spoken.
+     */
+    private val downloadScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val prefetched = ConcurrentHashMap<String, File>()
+
+    /**
+     * Cleared the first time a prefetch fails, so a network or endpoint that
+     * cannot be downloaded from is not fetched a second time for every piece —
+     * that would spend the turn on requests that never pay off.
+     */
+    @Volatile
+    private var prefetchEnabled = true
+
     @Volatile
     private var generation = 0
 
@@ -79,6 +99,9 @@ class RemoteTtsPlayer(
      */
     fun speak(text: String, bcp47: String, gender: String) {
         stop()
+        // A fresh reply gets a fresh chance to prefetch, so one bad moment on the
+        // network does not cost the gap-free voice for the rest of the session.
+        prefetchEnabled = true
         enqueue(text, bcp47, gender)
     }
 
@@ -106,6 +129,9 @@ class RemoteTtsPlayer(
             val mine = generation
             while (running && mine == generation) {
                 val piece = queue.removeFirstOrNull() ?: break
+                // The piece after this one is fetched while this one is playing,
+                // so the voice runs from sentence to sentence without a gap.
+                prefetchNext(mine)
                 val ok = play(piece)
                 if (!ok && piece.attempts < 1 && mine == generation) {
                     // One retry: a dropped connection is common on mobile data.
@@ -130,6 +156,25 @@ class RemoteTtsPlayer(
     }
 
     /**
+     * Starts downloading the next piece in the background. Deliberately not
+     * awaited: the point is to overlap it with the piece that is playing.
+     */
+    private fun prefetchNext(mine: Int) {
+        if (!prefetchEnabled) return
+        val next = queue.firstOrNull() ?: return
+        if (prefetched.containsKey(next.url)) return
+        downloadScope.launch {
+            if (mine != generation) return@launch
+            val file = download(next.url)
+            if (file != null && mine == generation) {
+                prefetched[next.url] = file
+            } else if (file == null) {
+                prefetchEnabled = false
+            }
+        }
+    }
+
+    /**
      * Plays one piece and waits for it to end.
      *
      * Two ways are tried in order. First the URL goes straight to the player,
@@ -139,6 +184,16 @@ class RemoteTtsPlayer(
      * heard either way; only the second way waits for the whole sentence.
      */
     private suspend fun play(piece: Piece): Boolean {
+        // A prefetched file plays the instant it is needed — no round trip, so the
+        // next sentence starts the moment the last one ends.
+        val ready = prefetched.remove(piece.url)
+        if (ready != null) {
+            return try {
+                playSource(ready.absolutePath)
+            } finally {
+                ready.delete()
+            }
+        }
         if (!fetch(piece.url)) return false
         if (playSource(piece.url)) return true
         val file = download(piece.url) ?: return false
@@ -262,12 +317,21 @@ class RemoteTtsPlayer(
         pumpJob = null
         release(player)
         player = null
+        clearPrefetched()
     }
 
     /** Releases the player and the queue for good. */
     fun shutdown() {
         stop()
+        downloadScope.cancel()
         try { client.dispatcher.executorService.shutdown() } catch (_: Exception) {}
+    }
+
+    private fun clearPrefetched() {
+        for (file in prefetched.values) {
+            try { file.delete() } catch (_: Exception) {}
+        }
+        prefetched.clear()
     }
 
     private fun release(mp: MediaPlayer?) {

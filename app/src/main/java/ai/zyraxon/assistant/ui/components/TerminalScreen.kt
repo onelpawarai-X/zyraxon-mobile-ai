@@ -452,6 +452,13 @@ private fun TerminalEntry(line: TerminalLine) {
 }
 
 private fun welcome(): String = """
+   ███████╗██╗   ██╗██████╗  █████╗ ██╗  ██╗ ██████╗ ███╗   ██╗
+   ╚══███╔╝╚██╗ ██╔╝██╔══██╗██╔══██╗╚██╗██╔╝██╔═══██╗████╗  ██║
+     ███╔╝  ╚████╔╝ ██████╔╝███████║ ╚███╔╝ ██║   ██║██╔██╗ ██║
+    ███╔╝    ╚██╔╝  ██╔══██╗██╔══██║ ██╔██╗ ██║   ██║██║╚██╗██║
+   ███████╗   ██║   ██║  ██║██║  ██║██╔╝ ██╗╚██████╔╝██║ ╚████║
+   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
+
 ZYRAXON TERMINAL — a real Unix shell on this phone.
 
 ~400 busybox commands are on PATH: sh, awk, sed, grep, tar, wget, curl,
@@ -460,6 +467,11 @@ find, xargs, sort, xxd, base64, gzip, diff, md5sum, and the rest.
 git clone / git pull / git status work too (served by JGit), so you can
 fetch a repository straight into ~. Example:
   git clone https://github.com/onelpawarai-X/zyraxon-mobile-ai
+
+The full ZYRAXON Linux system is one command away — a complete Unix
+userland with bash, apt, git, python, node and clang, installed straight
+from the APK, so it needs no network at all:
+  linux-install
 
 Working directory starts at ~ (the app's own storage). The assistant can
 run lines here too, in this same shell.

@@ -25,7 +25,7 @@ import ai.zyraxon.assistant.model.WorkspaceFile
 import ai.zyraxon.assistant.shell.GitRuntime
 import ai.zyraxon.assistant.shell.ShellRuntime
 import ai.zyraxon.assistant.shell.SystemShell
-import ai.zyraxon.assistant.shell.TermuxRuntime
+import ai.zyraxon.assistant.shell.LinuxRuntime
 import ai.zyraxon.assistant.ai.OnDeviceModel
 import ai.zyraxon.assistant.ai.ProviderCatalog
 import ai.zyraxon.assistant.ai.ProviderSpec
@@ -1268,6 +1268,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         if (prompt.isBlank()) return
 
         _inputText.value = ""
+        // The user has moved on. Whatever the previous answer was still saying is
+        // cut off now, not after the new answer is ready — so the two never play
+        // over each other and the new reply is heard from its first word.
+        if (isSpeaking.value) voiceManager.stopSpeaking()
 
         if (_isGenerating.value) {
             pendingInjections.add(prompt)
@@ -1883,13 +1887,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             appendTerminal(result)
             return result
         }
-        // A `termux` / `termux-install` line installs and drives the real Termux
-        // userland at system level. That is the only way to get the genuine
-        // Termux system — bash, apt, dpkg, git, python, clang — onto a modern
-        // Android app, and at shell/root level it is strictly more powerful than
-        // the app's own sandbox.
-        if (isTermuxCommand(line)) {
-            return runTermuxLine(app, line)
+        // A `linux` / `linux-install` line installs and drives ZYRAXON's own full
+        // Unix system. It is the complete userland — bash, apt, dpkg, git, python,
+        // node, clang — shipped inside the APK and installed from there, so it
+        // works with no network at all and at shell/root level is strictly more
+        // powerful than the app's own sandbox.
+        if (isLinuxCommand(line)) {
+            return runLinuxLine(app, line)
         }
         // A live entry is appended first and its output grows as the command
         // prints, so the terminal behaves like a real one — progress appears
@@ -1928,28 +1932,27 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    // ---- the real Termux system -------------------------------------------
+    // ---- ZYRAXON's own full Linux system --------------------------------
 
     /**
-     * Recognises the lines that belong to the Termux runtime rather than the
-     * bundled busybox: `termux-install`, `termux`, `termux-setup`, `pkg`, `apt`,
-     * `proot-distro` and the shell names Termux itself provides.
+     * Recognises the lines that belong to the bundled Linux userland rather than
+     * the app's own busybox: `linux-install`, `linux`, `linux-status`, and the
+     * package-manager names the guest provides once it is installed.
      */
-    private fun isTermuxCommand(line: String): Boolean {
+    private fun isLinuxCommand(line: String): Boolean {
         val first = line.trim().split(Regex("\\s+")).firstOrNull() ?: return false
         return first in setOf(
-            "termux", "termux-install", "termux-setup", "termux-status",
-            "pkg", "apt", "apt-get", "dpkg", "proot-distro", "pd",
-            "termux-ubuntu", "termux-debian", "pwsh", "powershell"
-        ) || line.trim().startsWith("termux ")
+            "linux", "linux-install", "linux-status", "linux-shell",
+            "pkg", "apt", "apt-get", "dpkg"
+        ) || line.trim().startsWith("linux ")
     }
 
     /**
-     * Runs one Termux line. Installing is a separate, explicit command because it
-     * downloads ~35 MB and must not happen behind the user's back; every other
-     * line goes into the installed guest.
+     * Runs one line of the bundled Linux system. Installing is a separate,
+     * explicit command because it unpacks ~350 MB from the APK and must not happen
+     * behind the user's back; every other line goes into the installed guest.
      */
-    private suspend fun runTermuxLine(app: Application, line: String): TerminalLine {
+    private suspend fun runLinuxLine(app: Application, line: String): TerminalLine {
         val lineId = UUID.randomUUID().toString()
         appendTerminal(TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
         val streamed = StringBuilder()
@@ -1960,61 +1963,44 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
         val status = buildString {
             append("Shizuku: ").append(if (SystemShell.available()) "চালু" else "বন্ধ")
-            append(" · Termux: ").append(if (TermuxRuntime.isInstalled(app)) "ইনস্টল করা" else "ইনস্টল করা হয়নি")
+            append(" · ZYRAXON Linux: ").append(if (LinuxRuntime.isInstalled(app)) "ইনস্টল করা" else "ইনস্টল করা হয়নি")
             append("\n\n")
             append("কমান্ড:\n")
-            append("  termux-install          — আসল Termux সিস্টেম ইনস্টল করে (bash, apt, dpkg, git, python)\n")
-            append("  termux <কমান্ড>          — Termux-এর ভিতরে কমান্ড চালায়\n")
-            append("  termux-status           — ইনস্টল অবস্থা দেখায়\n")
-            append("  termux-ubuntu           — proot-distro দিয়ে Ubuntu বসায় (apt পূর্ণ)\n")
-            append("  termux-debian           — proot-distro দিয়ে Debian বসায়\n")
-            append("  pwsh                     — PowerShell ৭ (Ubuntu-র ভিতরে)\n")
+            append("  linux-install           — ZYRAXON Linux সিস্টেম ইনস্টল করে (bash, apt, git, python, node, clang)\n")
+            append("  linux <কমান্ড>           — Linux-এর ভিতরে কমান্ড চালায়\n")
+            append("  linux-status            — ইনস্টল অবস্থা দেখায়\n")
+            append("  linux-shell             — ইন্টার‌্যাক্টিভ bash খোলে\n")
         }
 
         val result = when {
-            line == "termux-status" -> TerminalLine(
+            line == "linux-status" -> TerminalLine(
                 command = line, output = status, exitCode = 0, isError = false
             )
 
-            line == "termux-install" -> {
-                push("out", "আসল Termux সিস্টেম ইনস্টল করছি…")
-                val ok = TermuxRuntime.install(app) { msg -> push("out", msg) }
+            line == "linux-install" -> {
+                push("out", "ZYRAXON Linux সিস্টেম ইনস্টল করছি…")
+                val ok = LinuxRuntime.install(app) { msg -> push("out", msg) }
                 TerminalLine(
                     id = lineId,
                     command = line,
                     output = streamed.toString().trimEnd('\n') +
-                        if (ok) "\n\n✔ Termux প্রস্তুত। এখন `termux <কমান্ড>` চালান।"
+                        if (ok) "\n\n✔ ZYRAXON Linux প্রস্তুত। এখন `linux <কমান্ড>` চালান।"
                         else "\n\n✖ ইনস্টল সম্পূর্ণ হয়নি। Shizuku চালু আছে কিনা দেখুন।",
                     exitCode = if (ok) 0 else 1,
                     isError = !ok
                 )
             }
 
-            !TermuxRuntime.isInstalled(app) -> TerminalLine(
+            !LinuxRuntime.isInstalled(app) -> TerminalLine(
                 id = lineId,
                 command = line,
-                output = "Termux ইনস্টল করা নেই। আগে চালান:\n  termux-install\n\n$status",
+                output = "ZYRAXON Linux ইনস্টল করা নেই। আগে চালান:\n  linux-install\n\n$status",
                 exitCode = 1, isError = true
             )
 
-            line.startsWith("termux-ubuntu") -> runTermuxGuest(app, lineId, streamed, push,
-                "pkg install -y proot-distro && proot-distro install ubuntu && proot-distro login ubuntu")
-
-            line.startsWith("termux-debian") -> runTermuxGuest(app, lineId, streamed, push,
-                "pkg install -y proot-distro && proot-distro install debian && proot-distro login debian")
-
-            line.startsWith("pwsh") || line.startsWith("powershell") -> runTermuxGuest(app, lineId, streamed, push,
-                "pkg install -y proot-distro && proot-distro install ubuntu 2>/dev/null; " +
-                    "proot-distro login ubuntu -- /bin/bash -lc " +
-                    "\"command -v pwsh >/dev/null 2>&1 || " +
-                    "(apt-get update && apt-get install -y wget && " +
-                    "wget -q https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-linux-arm64.tar.gz -O /tmp/ps.tar.gz && " +
-                    "mkdir -p /opt/microsoft/powershell/7 && tar zxf /tmp/ps.tar.gz -C /opt/microsoft/powershell/7 && " +
-                    "ln -sf /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh); pwsh\"")
-
             else -> {
-                val cmd = line.removePrefix("termux").trim().ifEmpty { "bash -l" }
-                runTermuxGuest(app, lineId, streamed, push, cmd)
+                val cmd = line.removePrefix("linux").trim().ifEmpty { "bash -l" }
+                runLinuxGuest(app, lineId, streamed, push, cmd)
             }
         }
         // The entry is finalised in place, so the running cursor stops and the
@@ -2024,14 +2010,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /** Runs a command inside the installed guest, streaming its output live. */
-    private suspend fun runTermuxGuest(
+    private suspend fun runLinuxGuest(
         app: Application,
         lineId: String,
         streamed: StringBuilder,
         push: (String, String) -> Unit,
         command: String
     ): TerminalLine {
-        val r = TermuxRuntime.runStreaming(app, command) { stream, text -> push(stream, text) }
+        val r = LinuxRuntime.runStreaming(app, command) { stream, text -> push(stream, text) }
         if (r == null) {
             return TerminalLine(
                 command = command,

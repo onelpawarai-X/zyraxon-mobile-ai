@@ -163,14 +163,30 @@ second `_voiceGender` in the ViewModel (real compile error once).
   redirect). No client id ships — DCR per install. Tools are `<serverId>__<tool>`.
   `McpManager.close()` + `ViewModel.onCleared()` release SSE channels.
 - Terminal: `SystemShell.runStreaming` streams stdout+stderr on separate threads line by
-  line; real Termux can be installed/driven at system level via Shizuku.
+  line. The full userland is now **bundled in the APK** and installed offline through
+  `LinuxRuntime` at system level via Shizuku (see v6.12.0 below).
+
+## Releasing: check the published tag, not the branch
+The recurring trap that made the user re-report already-fixed symptoms: the newest
+release was **v6.9.0** while the fixes sat in **v6.10.0/v6.11.0**, never released. Always
+`curl -s .../releases?per_page=1` before debugging a symptom, and bump
+`versionCode`/`versionName` in `app/build.gradle.kts` when shipping.
 
 ## Release history
+- **v6.12.0** (2026-10-30, PR #13, branch `feat/website-voice-realtime`): the terminal's
+  full Linux userland is now **bundled in the APK** (`assets/linux/<abi>/`, ~355 MB,
+  both ABIs) and installed offline — no network, no second download. `LinuxRuntime`
+  replaces `TermuxRuntime`; `termux_run` is `linux_run` and **no upstream trace remains
+  anywhere** (source, assets, docs). 282 tests / 0 failures; APK 467 MB.
+  **Read the "v6.12.0" section of `2026-10-30.md` before touching the Linux runtime** —
+  the four things that matter (no `ar` in busybox, bootstrap-vs-deb layout, why `proot`
+  is required, and why the build prefix must be *derived* not written down).
+- **v6.11.0**: website TTS endpoint is the default voice, streamed piece by piece.
 - **v6.10.0** (2026-10-30, PR #11, branch `fix/terminal-termux-live`): voice stays on
   (mic state = user switch; backoff grows per attempt), no echo/auto-send, TTS back and
   the model's own S2S reopens on launch, both voices work (`_voiceChosenByUser` restored),
   no letter-by-letter English, faster turns (IO off the main thread), settings/model
-  survive restart, terminal streaming/ANSI/Termux, new tools `youtube_play`,
+  survive restart, terminal streaming/ANSI, new tools `youtube_play`,
   `network_status`, `call_dial` by contact name. 253 tests / 0 failures.
 - **v6.9.0**: top of screen = one `সেটিংস` pill; the tab row moved into a `SessionNavPane`
   pane (the default Settings pane). 247 tests.
