@@ -110,7 +110,7 @@ fun MessageBubble(
                 .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
             // Text Body. Selectable, so a word or the whole answer can be picked
-            // the way Termux does it; a long press copies the whole message.
+            // the way a chat app does it; a long press copies the whole message.
             SelectionContainer {
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(

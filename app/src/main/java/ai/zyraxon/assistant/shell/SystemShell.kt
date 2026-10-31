@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
  *
  * An ordinary Android app is a prisoner of its own sandbox: it cannot read
  * `/data`, cannot see another app's files, cannot write to `/system`. This class
- * is the way out, and it is the same way Termux and every serious shell app on
+ * is the way out, and it is the same way every serious shell app on
  * Android takes.
  *
  * Two levels are offered, and both are the user's to grant:

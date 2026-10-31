@@ -78,6 +78,13 @@ android {
       keepDebugSymbols += "**/libbusybox.so"
     }
   }
+
+  // The Linux payload under assets/linux/ is already compressed (zip and xz), so
+  // storing it as-is skips a pointless second pass at build time and lets it be
+  // streamed out of the APK without inflating the whole member into memory.
+  androidResources {
+    noCompress += listOf("zip", "deb", "xz", "gz", "Packages")
+  }
 }
 
 // Some unused dependencies are commented out below instead of being removed.
@@ -124,7 +131,7 @@ dependencies {
   // System-level access the user opts into. Shizuku lets ZYRAXON run commands as
   // the `shell` user (uid 2000) or as root (uid 0) on a rooted phone, without
   // the app itself holding any privileged permission. It is the same mechanism
-  // Termux and every other "real shell" app on Android uses.
+  // a system shell on Android uses.
   implementation(libs.shizuku.api)
   implementation(libs.shizuku.provider)
   coreLibraryDesugaring(libs.desugar.jdk.libs.nio)

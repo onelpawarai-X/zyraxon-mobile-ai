@@ -8,6 +8,7 @@ import ai.zyraxon.assistant.shell.BackgroundCommandService
 import ai.zyraxon.assistant.shell.GitRuntime
 import ai.zyraxon.assistant.shell.ShellRuntime
 import ai.zyraxon.assistant.shell.SystemShell
+import ai.zyraxon.assistant.shell.LinuxRuntime
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -243,8 +244,11 @@ object ToolRegistry {
             .put("description", "Bring the Terminal tab to the front so the user watches the commands run in the real terminal instead of reading them in the chat.")
             .put("parameters", S(JSONObject(), emptyList())),
         "system_shell" to JSONObject()
-            .put("description", "Run a command at SYSTEM level, above the app sandbox — the way Termux and adb do. With `level:\"root\"` it runs as uid 0 (full root: read every app's data, write /system, mount, iptables). With `level:\"shell\"` it runs as uid 2000 (the adb shell user: read most of /data, use pm/am/settings/dumpsys/input). Pass `level:\"auto\"` to use root when the phone is rooted and shell otherwise. It needs the user to have Shizuku running and to have granted ZYRAXON access — if that is missing the tool says exactly what to do, and run_shell still works. Returns the real exit code and real output.")
+            .put("description", "Run a command at SYSTEM level, above the app sandbox — the way a system shell and adb do. With `level:\"root\"` it runs as uid 0 (full root: read every app's data, write /system, mount, iptables). With `level:\"shell\"` it runs as uid 2000 (the adb shell user: read most of /data, use pm/am/settings/dumpsys/input). Pass `level:\"auto\"` to use root when the phone is rooted and shell otherwise. It needs the user to have Shizuku running and to have granted ZYRAXON access — if that is missing the tool says exactly what to do, and run_shell still works. Returns the real exit code and real output.")
             .put("parameters", S(JSONObject().put("command", str()).put("level", str()).put("timeout_ms", num()), listOf("command"))),
+        "linux_run" to JSONObject()
+            .put("description", "Run a command inside ZYRAXON's own full Linux system — bash, apt, git, python, node and clang, not the bundled busybox. It is the same system the user sees in the Terminal tab, and it is installed straight from the APK, so it works with no network at all. Use `action:\"status\"` to see whether it is installed, `action:\"install\"` to unpack it from the APK, or `action:\"run\"` with a command. Installing needs Shizuku running and granted to ZYRAXON; until then the tool explains exactly what to do.")
+            .put("parameters", S(JSONObject().put("action", str()).put("command", str()).put("timeout_ms", num()), listOf("action"))),
         "background_command" to JSONObject()
             .put("description", "Run one command in a background service so it keeps running after the user closes the app — for long jobs like a big download, a clone or a build. It shows a notification with a Stop button. Use `action:\"start\"` with a command, or `action:\"stop\"` to end the running one, or `action:\"status\"` to see whether one is running and how it ended.")
             .put("parameters", S(JSONObject().put("action", str()).put("command", str()), listOf("action"))),
@@ -408,6 +412,7 @@ object ToolRegistry {
             "delete_file" -> deleteFile(context, args)
             "run_shell" -> runShell(context, args)
             "system_shell" -> systemShell(context, args)
+            "linux_run" -> linuxRun(context, args)
             "background_command" -> backgroundCommand(context, args)
             "publish_website" -> publish(context, args, tunnel = false)
             "publish_cloudflare" -> publish(context, args, tunnel = true)
@@ -1118,6 +1123,76 @@ object ToolRegistry {
                 .put("root", levels[SystemShell.Level.ROOT] == true),
             label
         )
+    }
+
+    /**
+     * Runs a command in ZYRAXON's own Linux system, installs it, or reports on it.
+     *
+     * This is the same userland the Terminal tab drives, exposed as a tool so the
+     * assistant can build, run and test inside a real Unix system on the phone —
+     * `apt install`, `python`, `node`, `clang` — instead of only the bundled
+     * busybox. Everything comes from the APK, so it works with no network.
+     */
+    private suspend fun linuxRun(context: Context, args: JSONObject): JSONObject {
+        val action = args.optString("action", "status").trim().lowercase()
+        return when (action) {
+            "install" -> {
+                val log = StringBuilder()
+                val okInstall = LinuxRuntime.install(context) { msg ->
+                    log.append(msg).append('\n')
+                }
+                ok(
+                    JSONObject()
+                        .put("installed", okInstall)
+                        .put("log", log.toString()),
+                    if (okInstall) "ZYRAXON Linux ইনস্টল হয়েছে" else "ZYRAXON Linux ইনস্টল ব্যর্থ"
+                )
+            }
+
+            "run" -> {
+                val command = args.optString("command").trim()
+                if (command.isEmpty()) return err("bad-args", "কমান্ড দাও")
+                if (!LinuxRuntime.isInstalled(context)) {
+                    return err(
+                        "linux-missing",
+                        "ZYRAXON Linux এখনো ইনস্টল হয়নি। আগে action:\"install\" দিয়ে ইনস্টল করো।"
+                    )
+                }
+                val out = StringBuilder()
+                val r = LinuxRuntime.runStreaming(context, command) { _, text ->
+                    out.append(text)
+                }
+                if (r == null) {
+                    return err(
+                        "linux-shell",
+                        "সিস্টেম অ্যাক্সেস নেই। Shizuku চালু করে ZYRAXON-কে অনুমতি দাও।"
+                    )
+                }
+                val tail = r.stdout.trim().lines().lastOrNull()?.take(160)
+                val label = buildString {
+                    append("$ linux $command → exit ${r.code}")
+                    if (!tail.isNullOrBlank()) append(" | ").append(tail)
+                }
+                ok(
+                    JSONObject()
+                        .put("code", r.code)
+                        .put("stdout", r.stdout)
+                        .put("stderr", r.stderr),
+                    label
+                )
+            }
+
+            else -> {
+                val installed = LinuxRuntime.isInstalled(context)
+                ok(
+                    JSONObject()
+                        .put("installed", installed)
+                        .put("system_access", SystemShell.available())
+                        .put("root", SystemShell.probe(context)[SystemShell.Level.ROOT] == true),
+                    if (installed) "ZYRAXON Linux ইনস্টল করা আছে" else "ZYRAXON Linux ইনস্টল করা হয়নি"
+                )
+            }
+        }
     }
 
     /**

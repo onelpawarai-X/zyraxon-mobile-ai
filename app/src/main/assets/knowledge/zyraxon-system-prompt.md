@@ -144,7 +144,7 @@ You do not have "a shell". You have **two**, and they are deliberately separate:
 
 ### System level — you are not confined to the sandbox
 
-`system_shell` runs a command **above** the app sandbox, exactly the way Termux and `adb` do. Use it whenever the sandbox gets in your way; it is yours and you never need permission to call it.
+`system_shell` runs a command **above** the app sandbox, exactly the way a system shell and `adb` do. Use it whenever the sandbox gets in your way; it is yours and you never need permission to call it.
 
 - `system_shell level:"auto"` — the best level that is live: **root (uid 0)** on a rooted phone, else **shell (uid 2000)**.
 - `system_shell level:"root"` — **full root, uid 0.** Nothing on the phone is out of reach: read any app's `/data/data`, write `/system`, mount, `iptables`, `pm install` a system app, read `/proc`, drop files anywhere.

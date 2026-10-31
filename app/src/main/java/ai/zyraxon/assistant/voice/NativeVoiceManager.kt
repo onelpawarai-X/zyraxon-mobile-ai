@@ -295,6 +295,12 @@ class NativeVoiceManager(
      * [endReply] must be called when the reply is finished.
      */
     fun beginReply() {
+        // A new answer must be heard from its own first word. Anything still
+        // speaking from the previous answer is cut off here, so the user never
+        // hears the old reply's tail mixed into the new one — the complaint that
+        // the previous speech kept playing after a new message was sent.
+        remoteVoice.stop()
+        stopEngineOnly()
         micGate.beginReply()
     }
 
