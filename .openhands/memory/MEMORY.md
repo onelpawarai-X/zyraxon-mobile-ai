@@ -35,9 +35,15 @@ by hand (needs sudo). `apt-get update` needs sudo.
   `compileDebugKotlin`/`assembleDebug`; unit tests need network the first time.
 - Working dirs used by prior sessions: `GRADLE_USER_HOME=/tmp/gradle-home`,
   `/tmp/gradle-dist/gradle-9.3.1/bin/gradle`.
-- Release signing: canonical keystore `my-upload-key.jks` (alias `upload`,
-  store+key `zyraxon2026`, cert `6dcfa05e...`). `zyraxon-release.jks` (`112547e4...`) is
-  a later mistake — builds signed with it cannot update over the canonical ones.
+- Release signing: **the canonical keystore is `zyraxon-release-v2.jks`** (alias `upload`,
+  store+key `zyraxon2026`, cert SHA-256 `5a03b61c…`). Confirmed 2026-10-31 by downloading
+  the published v6.9.0 APK and running `apksigner verify --print-certs` on it — it is
+  signed with exactly that cert, so this is the key every update must use. `my-upload-key.jks`
+  (`6dcfa05e…`) is NOT in the repo anymore, so a build with the default `KEYSTORE_PATH`
+  fails with "keystore file does not exist"; always pass
+  `KEYSTORE_PATH=$PWD/zyraxon-release-v2.jks STORE_PASSWORD=zyraxon2026 KEY_PASSWORD=zyraxon2026`.
+  `zyraxon-release.jks` (`112547e4…`) is a later mistake — never use it.
+  **Check the cert of the last published APK, not the memory, before a release.**
 - Lint blocks `assembleRelease` on `InvalidFragmentVersionForActivityResult`; fix is the
   `androidx.fragment:fragment-ktx` dependency.
 - **Verify the artifact, not the source:** `unzip -o apk 'classes*.dex' -d /tmp/x` then
