@@ -692,6 +692,7 @@ fun SettingsSheet(
                     "updates" to t("⬆️ আপডেট"),
                     "voice" to t("🔊 ভয়েস (TTS)"),
                     "ondevice" to t("📴 অন-ডিভাইস মডেল"),
+                    "live" to t("📞 লাইভ ভয়েস"),
                     "mic" to t("🎙️ মাইক"),
                     "aura" to t("🔮 ওরা ও ব্যাকগ্রাউন্ড"),
                     "providers" to t("🔑 এআই প্রোভাইডার্স"),
@@ -776,13 +777,156 @@ fun SettingsSheet(
                     }
 
                     "live" -> {
-                        // Model-native speech-to-speech is switched off on the
-                        // user's request: the phone's own TTS is the voice, and
-                        // the realtime socket is not opened at all.
+                        // LIVE SPEECH-TO-SPEECH
+                        val liveOn by viewModel.liveVoiceEnabled.collectAsState()
+                        val liveState by viewModel.liveVoiceState.collectAsState()
+                        val liveModel by viewModel.liveVoiceModel.collectAsState()
+                        val liveProvider by viewModel.liveVoiceProvider.collectAsState()
+                        val models by viewModel.availableModels.collectAsState()
+                        val selected by viewModel.selectedModel.collectAsState()
+                        // The realtime models the loaded catalogue actually holds.
+                        // Nothing is listed here that the providers did not send.
+                        val realtimeModels = models.filter { it.isRealtime }
+
                         Text(
-                            t("মডেলের নিজের স্পিচ-টু-স্পিচ বন্ধ করা হয়েছে। এখন ফোনের ভয়েস (TTS) দিয়েই কথা বলা হয়।"),
+                            t("লাইভ ভয়েস — স্পিচ-টু-স্পিচ"),
+                            fontWeight = FontWeight.Bold,
+                            color = Glass.textPrimary,
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            t("চালু থাকলে রিয়েলটাইম মডেল নিজের কণ্ঠে সরাসরি কথা বলে, আর ফোনের TTS বন্ধ থাকে। বন্ধ থাকলে মডেলের লেখা ফোনের TTS পড়ে শোনায় — তাই লাইভ সংযোগ না হলেও কথা শোনা যায়।"),
                             color = Glass.textSecondary,
-                            fontSize = 12.sp
+                            fontSize = 11.5.sp
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // The live voice switch. Off hands the voice back to the
+                        // phone's own TTS, so a realtime model that cannot open a
+                        // socket still speaks normally instead of going silent.
+                        val preferred by viewModel.liveVoicePreferred.collectAsState()
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Glass.rowFill(0.30f))
+                                .border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(t("মডেলের নিজের কণ্ঠ ব্যবহার করো"), color = Glass.textPrimary, fontSize = 13.sp)
+                                Text(
+                                    t("বন্ধ থাকলে ফোনের TTS পড়ে শোনায় (সবসময় কাজ করে)"),
+                                    color = Glass.textMuted,
+                                    fontSize = 11.sp
+                                )
+                            }
+                            Switch(
+                                checked = preferred,
+                                onCheckedChange = { viewModel.setLiveVoicePreferred(it) },
+                                colors = SwitchDefaults.colors(checkedThumbColor = Glass.textPrimary, checkedTrackColor = Glass.cyanFill)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Live status. The switch follows the model, so this is a
+                        // read-out, not a control.
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(if (liveOn) Glass.cyanFill.copy(alpha = 0.22f) else Glass.rowFill(0.30f))
+                                .border(1.dp, if (liveOn) Glass.cyanFill else Glass.borderSoft, RoundedCornerShape(14.dp))
+                                .padding(14.dp)
+                                .testTag("live_voice_toggle")
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        if (liveOn) t("লাইভ ভয়েস চালু") else t("লাইভ ভয়েস বন্ধ"),
+                                        color = Glass.textPrimary,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp
+                                    )
+                                    Text(
+                                        when (liveState) {
+                                            ai.zyraxon.assistant.voice.LiveVoiceSession.State.CONNECTING -> t("সংযোগ হচ্ছে…")
+                                            ai.zyraxon.assistant.voice.LiveVoiceSession.State.LISTENING -> t("শুনছে…")
+                                            ai.zyraxon.assistant.voice.LiveVoiceSession.State.SPEAKING -> t("বলছে…")
+                                            else -> if (liveOn) t("অপেক্ষায়") else t("রিয়েলটাইম মডেল বাছলে নিজেই চালু হবে")
+                                        },
+                                        color = Glass.textSecondary,
+                                        fontSize = 11.sp
+                                    )
+                                    if (liveOn && liveModel.isNotBlank()) {
+                                        Text(
+                                            "$liveProvider · $liveModel",
+                                            color = Glass.cyanFill,
+                                            fontSize = 10.5.sp
+                                        )
+                                    }
+                                }
+                                Text(if (liveOn) "🎙️" else "🔇", fontSize = 20.sp)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            t("রিয়েলটাইম মডেল (নিজের কণ্ঠে কথা বলে):"),
+                            color = Glass.cyanFill,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        if (realtimeModels.isEmpty()) {
+                            Text(
+                                t("এখন কোনো রিয়েলটাইম মডেল লোড হয়নি। 🔑 এআই প্রোভাইডার্স ট্যাবে Gemini, OpenAI বা Grok-এর কী দিলে তাদের লাইভ মডেল এখানে আসবে।"),
+                                color = Glass.amber,
+                                fontSize = 11.sp
+                            )
+                        } else {
+                            realtimeModels.forEach { m ->
+                                val active = selected.id == m.id
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 3.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (active) Glass.pinkFill.copy(alpha = 0.20f) else Glass.rowFill(0.25f))
+                                        .border(1.dp, if (active) Glass.pinkFill else Glass.borderSoft, RoundedCornerShape(10.dp))
+                                        .clickable { viewModel.setModel(m) }
+                                        .padding(horizontal = 12.dp, vertical = 10.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(m.name, color = Glass.textPrimary, fontSize = 11.5.sp)
+                                            Text(m.provider, color = Glass.textSecondary, fontSize = 10.sp)
+                                        }
+                                        if (active) Icon(Icons.Rounded.Check, contentDescription = "Active", tint = Glass.pinkFill, modifier = Modifier.size(16.dp))
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            t("নিচের স্লাইডারে কণ্ঠ বাছলে রিয়েলটাইম মডেলেও সেই কণ্ঠই ব্যবহার হয়।"),
+                            color = Glass.textMuted,
+                            fontSize = 10.5.sp
                         )
                     }
                     "ondevice" -> {

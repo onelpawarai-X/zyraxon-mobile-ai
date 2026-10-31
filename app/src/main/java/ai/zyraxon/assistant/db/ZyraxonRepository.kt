@@ -108,6 +108,30 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
     }
 
     /**
+     * The whole memory block for one turn, in a single database read.
+     *
+     * The durable facts are always included; the ones whose key or value shares a
+     * subject with what the user just said are folded in on top. Both used to be
+     * fetched with their own `getMemoriesList()` call, so every turn paid for two
+     * reads of the same table — part of why a simple reply felt slow.
+     */
+    suspend fun memoryContextFor(topic: String): String {
+        val list = dao.getMemoriesList()
+        if (list.isEmpty()) return ""
+        val base = list.joinToString("\n") { "• ${it.key}: ${it.value}" }
+        val words = topic.lowercase()
+            .split(Regex("[^\\p{L}\\p{M}\\p{N}]+"))
+            .filter { it.length >= 3 && it !in STOP_WORDS }
+            .distinct()
+        if (words.isEmpty()) return base
+        val recalled = list.filter { m ->
+            val hay = (m.key + " " + m.value).lowercase()
+            words.any { hay.contains(it) }
+        }.take(8).joinToString("\n") { "• ${it.key}: ${it.value}" }
+        return if (recalled.isBlank()) base else base + "\n" + recalled
+    }
+
+    /**
      * Everything worth remembering from a long time ago, pulled out of the full
      * transcript for the words the user just used.
      *

@@ -61,6 +61,8 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.FlashlightOn
+import androidx.compose.material.icons.rounded.Mic
+import androidx.compose.material.icons.rounded.MicOff
 import androidx.compose.material.icons.rounded.OpenInBrowser
 import androidx.compose.material.icons.rounded.Phone
 import androidx.compose.material.icons.rounded.Security
@@ -346,6 +348,8 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                     onTextChange = { viewModel.onInputChange(it) },
                     onSend = { viewModel.sendMessage() },
                     isListening = isListening,
+                    micOn = alwaysListening,
+                    onMicToggle = { viewModel.toggleListening() },
                     onQuickAction = { viewModel.sendMessage(it) }
                 )
             }
@@ -975,6 +979,8 @@ fun BottomComposer(
     onTextChange: (String) -> Unit,
     onSend: () -> Unit,
     isListening: Boolean,
+    micOn: Boolean,
+    onMicToggle: () -> Unit,
     onQuickAction: (String) -> Unit
 ) {
     Column(
@@ -995,6 +1001,36 @@ fun BottomComposer(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // The microphone switch, right where the user types. It is a real
+                // button, not a hint: one tap holds the mic closed for as long as
+                // the user wants, and the choice is remembered across restarts.
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (micOn) Glass.pinkFill.copy(alpha = 0.22f)
+                            else Glass.rowFill(0.30f)
+                        )
+                        .border(
+                            1.dp,
+                            if (micOn) Glass.pinkFill else Glass.borderSoft,
+                            CircleShape
+                        )
+                        .clickable { onMicToggle() }
+                        .testTag("mic_button"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (micOn) Icons.Rounded.Mic else Icons.Rounded.MicOff,
+                        contentDescription = if (micOn) t("মাইক বন্ধ করুন") else t("মাইক চালু করুন"),
+                        tint = if (micOn) Glass.pinkFill else Glass.textMuted,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(6.dp))
+
                 BasicTextField(
                     value = text,
                     onValueChange = onTextChange,

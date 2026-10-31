@@ -220,4 +220,58 @@ class SettingsPersistenceTest {
         first.setAuraStyle("vortex")
         assertEquals("ওরা স্টাইল সেভ হয়নি", "vortex", newViewModel().auraStyle.value)
     }
+
+    @Test
+    fun `a live voice session takes the microphone from the recognizer`() {
+        // Android gives the microphone to one client at a time. If the always-on
+        // recognizer kept it while the live model tried to open its own
+        // AudioRecord, the socket connected but no audio ever went up — which is
+        // why speech-to-speech "did nothing". The recognizer must be released.
+        val vm = newViewModel()
+        vm.setMicEnabled(true)
+        assertTrue("শুরুতে মাইক খোলা হয়নি", vm.voiceManager.microphoneEnabled)
+
+        // A realtime model with a key, so a live session actually opens.
+        vm.aiEngine.setApiKey("gemini", "test-key")
+        vm.setModel(
+            AiModel(
+                id = "gemini-2.5-flash-native-audio-preview",
+                name = "Live",
+                category = "Gemini",
+                description = "Gemini",
+                provider = "gemini",
+                isRealtime = true
+            )
+        )
+        vm.enableLiveVoice()
+
+        assertFalse(
+            "লাইভ ভয়েস চালু হলে ফোনের মাইক ছাড়া হয়নি",
+            vm.voiceManager.microphoneEnabled
+        )
+    }
+
+    @Test
+    fun `the microphone switch is remembered while a live session runs`() {
+        // The user's own switch is never silently changed by the live session: the
+        // stored choice stays, and the ear is reopened from it when the session ends.
+        val vm = newViewModel()
+        vm.setMicEnabled(true)
+        vm.aiEngine.setApiKey("gemini", "test-key")
+        vm.setModel(
+            AiModel(
+                id = "gemini-2.5-flash-native-audio-preview",
+                name = "Live",
+                category = "Gemini",
+                description = "Gemini",
+                provider = "gemini",
+                isRealtime = true
+            )
+        )
+        vm.enableLiveVoice()
+        assertTrue(
+            "লাইভ ভয়েস ব্যবহারকারীর মাইক পছন্দ বদলে দিয়েছে",
+            vm.alwaysListening.value
+        )
+    }
 }

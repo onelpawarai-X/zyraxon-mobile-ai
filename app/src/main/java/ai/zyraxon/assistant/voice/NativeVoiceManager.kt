@@ -150,6 +150,9 @@ class NativeVoiceManager(
     private var restartJob: Job? = null
     private var restartAttempts = 0
 
+    /** When the recognizer was last reopened; a floor keeps it from thrashing. */
+    private var lastRestartMs = 0L
+
     /**
      * Fires when the engine never calls back for a piece it accepted — a stalled
      * or crashed TTS service, or an utterance that was silently dropped. Without
@@ -378,8 +381,8 @@ class NativeVoiceManager(
      */
     fun setVoiceLanguage(tag: String) {
         _voiceLanguage.value = tag
-        recognizerIntent?.putExtra(RecognizerIntent.EXTRA_LANGUAGE, tag)
-        recognizerIntent?.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, tag)
+        // A fresh intent, so no stale language extra survives the switch.
+        recognizerIntent = buildRecognizerIntent(tag)
         applyVoiceLanguage(tag)
         applyVoiceSettings(_voiceGender.value, currentRate, currentPitch, tag)
         if (micEnabled) {
@@ -547,14 +550,37 @@ class NativeVoiceManager(
             })
         }
 
-        recognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+        recognizerIntent = buildRecognizerIntent(_voiceLanguage.value)
+    }
+
+    /**
+     * Builds the recognition intent for a language. Rebuilt — never mutated in
+     * place — because a stale extra from a previous language was being carried
+     * over, and the recognizer then answered in the wrong language.
+     *
+     * The language is forced through every key an engine might read. Some engines
+     * only honour `EXTRA_LANGUAGE`, some prefer `EXTRA_LANGUAGE_PREFERENCE`, and
+     * when neither is set they quietly fall back to the device locale — which is
+     * why the user's Bangla was coming back transcribed as English. Bangla is also
+     * offered under the tags an engine might file it under, so a phone that has
+     * `bn-IN` but not `bn-BD` still listens in Bangla instead of dropping to English.
+     */
+    private fun buildRecognizerIntent(tag: String): Intent {
+        val resolved = if (tag.startsWith("bn")) "bn-BD" else tag
+        return Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, _voiceLanguage.value)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, _voiceLanguage.value)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, resolved)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, resolved)
+            putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES", arrayOf(resolved))
+            // A partial result is what lets the user cut in mid-answer, so it stays
+            // on; the caller drops the partials that are the assistant's own voice.
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1200L)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 700L)
+            // A phrase ends after a short pause, so the assistant answers promptly
+            // instead of waiting for a silence the user has already finished.
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 900L)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 900L)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 500L)
         }
     }
 
@@ -567,37 +593,51 @@ class NativeVoiceManager(
     }
 
     /**
-     * Opens the microphone again, with a debounce and a backoff. The debounce
-     * collapses the several "restart" calls that one turn can produce into a
-     * single open; the backoff stops a recognizer that fails immediately from
-     * being restarted in a tight loop.
+     * Opens the microphone again, with a debounce and a backoff.
+     *
+     * The ear is *not* held shut while the assistant speaks. Holding it shut for
+     * the whole reply was the reason the user could not interrupt, and the reason
+     * the mic looked off whenever the assistant talked — the exact report that
+     * "সে যখন কথা বলে তখন মাইক চালু থাকে না". The assistant's own voice is dropped
+     * by text (`SttDecision` / `EchoMatcher`) instead, so an open ear costs
+     * nothing and a real interruption still lands.
+     *
+     * Two guards keep the reopen from becoming a churn: a hard floor on how often
+     * the recognizer may be rebuilt, and an exponential backoff so a recognizer
+     * that keeps failing is retried ever more slowly rather than hammered. The
+     * ear is never *closed* by either guard — they only space out the rebuilds.
      */
     private fun scheduleRestart(immediate: Boolean = false, delayMs: Long = 0L) {
-        // The mic is reopened even while the assistant is speaking, so the user
-        // can cut in at any moment. The assistant's own words are filtered by
-        // text, so an open ear does not feed the reply back into the chat.
         if (!micEnabled) return
         if (sessionOpen) return
-        restartJob?.cancel()
+        val now = System.currentTimeMillis()
+        val since = now - lastRestartMs
         val backoff = if (immediate) 0L else minOf(RESTART_BASE_MS shl restartAttempts, RESTART_MAX_MS)
+        val wait = maxOf(delayMs, IDLE_RESTART_FLOOR_MS - since, backoff).coerceAtLeast(0L)
+        restartJob?.cancel()
         restartJob = scope.launch(Dispatchers.Main) {
-            delay(maxOf(delayMs, backoff))
+            delay(wait)
             if (!micEnabled || sessionOpen) return@launch
-            val intent = recognizerIntent ?: return@launch
-            // Every attempt counts, not only a successful one. A recognizer that
-            // refuses to start (a busy engine, a denied permission) used to leave
-            // the counter at zero, so the backoff never grew and the loop hammered
-            // it every 300 ms — the on/off churn the user heard.
-            restartAttempts = minOf(restartAttempts + 1, 6)
-            try {
-                speechRecognizer?.startListening(intent)
-                sessionOpen = true
-            } catch (_: Exception) {
-                sessionOpen = false
-                // A failed start is retried after the backoff, and the listening
-                // state is left alone: it is the user's switch, not this session.
-                scheduleRestart()
-            }
+            startRecognizer()
+        }
+    }
+
+    /**
+     * Hands the recognizer its intent. Every attempt counts toward the backoff,
+     * not only a successful one: a recognizer that refuses to start (a busy
+     * engine, a denied permission) used to leave the counter at zero, so the
+     * backoff never grew and the loop hammered it every 300 ms.
+     */
+    private fun startRecognizer() {
+        val intent = recognizerIntent ?: return
+        restartAttempts = minOf(restartAttempts + 1, 6)
+        lastRestartMs = System.currentTimeMillis()
+        try {
+            speechRecognizer?.startListening(intent)
+            sessionOpen = true
+        } catch (_: Exception) {
+            sessionOpen = false
+            scheduleRestart()
         }
     }
 
@@ -846,5 +886,19 @@ class NativeVoiceManager(
         /** Debounce before reopening the microphone, and the backoff ceiling. */
         private const val RESTART_BASE_MS = 300L
         private const val RESTART_MAX_MS = 4000L
+
+        /**
+         * How long a deferred reopen may wait for the assistant to stop speaking
+         * before it gives up. It only ever lapses if the "speaking" flag sticks,
+         * which the watchdog prevents, so this is a safety net, not a routine path.
+         */
+        private const val SPEAK_MAX_WAIT_MS = 60_000L
+
+        /**
+         * The shortest gap between two recognizer sessions while idle. The engine
+         * ends a session after every phrase, so without a floor the ear was torn
+         * down and rebuilt in a tight loop. One smooth, occasional reopen instead.
+         */
+        private const val IDLE_RESTART_FLOOR_MS = 450L
     }
 }
