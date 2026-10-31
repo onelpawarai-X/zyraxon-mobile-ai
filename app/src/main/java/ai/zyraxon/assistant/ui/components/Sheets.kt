@@ -169,20 +169,20 @@ fun PersonaList(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = persona.name,
+                            text = t(persona.name),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = Glass.textPrimary
                         )
                         Spacer(modifier = Modifier.size(6.dp))
                         Text(
-                            text = "• ${persona.title}",
+                            text = "• " + t(persona.title),
                             fontSize = 12.sp,
                             color = Glass.cyanFill
                         )
                     }
                     Text(
-                        text = persona.description,
+                        text = t(persona.description),
                         fontSize = 12.sp,
                         color = Glass.textSecondary
                     )
@@ -496,15 +496,15 @@ fun ModelListPane(
                                 // to tell apart from plain text models at a glance.
                                 Text(
                                     text = if (model.isRealtime) {
-                                        "${model.category} • " + t("সরাসরি কথা বলে")
+                                        t(model.category) + " • " + t("সরাসরি কথা বলে")
                                     } else {
-                                        "${model.category} • " + t("লেখা পড়ে শোনায়")
+                                        t(model.category) + " • " + t("লেখা পড়ে শোনায়")
                                     },
                                     fontSize = 10.sp,
                                     color = if (model.isRealtime) Glass.pinkFill else Glass.cyanFill
                                 )
                                 Text(
-                                    text = model.description,
+                                    text = t(model.description),
                                     fontSize = 11.5.sp,
                                     color = Glass.textSecondary
                                 )
@@ -1704,7 +1704,7 @@ fun SettingsSheet(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(text = mode.displayName, color = Glass.textPrimary, fontSize = 13.5.sp)
+                                    Text(text = t(mode.displayName), color = Glass.textPrimary, fontSize = 13.5.sp)
                                     if (isSelected) {
                                         Icon(Icons.Rounded.Check, contentDescription = "Active", tint = Glass.pinkFill)
                                     }
@@ -1817,7 +1817,7 @@ fun SettingsSheet(
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(t("স্ট্যাটাস: {0}", githubStatus), color = Glass.cyanFill, fontSize = 12.sp)
+                        Text(t("স্ট্যাটাস: {0}", t(githubStatus)), color = Glass.cyanFill, fontSize = 12.sp)
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -2099,7 +2099,7 @@ fun SessionNavPane(viewModel: ZyraxonViewModel, onDismiss: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (tab == AppTab.TERMINAL) t("⌘ ZX — সিস্টেম শেল") else tab.title,
+                    text = if (tab == AppTab.TERMINAL) t("⌘ ZX — সিস্টেম শেল") else t(tab.title),
                     color = if (selected) Glass.textOnAccent else Glass.textPrimary,
                     fontSize = 13.5.sp,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
@@ -2340,7 +2340,7 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
         }
 
         is UpdateState.Failed -> {
-            Text(s.message, color = Color(0xFFFF6B6B), fontSize = 12.sp)
+            Text(t(s.message), color = Color(0xFFFF6B6B), fontSize = 12.sp)
             Spacer(modifier = Modifier.height(12.dp))
             UpdateButton(t("আবার চেষ্টা করুন"), enabled = true) {
                 viewModel.checkForUpdates()

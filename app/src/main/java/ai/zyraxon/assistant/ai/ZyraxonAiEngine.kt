@@ -401,9 +401,9 @@ class ZyraxonAiEngine(private val context: Context) {
                             name = formatModelName(rawId),
                             category = spec.category,
                             description = if (realtime) {
-                                "${spec.label} — রিয়েলটাইম ভয়েস (সরাসরি কথা বলে)"
+                                "রিয়েলটাইম ভয়েস (সরাসরি কথা বলে)"
                             } else {
-                                "${spec.label} থেকে লাইভ মডেল"
+                                "লাইভ মডেল"
                             },
                             provider = spec.id,
                             isFree = isFree,
