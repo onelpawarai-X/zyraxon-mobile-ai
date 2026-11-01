@@ -610,14 +610,10 @@ class ZyraxonAiEngine(private val context: Context) {
         append("- Every past conversation is kept in the local database. When the user refers to something from before, or asks whether you remember, call `memory_read` with a `query` before answering; never say you have forgotten without checking first.\n")
 
         // The language rule is repeated here, after the character, because the
-        // last instruction is the one a model follows. Without it a character
-        // whose description reads "Bengali" in English drifted into English
-        // answers — the user's complaint that the assistant replied in English
-        // to a Bangla message.
-        append("\n## ভাষা (সবচেয়ে জরুরি নিয়ম)\n")
-        append("- ইউজার যে ভাষায় লিখেছে, ঠিক সেই ভাষায় উত্তর দাও। বাংলা লিখলে উত্তর **শুধু বাংলায়**; ইংরেজি লিখলে ইংরেজিতে।\n")
-        append("- ইউজার বাংলায় লিখলে উত্তরও বাংলা হবে — একটিও বাক্য ইংরেজিতে নয়, এবং কোনো ইংরেজি শব্দ আলাদা করে বানান করে বলা যাবে না।\n")
-        append("- এই নিয়ম চরিত্রের বর্ণনার উপরে। চরিত্র যেভাবেই বর্ণিত হোক, উত্তর দেবে ইউজারের ভাষায়।\n")
+        // last instruction is the one a model follows. One line, as the user
+        // asked: answer in whatever language the user speaks.
+        append("\n## ভাষা\n")
+        append("- ইউজার যে ভাষায় কথা বলে, তুমি সেই ভাষায় উত্তর দাও।\n")
     }
 
     /**
@@ -634,11 +630,14 @@ class ZyraxonAiEngine(private val context: Context) {
         memoriesContext: String = "",
         screenContext: String = "",
         imageDataUrl: String = "",
+        imageDataUrls: List<String> = emptyList(),
+        alwaysSeeScreen: Boolean = true,
         onToolCall: suspend (name: String, args: JSONObject) -> JSONObject = { _, _ ->
             JSONObject().put("ok", false).put("summary", "টুল চালানোর অনুমতি নেই")
         },
         drainInjections: () -> List<String> = { emptyList() },
         openTodos: () -> List<String> = { emptyList() },
+        drainScreenFrames: () -> List<String> = { emptyList() },
         screenNow: suspend () -> String = { "" },
         screenFrame: suspend () -> String = { "" }
     ): Flow<String> = channelFlow {
@@ -675,8 +674,12 @@ class ZyraxonAiEngine(private val context: Context) {
                     .put("content", msg.text))
             }
             // The newest user turn carries the screen frame when there is one,
-            // so the model sees the phone rather than a description of it.
-            put(JSONObject().put("role", "user").put("content", userContent(prompt, imageDataUrl)))
+            // so the model sees the phone rather than a description of it. Every
+            // picture the user attached (gallery, camera, video frames) travels
+            // with it too, so one turn can hold several images at once.
+            val userImages = (listOf(imageDataUrl) + imageDataUrls)
+                .filter { it.isNotBlank() }.distinct()
+            put(JSONObject().put("role", "user").put("content", userContent(prompt, userImages)))
         }
 
         // The agentic loop: the model answers, we run whatever it asked for,
@@ -689,12 +692,20 @@ class ZyraxonAiEngine(private val context: Context) {
         // the turn.
         var nudges = 0
         var lastActionWasScreenChange = false
+        // Whether the previous round already pushed a fresh frame in. The
+        // always-see injection below skips a round that already has one, so the
+        // same picture is never sent twice in a row.
+        var screenFrameInjected = false
         // What the judge is shown: what was done so far, and what the screen looks like.
         val actionLog = mutableListOf<String>()
         var lastScreenText = ""
         var stalls = 0
         while (round < MAX_TOOL_ROUNDS) {
             round++
+            // Each round starts with a clean slate: whether a frame is pushed in
+            // below is decided fresh, so a screen action that adds one is not
+            // mistaken for the previous round's.
+            screenFrameInjected = false
             // A message the user spoke or typed mid-task joins the conversation
             // here, so the running job keeps going instead of being thrown away.
             for (late in drainInjections()) {
@@ -714,6 +725,39 @@ class ZyraxonAiEngine(private val context: Context) {
                 messages.put(JSONObject().put("role", "user").put("content",
                     "⚠️ এখনো অসম্পূর্ণ কাজ (todo):\n" + open.joinToString("\n") { "- $it" } +
                         "\nএই কাজ শেষ না হওয়া পর্যন্ত তুমি থামবে না। পরের ধাপ নিজেই বেছে নাও এবং টুল কল করো।"))
+            }
+            // Always-see mode: a long running job re-reads the screen every round,
+            // so the model keeps working from what is actually on the phone rather
+            // than from what it remembers a few steps back. The user's "every two
+            // seconds while it is running" is served by the live frame channel
+            // below; this is the once-per-round version that costs one picture
+            // instead of one every two seconds. A round that already carries a
+            // fresh frame (the tool path just above) is skipped so nothing is
+            // sent twice.
+            if (alwaysSeeScreen && !screenFrameInjected) {
+                // The ticker's frames lead: they are the newest picture of the
+                // phone, captured while the model was still thinking about the
+                // last one. When the ticker produced nothing (screen unchanged),
+                // take a fresh capture now so the model is never working blind.
+                val liveFrames = try { drainScreenFrames() } catch (_: Exception) { emptyList() }
+                val shots = liveFrames.takeLast(2).toMutableList()
+                if (shots.isEmpty()) {
+                    val liveShot = try { screenFrame() } catch (_: Exception) { "" }
+                    if (liveShot.isNotBlank()) shots.add(liveShot)
+                }
+                if (shots.isNotEmpty()) {
+                    val parts = JSONArray().apply {
+                        put(JSONObject().put("type", "text")
+                            .put("text", "📱 এখনকার স্ক্রিন (প্রতি ধাপে নিজে থেকে দেখা)। " +
+                                "এই ছবি দেখে ঠিক করো পরের ধাপ কী — ব্যবহারকারীকে জিজ্ঞাসা কোরো না।"))
+                        for (shot in shots) {
+                            put(JSONObject().put("type", "image_url")
+                                .put("image_url", JSONObject().put("url", shot)))
+                        }
+                    }
+                    messages.put(JSONObject().put("role", "user").put("content", parts))
+                    screenFrameInjected = true
+                }
             }
             // Every round adds screenshots and tool output. Left alone, a long job
             // (a website, an hour of YouTube/app driving) outgrows the model's
@@ -1071,18 +1115,26 @@ class ZyraxonAiEngine(private val context: Context) {
 
     /**
      * A plain string when there is no image, and the OpenAI content-parts array
-     * when there is. Providers that ignore the array simply see the text.
+     * when there is. Providers that ignore the array simply see the text. Every
+     * picture in [images] becomes its own part, so a turn can carry a photo plus
+     * several video frames at once.
      */
-    private fun userContent(text: String, imageDataUrl: String): Any {
-        if (imageDataUrl.isBlank()) return text
+    private fun userContent(text: String, images: List<String>): Any {
+        val pics = images.filter { it.isNotBlank() }
+        if (pics.isEmpty()) return text
         return JSONArray().apply {
             put(JSONObject().put("type", "text").put("text", text))
-            put(
-                JSONObject().put("type", "image_url")
-                    .put("image_url", JSONObject().put("url", imageDataUrl))
-            )
+            for (url in pics) {
+                put(
+                    JSONObject().put("type", "image_url")
+                        .put("image_url", JSONObject().put("url", url))
+                )
+            }
         }
     }
+
+    private fun userContent(text: String, imageDataUrl: String): Any =
+        userContent(text, if (imageDataUrl.isBlank()) emptyList() else listOf(imageDataUrl))
 
     /**
      * One streamed request to the chosen model. Text deltas reach `onText` the
