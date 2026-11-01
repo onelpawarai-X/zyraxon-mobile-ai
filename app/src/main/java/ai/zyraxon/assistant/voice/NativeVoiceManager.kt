@@ -881,7 +881,7 @@ class NativeVoiceManager(
          * speaker's own echo. It is longer than [SPEAKER_TAIL_MS] because the
          * recognizer can deliver a final result slightly after the ear reopens.
          */
-        private const val ECHO_TAIL_MS = 1_800L
+        private const val ECHO_TAIL_MS = 1_200L
 
         /** Debounce before reopening the microphone, and the backoff ceiling. */
         private const val RESTART_BASE_MS = 300L

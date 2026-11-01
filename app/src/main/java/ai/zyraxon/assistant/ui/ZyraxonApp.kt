@@ -82,6 +82,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AttachFile
 import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.Check
@@ -93,6 +94,7 @@ import androidx.compose.material.icons.rounded.Hub
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.MicOff
 import androidx.compose.material.icons.rounded.OpenInBrowser
+import androidx.compose.material.icons.rounded.PhotoLibrary
 import androidx.compose.material.icons.rounded.Phone
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Security
@@ -120,6 +122,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -147,6 +151,9 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
 
     val messages by viewModel.messages.collectAsState()
     val inputText by viewModel.inputText.collectAsState()
+    val attachedImages by viewModel.attachedImages.collectAsState()
+    val imageNotice by viewModel.imageNotice.collectAsState()
+    val alwaysSeeScreen by viewModel.alwaysSeeScreen.collectAsState()
     val selectedPersona by viewModel.selectedPersona.collectAsState()
     val selectedModel by viewModel.selectedModel.collectAsState()
     val activeTab by viewModel.activeTab.collectAsState()
@@ -394,7 +401,17 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                     isListening = isListening,
                     micOn = alwaysListening,
                     onMicToggle = { viewModel.toggleListening() },
-                    onQuickAction = { viewModel.sendMessage(it) }
+                    onQuickAction = { viewModel.sendMessage(it) },
+                    attachedImages = attachedImages,
+                    imageNotice = imageNotice,
+                    onAttachMedia = { uri, mime -> viewModel.attachMedia(uri, mime) },
+                    onCameraShot = { viewModel.captureImageFromTool("look_camera") },
+                    onScreenShot = { viewModel.captureImageFromTool("screen_shot") },
+                    onRemoveAttachment = { index ->
+                        if (index < 0) viewModel.clearAttachedImage() else viewModel.removeAttachedImage(index)
+                    },
+                    alwaysSeeScreen = alwaysSeeScreen,
+                    onToggleAlwaysSee = { viewModel.setAlwaysSeeScreen(it) }
                 )
 
                 // Blood Cyber Luxury Bottom Dock Panel
@@ -1309,15 +1326,95 @@ fun BottomComposer(
     isListening: Boolean,
     micOn: Boolean,
     onMicToggle: () -> Unit,
-    onQuickAction: (String) -> Unit
+    onQuickAction: (String) -> Unit,
+    attachedImages: List<String> = emptyList(),
+    imageNotice: String = "",
+    onAttachImage: (android.net.Uri) -> Unit = {},
+    onAttachMedia: (android.net.Uri, String) -> Unit = { _, _ -> },
+    onCameraShot: () -> Unit = {},
+    onScreenShot: () -> Unit = {},
+    onRemoveAttachment: (Int) -> Unit = {},
+    alwaysSeeScreen: Boolean = true,
+    onToggleAlwaysSee: (Boolean) -> Unit = {}
 ) {
     val context = LocalContext.current
+    // The picker is asked for "any" type, so one button reaches photos, videos
+    // and audio. The MIME type comes back with the URI and decides how it is read.
+    val mediaPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: android.net.Uri? ->
+        if (uri != null) {
+            val type = context.contentResolver.getType(uri) ?: "image/*"
+            onAttachMedia(uri, type)
+        }
+    }
+    var showAttachMenu by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 3.dp)
     ) {
+        // Attachment strip: what is queued for the next send, each with a remove
+        // button so the user can drop one picture without clearing the rest.
+        if (attachedImages.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                attachedImages.take(6).forEachIndexed { index, dataUrl ->
+                    Box(
+                        modifier = Modifier
+                            .padding(end = 6.dp)
+                            .size(46.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0x33120A0C))
+                            .border(1.dp, Color(0xFFFF4A66), RoundedCornerShape(10.dp))
+                    ) {
+                        coil.compose.AsyncImage(
+                            model = dataUrl,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                        )
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(16.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xCC6B000B))
+                                .clickable { onRemoveAttachment(index) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("✕", color = Color.White, fontSize = 9.sp)
+                        }
+                    }
+                }
+                if (attachedImages.size > 6) {
+                    Text("+${attachedImages.size - 6}", color = Color(0xFFFFA3B2), fontSize = 11.sp)
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    "সব মুছুন",
+                    color = Color(0xFFFF6B85),
+                    fontSize = 11.sp,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onRemoveAttachment(-1) }
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
+        }
+        if (imageNotice.isNotBlank()) {
+            Text(
+                imageNotice,
+                color = Color(0xCCFFB3C0),
+                fontSize = 11.sp,
+                modifier = Modifier.padding(bottom = 4.dp, start = 6.dp)
+            )
+        }
         // Floating Frosted Obsidian-Blood Input Capsule
         Box(
             modifier = Modifier
@@ -1340,8 +1437,55 @@ fun BottomComposer(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // The microphone is the aura in the middle of the screen, so the
-                // composer has no mic button of its own.
-                Spacer(modifier = Modifier.width(10.dp))
+                // composer has no mic button of its own. The attach button opens
+                // the picture/video/audio picker, or a small menu for a fresh
+                // camera shot and a screen capture.
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(CircleShape)
+                        .background(Color(0x33FF2A4D))
+                        .border(1.dp, Color(0x66FF6680), CircleShape)
+                        .clickable { showAttachMenu = !showAttachMenu }
+                        .testTag("attach_button"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.AttachFile,
+                        contentDescription = "Attach",
+                        tint = Color(0xFFFFC2CD),
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(6.dp))
+
+                // The microphone switch: tap once to keep the ear open, tap again
+                // to keep it closed. Its state is the saved choice, so a restart
+                // comes back exactly as the user left it.
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(CircleShape)
+                        .background(if (micOn) Color(0x55FF2A4D) else Color(0x33120A0C))
+                        .border(
+                            1.dp,
+                            if (micOn) Color(0xFFFF6680) else Color(0x55FFA3B2),
+                            CircleShape
+                        )
+                        .clickable { onMicToggle() }
+                        .testTag("mic_button"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (micOn) Icons.Rounded.Mic else Icons.Rounded.MicOff,
+                        contentDescription = if (micOn) "Mic on" else "Mic off",
+                        tint = if (micOn) Color(0xFFFFE0E6) else Color(0x99FFA3B2),
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(6.dp))
 
                 BasicTextField(
                     value = text,
@@ -1412,7 +1556,56 @@ fun BottomComposer(
 
         // Quick Action Chips Row
         QuickActionChips(onChipClick = onQuickAction)
+
+        // The attach menu: one row for the picker (photo/video/audio), one for a
+        // camera shot, one for a fresh screen capture, and a switch for the
+        // always-see-screen timer. It floats above the chips and closes on tap.
+        if (showAttachMenu) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xE6140207))
+                    .border(1.dp, Color(0x66FF2A4D), RoundedCornerShape(16.dp))
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AttachChip("🖼️ গ্যালারি") {
+                    showAttachMenu = false
+                    mediaPicker.launch("*/*")
+                }
+                AttachChip("📷 ক্যামেরা") {
+                    showAttachMenu = false
+                    onCameraShot()
+                }
+                AttachChip("📱 স্ক্রিন") {
+                    showAttachMenu = false
+                    onScreenShot()
+                }
+                AttachChip(if (alwaysSeeScreen) "👁️ সবসময় দেখছে" else "🙈 স্ক্রিন দেখা বন্ধ") {
+                    onToggleAlwaysSee(!alwaysSeeScreen)
+                }
+            }
+        }
     }
+}
+
+/** One pill inside the attach menu. */
+@Composable
+private fun AttachChip(label: String, onClick: () -> Unit) {
+    Text(
+        label,
+        color = Color(0xFFFFD9E0),
+        fontSize = 11.sp,
+        modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color(0x33FF2A4D))
+            .border(1.dp, Color(0x55FF6680), RoundedCornerShape(10.dp))
+            .clickable { onClick() }
+            .padding(horizontal = 9.dp, vertical = 6.dp)
+    )
 }
 
 /**

@@ -50,6 +50,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -123,6 +124,27 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      */
     private val _screenFrameDataUrl = MutableStateFlow("")
     val screenFrameDataUrl: StateFlow<String> = _screenFrameDataUrl.asStateFlow()
+
+    /**
+     * Pictures the user attached, waiting to be sent: one image, or several when
+     * a video was attached (its frames). The next send carries them all as
+     * `image_url` parts, so the model looks at the real pictures.
+     */
+    private val _attachedImages = MutableStateFlow<List<String>>(emptyList())
+    val attachedImages: StateFlow<List<String>> = _attachedImages.asStateFlow()
+
+    /** A short line shown above the composer when an attachment succeeds or fails. */
+    private val _imageNotice = MutableStateFlow("")
+    val imageNotice: StateFlow<String> = _imageNotice.asStateFlow()
+
+    /**
+     * While a job is running the screen is re-read on a timer and pushed to the
+     * model, so it works from what is on the phone right now instead of from a
+     * frame captured when the turn began. On by default — the user asked for the
+     * assistant to always see the screen.
+     */
+    private val _alwaysSeeScreen = MutableStateFlow(prefs.getBoolean("always_see_screen", true))
+    val alwaysSeeScreen: StateFlow<Boolean> = _alwaysSeeScreen.asStateFlow()
 
     /** True when the last screen read came back as text (no screenshot API). */
     private val _screenTextSnapshot = MutableStateFlow("")
@@ -433,6 +455,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     val overlayExpanded: StateFlow<Boolean> = _overlayExpanded.asStateFlow()
 
     private val pendingInjections = java.util.concurrent.ConcurrentLinkedQueue<String>()
+
+    /**
+     * The live screen frame stream. While a turn is running the screen is
+     * captured every [LIVE_FRAME_INTERVAL_MS] and handed to the engine through
+     * [drainScreenFrames], so the model keeps seeing the phone even during a job
+     * that runs for an hour. The picture is dropped if the screen did not change
+     * and if a capture is already pending, so an idle phone costs nothing.
+     */
+    private val pendingScreenFrames = java.util.concurrent.ConcurrentLinkedQueue<String>()
+    private var liveFrameJob: kotlinx.coroutines.Job? = null
+    private var lastLiveFrameHash = 0
 
     private val _codeBoxOpen = MutableStateFlow(false)
     val codeBoxOpen: StateFlow<Boolean> = _codeBoxOpen.asStateFlow()
@@ -1318,20 +1351,28 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun sendMessage(overridePrompt: String? = null) {
+        val hasAttachments = _attachedImages.value.isNotEmpty()
         val prompt = (overridePrompt ?: _inputText.value).trim()
-        if (prompt.isBlank()) return
+        // A picture on its own is a valid turn: the user attached it and pressed
+        // send without typing anything, and the model should still look at it.
+        if (prompt.isBlank() && !hasAttachments) return
+        val effectivePrompt = prompt.ifBlank { "এই ছবিটি দেখে বলো এতে কী আছে।" }
 
         _inputText.value = ""
+        // The attached pictures were handed to the engine just below; clear them
+        // now so the next turn starts empty instead of re-sending the same photo.
+        _attachedImages.value = emptyList()
+        _imageNotice.value = ""
         // The user has moved on. Whatever the previous answer was still saying is
         // cut off now, not after the new answer is ready — so the two never play
         // over each other and the new reply is heard from its first word.
         if (isSpeaking.value) voiceManager.stopSpeaking()
 
         if (_isGenerating.value) {
-            pendingInjections.add(prompt)
+            pendingInjections.add(effectivePrompt)
             _messages.value = _messages.value + ChatMessage(
                 role = MessageRole.USER,
-                text = prompt,
+                text = effectivePrompt,
                 timestamp = currentTimeString()
             )
             viewModelScope.launch {
@@ -1342,7 +1383,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
         val userMsg = ChatMessage(
             role = MessageRole.USER,
-            text = prompt,
+            text = effectivePrompt,
             timestamp = currentTimeString()
         )
 
@@ -1360,6 +1401,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // Set before launching: a second message arriving in the same frame must
         // queue as an injection, not start a competing turn.
         _isGenerating.value = true
+        // The screen ticker runs for exactly as long as the turn does. An hour of
+        // running is an hour of frames; the moment the turn ends it stops.
+        startLiveFrameTicker()
 
         viewModelScope.launch {
             repository.saveMessage(userMsg)
@@ -1404,13 +1448,15 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 val screen = withContext(Dispatchers.IO) { screenContext() }
 
                 aiEngine.streamAiResponse(
-                    prompt = prompt,
+                    prompt = effectivePrompt,
                     history = history,
                     persona = _selectedPersona.value,
                     model = _selectedModel.value,
                     memoriesContext = memoriesWithHistory,
                     screenContext = screen,
                     imageDataUrl = _screenFrameDataUrl.value,
+                    imageDataUrls = _attachedImages.value,
+                    alwaysSeeScreen = _alwaysSeeScreen.value,
                     onToolCall = { name, args -> runTool(name, args) },
                     drainInjections = {
                         val out = mutableListOf<String>()
@@ -1422,6 +1468,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     // and the live screen after a tap so it chooses the next step
                     // itself instead of stopping one step short.
                     openTodos = { _tasks.value.filter { !it.isCompleted }.map { it.text } },
+                    drainScreenFrames = { drainScreenFrames() },
                     // A screen action forces a fresh read: the cached frame from
                     // before the tap is the one thing that is definitely stale.
                     screenNow = { withContext(Dispatchers.IO) { screenContext(force = true) } },
@@ -1459,6 +1506,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 fullReply = if (fullReply.isBlank()) reason else fullReply
             } finally {
                 _isGenerating.value = false
+                stopLiveFrameTicker()
                 // Speak the leftover sentence, then hand the microphone back
                 // exactly once, after the engine has finished the last word.
                 if (speakingReply && spokenBuffer.isNotBlank()) {
@@ -1499,6 +1547,170 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // A live model can look at the frame itself, so the same picture that the
         // screen panel shows is also offered to the session.
         if (liveVoice.isActive) liveVoice.sendScreenFrame(base64Jpeg)
+    }
+
+    /**
+     * Attaches a picture the user picked from the gallery or took with the
+     * camera. The bytes are read and downscaled off the main thread, because a
+     * modern phone photo is several megabytes and decoding it on the UI thread
+     * would freeze the composer for a second. The next send carries it as an
+     * `image_url` part, so the model looks at the actual picture.
+     */
+    fun attachImage(uri: android.net.Uri) {
+        viewModelScope.launch {
+            val dataUrl = withContext(Dispatchers.IO) {
+                try {
+                    val ctx = getApplication<Application>()
+                    val bitmap = ctx.contentResolver.openInputStream(uri)?.use {
+                        android.graphics.BitmapFactory.decodeStream(it)
+                    } ?: return@withContext ""
+                    ai.zyraxon.assistant.ai.CameraCapture.toDataUrl(bitmap, maxSide = 1280, quality = 82)
+                } catch (_: Exception) {
+                    ""
+                }
+            }
+            if (dataUrl.isNotBlank()) {
+                _attachedImages.value = _attachedImages.value + dataUrl
+                _imageNotice.value = "ছবি সংযুক্ত হয়েছে — এখন প্রশ্ন লিখে পাঠান"
+            } else {
+                _imageNotice.value = "ছবিটি পড়া গেল না"
+            }
+        }
+    }
+
+    /**
+     * Attaches any media the user picked: an image becomes one part, a video
+     * becomes several sampled frames, and an audio file is copied into the
+     * workspace so the model can be pointed at it. Picking a video here is what
+     * lets the user drop a clip into the chat instead of calling a tool first.
+     */
+    fun attachMedia(uri: android.net.Uri, mimeType: String) {
+        viewModelScope.launch {
+            val kind = when {
+                mimeType.startsWith("video") -> "video"
+                mimeType.startsWith("audio") -> "audio"
+                mimeType.startsWith("image") -> "image"
+                else -> "auto"
+            }
+            if (kind == "image" || kind == "auto") {
+                attachImage(uri)
+                return@launch
+            }
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    val ctx = getApplication<Application>()
+                    val file = File(
+                        ToolRegistry.workspace(ctx),
+                        "attach_" + System.currentTimeMillis() + "_" + (uri.lastPathSegment ?: "media")
+                    )
+                    ctx.contentResolver.openInputStream(uri)?.use { input ->
+                        file.outputStream().use { input.copyTo(it) }
+                    } ?: return@withContext JSONObject().put("ok", false)
+                    ToolRegistry.execute(
+                        ctx, "read_media",
+                        JSONObject().put("path", file.absolutePath).put("kind", kind)
+                            .put("frames", if (kind == "video") 4 else 0)
+                    )
+                } catch (e: Exception) {
+                    JSONObject().put("ok", false).put("summary", e.message ?: "ফাইল পড়া গেল না")
+                }
+            }
+            val single = result.optString("image_data_url")
+            val many = result.optJSONArray("image_data_urls")
+            val shots = mutableListOf<String>()
+            if (single.isNotBlank()) shots.add(single)
+            many?.let { for (i in 0 until it.length()) it.optString(i).takeIf { s -> s.isNotBlank() }?.let { s -> shots.add(s) } }
+            if (shots.isNotEmpty()) {
+                _attachedImages.value = _attachedImages.value + shots
+                _imageNotice.value = result.optString("summary").ifBlank { "মিডিয়া সংযুক্ত হয়েছে" }
+            } else {
+                _imageNotice.value = result.optString("summary").ifBlank { "মিডিয়া পড়া গেল না" }
+            }
+        }
+    }
+
+    /** Drops the attached pictures without sending them. */
+    fun clearAttachedImage() {
+        _attachedImages.value = emptyList()
+        _imageNotice.value = ""
+    }
+
+    /** Removes one attached picture by index. */
+    fun removeAttachedImage(index: Int) {
+        _attachedImages.value = _attachedImages.value.filterIndexed { i, _ -> i != index }
+    }
+
+    /** Turns the always-see-screen timer on or off and remembers the choice. */
+    fun setAlwaysSeeScreen(on: Boolean) {
+        _alwaysSeeScreen.value = on
+        prefs.edit().putBoolean("always_see_screen", on).apply()
+        if (on && _isGenerating.value) startLiveFrameTicker() else stopLiveFrameTicker()
+    }
+
+    /**
+     * Starts the two-second screen ticker. It runs only while a turn is in
+     * flight; the frames it captures are drained by the engine between rounds.
+     * The capture is skipped when the screen looks the same as last time, so a
+     * still screen does not burn a screenshot every two seconds for an hour.
+     */
+    private fun startLiveFrameTicker() {
+        if (!_alwaysSeeScreen.value) return
+        if (liveFrameJob?.isActive == true) return
+        liveFrameJob = viewModelScope.launch {
+            while (_isGenerating.value) {
+                val shot = withContext(Dispatchers.IO) {
+                    runCatching { ToolRegistry.screenFrame() }.getOrNull().orEmpty()
+                }
+                if (shot.isNotBlank()) {
+                    val hash = shot.hashCode()
+                    if (hash != lastLiveFrameHash && pendingScreenFrames.size < 3) {
+                        lastLiveFrameHash = hash
+                        pendingScreenFrames.add(shot)
+                    }
+                }
+                kotlinx.coroutines.delay(LIVE_FRAME_INTERVAL_MS)
+            }
+        }
+    }
+
+    private fun stopLiveFrameTicker() {
+        liveFrameJob?.cancel()
+        liveFrameJob = null
+        pendingScreenFrames.clear()
+    }
+
+    /** The frames captured since the last round. Called by the engine each round. */
+    fun drainScreenFrames(): List<String> {
+        val out = mutableListOf<String>()
+        while (true) out.add(pendingScreenFrames.poll() ?: break)
+        return out
+    }
+
+    /**
+     * Runs one of the picture tools from the composer menu: the camera, or a
+     * fresh look at what is on the screen right now. The result is attached so
+     * the user can add a question before sending, instead of the tool firing on
+     * its own mid-conversation.
+     */
+    fun captureImageFromTool(tool: String) {
+        viewModelScope.launch {
+            val args = JSONObject()
+            val result = withContext(Dispatchers.IO) {
+                runCatching { ToolRegistry.execute(getApplication(), tool, args) }
+                    .getOrElse { JSONObject().put("ok", false).put("summary", "ছবি নেওয়া গেল না") }
+            }
+            val dataUrl = result.optString("image_data_url")
+            val many = result.optJSONArray("image_data_urls")
+            val shots = mutableListOf<String>()
+            if (dataUrl.isNotBlank()) shots.add(dataUrl)
+            many?.let { for (i in 0 until it.length()) it.optString(i).takeIf { s -> s.isNotBlank() }?.let { s -> shots.add(s) } }
+            if (shots.isNotEmpty()) {
+                _attachedImages.value = _attachedImages.value + shots
+                _imageNotice.value = result.optString("summary").ifBlank { "ছবি সংযুক্ত হয়েছে" }
+            } else {
+                _imageNotice.value = result.optString("summary").ifBlank { "ছবি নেওয়া গেল না" }
+            }
+        }
     }
 
     fun onScreenText(text: String) {
@@ -2410,6 +2622,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         /** How long a screen read is reused. Long enough to serve one turn's two
          * asks, short enough that a screen the user just changed is re-read. */
         private const val SCREEN_CACHE_MS = 2_000L
+
+        /**
+         * How often the running turn re-reads the screen. Two seconds, as the user
+         * asked: while a job is in flight the phone is captured on this beat and
+         * the newest frame is handed to the model at the top of each round.
+         */
+        private const val LIVE_FRAME_INTERVAL_MS = 2_000L
 
         /**
          * The floating bubble lives in a service and has no ViewModel of its own,
