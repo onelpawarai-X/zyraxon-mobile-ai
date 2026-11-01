@@ -9,6 +9,9 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -88,23 +91,26 @@ fun rememberHeartbeat(periodMs: Int = 1700): State<Float> {
 private class Drip(val x: Float, val w: Float, val len: Float, val phase: Float)
 
 /**
- * Wet blood running down from the top edge: a ragged crimson band with drips
- * that slowly swell, run, and fade before the next ones form.
+ * Blood running from the top edge. A smooth, glossy coagulated rim with a few
+ * viscous drips: each one swells slowly, hangs with a heavy bulb, lets a drop
+ * fall, then draws back up. Few, slow and shaded like real liquid — not a comb
+ * of sticks.
  */
 @Composable
 fun BloodDrips(
     modifier: Modifier = Modifier,
     seed: Int = 11,
-    count: Int = 16,
-    maxLength: Dp = 110.dp
+    count: Int = 7,
+    maxLength: Dp = 56.dp
 ) {
-    val drips = remember(seed, count) {
+    val n = count.coerceIn(3, 9)
+    val drips = remember(seed, n) {
         val r = Random(seed)
-        List(count) {
+        List(n) {
             Drip(
-                x = (it + 0.2f + r.nextFloat() * 0.6f) / count,
-                w = 3f + r.nextFloat() * 7f,
-                len = 0.35f + r.nextFloat() * 0.65f,
+                x = (it + 0.30f + r.nextFloat() * 0.40f) / n,
+                w = 5f + r.nextFloat() * 7f,
+                len = 0.45f + r.nextFloat() * 0.55f,
                 phase = r.nextFloat()
             )
         }
@@ -114,57 +120,102 @@ fun BloodDrips(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(9000, easing = LinearEasing),
+            animation = tween(16000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "dripsT"
     )
-    Canvas(modifier = modifier.fillMaxWidth().height(maxLength + 16.dp)) {
+    Canvas(modifier = modifier.fillMaxWidth().height(maxLength + 26.dp)) {
         val maxPx = maxLength.toPx()
-        val band = 12.dp.toPx()
-        val blood = Brush.verticalGradient(
-            colors = listOf(Color(0xFFFF2A4D), BloodRedDeep, BloodRedDark),
-            startY = 0f,
-            endY = maxPx + band
-        )
-        val ragged = Path().apply {
+        val rim = 9.dp.toPx()
+        val w = size.width
+
+        // The coagulated rim: a smooth wave, darker at the top, glossy on its lip.
+        val rimPath = Path().apply {
             moveTo(0f, 0f)
-            lineTo(size.width, 0f)
-            lineTo(size.width, band * 0.6f)
-            var x = size.width
-            while (x > 0f) {
-                x -= 26f
-                lineTo(x, band * (0.55f + 0.45f * sin(x * 0.07f)))
+            lineTo(w, 0f)
+            lineTo(w, rim * 0.7f)
+            var px = w
+            val step = 70f
+            while (px > 0f) {
+                val nx = max(0f, px - step)
+                val mid = (px + nx) / 2f
+                quadraticBezierTo(
+                    mid, rim * (1.05f + 0.45f * sin(mid * 0.021f + 1.3f)),
+                    nx, rim * (0.55f + 0.30f * sin(nx * 0.033f))
+                )
+                px = nx
             }
             close()
         }
-        drawPath(ragged, blood)
+        drawPath(
+            rimPath,
+            Brush.verticalGradient(
+                colors = listOf(Color(0xFF3A000A), Color(0xFF8A0016), Color(0xFFC4112E)),
+                startY = 0f,
+                endY = rim * 1.5f
+            )
+        )
+        drawPath(rimPath, Color(0x33FFFFFF), style = Stroke(width = 1.2f))
+
         for (d in drips) {
-            val cycle = (t + d.phase) % 1f
-            val g = (cycle * 1.25f).coerceAtMost(1f)
-            val eased = 1f - (1f - g) * (1f - g)
-            val len = band + maxPx * d.len * eased
-            val cx = d.x * size.width
-            val a = if (cycle > 0.9f) (1f - (cycle - 0.9f) * 10f).coerceIn(0f, 1f) else 1f
-            drawRoundRect(
-                brush = blood,
-                topLeft = Offset(cx - d.w / 2f, 0f),
-                size = Size(d.w, len),
-                cornerRadius = CornerRadius(d.w / 2f, d.w / 2f),
-                alpha = a
+            val p = (t + d.phase) % 1f
+            val grow = when {
+                p < 0.72f -> 1f - (1f - p / 0.72f).let { it * it * it }
+                p < 0.90f -> 1f
+                else -> 1f - (p - 0.90f) / 0.10f
+            }.coerceIn(0f, 1f)
+            val bulbR = d.w * 0.62f
+            val len = rim * 0.8f + (maxPx * d.len) * grow
+            if (len <= rim) continue
+            val cx = d.x * w
+            val stickBottom = max(rim * 0.8f, len - bulbR)
+
+            val tube = Brush.horizontalGradient(
+                colors = listOf(Color(0xFF5A000F), Color(0xFFD01634), Color(0xFF5A000F)),
+                startX = cx - d.w / 2f,
+                endX = cx + d.w / 2f
+            )
+            val stick = Path().apply {
+                moveTo(cx - d.w * 0.5f, 0f)
+                lineTo(cx + d.w * 0.5f, 0f)
+                lineTo(cx + d.w * 0.30f, stickBottom)
+                lineTo(cx - d.w * 0.30f, stickBottom)
+                close()
+            }
+            drawPath(stick, tube)
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color(0xFFE8284A), Color(0xFFB00020), Color(0xFF4A000C)),
+                    center = Offset(cx - bulbR * 0.3f, len - bulbR * 0.35f),
+                    radius = bulbR * 1.6f
+                ),
+                radius = bulbR,
+                center = Offset(cx, len - bulbR * 0.2f)
+            )
+            // gloss
+            drawLine(
+                color = Color(0x55FFFFFF),
+                start = Offset(cx - d.w * 0.14f, rim * 0.9f),
+                end = Offset(cx - d.w * 0.12f, stickBottom),
+                strokeWidth = d.w * 0.12f,
+                cap = StrokeCap.Round
             )
             drawCircle(
-                color = BloodRedDeep.copy(alpha = a),
-                radius = d.w * 0.85f,
-                center = Offset(cx, len)
+                color = Color(0xAAFFFFFF),
+                radius = bulbR * 0.2f,
+                center = Offset(cx - bulbR * 0.35f, len - bulbR * 0.55f)
             )
-            drawRoundRect(
-                color = Color(0x55FFFFFF),
-                topLeft = Offset(cx - d.w * 0.28f, 0f),
-                size = Size(d.w * 0.2f, len * 0.9f),
-                cornerRadius = CornerRadius(d.w * 0.1f, d.w * 0.1f),
-                alpha = a
-            )
+            // the falling drop, released while the drip hangs at full length
+            if (p in 0.78f..0.97f) {
+                val f = (p - 0.78f) / 0.19f
+                val dy = len + bulbR + f * f * maxPx * 0.55f
+                drawCircle(
+                    color = Color(0xFFB00020).copy(alpha = (1f - f).coerceIn(0f, 1f)),
+                    radius = bulbR * 0.7f,
+                    center = Offset(cx, dy)
+                )
+            }
         }
     }
 }
@@ -490,9 +541,44 @@ fun HorrorSheetBackdrop(modifier: Modifier = Modifier, seed: Int = 3) {
     androidx.compose.foundation.layout.Box(modifier = modifier) {
         BloodVeins(Modifier.fillMaxSize(), seed = seed)
         HorrorVignette(Modifier.fillMaxSize(), intensity = 0.9f)
-        BloodDrips(Modifier.align(androidx.compose.ui.Alignment.TopStart), seed = seed + 10, count = 16, maxLength = 70.dp)
+        BloodDrips(Modifier.align(androidx.compose.ui.Alignment.TopStart), seed = seed + 10, count = 7, maxLength = 54.dp)
         androidx.compose.foundation.layout.Box(
             Modifier.fillMaxSize().bloodPulseBorder(RoundedCornerShape(0.dp), 1.5.dp)
+        )
+    }
+}
+
+
+/**
+ * A section title for the settings panes: a flickering skull, the title lit from
+ * behind in blood red, and a rule that fades out to the right.
+ */
+@Composable
+fun HorrorSectionTitle(text: String, modifier: Modifier = Modifier) {
+    androidx.compose.foundation.layout.Column(modifier = modifier.fillMaxWidth()) {
+        androidx.compose.foundation.layout.Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            androidx.compose.material3.Text(
+                text = "☠",
+                color = BloodRedHot,
+                fontSize = 15.sp,
+                style = androidx.compose.ui.text.TextStyle(shadow = BloodGlow),
+                modifier = Modifier.horrorFlicker()
+            )
+            androidx.compose.foundation.layout.Spacer(Modifier.width(8.dp))
+            androidx.compose.material3.Text(
+                text = text,
+                color = BoneWhite,
+                fontSize = 14.sp,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Black,
+                style = androidx.compose.ui.text.TextStyle(shadow = BloodGlowSoft)
+            )
+        }
+        androidx.compose.foundation.layout.Spacer(Modifier.height(5.dp))
+        androidx.compose.foundation.layout.Box(
+            Modifier
+                .fillMaxWidth()
+                .height(1.5.dp)
+                .background(Brush.horizontalGradient(listOf(BloodRedHot, BloodRedDark, Color.Transparent)))
         )
     }
 }

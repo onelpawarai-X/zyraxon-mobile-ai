@@ -26,6 +26,7 @@ import ai.zyraxon.assistant.ui.components.bloodPulseBorder
 import ai.zyraxon.assistant.ui.components.horrorFlicker
 import ai.zyraxon.assistant.ui.components.CodePanel
 import ai.zyraxon.assistant.ui.components.LivingAuraSphere
+import ai.zyraxon.assistant.ui.components.ZyraxonAura
 import ai.zyraxon.assistant.ui.components.MessageBubble
 import ai.zyraxon.assistant.ui.components.QuickActionChips
 import ai.zyraxon.assistant.ui.components.SettingsSheet
@@ -454,7 +455,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                 .fillMaxSize()
                 .bloodPulseBorder(RoundedCornerShape(0.dp), 2.dp)
         )
-        BloodDrips(Modifier.align(Alignment.TopStart), seed = 11, count = 20, maxLength = 80.dp)
+        BloodDrips(Modifier.align(Alignment.TopStart), seed = 11, count = 7, maxLength = 54.dp)
 
         // Luxurious frosted dark blood blur scrim behind SettingsSheet
         if (showSettingsSheet) {
@@ -809,7 +810,12 @@ fun ChatTabContent(
             }
 
             // 1. Living Blood-Red Aura Sphere
-            LivingAuraSphere(
+            ZyraxonAura(
+                style = auraStyle,
+                hue = auraHue,
+                scaleFactor = auraSize,
+                glow = auraGlow,
+                speed = auraSpeed,
                 isListening = isListening,
                 isSpeaking = isSpeaking,
                 audioLevel = audioLevel,
