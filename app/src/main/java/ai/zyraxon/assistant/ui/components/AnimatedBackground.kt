@@ -75,8 +75,8 @@ fun AnimatedBackground(
     val effectivePulse = if (isSpeaking) pulse * (1f + audioLevel * 0.4f) else pulse
 
     Canvas(modifier = modifier.fillMaxSize()) {
-        // Deep space dark cosmic foundation
-        drawRect(color = Color(0xFF05060F))
+        // Deep obsidian-crimson velvet foundation
+        drawRect(color = Color(0xFF070103))
 
         when (mode) {
             BgAnimationMode.LIVING_PINK_AURA -> {
@@ -109,12 +109,12 @@ private fun DrawScope.drawLivingPinkAuraStage(
 ) {
     val radius = (width * 0.85f) * pulse
 
-    // Top-left magenta ambient light
+    // Top-left blood-red ambient light
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(
-                Color(0x33FF69CA),
-                Color(0x18D946EF),
+                Color(0x44FF1744),
+                Color(0x228B0000),
                 Color.Transparent
             ),
             center = Offset(width * 0.2f, center.y * 0.3f),
@@ -124,12 +124,12 @@ private fun DrawScope.drawLivingPinkAuraStage(
         center = Offset(width * 0.2f, center.y * 0.3f)
     )
 
-    // Center-bottom cyan/teal ambient light
+    // Center-bottom scarlet/crimson ambient light
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(
-                Color(0x2200F0FF),
-                Color(0x0C38BDF8),
+                Color(0x33DC143C),
+                Color(0x187F0014),
                 Color.Transparent
             ),
             center = Offset(width * 0.8f, center.y * 1.3f),

@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -641,16 +642,59 @@ fun SettingsSheet(
     var newMemKey by remember { mutableStateOf("") }
     var newMemVal by remember { mutableStateOf("") }
 
+    val masterSections = listOf(
+        Triple("ai", "🎭", t("মডেল ও পরিচয়")) to listOf(
+            "persona" to t("পরিচয়"),
+            "model" to t("মডেল"),
+            "ondevice" to t("অন-ডিভাইস")
+        ),
+        Triple("keys", "🔑", t("এপিআই ও গিট")) to listOf(
+            "providers" to t("এআই প্রোভাইডার্স"),
+            "github" to "GitHub"
+        ),
+        Triple("audio", "🎙️", t("ভয়েস ও মাইক")) to listOf(
+            "voice" to t("ভয়েস (TTS)"),
+            "live" to t("লাইভ ভয়েস"),
+            "mic" to t("মাইক")
+        ),
+        Triple("aura", "🔮", t("ওরা ও ইফেক্ট")) to listOf(
+            "aura" to t("ওরা ও ব্যাকগ্রাউন্ড")
+        ),
+        Triple("system", "🛡️", t("সিস্টেম ও এক্সেস")) to listOf(
+            "session" to t("নেভিগেশন"),
+            "perms" to t("পারমিশন")
+        ),
+        Triple("knowledge", "🧠", t("মেমরি ও স্কিল")) to listOf(
+            "memory" to t("মেমরি"),
+            "skills" to t("স্কিল গাইড")
+        ),
+        Triple("updates", "🚀", t("আপডেট")) to listOf(
+            "updates" to t("আপডেট")
+        )
+    )
+
+    val currentMaster = masterSections.find { (_, subs) -> subs.any { it.first == activePane } }
+        ?: masterSections.first()
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = Glass.sheetFill(0.30f),
-        dragHandle = null
+        containerColor = Color(0xF7140205),
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(vertical = 10.dp)
+                    .width(44.dp)
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(Glass.pinkFill.copy(alpha = 0.8f))
+            )
+        }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .padding(horizontal = 20.dp, vertical = 12.dp)
         ) {
             // Header
             Row(
@@ -659,78 +703,128 @@ fun SettingsSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(9.dp)
+                                .clip(CircleShape)
+                                .background(Glass.pinkFill)
+                        )
+                        Spacer(modifier = Modifier.width(7.dp))
+                        Text(
+                            text = t("ZYRAXON সেটিংস ও কন্ট্রোল"),
+                            fontSize = 17.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Glass.textPrimary
+                        )
+                    }
                     Text(
-                        text = t("ZYRAXON সেটিংস ও সিস্টেম কন্ট্রোল"),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Glass.textPrimary
-                    )
-                    Text(
-                        text = t("ভার্সন ২.০.০ — অল ইন ওয়ান পাওয়ার প্যানেল"),
+                        text = t("৭টি সুবিন্যস্ত সেকশন — সম্পূর্ণ সিস্টেম নিয়ন্ত্রণ"),
                         fontSize = 11.sp,
-                        color = Glass.pinkFill
+                        color = Glass.pink
                     )
                 }
-                IconButton(onClick = onDismiss) {
+                IconButton(onClick = {
+                    Glass.vibrate(context, 14)
+                    onDismiss()
+                }) {
                     Icon(Icons.Rounded.Close, contentDescription = "Close", tint = Glass.textMuted)
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Navigation Tabs Row
+            // 7 Master Categorized Sections Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                listOf(
-                    "session" to t("🧭 নেভিগেশন"),
-                    "persona" to t("🎭 পরিচয়"),
-                    "model" to t("🧩 মডেল"),
-                    "updates" to t("⬆️ আপডেট"),
-                    "voice" to t("🔊 ভয়েস (TTS)"),
-                    "ondevice" to t("📴 অন-ডিভাইস মডেল"),
-                    "live" to t("📞 লাইভ ভয়েস"),
-                    "mic" to t("🎙️ মাইক"),
-                    "aura" to t("🔮 ওরা ও ব্যাকগ্রাউন্ড"),
-                    "providers" to t("🔑 এআই প্রোভাইডার্স"),
-                    "github" to "🐙 GitHub",
-                    "perms" to t("🛡️ পারমিশন"),
-                    "memory" to t("🧠 মেমরি"),
-                    "skills" to t("📖 স্কিল গাইড")
-                ).forEach { (paneId, label) ->
-                    val isActive = activePane == paneId
-                    Box(
+                masterSections.forEach { (masterMeta, subs) ->
+                    val (masterId, masterIcon, masterTitle) = masterMeta
+                    val isMasterActive = currentMaster.first.first == masterId
+
+                    Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isActive) Glass.pinkFill else Glass.rowFill(0.30f))
+                            .background(
+                                if (isMasterActive) Glass.pinkFill
+                                else Glass.rowFill(0.35f)
+                            )
+                            .border(
+                                1.dp,
+                                if (isMasterActive) Color(0xFFFF1E44) else Glass.borderSoft,
+                                RoundedCornerShape(12.dp)
+                            )
                             .clickable {
-                                activePane = paneId
-                                viewModel.settingsPane = paneId
+                                Glass.vibrate(context, 16)
+                                val targetPane = subs.first().first
+                                activePane = targetPane
+                                viewModel.settingsPane = targetPane
                             }
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Text(text = masterIcon, fontSize = 13.sp)
+                        Spacer(modifier = Modifier.width(5.dp))
                         Text(
-                            text = label,
+                            text = masterTitle,
                             fontSize = 12.sp,
-                            fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isActive) Glass.textOnAccent else Glass.textPrimary
+                            fontWeight = if (isMasterActive) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isMasterActive) Color.White else Glass.textPrimary
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            // Sub-category Segmented Pills (only if more than 1 sub-section exists)
+            if (currentMaster.second.size > 1) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Glass.rowFill(0.40f))
+                        .border(1.dp, Glass.borderSoft, RoundedCornerShape(12.dp))
+                        .padding(3.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    currentMaster.second.forEach { (subId, subLabel) ->
+                        val isSubActive = activePane == subId
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(9.dp))
+                                .background(if (isSubActive) Glass.pinkFill else Color.Transparent)
+                                .clickable {
+                                    Glass.vibrate(context, 12)
+                                    activePane = subId
+                                    viewModel.settingsPane = subId
+                                }
+                                .padding(vertical = 6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = subLabel,
+                                fontSize = 11.5.sp,
+                                fontWeight = if (isSubActive) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSubActive) Color.White else Glass.textSecondary
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
             HorizontalDivider(color = Glass.borderSoft)
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Content Area Scrollable
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(380.dp)
+                    .heightIn(min = 380.dp, max = 540.dp)
                     .verticalScroll(rememberScrollState())
             ) {
                 when (activePane) {

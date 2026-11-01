@@ -23,6 +23,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.compose.ui.draw.blur
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,17 +58,22 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Checklist
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.FlashlightOn
+import androidx.compose.material.icons.rounded.Hub
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.MicOff
 import androidx.compose.material.icons.rounded.OpenInBrowser
 import androidx.compose.material.icons.rounded.Phone
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Terminal
 import androidx.compose.material.icons.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Button
@@ -221,17 +228,21 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
             )
         }
 
-        // 2. Main Scaffold Content
+        // 2. Main Scaffold Content (blurs smoothly when Settings is open)
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .then(if (showSettingsSheet) Modifier.blur(22.dp) else Modifier)
                 .statusBarsPadding()
                 .navigationBarsPadding()
                 .imePadding()
         ) {
-            // Top Bar — a single Settings button, nothing else. Every other control
-            // lives inside the Settings sheet, in its own section.
+            // Top Bar with SVG Vector Icons & Real Terminal launcher
             ZyraxonTopBar(
+                activeTab = activeTab,
+                selectedPersonaName = selectedPersona.name,
+                onTabSelect = { tab -> viewModel.setTab(tab) },
+                onClearChat = { viewModel.clearChat() },
                 onSettingsClick = { showSettingsSheet = true }
             )
 
@@ -369,8 +380,20 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
             }
         }
 
-        // Sheets. Persona and model selection now live inside Settings, so only
-        // the Settings sheet is opened from here.
+        // Luxurious frosted dark blood blur scrim behind SettingsSheet
+        if (showSettingsSheet) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xD9080103))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { showSettingsSheet = false }
+            )
+        }
+
+        // Settings Sheet
         if (showSettingsSheet) {
             SettingsSheet(
                 viewModel = viewModel,
@@ -456,54 +479,177 @@ fun UpdateBanner(
 
 
 /**
- * The top bar holds exactly one control: the gear that opens Settings. Every
- * other switch — persona, microphone, model, live voice, clear chat — lives
- * inside Settings as a section, so the top of the screen stays clean.
+ * Luxurious Top Bar with SVG Vector Icons & Terminal Launcher.
+ * Clean, modern cyberpunk blood-red aesthetics with haptic feedback.
  */
 @Composable
 fun ZyraxonTopBar(
+    activeTab: AppTab,
+    selectedPersonaName: String,
+    onTabSelect: (AppTab) -> Unit,
+    onClearChat: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
+    val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 14.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "ZYRAXON",
-            color = Glass.textPrimary,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp
-        )
-        // The one control the user asked to keep up here. A labelled pill, not a
-        // bare icon, so it is unmistakably the Settings door.
+        // Branding & Persona Pill
         Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(20.dp))
-                .background(Glass.rowFill(0.28f))
-                .border(1.dp, Glass.borderSoft, RoundedCornerShape(20.dp))
-                .clickable { onSettingsClick() }
-                .padding(horizontal = 12.dp, vertical = 7.dp)
-                .testTag("settings_button"),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable {
+                Glass.vibrate(context, 14)
+                onTabSelect(AppTab.CHAT)
+            }
         ) {
-            Icon(
-                imageVector = Icons.Rounded.Settings,
-                contentDescription = "Settings",
-                tint = Glass.textPrimary,
-                modifier = Modifier.size(17.dp)
+            Box(
+                modifier = Modifier
+                    .size(9.dp)
+                    .clip(CircleShape)
+                    .background(Glass.pinkFill)
+            )
+            Spacer(modifier = Modifier.width(7.dp))
+            Text(
+                text = "ZYRAXON",
+                color = Color.White,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp
             )
             Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = t("সেটিংস"),
-                color = Glass.textPrimary,
-                fontSize = 12.5.sp,
-                fontWeight = FontWeight.SemiBold
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Glass.pinkFill.copy(alpha = 0.22f))
+                    .border(1.dp, Glass.borderSoft, RoundedCornerShape(8.dp))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = selectedPersonaName,
+                    color = Glass.pink,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        // SVG / Vector Action Icons Cluster
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 1. Terminal SVG Icon Button (Real Interactive Terminal full screen takeover)
+            TopBarSvgIconButton(
+                icon = Icons.Rounded.Terminal,
+                contentDescription = t("রিয়েল টার্মিনাল"),
+                isActive = activeTab == AppTab.TERMINAL,
+                activeColor = Glass.pinkFill,
+                testTag = "terminal_button",
+                onClick = {
+                    Glass.vibrate(context, 18)
+                    onTabSelect(if (activeTab == AppTab.TERMINAL) AppTab.CHAT else AppTab.TERMINAL)
+                }
+            )
+
+            // 2. Tasks / Todo SVG Button
+            TopBarSvgIconButton(
+                icon = Icons.Rounded.Checklist,
+                contentDescription = t("টাস্ক ও টুডু"),
+                isActive = activeTab == AppTab.TASKS,
+                activeColor = Glass.pinkFill,
+                testTag = "tasks_button",
+                onClick = {
+                    Glass.vibrate(context, 14)
+                    onTabSelect(if (activeTab == AppTab.TASKS) AppTab.CHAT else AppTab.TASKS)
+                }
+            )
+
+            // 3. Tools SVG Button
+            TopBarSvgIconButton(
+                icon = Icons.Rounded.Build,
+                contentDescription = t("সিস্টেম টুলস"),
+                isActive = activeTab == AppTab.TOOLS,
+                activeColor = Glass.pinkFill,
+                testTag = "tools_button",
+                onClick = {
+                    Glass.vibrate(context, 14)
+                    onTabSelect(if (activeTab == AppTab.TOOLS) AppTab.CHAT else AppTab.TOOLS)
+                }
+            )
+
+            // 4. MCP SVG Button
+            TopBarSvgIconButton(
+                icon = Icons.Rounded.Hub,
+                contentDescription = t("MCP প্রোটোকল"),
+                isActive = activeTab == AppTab.MCP,
+                activeColor = Glass.pinkFill,
+                testTag = "mcp_button",
+                onClick = {
+                    Glass.vibrate(context, 14)
+                    onTabSelect(if (activeTab == AppTab.MCP) AppTab.CHAT else AppTab.MCP)
+                }
+            )
+
+            // 5. New / Clear Chat SVG Button
+            TopBarSvgIconButton(
+                icon = Icons.Rounded.Refresh,
+                contentDescription = t("নতুন চ্যাট"),
+                isActive = false,
+                testTag = "clear_chat_button",
+                onClick = {
+                    Glass.vibrate(context, 16)
+                    onClearChat()
+                }
+            )
+
+            // 6. Settings SVG Button
+            TopBarSvgIconButton(
+                icon = Icons.Rounded.Settings,
+                contentDescription = t("সেটিংস"),
+                isActive = false,
+                testTag = "settings_button",
+                onClick = {
+                    Glass.vibrate(context, 18)
+                    onSettingsClick()
+                }
             )
         }
+    }
+}
+
+@Composable
+fun TopBarSvgIconButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentDescription: String,
+    isActive: Boolean = false,
+    activeColor: Color = Glass.pinkFill,
+    testTag: String = "",
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(36.dp)
+            .clip(CircleShape)
+            .background(if (isActive) activeColor else Glass.rowFill(0.35f))
+            .border(
+                1.dp,
+                if (isActive) Color(0xFFFF1E44) else Glass.borderSoft,
+                CircleShape
+            )
+            .clickable { onClick() }
+            .testTag(testTag),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = if (isActive) Color.White else Glass.textPrimary,
+            modifier = Modifier.size(18.dp)
+        )
     }
 }
 
@@ -549,39 +695,34 @@ fun ChatTabContent(
     }
 
     Column(modifier = modifier) {
-        // The aura, centred and untouched, exactly as designed. It is also the
-        // microphone: the mic is always open, so there is no button and no icon.
+        // The Living Blood-Red Aura, centered and alive!
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(top = 80.dp),
+                .padding(top = 16.dp, bottom = 6.dp),
             contentAlignment = Alignment.Center
         ) {
-            AuraWebView(
+            // 1. Living Blood-Red Aura Sphere
+            LivingAuraSphere(
                 isListening = isListening,
                 isSpeaking = isSpeaking,
                 audioLevel = audioLevel,
-                hue = auraHue,
-                size = auraSize,
-                glow = auraGlow,
-                speed = auraSpeed,
-                auraStyle = auraStyle,
-                auraShader = auraShader,
-                onTap = { transcriptOpen = !transcriptOpen }
+                onClick = {
+                    onMicToggle()
+                }
             )
 
-            // Live transcript floats over the aura, so the user sees their words
-            // land the moment they speak them. It also shows whether the mic is
-            // on or muted, so the user never has to guess. Tapping it is the
-            // user's own switch: it holds the mic closed until they open it again.
+            // 2. Live transcript & voice status floating below the aura
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 10.dp)
+                    .padding(bottom = 6.dp)
                     .clip(RoundedCornerShape(14.dp))
+                    .background(Glass.fill(panelAlpha))
+                    .border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
                     .clickable { onMicToggle() }
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    .padding(horizontal = 14.dp, vertical = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -592,13 +733,13 @@ fun ChatTabContent(
                         else -> t("মাইক চালু — বন্ধ করতে ট্যাপ করো")
                     },
                     color = when {
-                        !micOn -> Color(0x99FFFFFF)
-                        isListening -> Color(0xFF7DF9FF)
-                        isSpeaking -> Color(0xFFFF8AD8)
-                        else -> Color(0x99FFFFFF)
+                        !micOn -> Glass.textMuted
+                        isListening -> Color(0xFFFF1E44)
+                        isSpeaking -> Color(0xFFFF5277)
+                        else -> Glass.textPrimary
                     },
                     fontSize = 11.5.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
@@ -983,6 +1124,8 @@ fun BottomComposer(
     onMicToggle: () -> Unit,
     onQuickAction: (String) -> Unit
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1001,30 +1144,31 @@ fun BottomComposer(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // The microphone switch, right where the user types. It is a real
-                // button, not a hint: one tap holds the mic closed for as long as
-                // the user wants, and the choice is remembered across restarts.
+                // The microphone switch, right where the user types.
                 Box(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
                         .background(
-                            if (micOn) Glass.pinkFill.copy(alpha = 0.22f)
-                            else Glass.rowFill(0.30f)
+                            if (micOn) Glass.pinkFill.copy(alpha = 0.28f)
+                            else Glass.rowFill(0.35f)
                         )
                         .border(
                             1.dp,
-                            if (micOn) Glass.pinkFill else Glass.borderSoft,
+                            if (micOn) Color(0xFFFF1E44) else Glass.borderSoft,
                             CircleShape
                         )
-                        .clickable { onMicToggle() }
+                        .clickable {
+                            Glass.vibrate(context, 16)
+                            onMicToggle()
+                        }
                         .testTag("mic_button"),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = if (micOn) Icons.Rounded.Mic else Icons.Rounded.MicOff,
                         contentDescription = if (micOn) t("মাইক বন্ধ করুন") else t("মাইক চালু করুন"),
-                        tint = if (micOn) Glass.pinkFill else Glass.textMuted,
+                        tint = if (micOn) Color(0xFFFF1E44) else Glass.textMuted,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -1044,7 +1188,12 @@ fun BottomComposer(
                     ),
                     cursorBrush = SolidColor(Glass.pink),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                    keyboardActions = KeyboardActions(onSend = { onSend() }),
+                    keyboardActions = KeyboardActions(onSend = {
+                        if (text.isNotBlank()) {
+                            Glass.vibrate(context, 18)
+                            onSend()
+                        }
+                    }),
                     decorationBox = { innerTextField ->
                         if (text.isEmpty()) {
                             Text(
@@ -1057,18 +1206,22 @@ fun BottomComposer(
                     }
                 )
 
-                // Send Button (glowing pink/magenta gradient)
+                // Send Button (glowing blood-red ruby gradient)
                 Box(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
                         .background(
                             Brush.linearGradient(
-                                colors = listOf(Glass.pink, Color(0xFFD946EF))
+                                colors = listOf(Color(0xFFFF1E44), Color(0xFF8B0000))
                             )
                         )
+                        .border(1.dp, Color(0x66FF1E44), CircleShape)
                         .clickable {
-                            if (text.isNotBlank()) onSend()
+                            if (text.isNotBlank()) {
+                                Glass.vibrate(context, 18)
+                                onSend()
+                            }
                         }
                         .testTag("send_button"),
                     contentAlignment = Alignment.Center

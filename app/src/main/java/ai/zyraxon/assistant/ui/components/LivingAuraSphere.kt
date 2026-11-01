@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.ui.theme.Glass
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -23,12 +24,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 /**
- * LIVING PINK AURA (আগের ডিজাইনের গোলাপি কালার এবং সুন্দর ওরা)
- * Recreates the iconic glowing pearlescent pink/magenta living aura with
- * luminous cyan outer halo ring, dynamic plasma rotation, and audio-reactive breathing.
+ * LIVING BLOOD-RED AURA SPHERE (রক্তে ভেজা লালের মতো প্রাণবন্ত ওরা)
+ * Deep crimson-scarlet pearlescent living aura core, dynamic plasma swirl,
+ * audio-reactive breathing ripples, and luminous ruby halo glow.
  */
 @Composable
 fun LivingAuraSphere(
@@ -38,6 +40,7 @@ fun LivingAuraSphere(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val transition = rememberInfiniteTransition(label = "living_aura_anim")
 
     // Slow plasma rotation
@@ -45,7 +48,7 @@ fun LivingAuraSphere(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(14000, easing = LinearEasing),
+            animation = tween(12000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "plasma_spin"
@@ -53,10 +56,10 @@ fun LivingAuraSphere(
 
     // Breathing rhythm
     val breath by transition.animateFloat(
-        initialValue = 0.95f,
-        targetValue = 1.05f,
+        initialValue = 0.94f,
+        targetValue = 1.06f,
         animationSpec = infiniteRepeatable(
-            animation = tween(3200, easing = FastOutSlowInEasing),
+            animation = tween(2800, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "aura_breath"
@@ -65,9 +68,9 @@ fun LivingAuraSphere(
     // Fast ripple for voice interaction
     val ripple by transition.animateFloat(
         initialValue = 0.85f,
-        targetValue = 1.35f,
+        targetValue = 1.40f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1100, easing = FastOutSlowInEasing),
+            animation = tween(1000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "voice_ripple"
@@ -75,94 +78,97 @@ fun LivingAuraSphere(
 
     // Secondary ribbon drift
     val ribbonShift by transition.animateFloat(
-        initialValue = -0.2f,
-        targetValue = 0.2f,
+        initialValue = -0.22f,
+        targetValue = 0.22f,
         animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = FastOutSlowInEasing),
+            animation = tween(3600, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "ribbon_drift"
     )
 
     val effectiveScale = when {
-        isListening -> breath * (1f + audioLevel * 0.5f)
-        isSpeaking -> breath * (1f + (ripple - 0.85f) * 0.4f)
+        isListening -> breath * (1f + audioLevel * 0.55f)
+        isSpeaking -> breath * (1f + (ripple - 0.85f) * 0.45f)
         else -> breath
     }
 
     Box(
         modifier = modifier
-            .size(240.dp)
+            .size(260.dp)
             .clickable(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
-            ) { onClick() },
+            ) {
+                Glass.vibrate(context, 22)
+                onClick()
+            },
         contentAlignment = Alignment.Center
     ) {
-        Canvas(modifier = Modifier.size(240.dp)) {
+        Canvas(modifier = Modifier.size(260.dp)) {
             val center = Offset(size.width / 2f, size.height / 2f)
             val baseRadius = (size.width / 2f) * 0.62f * effectiveScale
 
-            // 1. Outermost soft ambient pink nebula glow
+            // 1. Outermost ambient blood-red velvet nebula glow
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0x66FF69CA),
-                        Color(0x33FF3DB9),
-                        Color(0x1500F0FF),
+                        Color(0x77FF1744),
+                        Color(0x44B91C1C),
+                        Color(0x187F0014),
                         Color.Transparent
                     ),
                     center = center,
-                    radius = baseRadius * 1.7f
+                    radius = baseRadius * 1.8f
                 ),
-                radius = baseRadius * 1.7f,
+                radius = baseRadius * 1.8f,
                 center = center
             )
 
-            // 2. Audio-reactive pulsating soft pink living ripple waves
+            // 2. Audio-reactive pulsating blood ripple waves
             if (isListening || isSpeaking) {
-                val alpha = (0.55f * (1.35f - ripple)).coerceIn(0f, 0.55f)
+                val alpha = (0.65f * (1.40f - ripple)).coerceIn(0f, 0.65f)
                 drawCircle(
-                    color = Color(0xFFFF69CA).copy(alpha = alpha),
-                    radius = baseRadius * ripple * 1.25f,
+                    color = Color(0xFFFF1E44).copy(alpha = alpha),
+                    radius = baseRadius * ripple * 1.28f,
                     center = center,
-                    style = Stroke(width = 2.5.dp.toPx())
+                    style = Stroke(width = 3.dp.toPx())
                 )
-                val secondAlpha = (0.35f * (1.2f - ripple + 0.15f)).coerceIn(0f, 0.35f)
+                val secondAlpha = (0.42f * (1.25f - ripple + 0.15f)).coerceIn(0f, 0.42f)
                 drawCircle(
-                    color = Color(0xFFFF30B5).copy(alpha = secondAlpha),
-                    radius = baseRadius * ripple * 1.12f,
+                    color = Color(0xFFFF4D6D).copy(alpha = secondAlpha),
+                    radius = baseRadius * ripple * 1.14f,
                     center = center,
-                    style = Stroke(width = 1.5.dp.toPx())
+                    style = Stroke(width = 2.dp.toPx())
                 )
             }
 
-            // 3. Soft Radiant Rose Pearlescent Halo Edge
+            // 3. Radiant Crimson Ruby Pearlescent Halo Edge
             drawCircle(
                 brush = Brush.sweepGradient(
                     colors = listOf(
-                        Color(0xFFFFB8E8),
-                        Color(0xFFFF69CA),
-                        Color(0xFFFF38B9),
-                        Color(0xFFFF80D7),
-                        Color(0xFFFFB8E8)
+                        Color(0xFFFF8599),
+                        Color(0xFFFF1E44),
+                        Color(0xFFDC143C),
+                        Color(0xFFFF4060),
+                        Color(0xFFFF8599)
                     ),
                     center = center
                 ),
-                radius = baseRadius * 1.02f,
+                radius = baseRadius * 1.03f,
                 center = center,
-                style = Stroke(width = 3.dp.toPx())
+                style = Stroke(width = 3.5.dp.toPx())
             )
 
-            // 4. THE LIVING PINK AURA SPHERE CORE (Original vibrant pink/magenta pearlescent gradient)
+            // 4. THE LIVING BLOOD-RED AURA SPHERE CORE
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFFFFE7F8), // Soft pearlescent highlight
-                        Color(0xFFFF91D9), // Vibrant orchid pink
-                        Color(0xFFFF4CBE), // Hot electric pink
-                        Color(0xFFFF1493), // Deep radiant magenta
-                        Color(0xFFD946EF)  // Deep violet-pink edge
+                        Color(0xFFFFE0E6), // Pearlescent white-rose highlight
+                        Color(0xFFFF3355), // Vibrant electric scarlet
+                        Color(0xFFFF1744), // Primary blood red
+                        Color(0xFFB00020), // Deep blood ruby
+                        Color(0xFF45000A)  // Deep obsidian blood edge
                     ),
                     center = Offset(center.x - baseRadius * 0.28f, center.y - baseRadius * 0.28f),
                     radius = baseRadius * 1.15f
@@ -171,15 +177,15 @@ fun LivingAuraSphere(
                 center = center
             )
 
-            // 5. Plasma Swirl Layer (Rotating smooth conic energy)
+            // 5. Plasma Swirl Layer (Rotating smooth conic crimson energy)
             drawCircle(
                 brush = Brush.sweepGradient(
                     colors = listOf(
-                        Color(0x44FFFFFF),
-                        Color(0x33FFC5ED),
-                        Color(0x44FF3DB9),
-                        Color(0x22FF80D7),
-                        Color(0x44FFFFFF)
+                        Color(0x55FFFFFF),
+                        Color(0x33FFA8B8),
+                        Color(0x55FF1744),
+                        Color(0x228B0000),
+                        Color(0x55FFFFFF)
                     ),
                     center = center
                 ),
@@ -195,9 +201,9 @@ fun LivingAuraSphere(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
                         Color.Transparent,
-                        Color(0x88FFFFFF),
-                        Color(0xAAFFD8F2),
-                        Color(0x66FF38B9),
+                        Color(0x99FFFFFF),
+                        Color(0xAAFFCCD5),
+                        Color(0x66FF1744),
                         Color.Transparent
                     )
                 ),
@@ -213,8 +219,8 @@ fun LivingAuraSphere(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xEEFFFFFF),
-                        Color(0x66FFD8F2),
+                        Color(0xF0FFFFFF),
+                        Color(0x66FFCCD5),
                         Color.Transparent
                     ),
                     center = Offset(center.x - baseRadius * 0.35f, center.y - baseRadius * 0.35f),
@@ -230,7 +236,7 @@ fun LivingAuraSphere(
                     colors = listOf(
                         Color.Transparent,
                         Color(0x44FFFFFF),
-                        Color(0x88FF9CDE)
+                        Color(0x99FF5277)
                     ),
                     center = center,
                     radius = baseRadius
@@ -242,3 +248,4 @@ fun LivingAuraSphere(
         }
     }
 }
+

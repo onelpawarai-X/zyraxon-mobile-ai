@@ -39,6 +39,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -89,17 +90,17 @@ fun MessageBubble(
                 .background(
                     if (isUser) {
                         Brush.horizontalGradient(
-                            colors = listOf(Glass.violetFill, Glass.violetFill)
+                            colors = listOf(Color(0xFF8B0000), Color(0xFFFF1E44))
                         )
                     } else {
                         Brush.verticalGradient(
-                            colors = listOf(Glass.fill(0.30f), Glass.fill(0.30f))
+                            colors = listOf(Glass.fill(0.35f), Glass.fill(0.25f))
                         )
                     }
                 )
                 .border(
                     width = 1.dp,
-                    color = if (isUser) Glass.pinkFill.copy(alpha = 0.26f) else Glass.cyanFill.copy(alpha = 0.16f),
+                    color = if (isUser) Color(0x88FF1E44) else Glass.borderSoft,
                     shape = RoundedCornerShape(
                         topStart = 18.dp,
                         topEnd = 18.dp,
@@ -195,6 +196,8 @@ fun QuickActionChips(
         t("ওয়াইফাই")
     )
 
+    val context = LocalContext.current
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -206,16 +209,19 @@ fun QuickActionChips(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Glass.rowFill(0.30f))
-                    .border(1.dp, Glass.cyanFill.copy(alpha = 0.16f), RoundedCornerShape(16.dp))
-                    .clickable { onChipClick(chip) }
+                    .background(Glass.rowFill(0.35f))
+                    .border(1.dp, Glass.borderSoft, RoundedCornerShape(16.dp))
+                    .clickable {
+                        Glass.vibrate(context, 10)
+                        onChipClick(chip)
+                    }
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = chip,
                     color = Glass.textPrimary,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal
+                    fontWeight = FontWeight.Medium
                 )
             }
         }

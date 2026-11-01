@@ -1,51 +1,96 @@
 package ai.zyraxon.assistant.ui.theme
 
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.compose.ui.graphics.Color
 
 /**
- * The frosted-glass look the user asked for: white, translucent panels with
- * clearly legible near-black text on top. The old panels were almost opaque
- * black (`0xD90B0A1E`), which is what made the whole screen feel dark.
- *
- * [glassFill] takes the user's alpha so the Settings slider can go from a clear
- * pane to a frosted one without touching any component.
+ * Blood-Red Cyber-Luxury Glass Theme:
+ * Deep obsidian velvet, glowing crimson/blood-red crystal borders,
+ * luminous silver-white typography, and tactile haptic vibration feedback.
  */
 object Glass {
-    /** White pane. Alpha is the only thing the user tunes. */
-    fun fill(alpha: Float): Color = Color.White.copy(alpha = alpha.coerceIn(0.06f, 0.6f))
+    /** Dark blood obsidian pane. */
+    fun fill(alpha: Float): Color =
+        Color(0xFF140205).copy(alpha = alpha.coerceIn(0.25f, 0.92f))
 
-    /** A slightly stronger pane for sheets that carry a lot of text. */
+    /** A slightly richer pane for sheets that carry a lot of text. */
     fun sheetFill(alpha: Float): Color =
-        Color.White.copy(alpha = (alpha + 0.14f).coerceIn(0.10f, 0.72f))
+        Color(0xFF180307).copy(alpha = (alpha + 0.28f).coerceIn(0.50f, 0.98f))
 
-    /** A subtler pane for chips and list rows sitting on top of a panel. */
+    /** A subtler crimson wine pane for chips and list rows. */
     fun rowFill(alpha: Float): Color =
-        Color.White.copy(alpha = (alpha * 0.7f).coerceIn(0.04f, 0.42f))
+        Color(0xFF28060C).copy(alpha = (alpha * 0.95f).coerceIn(0.20f, 0.80f))
 
-    /** The hairline around a pane. White glass needs a cool edge, not a bright one. */
-    val border: Color = Color(0x59FFFFFF)
-    val borderSoft: Color = Color(0x33FFFFFF)
+    /** The crystal neon hairline around a pane in vivid blood-red. */
+    val border: Color = Color(0x77FF1E44)
+    val borderSoft: Color = Color(0x38FF1E44)
+    val borderGlow: Color = Color(0xAAFF1744)
 
-    /** Text. Near-black, never pure black — pure black on white glass looks harsh. */
-    val textPrimary: Color = Color(0xFF0A0C14)
-    val textSecondary: Color = Color(0xFF3A4050)
-    val textMuted: Color = Color(0xFF5C6478)
-    val textDisabled: Color = Color(0xFF8A90A0)
+    /** Text. Crisp luminous white and warm silver for dark blood glass. */
+    val textPrimary: Color = Color(0xFFFFF0F2)
+    val textSecondary: Color = Color(0xFFE8B5BD)
+    val textMuted: Color = Color(0xFFA66F7B)
+    val textDisabled: Color = Color(0xFF6E434B)
 
     /** Text that sits on a saturated accent chip. */
     val textOnAccent: Color = Color(0xFFFFFFFF)
 
-    // Accents, darkened so they stay readable as text on a white pane.
-    val pink: Color = Color(0xFFC2185B)
-    val cyan: Color = Color(0xFF00707F)
-    val violet: Color = Color(0xFF4F46E5)
-    val green: Color = Color(0xFF047857)
-    val red: Color = Color(0xFFB91C1C)
-    val amber: Color = Color(0xFF92400E)
+    // Blood-red & cyber accents
+    val pink: Color = Color(0xFFFF1E44)       // Primary Blood-Red
+    val cyan: Color = Color(0xFF00E5FF)       // Electric Cyan
+    val violet: Color = Color(0xFFD946EF)     // Cyber Orchid
+    val green: Color = Color(0xFF10B981)      // Emerald Matrix
+    val red: Color = Color(0xFFFF1744)        // Pure Crimson Blood
+    val amber: Color = Color(0xFFFF9F1C)      // Fiery Amber
 
-    /** Filled accents, for buttons that carry white text. */
-    val pinkFill: Color = Color(0xFFD81B60)
-    val cyanFill: Color = Color(0xFF0891B2)
-    val violetFill: Color = Color(0xFF5B4BE0)
+    /** Filled accents, for primary buttons and active pills. */
+    val pinkFill: Color = Color(0xFFE50914)   // High-impact Blood Red
+    val cyanFill: Color = Color(0xFF00B4D8)
+    val violetFill: Color = Color(0xFFC026D3)
     val greenFill: Color = Color(0xFF059669)
+
+    /** Blood Red / Crimson palette shortcuts */
+    val bloodRed: Color = Color(0xFFFF1E44)
+    val darkBlood: Color = Color(0xFF8B0000)
+    val deepObsidian: Color = Color(0xFF080103)
+
+    /**
+     * Tactile Haptic Vibration Feedback for buttons and transitions
+     */
+    fun vibrate(context: Context, milliseconds: Long = 18) {
+        runCatching {
+            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            if (vibrator != null && vibrator.hasVibrator()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(
+                        VibrationEffect.createOneShot(
+                            milliseconds,
+                            VibrationEffect.DEFAULT_AMPLITUDE
+                        )
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(milliseconds)
+                }
+            }
+        }
+    }
+
+    /** Subtle haptic tick for list scrolling or light selections */
+    fun subtleTick(context: Context) {
+        runCatching {
+            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            if (vibrator != null && vibrator.hasVibrator()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(
+                        VibrationEffect.createOneShot(8, 50)
+                    )
+                }
+            }
+        }
+    }
 }
+
