@@ -1061,7 +1061,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    /**
+     * The aura is the microphone. A tap while the assistant is speaking cuts it
+     * off — the voice no longer cuts in by itself, because that is how the
+     * assistant's own words used to be heard as the user's. A tap while it is
+     * quiet opens or closes the microphone.
+     */
     fun toggleListening() {
+        if (isSpeaking.value) {
+            voiceManager.stopSpeaking()
+            return
+        }
         setMicEnabled(!_alwaysListening.value)
     }
 

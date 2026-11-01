@@ -6,6 +6,10 @@ import ai.zyraxon.assistant.shell.AnsiText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +31,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +42,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -46,26 +52,35 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val TerminalBg = Color(0xFF070103)
-private val TerminalChrome = Color(0xFF140206)
-private val TerminalEdge = Color(0xFF4A0A14)
+private val TerminalBg = Color(0xFF040001)
+private val TerminalChrome = Color(0xFF1C0208)
+private val TerminalEdge = Color(0xFF8A0C20)
 private val TerminalPrompt = Color(0xFFFF1E44)
 private val TerminalText = Color(0xFFF5E4E8)
 private val TerminalDim = Color(0xFF9E6572)
 private val TerminalError = Color(0xFFFF2244)
-private val TerminalCyan = Color(0xFFFF5277)
+private val TerminalCyan = Color(0xFFFF4D6D)
 
 /**
- * The Terminal tab: a real black terminal, not a log viewer.
+ * The Terminal tab: a real terminal, wearing a blood-red skin.
  *
- * The user types a line and it runs through the bundled busybox shell; the
- * assistant runs lines through the very same scrollback. The ✕ in the header
- * returns to the app's main menu without killing the session, so scrollback and
- * working directory are still there when the user comes back.
+ * What it does is exactly what a terminal does: one continuous black surface of
+ * monospace text, each command echoed on a prompt line with its output directly
+ * beneath it, the live prompt always the last line, a block cursor, long-press
+ * to select and copy, ↑/↓ for history, and a row of the symbols a phone keyboard
+ * hides (`/ ~ | > $`). Lines run through the bundled busybox shell (and the
+ * ZYRAXON Linux system once installed) — the assistant runs lines through the
+ * very same scrollback.
  *
- * A sidebar on the left lists the open shells. The user can add one, switch
- * between them and close them, and each keeps its own scrollback and working
- * directory — so several tasks can run at once without mixing their output.
+ * The horror is full strength: falling code over blood veins, splatter, eyes
+ * that watch from the dark, scanlines, a heartbeat-pulsing vignette and border,
+ * dripping blood, a glitching title. The text sits on a dark glass panel so it
+ * still reads like any real terminal. No fake system claims — the only facts
+ * shown are real: the working directory and the busy state.
+ *
+ * The ✕ returns to the main menu without killing the session, so scrollback and
+ * working directory are still there when the user comes back. A sidebar lists the
+ * open shells; each keeps its own scrollback and working directory.
  */
 @Composable
 fun TerminalScreen(
@@ -85,264 +100,321 @@ fun TerminalScreen(
     var input by remember { mutableStateOf("") }
     var history by remember { mutableStateOf(listOf<String>()) }
     var historyIndex by remember { mutableStateOf(-1) }
-    var backdrop by remember { mutableStateOf(true) }
+    var veins by remember { mutableStateOf(true) }
+    // Pure atmosphere: a line that changes under the cursor. Nothing here claims
+    // anything about the system — the only facts shown are cwd and busy state.
+    val whispers = remember {
+        listOf("☠ BLOOD MODE", "IT IS WATCHING", "YOU ARE NOT ALONE", "THE SHELL REMEMBERS", "DO NOT STOP TYPING", "IT HUNGERS FOR COMMANDS")
+    }
+    var whisper by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(3800)
+            whisper = (whisper + 1) % whispers.size
+        }
+    }
     var sidebar by remember { mutableStateOf(false) }
     val scroll = rememberScrollState()
+    val focus = remember { FocusRequester() }
+    val promptText = "root@zyraxon:$cwd# "
 
-    LaunchedEffect(lines.size, busy, activeId) {
-        scroll.animateScrollTo(scroll.maxValue)
+    // Follow the output as it streams in, not only when a new line is added.
+    val tailLength = lines.lastOrNull()?.output?.length ?: 0
+    LaunchedEffect(lines.size, tailLength, busy, activeId) {
+        scroll.scrollTo(scroll.maxValue)
+    }
+    // The prompt is back when a command ends, so the keyboard is too.
+    LaunchedEffect(busy, activeId) {
+        if (!busy) runCatching { focus.requestFocus() }
+    }
+
+    fun submit() {
+        val line = input
+        if (line.isBlank()) return
+        history = (history + line).takeLast(100)
+        historyIndex = -1
+        input = ""
+        onRun(line)
+    }
+
+    fun recall(step: Int) {
+        if (history.isEmpty()) return
+        val next = when {
+            step < 0 && historyIndex == -1 -> history.lastIndex
+            step < 0 -> maxOf(0, historyIndex - 1)
+            historyIndex == -1 -> -1
+            historyIndex + 1 > history.lastIndex -> -1
+            else -> historyIndex + 1
+        }
+        historyIndex = next
+        input = if (next == -1) "" else history[next]
     }
 
     Box(modifier = modifier.fillMaxSize().background(TerminalBg)) {
-        if (backdrop) {
+        if (veins) {
             MatrixRainBackground(Modifier.fillMaxSize())
+            BloodVeins(Modifier.fillMaxSize(), seed = 9)
         }
         Row(modifier = Modifier.fillMaxSize()) {
-        if (sidebar) {
-            TerminalSidebar(
-                sessions = sessions,
-                activeId = activeId,
-                onNewSession = onNewSession,
-                onSelectSession = onSelectSession,
-                onCloseSession = onCloseSession,
-                onCloseSidebar = { sidebar = false }
-            )
-        }
-        Column(modifier = Modifier.fillMaxSize()) {
-        // Header — the ✕ is the only way out, back to the app's main menu.
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(TerminalChrome)
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(9.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(if (busy) TerminalCyan else TerminalPrompt)
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = "☰",
-                color = TerminalText,
-                fontSize = 14.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .clickable { sidebar = !sidebar }
-                    .padding(horizontal = 8.dp, vertical = 2.dp)
-            )
-            Spacer(Modifier.width(4.dp))
-            Text(
-                text = "ZYRAXON TERMINAL",
-                color = TerminalText,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = FontFamily.Monospace
-            )
-            Spacer(Modifier.weight(1f))
-            Text(
-                text = "+",
-                color = TerminalPrompt,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .clickable { onNewSession() }
-                    .padding(horizontal = 9.dp, vertical = 1.dp)
-            )
-            Spacer(Modifier.width(4.dp))
-            Text(
-                text = if (backdrop) "matrix" else "plain",
-                color = TerminalDim,
-                fontSize = 11.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .clickable { backdrop = !backdrop }
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            )
-            Spacer(Modifier.width(4.dp))
-            Text(
-                text = "clear",
-                color = TerminalDim,
-                fontSize = 11.sp,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .clickable { onClear() }
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            )
-            Spacer(Modifier.width(4.dp))
-            Text(
-                text = "✕",
-                color = TerminalError,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .clickable { onClose() }
-                    .padding(horizontal = 10.dp, vertical = 2.dp)
-            )
-        }
-
-        // Scrollback
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .verticalScroll(scroll)
-                .padding(horizontal = 12.dp, vertical = 10.dp)
-        ) {
-            if (lines.isEmpty()) {
-                Text(
-                    text = welcome(),
-                    color = TerminalDim,
-                    fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
-                    lineHeight = 18.sp
+            if (sidebar) {
+                TerminalSidebar(
+                    sessions = sessions,
+                    activeId = activeId,
+                    onNewSession = onNewSession,
+                    onSelectSession = onSelectSession,
+                    onCloseSession = onCloseSession,
+                    onCloseSidebar = { sidebar = false }
                 )
             }
-            for (line in lines) {
-                TerminalEntry(line)
-                Spacer(Modifier.height(10.dp))
-            }
-            if (busy) {
-                Text(
-                    text = "▊ running…",
-                    color = TerminalCyan,
-                    fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace
-                )
-            }
-        }
-
-        // Kali Linux / Hacker Quick Command Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF0F0205))
-                .border(1.dp, TerminalEdge, RoundedCornerShape(0.dp))
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 8.dp, vertical = 5.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            val quickCommands = listOf("apt update", "kali-ui", "git status", "python3", "nmap", "clear", "ls -la", "top", "shizuku")
-            for (cmd in quickCommands) {
-                Box(
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Header — the ✕ is the only way out, back to the app's main menu.
+                Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0x33FF1744))
-                        .border(0.8.dp, Color(0x66FF1E44), RoundedCornerShape(6.dp))
-                        .clickable {
-                            if (cmd == "clear") {
-                                onClear()
-                            } else {
-                                onRun(cmd)
+                        .fillMaxWidth()
+                        .background(TerminalChrome)
+                        .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(9.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(if (busy) TerminalCyan else TerminalPrompt)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "☰",
+                        color = TerminalText,
+                        fontSize = 14.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .clickable { sidebar = !sidebar }
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = "☠ ZYRAXON TERMINAL ☠",
+                        color = BoneWhite,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.Monospace,
+                        letterSpacing = 1.5.sp,
+                        style = TextStyle(shadow = BloodGlow),
+                        modifier = Modifier.horrorFlicker().glitchShake()
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = "+",
+                        color = TerminalPrompt,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .clickable { onNewSession() }
+                            .padding(horizontal = 9.dp, vertical = 1.dp)
+                    )
+                    Text(
+                        text = if (veins) "gore:on" else "gore:off",
+                        color = TerminalDim,
+                        fontSize = 11.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .clickable { veins = !veins }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                    Text(
+                        text = "clear",
+                        color = TerminalDim,
+                        fontSize = 11.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .clickable { onClear() }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                    Text(
+                        text = "✕",
+                        color = TerminalError,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .clickable { onClose() }
+                            .padding(horizontal = 10.dp, vertical = 2.dp)
+                    )
+                }
+
+                // The terminal surface. Scrollback and the live prompt are one
+                // continuous column of text; a tap anywhere brings the keyboard up.
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .background(Color(0x99030001))
+                        .verticalScroll(scroll)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { runCatching { focus.requestFocus() } }
+                        .padding(horizontal = 10.dp, vertical = 8.dp)
+                ) {
+                    SelectionContainer {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            if (lines.isEmpty()) {
+                                Text(
+                                    text = welcomeBanner(),
+                                    color = TerminalPrompt,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace,
+                                    lineHeight = 11.sp,
+                                    style = TextStyle(shadow = BloodGlowSoft)
+                                )
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    text = welcomeBody(),
+                                    color = TerminalDim,
+                                    fontSize = 12.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    lineHeight = 16.sp
+                                )
+                                Spacer(Modifier.height(6.dp))
+                            }
+                            for (line in lines) {
+                                TerminalEntry(line)
                             }
                         }
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                    }
+                    // A terminal shows no prompt while a command is still running.
+                    if (!busy) {
+                        Row(verticalAlignment = Alignment.Top) {
+                            Text(
+                                text = "☠ $promptText",
+                                color = TerminalPrompt,
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace,
+                                lineHeight = 17.sp,
+                                style = TextStyle(shadow = BloodGlowSoft)
+                            )
+                            BasicTextField(
+                                value = input,
+                                onValueChange = { input = it },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .focusRequester(focus),
+                                textStyle = TextStyle(
+                                    color = TerminalText,
+                                    fontSize = 12.5.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    lineHeight = 17.sp
+                                ),
+                                cursorBrush = SolidColor(TerminalPrompt),
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    imeAction = ImeAction.Send,
+                                    capitalization = KeyboardCapitalization.None
+                                ),
+                                keyboardActions = KeyboardActions(onSend = { submit() })
+                            )
+                            Text(
+                                text = "↵ UNLEASH",
+                                color = TerminalPrompt,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace,
+                                style = TextStyle(shadow = BloodGlowSoft),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0x33FF1E44))
+                                    .bloodPulseBorder(RoundedCornerShape(6.dp), 0.8.dp)
+                                    .clickable { submit() }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
+                }
+
+                // The symbols a phone keyboard buries, plus history. Like Termux's
+                // extra-keys row — real keys, no fake commands.
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(TerminalChrome)
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 6.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val keys = listOf("↑", "↓", "/", "~", "-", "_", "|", ">", "<", "&", "$", "*", ".", "\"", "'", "\\")
+                    for (key in keys) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(5.dp))
+                                .background(Color(0x33FF1E44))
+                                .bloodPulseBorder(RoundedCornerShape(5.dp), 0.7.dp)
+                                .clickable {
+                                    when (key) {
+                                        "↑" -> recall(-1)
+                                        "↓" -> recall(1)
+                                        else -> input += key
+                                    }
+                                    runCatching { focus.requestFocus() }
+                                }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = key,
+                                color = TerminalText,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+                    }
+                }
+                // Real facts (the working directory) next to the whisper.
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(TerminalChrome)
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        text = cmd,
-                        color = TerminalPrompt,
-                        fontSize = 11.sp,
+                        text = "CWD: $cwd",
+                        color = TerminalCyan,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = FontFamily.Monospace
+                    )
+                    Text(
+                        text = "· ${whispers[whisper]}",
+                        color = TerminalPrompt,
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace,
+                        style = TextStyle(shadow = BloodGlowSoft)
                     )
                 }
             }
         }
-
-        // The prompt. One line, monospace, Enter runs it.
-        Row(
+        // The horror: everything below is drawn on top, takes no touches, and is
+        // layered so the middle stays readable while the edges are consumed.
+        BloodSplatter(Modifier.fillMaxSize(), seed = 31)
+        WatchingEyes(Modifier.fillMaxSize(), seed = 77, pairs = 4)
+        Scanlines(Modifier.fillMaxSize())
+        HorrorVignette(Modifier.fillMaxSize(), intensity = 1.3f)
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(TerminalChrome)
-                .border(1.dp, TerminalEdge, RoundedCornerShape(0.dp))
-                .padding(horizontal = 10.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "root@zyraxon:~# ",
-                color = TerminalPrompt,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Monospace
-            )
-            BasicTextField(
-                value = input,
-                onValueChange = { input = it },
-                modifier = Modifier.weight(1f),
-                textStyle = androidx.compose.ui.text.TextStyle(
-                    color = TerminalText,
-                    fontSize = 12.5.sp,
-                    fontFamily = FontFamily.Monospace
-                ),
-                cursorBrush = SolidColor(TerminalPrompt),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Done,
-                    capitalization = KeyboardCapitalization.None
-                ),
-                keyboardActions = KeyboardActions(onDone = {
-                    if (input.isNotBlank()) {
-                        history = (history + input).takeLast(100)
-                        historyIndex = -1
-                        onRun(input)
-                        input = ""
-                    }
-                })
-            )
-            Text(
-                text = "↵ RUN",
-                color = TerminalPrompt,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Color(0x33FF1E44))
-                    .border(0.8.dp, Color(0x77FF1E44), RoundedCornerShape(6.dp))
-                    .clickable {
-                        if (input.isNotBlank()) {
-                            history = (history + input).takeLast(100)
-                            historyIndex = -1
-                            onRun(input)
-                            input = ""
-                        }
-                    }
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(TerminalChrome)
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Text(
-                text = "ROOT: $cwd",
-                color = TerminalCyan,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = FontFamily.Monospace
-            )
-            Text(
-                text = "KALI LINUX · BUSYBOX 1.36 · SHIZUKU ACTIVE",
-                color = TerminalDim,
-                fontSize = 10.sp,
-                fontFamily = FontFamily.Monospace
-            )
-        }
-        }
-        }
+                .fillMaxSize()
+                .bloodPulseBorder(RoundedCornerShape(0.dp), 3.dp)
+        )
+        BloodDrips(Modifier.align(Alignment.TopStart), seed = 21, count = 20, maxLength = 90.dp)
     }
 }
 
@@ -440,19 +512,25 @@ private fun TerminalSidebar(
     }
 }
 
+/**
+ * One command and what it printed: the prompt line, then the output directly
+ * under it with no card, no gap and no label — the way a real terminal's
+ * scrollback reads. A command that printed nothing shows nothing.
+ */
 @Composable
 private fun TerminalEntry(line: TerminalLine) {
+    val quiet = line.output.isEmpty() || line.output == "(no output)"
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = TerminalPrompt)) { append("$ ") }
+                withStyle(SpanStyle(color = TerminalPrompt, fontWeight = FontWeight.Bold)) { append("☠ root@zyraxon# ") }
                 withStyle(SpanStyle(color = TerminalText)) { append(line.command) }
             },
-            fontSize = 12.sp,
+            fontSize = 12.5.sp,
             fontFamily = FontFamily.Monospace,
             lineHeight = 17.sp
         )
-        if (line.output.isNotEmpty()) {
+        if (!quiet) {
             // The output is parsed for the colour codes a real tool prints, so
             // `ls --color` and `git status` look the way they do in any terminal
             // instead of showing raw escape bytes.
@@ -467,40 +545,44 @@ private fun TerminalEntry(line: TerminalLine) {
                         withStyle(style) { append(span.text) }
                     }
                 },
-                fontSize = 12.sp,
+                fontSize = 12.5.sp,
                 fontFamily = FontFamily.Monospace,
                 lineHeight = 17.sp
             )
         }
         if (line.running) {
-            // A blinking block marks a command that is still printing, exactly
-            // like a real terminal's cursor — the output above keeps growing.
+            // A block marks a command that is still printing, exactly like a real
+            // terminal's cursor — the output above keeps growing.
             Text(
-                text = "▊",
-                color = TerminalCyan,
-                fontSize = 12.sp,
-                fontFamily = FontFamily.Monospace
+                text = "█",
+                color = TerminalPrompt,
+                fontSize = 12.5.sp,
+                fontFamily = FontFamily.Monospace,
+                lineHeight = 17.sp,
+                modifier = Modifier.horrorFlicker()
             )
         }
-        if (!line.running && (line.exitCode != 0 || line.timedOut)) {
+        if (!line.running && line.timedOut) {
             Text(
-                text = if (line.timedOut) "exit: timeout" else "exit: ${line.exitCode}",
+                text = "[timed out]",
                 color = TerminalError,
-                fontSize = 10.sp,
+                fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace
             )
         }
     }
 }
 
-private fun welcome(): String = """
+private fun welcomeBanner(): String = """
    ███████╗██╗   ██╗██████╗  █████╗ ██╗  ██╗ ██████╗ ███╗   ██╗
    ╚══███╔╝╚██╗ ██╔╝██╔══██╗██╔══██╗╚██╗██╔╝██╔═══██╗████╗  ██║
      ███╔╝  ╚████╔╝ ██████╔╝███████║ ╚███╔╝ ██║   ██║██╔██╗ ██║
     ███╔╝    ╚██╔╝  ██╔══██╗██╔══██║ ██╔██╗ ██║   ██║██║╚██╗██║
    ███████╗   ██║   ██║  ██║██║  ██║██╔╝ ██╗╚██████╔╝██║ ╚████║
    ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
+""".trimIndent()
 
+private fun welcomeBody(): String = """
 ZYRAXON TERMINAL — a real Unix shell on this phone.
 
 ~400 busybox commands are on PATH: sh, awk, sed, grep, tar, wget, curl,

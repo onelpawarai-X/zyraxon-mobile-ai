@@ -12,6 +12,18 @@ import ai.zyraxon.assistant.ui.components.ChatPanels
 import ai.zyraxon.assistant.ui.components.BottomFloatingPanel
 import ai.zyraxon.assistant.ui.components.BloodCyberDockBar
 import ai.zyraxon.assistant.ui.components.VideoBackground
+import ai.zyraxon.assistant.ui.components.BloodDrips
+import ai.zyraxon.assistant.ui.components.BloodGlow
+import ai.zyraxon.assistant.ui.components.BloodSplatter
+import ai.zyraxon.assistant.ui.components.BloodVeins
+import ai.zyraxon.assistant.ui.components.WatchingEyes
+import ai.zyraxon.assistant.ui.components.glitchShake
+import ai.zyraxon.assistant.ui.components.Scanlines
+import ai.zyraxon.assistant.ui.components.BoneWhite
+import ai.zyraxon.assistant.ui.components.HorrorVignette
+import ai.zyraxon.assistant.ui.components.RitualCircle
+import ai.zyraxon.assistant.ui.components.bloodPulseBorder
+import ai.zyraxon.assistant.ui.components.horrorFlicker
 import ai.zyraxon.assistant.ui.components.CodePanel
 import ai.zyraxon.assistant.ui.components.LivingAuraSphere
 import ai.zyraxon.assistant.ui.components.MessageBubble
@@ -411,6 +423,22 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
             }
         }
 
+        // Home-screen gore: veins crawling in from the corners, a beating
+        // vignette and blood running down from the top edge. Decorative only.
+        // This layer sits over every tab (chat, tasks, tools, MCP), so the whole
+        // app is consumed, not just the home screen.
+        BloodVeins(Modifier.fillMaxSize(), seed = 5)
+        BloodSplatter(Modifier.fillMaxSize(), seed = 8)
+        WatchingEyes(Modifier.fillMaxSize(), seed = 66, pairs = 4)
+        Scanlines(Modifier.fillMaxSize(), lineAlpha = 0.07f)
+        HorrorVignette(Modifier.fillMaxSize(), intensity = 1.2f)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .bloodPulseBorder(RoundedCornerShape(0.dp), 2.dp)
+        )
+        BloodDrips(Modifier.align(Alignment.TopStart), seed = 11, count = 20, maxLength = 80.dp)
+
         // Luxurious frosted dark blood blur scrim behind SettingsSheet
         if (showSettingsSheet) {
             Box(
@@ -525,7 +553,7 @@ fun ZyraxonTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 8.dp),
+            .padding(start = 14.dp, end = 14.dp, top = 14.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -537,26 +565,29 @@ fun ZyraxonTopBar(
                 onTabSelect(AppTab.CHAT)
             }
         ) {
-            Box(
-                modifier = Modifier
-                    .size(9.dp)
-                    .clip(CircleShape)
-                    .background(Glass.pinkFill)
+            Text(
+                text = "☠",
+                color = Color(0xFFFF1E44),
+                fontSize = 15.sp,
+                style = TextStyle(shadow = BloodGlow),
+                modifier = Modifier.horrorFlicker()
             )
-            Spacer(modifier = Modifier.width(7.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = "ZYRAXON",
-                color = Color.White,
+                color = BoneWhite,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Black,
-                letterSpacing = 1.sp
+                letterSpacing = 2.sp,
+                style = TextStyle(shadow = BloodGlow),
+                modifier = Modifier.horrorFlicker().glitchShake()
             )
             Spacer(modifier = Modifier.width(6.dp))
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
                     .background(Glass.pinkFill.copy(alpha = 0.22f))
-                    .border(1.dp, Glass.borderSoft, RoundedCornerShape(8.dp))
+                    .bloodPulseBorder(RoundedCornerShape(8.dp), 1.dp)
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
                 Text(
@@ -734,6 +765,32 @@ fun ChatTabContent(
                 .padding(top = 16.dp, bottom = 6.dp),
             contentAlignment = Alignment.Center
         ) {
+            // 0. Slowly turning blood sigil behind the aura
+            RitualCircle(Modifier.size(320.dp))
+
+            // 0b. Flickering title and tagline at the top of the home screen
+            Column(
+                modifier = Modifier.align(Alignment.TopCenter),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "☠ Z Y R A X O N ☠",
+                    color = BoneWhite,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 3.sp,
+                    style = TextStyle(shadow = BloodGlow),
+                    modifier = Modifier.horrorFlicker().glitchShake()
+                )
+                Text(
+                    text = t("রক্তে জাগা বুদ্ধিমত্তা — ডাকলেই সাড়া দেবে"),
+                    color = Glass.pink,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    style = TextStyle(shadow = BloodGlow)
+                )
+            }
+
             // 1. Living Blood-Red Aura Sphere
             LivingAuraSphere(
                 isListening = isListening,
@@ -751,22 +808,22 @@ fun ChatTabContent(
                     .padding(bottom = 6.dp)
                     .clip(RoundedCornerShape(14.dp))
                     .background(Glass.fill(panelAlpha))
-                    .border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
+                    .bloodPulseBorder(RoundedCornerShape(14.dp), 1.dp)
                     .clickable { onMicToggle() }
                     .padding(horizontal = 14.dp, vertical = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = when {
-                        !micOn -> t("🔇 মাইক বন্ধ — চালু করতে ট্যাপ করো")
-                        isListening -> t("🎙️ শুনছি… — বন্ধ করতে ট্যাপ করো")
-                        isSpeaking -> t("ZYRAXON বলছে…")
-                        else -> t("মাইক চালু — বন্ধ করতে ট্যাপ করো")
+                        isSpeaking -> t("ZYRAXON বলছে… থামাতে ওরায় ট্যাপ করো")
+                        !micOn -> t("🔇 মাইক বন্ধ — চালু করতে ওরায় ট্যাপ করো")
+                        isListening -> t("🎙️ শুনছি… — বন্ধ করতে ওরায় ট্যাপ করো")
+                        else -> t("মাইক চালু — বন্ধ করতে ওরায় ট্যাপ করো")
                     },
                     color = when {
+                        isSpeaking -> Color(0xFFFF5277)
                         !micOn -> Glass.textMuted
                         isListening -> Color(0xFFFF1E44)
-                        isSpeaking -> Color(0xFFFF5277)
                         else -> Glass.textPrimary
                     },
                     fontSize = 11.5.sp,
@@ -1275,31 +1332,16 @@ fun BottomComposer(
                         )
                     )
                 )
-                .border(
-                    width = 1.3.dp,
-                    brush = Brush.horizontalGradient(
-                        listOf(
-                            Color(0xFFFF1E44),
-                            Color(0xFF880018),
-                            Color(0xFFFF1E44)
-                        )
-                    ),
-                    shape = RoundedCornerShape(28.dp)
-                )
+                .bloodPulseBorder(RoundedCornerShape(28.dp), 1.6.dp)
                 .padding(horizontal = 8.dp, vertical = 5.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Living Blood-Cyber Mic Button
-                BloodCyberMicButton(
-                    micOn = micOn,
-                    isListening = isListening,
-                    onClick = onMicToggle
-                )
-
-                Spacer(modifier = Modifier.width(6.dp))
+                // The microphone is the aura in the middle of the screen, so the
+                // composer has no mic button of its own.
+                Spacer(modifier = Modifier.width(10.dp))
 
                 BasicTextField(
                     value = text,

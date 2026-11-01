@@ -176,6 +176,9 @@ object ToolRegistry {
         "clipboard_read" to JSONObject()
             .put("description", "Read the phone clipboard.")
             .put("parameters", S(JSONObject(), emptyList())),
+        "read_sms" to JSONObject()
+            .put("description", "Read the newest SMS messages on this phone — for example an OTP or verification code sent to the user. Optional `contains` filters by text or sender; `count` is how many (default 5, max 20). If it fails for a missing permission, call open_settings with page 'apps', tap through to the SMS permission yourself, then call this again. Never ask the user to read the code out.")
+            .put("parameters", S(JSONObject().put("contains", str()).put("count", num()), emptyList())),
         "clipboard_write" to JSONObject()
             .put("description", "Write text to the phone clipboard.")
             .put("parameters", S(JSONObject().put("text", str()), listOf("text"))),
@@ -397,6 +400,7 @@ object ToolRegistry {
             "clipboard_read" -> ok(clipboard(context).primaryClip?.getItemAt(0)?.coerceToText(context)?.toString() ?: "", "ক্লিপবোর্ড")
             "clipboard_write" -> { clipboard(context).setPrimaryClip(ClipData.newPlainText("zyraxon", args.optString("text"))); ok("copied", "ক্লিপবোর্ডে লেখা হয়েছে") }
             "share" -> share(context, args)
+            "read_sms" -> readSms(context, args)
             "look_camera" -> lookCamera(context, args)
             "read_media" -> readMedia(context, args)
             "read_url" -> readUrl(args)
@@ -440,6 +444,36 @@ object ToolRegistry {
 
     private fun ok(data: Any?, summary: String) = JSONObject().put("ok", true).put("summary", summary).put("data", data)
     private fun err(error: String, summary: String) = JSONObject().put("ok", false).put("error", error).put("summary", summary)
+
+    /** The newest inbox messages, so a one-time code can be read without the user. */
+    private fun readSms(context: Context, args: JSONObject): JSONObject {
+        val granted = androidx.core.content.ContextCompat.checkSelfPermission(
+            context, android.Manifest.permission.READ_SMS
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        if (!granted) {
+            return err("no-permission", "SMS পড়ার অনুমতি নেই — open_settings(apps) খুলে অ্যাপ পারমিশন থেকে SMS নিজে চালু করো, তারপর আবার চেষ্টা করো")
+        }
+        val want = args.optString("contains").lowercase()
+        val max = args.optInt("count", 5).coerceIn(1, 20)
+        return try {
+            val out = JSONArray()
+            context.contentResolver.query(
+                Uri.parse("content://sms/inbox"),
+                arrayOf("address", "body", "date"),
+                null, null, "date DESC LIMIT 60"
+            )?.use { c ->
+                while (c.moveToNext() && out.length() < max) {
+                    val from = c.getString(0) ?: ""
+                    val body = c.getString(1) ?: ""
+                    if (want.isNotEmpty() && !from.lowercase().contains(want) && !body.lowercase().contains(want)) continue
+                    out.put(JSONObject().put("from", from).put("body", body.take(500)).put("time", c.getLong(2)))
+                }
+            }
+            ok(out, "${out.length()}টি SMS পাওয়া গেছে")
+        } catch (e: Exception) {
+            err(e.message ?: e.toString(), "SMS পড়া যায়নি")
+        }
+    }
 
     private fun clipboard(context: Context): ClipboardManager =
         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager

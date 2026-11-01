@@ -60,26 +60,17 @@ class SttDecisionTest {
     }
 
     @Test
-    fun `a real two-word interruption still cuts in`() {
-        val action = SttDecision.decide(
-            text = "একটু থামো",
-            isFinal = false,
-            speakerActive = true,
-            repeatsReply = false
-        )
-        assertEquals("প্রকৃত ইন্টারাপশন আটকে গেছে", Action.INTERRUPT, action)
-    }
-
-    @Test
-    fun `a one-word stop command still cuts in`() {
-        for (word in listOf("থামো", "stop", "বন্ধ")) {
-            val action = SttDecision.decide(
-                text = word,
-                isFinal = false,
-                speakerActive = true,
-                repeatsReply = false
-            )
-            assertEquals("'$word' ইন্টারাপশন কাজ করেনি", Action.INTERRUPT, action)
+    fun `a spoken interruption during speech is ignored, the aura tap cuts in`() {
+        for (word in listOf("একটু থামো", "থামো", "stop", "বন্ধ", "তোমার কথা শুনছি না")) {
+            for (final in listOf(true, false)) {
+                val action = SttDecision.decide(
+                    text = word,
+                    isFinal = final,
+                    speakerActive = true,
+                    repeatsReply = false
+                )
+                assertEquals("'$word' বলার সময় বক্সে বা চ্যাটে গেছে", Action.IGNORE, action)
+            }
         }
     }
 

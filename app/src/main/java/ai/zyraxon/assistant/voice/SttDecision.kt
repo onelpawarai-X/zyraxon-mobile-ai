@@ -54,18 +54,17 @@ object SttDecision {
         // the part that was wrong — never allowed to cut the answer off.
         if (repeatsReply) return Action.IGNORE
 
-        // While the assistant is speaking, its own voice is the loudest thing in
-        // the room. A *final* result then is the assistant's own voice far more
-        // often than it is the user, so it is never auto-sent. A partial still
-        // gets through, so a real interruption can still land mid-answer.
-        if (speakerActive && isFinal) return Action.IGNORE
+        // While the assistant is speaking (and while its echo tail rings), the
+        // microphone hears the assistant, not the user. Whatever the recognizer
+        // produces then — partial or final — is dropped: it is never shown in
+        // the box, never sent, and never cuts the answer off. This is what
+        // closed the loop where the assistant's own voice was transcribed into
+        // the chat box and sent back to it. To cut the assistant off, the user
+        // taps the aura, which is the microphone, instead of talking over it.
+        if (speakerActive) return Action.IGNORE
 
         if (!isFinal) {
-            // A partial only ever interrupts. While the assistant is speaking a
-            // short partial is almost always a fragment of the reply, so it must
-            // carry enough words to be a real interruption before it stops the
-            // voice — otherwise every stray word tears the answer down.
-            if (speakerActive && !isRealInterruption(text)) return Action.IGNORE
+            // A partial only ever interrupts; it is never sent on its own.
             return Action.INTERRUPT
         }
 

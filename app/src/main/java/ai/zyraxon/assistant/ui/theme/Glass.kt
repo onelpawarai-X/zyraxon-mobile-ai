@@ -14,19 +14,19 @@ import androidx.compose.ui.graphics.Color
 object Glass {
     /** Dark blood obsidian pane. */
     fun fill(alpha: Float): Color =
-        Color(0xFF140205).copy(alpha = alpha.coerceIn(0.25f, 0.92f))
+        Color(0xFF0E0104).copy(alpha = alpha.coerceIn(0.30f, 0.94f))
 
     /** A slightly richer pane for sheets that carry a lot of text. */
     fun sheetFill(alpha: Float): Color =
-        Color(0xFF180307).copy(alpha = (alpha + 0.28f).coerceIn(0.50f, 0.98f))
+        Color(0xFF100206).copy(alpha = (alpha + 0.30f).coerceIn(0.55f, 0.98f))
 
     /** A subtler crimson wine pane for chips and list rows. */
     fun rowFill(alpha: Float): Color =
-        Color(0xFF28060C).copy(alpha = (alpha * 0.95f).coerceIn(0.20f, 0.80f))
+        Color(0xFF2E050C).copy(alpha = (alpha * 0.95f).coerceIn(0.25f, 0.85f))
 
     /** The crystal neon hairline around a pane in vivid blood-red. */
-    val border: Color = Color(0x77FF1E44)
-    val borderSoft: Color = Color(0x38FF1E44)
+    val border: Color = Color(0xAAFF1E44)
+    val borderSoft: Color = Color(0x55FF1E44)
     val borderGlow: Color = Color(0xAAFF1744)
 
     /** Text. Crisp luminous white and warm silver for dark blood glass. */
@@ -40,7 +40,7 @@ object Glass {
 
     // Blood-red & cyber accents
     val pink: Color = Color(0xFFFF1E44)       // Primary Blood-Red
-    val cyan: Color = Color(0xFF00E5FF)       // Electric Cyan
+    val cyan: Color = Color(0xFFFF6B4A)       // Ember
     val violet: Color = Color(0xFFD946EF)     // Cyber Orchid
     val green: Color = Color(0xFF10B981)      // Emerald Matrix
     val red: Color = Color(0xFFFF1744)        // Pure Crimson Blood
@@ -48,7 +48,7 @@ object Glass {
 
     /** Filled accents, for primary buttons and active pills. */
     val pinkFill: Color = Color(0xFFE50914)   // High-impact Blood Red
-    val cyanFill: Color = Color(0xFF00B4D8)
+    val cyanFill: Color = Color(0xFFD62828)
     val violetFill: Color = Color(0xFFC026D3)
     val greenFill: Color = Color(0xFF059669)
 

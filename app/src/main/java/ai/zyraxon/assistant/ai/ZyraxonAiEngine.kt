@@ -111,7 +111,9 @@ class ZyraxonAiEngine(private val context: Context) {
          * done, so this is deliberately generous. The guard exists only to stop a
          * genuinely stuck model from spinning forever.
          */
-        private const val MAX_TOOL_ROUNDS = 120
+        /** Effectively unlimited: a job runs until the goal is verified done. */
+        private const val MAX_TOOL_ROUNDS = 100_000
+
 
         /**
          * Calls that act on the screen itself. They are always run one at a time
@@ -687,6 +689,10 @@ class ZyraxonAiEngine(private val context: Context) {
         // the turn.
         var nudges = 0
         var lastActionWasScreenChange = false
+        // What the judge is shown: what was done so far, and what the screen looks like.
+        val actionLog = mutableListOf<String>()
+        var lastScreenText = ""
+        var stalls = 0
         while (round < MAX_TOOL_ROUNDS) {
             round++
             // A message the user spoke or typed mid-task joins the conversation
@@ -709,14 +715,34 @@ class ZyraxonAiEngine(private val context: Context) {
                     "⚠️ এখনো অসম্পূর্ণ কাজ (todo):\n" + open.joinToString("\n") { "- $it" } +
                         "\nএই কাজ শেষ না হওয়া পর্যন্ত তুমি থামবে না। পরের ধাপ নিজেই বেছে নাও এবং টুল কল করো।"))
             }
-            val result = callModelWithFailover(model, messages, tools, { delta ->
-                producedText = true
-                trySend(delta)
-            }, { switched ->
-                // Say the switch out loud: answering from a different model than
-                // the one on screen would otherwise be invisible.
-                trySend("\n\n🔁 `$switched` — আগের প্রোভাইডার সীমায় পৌঁছেছে, তাই এখান থেকে চালিয়ে যাচ্ছি।\n\n")
-            })
+            // Every round adds screenshots and tool output. Left alone, a long job
+            // (a website, an hour of YouTube/app driving) outgrows the model's
+            // context and the provider rejects the request — the job then dies
+            // mid-way, which looks exactly like "the AI stopped". Old pictures and
+            // oversized old tool results are shrunk; the newest stay intact.
+            compactHistory(messages)
+            val callOnce = {
+                callModelWithFailover(model, messages, tools, { delta ->
+                    producedText = true
+                    trySend(delta)
+                }, { switched ->
+                    // Say the switch out loud: answering from a different model than
+                    // the one on screen would otherwise be invisible.
+                    trySend("\n\n🔁 `$switched` — আগের প্রোভাইডার সীমায় পৌঁছেছে, তাই এখান থেকে চালিয়ে যাচ্ছি।\n\n")
+                })
+            }
+            var attempt = callOnce()
+            // A rate limit or a network blip in the middle of a long job must not
+            // end it. Wait a little and ask again before giving up; a permanent
+            // error (bad key, bad model id) is reported at once.
+            var retries = 0
+            while (attempt == null && retries < 3 && ProviderCatalog.isRetryableError(lastProviderError)) {
+                retries++
+                trySend("\n\n⏳ সংযোগে সমস্যা, ${retries * 3} সেকেন্ড পর আবার চেষ্টা করছি…\n\n")
+                kotlinx.coroutines.delay(retries * 3000L)
+                attempt = callOnce()
+            }
+            val result = attempt
                 ?: throw IllegalStateException(
                     lastProviderError
                         ?: "কোনো মডেল উত্তর দিতে পারেনি। ইন্টারনেট, এপিআই কী ও মডেল নির্বাচন দেখে আবার চেষ্টা করো।"
@@ -731,11 +757,34 @@ class ZyraxonAiEngine(private val context: Context) {
                 // যায় না" — a system-prompt rule alone cannot do it, because the
                 // turn ends here unless the engine refuses to end it.
                 val reply = result.text.toString()
-                if (ContinuationPolicy.shouldContinue(reply, lastActionWasScreenChange, nudges)) {
+                stalls++
+                // Every time the model stops talking, the engine asks a judge one
+                // question: is what the user asked for actually finished? The judge
+                // sees the original goal, the tool results so far and the screen —
+                // not just the model's own words — so "ইউটিউব খুলেছি" is correctly
+                // read as "not done yet", and a finished job is correctly left
+                // alone. If the judge cannot answer (network), the keyword policy
+                // is the fallback.
+                val verdict = verifyGoal(model, prompt, actionLog, lastScreenText, reply, tools)
+                val mustContinue = if (verdict != null) {
+                    !verdict.done && !verdict.blocked
+                } else {
+                    ContinuationPolicy.shouldContinue(reply, lastActionWasScreenChange, nudges)
+                }
+                if (mustContinue) {
                     nudges++
                     messages.put(JSONObject().put("role", "assistant").put("content", reply))
-                    messages.put(JSONObject().put("role", "user")
-                        .put("content", ContinuationPolicy.nudge(reply)))
+                    val push = if (verdict != null) {
+                        "⚠️ [যাচাই] কাজ এখনো শেষ হয়নি।" +
+                            (if (verdict.reason.isNotBlank()) " কারণ: ${verdict.reason}" else "") +
+                            (if (verdict.next.isNotBlank()) "\nপরের ধাপ: ${verdict.next}" else "") +
+                            "\nব্যবহারকারীর মূল লক্ষ্য: «${prompt.take(400)}»" +
+                            "\nকথা না বাড়িয়ে এখনই পরের টুল কল করো। লক্ষ্য পূরণ না হওয়া পর্যন্ত থামবে না।" +
+                            escalation(stalls)
+                    } else {
+                        ContinuationPolicy.nudge(reply, prompt)
+                    }
+                    messages.put(JSONObject().put("role", "user").put("content", push))
                     continue
                 }
                 if (producedText) return@channelFlow
@@ -763,6 +812,10 @@ class ZyraxonAiEngine(private val context: Context) {
             // Cleared here, before this round's calls run, so the flag read by the
             // next round's "no tool call" check describes only this round.
             lastActionWasScreenChange = false
+            // Real tool calls are progress, so the push budget starts over: only
+            // consecutive stalls without any action use it up.
+            nudges = 0
+            stalls = 0
             // A call that needs the screen in front of it must run alone and in
             // order: two taps racing each other would land on the wrong screen.
             // A call that only reads or writes data can run beside its siblings.
@@ -792,6 +845,9 @@ class ZyraxonAiEngine(private val context: Context) {
                 // work happen instead of staring at a frozen cursor.
                 val summary = outcome.optString("summary").take(200)
                 trySend("\n\n⚙️ `$name` → ${summary.ifBlank { "সম্পন্ন" }}\n\n")
+                actionLog.add("$name → ${summary.ifBlank { "সম্পন্ন" }}" +
+                    (if (outcome.optBoolean("ok", true)) "" else " [ব্যর্থ]"))
+                if (actionLog.size > 25) actionLog.removeAt(0)
 
                 // A tool that failed must not end the turn. The result carries the
                 // real error back to the model, which is told in plain words that a
@@ -799,7 +855,12 @@ class ZyraxonAiEngine(private val context: Context) {
                 // assistant reported "ফাইল লেখা যায়নি" and gave up, which is the
                 // complaint that it cannot finish anything.
                 val ok = outcome.optBoolean("ok", true)
-                val content = if (ok) outcome.toString() else outcome.toString() +
+                // The pictures travel as image parts just below; leaving the base64
+                // inside the tool text as well doubled (or worse) every request.
+                val lean = try {
+                    JSONObject(outcome.toString()).apply { remove("image_data_url"); remove("image_data_urls") }.toString()
+                } catch (_: Exception) { outcome.toString() }
+                val content = if (ok) lean else lean +
                     "\n\nএই কলটি ব্যর্থ হয়েছে। এটা থামার কারণ নয়। ভিন্ন পথে আবার চেষ্টা করো — " +
                     "অন্য টুল, অন্য আর্গুমেন্ট, অন্য পদ্ধতি। সফল না হওয়া পর্যন্ত চালিয়ে যাও।"
 
@@ -847,6 +908,7 @@ class ZyraxonAiEngine(private val context: Context) {
                 lastActionWasScreenChange = true
                 val frame = try { screenNow() } catch (_: Exception) { "" }
                 val shot = try { screenFrame() } catch (_: Exception) { "" }
+                if (frame.isNotBlank()) lastScreenText = frame.take(1500)
                 if (frame.isNotBlank() || shot.isNotBlank()) {
                     val text = buildString {
                         append("📱 অ্যাকশনের পরে বর্তমান স্ক্রিন (নিজে থেকেই নেওয়া)। ")
@@ -875,11 +937,137 @@ class ZyraxonAiEngine(private val context: Context) {
 
 
     /**
+     * The longer the model goes without acting, the more firmly it is told to
+     * change approach. There is no "I'm stuck" exit: another tool, another app,
+     * the terminal, a different route to the same goal.
+     */
+    private fun escalation(stalls: Int): String = when {
+        stalls < 2 -> ""
+        stalls < 4 -> "\n(এটা ${stalls}তম বার থেমেছ — আগের পথ কাজ করছে না, অন্য টুল বা অন্য আর্গুমেন্ট নাও।)"
+        else -> "\n(এটা ${stalls}তম বার থেমেছ। সম্পূর্ণ ভিন্ন পথ নাও: read_screen/screen_shot দিয়ে আসল অবস্থা দেখো, " +
+            "tap_text/tap/swipe/type_text দিয়ে নিজে করো, দরকারে terminal_run/run_shell, web_search, অন্য অ্যাপ বা MCP টুল ব্যবহার করো। " +
+            "OTP লাগলে read_sms বা নোটিফিকেশন শেড (press_key notifications + read_screen) থেকে নিজে পড়ো। " +
+            "অনুমতি লাগলে open_settings দিয়ে নিজে চালু করো।)"
+    }
+
+    /** The judge's answer to "is the user's goal actually finished?". */
+    private class Verdict(
+        val done: Boolean,
+        val blocked: Boolean,
+        val reason: String,
+        val next: String
+    )
+
+    /**
+     * Asks the model, in a fresh and tiny conversation, whether the goal is met.
+     *
+     * The judge is given the goal, the last tool results and the current screen —
+     * evidence, not the assistant's own claim. Returns null when it cannot answer
+     * (no network, unparseable), and the caller falls back to the keyword policy.
+     */
+    private fun verifyGoal(
+        model: AiModel,
+        goal: String,
+        actions: List<String>,
+        screen: String,
+        reply: String,
+        tools: JSONArray
+    ): Verdict? {
+        if (goal.isBlank()) return null
+        return try {
+            val system = "তুমি একজন কঠোর কাজ-যাচাইকারী। তোমার একটাই কাজ: ব্যবহারকারী যা চেয়েছিল তা " +
+                "সত্যিই শেষ হয়েছে কিনা বলা। কোনো টুল কল করবে না, শুধু একটি JSON অবজেক্ট দেবে:\n" +
+                "{\"done\": true|false, \"blocked_on_user\": true|false, \"reason\": \"...\", \"next_step\": \"...\"}\n" +
+                "নিয়ম:\n" +
+                "- done=true কেবল তখন, যখন টুলের ফলাফল বা স্ক্রিন দেখায় যে মূল লক্ষ্য পূরণ হয়েছে " +
+                "(যেমন ভিডিও সত্যিই চলছে, ফাইল/সাইট সত্যিই তৈরি হয়েছে)। সহকারীর নিজের দাবিই যথেষ্ট প্রমাণ নয়।\n" +
+                "- একটা মাঝের ধাপ (অ্যাপ খোলা, সার্চ রেজাল্ট এসেছে, ফাইলের একটা অংশ লেখা), ব্যর্থতার খবর, " +
+                "বা শুধু প্রতিশ্রুতি (\"করছি\") মানে done=false।\n" +
+                "- যে প্রশ্ন বা আলাপে কোনো কাজ করার দরকার নেই, সহকারীর উত্তর সেটার জবাব দিলে done=true।\n" +
+                "- blocked_on_user=true প্রায় কখনোই নয়। সহকারী নিজেই সব করে: ওটিপি SMS বা নোটিফিকেশন থেকে পড়ে, " +
+                "সেভ করা লগইন/অটোফিল ব্যবহার করে, চেকবক্স ট্যাপ করে, সেটিংস ঘুরে অনুমতি নিজে চালু করে। " +
+                "true কেবল তখন, যখন কাজের জন্য এমন একটা তথ্য লাগে যা ফোনে কোথাও নেই এবং ব্যবহারকারী কখনো দেয়নি " +
+                "(যেমন কোনো অ্যাকাউন্টের পাসওয়ার্ড)। তার আগে সব বিকল্প চেষ্টা না হলে false।\n" +
+                "- done=false হলে next_step এ এক লাইনে বলো পরে কোন টুল/কাজ করতে হবে।"
+            val user = buildString {
+                append("ব্যবহারকারীর লক্ষ্য:\n").append(goal.take(1500)).append("\n\n")
+                append("এ পর্যন্ত করা কাজ (শেষ কয়েকটি):\n")
+                if (actions.isEmpty()) append("(কোনো টুল চালানো হয়নি)\n")
+                else actions.takeLast(15).forEach { append("- ").append(it.take(300)).append('\n') }
+                if (screen.isNotBlank()) append("\nএখনকার স্ক্রিন:\n").append(screen.take(1200)).append('\n')
+                append("\nসহকারীর শেষ উত্তর:\n").append(reply.take(1200))
+            }
+            val msgs = JSONArray()
+                .put(JSONObject().put("role", "system").put("content", system))
+                .put(JSONObject().put("role", "user").put("content", user))
+            val turn = callModelWithFailover(model, msgs, tools, { }, { }) ?: return null
+            if (turn.toolCalls.length() > 0) return null
+            val raw = turn.text.toString()
+            val start = raw.indexOf('{')
+            val end = raw.lastIndexOf('}')
+            if (start < 0 || end <= start) return null
+            val o = JSONObject(raw.substring(start, end + 1))
+            if (!o.has("done")) return null
+            Verdict(
+                done = o.optBoolean("done", false),
+                blocked = o.optBoolean("blocked_on_user", false),
+                reason = o.optString("reason"),
+                next = o.optString("next_step")
+            )
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    /**
      * True for the calls that must touch the screen alone, in order. Two taps or
      * two swipes racing each other land on the wrong element, so these never run
      * in parallel with anything.
      */
     private fun isScreenTool(name: String): Boolean = name in SCREEN_TOOLS
+
+    /**
+     * Keeps a long agentic run inside the model's context window.
+     *
+     * Only the newest [keepImageMessages] messages that carry pictures keep them;
+     * older ones are rewritten to their text plus a short marker. Tool results
+     * older than the last [keepRecent] messages are cut to [maxToolChars]. The
+     * system prompt and every assistant/user sentence are left untouched, so the
+     * model still knows the goal and what it already did — it just stops
+     * re-reading dozens of old screenshots on every round.
+     */
+    private fun compactHistory(
+        messages: JSONArray,
+        keepImageMessages: Int = 2,
+        keepRecent: Int = 8,
+        maxToolChars: Int = 3000
+    ) {
+        var imageMessagesSeen = 0
+        for (i in messages.length() - 1 downTo 0) {
+            val m = messages.optJSONObject(i) ?: continue
+            val content = m.opt("content")
+            if (content is JSONArray) {
+                var hasImage = false
+                for (k in 0 until content.length()) {
+                    if (content.optJSONObject(k)?.optString("type") == "image_url") { hasImage = true; break }
+                }
+                if (!hasImage) continue
+                imageMessagesSeen++
+                if (imageMessagesSeen <= keepImageMessages) continue
+                val text = StringBuilder()
+                for (k in 0 until content.length()) {
+                    val part = content.optJSONObject(k) ?: continue
+                    if (part.optString("type") == "text") text.append(part.optString("text")).append('\n')
+                }
+                m.put("content", text.toString().trim() + "\n[পুরনো স্ক্রিনশট সরানো হয়েছে]")
+            } else if (m.optString("role") == "tool" && i < messages.length() - keepRecent) {
+                val s = content as? String ?: continue
+                if (s.length > maxToolChars) {
+                    m.put("content", s.take(maxToolChars) + "\n…[পুরনো আউটপুট ছোট করা হয়েছে]")
+                }
+            }
+        }
+    }
 
     /**
      * A plain string when there is no image, and the OpenAI content-parts array

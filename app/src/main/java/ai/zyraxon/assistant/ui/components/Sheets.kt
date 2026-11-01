@@ -80,6 +80,7 @@ import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -104,6 +105,8 @@ fun PersonaSelectionSheet(
         containerColor = Glass.sheetFill(0.30f),
         dragHandle = null
     ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+        HorrorSheetBackdrop(Modifier.matchParentSize(), seed = 4)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -115,10 +118,11 @@ fun PersonaSelectionSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = t("পরিচয় নির্বাচন (Persona)"),
+                    text = "☠ " + t("পরিচয় নির্বাচন (Persona)"),
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Glass.textPrimary
+                    fontWeight = FontWeight.Black,
+                    color = BoneWhite,
+                    style = TextStyle(shadow = BloodGlow)
                 )
                 IconButton(onClick = onDismiss) {
                     Icon(Icons.Rounded.Close, contentDescription = "Close", tint = Glass.textMuted)
@@ -129,6 +133,7 @@ fun PersonaSelectionSheet(
 
             PersonaList(selectedPersona = selectedPersona, onSelectPersona = onSelectPersona)
             Spacer(modifier = Modifier.height(20.dp))
+        }
         }
     }
 }
@@ -233,7 +238,10 @@ fun ModelSelectionSheet(
         containerColor = Glass.sheetFill(0.30f),
         dragHandle = null
     ) {
-        ModelListPane(viewModel = viewModel, onPicked = onDismiss, showClose = true)
+        Box(modifier = Modifier.fillMaxWidth()) {
+            HorrorSheetBackdrop(Modifier.matchParentSize(), seed = 6)
+            ModelListPane(viewModel = viewModel, onPicked = onDismiss, showClose = true)
+        }
     }
 }
 
@@ -322,7 +330,7 @@ fun ModelListPane(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Glass.fill(0.30f))
+                    .background(BloodCardBrush)
                     .border(1.dp, Glass.cyanFill.copy(alpha = 0.16f), RoundedCornerShape(12.dp))
                     .padding(horizontal = 12.dp, vertical = 10.dp)
             ) {
@@ -539,7 +547,7 @@ fun ModelListPane(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Glass.fill(0.30f))
+                                .background(BloodCardBrush)
                                 .padding(12.dp)
                         ) {
                             Text(t("মডেল ID লিখুন:"), color = Glass.textPrimary, fontSize = 12.sp)
@@ -549,7 +557,7 @@ fun ModelListPane(
                                 onValueChange = { customModelId = it },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(Glass.rowFill(0.30f), RoundedCornerShape(8.dp))
+                                    .background(BloodRowBrush, RoundedCornerShape(8.dp))
                                     .padding(10.dp),
                                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 13.sp),
                                 cursorBrush = SolidColor(Glass.cyanFill)
@@ -679,22 +687,24 @@ fun SettingsSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = Color(0xF7140205),
+        containerColor = Color(0xFA0A0104),
         dragHandle = {
             Box(
                 modifier = Modifier
                     .padding(vertical = 10.dp)
-                    .width(44.dp)
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(Glass.pinkFill.copy(alpha = 0.8f))
+                    .width(64.dp)
+                    .height(5.dp)
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(Brush.horizontalGradient(listOf(BloodRedDark, BloodRedHot, BloodRedDark)))
             )
         }
     ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+        HorrorSheetBackdrop(Modifier.matchParentSize(), seed = 9)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .padding(start = 20.dp, end = 20.dp, top = 30.dp, bottom = 12.dp)
         ) {
             // Header
             Row(
@@ -704,24 +714,27 @@ fun SettingsSheet(
             ) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(9.dp)
-                                .clip(CircleShape)
-                                .background(Glass.pinkFill)
+                        Text(
+                            text = "☠",
+                            fontSize = 18.sp,
+                            color = BloodRedHot,
+                            style = TextStyle(shadow = BloodGlow),
+                            modifier = Modifier.horrorFlicker()
                         )
                         Spacer(modifier = Modifier.width(7.dp))
                         Text(
                             text = t("ZYRAXON সেটিংস ও কন্ট্রোল"),
                             fontSize = 17.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Glass.textPrimary
+                            fontWeight = FontWeight.Black,
+                            color = BoneWhite,
+                            style = TextStyle(shadow = BloodGlow)
                         )
                     }
                     Text(
                         text = t("৭টি সুবিন্যস্ত সেকশন — সম্পূর্ণ সিস্টেম নিয়ন্ত্রণ"),
                         fontSize = 11.sp,
-                        color = Glass.pink
+                        color = Glass.pink,
+                        style = TextStyle(shadow = BloodGlow)
                     )
                 }
                 IconButton(onClick = {
@@ -752,11 +765,10 @@ fun SettingsSheet(
                                 if (isMasterActive) Glass.pinkFill
                                 else Glass.rowFill(0.35f)
                             )
-                            .border(
-                                1.dp,
-                                if (isMasterActive) Color(0xFFFF1E44) else Glass.borderSoft,
-                                RoundedCornerShape(12.dp)
-                            )
+                            .let {
+                                if (isMasterActive) it.bloodPulseBorder(RoundedCornerShape(12.dp), 1.5.dp)
+                                else it.border(1.dp, Glass.borderSoft, RoundedCornerShape(12.dp))
+                            }
                             .clickable {
                                 Glass.vibrate(context, 16)
                                 val targetPane = subs.first().first
@@ -817,7 +829,12 @@ fun SettingsSheet(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = Glass.borderSoft)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .background(Brush.horizontalGradient(listOf(Color.Transparent, BloodRedHot, Color.Transparent)))
+            )
             Spacer(modifier = Modifier.height(12.dp))
 
             // Content Area Scrollable
@@ -836,7 +853,8 @@ fun SettingsSheet(
                             t("পরিচয় নির্বাচন (Persona)"),
                             fontWeight = FontWeight.Bold,
                             color = Glass.textPrimary,
-                            fontSize = 14.sp
+                            fontSize = 14.sp,
+                            style = TextStyle(shadow = BloodGlowSoft)
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
@@ -886,7 +904,8 @@ fun SettingsSheet(
                             t("লাইভ ভয়েস — স্পিচ-টু-স্পিচ"),
                             fontWeight = FontWeight.Bold,
                             color = Glass.textPrimary,
-                            fontSize = 14.sp
+                            fontSize = 14.sp,
+                            style = TextStyle(shadow = BloodGlowSoft)
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
@@ -904,7 +923,7 @@ fun SettingsSheet(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(Glass.rowFill(0.30f))
+                                .background(BloodRowBrush)
                                 .border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
                                 .padding(horizontal = 14.dp, vertical = 10.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -1036,7 +1055,8 @@ fun SettingsSheet(
                             t("অন-ডিভাইস মডেল — ইন্টারনেট ছাড়াই উত্তর"),
                             fontWeight = FontWeight.Bold,
                             color = Glass.textPrimary,
-                            fontSize = 14.sp
+                            fontSize = 14.sp,
+                            style = TextStyle(shadow = BloodGlowSoft)
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
@@ -1400,7 +1420,7 @@ fun SettingsSheet(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Glass.rowFill(0.30f))
+                                .background(BloodRowBrush)
                                 .border(1.dp, Glass.borderSoft, RoundedCornerShape(10.dp))
                                 .padding(horizontal = 12.dp, vertical = 10.dp)
                         )
@@ -1814,7 +1834,7 @@ fun SettingsSheet(
                             onValueChange = { viewModel.setCustomBgUrl(it) },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Glass.fill(0.30f), RoundedCornerShape(8.dp))
+                                .background(BloodCardBrush, RoundedCornerShape(8.dp))
                                 .padding(10.dp),
                             textStyle = TextStyle(color = Glass.textPrimary, fontSize = 12.sp),
                             cursorBrush = SolidColor(Glass.pinkFill),
@@ -1898,7 +1918,7 @@ fun SettingsSheet(
                             onValueChange = { editGithubToken = it },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Glass.fill(0.30f), RoundedCornerShape(8.dp))
+                                .background(BloodCardBrush, RoundedCornerShape(8.dp))
                                 .padding(10.dp),
                             textStyle = TextStyle(color = Glass.textPrimary, fontSize = 13.sp),
                             cursorBrush = SolidColor(Glass.cyanFill),
@@ -2014,7 +2034,7 @@ fun SettingsSheet(
                                         .fillMaxWidth()
                                         .padding(vertical = 3.dp)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(Glass.fill(0.30f))
+                                        .background(BloodCardBrush)
                                         .padding(horizontal = 10.dp, vertical = 8.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
@@ -2042,7 +2062,7 @@ fun SettingsSheet(
                                 onValueChange = { newMemKey = it },
                                 modifier = Modifier
                                     .weight(1f)
-                                    .background(Glass.fill(0.30f), RoundedCornerShape(8.dp))
+                                    .background(BloodCardBrush, RoundedCornerShape(8.dp))
                                     .padding(8.dp),
                                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 12.sp),
                                 cursorBrush = SolidColor(Glass.pinkFill),
@@ -2056,7 +2076,7 @@ fun SettingsSheet(
                                 onValueChange = { newMemVal = it },
                                 modifier = Modifier
                                     .weight(1f)
-                                    .background(Glass.fill(0.30f), RoundedCornerShape(8.dp))
+                                    .background(BloodCardBrush, RoundedCornerShape(8.dp))
                                     .padding(8.dp),
                                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 12.sp),
                                 cursorBrush = SolidColor(Glass.pinkFill),
@@ -2109,7 +2129,7 @@ fun SettingsSheet(
                                     .fillMaxWidth()
                                     .padding(vertical = 4.dp)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(Glass.fill(0.30f))
+                                    .background(BloodCardBrush)
                                     .padding(10.dp)
                             ) {
                                 Text(title, color = Glass.cyanFill, fontWeight = FontWeight.Bold, fontSize = 13.sp)
@@ -2131,7 +2151,7 @@ fun SettingsSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "ZYRAXON Native Engine v3.0.0 (Zero Lag)",
+                    text = "☠ ZYRAXON Native Engine v3.0.0 (Zero Lag) ☠",
                     color = Glass.textSecondary,
                     fontSize = 11.sp
                 )
@@ -2141,6 +2161,12 @@ fun SettingsSheet(
                     fontSize = 11.sp
                 )
             }
+        }
+        // Decorative gore laid over the whole sheet; it never takes touches.
+        BloodVeins(Modifier.matchParentSize(), seed = 14)
+        BloodSplatter(Modifier.matchParentSize(), seed = 19)
+        HorrorVignette(Modifier.matchParentSize(), intensity = 0.8f)
+        BloodDrips(Modifier.align(Alignment.TopStart), seed = 3, count = 13, maxLength = 46.dp)
         }
     }
 }
@@ -2161,7 +2187,8 @@ fun SessionNavPane(viewModel: ZyraxonViewModel, onDismiss: () -> Unit) {
         t("সেকশন"),
         fontWeight = FontWeight.Bold,
         color = Glass.textPrimary,
-        fontSize = 14.sp
+        fontSize = 14.sp,
+        style = TextStyle(shadow = BloodGlowSoft)
     )
     Spacer(modifier = Modifier.height(6.dp))
     Text(
@@ -2210,7 +2237,8 @@ fun SessionNavPane(viewModel: ZyraxonViewModel, onDismiss: () -> Unit) {
         t("নতুন সেশন"),
         fontWeight = FontWeight.Bold,
         color = Glass.textPrimary,
-        fontSize = 14.sp
+        fontSize = 14.sp,
+        style = TextStyle(shadow = BloodGlowSoft)
     )
     Spacer(modifier = Modifier.height(6.dp))
     Text(
@@ -2223,7 +2251,7 @@ fun SessionNavPane(viewModel: ZyraxonViewModel, onDismiss: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Glass.rowFill(0.30f))
+            .background(BloodRowBrush)
             .border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
             .clickable {
                 viewModel.clearChat()
@@ -2248,7 +2276,8 @@ fun SessionNavPane(viewModel: ZyraxonViewModel, onDismiss: () -> Unit) {
         t("মাইক"),
         fontWeight = FontWeight.Bold,
         color = Glass.textPrimary,
-        fontSize = 14.sp
+        fontSize = 14.sp,
+        style = TextStyle(shadow = BloodGlowSoft)
     )
     Spacer(modifier = Modifier.height(10.dp))
     Row(
@@ -2284,7 +2313,8 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
         t("অ্যাপ আপডেট (In-app Update)"),
         fontWeight = FontWeight.Bold,
         color = Glass.textPrimary,
-        fontSize = 14.sp
+        fontSize = 14.sp,
+        style = TextStyle(shadow = BloodGlowSoft)
     )
     Spacer(modifier = Modifier.height(6.dp))
     Text(
@@ -2474,7 +2504,7 @@ fun ProviderKeyRow(
             .fillMaxWidth()
             .padding(vertical = 6.dp)
             .clip(RoundedCornerShape(10.dp))
-            .background(Glass.fill(0.30f))
+            .background(BloodCardBrush)
             .padding(10.dp)
     ) {
         Text(title, color = Glass.textPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
@@ -2488,7 +2518,7 @@ fun ProviderKeyRow(
                 onValueChange = onValueChange,
                 modifier = Modifier
                     .weight(1f)
-                    .background(Glass.rowFill(0.30f), RoundedCornerShape(8.dp))
+                    .background(BloodRowBrush, RoundedCornerShape(8.dp))
                     .padding(8.dp),
                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 12.sp),
                 cursorBrush = SolidColor(Glass.cyanFill),
@@ -2542,7 +2572,7 @@ fun PermissionRow(
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(RoundedCornerShape(10.dp))
-            .background(Glass.fill(0.30f))
+            .background(BloodCardBrush)
             .padding(10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically

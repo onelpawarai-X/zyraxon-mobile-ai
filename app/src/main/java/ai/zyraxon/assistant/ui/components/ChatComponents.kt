@@ -98,15 +98,15 @@ fun MessageBubble(
                         )
                     }
                 )
-                .border(
-                    width = 1.dp,
-                    color = if (isUser) Color(0xAAFF1E44) else Color(0x55FF1E44),
-                    shape = RoundedCornerShape(
+                // The border beats like a heart: every message is alive.
+                .bloodPulseBorder(
+                    RoundedCornerShape(
                         topStart = 18.dp,
                         topEnd = 18.dp,
                         bottomStart = if (isUser) 18.dp else 4.dp,
                         bottomEnd = if (isUser) 4.dp else 18.dp
-                    )
+                    ),
+                    if (isUser) 1.4.dp else 1.1.dp
                 )
                 .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
