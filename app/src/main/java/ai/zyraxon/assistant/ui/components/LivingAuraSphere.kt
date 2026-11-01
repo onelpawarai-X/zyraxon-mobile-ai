@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * LIVING BLOOD-RED AURA SPHERE (রক্তে ভেজা লালের মতো প্রাণবন্ত ওরা)
@@ -95,7 +97,7 @@ fun LivingAuraSphere(
 
     Box(
         modifier = modifier
-            .size(260.dp)
+            .size(240.dp)
             .clickable(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
@@ -105,45 +107,117 @@ fun LivingAuraSphere(
             },
         contentAlignment = Alignment.Center
     ) {
-        Canvas(modifier = Modifier.size(260.dp)) {
+        Canvas(modifier = Modifier.size(240.dp)) {
             val center = Offset(size.width / 2f, size.height / 2f)
-            val baseRadius = (size.width / 2f) * 0.62f * effectiveScale
+            val baseRadius = (size.width / 2f) * 0.70f * effectiveScale
 
-            // 1. Outermost ambient blood-red velvet nebula glow
+            // 1. Outermost soft velvet ambient blood-red nebula glow
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0x77FF1744),
+                        Color(0x88FF1744),
                         Color(0x44B91C1C),
                         Color(0x187F0014),
                         Color.Transparent
                     ),
                     center = center,
-                    radius = baseRadius * 1.8f
+                    radius = baseRadius * 1.65f
                 ),
-                radius = baseRadius * 1.8f,
+                radius = baseRadius * 1.65f,
                 center = center
             )
 
             // 2. Audio-reactive pulsating blood ripple waves
             if (isListening || isSpeaking) {
-                val alpha = (0.65f * (1.40f - ripple)).coerceIn(0f, 0.65f)
+                val alpha = (0.70f * (1.40f - ripple)).coerceIn(0f, 0.70f)
                 drawCircle(
                     color = Color(0xFFFF1E44).copy(alpha = alpha),
-                    radius = baseRadius * ripple * 1.28f,
+                    radius = baseRadius * ripple * 1.25f,
                     center = center,
                     style = Stroke(width = 3.dp.toPx())
                 )
-                val secondAlpha = (0.42f * (1.25f - ripple + 0.15f)).coerceIn(0f, 0.42f)
+                val secondAlpha = (0.45f * (1.25f - ripple + 0.15f)).coerceIn(0f, 0.45f)
                 drawCircle(
                     color = Color(0xFFFF4D6D).copy(alpha = secondAlpha),
-                    radius = baseRadius * ripple * 1.14f,
+                    radius = baseRadius * ripple * 1.12f,
                     center = center,
                     style = Stroke(width = 2.dp.toPx())
                 )
             }
 
-            // 3. Radiant Crimson Ruby Pearlescent Halo Edge
+            // 3. Ethereal Living Core — Translucent Deep Ruby-Blood (Not an opaque solid ball)
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0x66FF1744), // Translucent vibrant scarlet center
+                        Color(0x55B00020), // Translucent deep ruby
+                        Color(0x3545000A), // Translucent obsidian blood
+                        Color(0x15200004)  // Soft dark outer edge
+                    ),
+                    center = center,
+                    radius = baseRadius
+                ),
+                radius = baseRadius,
+                center = center
+            )
+
+            // 4. Rotating Swirling Plasma Currents inside the Aura
+            for (arcIndex in 0 until 3) {
+                val arcStartAngle = angle * (1f + arcIndex * 0.35f) + arcIndex * 120f
+                val arcRadius = baseRadius * (0.55f + arcIndex * 0.18f)
+                val arcColor = when (arcIndex) {
+                    0 -> Color(0xAAFF3355)
+                    1 -> Color(0x88FF1744)
+                    else -> Color(0x66FF8599)
+                }
+                drawArc(
+                    brush = Brush.sweepGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            arcColor,
+                            Color.Transparent
+                        ),
+                        center = center
+                    ),
+                    startAngle = arcStartAngle,
+                    sweepAngle = 140f,
+                    useCenter = false,
+                    topLeft = Offset(center.x - arcRadius, center.y - arcRadius),
+                    size = Size(arcRadius * 2f, arcRadius * 2f),
+                    style = Stroke(width = 4.5.dp.toPx(), cap = StrokeCap.Round)
+                )
+            }
+
+            // 5. Living Blood Droplets & Embers Orbiting, Rising, and Falling along the sides
+            // "ওরা ভিতরে এই রক্তে ভেজা লাল এগুলো ঘোরাফেরা করবে, উড়বে মানে একটু যেন পড়তেছে সাইড দিয়ে উঠতেছে এমন হবে"
+            for (i in 0 until 24) {
+                val speedMultiplier = if (i % 2 == 0) 1f else -0.7f
+                val orbitAngle = Math.toRadians((angle * speedMultiplier + i * 15f + ribbonShift * 90f).toDouble())
+                // Radial variance: some droplets drift outside, some inside
+                val rVariance = 0.50f + 0.45f * sin((angle * 0.05f + i).toDouble()).toFloat()
+                val orbR = baseRadius * rVariance
+                val dropletX = center.x + (cos(orbitAngle) * orbR).toFloat()
+                // Droplet vertical cascading effect (rising on one side, falling on the other)
+                val verticalFloat = sin((angle * 0.08f + i * 1.2f).toDouble()).toFloat() * (baseRadius * 0.22f)
+                val dropletY = center.y + (sin(orbitAngle) * orbR).toFloat() + verticalFloat
+
+                val dropletRadius = (2.2f + (i % 4) * 1.2f) * breath
+                val dropletAlpha = (0.45f + 0.50f * sin((angle * 0.1f + i).toDouble()).toFloat().coerceIn(0f, 1f))
+
+                val dropletColor = when (i % 3) {
+                    0 -> Color(0xFFFF2A4D).copy(alpha = dropletAlpha)
+                    1 -> Color(0xFFFF6680).copy(alpha = dropletAlpha)
+                    else -> Color(0xFFDC143C).copy(alpha = dropletAlpha)
+                }
+
+                drawCircle(
+                    color = dropletColor,
+                    radius = dropletRadius,
+                    center = Offset(dropletX, dropletY)
+                )
+            }
+
+            // 6. Radiant Crimson Ruby Pearlescent Outer Halo Ring
             drawCircle(
                 brush = Brush.sweepGradient(
                     colors = listOf(
@@ -155,95 +229,25 @@ fun LivingAuraSphere(
                     ),
                     center = center
                 ),
-                radius = baseRadius * 1.03f,
+                radius = baseRadius * 1.02f,
                 center = center,
-                style = Stroke(width = 3.5.dp.toPx())
+                style = Stroke(width = 3.dp.toPx())
             )
 
-            // 4. THE LIVING BLOOD-RED AURA SPHERE CORE
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFFFFE0E6), // Pearlescent white-rose highlight
-                        Color(0xFFFF3355), // Vibrant electric scarlet
-                        Color(0xFFFF1744), // Primary blood red
-                        Color(0xFFB00020), // Deep blood ruby
-                        Color(0xFF45000A)  // Deep obsidian blood edge
-                    ),
-                    center = Offset(center.x - baseRadius * 0.28f, center.y - baseRadius * 0.28f),
-                    radius = baseRadius * 1.15f
-                ),
-                radius = baseRadius,
-                center = center
-            )
-
-            // 5. Plasma Swirl Layer (Rotating smooth conic crimson energy)
-            drawCircle(
-                brush = Brush.sweepGradient(
-                    colors = listOf(
-                        Color(0x55FFFFFF),
-                        Color(0x33FFA8B8),
-                        Color(0x55FF1744),
-                        Color(0x228B0000),
-                        Color(0x55FFFFFF)
-                    ),
-                    center = center
-                ),
-                radius = baseRadius * 0.96f,
-                center = center
-            )
-
-            // 6. Shimmering Floating Wave Ribbon
-            val ribbonY = center.y + baseRadius * ribbonShift
-            val ribbonWidth = baseRadius * 1.6f
-            val ribbonHeight = baseRadius * 0.45f
-            drawArc(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        Color.Transparent,
-                        Color(0x99FFFFFF),
-                        Color(0xAAFFCCD5),
-                        Color(0x66FF1744),
-                        Color.Transparent
-                    )
-                ),
-                startAngle = angle,
-                sweepAngle = 180f,
-                useCenter = false,
-                topLeft = Offset(center.x - ribbonWidth / 2f, ribbonY - ribbonHeight / 2f),
-                size = Size(ribbonWidth, ribbonHeight),
-                style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
-            )
-
-            // 7. Glossy Glass Specular Highlights (Top-left shine reflection)
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xF0FFFFFF),
-                        Color(0x66FFCCD5),
-                        Color.Transparent
-                    ),
-                    center = Offset(center.x - baseRadius * 0.35f, center.y - baseRadius * 0.35f),
-                    radius = baseRadius * 0.45f
-                ),
-                radius = baseRadius * 0.45f,
-                center = Offset(center.x - baseRadius * 0.35f, center.y - baseRadius * 0.35f)
-            )
-
-            // 8. Inset Rim Glow
+            // 7. Subtle inner neon boundary ring
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
                         Color.Transparent,
-                        Color(0x44FFFFFF),
-                        Color(0x99FF5277)
+                        Color(0x33FF1744),
+                        Color(0x88FF3355)
                     ),
                     center = center,
                     radius = baseRadius
                 ),
                 radius = baseRadius,
                 center = center,
-                style = Stroke(width = 4.dp.toPx())
+                style = Stroke(width = 2.dp.toPx())
             )
         }
     }

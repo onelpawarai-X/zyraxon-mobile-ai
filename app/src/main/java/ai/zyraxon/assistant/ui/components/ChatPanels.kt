@@ -47,10 +47,184 @@ private val TextSub = Glass.textSecondary
 private val TextFaint = Glass.textMuted
 
 /**
- * The three live panels that sit inside the chat column, under the transcript:
- * the todo board, the tool-call feed and the files the assistant wrote. They
- * collapse to a single header row so the chat keeps the screen when idle.
+ * Modern Blood-Cyber Bottom Floating Panel that displays To-Do, Tool-calls, or Files
+ * cleanly above the bottom navigation panel without cluttering the main conversation screen.
  */
+@Composable
+fun BottomFloatingPanel(
+    panelType: String,
+    tasks: List<TaskItem>,
+    toolExecutions: List<ToolExecutionItem>,
+    files: List<WorkspaceFile>,
+    onDeleteFile: (String) -> Unit,
+    onOpenFile: (String) -> Unit,
+    onPublishFile: (WorkspaceFile) -> Unit,
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 6.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color(0xF0120206))
+            .border(1.2.dp, Color(0x88FF1E44), RoundedCornerShape(20.dp))
+            .padding(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val title = when (panelType) {
+                "todo" -> "📋 " + t("টুডু বোর্ড") + " (${tasks.count { !it.isCompleted }}/${tasks.size})"
+                "tool" -> "🛠️ " + t("টুল এক্সিকিউশন") + " (${toolExecutions.size})"
+                "files" -> "📁 " + t("ফাইল ম্যানেজার") + " (${files.size})"
+                else -> t("প্যানেল")
+            }
+            Text(
+                text = title,
+                color = Color(0xFFFF4D6D),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0x33FF1744))
+                    .clickable { onClose() }
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "✕",
+                    color = Color(0xFFFF1E44),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        when (panelType) {
+            "todo" -> TodoPanelBody(tasks)
+            "tool" -> ToolPanelBody(toolExecutions)
+            "files" -> FilesPanelBody(files, onDeleteFile, onOpenFile, onPublishFile)
+        }
+    }
+}
+
+/**
+ * Blood-Cyber Luxury Unified Dock Bar at the bottom of the screen.
+ * Contains: Chat, To-Do, Tool, Files, and Terminal.
+ */
+@Composable
+fun BloodCyberDockBar(
+    activePanel: String?,
+    todoCount: Int,
+    toolCount: Int,
+    fileCount: Int,
+    onPanelSelect: (String?) -> Unit,
+    onOpenTerminal: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(22.dp))
+            .background(Color(0xE6100205))
+            .border(1.dp, Color(0x66FF1E44), RoundedCornerShape(22.dp))
+            .padding(horizontal = 4.dp, vertical = 5.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        DockItem(
+            label = t("চ্যাট"),
+            icon = "💬",
+            badge = null,
+            isSelected = activePanel == null,
+            onClick = { onPanelSelect(null) }
+        )
+        DockItem(
+            label = t("টুডু"),
+            icon = "📋",
+            badge = if (todoCount > 0) todoCount.toString() else null,
+            isSelected = activePanel == "todo",
+            onClick = { onPanelSelect(if (activePanel == "todo") null else "todo") }
+        )
+        DockItem(
+            label = t("টুল"),
+            icon = "🛠️",
+            badge = if (toolCount > 0) toolCount.toString() else null,
+            isSelected = activePanel == "tool",
+            onClick = { onPanelSelect(if (activePanel == "tool") null else "tool") }
+        )
+        DockItem(
+            label = t("ফাইল"),
+            icon = "📁",
+            badge = if (fileCount > 0) fileCount.toString() else null,
+            isSelected = activePanel == "files",
+            onClick = { onPanelSelect(if (activePanel == "files") null else "files") }
+        )
+        DockItem(
+            label = t("টার্মিনাল"),
+            icon = "⌘",
+            badge = null,
+            isSelected = false,
+            onClick = { onOpenTerminal() }
+        )
+    }
+}
+
+@Composable
+private fun DockItem(
+    label: String,
+    icon: String,
+    badge: String?,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(if (isSelected) Color(0x44FF1E44) else Color.Transparent)
+            .border(
+                width = if (isSelected) 1.dp else 0.dp,
+                color = if (isSelected) Color(0xFFFF1E44) else Color.Transparent,
+                shape = RoundedCornerShape(14.dp)
+            )
+            .clickable { onClick() }
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(icon, fontSize = 12.sp)
+            Spacer(Modifier.width(3.dp))
+            Text(
+                text = label,
+                color = if (isSelected) Color(0xFFFF4D6D) else Color(0xFFD0BAC0),
+                fontSize = 11.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+            )
+            if (badge != null) {
+                Spacer(Modifier.width(3.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFFF1E44))
+                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                ) {
+                    Text(
+                        text = badge,
+                        color = Color.White,
+                        fontSize = 8.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun ChatPanels(
     tasks: List<TaskItem>,

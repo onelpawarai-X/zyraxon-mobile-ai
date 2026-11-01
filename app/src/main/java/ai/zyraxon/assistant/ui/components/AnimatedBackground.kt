@@ -147,98 +147,127 @@ private fun DrawScope.drawLivingPinkAuraStage(
     pulse: Float,
     drift: Float
 ) {
-    val radius = (width * 0.85f) * pulse
+    val radius = (width * 0.92f) * pulse
     val rad = Math.toRadians(rotation.toDouble())
     val waveCos = cos(rad).toFloat()
     val waveSin = sin(rad).toFloat()
+    val waveCos2 = cos(rad * 1.5).toFloat()
+    val waveSin2 = sin(rad * 1.5).toFloat()
 
-    // 1. Swirling Blood-Red Smoke Plume #1 (Top-Left undulating towards Center)
+    // 1. Swirling Blood-Red Smoke Plume #1 (Upper-Left billowing towards Center)
     val smoke1Center = Offset(
-        x = width * 0.28f + waveCos * 45f,
-        y = height * 0.26f + waveSin * 35f
+        x = width * 0.30f + waveCos * 55f,
+        y = height * 0.28f + waveSin * 45f
     )
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(
-                Color(0x66FF1744),
-                Color(0x408B0000),
-                Color(0x203D0008),
+                Color(0x88FF1744),
+                Color(0x55990018),
+                Color(0x283D0008),
                 Color.Transparent
             ),
             center = smoke1Center,
-            radius = radius * 0.95f
+            radius = radius * 1.1f
         ),
-        radius = radius * 0.95f,
+        radius = radius * 1.1f,
         center = smoke1Center
     )
 
-    // 2. Swirling Blood-Red Smoke Plume #2 (Central Living Mist halo around the Aura)
+    // 2. Swirling Deep Crimson Smoke Plume #2 (Central Living Mist halo wrapping the Aura)
     val smoke2Center = Offset(
-        x = center.x - waveSin * 40f,
-        y = center.y + waveCos * 30f
+        x = center.x - waveSin * 45f,
+        y = center.y + waveCos * 40f
     )
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(
-                Color(0x55DC143C),
-                Color(0x35990018),
-                Color(0x184A000A),
+                Color(0x75DC143C),
+                Color(0x45800014),
+                Color(0x20350005),
                 Color.Transparent
             ),
             center = smoke2Center,
-            radius = radius * 1.15f
+            radius = radius * 1.25f
         ),
-        radius = radius * 1.15f,
+        radius = radius * 1.25f,
         center = smoke2Center
     )
 
-    // 3. Rolling Crimson Smoke Bank #3 (Bottom-Right curling upwards)
+    // 3. Rolling Crimson Blood Bank #3 (Bottom-Right curling upwards)
     val smoke3Center = Offset(
-        x = width * 0.72f + waveSin * 50f,
-        y = height * 0.72f - waveCos * 40f
+        x = width * 0.70f + waveSin2 * 60f,
+        y = height * 0.68f - waveCos2 * 50f
     )
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(
-                Color(0x52FF0834),
-                Color(0x3066000E),
+                Color(0x70FF0834),
+                Color(0x4266000E),
+                Color(0x181A0002),
                 Color.Transparent
             ),
             center = smoke3Center,
-            radius = radius * 1.05f
+            radius = radius * 1.15f
         ),
-        radius = radius * 1.05f,
+        radius = radius * 1.15f,
         center = smoke3Center
     )
 
     // 4. Subtle Blood Vapor Tendril #4 (Top-Right drifting across)
     val smoke4Center = Offset(
-        x = width * 0.82f - waveCos * 35f,
-        y = height * 0.18f + waveSin * 30f
+        x = width * 0.80f - waveCos * 45f,
+        y = height * 0.20f + waveSin * 40f
     )
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(
-                Color(0x3AB22222),
-                Color(0x1C800000),
+                Color(0x5CB22222),
+                Color(0x306B000B),
                 Color.Transparent
             ),
             center = smoke4Center,
-            radius = radius * 0.85f
+            radius = radius * 0.95f
         ),
-        radius = radius * 0.85f,
+        radius = radius * 0.95f,
         center = smoke4Center
     )
 
-    // 5. Rising Blood-Red Embers / Sparks drifting upward through the smoke
-    for (i in 0 until 18) {
-        val emberSeed = (i * 37) % 100 / 100f
-        val emberX = (width * emberSeed + waveSin * 25f * (if (i % 2 == 0) 1f else -1f)) % width
-        val baseEmberY = (height * (1f - ((drift + emberSeed) % 1f)))
-        val emberAlpha = (0.25f + 0.55f * sin((drift * 6.28f + i).toDouble()).toFloat().coerceIn(0f, 1f))
+    // 5. Lower Deep Blood Cauldron Mist #5 (Bottom center rising)
+    val smoke5Center = Offset(
+        x = width * 0.45f + waveCos2 * 40f,
+        y = height * 0.88f - waveSin2 * 30f
+    )
+    drawCircle(
+        brush = Brush.radialGradient(
+            colors = listOf(
+                Color(0x66FF1E44),
+                Color(0x387F0012),
+                Color.Transparent
+            ),
+            center = smoke5Center,
+            radius = radius * 1.05f
+        ),
+        radius = radius * 1.05f,
+        center = smoke5Center
+    )
+
+    // 6. 36 Rising Living Blood-Red Embers / Sparks floating upward through the smoke
+    for (i in 0 until 36) {
+        val emberSeed = (i * 29) % 100 / 100f
+        val driftOffset = sin((drift * 6.28f + i * 1.3f).toDouble()).toFloat() * 30f
+        val emberX = (width * emberSeed + driftOffset + width) % width
+        val baseEmberY = (height * (1f - ((drift * (0.8f + (i % 5) * 0.1f) + emberSeed) % 1f)))
+        val emberAlpha = (0.35f + 0.65f * sin((drift * 6.28f + i * 0.8f).toDouble()).toFloat().coerceIn(0f, 1f))
+        val emberColor = when (i % 4) {
+            0 -> Color(0xFFFF4D6D).copy(alpha = emberAlpha)
+            1 -> Color(0xFFFF1744).copy(alpha = emberAlpha)
+            2 -> Color(0xFFFF8599).copy(alpha = emberAlpha)
+            else -> Color(0xFFFF0033).copy(alpha = emberAlpha)
+        }
         drawCircle(
-            color = if (i % 3 == 0) Color(0xFFFF4D6D).copy(alpha = emberAlpha) else Color(0xFFFF1E44).copy(alpha = emberAlpha),
-            radius = (1.5f + (i % 3) * 1.2f) * pulse,
+            color = emberColor,
+            radius = (1.8f + (i % 4) * 1.4f) * pulse,
             center = Offset(emberX, baseEmberY)
         )
     }
@@ -396,8 +425,9 @@ fun MatrixRainBackground(modifier: Modifier = Modifier) {
                 val y = headY - k * glyph
                 if (y < -glyph || y > size.height) continue
                 val fade = 1f - k.toFloat() / column.length
+                val rainColor = if (k == 0) Color(0xFFFF8599) else Color(0xFFFF1E44)
                 drawRect(
-                    color = Color(0xFF00FF66).copy(alpha = 0.16f * fade * fade),
+                    color = rainColor.copy(alpha = 0.22f * fade * fade),
                     topLeft = Offset(column.xRatio * size.width, y),
                     size = androidx.compose.ui.geometry.Size(colWidth * 0.5f, glyph * 0.7f)
                 )

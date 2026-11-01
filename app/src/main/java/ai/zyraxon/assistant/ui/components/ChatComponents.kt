@@ -94,13 +94,13 @@ fun MessageBubble(
                         )
                     } else {
                         Brush.verticalGradient(
-                            colors = listOf(Glass.fill(0.35f), Glass.fill(0.25f))
+                            colors = listOf(Color(0xD9170206), Color(0xCF220409))
                         )
                     }
                 )
                 .border(
                     width = 1.dp,
-                    color = if (isUser) Color(0x88FF1E44) else Glass.borderSoft,
+                    color = if (isUser) Color(0xAAFF1E44) else Color(0x55FF1E44),
                     shape = RoundedCornerShape(
                         topStart = 18.dp,
                         topEnd = 18.dp,
@@ -209,8 +209,8 @@ fun QuickActionChips(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Glass.rowFill(0.35f))
-                    .border(1.dp, Glass.borderSoft, RoundedCornerShape(16.dp))
+                    .background(Color(0xCC1A0307))
+                    .border(1.dp, Color(0x66FF1E44), RoundedCornerShape(16.dp))
                     .clickable {
                         Glass.vibrate(context, 10)
                         onChipClick(chip)
@@ -219,7 +219,7 @@ fun QuickActionChips(
             ) {
                 Text(
                     text = chip,
-                    color = Glass.textPrimary,
+                    color = Color(0xFFFFB3C1),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )

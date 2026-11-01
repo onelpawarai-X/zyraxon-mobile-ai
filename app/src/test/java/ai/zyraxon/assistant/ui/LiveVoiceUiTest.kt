@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import ai.zyraxon.assistant.model.AppTab
 import ai.zyraxon.assistant.ui.ZyraxonTopBar
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -29,7 +30,13 @@ class LiveVoiceUiTest {
     fun `the settings gear is the only control on the top bar`() {
         var settings = 0
         compose.setContent {
-            ZyraxonTopBar(onSettingsClick = { settings++ })
+            ZyraxonTopBar(
+                activeTab = AppTab.CHAT,
+                selectedPersonaName = "লুনা",
+                onTabSelect = {},
+                onClearChat = {},
+                onSettingsClick = { settings++ }
+            )
         }
 
         compose.onNodeWithTag("settings_button").assertIsDisplayed()
@@ -41,7 +48,13 @@ class LiveVoiceUiTest {
     @Test
     fun `the old persona, model, mic and live buttons are gone`() {
         compose.setContent {
-            ZyraxonTopBar(onSettingsClick = {})
+            ZyraxonTopBar(
+                activeTab = AppTab.CHAT,
+                selectedPersonaName = "লুনা",
+                onTabSelect = {},
+                onClearChat = {},
+                onSettingsClick = {}
+            )
         }
 
         compose.onNodeWithTag("persona_button").assertDoesNotExist()

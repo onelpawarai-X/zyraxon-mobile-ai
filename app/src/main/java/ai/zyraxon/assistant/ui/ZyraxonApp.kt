@@ -9,6 +9,8 @@ import ai.zyraxon.assistant.model.WorkspaceFile
 import ai.zyraxon.assistant.ui.components.AnimatedBackground
 import ai.zyraxon.assistant.ui.components.AuraWebView
 import ai.zyraxon.assistant.ui.components.ChatPanels
+import ai.zyraxon.assistant.ui.components.BottomFloatingPanel
+import ai.zyraxon.assistant.ui.components.BloodCyberDockBar
 import ai.zyraxon.assistant.ui.components.VideoBackground
 import ai.zyraxon.assistant.ui.components.CodePanel
 import ai.zyraxon.assistant.ui.components.LivingAuraSphere
@@ -24,6 +26,16 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import androidx.compose.ui.draw.blur
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -157,6 +169,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
 
     var showSettingsSheet by remember { mutableStateOf(false) }
     var newTaskText by remember { mutableStateOf("") }
+    var activeDockPanel by remember { mutableStateOf<String?>(null) }
 
     val updateState by viewModel.updateState.collectAsState()
     val updateDismissed by viewModel.updateBannerDismissed.collectAsState()
@@ -216,17 +229,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // 1b. The looping clip on top, when one is chosen and it actually plays.
-        //     If it cannot be prepared or errors out, it reports back and is
-        //     dropped so the shader underneath shows through.
-        var videoBroken by remember { mutableStateOf(false) }
-        if (!videoBroken) {
-            VideoBackground(
-                assetName = bgVideoAsset,
-                modifier = Modifier.fillMaxSize(),
-                onFailed = { videoBroken = true }
-            )
-        }
+        // 1b. Background is the dedicated blood-red cyber picture with living circulating smoke and embers
 
         // 2. Main Scaffold Content (blurs smoothly when Settings is open)
         Column(
@@ -351,6 +354,24 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                 )
             }
 
+            // Expandable floating bottom panel (Todo, Tools, Files)
+            if (activeDockPanel != null && activeTab == AppTab.CHAT) {
+                BottomFloatingPanel(
+                    panelType = activeDockPanel!!,
+                    tasks = tasks,
+                    toolExecutions = toolExecutions,
+                    files = workspaceFiles,
+                    onDeleteFile = { viewModel.deleteWorkspaceFile(it) },
+                    onOpenFile = { viewModel.openWorkspaceFile(it) },
+                    onPublishFile = { file ->
+                        viewModel.sendMessage(
+                            t("এই ফাইলটি ওয়েবসাইট হিসেবে প্রকাশ করো: {0}", file.relative)
+                        )
+                    },
+                    onClose = { activeDockPanel = null }
+                )
+            }
+
             // Bottom Composer (only visible in Chat tab)
             if (activeTab == AppTab.CHAT) {
                 BottomComposer(
@@ -362,6 +383,16 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                     micOn = alwaysListening,
                     onMicToggle = { viewModel.toggleListening() },
                     onQuickAction = { viewModel.sendMessage(it) }
+                )
+
+                // Blood Cyber Luxury Bottom Dock Panel
+                BloodCyberDockBar(
+                    activePanel = activeDockPanel,
+                    todoCount = tasks.count { !it.isCompleted },
+                    toolCount = toolExecutions.size,
+                    fileCount = workspaceFiles.size,
+                    onPanelSelect = { activeDockPanel = it },
+                    onOpenTerminal = { viewModel.setTab(AppTab.TERMINAL) }
                 )
             }
 
@@ -744,17 +775,7 @@ fun ChatTabContent(
             }
         }
 
-        // The three live panels sit inside the chat column, right above the
-        // composer, and stay out of the way until something happens.
-        ChatPanels(
-            tasks = tasks,
-            toolExecutions = toolExecutions,
-            files = files,
-            panelAlpha = panelAlpha,
-            onDeleteFile = onDeleteFile,
-            onOpenFile = onOpenFile,
-            onPublishFile = onPublishFile
-        )
+        // Middle floating buttons (Todo, Tool, File) are removed from here and relocated cleanly to the bottom BloodCyberDockBar
 
         // Transcript, collapsible so the aura keeps the screen when the user
         // only wants to talk.
@@ -1114,6 +1135,115 @@ fun ToolActionCard(
 }
 
 @Composable
+fun BloodCyberMicButton(
+    micOn: Boolean,
+    isListening: Boolean,
+    onClick: () -> Unit
+) {
+    val context = LocalContext.current
+    val infiniteTransition = rememberInfiniteTransition(label = "blood_mic_anim")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 0.96f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "mic_pulse"
+    )
+    val rippleRadius by infiniteTransition.animateFloat(
+        initialValue = 0.85f,
+        targetValue = 1.50f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "mic_ripple"
+    )
+
+    Box(
+        modifier = Modifier
+            .size(46.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
+                Glass.vibrate(context, 20)
+                onClick()
+            }
+            .testTag("mic_button"),
+        contentAlignment = Alignment.Center
+    ) {
+        // Living pulsing audio-reactive energy ripples when mic is active
+        if (micOn) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val center = Offset(size.width / 2f, size.height / 2f)
+                val baseR = (size.width / 2f) * 0.70f
+                val rippleAlpha = ((1.50f - rippleRadius) / 0.65f).coerceIn(0f, 0.75f)
+                drawCircle(
+                    color = Color(0xFFFF1E44).copy(alpha = rippleAlpha),
+                    radius = baseR * rippleRadius,
+                    center = center,
+                    style = Stroke(width = 2.dp.toPx())
+                )
+            }
+        }
+
+        // Blood-Red Cyber Mic Core Orb
+        Box(
+            modifier = Modifier
+                .size(if (micOn && isListening) 40.dp * pulseScale else 40.dp)
+                .clip(CircleShape)
+                .background(
+                    if (micOn) {
+                        Brush.radialGradient(
+                            listOf(
+                                Color(0xFFFF2A4D),
+                                Color(0xFFC0001E),
+                                Color(0xFF6B000B),
+                                Color(0xFF280004)
+                            )
+                        )
+                    } else {
+                        Brush.radialGradient(
+                            listOf(
+                                Color(0xFF24060B),
+                                Color(0xFF140205),
+                                Color(0xFF0A0103)
+                            )
+                        )
+                    }
+                )
+                .border(
+                    width = if (micOn) 1.6.dp else 1.dp,
+                    brush = if (micOn) {
+                        Brush.sweepGradient(
+                            listOf(
+                                Color(0xFFFF8599),
+                                Color(0xFFFF1E44),
+                                Color(0xFF880016),
+                                Color(0xFFFF1E44),
+                                Color(0xFFFF8599)
+                            )
+                        )
+                    } else {
+                        SolidColor(Color(0x55FF1E44))
+                    },
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (micOn) Icons.Rounded.Mic else Icons.Rounded.MicOff,
+                contentDescription = if (micOn) t("মাইক বন্ধ করুন") else t("মাইক চালু করুন"),
+                tint = if (micOn) Color(0xFFFFFFFF) else Color(0xFF882233),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+@Composable
 fun BottomComposer(
     panelAlpha: Float = 0.22f,
     text: String,
@@ -1129,49 +1259,45 @@ fun BottomComposer(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .padding(horizontal = 12.dp, vertical = 3.dp)
     ) {
-        // Floating Frosted Glass Input Container
+        // Floating Frosted Obsidian-Blood Input Capsule
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(28.dp))
-                .background(Glass.fill(panelAlpha))
-                .border(1.dp, Glass.border, RoundedCornerShape(28.dp))
-                .padding(horizontal = 14.dp, vertical = 6.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(
+                            Color(0xF2150206),
+                            Color(0xF222040B),
+                            Color(0xF2150206)
+                        )
+                    )
+                )
+                .border(
+                    width = 1.3.dp,
+                    brush = Brush.horizontalGradient(
+                        listOf(
+                            Color(0xFFFF1E44),
+                            Color(0xFF880018),
+                            Color(0xFFFF1E44)
+                        )
+                    ),
+                    shape = RoundedCornerShape(28.dp)
+                )
+                .padding(horizontal = 8.dp, vertical = 5.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // The microphone switch, right where the user types.
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (micOn) Glass.pinkFill.copy(alpha = 0.28f)
-                            else Glass.rowFill(0.35f)
-                        )
-                        .border(
-                            1.dp,
-                            if (micOn) Color(0xFFFF1E44) else Glass.borderSoft,
-                            CircleShape
-                        )
-                        .clickable {
-                            Glass.vibrate(context, 16)
-                            onMicToggle()
-                        }
-                        .testTag("mic_button"),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = if (micOn) Icons.Rounded.Mic else Icons.Rounded.MicOff,
-                        contentDescription = if (micOn) t("মাইক বন্ধ করুন") else t("মাইক চালু করুন"),
-                        tint = if (micOn) Color(0xFFFF1E44) else Glass.textMuted,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                // Living Blood-Cyber Mic Button
+                BloodCyberMicButton(
+                    micOn = micOn,
+                    isListening = isListening,
+                    onClick = onMicToggle
+                )
 
                 Spacer(modifier = Modifier.width(6.dp))
 
@@ -1183,10 +1309,10 @@ fun BottomComposer(
                         .padding(horizontal = 6.dp, vertical = 8.dp)
                         .testTag("chat_input_field"),
                     textStyle = TextStyle(
-                        color = Glass.textPrimary,
+                        color = Color(0xFFFFF0F2),
                         fontSize = 14.5.sp
                     ),
-                    cursorBrush = SolidColor(Glass.pink),
+                    cursorBrush = SolidColor(Color(0xFFFF1E44)),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                     keyboardActions = KeyboardActions(onSend = {
                         if (text.isNotBlank()) {
@@ -1198,7 +1324,7 @@ fun BottomComposer(
                         if (text.isEmpty()) {
                             Text(
                                 text = t("বলা বা লেখা..."),
-                                color = Glass.textMuted,
+                                color = Color(0x99FFA3B2),
                                 fontSize = 14.sp
                             )
                         }
@@ -1206,17 +1332,21 @@ fun BottomComposer(
                     }
                 )
 
-                // Send Button (glowing blood-red ruby gradient)
+                // Send Button (Glowing blood-red ruby circular button)
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(42.dp)
                         .clip(CircleShape)
                         .background(
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFFFF1E44), Color(0xFF8B0000))
+                            Brush.radialGradient(
+                                listOf(
+                                    Color(0xFFFF2A4D),
+                                    Color(0xFFC0001E),
+                                    Color(0xFF6B000B)
+                                )
                             )
                         )
-                        .border(1.dp, Color(0x66FF1E44), CircleShape)
+                        .border(1.2.dp, Color(0xFFFF6680), CircleShape)
                         .clickable {
                             if (text.isNotBlank()) {
                                 Glass.vibrate(context, 18)
@@ -1229,14 +1359,14 @@ fun BottomComposer(
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.Send,
                         contentDescription = "Send",
-                        tint = Glass.textOnAccent,
-                        modifier = Modifier.size(18.dp)
+                        tint = Color.White,
+                        modifier = Modifier.size(19.dp)
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         // Quick Action Chips Row
         QuickActionChips(onChipClick = onQuickAction)

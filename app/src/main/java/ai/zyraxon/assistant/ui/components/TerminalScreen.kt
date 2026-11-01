@@ -46,14 +46,14 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val TerminalBg = Color(0xFF07090C)
-private val TerminalChrome = Color(0xFF11151B)
-private val TerminalEdge = Color(0xFF2A313C)
-private val TerminalPrompt = Color(0xFF43E08A)
-private val TerminalText = Color(0xFFD7E1EC)
-private val TerminalDim = Color(0xFF7C8798)
-private val TerminalError = Color(0xFFFF6B6B)
-private val TerminalCyan = Color(0xFF4FD6E8)
+private val TerminalBg = Color(0xFF070103)
+private val TerminalChrome = Color(0xFF140206)
+private val TerminalEdge = Color(0xFF4A0A14)
+private val TerminalPrompt = Color(0xFFFF1E44)
+private val TerminalText = Color(0xFFF5E4E8)
+private val TerminalDim = Color(0xFF9E6572)
+private val TerminalError = Color(0xFFFF2244)
+private val TerminalCyan = Color(0xFFFF5277)
 
 /**
  * The Terminal tab: a real black terminal, not a log viewer.
@@ -220,19 +220,57 @@ fun TerminalScreen(
             }
         }
 
+        // Kali Linux / Hacker Quick Command Bar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF0F0205))
+                .border(1.dp, TerminalEdge, RoundedCornerShape(0.dp))
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 8.dp, vertical = 5.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            val quickCommands = listOf("apt update", "kali-ui", "git status", "python3", "nmap", "clear", "ls -la", "top", "shizuku")
+            for (cmd in quickCommands) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0x33FF1744))
+                        .border(0.8.dp, Color(0x66FF1E44), RoundedCornerShape(6.dp))
+                        .clickable {
+                            if (cmd == "clear") {
+                                onClear()
+                            } else {
+                                onRun(cmd)
+                            }
+                        }
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = cmd,
+                        color = TerminalPrompt,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
+            }
+        }
+
         // The prompt. One line, monospace, Enter runs it.
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(TerminalChrome)
                 .border(1.dp, TerminalEdge, RoundedCornerShape(0.dp))
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = 10.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "$ ",
+                text = "root@zyraxon:~# ",
                 color = TerminalPrompt,
-                fontSize = 13.sp,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.Monospace
             )
             BasicTextField(
@@ -241,7 +279,7 @@ fun TerminalScreen(
                 modifier = Modifier.weight(1f),
                 textStyle = androidx.compose.ui.text.TextStyle(
                     color = TerminalText,
-                    fontSize = 13.sp,
+                    fontSize = 12.5.sp,
                     fontFamily = FontFamily.Monospace
                 ),
                 cursorBrush = SolidColor(TerminalPrompt),
@@ -260,12 +298,15 @@ fun TerminalScreen(
                 })
             )
             Text(
-                text = "↵",
-                color = TerminalDim,
-                fontSize = 14.sp,
+                text = "↵ RUN",
+                color = TerminalPrompt,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.Monospace,
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0x33FF1E44))
+                    .border(0.8.dp, Color(0x77FF1E44), RoundedCornerShape(6.dp))
                     .clickable {
                         if (input.isNotBlank()) {
                             history = (history + input).takeLast(100)
@@ -274,7 +315,7 @@ fun TerminalScreen(
                             input = ""
                         }
                     }
-                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
             )
         }
 
@@ -283,17 +324,18 @@ fun TerminalScreen(
                 .fillMaxWidth()
                 .background(TerminalChrome)
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp, vertical = 5.dp),
+                .padding(horizontal = 12.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
-                text = cwd,
+                text = "ROOT: $cwd",
                 color = TerminalCyan,
                 fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
                 fontFamily = FontFamily.Monospace
             )
             Text(
-                text = "busybox sh · PATH ~/bin",
+                text = "KALI LINUX · BUSYBOX 1.36 · SHIZUKU ACTIVE",
                 color = TerminalDim,
                 fontSize = 10.sp,
                 fontFamily = FontFamily.Monospace
