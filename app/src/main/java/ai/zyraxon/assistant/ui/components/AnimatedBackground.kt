@@ -8,7 +8,13 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.zyraxon.assistant.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -59,6 +65,16 @@ fun AnimatedBackground(
         label = "pulse"
     )
 
+    val smokeDrift by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(12000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "smoke_drift"
+    )
+
     val stars = remember {
         val rand = Random(42)
         List(70) {
@@ -74,28 +90,50 @@ fun AnimatedBackground(
 
     val effectivePulse = if (isSpeaking) pulse * (1f + audioLevel * 0.4f) else pulse
 
-    Canvas(modifier = modifier.fillMaxSize()) {
-        // Deep obsidian-crimson velvet foundation
-        drawRect(color = Color(0xFF070103))
+    Box(modifier = modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.img_blood_cyber_bg),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
 
-        when (mode) {
-            BgAnimationMode.LIVING_PINK_AURA -> {
-                drawLivingPinkAuraStage(center, size.width, rotation, effectivePulse)
-                drawTwinklingStars(stars, pulse)
-            }
-            BgAnimationMode.COSMIC_AURA -> {
-                drawCosmicPortal(center, size.width, rotation, effectivePulse)
-                drawTwinklingStars(stars, pulse)
-            }
-            BgAnimationMode.CYBER_GRID -> {
-                drawCyberGrid(size.width, size.height, rotation, effectivePulse)
-            }
-            BgAnimationMode.DEEP_NEBULA -> {
-                drawDeepNebula(center, size.width, rotation, effectivePulse)
-                drawTwinklingStars(stars, pulse)
-            }
-            BgAnimationMode.MATRIX_RAIN -> {
-                drawMatrixRain(size.width, size.height, rotation)
+        // Animated aura/nebula light glow layer on top
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .alpha(0.85f)
+        ) {
+            // Subtle obsidian-crimson shading so text and controls pop with luxury contrast
+            drawRect(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xB0070103),
+                        Color(0x40070103),
+                        Color(0xD0070103)
+                    )
+                )
+            )
+
+            when (mode) {
+                BgAnimationMode.LIVING_PINK_AURA -> {
+                    drawLivingPinkAuraStage(center, size.width, size.height, rotation, effectivePulse, smokeDrift)
+                    drawTwinklingStars(stars, pulse)
+                }
+                BgAnimationMode.COSMIC_AURA -> {
+                    drawCosmicPortal(center, size.width, rotation, effectivePulse)
+                    drawTwinklingStars(stars, pulse)
+                }
+                BgAnimationMode.CYBER_GRID -> {
+                    drawCyberGrid(size.width, size.height, rotation, effectivePulse)
+                }
+                BgAnimationMode.DEEP_NEBULA -> {
+                    drawDeepNebula(center, size.width, rotation, effectivePulse)
+                    drawTwinklingStars(stars, pulse)
+                }
+                BgAnimationMode.MATRIX_RAIN -> {
+                    drawMatrixRain(size.width, size.height, rotation)
+                }
             }
         }
     }
@@ -104,40 +142,106 @@ fun AnimatedBackground(
 private fun DrawScope.drawLivingPinkAuraStage(
     center: Offset,
     width: Float,
+    height: Float,
     rotation: Float,
-    pulse: Float
+    pulse: Float,
+    drift: Float
 ) {
     val radius = (width * 0.85f) * pulse
+    val rad = Math.toRadians(rotation.toDouble())
+    val waveCos = cos(rad).toFloat()
+    val waveSin = sin(rad).toFloat()
 
-    // Top-left blood-red ambient light
+    // 1. Swirling Blood-Red Smoke Plume #1 (Top-Left undulating towards Center)
+    val smoke1Center = Offset(
+        x = width * 0.28f + waveCos * 45f,
+        y = height * 0.26f + waveSin * 35f
+    )
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(
-                Color(0x44FF1744),
-                Color(0x228B0000),
+                Color(0x66FF1744),
+                Color(0x408B0000),
+                Color(0x203D0008),
                 Color.Transparent
             ),
-            center = Offset(width * 0.2f, center.y * 0.3f),
-            radius = radius * 0.9f
+            center = smoke1Center,
+            radius = radius * 0.95f
         ),
-        radius = radius * 0.9f,
-        center = Offset(width * 0.2f, center.y * 0.3f)
+        radius = radius * 0.95f,
+        center = smoke1Center
     )
 
-    // Center-bottom scarlet/crimson ambient light
+    // 2. Swirling Blood-Red Smoke Plume #2 (Central Living Mist halo around the Aura)
+    val smoke2Center = Offset(
+        x = center.x - waveSin * 40f,
+        y = center.y + waveCos * 30f
+    )
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(
-                Color(0x33DC143C),
-                Color(0x187F0014),
+                Color(0x55DC143C),
+                Color(0x35990018),
+                Color(0x184A000A),
                 Color.Transparent
             ),
-            center = Offset(width * 0.8f, center.y * 1.3f),
-            radius = radius * 0.9f
+            center = smoke2Center,
+            radius = radius * 1.15f
         ),
-        radius = radius * 0.9f,
-        center = Offset(width * 0.8f, center.y * 1.3f)
+        radius = radius * 1.15f,
+        center = smoke2Center
     )
+
+    // 3. Rolling Crimson Smoke Bank #3 (Bottom-Right curling upwards)
+    val smoke3Center = Offset(
+        x = width * 0.72f + waveSin * 50f,
+        y = height * 0.72f - waveCos * 40f
+    )
+    drawCircle(
+        brush = Brush.radialGradient(
+            colors = listOf(
+                Color(0x52FF0834),
+                Color(0x3066000E),
+                Color.Transparent
+            ),
+            center = smoke3Center,
+            radius = radius * 1.05f
+        ),
+        radius = radius * 1.05f,
+        center = smoke3Center
+    )
+
+    // 4. Subtle Blood Vapor Tendril #4 (Top-Right drifting across)
+    val smoke4Center = Offset(
+        x = width * 0.82f - waveCos * 35f,
+        y = height * 0.18f + waveSin * 30f
+    )
+    drawCircle(
+        brush = Brush.radialGradient(
+            colors = listOf(
+                Color(0x3AB22222),
+                Color(0x1C800000),
+                Color.Transparent
+            ),
+            center = smoke4Center,
+            radius = radius * 0.85f
+        ),
+        radius = radius * 0.85f,
+        center = smoke4Center
+    )
+
+    // 5. Rising Blood-Red Embers / Sparks drifting upward through the smoke
+    for (i in 0 until 18) {
+        val emberSeed = (i * 37) % 100 / 100f
+        val emberX = (width * emberSeed + waveSin * 25f * (if (i % 2 == 0) 1f else -1f)) % width
+        val baseEmberY = (height * (1f - ((drift + emberSeed) % 1f)))
+        val emberAlpha = (0.25f + 0.55f * sin((drift * 6.28f + i).toDouble()).toFloat().coerceIn(0f, 1f))
+        drawCircle(
+            color = if (i % 3 == 0) Color(0xFFFF4D6D).copy(alpha = emberAlpha) else Color(0xFFFF1E44).copy(alpha = emberAlpha),
+            radius = (1.5f + (i % 3) * 1.2f) * pulse,
+            center = Offset(emberX, baseEmberY)
+        )
+    }
 }
 
 private fun DrawScope.drawCosmicPortal(
