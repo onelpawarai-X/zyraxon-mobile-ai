@@ -280,7 +280,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     // The aura's look. Every value is written straight into the aura page as a
     // CSS variable, so the user can reshape the orb without a rebuild.
-    private val _auraHue = MutableStateFlow(prefs.getInt("aura_hue", 325))
+    private val _auraHue = MutableStateFlow(prefs.getInt("aura_hue", 352))
     val auraHue: StateFlow<Int> = _auraHue.asStateFlow()
 
     private val _auraSize = MutableStateFlow(prefs.getFloat("aura_size", 1.0f))
@@ -963,7 +963,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun setAuraStyle(style: String) {
-        val allowed = setOf("orb", "twin", "vortex", "bloom", "helix", "core")
+        val allowed = ai.zyraxon.assistant.ui.components.AuraStyleIds.toSet()
         if (style !in allowed) return
         _auraStyle.value = style
         prefs.edit().putString("aura_style", style).apply()

@@ -20,6 +20,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -842,20 +848,18 @@ fun SettingsSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 380.dp, max = 540.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Brush.verticalGradient(listOf(Color(0x99240309), Color(0xB30A0104))))
+                    .bloodPulseBorder(RoundedCornerShape(16.dp), 1.dp)
                     .verticalScroll(rememberScrollState())
+                    .padding(12.dp)
             ) {
                 when (activePane) {
                     "session" -> SessionNavPane(viewModel = viewModel, onDismiss = onDismiss)
 
                     "persona" -> {
                         val selectedPersona by viewModel.selectedPersona.collectAsState()
-                        Text(
-                            t("পরিচয় নির্বাচন (Persona)"),
-                            fontWeight = FontWeight.Bold,
-                            color = Glass.textPrimary,
-                            fontSize = 14.sp,
-                            style = TextStyle(shadow = BloodGlowSoft)
-                        )
+                        HorrorSectionTitle(t("পরিচয় নির্বাচন (Persona)"))
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             t("যে পরিচয় বাছবেন, তার কণ্ঠ ও কথা বলার ভঙ্গি সেই অনুযায়ী হবে।"),
@@ -900,13 +904,7 @@ fun SettingsSheet(
                         // Nothing is listed here that the providers did not send.
                         val realtimeModels = models.filter { it.isRealtime }
 
-                        Text(
-                            t("লাইভ ভয়েস — স্পিচ-টু-স্পিচ"),
-                            fontWeight = FontWeight.Bold,
-                            color = Glass.textPrimary,
-                            fontSize = 14.sp,
-                            style = TextStyle(shadow = BloodGlowSoft)
-                        )
+                        HorrorSectionTitle(t("লাইভ ভয়েস — স্পিচ-টু-স্পিচ"))
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             t("চালু থাকলে রিয়েলটাইম মডেল নিজের কণ্ঠে সরাসরি কথা বলে, আর ফোনের TTS বন্ধ থাকে। বন্ধ থাকলে মডেলের লেখা ফোনের TTS পড়ে শোনায় — তাই লাইভ সংযোগ না হলেও কথা শোনা যায়।"),
@@ -1051,13 +1049,7 @@ fun SettingsSheet(
                         var hfToken by remember { mutableStateOf("") }
                         val scope = rememberCoroutineScope()
 
-                        Text(
-                            t("অন-ডিভাইস মডেল — ইন্টারনেট ছাড়াই উত্তর"),
-                            fontWeight = FontWeight.Bold,
-                            color = Glass.textPrimary,
-                            fontSize = 14.sp,
-                            style = TextStyle(shadow = BloodGlowSoft)
-                        )
+                        HorrorSectionTitle(t("অন-ডিভাইস মডেল — ইন্টারনেট ছাড়াই উত্তর"))
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             t("মডেল ফাইলটা ফোনেই চলে, কোনো ডেটা বাইরে যায় না। ফাইল বড় (৫০০MB+), তাই একবার ডাউনলোড করে রাখা হয়।"),
@@ -1194,7 +1186,7 @@ fun SettingsSheet(
 
                     "voice" -> {
                         // VOICE (TTS) CONTROLS
-                        Text(t("ভয়েস সেটিংস ও কণ্ঠের প্রকার (Text-to-Speech)"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        HorrorSectionTitle(t("ভয়েস সেটিংস ও কণ্ঠের প্রকার (Text-to-Speech)"))
                         Spacer(modifier = Modifier.height(8.dp))
 
                         val currentGender by viewModel.voiceGender.collectAsState()
@@ -1512,7 +1504,7 @@ fun SettingsSheet(
 
                     "mic" -> {
                         // MICROPHONE CONTROLS
-                        Text(t("মাইক্রোফোন ও লিসেনিং সেটিংস"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        HorrorSectionTitle(t("মাইক্রোফোন ও লিসেনিং সেটিংস"))
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Row(
@@ -1574,70 +1566,67 @@ fun SettingsSheet(
 
                     "aura" -> {
                         // AURA & BACKGROUND
-                        Text(t("ওরা ও ব্যাকগ্রাউন্ড অ্যানিমেশন"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        HorrorSectionTitle(t("ওরা ও ব্যাকগ্রাউন্ড অ্যানিমেশন"))
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Which designed aura is showing. Each one is a distinct
-                        // shape, not just a recolour.
-                        Text(t("ওরার স্টাইল"), color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            listOf(
-                                "orb" to t("ক্লাসিক"),
-                                "twin" to t("টুইন রিং"),
-                                "vortex" to t("ভর্টেক্স")
-                            ).forEach { (styleId, label) ->
-                                AuraStyleChip(styleId, label, auraStyle) { viewModel.setAuraStyle(it) }
+                        // The aura gallery: twelve designed auras, each shown live.
+                        // The picked one is what appears in the middle of the home
+                        // screen, recoloured by the hue below.
+                        Text(t("ওরার স্টাইল — ছুঁয়ে বেছে নাও"), color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val galleryClock by rememberInfiniteTransition(label = "gallery").animateFloat(
+                            initialValue = 0f,
+                            targetValue = 3600f,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(3_600_000, easing = LinearEasing),
+                                repeatMode = RepeatMode.Restart
+                            ),
+                            label = "galleryClock"
+                        )
+                        AuraStyleIds.chunked(3).forEach { rowIds ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                rowIds.forEach { styleId ->
+                                    val picked = auraStyle == styleId
+                                    Column(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(14.dp))
+                                            .background(BloodCardBrush)
+                                            .let {
+                                                if (picked) it.bloodPulseBorder(RoundedCornerShape(14.dp), 1.6.dp)
+                                                else it.border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
+                                            }
+                                            .clickable {
+                                                Glass.vibrate(context, 16)
+                                                viewModel.setAuraStyle(styleId)
+                                            }
+                                            .padding(vertical = 8.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        AuraPreview(
+                                            style = styleId,
+                                            hue = auraHue,
+                                            clock = galleryClock,
+                                            modifier = Modifier.size(84.dp)
+                                        )
+                                        Text(
+                                            text = t(auraStyleLabel(styleId)),
+                                            color = if (picked) BoneWhite else Glass.textSecondary,
+                                            fontSize = 11.sp,
+                                            fontWeight = if (picked) FontWeight.Bold else FontWeight.Medium,
+                                            maxLines = 1,
+                                            style = if (picked) TextStyle(shadow = BloodGlowSoft) else TextStyle.Default
+                                        )
+                                    }
+                                }
+                                repeat(3 - rowIds.size) { Spacer(modifier = Modifier.weight(1f)) }
                             }
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            listOf(
-                                "bloom" to t("ব্লুম"),
-                                "helix" to t("হেলিক্স"),
-                                "core" to t("কোর")
-                            ).forEach { (styleId, label) ->
-                                AuraStyleChip(styleId, label, auraStyle) { viewModel.setAuraStyle(it) }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // The shader modes. Each is a real WebGL scene rendered
-                        // inside the orb, and "ক্লাসিক" hands the aura back to
-                        // the CSS shapes above.
-                        Text(t("শেডার মোড"), color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            listOf(
-                                "none" to t("ক্লাসিক"),
-                                "cosmic" to t("কসমিক"),
-                                "portal" to t("পোর্টাল")
-                            ).forEach { (shaderId, label) ->
-                                AuraStyleChip(shaderId, label, auraShader) { viewModel.setAuraShader(it) }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            listOf(
-                                "cyber" to t("সাইবার গ্রিড"),
-                                "nebula" to t("নেবুলা")
-                            ).forEach { (shaderId, label) ->
-                                AuraStyleChip(shaderId, label, auraShader) { viewModel.setAuraShader(it) }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         // The aura itself. These four sliders drive the CSS
                         // variables inside aura.html, so the change is instant.
@@ -1648,12 +1637,12 @@ fun SettingsSheet(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             listOf(
-                                325 to t("গোলাপি"),
+                                352 to t("রক্ত"),
+                                330 to t("গোলাপি"),
                                 268 to t("বেগুনি"),
                                 190 to t("আকাশি"),
                                 150 to t("সবুজ"),
-                                20 to t("কমলা"),
-                                0 to t("লাল")
+                                30 to t("আগুন")
                             ).forEach { (hueValue, label) ->
                                 val isSelected = kotlin.math.abs(auraHue - hueValue) <= 8
                                 Box(
@@ -1685,6 +1674,13 @@ fun SettingsSheet(
                         }
                         Spacer(modifier = Modifier.height(10.dp))
 
+                        Text(t("রঙের সূক্ষ্ম নিয়ন্ত্রণ: {0}°", auraHue), color = Glass.textSecondary, fontSize = 12.sp)
+                        Slider(
+                            value = auraHue.toFloat(),
+                            onValueChange = { viewModel.setAuraHue(it.toInt()) },
+                            valueRange = 0f..360f,
+                            colors = SliderDefaults.colors(thumbColor = Glass.pinkFill, activeTrackColor = Glass.pinkFill)
+                        )
                         Text(t("ওরার আকার: {0}x", String.format("%.2f", auraSize)), color = Glass.textSecondary, fontSize = 12.sp)
                         Slider(
                             value = auraSize,
@@ -1761,39 +1757,8 @@ fun SettingsSheet(
                         }
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // The looping clip behind the aura. These are the clips
-                        // bundled with the app, so they work with no network.
-                        Text(t("ব্যাকগ্রাউন্ড ভিডিও"), color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
-                        Spacer(modifier = Modifier.height(6.dp))
-                        listOf(
-                            "girl.mp4" to t("মেয়ে (ওরা)"),
-                            "aurora.mp4" to t("অরোরা"),
-                            "space.mp4" to t("স্পেস টানেল"),
-                            "hero.mp4" to t("টানেল"),
-                            "dream.mp4" to t("স্বপ্নের মেঘ"),
-                            "ink.mp4" to t("কালি"),
-                            "city.mp4" to t("শহরের আলো"),
-                            "galaxy-eye.mp4" to t("গ্যালাক্সি আই"),
-                            "" to t("কোনো ভিডিও নয় (শুধু শেডার)")
-                        ).forEach { (asset, label) ->
-                            val isSelected = bgVideoAsset == asset
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 3.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(if (isSelected) Glass.pinkFill.copy(alpha = 0.20f) else Glass.rowFill(0.30f))
-                                    .clickable { viewModel.setBgVideoAsset(asset) }
-                                    .padding(11.dp)
-                            ) {
-                                Text(
-                                    text = if (isSelected) "● $label" else "○ $label",
-                                    color = if (isSelected) Glass.pink else Glass.textPrimary,
-                                    fontSize = 12.5.sp
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
+                        // The background is the bundled blood-red picture with living smoke and
+                        // embers; the old looping-video list did nothing and has been removed.
                         Text(t("শেডার মোড"), color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(6.dp))
 
@@ -1858,7 +1823,7 @@ fun SettingsSheet(
 
                     "providers" -> {
                         // AI PROVIDERS KEYS
-                        Text(t("এআই প্রোভাইডার ও নিজস্ব API Keys"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        HorrorSectionTitle(t("এআই প্রোভাইডার ও নিজস্ব API Keys"))
                         Text(t("কী সেভ করলে অ্যাপ নিজেই প্রোভাইডারের ক্যাটালগ পড়ে যাচাই করে — সত্যি কানেক্টেড হলে সবুজ, নাহলে আসল কারণ লাল রঙে দেখাবে।"), color = Glass.textMuted, fontSize = 11.5.sp)
                         Spacer(modifier = Modifier.height(10.dp))
 
@@ -1909,7 +1874,7 @@ fun SettingsSheet(
 
                     "github" -> {
                         // GITHUB INTEGRATION
-                        Text(t("গিটহাব ইন্টিগ্রেশন (GitHub Access Token)"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        HorrorSectionTitle(t("গিটহাব ইন্টিগ্রেশন (GitHub Access Token)"))
                         Text(t("ওয়েবসাইট ডিপ্লয় ও কোড সেভ করার জন্য আপনার নিজস্ব গিটহাব টোকেন ব্যবহার করুন।"), color = Glass.textMuted, fontSize = 11.5.sp)
                         Spacer(modifier = Modifier.height(10.dp))
 
@@ -1953,7 +1918,7 @@ fun SettingsSheet(
 
                     "perms" -> {
                         // SYSTEM PERMISSIONS
-                        Text(t("সিস্টেম পারমিশন ও ব্যাকগ্রাউন্ড সার্ভিস"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        HorrorSectionTitle(t("সিস্টেম পারমিশন ও ব্যাকগ্রাউন্ড সার্ভিস"))
                         Spacer(modifier = Modifier.height(10.dp))
 
                         // Accessibility Bridge
@@ -2008,7 +1973,7 @@ fun SettingsSheet(
 
                     "memory" -> {
                         // MEMORY MANAGEMENT (LOCAL SQLITE ROOM DB)
-                        Text(t("লোকাল এসকিউএল মেমরি (Persistent SQL Memory)"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        HorrorSectionTitle(t("লোকাল এসকিউএল মেমরি (Persistent SQL Memory)"))
                         Text(t("ZYRAXON আপনার যেসব তথ্য লোকাল SQLite ডাটাবেজে স্থায়ীভাবে মনে রেখেছে:"), color = Glass.textMuted, fontSize = 11.5.sp)
                         Spacer(modifier = Modifier.height(6.dp))
 
@@ -2113,7 +2078,7 @@ fun SettingsSheet(
 
                     "skills" -> {
                         // SKILLS & TOOLS GUIDE
-                        Text(t("ZYRAXON সিস্টেম ক্যাপাবিলিটি ও স্কিল গাইড"), fontWeight = FontWeight.Bold, color = Glass.textPrimary, fontSize = 14.sp)
+                        HorrorSectionTitle(t("ZYRAXON সিস্টেম ক্যাপাবিলিটি ও স্কিল গাইড"))
                         Spacer(modifier = Modifier.height(8.dp))
 
                         listOf(
@@ -2165,8 +2130,9 @@ fun SettingsSheet(
         // Decorative gore laid over the whole sheet; it never takes touches.
         BloodVeins(Modifier.matchParentSize(), seed = 14)
         BloodSplatter(Modifier.matchParentSize(), seed = 19)
+        WatchingEyes(Modifier.matchParentSize(), seed = 41, pairs = 3)
         HorrorVignette(Modifier.matchParentSize(), intensity = 0.8f)
-        BloodDrips(Modifier.align(Alignment.TopStart), seed = 3, count = 13, maxLength = 46.dp)
+        BloodDrips(Modifier.align(Alignment.TopStart), seed = 3, count = 6, maxLength = 42.dp)
         }
     }
 }
@@ -2183,13 +2149,7 @@ fun SessionNavPane(viewModel: ZyraxonViewModel, onDismiss: () -> Unit) {
     val alwaysListening by viewModel.alwaysListening.collectAsState()
     val messages by viewModel.messages.collectAsState()
 
-    Text(
-        t("সেকশন"),
-        fontWeight = FontWeight.Bold,
-        color = Glass.textPrimary,
-        fontSize = 14.sp,
-        style = TextStyle(shadow = BloodGlowSoft)
-    )
+    HorrorSectionTitle(t("সেকশন"))
     Spacer(modifier = Modifier.height(6.dp))
     Text(
         t("যে অংশে যেতে চান সেটি বেছে নিন। উপরে কোনো বাটন নেই — সব এখানে।"),
@@ -2233,13 +2193,7 @@ fun SessionNavPane(viewModel: ZyraxonViewModel, onDismiss: () -> Unit) {
     }
 
     Spacer(modifier = Modifier.height(18.dp))
-    Text(
-        t("নতুন সেশন"),
-        fontWeight = FontWeight.Bold,
-        color = Glass.textPrimary,
-        fontSize = 14.sp,
-        style = TextStyle(shadow = BloodGlowSoft)
-    )
+    HorrorSectionTitle(t("নতুন সেশন"))
     Spacer(modifier = Modifier.height(6.dp))
     Text(
         t("চ্যাট ইতিহাস মুছে একেবারে নতুন করে শুরু করুন।"),
@@ -2272,13 +2226,7 @@ fun SessionNavPane(viewModel: ZyraxonViewModel, onDismiss: () -> Unit) {
     }
 
     Spacer(modifier = Modifier.height(18.dp))
-    Text(
-        t("মাইক"),
-        fontWeight = FontWeight.Bold,
-        color = Glass.textPrimary,
-        fontSize = 14.sp,
-        style = TextStyle(shadow = BloodGlowSoft)
-    )
+    HorrorSectionTitle(t("মাইক"))
     Spacer(modifier = Modifier.height(10.dp))
     Row(
         modifier = Modifier
@@ -2309,13 +2257,7 @@ fun SessionNavPane(viewModel: ZyraxonViewModel, onDismiss: () -> Unit) {
 fun UpdatePane(viewModel: ZyraxonViewModel) {
     val state by viewModel.updateState.collectAsState()
 
-    Text(
-        t("অ্যাপ আপডেট (In-app Update)"),
-        fontWeight = FontWeight.Bold,
-        color = Glass.textPrimary,
-        fontSize = 14.sp,
-        style = TextStyle(shadow = BloodGlowSoft)
-    )
+    HorrorSectionTitle(t("অ্যাপ আপডেট (In-app Update)"))
     Spacer(modifier = Modifier.height(6.dp))
     Text(
         t("নতুন রিলিজ আপলোড হলে এখানেই দেখা যাবে। ইনস্টল করলে পুরনো অ্যাপটিই আপডেট হবে — চ্যাট, মেমরি ও সেটিংস মুছবে না, আলাদা অ্যাপ বসবে না।"),
