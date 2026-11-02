@@ -718,6 +718,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
         // Fetch Live Models on startup
         refreshModels()
+
+        // The Linux system ships inside the APK, so it is unpacked once, quietly,
+        // as soon as the app starts. There is nothing for the user to type and no
+        // `linux-install` step to remember: by the time they open the Terminal the
+        // system is already there, and it stays there across restarts.
+        viewModelScope.launch(Dispatchers.IO) {
+            val app = getApplication<Application>()
+            if (LinuxRuntime.isSupported(app) && !LinuxRuntime.isInstalled(app)) {
+                LinuxRuntime.install(app) { }
+            }
+        }
     }
 
     /**
@@ -2389,12 +2400,24 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 )
             }
 
-            !LinuxRuntime.isInstalled(app) -> TerminalLine(
-                id = lineId,
-                command = line,
-                output = "ZYRAXON Linux is not installed yet. Run first:\n  linux-install\n\n$status",
-                exitCode = 1, isError = true
-            )
+            !LinuxRuntime.isInstalled(app) -> {
+                // The system is unpacked on first launch, so reaching this branch
+                // means the very first command arrived before that finished. Set it
+                // up now rather than telling the user to type an install command:
+                // there is nothing they should have to do.
+                push("out", "Preparing ZYRAXON Linux…")
+                val ok = LinuxRuntime.install(app) { msg -> push("out", msg) }
+                if (ok) {
+                    runLinuxGuest(app, lineId, streamed, push, line.removePrefix("linux").trim().ifEmpty { "bash -l" })
+                } else {
+                    TerminalLine(
+                        id = lineId,
+                        command = line,
+                        output = streamed.toString().trimEnd('\n'),
+                        exitCode = 1, isError = true
+                    )
+                }
+            }
 
             else -> {
                 val cmd = line.removePrefix("linux").trim().ifEmpty { "bash -l" }

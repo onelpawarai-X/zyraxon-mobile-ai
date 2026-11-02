@@ -44,8 +44,11 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontStyle
+import com.zyraxon.assistant.R
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
@@ -66,6 +69,21 @@ private val TerminalText = Color(0xFFF5E4E8)
 private val TerminalDim = Color(0xFF9E6572)
 private val TerminalError = Color(0xFFFF2244)
 private val TerminalCyan = Color(0xFFFF4D6D)
+
+/**
+ * The Terminal's typeface. A monospace face carries the code, but no monospace
+ * font has Bengali glyphs, so Bengali text would fall back to a face that does
+ * not join the letters and renders as garbage. Both are therefore listed: the
+ * monospace first for ASCII, and Noto Sans Bengali after it for anything the
+ * first font does not cover. Compose falls through per glyph, so `echo` stays
+ * monospaced while `বাংলা` is shaped correctly.
+ */
+private val TerminalFont: FontFamily by lazy {
+    FontFamily(
+        Font(R.font.jetbrains_mono_regular, FontWeight.Normal, FontStyle.Normal),
+        Font(R.font.noto_sans_bengali, FontWeight.Normal, FontStyle.Normal),
+    )
+}
 
 /**
  * The Terminal tab: a real terminal, wearing a blood-red skin.
@@ -329,7 +347,7 @@ fun TerminalScreen(
                         text = "☰",
                         color = TerminalText,
                         fontSize = 15.sp,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = TerminalFont,
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .clickable { sidebar = !sidebar }
@@ -349,7 +367,7 @@ fun TerminalScreen(
                                 color = if (active) BoneWhite else TerminalDim,
                                 fontSize = 11.5.sp,
                                 fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                                fontFamily = FontFamily.Monospace,
+                                fontFamily = TerminalFont,
                                 maxLines = 1,
                                 style = if (active) TextStyle(shadow = BloodGlowSoft) else TextStyle.Default,
                                 modifier = Modifier
@@ -369,7 +387,7 @@ fun TerminalScreen(
                             color = TerminalPrompt,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily.Monospace,
+                            fontFamily = TerminalFont,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
                                 .clickable { onNewSession() }
@@ -389,7 +407,7 @@ fun TerminalScreen(
                         text = "fx",
                         color = if (fx) TerminalPrompt else TerminalDim,
                         fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = TerminalFont,
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .clickable { fx = !fx }
@@ -399,7 +417,7 @@ fun TerminalScreen(
                         text = "clear",
                         color = TerminalDim,
                         fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = TerminalFont,
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .clickable { onClear() }
@@ -445,7 +463,7 @@ fun TerminalScreen(
                                     color = TerminalPrompt,
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold,
-                                    fontFamily = FontFamily.Monospace,
+                                    fontFamily = TerminalFont,
                                     lineHeight = 11.sp,
                                     style = TextStyle(shadow = BloodGlowSoft)
                                 )
@@ -454,7 +472,7 @@ fun TerminalScreen(
                                     text = welcomeBody(),
                                     color = TerminalDim,
                                     fontSize = 12.sp,
-                                    fontFamily = FontFamily.Monospace,
+                                    fontFamily = TerminalFont,
                                     lineHeight = 16.sp
                                 )
                                 Spacer(Modifier.height(6.dp))
@@ -472,7 +490,7 @@ fun TerminalScreen(
                                 color = TerminalPrompt,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace,
+                                fontFamily = TerminalFont,
                                 lineHeight = 17.sp,
                                 style = TextStyle(shadow = BloodGlowSoft)
                             )
@@ -492,7 +510,7 @@ fun TerminalScreen(
                                     },
                                     color = TerminalText,
                                     fontSize = 12.5.sp,
-                                    fontFamily = FontFamily.Monospace,
+                                    fontFamily = TerminalFont,
                                     lineHeight = 17.sp,
                                     modifier = Modifier.weight(1f)
                                 )
@@ -513,7 +531,7 @@ fun TerminalScreen(
                                     textStyle = TextStyle(
                                         color = TerminalText,
                                         fontSize = 12.5.sp,
-                                        fontFamily = FontFamily.Monospace,
+                                        fontFamily = TerminalFont,
                                         lineHeight = 17.sp
                                     ),
                                     cursorBrush = SolidColor(TerminalPrompt),
@@ -530,7 +548,7 @@ fun TerminalScreen(
                                 color = TerminalPrompt,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace,
+                                fontFamily = TerminalFont,
                                 style = TextStyle(shadow = BloodGlowSoft),
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
@@ -615,13 +633,13 @@ fun TerminalScreen(
                         color = TerminalCyan,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.SemiBold,
-                        fontFamily = FontFamily.Monospace
+                        fontFamily = TerminalFont
                     )
                     Text(
                         text = "· ${whispers[whisper]}",
                         color = TerminalPrompt,
                         fontSize = 10.sp,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = TerminalFont,
                         style = TextStyle(shadow = BloodGlowSoft)
                     )
                 }
@@ -662,7 +680,7 @@ private fun RowScope.KbKey(label: String, active: Boolean, weight: Float = 1f, o
             color = if (active) Color.White else TerminalText,
             fontSize = if (label.length > 2) 11.sp else 14.sp,
             fontWeight = FontWeight.SemiBold,
-            fontFamily = FontFamily.Monospace,
+            fontFamily = TerminalFont,
             maxLines = 1
         )
     }
@@ -698,14 +716,14 @@ private fun TerminalSidebar(
                 color = TerminalDim,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,
-                fontFamily = FontFamily.Monospace
+                fontFamily = TerminalFont
             )
             Spacer(Modifier.weight(1f))
             Text(
                 text = "‹",
                 color = TerminalText,
                 fontSize = 15.sp,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = TerminalFont,
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
                     .clickable { onCloseSidebar() }
@@ -727,20 +745,20 @@ private fun TerminalSidebar(
                     text = if (active) "▸ " else "  ",
                     color = TerminalPrompt,
                     fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = TerminalFont
                 )
                 Text(
                     text = session.title,
                     color = if (active) TerminalText else TerminalDim,
                     fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = TerminalFont,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = "✕",
                     color = TerminalDim,
                     fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = TerminalFont,
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
                         .clickable { onCloseSession(session.id) }
@@ -753,7 +771,7 @@ private fun TerminalSidebar(
             text = "+  new shell",
             color = TerminalPrompt,
             fontSize = 12.sp,
-            fontFamily = FontFamily.Monospace,
+            fontFamily = TerminalFont,
             modifier = Modifier
                 .clip(RoundedCornerShape(6.dp))
                 .clickable { onNewSession() }
@@ -777,7 +795,7 @@ private fun TerminalEntry(line: TerminalLine) {
                 withStyle(SpanStyle(color = TerminalText)) { append(line.command) }
             },
             fontSize = 12.5.sp,
-            fontFamily = FontFamily.Monospace,
+            fontFamily = TerminalFont,
             lineHeight = 17.sp
         )
         if (!quiet) {
@@ -796,7 +814,7 @@ private fun TerminalEntry(line: TerminalLine) {
                     }
                 },
                 fontSize = 12.5.sp,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = TerminalFont,
                 lineHeight = 17.sp
             )
         }
@@ -807,7 +825,7 @@ private fun TerminalEntry(line: TerminalLine) {
                 text = "█",
                 color = TerminalPrompt,
                 fontSize = 12.5.sp,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = TerminalFont,
                 lineHeight = 17.sp,
                 modifier = Modifier.horrorFlicker()
             )
@@ -817,7 +835,7 @@ private fun TerminalEntry(line: TerminalLine) {
                 text = "[timed out]",
                 color = TerminalError,
                 fontSize = 11.sp,
-                fontFamily = FontFamily.Monospace
+                fontFamily = TerminalFont
             )
         }
     }

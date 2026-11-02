@@ -1385,10 +1385,16 @@ object ToolRegistry {
             "run" -> {
                 val command = args.optString("command").trim()
                 if (command.isEmpty()) return err("bad-args", "Provide a command")
+                // The system ships in the APK and is unpacked on first launch. If a
+                // command arrives before that finishes, set it up now instead of
+                // asking the user to run an install step they should never need.
+                if (!LinuxRuntime.isInstalled(context) && LinuxRuntime.isSupported(context)) {
+                    LinuxRuntime.install(context) { }
+                }
                 if (!LinuxRuntime.isInstalled(context)) {
                     return err(
-                        "linux-missing",
-                        "ZYRAXON Linux is not installed yet. Run it once with action:\"install\"."
+                        "linux-unavailable",
+                        "ZYRAXON Linux could not be set up on this device."
                     )
                 }
                 val out = StringBuilder()

@@ -394,7 +394,12 @@ object LinuxRuntime {
 
         val line = buildString {
             append("PATH=$native:$real/bin:/system/bin ")
-            append("LD_LIBRARY_PATH=$native:$real/lib ")
+            // The guest's own libraries only. Pointing this at the native library
+            // directory would put Android's `libc.so` on the guest linker's search
+            // path, and a guest binary that then loads it dies on the spot. proot
+            // itself finds its own libraries through the `$ORIGIN` runpath, so it
+            // does not need this to include them.
+            append("LD_LIBRARY_PATH=$GUEST_PREFIX/lib ")
             append("PROOT_LOADER=$loader PROOT_TMP_DIR=$tmp ")
             append("PREFIX=$GUEST_PREFIX HOME=$GUEST_HOME TMPDIR=$GUEST_PREFIX/tmp ")
             append("TERM=xterm-256color LANG=C.UTF-8 ")
