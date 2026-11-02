@@ -582,6 +582,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private val _terminalBusy = MutableStateFlow(false)
     val terminalBusy: StateFlow<Boolean> = _terminalBusy.asStateFlow()
 
+    /**
+     * The standard input of the command that is running right now, if any.
+     *
+     * A running command owns the terminal: whatever the user types next is an
+     * answer to that command's question, not a new command. This is the pipe that
+     * carries that answer. It is null whenever nothing is running.
+     */
+    @Volatile
+    private var terminalInput: java.io.OutputStream? = null
+
     private val _terminalCwd = MutableStateFlow("~")
     val terminalCwd: StateFlow<String> = _terminalCwd.asStateFlow()
 
@@ -2259,7 +2269,15 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      */
     fun runTerminal(command: String) {
         val line = command.trim()
-        if (line.isEmpty() || _terminalBusy.value) return
+        if (line.isEmpty()) return
+        // While a command is running, a line of input belongs to that command, not
+        // to the shell. This is what makes a prompt answerable: `apt install` asks
+        // "Do you want to continue? [Y/n]", and the "y" the user types goes to the
+        // program that asked, instead of being rejected as a new command.
+        if (_terminalBusy.value) {
+            sendTerminalInput(line)
+            return
+        }
         viewModelScope.launch(Dispatchers.IO) {
             _terminalBusy.value = true
             try {
@@ -2267,6 +2285,26 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             } finally {
                 _terminalBusy.value = false
             }
+        }
+    }
+
+    /**
+     * Writes a line to the standard input of the command that is currently running.
+     *
+     * Nothing happens if no command is running, so this can never leak text into a
+     * later command. The newline is appended because a prompt waits for a whole
+     * line, and the user pressing Enter is what this represents.
+     */
+    fun sendTerminalInput(text: String) {
+        val sink = terminalInput ?: return
+        try {
+            synchronized(sink) {
+                sink.write((text + "\n").toByteArray())
+                sink.flush()
+            }
+        } catch (e: Exception) {
+            // The command may have just finished and closed its input. Losing the
+            // race is not an error worth showing, and the output already says so.
         }
     }
 
@@ -2310,10 +2348,19 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val lineId = UUID.randomUUID().toString()
         appendTerminal(TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
         val streamed = StringBuilder()
-        val r = ShellRuntime.runStreaming(app, line, cwd = currentTerminalDir(home), timeoutMs = 120_000) { _, text ->
-            synchronized(streamed) { streamed.append(text).append('\n') }
-            updateTerminalLine(lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
-        }
+        val r = ShellRuntime.runStreaming(
+            app, line,
+            cwd = currentTerminalDir(home),
+            timeoutMs = 120_000,
+            onChunk = { _, text ->
+                synchronized(streamed) { streamed.append(text).append('\n') }
+                updateTerminalLine(lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
+            },
+            // A host command can prompt too (`read`, a password), so it gets the
+            // same answerable input as a Linux one.
+            onSpawn = { sink -> terminalInput = sink }
+        )
+        terminalInput = null
         val body = buildString {
             if (r.stdout.isNotEmpty()) append(r.stdout.trimEnd())
             if (r.stderr.isNotEmpty()) {
@@ -2357,9 +2404,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /**
-     * Runs one line of the bundled Linux system. Installing is a separate,
-     * explicit command because it unpacks ~350 MB from the APK and must not happen
-     * behind the user's back; every other line goes into the installed guest.
+     * Runs one line of the bundled Linux system. The system is unpacked on first
+     * launch, so this only ever drives it; every line goes into the guest.
      */
     private suspend fun runLinuxLine(app: Application, line: String): TerminalLine {
         val lineId = UUID.randomUUID().toString()
@@ -2371,14 +2417,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         }
 
         val status = buildString {
-            append("Linux: ").append(if (LinuxRuntime.isInstalled(app)) "installed" else "not installed")
+            append("Linux: ").append(if (LinuxRuntime.isInstalled(app)) "ready" else "setting up…")
             if (!LinuxRuntime.isSupported(app)) append(" · unsupported on this device")
             append("\n\n")
-            append("Commands:\n")
-            append("  linux-install           — install ZYRAXON Linux (bash, apt, git, python, node, clang)\n")
-            append("  linux <command>         — run a command inside Linux\n")
-            append("  linux-status            — show install status\n")
-            append("  linux-shell             — open an interactive bash\n")
+            append("The system is already installed — nothing to set up. Type any Linux command.\n\n")
+            append("Examples:\n")
+            append("  pkg install nmap        — install a tool from the Termux repository\n")
+            append("  pkg upgrade             — update every installed package\n")
+            append("  ls, cd, cat, nano       — the usual shell\n")
+            append("  git clone <url>         — clone a repository\n")
+            append("  python, node, clang     — run code\n")
+            append("  linux-status            — show this status\n")
         }
 
         val result = when {
@@ -2438,7 +2487,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         push: (String, String) -> Unit,
         command: String
     ): TerminalLine {
-        val r = LinuxRuntime.runStreaming(app, command) { stream, text -> push(stream, text) }
+        val r = LinuxRuntime.runStreaming(
+            app, command,
+            onChunk = { stream, text -> push(stream, text) },
+            // Hold the command's input while it runs, so a prompt can be answered.
+            onSpawn = { sink -> terminalInput = sink }
+        )
+        terminalInput = null
         if (r == null) {
             return TerminalLine(
                 command = command,

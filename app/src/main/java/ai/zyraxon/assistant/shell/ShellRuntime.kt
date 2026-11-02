@@ -127,6 +127,14 @@ object ShellRuntime {
      * `exitValue()` — the one method present on every version.
      */
     private fun awaitProcess(p: Process, timeoutMs: Long): Boolean {
+        // A timeout of zero or less means no deadline: the command runs until it
+        // decides it is finished. That is how a real terminal behaves, and it is
+        // what Termux does — its interactive session has no timeout at all, and
+        // its own comment says a bound is only worth adding for plugin commands
+        // that must return a result.
+        if (timeoutMs <= 0) {
+            return try { p.waitFor(); true } catch (_: InterruptedException) { false }
+        }
         val deadline = System.currentTimeMillis() + timeoutMs
         while (System.currentTimeMillis() < deadline) {
             try { p.exitValue(); return true } catch (_: IllegalThreadStateException) {}
@@ -236,6 +244,25 @@ object ShellRuntime {
         timeoutMs: Long = 60_000,
         extraEnv: Map<String, String> = emptyMap(),
         onChunk: (stream: String, text: String) -> Unit
+    ): Result = runStreaming(context, command, cwd, timeoutMs, extraEnv, onChunk, null)
+
+    /**
+     * Streams a command and, when [onSpawn] is given, hands back the live process.
+     *
+     * The handle exists so a caller can write to the command's standard input while
+     * it is still running. A command that asks a question — `apt` asking to confirm
+     * an install, a program asking for a password — is otherwise unanswerable, and
+     * the Terminal would appear to hang until the timeout. `onSpawn` runs on the
+     * calling thread as soon as the process exists, before any output is read.
+     */
+    fun runStreaming(
+        context: Context,
+        command: String,
+        cwd: File? = null,
+        timeoutMs: Long = 60_000,
+        extraEnv: Map<String, String> = emptyMap(),
+        onChunk: (stream: String, text: String) -> Unit,
+        onSpawn: ((java.io.OutputStream) -> Unit)?
     ): Result {
         ensureReady(context)
         val dir = (cwd ?: home(context)).apply { mkdirs() }
@@ -247,6 +274,7 @@ object ShellRuntime {
             pb.environment().putAll(extraEnv)
             pb.redirectErrorStream(false)
             val p = pb.start()
+            onSpawn?.invoke(p.outputStream)
             val out = StringBuilder()
             val err = StringBuilder()
             // A reader thread pumps each stream and hands every line up as it is

@@ -27,10 +27,9 @@ import java.io.File
  *    never reached.
  *
  * So the whole system runs as the app's own user, with no Shizuku and no root,
- * while `proot -0` still presents uid 0 *inside* the guest, which is what `apt`,
- * `dpkg` and every package script expect. Shizuku, when present, only adds the
- * ability to touch real system directories; it is never required for the
- * Terminal to work.
+ * and so does everything inside the guest: the guest sees the same non-root uid
+ * that Termux itself runs as. Shizuku, when present, only adds the ability to
+ * touch real system directories; it is never required for the Terminal to work.
  *
  * ## Why the guest prefix is not `/data/data/com.termux/...`
  *
@@ -374,15 +373,21 @@ object LinuxRuntime {
      * `proot` is exec'd from the native library directory (allowed), and it in turn
      * execs its loader from the same place, so no blocked `execve` is ever made.
      * The guest tree is bound at a clean prefix (`/usr`) that the user sees, and
-     * again at the payload's canonical Termux path so the binaries find their own
-     * libraries. `-0` makes the guest believe it is root, which is what lets `apt`
-     * and `dpkg` write to their own directories — an illusion inside this one
-     * process tree; the app's real privileges are unchanged.
+     * again at the payload's canonical path so the binaries find their own
+     * libraries.
+     *
+     * The identity is left alone — no `-0`, no `--change-id`. The guest runs as
+     * the app's own uid, which is the only uid Android gives it, and that is
+     * exactly what Termux does: a `termux`-type container in proot-distro is
+     * never given a fake root. This is also what lets the guest's `pkg` and `apt`
+     * work at all, since they refuse to run when `id -u` is 0 and treat that as a
+     * mistake rather than a privilege.
      */
     fun runStreaming(
         context: Context,
         command: String,
-        onChunk: (stream: String, text: String) -> Unit
+        onChunk: (stream: String, text: String) -> Unit,
+        onSpawn: ((java.io.OutputStream) -> Unit)? = null
     ): ShellRuntime.Result? {
         if (!isInstalled(context)) return null
         val native = nativeLib(context).absolutePath
@@ -403,7 +408,25 @@ object LinuxRuntime {
             append("PROOT_LOADER=$loader PROOT_TMP_DIR=$tmp ")
             append("PREFIX=$GUEST_PREFIX HOME=$GUEST_HOME TMPDIR=$GUEST_PREFIX/tmp ")
             append("TERM=xterm-256color LANG=C.UTF-8 ")
-            append("$proot -0 -r / ")
+            // `--kill-on-exit` reaps the whole traced tree when the command ends.
+            // Without it a killed command leaves the guest's background children
+            // behind, and proot is holding the pipes open, so the Terminal hangs
+            // even though the command itself already finished.
+            append("$proot --kill-on-exit ")
+            // `--link2symlink` emulates hard links with symlinks. `dpkg` unpacks
+            // its control files as hard links, so without this an install fails
+            // partway through and leaves the package database inconsistent. This
+            // is why proot-distro turns it on for every container it runs.
+            append("--link2symlink ")
+            // `-L` corrects the size `lstat` reports for a symlink. `dpkg` uses
+            // that to decide whether a path is a link it must replace, and the
+            // wrong answer makes it warn and mis-handle the file.
+            append("-L ")
+            // Some programs use SysV IPC. Android's kernel allows it and the
+            // guest binaries expect it, so the extension is left on, as it is in
+            // proot-distro's default (non-minimal) mode.
+            append("--sysvipc ")
+            append("-r / ")
             append("-b /dev -b /proc -b /sys -b /storage -b /system ")
             append("-b $real:$GUEST_PREFIX ")
             append("-b $real:$COMPAT_PREFIX ")
@@ -415,7 +438,16 @@ object LinuxRuntime {
             // layout into a shell the user is looking at.
             append("$GUEST_PREFIX/bin/bash -lc ${q("export PATH=$GUEST_PREFIX/bin:/system/bin; $command")}")
         }
-        return ShellRuntime.runStreaming(context, line, timeoutMs = 600_000, onChunk = onChunk)
+        // No timeout. A real terminal does not put a clock on the command you
+        // typed, and neither does Termux's interactive session: `apt upgrade`,
+        // `git clone` and a long build all run to completion. A deadline here was
+        // the thing that cut work off halfway.
+        return ShellRuntime.runStreaming(
+            context, line,
+            timeoutMs = 0,
+            onChunk = onChunk,
+            onSpawn = onSpawn
+        )
     }
 
     /**

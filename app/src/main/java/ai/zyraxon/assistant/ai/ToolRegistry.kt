@@ -1398,9 +1398,9 @@ object ToolRegistry {
                     )
                 }
                 val out = StringBuilder()
-                val r = LinuxRuntime.runStreaming(context, command) { _, text ->
+                val r = LinuxRuntime.runStreaming(context, command, onChunk = { _, text ->
                     out.append(text)
-                }
+                })
                 if (r == null) {
                     return err(
                         "linux-shell",

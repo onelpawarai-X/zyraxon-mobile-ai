@@ -114,6 +114,7 @@ fun TerminalScreen(
     cwd: String,
     busy: Boolean,
     onRun: (String) -> Unit,
+    onInput: (String) -> Unit,
     onClear: () -> Unit,
     onNewSession: () -> Unit,
     onSelectSession: (String) -> Unit,
@@ -147,16 +148,18 @@ fun TerminalScreen(
     var sidebar by remember { mutableStateOf(false) }
     val scroll = rememberScrollState()
     val focus = remember { FocusRequester() }
-    val promptText = "root@zyraxon:$cwd# "
+    val promptText = "zyraxon:$cwd$ "
 
     // Follow the output as it streams in, not only when a new line is added.
     val tailLength = lines.lastOrNull()?.output?.length ?: 0
     LaunchedEffect(lines.size, tailLength, busy, activeId) {
         scroll.scrollTo(scroll.maxValue)
     }
-    // The prompt is back when a command ends, so the keyboard is too.
+    // The prompt is back when a command ends, so the keyboard is too. While a
+    // command runs the field also stays focused, because it may be waiting for an
+    // answer and the user should not have to tap back into it to give one.
     LaunchedEffect(busy, activeId) {
-        if (!busy) runCatching { focus.requestFocus() }
+        runCatching { focus.requestFocus() }
     }
 
     fun setText(text: String, cursor: Int = text.length) {
@@ -171,7 +174,9 @@ fun TerminalScreen(
         setText("")
         ctrl = false
         alt = false
-        onRun(line)
+        // While a command runs, the line is an answer to its prompt, not a new
+        // command. That is what lets `apt install` receive the "y" it is waiting for.
+        if (busy) onInput(line) else onRun(line)
     }
 
     fun recall(step: Int) {
@@ -482,11 +487,13 @@ fun TerminalScreen(
                             }
                         }
                     }
-                    // A terminal shows no prompt while a command is still running.
-                    if (!busy) {
+                    // The prompt stays on screen while a command runs: a command that
+                    // asks a question reads its answer from this same line. A running
+                    // command is not a reason to take the keyboard away.
+                    if (true) {
                         Row(verticalAlignment = Alignment.Top) {
                             Text(
-                                text = "☠ $promptText",
+                                text = if (busy) "… " else "☠ $promptText",
                                 color = TerminalPrompt,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Bold,
@@ -791,7 +798,7 @@ private fun TerminalEntry(line: TerminalLine) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = TerminalPrompt, fontWeight = FontWeight.Bold)) { append("☠ root@zyraxon# ") }
+                withStyle(SpanStyle(color = TerminalPrompt, fontWeight = FontWeight.Bold)) { append("☠ zyraxon# ") }
                 withStyle(SpanStyle(color = TerminalText)) { append(line.command) }
             },
             fontSize = 12.5.sp,
