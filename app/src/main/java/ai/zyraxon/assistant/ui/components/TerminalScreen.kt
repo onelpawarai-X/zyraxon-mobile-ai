@@ -115,6 +115,7 @@ fun TerminalScreen(
     busy: Boolean,
     onRun: (String) -> Unit,
     onInput: (String) -> Unit,
+    onInterrupt: () -> Unit,
     onClear: () -> Unit,
     onNewSession: () -> Unit,
     onSelectSession: (String) -> Unit,
@@ -265,7 +266,13 @@ fun TerminalScreen(
         val t = input.text
         val cur = input.selection.start.coerceIn(0, t.length)
         when (ch.lowercaseChar()) {
-            'c' -> setText("")
+            'c' -> {
+                // While a command runs, Ctrl-C is the interrupt: it stops the
+                // command. Otherwise it clears the line being typed, as in any
+                // shell. Without the first case a command with no timeout would
+                // have no way to be stopped from the keyboard.
+                if (busy) onInterrupt() else setText("")
+            }
             'u' -> setText(t.substring(cur), 0)
             'k' -> setText(t.substring(0, cur))
             'a' -> moveCursor(0)

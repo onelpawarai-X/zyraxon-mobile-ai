@@ -387,7 +387,7 @@ object LinuxRuntime {
         context: Context,
         command: String,
         onChunk: (stream: String, text: String) -> Unit,
-        onSpawn: ((java.io.OutputStream) -> Unit)? = null
+        onSpawn: ((ShellRuntime.LiveProcess) -> Unit)? = null
     ): ShellRuntime.Result? {
         if (!isInstalled(context)) return null
         val native = nativeLib(context).absolutePath

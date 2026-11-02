@@ -224,6 +224,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                 busy = terminalBusy,
                 onRun = { viewModel.runTerminal(it) },
                 onInput = { viewModel.sendTerminalInput(it) },
+                onInterrupt = { viewModel.interruptTerminal() },
                 onClear = { viewModel.clearTerminal() },
                 onNewSession = { viewModel.newTerminalSession() },
                 onSelectSession = { viewModel.selectTerminalSession(it) },

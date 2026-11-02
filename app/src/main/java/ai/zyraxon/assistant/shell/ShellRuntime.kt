@@ -229,6 +229,29 @@ object ShellRuntime {
     }
 
     /**
+     * A running command, handed to a caller that needs to talk to it.
+     *
+     * [input] is the command's standard input, for answering a prompt. [interrupt]
+     * is the terminal's Ctrl-C: it stops the command, which is the only way out of
+     * one that never ends now that there is no timeout to rescue it.
+     */
+    class LiveProcess(
+        val input: java.io.OutputStream,
+        private val process: Process
+    ) {
+        @Volatile private var asked = false
+
+        /** Stops the command. A second call does not ask again, it forces. */
+        fun interrupt() {
+            if (asked) runCatching { process.destroyForcibly() }
+            else {
+                asked = true
+                runCatching { process.destroy() }
+            }
+        }
+    }
+
+    /**
      * Runs one line and reports output **as it arrives**, line by line, instead of
      * waiting for the process to exit. This is what a real terminal does: a
      * long-running command shows its progress live rather than a spinner. The
@@ -250,10 +273,11 @@ object ShellRuntime {
      * Streams a command and, when [onSpawn] is given, hands back the live process.
      *
      * The handle exists so a caller can write to the command's standard input while
-     * it is still running. A command that asks a question — `apt` asking to confirm
-     * an install, a program asking for a password — is otherwise unanswerable, and
-     * the Terminal would appear to hang until the timeout. `onSpawn` runs on the
-     * calling thread as soon as the process exists, before any output is read.
+     * it is still running, and stop it. A command that asks a question — `apt`
+     * asking to confirm an install, a program asking for a password — is otherwise
+     * unanswerable, and the Terminal would appear to hang until the timeout.
+     * `onSpawn` runs on the calling thread as soon as the process exists, before
+     * any output is read.
      */
     fun runStreaming(
         context: Context,
@@ -262,7 +286,7 @@ object ShellRuntime {
         timeoutMs: Long = 60_000,
         extraEnv: Map<String, String> = emptyMap(),
         onChunk: (stream: String, text: String) -> Unit,
-        onSpawn: ((java.io.OutputStream) -> Unit)?
+        onSpawn: ((LiveProcess) -> Unit)?
     ): Result {
         ensureReady(context)
         val dir = (cwd ?: home(context)).apply { mkdirs() }
@@ -274,7 +298,7 @@ object ShellRuntime {
             pb.environment().putAll(extraEnv)
             pb.redirectErrorStream(false)
             val p = pb.start()
-            onSpawn?.invoke(p.outputStream)
+            onSpawn?.invoke(LiveProcess(p.outputStream, p))
             val out = StringBuilder()
             val err = StringBuilder()
             // A reader thread pumps each stream and hands every line up as it is

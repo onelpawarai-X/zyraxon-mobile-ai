@@ -583,14 +583,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     val terminalBusy: StateFlow<Boolean> = _terminalBusy.asStateFlow()
 
     /**
-     * The standard input of the command that is running right now, if any.
+     * The command that is running right now, if any.
      *
      * A running command owns the terminal: whatever the user types next is an
-     * answer to that command's question, not a new command. This is the pipe that
-     * carries that answer. It is null whenever nothing is running.
+     * answer to that command's question, not a new command, and Ctrl-C stops it.
+     * It is null whenever nothing is running.
      */
     @Volatile
-    private var terminalInput: java.io.OutputStream? = null
+    private var terminalProcess: ShellRuntime.LiveProcess? = null
 
     private val _terminalCwd = MutableStateFlow("~")
     val terminalCwd: StateFlow<String> = _terminalCwd.asStateFlow()
@@ -2296,7 +2296,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * line, and the user pressing Enter is what this represents.
      */
     fun sendTerminalInput(text: String) {
-        val sink = terminalInput ?: return
+        val sink = terminalProcess?.input ?: return
         try {
             synchronized(sink) {
                 sink.write((text + "\n").toByteArray())
@@ -2306,6 +2306,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             // The command may have just finished and closed its input. Losing the
             // race is not an error worth showing, and the output already says so.
         }
+    }
+
+    /**
+     * Stops the command that is running. This is the terminal's Ctrl-C.
+     *
+     * With no timeout on a command, this is the only way out of one that never
+     * finishes — a `ping` without `-c`, a `cat` on a pipe that never closes, a
+     * `git clone` of the wrong repository. A no-op when nothing is running.
+     */
+    fun interruptTerminal() {
+        terminalProcess?.interrupt()
     }
 
     /** The body of a terminal line, shared by the user's typing and `terminal_run`. */
@@ -2358,9 +2369,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             },
             // A host command can prompt too (`read`, a password), so it gets the
             // same answerable input as a Linux one.
-            onSpawn = { sink -> terminalInput = sink }
+            onSpawn = { live -> terminalProcess = live }
         )
-        terminalInput = null
+        terminalProcess = null
         val body = buildString {
             if (r.stdout.isNotEmpty()) append(r.stdout.trimEnd())
             if (r.stderr.isNotEmpty()) {
@@ -2491,9 +2502,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             app, command,
             onChunk = { stream, text -> push(stream, text) },
             // Hold the command's input while it runs, so a prompt can be answered.
-            onSpawn = { sink -> terminalInput = sink }
+            onSpawn = { live -> terminalProcess = live }
         )
-        terminalInput = null
+        terminalProcess = null
         if (r == null) {
             return TerminalLine(
                 command = command,
