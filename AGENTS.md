@@ -149,13 +149,11 @@ To ship a version, write the release notes into the tag itself:
 git tag -a vX.Y.Z -F notes.md && git push origin vX.Y.Z
 ```
 
-The workflow creates the release with `--notes-from-tag`, so the note is the
-tag's own annotation. Write the notes into the tag and there is nothing to patch
-afterwards:
+The workflow reads that annotation and uses it as the release note.
 
-```bash
-git tag -a vX.Y.Z -F notes.md && git push origin vX.Y.Z
-```
+(`gh release create --notes-from-tag` cannot be combined with `--repo`, which
+the workflow needs, so the annotation is read with `git tag -l --format='%(contents)'`
+and passed as `--notes-file` instead.)
 
 If a release already exists with the wrong body, patch it:
 

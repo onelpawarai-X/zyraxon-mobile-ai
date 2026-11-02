@@ -122,12 +122,21 @@ jobs:
             gh release upload "$TAG" "$RUNNER_TEMP/$APK_NAME" "$RUNNER_TEMP/$APK_NAME.sha256" \
               --repo "${{ github.repository }}" --clobber
           else
-            # The tag's own annotation is the release note, so the note can be
-            # written with the tag and does not have to be patched in afterwards.
+            # `--notes-from-tag` cannot be combined with `--repo`, so the tag's
+            # own annotation is read from the local repo and passed as a notes
+            # file. Fetch the tag explicitly first: the checkout is shallow and
+            # the annotation object is not guaranteed to be present. A tag with
+            # no annotation falls back to a one-line note rather than an empty
+            # release body.
+            git fetch --force --tags --depth=1 origin "+refs/tags/$TAG:refs/tags/$TAG" 2>/dev/null || true
+            git tag -l --format='%(contents)' "$TAG" > "$RUNNER_TEMP/notes.md"
+            if [ ! -s "$RUNNER_TEMP/notes.md" ]; then
+              echo "ZYRAXON $TAG" > "$RUNNER_TEMP/notes.md"
+            fi
             gh release create "$TAG" "$RUNNER_TEMP/$APK_NAME" "$RUNNER_TEMP/$APK_NAME.sha256" \
               --repo "${{ github.repository }}" \
               --title "ZYRAXON $TAG" \
-              --notes-from-tag
+              --notes-file "$RUNNER_TEMP/notes.md"
           fi
 
       - name: Job summary
