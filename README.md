@@ -1,81 +1,73 @@
 # ZYRAXON
 
-### বিশ্বের সবচেয়ে শক্তিশালী অল-ইন-ওয়ান মোবাইল AI অ্যাসিস্ট্যান্ট
+**English** · [বাংলা](README.bn.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md)
 
-ZYRAXON শুধু একটি চ্যাট অ্যাপ নয় — এটি আপনার হাতের মুঠোয় একটি সম্পূর্ণ এজেন্ট। এটি কথা বলে, ভাবে, টুল ব্যবহার করে, কোড লেখে, ফাইল বানায় এবং আপনার ফোনের ভিতরে একটি সম্পূর্ণ Linux সিস্টেম চালায়। সবকিছু একসাথে, একটিমাত্র অ্যাপে।
+### The world's most advanced all-in-one mobile AI assistant
 
-<p align="center">
-  <b>২০০,০০০+ ইনস্টল</b> • <b>বাংলা + ইংরেজি</b> • <b>অফলাইন সমর্থন</b> • <b>বিল্ট-ইন Linux টার্মিনাল</b>
-</p>
+ZYRAXON is not just a chat app — it is a complete agent in your pocket. It talks, thinks, uses tools, writes code, creates files, and runs a full Linux system inside your phone. All of it, in one app.
 
 ---
 
-## ZYRAXON কেন আলাদা
+## Why ZYRAXON is different
 
-### ১. এজেন্ট, শুধু চ্যাটবট নয়
-ZYRAXON শুধু উত্তর দেয় না — **কাজ করে দেয়**। আপনার কথার ভিতরের উদ্দেশ্য বুঝে সে নিজেই ঠিক করে কোন টুল লাগবে, সেটি চালায়, ফলাফল দেখে, এবং কাজ শেষ করে আপনাকে জানায়। ফাইল লেখা, কোড চালানো, ওয়েব থেকে তথ্য আনা, স্ক্রিন দেখা — সবই স্বয়ংক্রিয়ভাবে।
+### 1. An agent, not a chatbot
+ZYRAXON does not just answer — it **does the work**. It reads the intent behind what you said, decides which tool is needed, runs it, looks at the result, and finishes the job. Writing files, running code, fetching from the web, looking at your screen — all of it automatically.
 
-### ২. ভিতরে সম্পূর্ণ Linux
-অ্যাপের ভিতরেই একটি পূর্ণাঙ্গ Linux এনভায়রনমেন্ট বান্ডল করা আছে — `apt`, `dpkg`, `git`, `python`, `node`, সব। **Shizuku বা রুট ছাড়াই** এটি চলে। আপনি যা চান ইনস্টল করুন, যা চান চালান, ঠিক টার্মাক্সের মতো — তবে কোনো আলাদা অ্যাপ ছাড়াই, ZYRAXON-এর ভিতরেই।
+### 2. A full Linux inside
+A complete Linux environment is bundled inside the app — `apt`, `dpkg`, `git`, `python`, `node`, all of it. It runs **without Shizuku and without root**. Install anything, run anything, just like Termux — but with no separate app, right inside ZYRAXON.
 
-- কমান্ডের কোনো সময়সীমা নেই — `apt upgrade` বা লম্বা বিল্ড মাঝপথে কাটে না
-- কমান্ড চলার সময়ই আপনি তার প্রশ্নের উত্তর দিতে পারেন (`[Y/n]` আপনি নিজে টাইপ করবেন)
-- **Ctrl-C** দিয়ে যেকোনো চলমান কমান্ড থামানো যায়
+### 3. Real "thinking", shown
+The moment work starts, ZYRAXON shows that it is **thinking**. Click the thinking to read its actual reasoning step by step — nothing hidden, see for yourself how it decides. Then, while it works, the **working** state is live.
 
-### ৩. আসল "থিংকিং" দেখায়
-কাজ শুরুর সাথে সাথেই ZYRAXON দেখায় সে **ভাবছে**। থিংকিং-এর উপর ক্লিক করলে তার আসল চিন্তাধারা ধাপে ধাপে পড়তে পারবেন — গোপন কিছু নয়, নিজের চোখে দেখুন সে কীভাবে সিদ্ধান্ত নিচ্ছে। এরপর যখন কাজ করে, তখন **ওয়ার্কিং** অবস্থা লাইভ দেখা যায়।
+### 4. One tool after another, live
+Every tool is sent separately, so ZYRAXON knows when each one is needed. You watch every step on screen — what it ran, what it got, what it changed. There is no black box.
 
-### ৪. একটার পর একটা টুল, লাইভ
-প্রতিটি টুল আলাদাভাবে পাঠানো হয়, তাই ZYRAXON জানে কখন কোনটি লাগবে। টুল চলার প্রতিটি ধাপ আপনি স্ক্রিনে দেখতে পান — কী চালাল, কী পেল, কী বদলাল। কোনো "কালো বাক্স" নেই।
+### 5. Bengali as a first-class citizen
+Bengali renders perfectly in both the interface and the terminal. Code stays monospaced while Bengali shapes correctly — the two together, on the same line.
 
-### ৫. বাংলা, প্রথম শ্রেণির নাগরিক হিসেবে
-ZYRAXON-এর ইন্টারফেস এবং টার্মিনাল — দুটোতেই বাংলা নিখুঁতভাবে রেন্ডার হয়। কোড মোনোস্পেসে থাকে, বাংলা ঠিকভাবে লেখা হয় — দুটো একসাথে, একই লাইনে।
+### 6. Beauty that does not get in the way
+Every animation — the aura sphere, the backgrounds, the transitions — is kept, but with **no bugs**. An animation never slows the work down.
 
-### ৬. সৌন্দর্য, যা বাধা নয়
-প্রতিটি অ্যানিমেশন — অরা স্ফিয়ার, ব্যাকগ্রাউন্ড, ট্রানজিশন — রাখা হয়েছে, তবে **কোনো বাগ ছাড়া**। অ্যানিমেশন কখনো কাজের গতি কমায় না।
-
-### ৭. একটি অ্যাপ, পুরো দুনিয়া
-- **ভয়েস** — বলুন, সে শুনবে; লিখুন, সে পড়বে
-- **MCP সমর্থন** — বাইরের টুল সার্ভার সংযুক্ত করুন
-- **Aura WebView** — ভিতরে ব্রাউজার ও ওয়েব অ্যাপ
-- **Aura Studio** — ছবি ও মিডিয়া নিয়ে কাজ
-- **অফলাইন AI** — ইন্টারনেট ছাড়াও বেসিক কাজ
-- **এক ট্যাপে আপডেট** — অ্যাপ থেকেই নতুন ভার্সন
+### 7. One app, a whole world
+- **Voice** — speak and it listens; type and it reads
+- **MCP support** — connect outside tool servers
+- **Aura WebView** — a browser and web apps inside
+- **Aura Studio** — work with images and media
+- **Offline AI** — basic work without internet
+- **One-tap updates** — new versions from inside the app
 
 ---
 
-## আমাদের মডেল সম্পর্কে — একটি প্রতিশ্রুতি
+## Our model — a promise
 
-ZYRAXON-এর নিজস্ব মডেল ও প্রোভাইডার সম্পূর্ণ প্রস্তুত। কিন্তু আমরা এটিকে এখনই সবার জন্য খুলে দিচ্ছি না — কারণ আমরা চাই এটি প্রথম দিন থেকেই স্থির, দ্রুত এবং নির্ভরযোগ্য হোক।
+ZYRAXON's own model and provider are fully built. But we are not opening them to everyone yet — because we want them to be stable, fast and reliable from day one.
 
-> **আমাদের লক্ষ্য: এই অ্যাপটি যখন এক লক্ষ (১০০,০০০) ইনস্টল স্পর্শ করবে, তখন আমাদের নিজস্ব প্রোভাইডার সবার জন্য খুলে দেওয়া হবে।**
-
-ততদিন পর্যন্ত ZYRAXON বিশ্বের সেরা প্রোভাইডারগুলোর সাথে কাজ করে — এবং **দ্রুততমটি আগে** বেছে নেয়, যাতে আপনি সবচেয়ে কম অপেক্ষায় উত্তর পান। আপনার ইনস্টল মানে আমাদের কাছে একটি ভোট — এক লক্ষে পৌঁছালে গেট খুলবে।
+> **Our goal: the moment this app reaches one hundred thousand (100,000) installs, our own provider opens to everyone.**
 
 ---
 
-## ডাউনলোড
+## Download
 
-সর্বশেষ APK: **[Releases](../../releases/latest)** থেকে `ZYRAXON-v*.apk` নামান।
+Latest APK: download `ZYRAXON-v*.apk` from **[Releases](../../releases/latest)**.
 
 ```
-versionCode বাড়ানো হয় প্রতিটি বিল্ডে, তাই পুরনো ভার্সনের উপরে সরাসরি ইনস্টল হবে।
-APK-এর পাশে sha256 দেওয়া থাকে — ইনস্টলের আগে মিলিয়ে নিন।
+versionCode is bumped on every build, so it installs straight over the previous version.
+A sha256 is published next to the APK — verify it before installing.
 ```
 
-**সর্বনিম্ন:** Android 5.0 (API 21) • **লক্ষ্য:** Android 16 (API 36)
+**Minimum:** Android 5.0 (API 21) • **Target:** Android 16 (API 36)
 
 ---
 
-## তৈরি করেছে
+## Built by
 
-**ZYRAXON GROUP X** — এই এজেন্টটি আমাদের নিজস্ব টিম তৈরি করেছে, শুরু থেকে শেষ পর্যন্ত।
+**ZYRAXON LAB** — this agent was built by our own team, from start to finish.
 
-অফিসিয়াল ওয়েবসাইট: **[zyraxon-group-x.lovable.app](https://zyraxon-group-x.lovable.app/)**
+**[zyraxon-group-x.lovable.app](https://zyraxon-group-x.lovable.app/)**
 
 ---
 
 <p align="center">
-  <b>ZYRAXON</b> — আপনার ফোনে বিশ্বের সবচেয়ে ক্ষমতাধর AI এজেন্ট।<br/>
-  <sub>© ZYRAXON GROUP X</sub>
+  <b>ZYRAXON</b> — the most capable AI agent on your phone.<br/>
+  <sub>© ZYRAXON LAB</sub>
 </p>
