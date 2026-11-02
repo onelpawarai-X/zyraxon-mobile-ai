@@ -93,8 +93,27 @@ Android 10+ blocks `execve` of files in the app's data dir. proot and its
 loader therefore ship as `jniLibs` (`libproot.so`, `libproot-loader.so`), which
 Android does allow executing. proot never execs the guest anyway: it `mmap`s the
 binary and branches to its entry point (`src/loader/loader.c`), so the block
-never applies. The whole system runs as the app's own uid, with `proot -0`
-presenting uid 0 inside the guest.
+never applies. The whole system runs as the app's own uid, inside and out: no
+`-0`, no `--change-id`, exactly like a `termux`-type container in proot-distro.
+That is also what lets the guest's `pkg`/`apt` run at all, since they refuse
+uid 0.
+
+The proot argv follows proot-distro's defaults, which are the reference for
+"does this work on a phone":
+
+- `--kill-on-exit` reaps the traced tree, so a finished command cannot leave
+  children behind holding the pipes open.
+- `--link2symlink` emulates hard links. `dpkg` unpacks control files as hard
+  links, so without it an install fails partway and corrupts the package db.
+- `-L` corrects the size `lstat` reports for a symlink, which `dpkg` reads.
+- `--sysvipc` is proot-distro's non-minimal default.
+
+Commands run with **no timeout** (`timeoutMs = 0` in `ShellRuntime.awaitProcess`
+means "wait forever"). Termux's interactive session has none either; a bound cut
+`apt upgrade` off mid-transaction. Because there is no timeout, Ctrl-C must
+work: while a command runs it stops it, otherwise it clears the line. The live
+process handle (`ShellRuntime.LiveProcess`) carries both the input pipe and the
+stop, so a prompt can be answered by typing into the running command.
 
 - `LD_LIBRARY_PATH` must NOT contain the native library dir: Android's `libc.so`
   lives there and a guest binary that loads it dies immediately. proot finds its
@@ -124,15 +143,21 @@ Two workflows, deliberately separate:
 - `release.yml` — triggers on a `v*` tag (or by hand). Builds the signed release
   APK and publishes it to the release for that tag.
 
-To ship a version:
+To ship a version, write the release notes into the tag itself:
 
 ```bash
-git tag -a vX.Y.Z -m "..." && git push origin vX.Y.Z
+git tag -a vX.Y.Z -F notes.md && git push origin vX.Y.Z
 ```
 
-The workflow creates the release with a one-line placeholder body
-("Signed release APK built by GitHub Actions."). Replace it with real notes
-afterwards, or the release looks unfinished:
+The workflow creates the release with `--notes-from-tag`, so the note is the
+tag's own annotation. Write the notes into the tag and there is nothing to patch
+afterwards:
+
+```bash
+git tag -a vX.Y.Z -F notes.md && git push origin vX.Y.Z
+```
+
+If a release already exists with the wrong body, patch it:
 
 ```bash
 python3 - <<'PY'
