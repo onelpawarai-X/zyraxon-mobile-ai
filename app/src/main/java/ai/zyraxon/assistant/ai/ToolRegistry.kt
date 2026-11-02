@@ -1173,7 +1173,7 @@ object ToolRegistry {
         }
         val r = ShellRuntime.run(context, cmd, cwd = cwd, timeoutMs = timeout)
         if (r.code == -1 && r.stderr.isEmpty() && r.stdout.isEmpty()) {
-            return err("failed", "কমান্ড চালানো যায়নি: $cmd")
+            return err("failed", "Could not run the command: $cmd")
         }
         val tail = r.stdout.trim().lines().lastOrNull()?.take(160)
         val label = buildString {
@@ -1201,16 +1201,16 @@ object ToolRegistry {
         return when (args.optString("action", "status").trim().lowercase()) {
             "start" -> {
                 val command = args.optString("command").trim()
-                if (command.isEmpty()) return err("bad-args", "কমান্ড দাও")
+                if (command.isEmpty()) return err("bad-args", "Provide a command")
                 BackgroundCommandService.start(context, command)
                 ok(
                     JSONObject().put("running", true).put("command", command),
-                    "ব্যাকগ্রাউন্ডে চালু: $command — অ্যাপ বন্ধ করলেও চলবে, নোটিফিকেশনের বাটনে বন্ধ করা যাবে"
+                    "Running in the background: $command — keeps going after the app is closed; stop it from the notification"
                 )
             }
             "stop" -> {
                 BackgroundCommandService.stop(context)
-                ok(JSONObject().put("running", false), "ব্যাকগ্রাউন্ড কমান্ড বন্ধ করা হয়েছে")
+                ok(JSONObject().put("running", false), "Background command stopped")
             }
             else -> ok(
                 JSONObject()
@@ -1218,8 +1218,8 @@ object ToolRegistry {
                     .put("command", BackgroundCommandService.lastCommand)
                     .put("exit", BackgroundCommandService.lastExit)
                     .put("output", BackgroundCommandService.lastOutput),
-                if (BackgroundCommandService.running) "একটা কমান্ড চলছে"
-                else "এখন কোনো ব্যাকগ্রাউন্ড কমান্ড চলছে না"
+                if (BackgroundCommandService.running) "A command is running"
+                else "No background command is running"
             )
         }
     }
@@ -1232,14 +1232,15 @@ object ToolRegistry {
      */
     private fun systemShell(context: Context, args: JSONObject): JSONObject {
         val command = args.optString("command").trim()
-        if (command.isEmpty()) return err("bad-args", "কমান্ড দাও")
+        if (command.isEmpty()) return err("bad-args", "Provide a command")
         val timeout = args.optLong("timeout_ms", 60_000)
         val requested = args.optString("level", "auto").trim().lowercase()
         if (!SystemShell.available()) {
             val hint = if (SystemShell.needsPermission()) {
-                "Shizuku চালু আছে কিন্তু ZYRAXON-কে অনুমতি দেওয়া হয়নি। Settings → সিস্টেম লেভেলে গিয়ে Allow চাপুন।"
+                "Shizuku is running but ZYRAXON has not been granted access. Open Settings -> System access and tap Allow."
             } else {
-                "Shizuku চলছে না। ফোনে Shizuku ইনস্টল করে চালু করুন (রুট থাকলে Shizuku নিজেই root mode-এ চালান), তারপর Settings → সিস্টেম লেভেল → Allow।"
+                "Shizuku is not running. This tool reaches real system directories and needs Shizuku or root. " +
+                    "The Terminal and Linux do not need it — use those instead."
             }
             return ok(
                 JSONObject()
@@ -1247,7 +1248,7 @@ object ToolRegistry {
                     .put("code", -1)
                     .put("stdout", "")
                     .put("stderr", hint),
-                "সিস্টেম লেভেল এখনো চালু হয়নি — $hint"
+                "System access is not available — $hint"
             )
         }
         val levels = SystemShell.probe(context)
@@ -1255,7 +1256,7 @@ object ToolRegistry {
             "root" -> SystemShell.run(context, command, SystemShell.Level.ROOT, timeout)
             "shell" -> SystemShell.run(context, command, SystemShell.Level.SHELL, timeout)
             else -> SystemShell.runBest(context, command, timeout)
-        } ?: return err("system-shell", "সিস্টেম লেভেলে কমান্ড চালানো যায়নি")
+        } ?: return err("system-shell", "Could not run the command at system level")
         val levelLabel = when {
             levels[SystemShell.Level.ROOT] == true && requested != "shell" -> "root (uid 0)"
             else -> "system (uid 2000)"
@@ -1383,11 +1384,11 @@ object ToolRegistry {
 
             "run" -> {
                 val command = args.optString("command").trim()
-                if (command.isEmpty()) return err("bad-args", "কমান্ড দাও")
+                if (command.isEmpty()) return err("bad-args", "Provide a command")
                 if (!LinuxRuntime.isInstalled(context)) {
                     return err(
                         "linux-missing",
-                        "ZYRAXON Linux এখনো ইনস্টল হয়নি। আগে action:\"install\" দিয়ে ইনস্টল করো।"
+                        "ZYRAXON Linux is not installed yet. Run it once with action:\"install\"."
                     )
                 }
                 val out = StringBuilder()
@@ -1397,7 +1398,7 @@ object ToolRegistry {
                 if (r == null) {
                     return err(
                         "linux-shell",
-                        "সিস্টেম অ্যাক্সেস নেই। Shizuku চালু করে ZYRAXON-কে অনুমতি দাও।"
+                        "Could not start ZYRAXON Linux. Run action:\"install\" and try again."
                     )
                 }
                 val tail = r.stdout.trim().lines().lastOrNull()?.take(160)

@@ -6,70 +6,82 @@ import java.io.File
 /**
  * ZYRAXON's own Linux userland, installed from the payload bundled inside the APK.
  *
- * This is a full Arch-style Unix system — `bash`, `apt`, `dpkg`, `git`, `python`,
+ * This is a full Termux-style Unix system — `bash`, `apt`, `dpkg`, `git`, `python`,
  * `node`, `clang` — running on the phone with no network access at all. The
- * bootstrap archive and every package it needs are shipped in the APK's assets
+ * bootstrap archive and every package it needs ship in the APK's assets
  * (`assets/linux/<arch>/`), so the first launch installs a working system and
- * never downloads anything: no index fetch, no package manager round trip, no
- * update check. That is the whole point — a phone in airplane mode still gets a
- * compiler.
+ * never downloads anything.
  *
- * Android's W^X rule forbids executing a file from the app's own data directory,
- * so the tree is placed in `/data/local/tmp`, which the system owns and where
- * execution is allowed. Reaching it needs Shizuku (uid 2000) or root; without
- * either, [isInstalled] is false and [install] explains exactly what to do.
+ * ## Why it runs without root or Shizuku
+ *
+ * Android 10+ forbids `exec()` of a file inside the app's own data directory, so
+ * the guest cannot simply be executed from where it is unpacked. Two facts make
+ * that irrelevant:
+ *
+ * 1. Android *does* allow executing files in the app's native library directory.
+ *    `proot` and its loader are shipped there under the `lib*.so` names the
+ *    platform expects, exactly as the bundled `busybox` already is.
+ * 2. `proot` never `exec()`s the guest program. It `exec()`s its own **loader** —
+ *    which lives in the native library directory, so the kernel allows it — and
+ *    that loader maps the guest program into memory. The blocked `execve` is
+ *    never reached.
+ *
+ * So the whole system runs as the app's own user, with no Shizuku and no root,
+ * while `proot -0` still presents uid 0 *inside* the guest, which is what `apt`,
+ * `dpkg` and every package script expect. Shizuku, when present, only adds the
+ * ability to touch real system directories; it is never required for the
+ * Terminal to work.
+ *
+ * ## Why the guest prefix is not `/data/data/com.termux/...`
+ *
+ * The payload is a Termux bootstrap, so its binaries carry a hard-coded RUNPATH
+ * and its symlinks point at `/data/data/com.termux/files/usr`. That path is an
+ * upstream detail and is never shown to the user. The tree is bound at a clean
+ * prefix (`/usr`) that `$PREFIX`, `$HOME` and `pwd` report, and *also* at the
+ * canonical Termux path, purely so the binaries can still find their own
+ * libraries. Nothing the user sees mentions Termux.
  */
 object LinuxRuntime {
 
-    /** Where the guest lives, at system level. */
-    fun root(context: Context): File = File("/data/local/tmp/zyraxon/linux")
-    fun prefix(context: Context): File = File(root(context), "usr")
-    fun home(context: Context): File = File(root(context), "home")
+    /** The prefix the guest sees — what `$PREFIX`, `$HOME` and `pwd` show. */
+    const val GUEST_PREFIX = "/usr"
+    const val GUEST_HOME = "/home"
 
     /**
-     * The absolute prefix the payload's binaries were compiled against.
-     *
-     * Their `RUNPATH` and their shebangs both name one fixed absolute path, so the
-     * tree only runs when it appears there. That value is not guessed or written
-     * down here — it is read back out of the payload itself, from the absolute
-     * targets in the bootstrap's own `SYMLINKS.txt`, which stays in the installed
-     * tree. Keeping it as data means the tree stays relocatable: it can live
-     * anywhere on disk and `proot` presents it at the path the payload asks for.
+     * The path the payload's own binaries were built against. Kept only so the
+     * dynamic linker can resolve their RUNPATH; never shown to the user.
      */
-    fun canonicalPrefix(context: Context): String =
-        derivePrefix(prefix(context)) ?: prefix(context).absolutePath
+    private const val COMPAT_PREFIX = "/data/data/com.termux/files/usr"
 
-    /**
-     * Finds the absolute prefix inside an unpacked bootstrap by looking at the
-     * absolute symlink targets it ships. They are all built from the same prefix,
-     * so the first one with a `/usr/` segment gives it away.
-     */
-    internal fun derivePrefix(unpacked: File): String? {
-        val manifest = File(unpacked, "SYMLINKS.txt")
-        if (!manifest.isFile) return null
-        for (line in manifest.readLines()) {
-            val target = line.trim().substringBefore('←')
-            if (target.startsWith("/") && target.contains("/usr/")) {
-                return target.substringBefore("/usr/") + "/usr"
-            }
-        }
-        return null
-    }
+    private const val MARKER = "SYMLINKS.txt"
+
+    /** The app's native library directory — the one place Android lets us exec from. */
+    fun nativeLib(context: Context): File = File(context.applicationInfo.nativeLibraryDir)
+
+    /** proot itself, packaged as a native lib so it can be executed. */
+    fun proot(context: Context): File = File(nativeLib(context), "libproot.so")
+
+    /** proot's loader, handed to it through `PROOT_LOADER`. */
+    fun loader(context: Context): File = File(nativeLib(context), "libproot-loader.so")
+
+    /** The guest's prefix on the phone: the app's own storage, no root needed. */
+    fun root(context: Context): File = File(context.filesDir, "usr")
+
+    /** The guest's home directory. */
+    fun home(context: Context): File = File(context.filesDir, "home")
+
+    /** A writable scratch directory for proot's own bookkeeping. */
+    private fun prootTmp(context: Context): File = File(context.filesDir, "proot-tmp").apply { mkdirs() }
+
+    /** The directory the bootstrap and packages are unpacked through. */
+    private fun stage(context: Context): File = File(context.cacheDir, "linux-stage").apply { mkdirs() }
 
     /**
      * The asset directory holding this device's payload, or null when the APK
      * ships nothing this device can run.
-     *
-     * The APK declares four ABIs but only two payloads are vendored, so a device
-     * that lists a 32-bit ABI first must not be sent to a folder that does not
-     * exist. Each of the device's ABIs is tried in order and the first one with a
-     * real payload wins; when none does the caller explains that instead of
-     * failing later with a confusing "no packages found".
      */
-    fun assetDir(context: Context): String? {
-        val abis = android.os.Build.SUPPORTED_ABIS
-        return pickAssetDir(abis) { folder -> hasPayload(context, folder) }
-    }
+    fun assetDir(context: Context): String? =
+        pickAssetDir(android.os.Build.SUPPORTED_ABIS) { folder -> hasPayload(context, folder) }
 
     /** The selection rule, kept pure so it can be checked without an APK. */
     internal fun pickAssetDir(abis: Array<String>, exists: (String) -> Boolean): String? {
@@ -80,7 +92,6 @@ object LinuxRuntime {
         return null
     }
 
-    /** True when the APK actually carries a payload for this architecture folder. */
     private fun hasPayload(context: Context, folder: String): Boolean = try {
         context.assets.list("linux/$folder/debs").orEmpty().any { it.endsWith(".deb") }
     } catch (_: Exception) {
@@ -96,108 +107,70 @@ object LinuxRuntime {
         else -> null
     }
 
+    /** True when this device has a payload and the proot toolchain to run it. */
+    fun isSupported(context: Context): Boolean =
+        assetDir(context) != null && proot(context).canExecute() && loader(context).canExecute()
+
     /**
-     * True when the guest's own shell is in place and runnable. The check runs the
-     * binary rather than only looking for it, so a tree that was copied without
-     * its execute bit reads as not installed instead of failing later.
+     * True when the guest is in place and runnable. This asks the filesystem, not
+     * Shizuku: the guest lives in the app's own storage, so its presence is all
+     * that matters.
      */
     fun isInstalled(context: Context): Boolean {
-        if (!SystemShell.available()) return false
-        val sh = File(prefix(context), "bin/bash")
-        val marker = File(prefix(context), "SYMLINKS.txt")
-        val r = SystemShell.runBest(
-            context,
-            "test -x ${q(sh.absolutePath)} && test -f ${q(marker.absolutePath)} && echo yes",
-            timeoutMs = 10_000
-        )
-        return r?.stdout?.trim() == "yes"
+        val bash = File(root(context), "bin/bash")
+        val marker = File(root(context), MARKER)
+        return bash.isFile && marker.isFile && proot(context).canExecute()
     }
 
     /**
-     * Installs the bundled userland. Nothing here touches the network: the
-     * bootstrap and every `.deb` come from the APK, are unpacked into the app's
-     * cache, and the finished tree is copied into `/data/local/tmp` at system
-     * level, which is the only way to reach a directory the app may not write.
+     * Installs the bundled userland into the app's own storage. Nothing here
+     * touches the network, and nothing here needs root or Shizuku: the bootstrap
+     * and every `.deb` come from the APK and are written as the app.
      *
      * [log] receives one line per step so the Terminal shows the install live.
+     * Every line is plain English — a real terminal does not speak Bengali.
      */
     fun install(context: Context, log: (String) -> Unit): Boolean {
-        if (!SystemShell.available()) {
-            log("সিস্টেম অ্যাক্সেস নেই। Shizuku চালু করে ZYRAXON-কে অনুমতি দিন, তারপর আবার চেষ্টা করুন।")
-            return false
+        if (isInstalled(context)) {
+            log("Linux is already installed.")
+            return true
         }
-        val level = if (SystemShell.probe(context)[SystemShell.Level.ROOT] == true)
-            SystemShell.Level.ROOT else SystemShell.Level.SHELL
-        log("সিস্টেম লেভেল: ${level.label}")
-
         val assets = assetDir(context)
         if (assets == null) {
-            log("এই ডিভাইসের আর্কিটেকচারের (${android.os.Build.SUPPORTED_ABIS.joinToString()}) জন্য ZYRAXON Linux পেলোড APK-তে নেই।")
+            log("This device's architecture (${android.os.Build.SUPPORTED_ABIS.joinToString()}) has no Linux payload in the APK.")
             return false
         }
-        val stage = File(context.cacheDir, "linux-stage").apply { mkdirs() }
-        log("প্যাকেজ: $assets (APK-তে বান্ডল করা)")
-
-        // The staged tree mirrors the installed one: `rootfs/usr` is the prefix and
-        // `rootfs/home` is the user's home. The bootstrap archive *is* the prefix,
-        // so it unpacks into `usr/`; a deb wraps its payload in `usr/` already, so
-        // it unpacks into the root. Getting that backwards would nest a second
-        // `usr` and nothing would be found.
-        val unpack = File(stage, "rootfs").apply { deleteRecursively(); mkdirs() }
-        val unpackPrefix = File(unpack, "usr").apply { mkdirs() }
-
-        // 1. The bootstrap, straight out of the APK. It is unzipped from the asset
-        //    stream, so the 33 MB archive is never written to disk twice.
-        log("বান্ডল করা সিস্টেম খুলছি…")
-        if (!unzipAsset(context, "$assets/bootstrap.zip", unpackPrefix, log)) return false
-        applySymlinks(File(unpackPrefix, "SYMLINKS.txt"), unpackPrefix, log)
-
-        // 2. Every package, from the same APK. Each deb is written to a scratch
-        //    file, unpacked and deleted before the next one starts, so the peak
-        //    temporary footprint is one package rather than the whole toolchain.
-        log("প্যাকেজ বসাচ্ছি…")
-        val installed = installBundledDebs(context, assets, unpack, log)
-        log("  $installed প্যাকেজ প্রস্তুত")
-
-        // 3. Push the finished tree to the system-owned directory. `cp -a` keeps
-        //    the symlinks and the exec bits, which a plain copy would flatten.
-        val dest = root(context)
-        log("সিস্টেম ডিরেক্টরিতে বসাচ্ছি…")
-        val push = SystemShell.runBest(
-            context,
-            "mkdir -p ${q(dest.absolutePath)} && rm -rf ${q(dest.absolutePath)}/usr ${q(dest.absolutePath)}/home " +
-                "&& cp -a ${q(unpack.absolutePath)}/. ${q(dest.absolutePath)}/ && " +
-                "chmod -R 755 ${q(prefix(context).absolutePath)} && echo ok",
-            timeoutMs = 300_000
-        )
-        if (push == null || !push.stdout.contains("ok")) {
-            log("বসানো ব্যর্থ: ${push?.stderr?.take(300) ?: "Shizuku সাড়া দেয়নি"}")
+        if (!proot(context).canExecute() || !loader(context).canExecute()) {
+            log("proot is missing from the native libraries; this build cannot run Linux.")
             return false
         }
 
-        // 4. First-run setup: HOME, TMPDIR and the login shell. Without this the
-        //    package manager refuses to work.
-        val setup = SystemShell.runBest(
-            context,
-            "P=${q(prefix(context).absolutePath)}; H=${q(home(context).absolutePath)}; " +
-                "mkdir -p \"\$H\" \"\$P/tmp\" && " +
-                "ln -sf \"\$P/bin/login\" ${q(File(dest, "bin/login").absolutePath)} 2>/dev/null; " +
-                "echo ok",
-            timeoutMs = 60_000
-        )
-        if (setup == null || !setup.stdout.contains("ok")) {
-            log("প্রস্তুতি ধাপে সমস্যা: ${setup?.stderr?.take(300) ?: "কোনো উত্তর নেই"}")
-            return false
-        }
+        val root = root(context).apply { mkdirs() }
+        log("Installing ZYRAXON Linux (${android.os.Build.SUPPORTED_ABIS.firstOrNull()})…")
+        log("Payload: $assets (bundled in the APK)")
 
-        log("ZYRAXON Linux প্রস্তুত: ${dest.absolutePath}")
-        return true
+        // The bootstrap archive *is* the prefix: its top level is `bin/`, `lib/`,
+        // `SYMLINKS.txt`. A deb wraps its payload under an absolute Termux path
+        // that is stripped, so both land directly under the prefix.
+        log("Unpacking the bundled system…")
+        if (!unzipAsset(context, "$assets/bootstrap.zip", root, log)) return false
+        applySymlinks(context, File(root, MARKER), root, log)
+
+        log("Installing bundled packages…")
+        val installed = installBundledDebs(context, assets, root, log)
+        log("  $installed packages ready")
+
+        // First-run setup: HOME, TMPDIR and the guest's own tmp.
+        File(root, "tmp").mkdirs()
+        home(context).mkdirs()
+
+        log("ZYRAXON Linux is ready. Run a command with: linux <command>")
+        return isInstalled(context)
     }
 
     /**
      * Unpacks every bundled `.deb` into [dest]. The debs are listed in the APK
-     * itself, so the set installed is exactly the set that shipped — no version
-     * can drift and nothing is fetched.
+     * itself, so the set installed is exactly the set that shipped.
      */
     private fun installBundledDebs(
         context: Context,
@@ -205,19 +178,19 @@ object LinuxRuntime {
         dest: File,
         log: (String) -> Unit
     ): Int {
-        val stage = File(context.cacheDir, "linux-stage").apply { mkdirs() }
+        val work = stage(context)
         val names: Array<String> = try {
             context.assets.list("$assets/debs").orEmpty().filter { it.endsWith(".deb") }.sorted().toTypedArray()
         } catch (_: Exception) {
             emptyArray()
         }
         if (names.isEmpty()) {
-            log("  APK-তে প্যাকেজ পাওয়া যায়নি")
+            log("  No packages found in the APK")
             return 0
         }
         var done = 0
         for (name in names) {
-            val deb = File(stage, name)
+            val deb = File(work, name)
             if (!copyAsset(context, "$assets/debs/$name", deb, log)) continue
             if (extractDeb(context, deb, dest, log)) done++
             deb.delete()
@@ -233,7 +206,7 @@ object LinuxRuntime {
         }
         true
     } catch (e: Exception) {
-        log("  asset খোলা যায়নি ($path): ${e.message}")
+        log("  Could not open asset ($path): ${e.message}")
         false
     }
 
@@ -247,7 +220,7 @@ object LinuxRuntime {
     private fun extractDeb(context: Context, deb: File, dest: File, log: (String) -> Unit): Boolean {
         return try {
             val bb = ShellRuntime.command(context)?.absolutePath ?: run {
-                log("  বাজবক্স পাওয়া যায়নি"); return false
+                log("  busybox not found"); return false
             }
             val work = File(deb.parentFile, deb.nameWithoutExtension).apply { deleteRecursively(); mkdirs() }
             val payload = readArMember(deb, "data.tar") ?: return false
@@ -267,15 +240,14 @@ object LinuxRuntime {
             }
             val extract = File(work, "x").apply { mkdirs() }
             if (!run(bb, work, "tar", "xf", tar.absolutePath, "-C", extract.absolutePath)) return false
-            // The payload stores files under an absolute Android data path
-            // (`data/data/<pkg>/files/usr/...`). The package name is an upstream
-            // detail, so the `files` directory is located rather than hard-coded.
-            val root = findPayloadRoot(extract)
-            if (root != null) root.copyRecursively(dest, overwrite = true)
+            // The payload stores files under an absolute Termux data path. That is
+            // an upstream detail, so the `files` directory is located, not guessed.
+            val payloadRoot = findPayloadRoot(extract)
+            if (payloadRoot != null) payloadRoot.copyRecursively(dest, overwrite = true)
             work.deleteRecursively()
             true
         } catch (e: Exception) {
-            log("  deb খোলা যায়নি (${deb.name}): ${e.message}")
+            log("  Could not unpack deb (${deb.name}): ${e.message}")
             false
         }
     }
@@ -318,8 +290,6 @@ object LinuxRuntime {
     }
 
     private fun unxz(bb: String, xz: File, out: File): Boolean {
-        // busybox `unxz` refuses a name it does not recognise, so the file carries
-        // the `.xz` suffix it wants and the result is renamed.
         if (!run(bb, xz.parentFile!!, "unxz", "-f", xz.absolutePath)) return false
         val produced = File(xz.parentFile, xz.name.removeSuffix(".xz"))
         return produced.exists() && produced.renameTo(out)
@@ -362,12 +332,12 @@ object LinuxRuntime {
                         }
                         entry = zis.nextEntry
                     }
-                    log("  $count ফাইল")
+                    log("  $count files")
                 }
             }
             true
         } catch (e: Exception) {
-            log("  আনপ্যাক ব্যর্থ: ${e.message}")
+            log("  Unpack failed: ${e.message}")
             false
         }
     }
@@ -375,73 +345,81 @@ object LinuxRuntime {
     /**
      * A zip cannot hold symlinks, so the bootstrap ships them as a `target←link`
      * text file. Without them `sh`, `env` and most applets do not exist.
+     *
+     * The links are made with the bundled busybox rather than
+     * `java.nio.file.Files`, which is API 26+ and this app supports API 21. Any
+     * absolute target that points at the payload's build path is rewritten to the
+     * prefix the guest actually sees, so a link never depends on the compat bind.
      */
-    private fun applySymlinks(manifest: File, dest: File, log: (String) -> Unit) {
+    private fun applySymlinks(context: Context, manifest: File, dest: File, log: (String) -> Unit) {
         if (!manifest.exists()) return
+        val bb = ShellRuntime.command(context)?.absolutePath ?: return
         var made = 0
         manifest.readLines().forEach { raw ->
             val line = raw.trim()
             val sep = line.indexOf('←')
             if (sep <= 0) return@forEach
-            val target = line.substring(0, sep)
-            val linkPath = line.substring(sep + 1)
-            val link = File(dest, linkPath.removePrefix("./"))
-            val resolvedTarget = if (target.startsWith("/")) target else {
-                File(link.parentFile, target).path
-            }
-            runCatching {
-                link.parentFile?.mkdirs()
-                if (link.exists()) link.delete()
-                java.nio.file.Files.createSymbolicLink(link.toPath(), File(resolvedTarget).toPath())
-                made++
-            }
+            val target = guestTarget(line.substring(0, sep))
+            val link = File(dest, line.substring(sep + 1).removePrefix("./"))
+            link.parentFile?.mkdirs()
+            // `-f` replaces an existing link, so there is nothing to clean up first.
+            if (run(bb, dest, "ln", "-sf", target, link.absolutePath)) made++
         }
-        log("  $made সিমলিংক")
+        log("  $made symlinks")
     }
 
     /**
      * Runs a command inside the installed guest, streaming its output live.
      *
-     * The guest's binaries and scripts were built against a fixed absolute prefix:
-     * their `RUNPATH` points at it and their shebangs name it, so moving the tree
-     * would break both. Rather than patch hundreds of files, `proot` is asked to
-     * present the real tree at that canonical path. Every path lookup is then
-     * translated for the guest, which fixes `RUNPATH`, shebangs and hard-coded
-     * paths in one step and needs no `LD_PRELOAD` shim.
-     *
-     * `proot` itself runs *before* that translation exists, so its own libraries
-     * are found through `LD_LIBRARY_PATH` pointing at the real prefix. Inside, the
-     * canonical path is used everywhere, which is what the packages expect.
-     *
-     * `-0` makes the guest believe it is root, which is what lets `apt` and `dpkg`
-     * write to their own directories. That is an illusion inside this one process
-     * tree; the app's real privileges are unchanged.
+     * `proot` is exec'd from the native library directory (allowed), and it in turn
+     * execs its loader from the same place, so no blocked `execve` is ever made.
+     * The guest tree is bound at a clean prefix (`/usr`) that the user sees, and
+     * again at the payload's canonical Termux path so the binaries find their own
+     * libraries. `-0` makes the guest believe it is root, which is what lets `apt`
+     * and `dpkg` write to their own directories — an illusion inside this one
+     * process tree; the app's real privileges are unchanged.
      */
     fun runStreaming(
         context: Context,
         command: String,
         onChunk: (stream: String, text: String) -> Unit
-    ): SystemShell.Result? {
-        if (!SystemShell.available()) return null
-        val real = prefix(context).absolutePath
+    ): ShellRuntime.Result? {
+        if (!isInstalled(context)) return null
+        val native = nativeLib(context).absolutePath
+        val real = root(context).absolutePath
         val realHome = home(context).absolutePath
-        val guest = canonicalPrefix(context)
-        val guestHome = "$guest/../home"
+        val proot = proot(context).absolutePath
+        val loader = loader(context).absolutePath
+        val tmp = prootTmp(context).absolutePath
+
         val line = buildString {
-            append("PATH=$real/bin:/system/bin:\$PATH ")
-            append("LD_LIBRARY_PATH=$real/lib ")
-            append("HOME=$guestHome PREFIX=$guest TMPDIR=$guest/tmp ")
+            append("PATH=$native:$real/bin:/system/bin ")
+            append("LD_LIBRARY_PATH=$native:$real/lib ")
+            append("PROOT_LOADER=$loader PROOT_TMP_DIR=$tmp ")
+            append("PREFIX=$GUEST_PREFIX HOME=$GUEST_HOME TMPDIR=$GUEST_PREFIX/tmp ")
             append("TERM=xterm-256color LANG=C.UTF-8 ")
-            append("$real/bin/proot -0 -r / ")
+            append("$proot -0 -r / ")
             append("-b /dev -b /proc -b /sys -b /storage -b /system ")
-            append("-b $real:$guest ")
-            append("-b $realHome:$guestHome ")
-            append("-b $guest/tmp:/tmp ")
-            append("-w $guestHome ")
-            append("$guest/bin/bash -lc ${q(command)}")
+            append("-b $real:$GUEST_PREFIX ")
+            append("-b $real:$COMPAT_PREFIX ")
+            append("-b $realHome:$GUEST_HOME ")
+            append("-b $real/tmp:/tmp ")
+            append("-w $GUEST_HOME ")
+            // Inside the guest the prefix is `/usr`, so PATH is set there rather
+            // than inherited: a host path in `$PATH` would leak the app's storage
+            // layout into a shell the user is looking at.
+            append("$GUEST_PREFIX/bin/bash -lc ${q("export PATH=$GUEST_PREFIX/bin:/system/bin; $command")}")
         }
-        return SystemShell.runStreaming(context, line, timeoutMs = 600_000, onChunk = onChunk)
+        return ShellRuntime.runStreaming(context, line, timeoutMs = 600_000, onChunk = onChunk)
     }
+
+    /**
+     * Rewrites a symlink target that points at the payload's build path into the
+     * prefix the guest sees. A target that is relative, or already clean, is
+     * returned unchanged. Pure, so the rule can be checked off-device.
+     */
+    internal fun guestTarget(target: String): String =
+        if (target.startsWith(COMPAT_PREFIX)) GUEST_PREFIX + target.removePrefix(COMPAT_PREFIX) else target
 
     private fun q(s: String): String = "'" + s.replace("'", "'\\''") + "'"
 }

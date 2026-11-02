@@ -57,37 +57,34 @@ class LinuxRuntimeTest {
         assertEquals("linux/x86_64", chosen)
     }
 
-    // ---- deriving the prefix the payload was built for ----------------------
+    // ---- the prefix the guest is shown --------------------------------------
 
     @Test
-    fun `the build prefix is read back out of the payload's own symlinks`() {
-        // The value must come from the payload, never from a constant here: the
-        // tree has to stay relocatable and the source must not name the upstream
-        // build path at all.
-        val dir = java.io.File.createTempFile("zyraxon", "").apply { delete(); mkdirs(); deleteOnExit() }
-        java.io.File(dir, "SYMLINKS.txt").writeText(
-            """
-            curses.h←./include/ncurses.h
-            /opt/build/payload/files/usr/share/keys/a.gpg←./etc/a.gpg
-            """.trimIndent()
+    fun `the guest prefix is clean and never mentions the upstream build path`() {
+        // The user sees $PREFIX, $HOME and pwd. Those must be ordinary Unix paths,
+        // never the payload's upstream Termux path, which is an implementation
+        // detail and would leak a third-party name into our Terminal.
+        assertEquals("/usr", LinuxRuntime.GUEST_PREFIX)
+        assertEquals("/home", LinuxRuntime.GUEST_HOME)
+        assertTrue(!LinuxRuntime.GUEST_PREFIX.contains("termux"))
+        assertTrue(!LinuxRuntime.GUEST_HOME.contains("termux"))
+    }
+
+    @Test
+    fun `a symlink target on the build path is rewritten to the guest prefix`() {
+        // The payload's links point at its own build path. Leaving that in place
+        // would make the links depend on the compat bind and would leak the
+        // upstream name into anything that prints a link target.
+        assertEquals(
+            "/usr/share/keys/a.gpg",
+            LinuxRuntime.guestTarget("/data/data/com.termux/files/usr/share/keys/a.gpg")
         )
-
-        assertEquals("/opt/build/payload/files/usr", LinuxRuntime.derivePrefix(dir))
     }
 
     @Test
-    fun `a manifest with only relative targets yields no prefix`() {
-        val dir = java.io.File.createTempFile("zyraxon", "").apply { delete(); mkdirs(); deleteOnExit() }
-        java.io.File(dir, "SYMLINKS.txt").writeText("curses.h←./include/ncurses.h")
-
-        assertEquals(null, LinuxRuntime.derivePrefix(dir))
-    }
-
-    @Test
-    fun `a missing manifest yields no prefix rather than throwing`() {
-        val dir = java.io.File.createTempFile("zyraxon", "").apply { delete(); mkdirs(); deleteOnExit() }
-
-        assertEquals(null, LinuxRuntime.derivePrefix(dir))
+    fun `a relative or already clean target is left alone`() {
+        assertEquals("ncurses.h", LinuxRuntime.guestTarget("ncurses.h"))
+        assertEquals("/usr/bin/bash", LinuxRuntime.guestTarget("/usr/bin/bash"))
     }
 
     // ---- the ar reader ------------------------------------------------------

@@ -810,8 +810,15 @@ class ZyraxonAiEngine(private val context: Context) {
             var retries = 0
             while (attempt == null && retries < 3 && ProviderCatalog.isRetryableError(lastProviderError)) {
                 retries++
-                trySend("\n\n⏳ সংযোগে সমস্যা, ${retries} সেকেন্ড পর আবার চেষ্টা করছি…\n\n")
-                kotlinx.coroutines.delay(retries * 1000L)
+                // Count down out loud, one second at a time, so the wait the user
+                // sees is the wait that is actually happening. A single message
+                // followed by a silent delay reads as "stuck", not as "retrying".
+                trySend("\n\n⏳ Connection problem — retry $retries/3 in ")
+                for (s in retries downTo 1) {
+                    trySend("$s… ")
+                    kotlinx.coroutines.delay(1000L)
+                }
+                trySend("\n\n")
                 attempt = callOnce()
             }
             val result = attempt

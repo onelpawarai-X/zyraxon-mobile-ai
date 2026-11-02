@@ -2360,14 +2360,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         }
 
         val status = buildString {
-            append("Shizuku: ").append(if (SystemShell.available()) "চালু" else "বন্ধ")
-            append(" · ZYRAXON Linux: ").append(if (LinuxRuntime.isInstalled(app)) "ইনস্টল করা" else "ইনস্টল করা হয়নি")
+            append("Linux: ").append(if (LinuxRuntime.isInstalled(app)) "installed" else "not installed")
+            if (!LinuxRuntime.isSupported(app)) append(" · unsupported on this device")
             append("\n\n")
-            append("কমান্ড:\n")
-            append("  linux-install           — ZYRAXON Linux সিস্টেম ইনস্টল করে (bash, apt, git, python, node, clang)\n")
-            append("  linux <কমান্ড>           — Linux-এর ভিতরে কমান্ড চালায়\n")
-            append("  linux-status            — ইনস্টল অবস্থা দেখায়\n")
-            append("  linux-shell             — ইন্টার‌্যাক্টিভ bash খোলে\n")
+            append("Commands:\n")
+            append("  linux-install           — install ZYRAXON Linux (bash, apt, git, python, node, clang)\n")
+            append("  linux <command>         — run a command inside Linux\n")
+            append("  linux-status            — show install status\n")
+            append("  linux-shell             — open an interactive bash\n")
         }
 
         val result = when {
@@ -2376,14 +2376,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             )
 
             line == "linux-install" -> {
-                push("out", "ZYRAXON Linux সিস্টেম ইনস্টল করছি…")
+                push("out", "Installing ZYRAXON Linux…")
                 val ok = LinuxRuntime.install(app) { msg -> push("out", msg) }
                 TerminalLine(
                     id = lineId,
                     command = line,
                     output = streamed.toString().trimEnd('\n') +
-                        if (ok) "\n\n✔ ZYRAXON Linux প্রস্তুত। এখন `linux <কমান্ড>` চালান।"
-                        else "\n\n✖ ইনস্টল সম্পূর্ণ হয়নি। Shizuku চালু আছে কিনা দেখুন।",
+                        if (ok) "\n\nZYRAXON Linux is ready. Run a command with: linux <command>"
+                        else "\n\nInstall did not finish. See the lines above for the reason.",
                     exitCode = if (ok) 0 else 1,
                     isError = !ok
                 )
@@ -2392,7 +2392,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             !LinuxRuntime.isInstalled(app) -> TerminalLine(
                 id = lineId,
                 command = line,
-                output = "ZYRAXON Linux ইনস্টল করা নেই। আগে চালান:\n  linux-install\n\n$status",
+                output = "ZYRAXON Linux is not installed yet. Run first:\n  linux-install\n\n$status",
                 exitCode = 1, isError = true
             )
 
@@ -2419,7 +2419,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         if (r == null) {
             return TerminalLine(
                 command = command,
-                output = "সিস্টেম অ্যাক্সেস নেই। Shizuku চালু করে ZYRAXON-কে অনুমতি দিন।",
+                output = "Linux is not installed. Run: linux-install",
                 exitCode = 1, isError = true
             )
         }
