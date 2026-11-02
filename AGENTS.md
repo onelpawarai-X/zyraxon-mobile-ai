@@ -66,3 +66,49 @@ GitHub Actions `.github/workflows/release.yml` ("Build & Release APK") builds th
 - `zyraxonai.lovable.app` stays (built-in proprietary, to be enabled later).
 - MCP tools keep auto-injecting as schemas; the model inspects them itself with `mcp_list`.
 - **No animation may ever be cut or removed.** Performance work must not delete motion; only the boot intro duration and unit-test-only guards may change.
+
+## Build & verify (works without GitHub Actions)
+
+Toolchain used in this container:
+
+```bash
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+export PATH=$JAVA_HOME/bin:/opt/gradle/gradle-9.3.1/bin:$PATH
+export ANDROID_HOME=/opt/android-sdk
+export ANDROID_SDK_ROOT=$ANDROID_HOME
+base64 -d debug.keystore.base64 > debug.keystore   # debug build needs it
+gradle :app:testDebugUnitTest :app:assembleDebug -x lintVitalRelease -x lintVitalAnalyzeRelease
+```
+
+`gradlew` is NOT in the repo; `gradle` 9.3.1 + AGP 9.1.1 + JDK 21 are required.
+Run long builds with `nohup ... &` and poll the log: a foreground command is
+capped below the 1200 s idle-cleanup window.
+
+The debug APK is ~480 MB because every ABI's 30 MB Linux payload is bundled.
+That is why the release workflow needs `timeout-minutes: 90`.
+
+## Linux / proot (why it works on targetSdk 36)
+
+Android 10+ blocks `execve` of files in the app's data dir. proot and its
+loader therefore ship as `jniLibs` (`libproot.so`, `libproot-loader.so`), which
+Android does allow executing. proot never execs the guest anyway: it `mmap`s the
+binary and branches to its entry point (`src/loader/loader.c`), so the block
+never applies. The whole system runs as the app's own uid, with `proot -0`
+presenting uid 0 inside the guest.
+
+- `LD_LIBRARY_PATH` must NOT contain the native library dir: Android's `libc.so`
+  lives there and a guest binary that loads it dies immediately. proot finds its
+  own libs through its `$ORIGIN` runpath.
+- The guest prefix shown to the user is `/usr`; the payload's real build path
+  (`/data/data/com.termux/files/usr`) is bound too, because the binaries embed it.
+- Symlinks are created with bundled busybox, not `java.nio.file.Files` (API 26+;
+  minSdk is 21). Absolute targets on the build path are rewritten to `/usr`.
+- The system is unpacked in the background on first launch; there is no install
+  step for the user. Nothing needs Shizuku to run the Terminal.
+
+## Terminal fonts
+
+`FontFamily.Monospace` has no Bengali glyphs, so Bengali rendered as garbage.
+The Terminal uses JetBrains Mono followed by Noto Sans Bengali in one
+`FontFamily`; Compose falls through per glyph, keeping code monospaced while
+shaping Bengali correctly.
