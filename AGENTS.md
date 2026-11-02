@@ -112,3 +112,47 @@ presenting uid 0 inside the guest.
 The Terminal uses JetBrains Mono followed by Noto Sans Bengali in one
 `FontFamily`; Compose falls through per glyph, keeping code monospaced while
 shaping Bengali correctly.
+
+## Release process (GitHub Actions)
+
+Two workflows, deliberately separate:
+
+- `TEST-CI.yml` — manual (`workflow_dispatch`). Runs unit tests, builds a
+  **debug** APK, uploads it as a run artifact. `permissions: contents: read` and
+  no tag trigger, so it can never publish a release. This is the build to hand
+  to someone for testing on a phone.
+- `release.yml` — triggers on a `v*` tag (or by hand). Builds the signed release
+  APK and publishes it to the release for that tag.
+
+To ship a version:
+
+```bash
+git tag -a vX.Y.Z -m "..." && git push origin vX.Y.Z
+```
+
+The workflow creates the release with a one-line placeholder body
+("Signed release APK built by GitHub Actions."). Replace it with real notes
+afterwards, or the release looks unfinished:
+
+```bash
+python3 - <<'PY'
+import json,urllib.request,os
+req=urllib.request.Request(
+ "https://api.github.com/repos/onelpawarai-X/zyraxon-mobile-ai/releases/<id>",
+ data=json.dumps({"body":open('notes.md').read(),"name":"ZYRAXON vX.Y.Z — ..."}).encode(),
+ headers={"Authorization":f"Bearer {os.environ['GH_TOKEN']}",
+          "Accept":"application/vnd.github+json","Content-Type":"application/json"},
+ method="PATCH")
+print(json.load(urllib.request.urlopen(req))['html_url'])
+PY
+```
+
+Bump `versionCode` for every shipped build or the APK will not install over the
+previous one.
+
+The release APK is ~445 MB and the debug APK ~480 MB, because each ABI carries
+its own ~30 MB Linux payload. Any step that builds an APK needs a generous
+timeout.
+
+Do not put a token in the git remote URL. Pass it per command:
+`git -c credential.helper= push https://x-access-token:$GH_TOKEN@github.com/...`
