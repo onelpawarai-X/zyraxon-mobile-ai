@@ -183,4 +183,4 @@ fun BootScreen(onDone: () -> Unit) {
     }
 }
 
-private const val TOTAL_SECS = 3.0f
+private const val TOTAL_SECS = 1.1f

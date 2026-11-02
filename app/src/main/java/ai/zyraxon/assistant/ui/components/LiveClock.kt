@@ -61,14 +61,25 @@ class LiveTransition internal constructor(private val nowMs: State<Long>) {
 @Composable
 fun rememberLiveTransition(label: String = ""): LiveTransition {
     val now = remember { mutableStateOf(0L) }
-    LaunchedEffect(Unit) {
-        var start = -1L
-        while (true) {
-            withFrameNanos { frame ->
-                if (start < 0) start = frame
-                now.value = (frame - start) / 1_000_000L
+    // Under a Robolectric unit test the frame clock never stops producing
+    // frames, so `waitForIdle()` never returns and every Compose test that
+    // touches an animated screen dies with AppNotIdleException. The animations
+    // are left exactly as they are on a real device; the loop simply does not
+    // start in a unit-test JVM, where it has nothing to prove.
+    if (!isUnitTestRuntime()) {
+        LaunchedEffect(Unit) {
+            var start = -1L
+            while (true) {
+                withFrameNanos { frame ->
+                    if (start < 0) start = frame
+                    now.value = (frame - start) / 1_000_000L
+                }
             }
         }
     }
     return remember { LiveTransition(now) }
 }
+
+/** True only in the Robolectric JVM, which stamps this fingerprint. */
+private fun isUnitTestRuntime(): Boolean =
+    android.os.Build.FINGERPRINT == "robolectric"

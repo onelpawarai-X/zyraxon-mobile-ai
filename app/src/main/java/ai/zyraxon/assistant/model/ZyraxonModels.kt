@@ -9,7 +9,13 @@ data class ChatMessage(
     val text: String,
     val timestamp: String,
     val isStreaming: Boolean = false,
-    val modelName: String = "OpenCode Free"
+    val modelName: String = "OpenCode Free",
+    /**
+     * The model's own reasoning for this turn, when the provider streamed it. Shown
+     * on screen only — the user can tap to read exactly what it was thinking — and
+     * never spoken.
+     */
+    val thinking: String = ""
 )
 
 enum class MessageRole {

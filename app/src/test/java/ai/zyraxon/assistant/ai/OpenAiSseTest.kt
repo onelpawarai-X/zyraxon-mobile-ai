@@ -19,11 +19,21 @@ class OpenAiSseTest {
     private fun readSse(raw: String): Pair<StreamedTurn, StringBuilder> {
         val seen = StringBuilder()
         val sse = OpenAiSse(OkHttpClient())
+        // readEvents now takes both a text and a reasoning callback, so thinking
+        // deltas can be shown live while the answer streams.
         val method = OpenAiSse::class.java.getDeclaredMethod(
-            "readEvents", BufferedReader::class.java, Function1::class.java
+            "readEvents",
+            BufferedReader::class.java,
+            Function1::class.java,
+            Function1::class.java
         )
         method.isAccessible = true
-        val turn = method.invoke(sse, BufferedReader(StringReader(raw)), { s: String -> seen.append(s) })
+        val turn = method.invoke(
+            sse,
+            BufferedReader(StringReader(raw)),
+            { s: String -> seen.append(s) },
+            { _: String -> }
+        )
         return (turn as StreamedTurn) to seen
     }
 

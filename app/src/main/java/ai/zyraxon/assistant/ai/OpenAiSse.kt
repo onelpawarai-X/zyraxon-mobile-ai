@@ -25,7 +25,8 @@ class OpenAiSse(private val client: OkHttpClient) {
         apiKey: String,
         body: JSONObject,
         extraHeaders: Map<String, String> = emptyMap(),
-        onText: (String) -> Unit
+        onText: (String) -> Unit,
+        onReasoning: (String) -> Unit = {}
     ): StreamedTurn? {
         val request = Request.Builder()
             .url(url)
@@ -63,7 +64,7 @@ class OpenAiSse(private val client: OkHttpClient) {
                     val source = response.body?.source() ?: return null
                     // Read line by line off the live socket: deltas must reach the
                     // caller as they arrive, never after the answer ends.
-                    readEvents(BufferedReader(InputStreamReader(source.inputStream())), onText)
+                                          readEvents(BufferedReader(InputStreamReader(source.inputStream())), onText, onReasoning)
                 }
         } catch (e: Exception) {
             lastError = e.message ?: "সংযোগ বিচ্ছিন্ন"
@@ -72,18 +73,27 @@ class OpenAiSse(private val client: OkHttpClient) {
     }
 
 
-    private fun consume(payload: String, turn: StreamedTurn, onText: (String) -> Unit) {
+    private fun consume(payload: String, turn: StreamedTurn, onText: (String) -> Unit, onReasoning: (String) -> Unit) {
         val json = try { JSONObject(payload) } catch (_: Exception) { return }
         val choice = json.optJSONArray("choices")?.optJSONObject(0) ?: return
         val delta = choice.optJSONObject("delta") ?: return
+        // Reasoning first: the providers name it differently and it must never be
+        // mistaken for the answer. `reasoning_content` is DeepSeek/Groq/Gemini's
+        // OpenAI-compatible field; `reasoning` and `thinking` cover the rest.
+        val reason = delta.optString("reasoning_content").ifBlank { delta.optString("reasoning") }
+            .ifBlank { delta.optString("thinking") }
+        if (reason.isNotEmpty()) {
+            turn.appendReasoning(reason)
+            onReasoning(reason)
+        }
         val text = delta.optString("content", "")
         if (text.isNotEmpty()) {
             turn.appendText(text)
             onText(text)
         }
         delta.optJSONArray("tool_calls")?.let { turn.mergeToolCalls(it) }
-        val reason = choice.opt("finish_reason")
-        if (reason != null && reason != JSONObject.NULL) turn.finished = true
+        val finish = choice.opt("finish_reason")
+        if (finish != null && finish != JSONObject.NULL) turn.finished = true
     }
 
 
@@ -102,7 +112,7 @@ class OpenAiSse(private val client: OkHttpClient) {
         return raw.take(400).takeIf { it.isNotBlank() }
     }
 
-    private fun readEvents(reader: BufferedReader, onText: (String) -> Unit): StreamedTurn {
+    private fun readEvents(reader: BufferedReader, onText: (String) -> Unit, onReasoning: (String) -> Unit): StreamedTurn {
         val turn = StreamedTurn()
         val data = StringBuilder()
         var line = reader.readLine()
@@ -111,14 +121,14 @@ class OpenAiSse(private val client: OkHttpClient) {
                 line.startsWith("data:") -> data.append(line.removePrefix("data:").trim())
                 line.isEmpty() -> {
                     if (data.isNotEmpty()) {
-                        consume(data.toString(), turn, onText)
+                        consume(data.toString(), turn, onText, onReasoning)
                         data.setLength(0)
                     }
                 }
             }
             line = reader.readLine()
         }
-        if (data.isNotEmpty()) consume(data.toString(), turn, onText)
+        if (data.isNotEmpty()) consume(data.toString(), turn, onText, onReasoning)
         return turn
     }
 

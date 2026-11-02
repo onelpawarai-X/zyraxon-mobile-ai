@@ -5,7 +5,6 @@ import ai.zyraxon.assistant.model.AiModel
 import ai.zyraxon.assistant.model.ChatMessage
 import ai.zyraxon.assistant.model.MessageRole
 import ai.zyraxon.assistant.model.Persona
-import ai.zyraxon.assistant.shell.ShellRuntime
 import android.content.Context
 import android.content.Intent
 import android.hardware.camera2.CameraManager
@@ -106,6 +105,13 @@ class ZyraxonAiEngine(private val context: Context) {
         .build()
 
     companion object {
+        /**
+         * Reasoning deltas travel through the same Flow as the answer, wrapped in
+         * this marker so the UI can show them as "thinking" and never speak them.
+         * The marker cannot occur in real prose, so a plain answer is unaffected.
+         */
+        const val REASONING_PREFIX = "\u0001zyraxon-reasoning\u0001"
+
         /**
          * The user's rule is that the assistant keeps working until the job is
          * done, so this is deliberately generous. The guard exists only to stop a
@@ -502,22 +508,21 @@ class ZyraxonAiEngine(private val context: Context) {
     }
 
     /**
-     * The contract for live speech-to-speech models. A live model talks instead
-     * of writing, so it needs different rules: short turns, no markdown, and no
-     * reading of code or paths aloud. Kept as its own file because the two jobs
-     * genuinely differ.
+     * The live speech-to-speech section of the one contract file, taken from the
+     * `LIVE VOICE` marker to the end. Both jobs live in a single file so no prompt
+     * is ever injected from a second place.
      */
     val liveVoiceContract: String by lazy {
-        try {
-            context.assets.open("knowledge/zyraxon-live-voice-prompt.md")
-                .bufferedReader(Charsets.UTF_8).use { it.readText() }
-        } catch (_: Exception) { "" }
+        val marker = "<!-- ==================== LIVE VOICE ==================== -->"
+        val at = bundledContract.indexOf(marker)
+        if (at < 0) "" else bundledContract.substring(at + marker.length).trim()
     }
 
     /**
      * The system prompt a live session starts with: the live contract, the real
      * device facts, and the active character. Deliberately shorter than the text
-     * prompt — a live model has to answer in a second, not read a manual.
+     * prompt — a live model has to answer in a second, not read a manual. The tool
+     * list is not repeated here: the model already receives the tools themselves.
      */
     fun buildLiveVoicePrompt(persona: Persona): String = buildString {
         append(liveVoiceContract)
@@ -525,7 +530,6 @@ class ZyraxonAiEngine(private val context: Context) {
         append("- Android phone (APK), Android ").append(Build.VERSION.RELEASE)
             .append(" (API ").append(Build.VERSION.SDK_INT).append("), ")
             .append(Build.MANUFACTURER).append(" ").append(Build.MODEL).append("\n")
-        append("- Tools available this turn: ").append(ToolRegistry.names().joinToString(", ")).append("\n")
         append("\n## Active character (speak as this person)\n").append(persona.systemPrompt).append("\n")
     }
 
@@ -544,56 +548,18 @@ class ZyraxonAiEngine(private val context: Context) {
         append("\n\n---\n\n## Platform (the truth about where you are running)\n")
         append("- Device: Android phone (APK), Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}), ${Build.MANUFACTURER} ${Build.MODEL}\n")
         append("- This app is Android only. It ships as an APK and nothing else — never propose, plan or build a desktop (Windows EXE, Linux, AppImage, DMG) version of ZYRAXON itself.\n")
-        append("- Shell: four of them, all real. `run_shell` runs in the tool shell (bundled busybox, ~300 commands) inside the tool workspace ").append(ToolRegistry.workspace(context).absolutePath).append(". `terminal_run` runs in the Terminal shell the user watches (`⌘ ZX`) inside ").append(ShellRuntime.home(context).absolutePath).append(". `linux_run` runs inside ZYRAXON's own full Linux system (bash, apt, git, python, node, clang), installed straight from the APK with no network at all — `action:\"status\"`, `action:\"install\"`, `action:\"run\"` with a command. That is the strongest system on the phone, so prefer it for real builds. `system_shell` runs ABOVE the app sandbox the way a system shell and adb do — `level:\"root\"` is uid 0 (read any app's data, write /system, mount, iptables), `level:\"shell\"` is uid 2000 (pm, am, settings, dumpsys, input), `level:\"auto\"` picks the best level that is live. System level and the Linux install both need the user to have Shizuku running and to have granted ZYRAXON access; until then the tool explains exactly what to do and `run_shell` keeps working. `git clone/pull/status` work through JGit, and `wget https://…` works through a loopback proxy.\n")
-        append("- Tools available this turn: ").append(ToolRegistry.names().joinToString(", "))
-        if (mcpTools.isNotEmpty()) {
-            append(", ").append(mcpTools.joinToString(", ") { it.qualifiedName })
-        }
-        append("\n")
+        append("- শেল/টার্মিনাল: তোমার কাছে আসল শেল আর টার্মিনাল আছে — কমান্ড দিয়েই যেকোনো কাজ করা যায়। ")
+        append("কমান্ড-নির্ভর সবচেয়ে শক্তিশালী কাজগুলোর জন্য টার্মিনাল ব্যবহার করবে এবং কাজ শেষ না হওয়া পর্যন্ত থামবে না। ")
+        append("কোথায় চালাচ্ছ, কী আছে, কীভাবে — এসব তুমি নিজেই টুল কল করে জেনে নেবে।\n")
         append("- Call tools through the function-calling interface, never as text.\n")
 
-        // MCP: state which servers are live and what each one can do, so the model
-        // picks the right one instead of guessing at a tool name.
-        append("\n## MCP servers (connected — their tools are already in your tool list)\n")
-        if (mcpTools.isEmpty()) {
-            append("- এই মুহূর্তে কোনো MCP সার্ভার কানেক্টেড নেই।\n")
-        } else {
-            for ((serverId, tools) in mcpTools.groupBy { it.serverId }) {
-                val name = tools.first().serverName
-                append("- **").append(name).append("** (`").append(serverId)
-                    .append("__` প্রিফিক্স): ")
-                    .append(tools.joinToString(", ") { it.name })
-                    .append("\n")
-            }
-        }
-        append("\n## MCP servers (not connected)\n")
-        val allMcp = mcp.servers()
-        val connectedIds = mcpTools.map { it.serverId }.toSet()
-        val offline = allMcp.filterNot { it.id in connectedIds }
-        if (offline.isEmpty()) {
-            append("- সব MCP সার্ভার কানেক্টেড।\n")
-        } else {
-            for (s in offline) {
-                append("- ").append(s.name).append(" (`").append(s.id).append("`) — ")
-                    .append(s.tagline).append(". কানেক্ট করতে বললে ")
-                    .append("`mcp_connect` টুল কল করো।\n")
-            }
-        }
-
-        // Resources and prompts are listed by count only: dumping every URI into
-        // the prompt would waste the context the conversation needs.
-        val resources = mcp.allResources()
-        val prompts = mcp.allPrompts()
-        if (resources.isNotEmpty() || prompts.isNotEmpty()) {
-            append("\n## MCP resources and prompts (call the tool to see the details)\n")
-            if (resources.isNotEmpty()) {
-                append("- ").append(resources.size).append("টি রিসোর্স পাওয়া যায় (`mcp_resources` দিয়ে তালিকা, ")
-                    .append("`mcp_read_resource` দিয়ে পড়ো)।\n")
-            }
-            if (prompts.isNotEmpty()) {
-                append("- ").append(prompts.size).append("টি প্রম্পট টেমপ্লেট পাওয়া যায় (`mcp_prompts` দিয়ে তালিকা, ")
-                    .append("`mcp_prompt` দিয়ে রেন্ডার করো)।\n")
-            }
+        // MCP: the connected servers' tools are already injected as real tool
+        // schemas this turn, so nothing about them is repeated here. The model
+        // finds out what exists by calling the tools themselves.
+        if (mcpTools.isNotEmpty()) {
+            append("\n## MCP\n")
+            append("- ").append(mcpTools.size).append("টি MCP টুল ইতিমধ্যে তোমার টুল-লিস্টে দেওয়া আছে; ")
+            append("নাম ও বিস্তারিত দেখতে `mcp_list` কল করো।\n")
         }
 
         if (screenContext.isNotBlank()) {
@@ -831,6 +797,10 @@ class ZyraxonAiEngine(private val context: Context) {
                     // Say the switch out loud: answering from a different model than
                     // the one on screen would otherwise be invisible.
                     trySend("\n\n🔁 `$switched` — আগের প্রোভাইডার সীমায় পৌঁছেছে, তাই এখান থেকে চালিয়ে যাচ্ছি।\n\n")
+                }, { reason ->
+                    // Reasoning is shown on screen and never spoken, so it travels
+                    // in its own envelope the UI can tell apart from the answer.
+                    trySend(REASONING_PREFIX + reason)
                 })
             }
             var attempt = callOnce()
@@ -840,8 +810,8 @@ class ZyraxonAiEngine(private val context: Context) {
             var retries = 0
             while (attempt == null && retries < 3 && ProviderCatalog.isRetryableError(lastProviderError)) {
                 retries++
-                trySend("\n\n⏳ সংযোগে সমস্যা, ${retries * 3} সেকেন্ড পর আবার চেষ্টা করছি…\n\n")
-                kotlinx.coroutines.delay(retries * 3000L)
+                trySend("\n\n⏳ সংযোগে সমস্যা, ${retries} সেকেন্ড পর আবার চেষ্টা করছি…\n\n")
+                kotlinx.coroutines.delay(retries * 1000L)
                 attempt = callOnce()
             }
             val result = attempt
@@ -860,14 +830,19 @@ class ZyraxonAiEngine(private val context: Context) {
                 // turn ends here unless the engine refuses to end it.
                 val reply = result.text.toString()
                 stalls++
-                // Every time the model stops talking, the engine asks a judge one
-                // question: is what the user asked for actually finished? The judge
-                // sees the original goal, the tool results so far and the screen —
-                // not just the model's own words — so "ইউটিউব খুলেছি" is correctly
-                // read as "not done yet", and a finished job is correctly left
-                // alone. If the judge cannot answer (network), the keyword policy
-                // is the fallback.
-                val verdict = verifyGoal(model, prompt, actionLog, lastScreenText, reply, tools)
+                // When the model stops talking after having acted, the engine asks
+                // a judge one question: is what the user asked for actually
+                // finished? The judge sees the original goal, the tool results so
+                // far and the screen — not just the model's own words — so
+                // "ইউটিউব খুলেছি" is correctly read as "not done yet", and a
+                // finished job is correctly left alone. If the judge cannot answer
+                // (network), the keyword policy is the fallback. The judge is a
+                // second, blocking round-trip, so it is only asked when there is
+                // real evidence to weigh: some tool ran or the screen changed. A
+                // plain conversational reply needs no verification, and asking
+                // anyway was doubling the wait for a one-line answer.
+                val verdict = if (actionLog.isEmpty() && !lastActionWasScreenChange) null
+                    else verifyGoal(model, prompt, actionLog, lastScreenText, reply)
                 val mustContinue = if (verdict != null) {
                     !verdict.done && !verdict.blocked
                 } else {
@@ -1076,6 +1051,29 @@ class ZyraxonAiEngine(private val context: Context) {
     )
 
     /**
+     * The model used to judge whether a job is done. Verification is a tiny,
+     * latency-critical question, so the fastest keyed provider is preferred over
+     * the user's (possibly large, slow) selected model. Falls back to the selected
+     * model when no fast provider has a key, so the judge always has something.
+     */
+    private fun judgeModel(preferred: AiModel): AiModel {
+        val fast = listOf("groq", "gemini")
+        for (id in fast) {
+            val spec = ProviderCatalog.find(id) ?: continue
+            if (getApiKey(id).isBlank()) continue
+            val candidateId = spec.seedModels.firstOrNull() ?: continue
+            return AiModel(
+                id = candidateId,
+                name = candidateId,
+                category = spec.category,
+                description = spec.label,
+                provider = spec.id
+            )
+        }
+        return preferred
+    }
+
+    /**
      * Asks the model, in a fresh and tiny conversation, whether the goal is met.
      *
      * The judge is given the goal, the last tool results and the current screen —
@@ -1087,8 +1085,7 @@ class ZyraxonAiEngine(private val context: Context) {
         goal: String,
         actions: List<String>,
         screen: String,
-        reply: String,
-        tools: JSONArray
+        reply: String
     ): Verdict? {
         if (goal.isBlank()) return null
         return try {
@@ -1117,7 +1114,12 @@ class ZyraxonAiEngine(private val context: Context) {
             val msgs = JSONArray()
                 .put(JSONObject().put("role", "system").put("content", system))
                 .put(JSONObject().put("role", "user").put("content", user))
-            val turn = callModelWithFailover(model, msgs, tools, { }, { }) ?: return null
+            // The judge is asked one question and answers with a small JSON
+            // object, so it is given no tools. Sending all seventy-two tool
+            // schemas here — which the old call did — added tens of thousands of
+            // tokens to every judge request for nothing, and that was pure latency
+            // on every turn. The judge only decides, it never acts.
+            val turn = callModelWithFailover(judgeModel(model), msgs, JSONArray(), { }, { }) ?: return null
             if (turn.toolCalls.length() > 0) return null
             val raw = turn.text.toString()
             val start = raw.indexOf('{')
@@ -1217,12 +1219,13 @@ class ZyraxonAiEngine(private val context: Context) {
         model: AiModel,
         messages: JSONArray,
         tools: JSONArray,
-        onText: (String) -> Unit
+        onText: (String) -> Unit,
+        onReasoning: (String) -> Unit = {}
     ): StreamedTurn? {
         val sse = OpenAiSse(client)
         lastProviderError = null
         val spec = ProviderCatalog.find(model.provider)
-            ?: return callModelStreamingLegacy(model, messages, tools, onText)
+            ?: return callModelStreamingLegacy(model, messages, tools, onText, onReasoning)
         val key = getApiKey(model.provider)
         // A key-less public provider is still worth a try; only a provider that
         // requires a key and has none is skipped, so the caller reports it.
@@ -1257,7 +1260,8 @@ class ZyraxonAiEngine(private val context: Context) {
         model: AiModel,
         messages: JSONArray,
         tools: JSONArray,
-        onText: (String) -> Unit
+        onText: (String) -> Unit,
+        onReasoning: (String) -> Unit = {}
     ): StreamedTurn? {
         val sse = OpenAiSse(client)
         val fallbackId = when {
@@ -1279,7 +1283,8 @@ class ZyraxonAiEngine(private val context: Context) {
             key,
             body,
             headersFor(spec),
-            onText
+            onText,
+            onReasoning
         )?.let { return it }
         lastProviderError = sse.lastError ?: "${spec.label}: সংযোগ ব্যর্থ"
         return null
@@ -1293,9 +1298,12 @@ class ZyraxonAiEngine(private val context: Context) {
         model: AiModel,
         messages: JSONArray,
         tools: JSONArray,
-        onText: (String) -> Unit
+        onText: (String) -> Unit,
+        onReasoning: (String) -> Unit = {}
     ): StreamedTurn? {
-        callModelStreaming(model, messages, tools, onText)?.let { if (it.text.isNotEmpty() || it.toolCalls.length() > 0) return it }
+        callModelStreaming(model, messages, tools, onText, onReasoning)?.let {
+            if (it.text.isNotEmpty() || it.toolCalls.length() > 0) return it
+        }
         val blocking = callModel(model, messages, tools) ?: return null
         if (blocking.text.isNotBlank()) onText(blocking.text)
         return StreamedTurn().also {
@@ -1316,9 +1324,10 @@ class ZyraxonAiEngine(private val context: Context) {
         messages: JSONArray,
         tools: JSONArray,
         onText: (String) -> Unit,
-        onSwitch: (String) -> Unit
+        onSwitch: (String) -> Unit,
+        onReasoning: (String) -> Unit = {}
     ): StreamedTurn? {
-        callModelAny(model, messages, tools, onText)?.let {
+        callModelAny(model, messages, tools, onText, onReasoning)?.let {
             if (it.text.isNotEmpty() || it.toolCalls.length() > 0) return it
         }
         val firstError = lastProviderError
@@ -1328,7 +1337,7 @@ class ZyraxonAiEngine(private val context: Context) {
         if (!ProviderCatalog.isRetryableError(firstError)) return null
 
         for (candidate in failoverCandidates(model)) {
-            val attempt = callModelAny(candidate, messages, tools, onText)
+            val attempt = callModelAny(candidate, messages, tools, onText, onReasoning)
             if (attempt != null && (attempt.text.isNotEmpty() || attempt.toolCalls.length() > 0)) {
                 onSwitch("${model.provider} → ${candidate.provider} (${candidate.id})")
                 return attempt

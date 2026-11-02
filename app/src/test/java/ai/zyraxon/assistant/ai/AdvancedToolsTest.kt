@@ -172,26 +172,35 @@ class AdvancedToolsTest {
 
     @Test
     fun `the live voice contract exists and differs from the text contract`() {
-        val live = File("src/main/assets/knowledge/zyraxon-live-voice-prompt.md")
-        val text = File("src/main/assets/knowledge/zyraxon-system-prompt.md")
-        assertTrue("লাইভ প্রম্পট ফাইল নেই", live.exists())
-        assertTrue("টেক্সট প্রম্পট ফাইল নেই", text.exists())
-        val liveText = live.readText()
+        val file = File("src/main/assets/knowledge/zyraxon-system-prompt.md")
+        assertTrue("প্রম্পট ফাইল নেই", file.exists())
+        val full = file.readText()
+        // Both jobs live in one file, split by the LIVE VOICE marker; the engine
+        // cuts the live half out by the same marker.
+        val marker = "<!-- ==================== LIVE VOICE ==================== -->"
+        val at = full.indexOf(marker)
+        assertTrue("লাইভ ভয়েস সেকশন নেই", at >= 0)
+        val textPart = full.substring(0, at)
+        val liveText = full.substring(at + marker.length).trim()
         assertTrue("লাইভ প্রম্পট ফাঁকা", liveText.isNotBlank())
         // The live contract is about speaking, so it must say so and must warn
-        // against the markdown and long turns the text contract allows.
+        // against the markdown and long turns the text contract allows. The
+        // contract is written in Bengali, so the tokens are Bengali too.
         assertTrue("speech-to-speech উল্লেখ থাকতে হবে", liveText.contains("speech-to-speech"))
-        assertTrue("ছোট পালা বলতে হবে", liveText.lowercase().contains("sentence"))
-        assertTrue("ইন্টারাপ্ট নিয়ম থাকতে হবে", liveText.lowercase().contains("interrupt"))
-        assertFalse("দুটি প্রম্পট এক নয়", liveText == text.readText())
+        assertTrue("ছোট পালা (বাক্য) বলতে হবে", liveText.contains("বাক্য"))
+        assertTrue("ইন্টারাপ্ট/থামার নিয়ম থাকতে হবে", liveText.contains("থামো"))
+        assertFalse("লাইভ নিয়ম টেক্সট কনট্র্যাক্টে থাকা উচিত নয়", textPart.contains("speech-to-speech"))
     }
 
     @Test
-    fun `the text contract documents the danger lock and the new tools`() {
+    fun `the text contract documents the danger lock and the tools are advertised`() {
         val text = File("src/main/assets/knowledge/zyraxon-system-prompt.md").readText()
         assertTrue("device_lock ডকুমেন্ট করা হয়নি", text.contains("device_lock"))
-        assertTrue("live_voice ডকুমেন্ট করা হয়নি", text.contains("live_voice"))
-        assertTrue("on_device_model ডকুমেন্ট করা হয়নি", text.contains("on_device_model"))
-        assertTrue("বিপদের নিয়ম নেই", text.contains("lock first"))
+        assertTrue("বিপদের নিয়ম নেই", text.contains("আগে `device_lock`"))
+        // Tool names and descriptions travel in the function-calling schema, not
+        // in the prompt, so a tool's real contract is the schema the model sees.
+        val offered = schemaNames()
+        assertTrue("live_voice টুল দেওয়া হয়নি", "live_voice" in offered)
+        assertTrue("on_device_model টুল দেওয়া হয়নি", "on_device_model" in offered)
     }
 }

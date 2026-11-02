@@ -6,10 +6,18 @@ import org.json.JSONObject
 /** One assistant turn as it comes off the wire: spoken text plus requested tools. */
 class StreamedTurn {
     val text = StringBuilder()
+    /**
+     * The model's own reasoning, when the provider streams it (`reasoning_content`
+     * on DeepSeek/Groq/Gemini, `reasoning` or `thinking` elsewhere). It is shown on
+     * screen and never spoken, so it is kept apart from [text] from the first token.
+     */
+    val reasoning = StringBuilder()
     val toolCalls = JSONArray()
     var finished = false
 
     fun appendText(delta: String) { text.append(delta) }
+
+    fun appendReasoning(delta: String) { reasoning.append(delta) }
 
     /**
      * Merge a streamed `tool_calls` delta. OpenAI sends each call split across

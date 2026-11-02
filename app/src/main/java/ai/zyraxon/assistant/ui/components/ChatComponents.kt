@@ -39,6 +39,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -110,6 +113,52 @@ fun MessageBubble(
                 )
                 .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
+            // The thinking block sits above the answer. It is opened the moment a
+            // reasoning token arrives and, because the header is tappable, the user
+            // can expand it and read exactly what the model was thinking — the real
+            // chain of thought, not a summary. It is never spoken aloud.
+            if (!isUser && message.thinking.isNotBlank()) {
+                var expanded by remember(message.id) { mutableStateOf(false) }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 6.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { expanded = !expanded },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = (if (expanded) "▾ " else "▸ ") + t("ভাবছে"),
+                            color = Glass.textMuted,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (message.isStreaming && !expanded) {
+                            Text(
+                                text = "…",
+                                color = Glass.textMuted,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                    AnimatedVisibility(visible = expanded) {
+                        Text(
+                            text = message.thinking,
+                            color = Glass.textSecondary,
+                            fontSize = 12.sp,
+                            lineHeight = 17.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp)
+                        )
+                    }
+                }
+            }
+
             // Text Body. Selectable, so a word or the whole answer can be picked
             // the way a chat app does it; a long press copies the whole message.
             SelectionContainer {

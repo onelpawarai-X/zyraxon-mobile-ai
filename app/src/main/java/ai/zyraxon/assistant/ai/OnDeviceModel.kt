@@ -227,6 +227,30 @@ class OnDeviceModel(context: Context) {
          */
         val SUGGESTED = listOf(
             OnDeviceModelInfo(
+                name = "SmolLM2 135M — সবচেয়ে ছোট (১৪৩ MB)",
+                fileName = "SmolLM2_135M_Instruct.litertlm",
+                url = "https://huggingface.co/litert-community/SmolLM2-135M-Instruct/resolve/main/SmolLM2_135M_Instruct.litertlm",
+                approxMb = 143,
+                requiresToken = false,
+                note = "সবচেয়ে ছোট বান্ডেল — প্রায় যেকোনো ফোনে চলে। সাধারণ কথা ও ছোট প্রশ্নের জন্য, জটিল কাজে নয়। Apache-2.0।"
+            ),
+            OnDeviceModelInfo(
+                name = "FunctionGemma 270M — ছোট ও দ্রুত, টুল-কল (২৮৪ MB)",
+                fileName = "mobile-actions_q8_ekv1024.litertlm",
+                url = "https://huggingface.co/litert-community/functiongemma-mobile-actions_q8_ekv1024.litertlm/resolve/main/mobile-actions_q8_ekv1024.litertlm",
+                approxMb = 284,
+                requiresToken = false,
+                note = "FunctionGemma 270M, ফাংশন-কলিংয়ের জন্য ফাইন-টিউনড। সবচেয়ে কম RAM-এ চলে এবং সবচেয়ে দ্রুত — দুর্বল ফোনের জন্যও ভালো। Apache-2.0।"
+            ),
+            OnDeviceModelInfo(
+                name = "Qwen3 0.6B — খুব দুর্বল ফোনের জন্য (৫৮৬ MB)",
+                fileName = "Qwen3-0.6B.litertlm",
+                url = "https://huggingface.co/litert-community/Qwen3-0.6B/resolve/main/Qwen3-0.6B.litertlm",
+                approxMb = 586,
+                requiresToken = false,
+                note = "খুব ছোট ও দ্রুত, কিন্তু বাংলা ও জটিল কাজে দুর্বল। শুধু শেষ ভরসা হিসেবে।"
+            ),
+            OnDeviceModelInfo(
                 name = "Gemma 4 E2B — সেরা পছন্দ (বহুভাষা, টুল-কল, ২.৬ GB)",
                 fileName = "gemma-4-E2B-it.litertlm",
                 url = "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm",

@@ -1391,7 +1391,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val streamingAssistantMsg = ChatMessage(
             id = assistantMsgId,
             role = MessageRole.ASSISTANT,
-            text = "...",
+            // Empty, not "...": the thinking block is what shows first, so the
+            // bubble holds her reasoning rather than a placeholder that fights it.
+            text = "",
             timestamp = currentTimeString(),
             isStreaming = true,
             modelName = _selectedModel.value.name
@@ -1408,6 +1410,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             repository.saveMessage(userMsg)
             var fullReply = ""
+            // Reasoning arrives wrapped in the engine's marker; it is collected
+            // separately so it is shown as "thinking" and never spoken.
+            val thinkingBuf = StringBuilder()
             val spokenBuffer = StringBuilder()
             var lastUiUpdate = 0L
             // One spoken reply: the ear closes here and reopens once, in the
@@ -1474,6 +1479,22 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     screenNow = { withContext(Dispatchers.IO) { screenContext(force = true) } },
                     screenFrame = { withContext(Dispatchers.IO) { ToolRegistry.screenFrame() } }
                 ).collect { chunk ->
+                    // A reasoning delta travels in its own envelope: append it to
+                    // the thinking buffer and repaint, so the block appears the
+                    // moment the model starts thinking instead of after the answer.
+                    if (chunk.startsWith(ZyraxonAiEngine.REASONING_PREFIX)) {
+                        thinkingBuf.append(chunk.removePrefix(ZyraxonAiEngine.REASONING_PREFIX))
+                        val nowR = System.currentTimeMillis()
+                        if (nowR - lastUiUpdate >= UI_UPDATE_MS) {
+                            lastUiUpdate = nowR
+                            _messages.value = _messages.value.map { msg ->
+                                if (msg.id == assistantMsgId) {
+                                    msg.copy(thinking = thinkingBuf.toString(), isStreaming = true)
+                                } else msg
+                            }
+                        }
+                        return@collect
+                    }
                     fullReply += chunk
                     // The UI is only repainted a few times a second. Rebuilding
                     // the whole message list for every token made a long answer
@@ -1486,6 +1507,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                             if (msg.id == assistantMsgId) {
                                 msg.copy(
                                     text = fullReply,
+                                    thinking = thinkingBuf.toString(),
                                     isStreaming = true
                                 )
                             } else {
@@ -1525,7 +1547,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 text = fullReply,
                 timestamp = currentTimeString(),
                 isStreaming = false,
-                modelName = _selectedModel.value.name
+                modelName = _selectedModel.value.name,
+                thinking = thinkingBuf.toString()
             )
 
             // Mark stream complete in memory
