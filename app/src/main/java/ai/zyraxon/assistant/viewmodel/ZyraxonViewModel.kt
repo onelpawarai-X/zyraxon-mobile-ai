@@ -25,6 +25,8 @@ import ai.zyraxon.assistant.model.ToolExecutionItem
 import ai.zyraxon.assistant.model.WorkspaceFile
 import ai.zyraxon.assistant.shell.GitRuntime
 import ai.zyraxon.assistant.shell.ShellRuntime
+import ai.zyraxon.assistant.shell.ShizukuBundle
+import ai.zyraxon.assistant.shell.ShizukuState
 import ai.zyraxon.assistant.shell.SystemShell
 import ai.zyraxon.assistant.shell.LinuxRuntime
 import ai.zyraxon.assistant.ai.OnDeviceModel
@@ -339,6 +341,50 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     /** Opens the "install unknown apps" row so the user can allow in-app installs. */
     fun openInstallPermission() = updater.openInstallPermissionSettings()
 
+    // ---- Shizuku (system access) ------------------------------------------
+
+    private val _shizukuState = MutableStateFlow<ShizukuState>(ShizukuState.Unknown)
+    val shizukuState: StateFlow<ShizukuState> = _shizukuState.asStateFlow()
+
+    /** Reads the real state from the running service. */
+    fun refreshShizuku() {
+        _shizukuState.value = ShizukuBundle.state(getApplication())
+    }
+
+    /**
+     * Installs the Shizuku app ZYRAXON carries. Android shows its own confirm
+     * dialog; the user taps Install once and Shizuku is on the phone.
+     */
+    fun installShizuku() {
+        val app = getApplication<Application>()
+        val apk = ShizukuBundle.apkFile(app)
+        if (apk == null) {
+            _shizukuState.value = ShizukuState.Failed("বান্ডেল করা Shizuku ফাইল খোলা গেল না")
+            return
+        }
+        if (!updater.canInstall()) {
+            updater.openInstallPermissionSettings()
+            _shizukuState.value = ShizukuState.Failed("ইনস্টল করতে আগে \"এই সোর্স থেকে ইনস্টল\" অনুমতি দিন")
+            return
+        }
+        _shizukuState.value = ShizukuState.Installing
+        runCatching { updater.installPackage(apk) }.fold(
+            onSuccess = { _shizukuState.value = ShizukuState.InstalledNotRunning },
+            onFailure = { _shizukuState.value = ShizukuState.Failed(it.message ?: "Shizuku ইনস্টল শুরু করা গেল না") }
+        )
+    }
+
+    /** Opens Shizuku so the user can start it and grant ZYRAXON access. */
+    fun openShizuku() {
+        ShizukuBundle.launch(getApplication())
+    }
+
+    /** Asks Shizuku for permission; the user answers in Shizuku's own dialog. */
+    fun requestShizukuPermission() {
+        SystemShell.requestPermission()
+        refreshShizuku()
+    }
+
     fun dismissUpdateBanner() {
         _updateBannerDismissed.value = true
     }
@@ -360,7 +406,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                         release.apk == null -> UpdateState.NoApk(release)
                         else -> UpdateState.Available(release)
                     }
-                    if (release != null) _updateBannerDismissed.value = false
+                    if (release != null) {
+                        _updateBannerDismissed.value = false
+                        // Fetch it now, in the background, so the user only has to
+                        // tap Install when they open Settings — no waiting.
+                        stageUpdate(release)
+                    }
                 },
                 onFailure = { error ->
                     // A failed check is silent on launch — being offline is not an
@@ -384,7 +435,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         if (_updateState.value is UpdateState.Downloading) return
         _updateState.value = UpdateState.Downloading(0f)
         viewModelScope.launch {
-            updater.download(release) { progress ->
+            updater.stage(release) { progress ->
                 _updateState.value = UpdateState.Downloading(progress)
             }.fold(
                 onSuccess = { apk ->
@@ -397,18 +448,48 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    /**
+     * Fetches a release in the background the moment it is found, so by the time
+     * the user opens Settings the APK is already on disk and Install is one tap.
+     * A failure here is not an error: the release stays Available and the user can
+     * still download it by hand.
+     */
+    private fun stageUpdate(release: UpdateRelease) {
+        viewModelScope.launch {
+            updater.stage(release) { progress ->
+                if (_updateState.value is UpdateState.Available) {
+                    _updateState.value = UpdateState.Downloading(progress)
+                }
+            }.onSuccess { apk ->
+                _updateState.value = UpdateState.Downloaded(release, apk.absolutePath)
+            }.onFailure {
+                if (_updateState.value is UpdateState.Downloading) {
+                    _updateState.value = UpdateState.Available(release)
+                }
+            }
+        }
+    }
+
     /** Installs a downloaded update in place. Asks for the permission if needed. */
     fun installUpdate() {
         val state = _updateState.value
-        val path = (state as? UpdateState.Downloaded)?.apkPath ?: return
-        val file = java.io.File(path)
-        if (!file.exists()) {
+        val release = when (state) {
+            is UpdateState.Downloaded -> state.release
+            is UpdateState.Available -> state.release
+            is UpdateState.NeedsPermission -> state.release
+            else -> pendingRelease
+        } ?: return
+        // Prefer the file the Download state names; otherwise use whatever was
+        // staged in the background, which is the common case now.
+        val file = (state as? UpdateState.Downloaded)?.apkPath?.let { java.io.File(it) }
+            ?: updater.stagedApk(release)
+        if (file == null || !file.exists()) {
             _updateState.value = UpdateState.Failed("ডাউনলোড করা ফাইল পাওয়া গেল না")
             return
         }
         if (!updater.canInstall()) {
             updater.openInstallPermissionSettings()
-            _updateState.value = UpdateState.NeedsPermission(state.release)
+            _updateState.value = UpdateState.NeedsPermission(release)
             return
         }
         runCatching { updater.install(file) }.onFailure { error ->

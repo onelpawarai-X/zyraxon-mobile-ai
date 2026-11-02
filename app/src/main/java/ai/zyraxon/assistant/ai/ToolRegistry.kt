@@ -7,8 +7,11 @@ import ai.zyraxon.assistant.lock.DeviceLocker
 import ai.zyraxon.assistant.shell.BackgroundCommandService
 import ai.zyraxon.assistant.shell.GitRuntime
 import ai.zyraxon.assistant.shell.ShellRuntime
+import ai.zyraxon.assistant.shell.ShizukuBundle
+import ai.zyraxon.assistant.shell.ShizukuState
 import ai.zyraxon.assistant.shell.SystemShell
 import ai.zyraxon.assistant.shell.LinuxRuntime
+import ai.zyraxon.assistant.update.Updater
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -256,6 +259,9 @@ object ToolRegistry {
         "linux_run" to JSONObject()
             .put("description", "Run a command inside ZYRAXON's own full Linux system — bash, apt, git, python, node and clang, not the bundled busybox. It is the same system the user sees in the Terminal tab, and it is installed straight from the APK, so it works with no network at all. Use `action:\"status\"` to see whether it is installed, `action:\"install\"` to unpack it from the APK, or `action:\"run\"` with a command. Installing needs Shizuku running and granted to ZYRAXON; until then the tool explains exactly what to do.")
             .put("parameters", S(JSONObject().put("action", str()).put("command", str()).put("timeout_ms", num()), listOf("action"))),
+        "setup_shizuku" to JSONObject()
+            .put("description", "Set up Shizuku, the system-access app ZYRAXON carries inside itself. Use `action:\"status\"` to see whether it is installed, running and granted; `action:\"install\"` to install the bundled copy (Android shows its own confirm dialog — the user taps Install once); `action:\"open\"` to open Shizuku so the user can start it; `action:\"request\"` to ask Shizuku for permission (the user taps Allow in Shizuku's dialog). Do this before the system-level tools (system_shell, linux_run) can work. The user must make the Install and Allow taps themselves — Android does not let an app make those two taps.")
+            .put("parameters", S(JSONObject().put("action", str()), listOf("action"))),
         "background_command" to JSONObject()
             .put("description", "Run one command in a background service so it keeps running after the user closes the app — for long jobs like a big download, a clone or a build. It shows a notification with a Stop button. Use `action:\"start\"` with a command, or `action:\"stop\"` to end the running one, or `action:\"status\"` to see whether one is running and how it ended.")
             .put("parameters", S(JSONObject().put("action", str()).put("command", str()), listOf("action"))),
@@ -420,6 +426,7 @@ object ToolRegistry {
             "delete_file" -> deleteFile(context, args)
             "run_shell" -> runShell(context, args)
             "system_shell" -> systemShell(context, args)
+            "setup_shizuku" -> setupShizuku(context, args)
             "linux_run" -> linuxRun(context, args)
             "background_command" -> backgroundCommand(context, args)
             "publish_website" -> publish(context, args, tunnel = false)
@@ -1271,6 +1278,83 @@ object ToolRegistry {
                 .put("root", levels[SystemShell.Level.ROOT] == true),
             label
         )
+    }
+
+    /**
+     * Installs and connects Shizuku, the system-access app ZYRAXON carries inside
+     * itself. The agent can drive every step except the two Android reserves for
+     * the user: confirming the install, and tapping Allow in Shizuku's own dialog.
+     */
+    private fun setupShizuku(context: Context, args: JSONObject): JSONObject {
+        val action = args.optString("action", "status").trim().lowercase()
+
+        fun report(state: ShizukuState): JSONObject {
+            val name = when (state) {
+                ShizukuState.Unknown -> "unknown"
+                ShizukuState.NotInstalled -> "not-installed"
+                ShizukuState.Installing -> "installing"
+                ShizukuState.InstalledNotRunning -> "installed-not-running"
+                ShizukuState.NeedsPermission -> "needs-permission"
+                ShizukuState.Active -> "active"
+                is ShizukuState.Failed -> "failed"
+            }
+            val levels = if (state is ShizukuState.Active) SystemShell.probe(context) else emptyMap()
+            val data = JSONObject()
+                .put("state", name)
+                .put("installed", ShizukuBundle.isInstalled(context))
+                .put("running", SystemShell.available() || SystemShell.needsPermission())
+                .put("granted", SystemShell.available())
+                .put("root", levels[SystemShell.Level.ROOT] == true)
+                .put("version", ShizukuBundle.VERSION)
+            val summary = when (state) {
+                ShizukuState.Active -> "সিস্টেম অ্যাক্সেস চালু — সিস্টেম লেভেলে কাজ করা যাবে"
+                ShizukuState.NotInstalled -> "Shizuku ইনস্টল করা নেই — বান্ডেল করা কপি ইনস্টল করা যায়"
+                ShizukuState.InstalledNotRunning -> "Shizuku ইনস্টল আছে, চালু নেই — খুলে Start চাপতে হবে"
+                ShizukuState.NeedsPermission -> "Shizuku চালু, অনুমতি নেই — Allow চাপতে হবে"
+                ShizukuState.Installing -> "Shizuku ইনস্টলার খোলা — Android-এর পপ-আপে Install চাপুন"
+                is ShizukuState.Failed -> "ব্যর্থ: ${state.message}"
+                ShizukuState.Unknown -> "Shizuku অবস্থা অজানা"
+            }
+            return ok(data, summary)
+        }
+
+        return when (action) {
+            "status" -> report(ShizukuBundle.state(context))
+
+            "install" -> {
+                if (ShizukuBundle.isInstalled(context)) {
+                    report(ShizukuBundle.state(context))
+                } else {
+                    val apk = ShizukuBundle.apkFile(context)
+                    if (apk == null) {
+                        err("no-bundle", "বান্ডেল করা Shizuku ফাইল খোলা গেল না")
+                    } else if (!Updater(context).canInstall()) {
+                        err(
+                            "needs-install-permission",
+                            "ইনস্টল করতে আগে অনুমতি দরকার — Settings → আপডেট → অনুমতি সেটিংস খুলে ZYRAXON-কে \"এই সোর্স থেকে ইনস্টল\" চালু করুন"
+                        )
+                    } else {
+                        val started = runCatching { Updater(context).installPackage(apk) }.getOrDefault(false)
+                        report(
+                            if (started) ShizukuState.Installing
+                            else ShizukuState.Failed("Shizuku ইনস্টল শুরু করা গেল না")
+                        )
+                    }
+                }
+            }
+
+            "open" -> {
+                ShizukuBundle.launch(context)
+                report(ShizukuBundle.state(context))
+            }
+
+            "request" -> {
+                SystemShell.requestPermission()
+                report(ShizukuBundle.state(context))
+            }
+
+            else -> err("bad-args", "action হবে status, install, open বা request")
+        }
     }
 
     /**

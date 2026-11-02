@@ -3,5 +3,6 @@
     <external-files-path name="zyraxon_files" path="zyraxon/" />
     <files-path name="zyraxon_internal" path="zyraxon/" />
     <cache-path name="zyraxon_cache" path="." />
+    <files-path name="zyraxon_updates" path="updates/" />
     <external-path name="zyraxon_ext" path="." />
 </paths>

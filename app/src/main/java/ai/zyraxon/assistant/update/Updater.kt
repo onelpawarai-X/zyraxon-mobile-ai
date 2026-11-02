@@ -144,7 +144,9 @@ class Updater(private val context: Context) {
     ): Result<File> = withContext(Dispatchers.IO) {
         runCatching {
             val asset = release.apk ?: error("এই রিলিজে কোনো APK নেই")
-            val dir = File(context.cacheDir, "updates").apply { mkdirs() }
+            // filesDir, not cacheDir: an APK downloaded in advance must survive
+            // until the user taps Install, and the system clears the cache freely.
+            val dir = File(context.filesDir, "updates").apply { mkdirs() }
             val target = File(dir, "ZYRAXON-${release.version}.apk")
             val partial = File(dir, "ZYRAXON-${release.version}.part")
             if (partial.exists()) partial.delete()
@@ -184,11 +186,40 @@ class Updater(private val context: Context) {
     }
 
     /**
-     * Hands the downloaded APK to Android's package installer. Returns false when
-     * the user has not granted this app permission to install packages, so the UI
-     * can open that exact settings row instead of failing silently.
+     * Downloads a release and keeps the APK, so the user only has to tap Install
+     * when they are ready. A copy already on disk is reused instead of fetched
+     * again, which is what makes an update feel instant.
      */
-    fun install(apk: File): Boolean {
+    suspend fun stage(release: UpdateRelease, onProgress: (Float) -> Unit): Result<File> {
+        val existing = stagedApk(release)
+        if (existing != null) return Result.success(existing)
+        return download(release, onProgress)
+    }
+
+    /** The APK already staged for [release], or null when none is on disk. */
+    fun stagedApk(release: UpdateRelease): File? = stagedApk(release.version)
+
+    /** The APK staged for [version], or null when none is on disk. */
+    fun stagedApk(version: Version): File? =
+        File(stagedDir(), "ZYRAXON-$version.apk").takeIf { it.exists() && it.length() > 0 }
+
+    private fun stagedDir(): File = File(context.filesDir, "updates").apply { mkdirs() }
+
+    /**
+     * Hands ZYRAXON's own update to Android's package installer. Returns false
+     * when the user has not granted this app permission to install packages, so
+     * the UI can open that exact settings row instead of failing silently.
+     */
+    fun install(apk: File): Boolean = installPackage(apk, context.packageName)
+
+    /**
+     * Installs any APK. [appPackageName] is passed only when the APK replaces an
+     * app that is already installed, as a self-update does; a brand-new app is
+     * installed without it, because naming a package that is not there yet makes
+     * the session fail. This is the same path ZYRAXON uses for itself, so it is
+     * known to work on the phones the app already runs on.
+     */
+    fun installPackage(apk: File, appPackageName: String? = null): Boolean {
         if (!canInstall()) return false
         val uri: Uri = FileProvider.getUriForFile(
             context,
@@ -199,7 +230,7 @@ class Updater(private val context: Context) {
         val params = PackageInstaller.SessionParams(
             PackageInstaller.SessionParams.MODE_FULL_INSTALL
         ).apply {
-            setAppPackageName(context.packageName)
+            if (appPackageName != null) setAppPackageName(appPackageName)
         }
         val sessionId = installer.createSession(params)
         installer.openSession(sessionId).use { session ->

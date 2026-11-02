@@ -8,6 +8,7 @@ import ai.zyraxon.assistant.model.AiModel
 import ai.zyraxon.assistant.model.AppTab
 import ai.zyraxon.assistant.model.BgAnimationMode
 import ai.zyraxon.assistant.model.Persona
+import ai.zyraxon.assistant.shell.ShizukuState
 import ai.zyraxon.assistant.update.UpdateState
 import ai.zyraxon.assistant.ui.theme.Glass
 import ai.zyraxon.assistant.viewmodel.ZyraxonViewModel
@@ -48,6 +49,7 @@ import androidx.compose.foundation.verticalScroll
 import ai.zyraxon.assistant.ui.components.PermissionPanel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
@@ -2260,7 +2262,7 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
     HorrorSectionTitle(t("অ্যাপ আপডেট (In-app Update)"))
     Spacer(modifier = Modifier.height(6.dp))
     Text(
-        t("নতুন রিলিজ আপলোড হলে এখানেই দেখা যাবে। ইনস্টল করলে পুরনো অ্যাপটিই আপডেট হবে — চ্যাট, মেমরি ও সেটিংস মুছবে না, আলাদা অ্যাপ বসবে না।"),
+        t("নতুন রিলিজ আপলোড হলে এখানেই দেখা যাবে। অ্যাপ নিজে থেকেই নতুন ভার্সন আগে থেকে ডাউনলোড করে রাখে — আপনি শুধু ইনস্টল চাপবেন। ইনস্টল করলে পুরনো অ্যাপটিই আপডেট হবে — চ্যাট, মেমরি ও সেটিংস মুছবে না, আলাদা অ্যাপ বসবে না।"),
         color = Glass.textMuted,
         fontSize = 11.5.sp
     )
@@ -2271,6 +2273,9 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
         fontSize = 12.sp,
         fontWeight = FontWeight.SemiBold
     )
+    Spacer(modifier = Modifier.height(14.dp))
+
+    ShizukuCard(viewModel = viewModel)
     Spacer(modifier = Modifier.height(14.dp))
 
     // A release card. Rendered for every state that has a release to show, so the
@@ -2412,6 +2417,139 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
                 viewModel.checkForUpdates()
             }
         }
+    }
+}
+
+/**
+ * The system-access card, kept in the Updates section as the one place a user
+ * goes for "the app needs something installed". ZYRAXON carries the official
+ * Shizuku APK inside itself, so there is no download and no hunting for a file —
+ * the button installs it, and the guide walks through starting it and granting
+ * access. Every step is the user's own tap, because Android requires it.
+ */
+@Composable
+private fun ShizukuCard(viewModel: ZyraxonViewModel) {
+    val state by viewModel.shizukuState.collectAsState()
+    LaunchedEffect(Unit) { viewModel.refreshShizuku() }
+
+    val active = state is ShizukuState.Active
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(if (active) Glass.greenFill.copy(alpha = 0.14f) else Glass.rowFill(0.30f))
+            .border(
+                1.dp,
+                if (active) Glass.greenFill else Glass.pinkFill.copy(alpha = 0.30f),
+                RoundedCornerShape(14.dp)
+            )
+            .padding(14.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                if (active) Icons.Rounded.Check else Icons.Rounded.Build,
+                contentDescription = null,
+                tint = if (active) Glass.greenFill else Glass.pinkFill,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                t("⚙️ সিস্টেম অ্যাক্সেস (Shizuku)"),
+                color = Glass.textPrimary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.5.sp
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            t("সিস্টেম লেভেলে কাজ করতে (ফাইল, টার্মিনাল, Linux) Shizuku লাগে। এটা ZYRAXON-এর ভেতরেই আছে — নিচের বাটনে চাপলেই ইনস্টল হবে, আলাদা করে কিছু খুঁজতে হবে না।"),
+            color = Glass.textSecondary,
+            fontSize = 11.5.sp
+        )
+        Spacer(Modifier.height(10.dp))
+
+        when (val s = state) {
+            ShizukuState.Unknown -> {
+                UpdateButton(t("অবস্থা দেখুন"), enabled = true) { viewModel.refreshShizuku() }
+            }
+
+            ShizukuState.NotInstalled -> {
+                UpdateButton(t("⬇️ Shizuku ইনস্টল করুন"), enabled = true) {
+                    viewModel.installShizuku()
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    t("ইনস্টল হওয়ার পর Shizuku খুলে তাকে চালু করুন, তারপর নিচের ধাপগুলো।"),
+                    color = Glass.textMuted,
+                    fontSize = 11.sp
+                )
+            }
+
+            ShizukuState.Installing -> {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = Glass.cyanFill,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        t("ইনস্টলার খুলছে — Android-এর পপ-আপে Install চাপুন।"),
+                        color = Glass.textSecondary,
+                        fontSize = 12.sp
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                UpdateButton(t("আবার দেখুন"), enabled = true) { viewModel.refreshShizuku() }
+            }
+
+            ShizukuState.InstalledNotRunning -> {
+                Text(
+                    t("Shizuku ইনস্টল হয়েছে, কিন্তু চালু নেই। খুলে Start চাপুন (রুটেড ফোনে সহজ; নাহলে Wireless debugging লাগবে), তারপর এখানে ফিরে আসুন।"),
+                    color = Glass.textSecondary,
+                    fontSize = 11.5.sp
+                )
+                Spacer(Modifier.height(10.dp))
+                UpdateButton(t("▶️ Shizuku খুলুন"), enabled = true) { viewModel.openShizuku() }
+                Spacer(Modifier.height(8.dp))
+                UpdateButton(t("চালু করেছি — আবার দেখুন"), enabled = true) { viewModel.refreshShizuku() }
+            }
+
+            ShizukuState.NeedsPermission -> {
+                Text(
+                    t("Shizuku চালু আছে। এখন ZYRAXON-কে অনুমতি দিতে হবে — নিচের বাটনে চাপলে Shizuku-র নিজের ডায়ালগ আসবে, Allow চাপুন।"),
+                    color = Glass.textSecondary,
+                    fontSize = 11.5.sp
+                )
+                Spacer(Modifier.height(10.dp))
+                UpdateButton(t("🔓 অনুমতি দিন"), enabled = true) { viewModel.requestShizukuPermission() }
+                Spacer(Modifier.height(8.dp))
+                UpdateButton(t("আবার দেখুন"), enabled = true) { viewModel.refreshShizuku() }
+            }
+
+            ShizukuState.Active -> {
+                Text(
+                    t("✔ সিস্টেম অ্যাক্সেস চালু — এখন এজেন্ট সিস্টেম লেভেলে কাজ করতে পারবে।"),
+                    color = Glass.greenFill,
+                    fontSize = 12.5.sp
+                )
+                Spacer(Modifier.height(8.dp))
+                UpdateButton(t("আবার দেখুন"), enabled = true) { viewModel.refreshShizuku() }
+            }
+
+            is ShizukuState.Failed -> {
+                Text(t(s.message), color = Color(0xFFFF6B6B), fontSize = 12.sp)
+                Spacer(Modifier.height(10.dp))
+                UpdateButton(t("আবার চেষ্টা করুন"), enabled = true) { viewModel.refreshShizuku() }
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
+        Text(
+            t("Shizuku (v13.6.0, Apache-2.0) ZYRAXON-এর ভেতরে বান্ডেল করা আছে। শুধু ইনস্টল ও অনুমতি—দুইটা ট্যাপ আপনার নিজের।"),
+            color = Glass.textMuted,
+            fontSize = 10.sp
+        )
     }
 }
 
