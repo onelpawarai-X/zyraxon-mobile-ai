@@ -4,7 +4,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
-import androidx.compose.animation.core.rememberInfiniteTransition
+import ai.zyraxon.assistant.ui.components.rememberLiveTransition
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -71,7 +71,7 @@ private fun bump(t: Float, centre: Float, width: Float): Float =
 /** A "lub-dub" heartbeat envelope, 0..1, repeating about every 1.7 seconds. */
 @Composable
 fun rememberHeartbeat(periodMs: Int = 1700): State<Float> {
-    val transition = rememberInfiniteTransition(label = "heartbeat")
+    val transition = rememberLiveTransition(label = "heartbeat")
     val t = transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
@@ -115,7 +115,7 @@ fun BloodDrips(
             )
         }
     }
-    val transition = rememberInfiniteTransition(label = "drips")
+    val transition = rememberLiveTransition(label = "drips")
     val t by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
@@ -251,7 +251,7 @@ fun HorrorVignette(modifier: Modifier = Modifier, intensity: Float = 1f) {
 /** CRT scan-lines plus a slow red sweep, for the terminal. */
 @Composable
 fun Scanlines(modifier: Modifier = Modifier, lineAlpha: Float = 0.12f) {
-    val transition = rememberInfiniteTransition(label = "scan")
+    val transition = rememberLiveTransition(label = "scan")
     val t by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
@@ -336,7 +336,7 @@ fun BloodVeins(modifier: Modifier = Modifier, seed: Int = 5) {
 /** A slowly turning blood-sigil: rings, rune ticks and a five-point star. */
 @Composable
 fun RitualCircle(modifier: Modifier = Modifier) {
-    val transition = rememberInfiniteTransition(label = "ritual")
+    val transition = rememberLiveTransition(label = "ritual")
     val rot by transition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
@@ -393,7 +393,7 @@ fun Modifier.bloodPulseBorder(
 /** A faulty-light flicker: steady, then a sudden stutter. */
 @Composable
 fun Modifier.horrorFlicker(): Modifier {
-    val transition = rememberInfiniteTransition(label = "flicker")
+    val transition = rememberLiveTransition(label = "flicker")
     val a by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
@@ -427,7 +427,7 @@ fun WatchingEyes(modifier: Modifier = Modifier, seed: Int = 66, pairs: Int = 3) 
         val n = pairs.coerceIn(1, spots.size)
         List(n) { EyePair(spots[it].first, spots[it].second, 5f + rnd.nextFloat() * 3f, it / n.toFloat() + rnd.nextFloat() * 0.05f) }
     }
-    val transition = rememberInfiniteTransition(label = "eyes")
+    val transition = rememberLiveTransition(label = "eyes")
     val t by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
@@ -479,7 +479,7 @@ fun WatchingEyes(modifier: Modifier = Modifier, seed: Int = 66, pairs: Int = 3) 
 /** A rare horizontal glitch jolt, like a bad signal. */
 @Composable
 fun Modifier.glitchShake(): Modifier {
-    val transition = rememberInfiniteTransition(label = "glitch")
+    val transition = rememberLiveTransition(label = "glitch")
     val dx by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,

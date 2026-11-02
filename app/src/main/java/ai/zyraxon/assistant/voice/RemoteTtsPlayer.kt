@@ -212,6 +212,8 @@ class RemoteTtsPlayer(
      * `prepareAsync` is used, never `prepare`: a synchronous prepare on the main
      * thread would freeze the UI for as long as the network takes.
      */
+    private var enhancer: android.media.audiofx.LoudnessEnhancer? = null
+
     private suspend fun playSource(source: String): Boolean = withContext(Dispatchers.Main) {
         val mp = MediaPlayer()
         try {
@@ -225,6 +227,17 @@ class RemoteTtsPlayer(
             val prepared = CompletableDeferred<Boolean>()
             val done = CompletableDeferred<Boolean>()
             mp.setOnPreparedListener {
+                // The voice was too quiet even at full phone volume. A loudness
+                // enhancer on this player's own audio session adds about +10 dB
+                // without touching any other app's sound.
+                try {
+                    enhancer?.release()
+                    enhancer = android.media.audiofx.LoudnessEnhancer(it.audioSessionId).apply {
+                        setTargetGain(VOICE_GAIN_MB)
+                        enabled = true
+                    }
+                } catch (_: Exception) {}
+                try { it.setVolume(1f, 1f) } catch (_: Exception) {}
                 prepared.complete(true)
                 try { it.start() } catch (_: Exception) { done.complete(false) }
             }
@@ -336,12 +349,17 @@ class RemoteTtsPlayer(
 
     private fun release(mp: MediaPlayer?) {
         if (mp == null) return
+        try { enhancer?.release() } catch (_: Exception) {}
+        enhancer = null
         try { mp.stop() } catch (_: Exception) {}
         try { mp.release() } catch (_: Exception) {}
     }
 
     private companion object {
         const val TAG = "RemoteTts"
+
+        /** Extra loudness for the voice, in millibels (1000 = +10 dB). */
+        const val VOICE_GAIN_MB = 1200
 
         /** How long a source may take to start before it is abandoned. */
         const val PREPARE_TIMEOUT_MS = 8_000L

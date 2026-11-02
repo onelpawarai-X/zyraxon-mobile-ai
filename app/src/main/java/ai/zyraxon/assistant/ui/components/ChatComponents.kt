@@ -9,7 +9,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
+import ai.zyraxon.assistant.ui.components.rememberLiveTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -59,7 +59,7 @@ fun MessageBubble(
 ) {
     val isUser = message.role == MessageRole.USER
 
-    val transition = rememberInfiniteTransition(label = "cursor")
+    val transition = rememberLiveTransition(label = "cursor")
     val cursorAlpha by transition.animateFloat(
         initialValue = 0.2f,
         targetValue = 1f,

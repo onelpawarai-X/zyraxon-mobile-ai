@@ -7,7 +7,7 @@
          touch API-21-safe classes (ContentProvider, Context, Bundle, IBinder,
          Log). Overriding lets the app itself support Android 5.0 while Shizuku
          still works on the phones that can run it. -->
-    <uses-sdk tools:overrideLibrary="rikka.shizuku.api,rikka.shizuku.provider,rikka.shizuku.shared,rikka.shizuku.aidl" />
+    <uses-sdk tools:overrideLibrary="com.google.ai.edge.litertlm,rikka.shizuku.api,rikka.shizuku.provider,rikka.shizuku.shared,rikka.shizuku.aidl" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -124,7 +125,9 @@
              permission, which the settings row requests. -->
         <service
             android:name="ai.zyraxon.assistant.OverlayChatService"
-            android:exported="false" />
+            android:exported="false"
+            android:stopWithTask="false"
+            android:foregroundServiceType="dataSync|microphone" />
 
         <!-- The admin component that makes `lockNow()` legal. The user activates
              it once from the system screen the assistant opens. -->

@@ -24,7 +24,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
+import ai.zyraxon.assistant.ui.components.rememberLiveTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -1574,7 +1574,7 @@ fun SettingsSheet(
                         // screen, recoloured by the hue below.
                         Text(t("ওরার স্টাইল — ছুঁয়ে বেছে নাও"), color = Glass.pink, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(modifier = Modifier.height(8.dp))
-                        val galleryClock by rememberInfiniteTransition(label = "gallery").animateFloat(
+                        val galleryClock by rememberLiveTransition(label = "gallery").animateFloat(
                             initialValue = 0f,
                             targetValue = 3600f,
                             animationSpec = infiniteRepeatable(

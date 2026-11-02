@@ -12,8 +12,8 @@ android {
     applicationId = "com.zyraxon.assistant"
     minSdk = 21
     targetSdk = 36
-    versionCode = 27
-    versionName = "6.15.0"
+    versionCode = 28
+    versionName = "6.16.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -123,6 +123,9 @@ dependencies {
   // On-device inference: runs a downloaded model (.task / Gemma) on the phone
   // itself, with no network at all. Optional at runtime — the app works without it.
   implementation(libs.mediapipe.tasks.genai)
+  // LiteRT-LM: the runtime that Gemma 4 and Qwen3 (.litertlm) need. MediaPipe above
+  // is in maintenance mode and stays only for older .task bundles.
+  implementation(libs.litertlm.android)
   implementation(libs.okhttp)
   // Real `git clone` in the terminal. busybox has no git, so the terminal would
   // otherwise be the one shell that cannot clone a repository.

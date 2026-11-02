@@ -7,6 +7,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.flowOn
 import java.io.File
 
@@ -26,6 +28,9 @@ class OnDeviceModel(context: Context) {
     private val appContext = context.applicationContext
     private var inference: LlmInference? = null
 
+    /** The LiteRT-LM engine, used for `.litertlm` bundles (Gemma 4, Qwen3). */
+    private var lmEngine: com.google.ai.edge.litertlm.Engine? = null
+
     /** The model file this instance loaded, if any. */
     var loadedPath: String? = null
         private set
@@ -34,12 +39,13 @@ class OnDeviceModel(context: Context) {
     fun modelsDir(): File =
         File(appContext.filesDir, "ondevice-models").apply { mkdirs() }
 
-    /** Every `.task` bundle the user has downloaded. */
+    /** Every bundle the user has downloaded: `.litertlm` (LiteRT-LM) and `.task` (MediaPipe). */
     fun installedModels(): List<File> =
-        modelsDir().listFiles { f -> f.isFile && f.extension == "task" }?.sortedBy { it.name }
+        modelsDir().listFiles { f -> f.isFile && f.extension in setOf("litertlm", "task") }
+            ?.sortedBy { it.name }
             ?: emptyList()
 
-    fun isReady(): Boolean = inference != null
+    fun isReady(): Boolean = inference != null || lmEngine != null
 
     /**
      * Loads a bundle into memory. The work is real and can take a few seconds for
@@ -47,21 +53,35 @@ class OnDeviceModel(context: Context) {
      */
     @Synchronized
     fun load(path: String): Boolean {
-        if (loadedPath == path && inference != null) return true
+        if (loadedPath == path && isReady()) return true
         unload()
         val file = File(path)
         if (!file.isFile) return false
         return try {
-            val options = LlmInferenceOptions.builder()
-                .setModelPath(file.absolutePath)
-                .setMaxTokens(2048)
-                .setMaxTopK(40)
-                .build()
-            inference = LlmInference.createFromOptions(appContext, options)
+            if (file.extension == "litertlm") {
+                // CPU backend: slower than the GPU but it does not crash on any
+                // phone, and the phone's own GPU drivers vary too much to trust.
+                val config = com.google.ai.edge.litertlm.EngineConfig(
+                    modelPath = file.absolutePath,
+                    backend = com.google.ai.edge.litertlm.Backend.CPU(),
+                    cacheDir = appContext.cacheDir.path
+                )
+                val engine = com.google.ai.edge.litertlm.Engine(config)
+                engine.initialize()
+                lmEngine = engine
+            } else {
+                val options = LlmInferenceOptions.builder()
+                    .setModelPath(file.absolutePath)
+                    .setMaxTokens(2048)
+                    .setMaxTopK(40)
+                    .build()
+                inference = LlmInference.createFromOptions(appContext, options)
+            }
             loadedPath = path
             true
         } catch (_: Throwable) {
             inference = null
+            lmEngine = null
             loadedPath = null
             false
         }
@@ -70,7 +90,9 @@ class OnDeviceModel(context: Context) {
     @Synchronized
     fun unload() {
         try { inference?.close() } catch (_: Throwable) {}
+        try { lmEngine?.close() } catch (_: Throwable) {}
         inference = null
+        lmEngine = null
         loadedPath = null
     }
 
@@ -80,6 +102,38 @@ class OnDeviceModel(context: Context) {
      * back to a hosted provider instead of showing a failure.
      */
     fun generate(prompt: String, systemPrompt: String = ""): Flow<String> = callbackFlow {
+        val lm = lmEngine
+        if (lm != null) {
+            // One short-lived conversation per call: the caller sends the history
+            // it wants the model to see inside the prompt, so nothing is kept here.
+            val qwen = loadedPath?.lowercase()?.contains("qwen") == true
+            // Qwen3 "thinks" for a long time by default and can use up its whole
+            // small context before answering; /no_think switches that off.
+            val text = if (qwen) "/no_think\n$prompt" else prompt
+            val conversation = try {
+                if (systemPrompt.isNotBlank()) {
+                    lm.createConversation(
+                        com.google.ai.edge.litertlm.ConversationConfig(
+                            systemInstruction = com.google.ai.edge.litertlm.Contents.of(systemPrompt)
+                        )
+                    )
+                } else lm.createConversation()
+            } catch (_: Throwable) { close(); return@callbackFlow }
+            launch {
+                try {
+                    conversation.sendMessageAsync(text)
+                        .catch { }
+                        .collect { part ->
+                            val piece = part.toString()
+                            if (piece.isNotEmpty()) trySend(piece)
+                        }
+                } catch (_: Throwable) {
+                }
+                close()
+            }
+            awaitClose { try { conversation.close() } catch (_: Throwable) {} }
+            return@callbackFlow
+        }
         val engine = inference ?: run { close(); return@callbackFlow }
         val full = buildString {
             if (systemPrompt.isNotBlank()) {
@@ -173,46 +227,36 @@ class OnDeviceModel(context: Context) {
          */
         val SUGGESTED = listOf(
             OnDeviceModelInfo(
-                name = "SmolLM 135M (int8)",
-                fileName = "SmolLM-135M-Instruct_multi-prefill-seq_q8_ekv1280.task",
-                url = "https://huggingface.co/litert-community/SmolLM-135M-Instruct/resolve/main/SmolLM-135M-Instruct_multi-prefill-seq_q8_ekv1280.task",
-                approxMb = 159,
-                requiresToken = false
+                name = "Gemma 4 E2B — সেরা পছন্দ (বহুভাষা, টুল-কল, ২.৬ GB)",
+                fileName = "gemma-4-E2B-it.litertlm",
+                url = "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm",
+                approxMb = 2583,
+                requiresToken = false,
+                note = "Google-এর Gemma পরিবার বহু ভাষায় প্রশিক্ষিত। ৬ GB+ RAM-এর ফোনে ভালো চলে। Apache-2.0।"
             ),
             OnDeviceModelInfo(
-                name = "TinyLlama 1.1B (int8)",
-                fileName = "TinyLlama-1.1B-Chat-v1.0_multi-prefill-seq_q8_ekv1280.task",
-                url = "https://huggingface.co/litert-community/TinyLlama-1.1B-Chat-v1.0/resolve/main/TinyLlama-1.1B-Chat-v1.0_multi-prefill-seq_q8_ekv1280.task",
-                approxMb = 1095,
-                requiresToken = false
-            ),
-            OnDeviceModelInfo(
-                name = "Qwen2.5 1.5B Instruct (int8)",
-                fileName = "Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
-                url = "https://huggingface.co/litert-community/Qwen2.5-1.5B-Instruct/resolve/main/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
-                approxMb = 1524,
-                requiresToken = false
-            ),
-            OnDeviceModelInfo(
-                name = "DeepSeek-R1 Distill Qwen 1.5B (int8)",
-                fileName = "DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv1280.task",
-                url = "https://huggingface.co/litert-community/DeepSeek-R1-Distill-Qwen-1.5B/resolve/main/DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv1280.task",
-                approxMb = 1775,
-                requiresToken = false
-            ),
-            OnDeviceModelInfo(
-                name = "Qwen3 4B (int4)",
+                name = "Qwen3 4B — বহুভাষা, ভালো টুল-কল (২.৫ GB)",
                 fileName = "qwen3_4b_mixed_int4.litertlm",
                 url = "https://huggingface.co/litert-community/Qwen3-4B/resolve/main/qwen3_4b_mixed_int4.litertlm",
                 approxMb = 2536,
-                requiresToken = false
+                requiresToken = false,
+                note = "Qwen3 ১১৯টি ভাষা জানে (বাংলা সহ) এবং টুল-কল ভালো বোঝে। প্রসঙ্গ-সীমা ২০৪৮ টোকেন। Apache-2.0।"
             ),
             OnDeviceModelInfo(
-                name = "Phi-4 mini Instruct (int8)",
-                fileName = "Phi-4-mini-instruct_multi-prefill-seq_q8_ekv1280.task",
-                url = "https://huggingface.co/litert-community/Phi-4-mini-instruct/resolve/main/Phi-4-mini-instruct_multi-prefill-seq_q8_ekv1280.task",
-                approxMb = 3762,
-                requiresToken = false
+                name = "Gemma 4 E4B — সবচেয়ে নিখুঁত (৩.৭ GB, ৮ GB+ RAM)",
+                fileName = "gemma-4-E4B-it.litertlm",
+                url = "https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it.litertlm",
+                approxMb = 3660,
+                requiresToken = false,
+                note = "E2B-র চেয়ে বুদ্ধিমান, কিন্তু বেশি RAM লাগে। ফাইলের নামটি নিয়মমাফিক ধরা, ডাউনলোড না হলে রিপোর (litert-community/gemma-4-E4B-it-litert-lm) নাম দেখুন।"
+            ),
+            OnDeviceModelInfo(
+                name = "Qwen3 0.6B — খুব দুর্বল ফোনের জন্য (৫৮৬ MB)",
+                fileName = "Qwen3-0.6B.litertlm",
+                url = "https://huggingface.co/litert-community/Qwen3-0.6B/resolve/main/Qwen3-0.6B.litertlm",
+                approxMb = 586,
+                requiresToken = false,
+                note = "খুব ছোট ও দ্রুত, কিন্তু বাংলা ও জটিল কাজে দুর্বল। শুধু শেষ ভরসা হিসেবে।"
             )
         )
     }
@@ -229,5 +273,6 @@ data class OnDeviceModelInfo(
     val url: String,
     val approxMb: Int,
     val requiresToken: Boolean = false,
-    val licencePage: String = ""
+    val licencePage: String = "",
+    val note: String = ""
 )

@@ -853,9 +853,29 @@ class NativeVoiceManager(
         speechWatchdog = null
     }
 
+    // The phone's engine is limited to the stream volume, which is why the voice
+    // was quiet at full volume. Giving it its own audio session lets a loudness
+    // enhancer lift just the assistant's voice (+12 dB), without touching other apps.
+    private var ttsSession = 0
+    private var ttsEnhancer: android.media.audiofx.LoudnessEnhancer? = null
+
     private fun utteranceParams(): Bundle = Bundle().apply {
         putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "zyraxon_msg")
         putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC)
+        putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1f)
+        try {
+            if (ttsSession == 0) {
+                ttsSession = (context.getSystemService(android.content.Context.AUDIO_SERVICE) as? AudioManager)
+                    ?.generateAudioSessionId()?.takeIf { it > 0 } ?: 0
+                if (ttsSession > 0) {
+                    ttsEnhancer = android.media.audiofx.LoudnessEnhancer(ttsSession).apply {
+                        setTargetGain(1200)
+                        enabled = true
+                    }
+                }
+            }
+            if (ttsSession > 0) putInt(TextToSpeech.Engine.KEY_PARAM_SESSION_ID, ttsSession)
+        } catch (_: Exception) {}
     }
 
     /**
