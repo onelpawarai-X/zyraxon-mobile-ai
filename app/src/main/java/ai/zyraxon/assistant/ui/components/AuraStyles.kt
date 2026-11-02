@@ -5,7 +5,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
+import ai.zyraxon.assistant.ui.components.rememberLiveTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -53,7 +54,8 @@ import kotlin.random.Random
  */
 val AuraStyleIds = listOf(
     "orb", "twin", "vortex", "bloom", "helix", "core",
-    "sigil", "heart", "storm", "void", "inferno", "swarm"
+    "sigil", "heart", "storm", "void", "inferno", "swarm",
+    "crown", "rift", "ghost", "mandala"
 )
 
 /** Bengali display name for an aura style id. */
@@ -70,6 +72,10 @@ fun auraStyleLabel(id: String): String = when (id) {
     "void" -> "ভয়েড"
     "inferno" -> "ইনফার্নো"
     "swarm" -> "চক্ষু-ঝাঁক"
+    "crown" -> "কাঁটার মুকুট"
+    "rift" -> "চিড়"
+    "ghost" -> "প্রেত"
+    "mandala" -> "মণ্ডল"
     else -> id
 }
 
@@ -605,9 +611,161 @@ private fun DrawScope.drawStyle(style: String, x: Ctx) {
         "void" -> drawVoid(x)
         "inferno" -> drawInferno(x)
         "swarm" -> drawSwarm(x)
+        "crown" -> drawCrown(x)
+        "rift" -> drawRift(x)
+        "ghost" -> drawGhost(x)
+        "mandala" -> drawMandala(x)
         else -> drawMiniEye(x)
     }
     voiceRings(x)
+}
+
+
+// ---------------------------------------------------------------- crown
+
+/** Two counter-rotating rings of thorns around a slit-pupil core. */
+private fun DrawScope.drawCrown(x: Ctx) {
+    halo(x, 1.7f, 0.40f)
+    val big = x.r * x.k
+    fun ring(count: Int, inner: Float, outer: Float, spin: Float, alpha: Float) {
+        for (i in 0 until count) {
+            val a = spin + i * TAU / count
+            val len = outer * (0.9f + 0.1f * sin(x.t * 2.2f + i * 1.3f) + x.level * 0.12f)
+            val half = TAU / count * 0.26f
+            val path = Path().apply {
+                moveTo(pt(x.c, a - half, big * inner).x, pt(x.c, a - half, big * inner).y)
+                lineTo(pt(x.c, a, big * len).x, pt(x.c, a, big * len).y)
+                lineTo(pt(x.c, a + half, big * inner).x, pt(x.c, a + half, big * inner).y)
+                close()
+            }
+            drawPath(path, x.pal.hot.copy(alpha = alpha), style = Fill)
+            drawPath(path, x.pal.bright.copy(alpha = alpha * 0.9f), style = Stroke(width = 1.2f * x.u))
+        }
+    }
+    ring(18, 0.62f, 1.00f, x.t * 0.45f, 0.70f)
+    ring(12, 0.50f, 0.78f, -x.t * 0.75f, 0.85f)
+    drawCircle(x.pal.deep.copy(alpha = 0.7f), radius = big * 0.5f, center = x.c, style = Stroke(width = 3f * x.u))
+    glowCore(x, big * 0.42f)
+    val pw = big * (0.05f + 0.10f * (if (x.speaking || x.listening) 0.6f + x.level else 0.3f * x.beat))
+    drawOval(Color.Black, Offset(x.c.x - pw, x.c.y - big * 0.30f), Size(pw * 2f, big * 0.60f))
+}
+
+// ---------------------------------------------------------------- rift
+
+/** A glowing tear in the air with forking lightning and an eye in the middle. */
+private fun DrawScope.drawRift(x: Ctx) {
+    halo(x, 1.5f, 0.34f)
+    val big = x.r * x.k
+    val seed = (x.t * 7f).toInt()
+    fun crack(widthMul: Float, color: Color, strokeW: Float) {
+        val p = Path()
+        val steps = 14
+        for (i in 0..steps) {
+            val s = i / steps.toFloat()
+            val yy = x.c.y - big * 1.05f + s * big * 2.1f
+            val xx = x.c.x + sin(s * 11f + x.t * 1.4f) * big * 0.10f * widthMul +
+                sin(s * 27f + seed) * big * 0.035f
+            if (i == 0) p.moveTo(xx, yy) else p.lineTo(xx, yy)
+        }
+        drawPath(p, color, style = Stroke(width = strokeW, cap = StrokeCap.Round))
+    }
+    crack(1f, x.pal.deep.copy(alpha = 0.55f), 22f * x.u)
+    crack(1f, x.pal.hot.copy(alpha = 0.9f), 8f * x.u)
+    crack(1f, Color.White.copy(alpha = 0.85f), 2.2f * x.u)
+    // Lightning forks, re-rolled several times a second.
+    for (k in 0 until 7) {
+        val a = (seed * 0.91f + k * 0.9f) % TAU
+        var cur = x.c
+        val path = Path().apply { moveTo(cur.x, cur.y) }
+        for (j in 1..4) {
+            val na = a + sin(seed * 1.7f + k * 3f + j * 2.3f) * 0.5f
+            cur = pt(cur, na, big * 0.22f)
+            path.lineTo(cur.x, cur.y)
+        }
+        drawPath(path, x.pal.bright.copy(alpha = 0.55f + 0.4f * x.beat),
+            style = Stroke(width = 1.6f * x.u, cap = StrokeCap.Round))
+    }
+    drawOval(Color.Black, Offset(x.c.x - big * 0.30f, x.c.y - big * 0.16f), Size(big * 0.60f, big * 0.32f))
+    drawCircle(x.pal.hot, big * 0.12f * (1f + 0.4f * x.level), x.c)
+    drawOval(Color.Black, Offset(x.c.x - big * 0.025f, x.c.y - big * 0.12f), Size(big * 0.05f, big * 0.24f))
+}
+
+// ---------------------------------------------------------------- ghost
+
+/** A floating spirit: ragged hem, hollow eyes, trailing wisps. */
+private fun DrawScope.drawGhost(x: Ctx) {
+    halo(x, 1.6f, 0.34f)
+    val big = x.r * x.k
+    val bob = sin(x.t * 1.6f) * big * 0.07f
+    val cx = x.c.x
+    val top = x.c.y - big * 0.82f + bob
+    val bottom = x.c.y + big * 0.82f + bob
+    val halfW = big * 0.62f
+    for (layer in 2 downTo 0) {
+        val spread = 1f + layer * 0.16f
+        val body = Path().apply {
+            moveTo(cx - halfW * spread, bottom)
+            lineTo(cx - halfW * spread, x.c.y - big * 0.15f + bob)
+            cubicTo(cx - halfW * spread, top, cx + halfW * spread, top, cx + halfW * spread, x.c.y - big * 0.15f + bob)
+            lineTo(cx + halfW * spread, bottom)
+            val waves = 5
+            for (i in waves downTo 1) {
+                val x0 = cx - halfW * spread + (halfW * 2f * spread) * (i - 1) / waves
+                val x1 = cx - halfW * spread + (halfW * 2f * spread) * i / waves
+                val wob = sin(x.t * 3f + i * 1.7f + layer) * big * 0.06f
+                quadraticBezierTo((x0 + x1) / 2f, bottom + big * 0.18f + wob, x0, bottom)
+            }
+            close()
+        }
+        drawPath(body, x.pal.bright.copy(alpha = 0.10f + 0.10f * (3 - layer)), style = Fill)
+        drawPath(body, x.pal.hot.copy(alpha = 0.55f - layer * 0.12f), style = Stroke(width = (2.2f - layer * 0.4f) * x.u))
+    }
+    val ey = x.c.y - big * 0.22f + bob
+    val open = 1f + 0.35f * (if (x.speaking || x.listening) x.level else 0f)
+    for (side in listOf(-1f, 1f)) {
+        val ex = cx + side * big * 0.24f
+        drawOval(Color.Black, Offset(ex - big * 0.11f, ey - big * 0.16f * open), Size(big * 0.22f, big * 0.32f * open))
+        drawCircle(x.pal.hot.copy(alpha = 0.5f + 0.5f * x.beat), big * 0.035f, Offset(ex, ey + big * 0.02f))
+    }
+    val mouth = big * (0.07f + 0.17f * (if (x.speaking) x.level else 0.2f * x.beat))
+    drawOval(Color.Black, Offset(cx - big * 0.12f, x.c.y + big * 0.14f + bob), Size(big * 0.24f, mouth * 2f))
+    for (i in 0 until 14) {
+        val a = x.t * 0.6f + i * 0.9f
+        drawCircle(x.pal.bright.copy(alpha = 0.55f), (1f + i % 3) * x.u,
+            Offset(cx + cos(a) * big * 0.95f, x.c.y + sin(a * 1.3f) * big * 0.8f))
+    }
+}
+
+// ---------------------------------------------------------------- mandala
+
+/** Layered petals turning against each other around a burning core. */
+private fun DrawScope.drawMandala(x: Ctx) {
+    halo(x, 1.6f, 0.36f)
+    val big = x.r * x.k
+    for (layer in 3 downTo 0) {
+        val n = 8 + layer * 2
+        val dir = if (layer % 2 == 0) 1f else -1f
+        val spin = dir * x.t * (0.25f + layer * 0.12f)
+        val len = big * (0.42f + layer * 0.19f) * (1f + 0.05f * sin(x.t * 2f + layer))
+        for (i in 0 until n) {
+            val a = spin + i * TAU / n
+            val base = pt(x.c, a, big * 0.14f)
+            val tip = pt(x.c, a, len)
+            val l = pt(x.c, a - TAU / n * 0.38f, len * 0.62f)
+            val r = pt(x.c, a + TAU / n * 0.38f, len * 0.62f)
+            val petal = Path().apply {
+                moveTo(base.x, base.y)
+                quadraticBezierTo(l.x, l.y, tip.x, tip.y)
+                quadraticBezierTo(r.x, r.y, base.x, base.y)
+                close()
+            }
+            drawPath(petal, (if (layer % 2 == 0) x.pal.hot else x.pal.mid).copy(alpha = 0.16f + layer * 0.05f), style = Fill)
+            drawPath(petal, x.pal.bright.copy(alpha = 0.55f), style = Stroke(width = 1.3f * x.u))
+        }
+    }
+    drawCircle(x.pal.bright.copy(alpha = 0.7f), big * 0.2f, x.c, style = Stroke(width = 2f * x.u))
+    glowCore(x, big * 0.24f)
+    drawOval(Color.Black, Offset(x.c.x - big * 0.03f, x.c.y - big * 0.14f), Size(big * 0.06f, big * 0.28f))
 }
 
 /** A compact native version of the watching eye, used for the gallery preview. */
@@ -713,7 +871,7 @@ fun ZyraxonAura(
         return
     }
     val context = LocalContext.current
-    val transition = rememberInfiniteTransition(label = "aura_gallery")
+    val transition = rememberLiveTransition(label = "aura_gallery")
     val clock by transition.animateFloat(
         initialValue = 0f,
         targetValue = 3600f,

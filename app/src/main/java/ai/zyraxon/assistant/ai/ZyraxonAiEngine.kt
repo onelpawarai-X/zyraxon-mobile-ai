@@ -114,6 +114,12 @@ class ZyraxonAiEngine(private val context: Context) {
         /** Effectively unlimited: a job runs until the goal is verified done. */
         private const val MAX_TOOL_ROUNDS = 100_000
 
+        /** Lookups and launches that gain nothing from running twice with the same arguments. */
+        private val REPEAT_GUARDED = setOf(
+            "youtube_play", "web_search", "open_app", "launch_url", "read_url",
+            "list_apps", "verify_url", "open_settings", "publish_website", "publish_cloudflare"
+        )
+
 
         /**
          * Calls that act on the screen itself. They are always run one at a time
@@ -616,6 +622,16 @@ class ZyraxonAiEngine(private val context: Context) {
         append("- ইউজার যে ভাষায় কথা বলে, তুমি সেই ভাষায় উত্তর দাও।\n")
     }
 
+    /** True when the phone has a working internet connection right now. */
+    private fun isOnline(): Boolean = try {
+        val cm = context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        val caps = cm.getNetworkCapabilities(cm.activeNetwork)
+        caps != null && caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    } catch (_: Exception) {
+        true
+    }
+
     /**
      * Streams the model's reply for one turn, as plain text deltas.
      * `onToolCall` is invoked for every tool the model asks for, in order, and
@@ -643,21 +659,62 @@ class ZyraxonAiEngine(private val context: Context) {
     ): Flow<String> = channelFlow {
         val mcpTools = mcp.allTools()
         val systemPrompt = buildComprehensiveSystemPrompt(persona, memoriesContext, screenContext, mcpTools)
-        // An on-device model, when one is loaded, answers the whole turn itself:
-        // no network, no tools. It cannot run the phone tools, so phone-side work
-        // is left to the hosted path below.
+        // The on-device model is the offline fallback: with no internet the turn is
+        // answered by the best downloaded model, and it can still use the phone's
+        // tools (see LocalAgent). While the network is up, the hosted providers
+        // answer, because they are far stronger than any phone-sized model.
         val local = OnDeviceModel.get(context)
-        if (local.isReady() && !_onDeviceDisabled) {
-            if (prompt.isNotBlank()) {
-                var localText = ""
-                local.generate(prompt, systemPrompt).collect { delta ->
-                    localText += delta
-                    trySend(delta)
-                }
-                if (localText.isNotBlank()) return@channelFlow
-                // The local model produced nothing — fall through to the hosted
-                // providers rather than leaving the user with an empty reply.
+        val offline = !isOnline()
+        if (offline && !local.isReady() && !_onDeviceDisabled) {
+            val files = local.installedModels()
+            val order = listOf("gemma-4-E4B", "gemma-4-E2B", "qwen3_4b", "Qwen3-0.6B")
+            val pick = order.firstNotNullOfOrNull { key -> files.firstOrNull { it.name.contains(key, ignoreCase = true) } }
+                ?: files.firstOrNull()
+            if (pick != null) withContext(Dispatchers.IO) { local.load(pick.absolutePath) }
+        }
+        if (offline && local.isReady() && !_onDeviceDisabled && prompt.isNotBlank()) {
+            trySend("📴 ইন্টারনেট নেই — ফোনের অফলাইন মডেলে চলছে।\n\n")
+            val sys = LocalAgent.systemPrompt(persona.systemPrompt, memoriesContext, offline = true)
+            val convo = StringBuilder()
+            for (m in history.takeLast(6)) {
+                if (m.role == MessageRole.SYSTEM) continue
+                convo.append(if (m.role == MessageRole.USER) "User: " else "Assistant: ")
+                    .append(m.text.take(500)).append("\n")
             }
+            convo.append("User: ").append(prompt).append("\nAssistant:")
+            var answered = false
+            var round = 0
+            while (round < LocalAgent.MAX_ROUNDS) {
+                round++
+                var out = ""
+                var sent = 0
+                val tail = convo.toString().let { if (it.length > 6000) it.substring(it.length - 6000) else it }
+                local.generate(tail, sys).collect { d ->
+                    out += d
+                    // Text is streamed as it arrives, except from the first
+                    // "<tool_call>" on, which is for the engine and not the user.
+                    val idx = out.indexOf(LocalAgent.OPEN)
+                    val safe = if (idx >= 0) idx else (out.length - LocalAgent.OPEN.length).coerceAtLeast(0)
+                    if (safe > sent) { trySend(out.substring(sent, safe)); sent = safe }
+                }
+                val call = LocalAgent.parse(out)
+                if (call == null) {
+                    val idx = out.indexOf(LocalAgent.OPEN)
+                    if (idx < 0 && out.length > sent) trySend(out.substring(sent))
+                    if (out.isNotBlank()) answered = true
+                    break
+                }
+                val (name, args) = call
+                val outcome = onToolCall(name, args)
+                val summary = outcome.optString("summary").take(160).ifBlank { "সম্পন্ন" }
+                trySend("\n\n⚙️ `$name` → $summary\n\n")
+                val result = outcome.toString().let { if (it.length > 1200) it.take(1200) + "…" else it }
+                convo.append(" ").append(out.trim()).append("\nTool result: ").append(result).append("\nAssistant:")
+                answered = true
+            }
+            if (answered) return@channelFlow
+            // The local model produced nothing: fall through so the user still
+            // gets the hosted providers' real error message instead of silence.
         }
         // Built-in device tools first, then every tool a connected MCP server
         // advertised. They are offered on every turn, so the model reaches for
@@ -700,6 +757,7 @@ class ZyraxonAiEngine(private val context: Context) {
         val actionLog = mutableListOf<String>()
         var lastScreenText = ""
         var stalls = 0
+        val callCounts = mutableMapOf<String, Int>()
         while (round < MAX_TOOL_ROUNDS) {
             round++
             // Each round starts with a clean slate: whether a frame is pushed in
@@ -863,10 +921,25 @@ class ZyraxonAiEngine(private val context: Context) {
             // A call that needs the screen in front of it must run alone and in
             // order: two taps racing each other would land on the wrong screen.
             // A call that only reads or writes data can run beside its siblings.
-            val sequential = parsed.filter { isScreenTool(it.second) }
-            val parallel = parsed.filterNot { isScreenTool(it.second) }
-
+            // The same lookup, search or launch asked for again with identical
+            // arguments is the loop behind "it opens YouTube trending music five
+            // times and never plays anything". From the second repeat the call is
+            // not run again; the model is told to change the plan instead.
             val outcomes = mutableMapOf<String, JSONObject>()
+            val fresh = parsed.filter { (id, name, args) ->
+                if (name !in REPEAT_GUARDED) return@filter true
+                val sig = name + args.toString()
+                val seen = callCounts.merge(sig, 1, Int::plus) ?: 1
+                if (seen >= 3) {
+                    outcomes[id] = JSONObject().put("ok", false).put("summary", "একই কল বারবার")
+                        .put("error", "এই একই '$name' কল আগেই $seen বার হয়েছে, ফল একই। আবার করো না। " +
+                            "ভিন্ন আর্গুমেন্ট বা ভিন্ন টুল নাও: স্ক্রিন পড়ো (read_screen), তারপর স্ক্রিনের আসল " +
+                            "উপাদানে tap_text করো। ভিডিও চালাতে হলে প্রথম আসল ভিডিওতে ট্যাপ করো এবং চলছে কি না দেখো।")
+                    false
+                } else true
+            }
+            val sequential = fresh.filter { isScreenTool(it.second) }
+            val parallel = fresh.filterNot { isScreenTool(it.second) }
 
             if (parallel.isNotEmpty()) {
                 coroutineScope {

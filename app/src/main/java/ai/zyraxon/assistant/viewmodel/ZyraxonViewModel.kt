@@ -448,7 +448,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     // The floating chat bubble. Off by default: it needs the overlay permission,
     // which only the user can grant.
-    private val _overlayEnabled = MutableStateFlow(prefs.getBoolean("overlay_enabled", false))
+    private val _overlayEnabled = MutableStateFlow(prefs.getBoolean("overlay_enabled", true))
     val overlayEnabled: StateFlow<Boolean> = _overlayEnabled.asStateFlow()
 
     private val _overlayExpanded = MutableStateFlow(false)
@@ -2638,5 +2638,19 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         @Volatile
         var active: ZyraxonViewModel? = null
             private set
+
+        private val sharedStore = androidx.lifecycle.ViewModelStore()
+
+        /**
+         * The one assistant for the whole process. The screen and the floating eye
+         * both use it, so the eye keeps working (mic, voice, tools) after the
+         * screen is closed instead of finding nobody home.
+         */
+        @Synchronized
+        fun shared(app: Application): ZyraxonViewModel =
+            androidx.lifecycle.ViewModelProvider(
+                sharedStore,
+                androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.getInstance(app)
+            )[ZyraxonViewModel::class.java]
     }
 }

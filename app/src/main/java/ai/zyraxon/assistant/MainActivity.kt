@@ -22,7 +22,9 @@ import androidx.core.content.ContextCompat
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: ZyraxonViewModel by viewModels()
+    // One assistant for the whole process (see ZyraxonViewModel.shared), so the
+    // floating eye keeps working after this screen is closed.
+    private val viewModel: ZyraxonViewModel by lazy { ZyraxonViewModel.shared(application) }
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -155,6 +157,18 @@ class MainActivity : ComponentActivity() {
         // Start background keepalive
         KeepAliveService.start(this)
 
+        // The eye: always on screen, even after the app is swiped away. The
+        // overlay permission is asked for once; after that it just starts.
+        val eyePrefs = getSharedPreferences("zyraxon_eye", MODE_PRIVATE)
+        if (viewModel.overlayEnabled.value) {
+            if (android.provider.Settings.canDrawOverlays(this)) {
+                OverlayChatService.start(this)
+            } else if (!eyePrefs.getBoolean("asked", false)) {
+                eyePrefs.edit().putBoolean("asked", true).apply()
+                openSpecialSetting("overlay")
+            }
+        }
+
         // Initialize CallWatcher
         if (CallWatcher.permissionsOk(this)) {
             CallWatcher.refresh(this)
@@ -168,7 +182,11 @@ class MainActivity : ComponentActivity() {
             val language by languageCode
             key(language) {
                 ZyraxonTheme {
-                    ZyraxonApp(viewModel = viewModel)
+                    var booting by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
+                    androidx.compose.foundation.layout.Box {
+                        ZyraxonApp(viewModel = viewModel)
+                        if (booting) ai.zyraxon.assistant.ui.components.BootScreen { booting = false }
+                    }
                 }
             }
         }
@@ -203,6 +221,10 @@ class MainActivity : ComponentActivity() {
      */
     override fun onResume() {
         super.onResume()
+        // Back from the overlay-permission screen: start the eye now.
+        if (viewModel.overlayEnabled.value && android.provider.Settings.canDrawOverlays(this)) {
+            OverlayChatService.start(this)
+        }
         viewModel.onAppReturnedToForeground()
     }
 

@@ -178,7 +178,11 @@ object ToolRegistry {
             .put("parameters", S(JSONObject(), emptyList())),
         "read_sms" to JSONObject()
             .put("description", "Read the newest SMS messages on this phone — for example an OTP or verification code sent to the user. Optional `contains` filters by text or sender; `count` is how many (default 5, max 20). If it fails for a missing permission, call open_settings with page 'apps', tap through to the SMS permission yourself, then call this again. Never ask the user to read the code out.")
-            .put("parameters", S(JSONObject().put("contains", str()).put("count", num()), emptyList())),
+            .put("parameters", S(JSONObject().put("contains", str()).put("count", num())
+                .put("box", str().put("description", "inbox (default) | sent | all"))
+                .put("since_minutes", num().put("description", "only messages from the last N minutes"))
+                .put("wait_seconds", num().put("description", "wait up to N seconds (max 120) for a matching message to arrive — use right after requesting a code; the result carries newest_code")),
+                emptyList())),
         "clipboard_write" to JSONObject()
             .put("description", "Write text to the phone clipboard.")
             .put("parameters", S(JSONObject().put("text", str()), listOf("text"))),
@@ -454,22 +458,52 @@ object ToolRegistry {
             return err("no-permission", "SMS পড়ার অনুমতি নেই — open_settings(apps) খুলে অ্যাপ পারমিশন থেকে SMS নিজে চালু করো, তারপর আবার চেষ্টা করো")
         }
         val want = args.optString("contains").lowercase()
-        val max = args.optInt("count", 5).coerceIn(1, 20)
-        return try {
+        val max = args.optInt("count", 5).coerceIn(1, 50)
+        val box = when (args.optString("box", "inbox").lowercase()) {
+            "sent" -> "content://sms/sent"
+            "all" -> "content://sms"
+            else -> "content://sms/inbox"
+        }
+        val sinceMs = if (args.has("since_minutes"))
+            System.currentTimeMillis() - args.optLong("since_minutes", 0L).coerceAtLeast(0L) * 60_000L else 0L
+        // `wait_seconds` lets one call cover the gap between "code requested" and
+        // "code arrived": it re-reads every 1.5 s until a match shows up.
+        val waitMs = args.optLong("wait_seconds", 0L).coerceIn(0L, 120L) * 1000L
+        val otpRegex = Regex("(?<![0-9])[0-9]{4,8}(?![0-9])")
+        val deadline = System.currentTimeMillis() + waitMs
+
+        fun readOnce(): JSONArray {
             val out = JSONArray()
             context.contentResolver.query(
-                Uri.parse("content://sms/inbox"),
+                Uri.parse(box),
                 arrayOf("address", "body", "date"),
-                null, null, "date DESC LIMIT 60"
+                if (sinceMs > 0) "date >= ?" else null,
+                if (sinceMs > 0) arrayOf(sinceMs.toString()) else null,
+                "date DESC LIMIT 200"
             )?.use { c ->
                 while (c.moveToNext() && out.length() < max) {
                     val from = c.getString(0) ?: ""
                     val body = c.getString(1) ?: ""
                     if (want.isNotEmpty() && !from.lowercase().contains(want) && !body.lowercase().contains(want)) continue
-                    out.put(JSONObject().put("from", from).put("body", body.take(500)).put("time", c.getLong(2)))
+                    val item = JSONObject().put("from", from).put("body", body.take(800)).put("time", c.getLong(2))
+                    otpRegex.find(body)?.let { item.put("code", it.value) }
+                    out.put(item)
                 }
             }
-            ok(out, "${out.length()}টি SMS পাওয়া গেছে")
+            return out
+        }
+
+        return try {
+            var out = readOnce()
+            // Only a wait that was asked for loops; and only until something matches.
+            while (out.length() == 0 && System.currentTimeMillis() < deadline) {
+                Thread.sleep(1500)
+                out = readOnce()
+            }
+            val newestCode = (0 until out.length()).firstNotNullOfOrNull { out.getJSONObject(it).optString("code").takeIf { s -> s.isNotBlank() } }
+            val result = JSONObject().put("messages", out)
+            if (newestCode != null) result.put("newest_code", newestCode)
+            ok(result, "${out.length()}টি SMS পাওয়া গেছে" + (newestCode?.let { " — সর্বশেষ কোড: $it" } ?: ""))
         } catch (e: Exception) {
             err(e.message ?: e.toString(), "SMS পড়া যায়নি")
         }
@@ -617,8 +651,24 @@ object ToolRegistry {
     }
 
     private fun launchUrl(context: Context, args: JSONObject): JSONObject {
-        val url = args.optString("url")
+        var url = args.optString("url")
         if (url.isBlank()) return err("no-url", "কোন লিংক খুলব বলোনি")
+        // A path to a local file: serve its folder and open it over loopback, so
+        // "write the page, then show it" is one step and no LAN address is shown.
+        val localPath = when {
+            url.startsWith("file://") -> url.removePrefix("file://")
+            url.startsWith("/") -> url
+            else -> ""
+        }
+        if (localPath.isNotBlank()) {
+            val f = File(localPath)
+            if (f.exists()) {
+                val dir = if (f.isDirectory) f else f.parentFile
+                if (dir != null && startHttpServer(dir, 8792) != null) {
+                    url = "http://127.0.0.1:8792/" + (if (f.isDirectory) "" else f.name)
+                }
+            }
+        }
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         return try {
             context.startActivity(intent)
@@ -1418,8 +1468,12 @@ object ToolRegistry {
         if (!tunnel) {
             val served = startHttpServer(siteDir, 8791)
             if (served != null) {
-                return ok(JSONObject().put("url", served).put("dir", siteDir.absolutePath),
-                    "সাইট চালু হয়েছে: $served (একই ওয়াই-ফাইয়ের যেকোনো ডিভাইসে খুলবে)")
+                // The finished site is OPENED, on the phone's own loopback address,
+                // instead of handing back a 192.168.x.x link nobody can use here.
+                val local = "http://127.0.0.1:8791/"
+                launchUrl(context, JSONObject().put("url", local))
+                return ok(JSONObject().put("url", local).put("lan", served).put("dir", siteDir.absolutePath),
+                    "সাইট খুলে দিয়েছি: $local (একই ওয়াই-ফাইয়ের অন্য ডিভাইসে: $served)। পাবলিক লিংক লাগলে publish_cloudflare ব্যবহার করো।")
             }
             return ok(siteDir.absolutePath, "সাইটটি ফোনে সেভ হয়েছে: ${siteDir.absolutePath} (সার্ভার চালু হয়নি)")
         }
@@ -1434,31 +1488,35 @@ object ToolRegistry {
             bin.setExecutable(true)
         }
 
-        val server = ProcessBuilder("sh", "-c",
-            "cd '${siteDir.absolutePath}' && (python3 -m http.server 8791 2>/dev/null || toybox httpd -p 8791 -h . 2>/dev/null || busybox httpd -p 8791 -h .) &")
-            .start()
-        Thread.sleep(1200)
+        // The site is served by the app's own in-process server, so it never
+        // depends on python or busybox being present on the phone.
+        val served = startHttpServer(siteDir, 8791)
+        val local = "http://127.0.0.1:8791/"
 
-        val proc = ProcessBuilder("sh", "-c", "'${bin.absolutePath}' tunnel --url http://127.0.0.1:8791 --no-autoupdate 2>&1")
-            .redirectErrorStream(true).start()
-        val reader = BufferedReader(InputStreamReader(proc.inputStream))
-        val deadline = System.currentTimeMillis() + 45_000
+        // Two attempts with different transports: the default (QUIC) is often
+        // blocked on mobile networks, http2 over 443 usually is not.
         var publicUrl: String? = null
-        while (System.currentTimeMillis() < deadline) {
-            val line = reader.readLine() ?: break
-            val m = Regex("https://[a-z0-9-]+\\.trycloudflare\\.com").find(line)
-            if (m != null) { publicUrl = m.value; break }
+        for (protocol in listOf("http2", "quic")) {
+            val proc = ProcessBuilder("sh", "-c",
+                "'${bin.absolutePath}' tunnel --url $local --protocol $protocol --no-autoupdate 2>&1")
+                .redirectErrorStream(true).start()
+            val reader = BufferedReader(InputStreamReader(proc.inputStream))
+            val deadline = System.currentTimeMillis() + 40_000
+            while (System.currentTimeMillis() < deadline) {
+                val line = reader.readLine() ?: break
+                val m = Regex("https://[a-z0-9-]+\\.trycloudflare\\.com").find(line)
+                if (m != null) { publicUrl = m.value; break }
+            }
+            if (publicUrl != null) break
+            proc.destroy()
         }
         if (publicUrl == null) {
-            proc.destroy(); server.destroy()
-            // The tunnel client is a network download and can fail on a phone with
-            // no data or a blocked host. That is not the end of the job: the site
-            // is real and can still be reached on the same Wi-Fi, so the LAN URL
-            // is returned instead of a bare failure.
-            val served = startHttpServer(siteDir, 8791)
+            // No public tunnel this time. The site is still real and is OPENED on
+            // the phone itself; the tool result says exactly what to try next.
             if (served != null) {
-                return ok(JSONObject().put("url", served).put("dir", siteDir.absolutePath),
-                    "পাবলিক টানেল হলো না, তবে সাইটটি চালু আছে: $served (একই ওয়াই-ফাইয়ে খুলবে)")
+                launchUrl(context, JSONObject().put("url", local))
+                return ok(JSONObject().put("url", local).put("lan", served).put("dir", siteDir.absolutePath),
+                    "টানেল এবার ওঠেনি, তবে সাইট খুলে দিয়েছি: $local। এখন terminal_run/run_shell দিয়ে নিজে cloudflared চালাও বা publish_github (Pages) ব্যবহার করো।")
             }
             return err("tunnel-failed", "পাবলিক লিংক তৈরি হয়নি")
         }

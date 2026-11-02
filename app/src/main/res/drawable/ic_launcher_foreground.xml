@@ -4,33 +4,42 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- The adaptive-icon safe zone is the middle 66dp, so the glyph stays
-         inside roughly x=34..74 and y=32..76. -->
+    <!-- A watching eye. Everything sits inside the 66dp adaptive-icon safe zone. -->
+    <!-- Outer lash line / socket. -->
     <path
-        android:pathData="M31,29 L77,29 L77,38 L43,70 L77,70 L77,79 L31,79 L31,70 L65,38 L31,38 Z"
-        android:fillAlpha="0.30">
+        android:fillColor="#FF1A0206"
+        android:pathData="M22,54 Q54,28 86,54 Q54,80 22,54 Z" />
+    <!-- Sclera. -->
+    <path
+        android:pathData="M27,54 Q54,34 81,54 Q54,74 27,54 Z">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:startX="31" android:startY="29"
-                android:endX="77" android:endY="79"
-                android:type="linear">
-                <item android:color="#FF22D3EE" android:offset="0.0" />
-                <item android:color="#FFF472B6" android:offset="1.0" />
+                android:type="radial"
+                android:centerX="54" android:centerY="54"
+                android:gradientRadius="30">
+                <item android:offset="0" android:color="#FFF8E9E4" />
+                <item android:offset="0.7" android:color="#FFE09A9A" />
+                <item android:offset="1" android:color="#FF8A1018" />
             </gradient>
         </aapt:attr>
     </path>
-    <path
-        android:pathData="M34,32 L74,32 L74,39 L44,71 L74,71 L74,78 L34,78 L34,71 L64,39 L34,39 Z"
-        android:fillType="nonZero">
+    <!-- Veins. -->
+    <path android:strokeColor="#CC9A0A14" android:strokeWidth="0.9" android:pathData="M29,54 L40,51 M30,57 L41,55 M79,54 L68,51 M78,57 L67,55 M34,50 L42,48 M74,50 L66,48" />
+    <!-- Iris. -->
+    <path android:pathData="M40,54a14,14 0,1 0,28 0a14,14 0,1 0,-28 0">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:startX="34" android:startY="32"
-                android:endX="74" android:endY="78"
-                android:type="linear">
-                <item android:color="#FF67E8F9" android:offset="0.0" />
-                <item android:color="#FF22D3EE" android:offset="0.5" />
-                <item android:color="#FFF472B6" android:offset="1.0" />
+                android:type="radial"
+                android:centerX="54" android:centerY="54"
+                android:gradientRadius="14">
+                <item android:offset="0" android:color="#FF1A0003" />
+                <item android:offset="0.5" android:color="#FFE0121E" />
+                <item android:offset="1" android:color="#FF6A0710" />
             </gradient>
         </aapt:attr>
     </path>
+    <!-- Slit pupil. -->
+    <path android:fillColor="#FF000000" android:pathData="M54,41 Q59.5,54 54,67 Q48.5,54 54,41 Z" />
+    <!-- Wet highlight. -->
+    <path android:fillColor="#CCFFFFFF" android:pathData="M47.5,47.5a2.4,2.4 0,1 0,4.8 0a2.4,2.4 0,1 0,-4.8 0" />
 </vector>

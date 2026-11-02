@@ -5,7 +5,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
+import ai.zyraxon.assistant.ui.components.rememberLiveTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -43,7 +43,7 @@ fun AnimatedBackground(
     isSpeaking: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val transition = rememberInfiniteTransition(label = "bg_anim")
+    val transition = rememberLiveTransition(label = "bg_anim")
 
     val rotation by transition.animateFloat(
         initialValue = 0f,
@@ -136,6 +136,10 @@ fun AnimatedBackground(
                 }
             }
         }
+
+        // Fire, smoke and embers over the whole picture, in every mode, so the
+        // background is never a still image.
+        FireSmokeLayer(intensity = 1f + (if (isSpeaking) audioLevel * 0.6f else 0f))
     }
 }
 
@@ -395,7 +399,7 @@ private data class MatrixColumn(val xRatio: Float, val speed: Float, val offset:
  */
 @Composable
 fun MatrixRainBackground(modifier: Modifier = Modifier) {
-    val transition = rememberInfiniteTransition(label = "matrix")
+    val transition = rememberLiveTransition(label = "matrix")
     val phase by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,

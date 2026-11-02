@@ -11,7 +11,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
+import ai.zyraxon.assistant.ui.components.rememberLiveTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -229,7 +229,7 @@ private fun McpServerCard(
     val isConnected = connection.status == McpStatus.CONNECTED
     val isBusy = connection.status == McpStatus.CONNECTING
 
-    val pulse = rememberInfiniteTransition(label = "mcp-pulse")
+    val pulse = rememberLiveTransition(label = "mcp-pulse")
     val dotAlpha by pulse.animateFloat(
         initialValue = 0.35f,
         targetValue = 1f,

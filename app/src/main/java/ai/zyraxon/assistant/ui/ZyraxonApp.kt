@@ -44,7 +44,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
+import ai.zyraxon.assistant.ui.components.rememberLiveTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.geometry.Offset
@@ -1221,7 +1221,7 @@ fun BloodCyberMicButton(
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val infiniteTransition = rememberInfiniteTransition(label = "blood_mic_anim")
+    val infiniteTransition = rememberLiveTransition(label = "blood_mic_anim")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 0.96f,
         targetValue = 1.08f,
