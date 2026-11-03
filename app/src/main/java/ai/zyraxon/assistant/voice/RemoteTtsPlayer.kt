@@ -69,6 +69,14 @@ class RemoteTtsPlayer(
     @Volatile
     private var prefetchEnabled = true
 
+    /**
+     * Cleared the first time pointing the player straight at the URL fails, so a
+     * device that will not accept the streamed response does not pay the stream
+     * timeout once per sentence for the rest of the session.
+     */
+    @Volatile
+    private var streamUsable = true
+
     @Volatile
     private var generation = 0
 
@@ -100,9 +108,10 @@ class RemoteTtsPlayer(
      */
     fun speak(text: String, bcp47: String, gender: String) {
         stop()
-        // A fresh reply gets a fresh chance to prefetch, so one bad moment on the
-        // network does not cost the gap-free voice for the rest of the session.
+        // A fresh reply gets a fresh chance to prefetch and to stream, so one bad
+        // moment on the network does not cost the gap-free voice for the session.
         prefetchEnabled = true
+        streamUsable = true
         enqueue(text, bcp47, gender)
     }
 
@@ -202,14 +211,29 @@ class RemoteTtsPlayer(
         // the download, and that single wait, once per sentence, is what made the
         // voice fall silent for seconds between words. Racing the two means the
         // file is usually already in hand the moment the stream attempt gives up.
-        val downloadJob = downloadScope.async { download(piece.url) }
-        if (playSource(piece.url, STREAM_START_TIMEOUT_MS)) {
-            // The stream is playing. The parallel download may still land, so its
-            // file is deleted once it arrives rather than left in the cache.
-            downloadScope.launch { downloadJob.await()?.delete() }
-            return true
+        //
+        // Once a stream attempt has failed, the device has proven it will not take
+        // this shape, so later pieces skip the attempt and go straight to the file
+        // — no repeated wait for a path that cannot work here.
+        if (streamUsable) {
+            val downloadJob = downloadScope.async { download(piece.url) }
+            if (playSource(piece.url, STREAM_START_TIMEOUT_MS)) {
+                // The stream is playing. The parallel download may still land, so
+                // its file is deleted once it arrives rather than left in the cache.
+                downloadScope.launch { downloadJob.await()?.delete() }
+                return true
+            }
+            streamUsable = false
+            val raced = downloadJob.await()
+            if (raced != null) {
+                return try {
+                    playSource(raced.absolutePath, PREPARE_TIMEOUT_MS)
+                } finally {
+                    raced.delete()
+                }
+            }
         }
-        val file = downloadJob.await()
+        val file = download(piece.url)
         if (file == null) {
             onError?.invoke("ভয়েস আনা যায়নি")
             return false
