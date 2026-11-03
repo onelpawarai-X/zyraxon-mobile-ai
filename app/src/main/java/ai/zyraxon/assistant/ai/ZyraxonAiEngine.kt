@@ -1003,15 +1003,19 @@ class ZyraxonAiEngine(private val context: Context) {
             // back into the conversation on their own. The model does not have to
             // remember to ask, which is what left it stuck one step short of
             // pressing play.
-            if (parsed.any { isScreenTool(it.second) || it.second in SCREEN_CHANGING_TOOLS }) {
+            val screenActions = parsed.filter { isScreenTool(it.second) || it.second in SCREEN_CHANGING_TOOLS }
+            if (screenActions.isNotEmpty()) {
                 lastActionWasScreenChange = true
+                val done = screenActions.joinToString(" → ") { it.second }
                 val frame = try { screenNow() } catch (_: Exception) { "" }
                 val shot = try { screenFrame() } catch (_: Exception) { "" }
                 if (frame.isNotBlank()) lastScreenText = frame.take(1500)
                 if (frame.isNotBlank() || shot.isNotBlank()) {
                     val text = buildString {
-                        append("📱 অ্যাকশনের পরে বর্তমান স্ক্রিন (নিজে থেকেই নেওয়া)। ")
-                        append("এটা দেখে নিজেই ঠিক করো পরের ধাপ কী — ব্যবহারকারীকে জিজ্ঞাসা কোরো না।\n")
+                        append("📱 এই কাজগুলো এইমাত্র স্বয়ংক্রিয়ভাবে হয়ে গেছে: $done\n")
+                        append("এগুলো তোমার নিজের হাতেই হয়েছে — তাই \"করব\" বলে আর জিজ্ঞাসা কোরো না, হয়ে গেছে। ")
+                        append("এখন স্ক্রিনটা দেখে নিজেই পরের ধাপ নাও, আর এক লাইনে বলো কাজটা হয়ে গেছে ")
+                        append("(যেমন \"ইউটিউব খুলে দিয়েছি\")। ব্যবহারকারী যেন বুঝতে পারে তুমি নিজেই করেছ।\n")
                         if (frame.isNotBlank()) append("\n$frame")
                     }
                     if (shot.isNotBlank()) {
