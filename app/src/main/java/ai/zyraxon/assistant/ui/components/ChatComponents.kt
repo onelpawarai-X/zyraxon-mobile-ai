@@ -113,11 +113,12 @@ fun MessageBubble(
                 )
                 .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
-            // The thinking block sits above the answer. It is opened the moment a
-            // reasoning token arrives and, because the header is tappable, the user
-            // can expand it and read exactly what the model was thinking — the real
-            // chain of thought, not a summary. It is never spoken aloud.
-            if (!isUser && message.thinking.isNotBlank()) {
+            // The working block sits above the answer. It appears the moment the
+            // turn starts — not only when the model happens to emit reasoning — so
+            // the user always sees that ZYRAXON is working instead of an empty
+            // bubble. When a real chain of thought arrives it shows here too, and
+            // the header is tappable so it can be read in full. Never spoken aloud.
+            if (!isUser && (message.thinking.isNotBlank() || message.isStreaming)) {
                 var expanded by remember(message.id) { mutableStateOf(false) }
                 Column(
                     modifier = Modifier
@@ -137,9 +138,18 @@ fun MessageBubble(
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
-                        if (message.isStreaming && !expanded) {
+                        // A live ellipsis that fades in and out while the turn runs.
+                        // Its blink is the proof of work even when no reasoning
+                        // token has arrived yet, which is why it is not gated on
+                        // the thinking text any more.
+                        Text(
+                            text = "…",
+                            color = Glass.cyanFill.copy(alpha = if (message.isStreaming) cursorAlpha else 0.6f),
+                            fontSize = 12.sp
+                        )
+                        if (message.isStreaming && message.thinking.isBlank()) {
                             Text(
-                                text = "…",
+                                text = t("কাজ করছে"),
                                 color = Glass.textMuted,
                                 fontSize = 12.sp
                             )
@@ -147,7 +157,7 @@ fun MessageBubble(
                     }
                     AnimatedVisibility(visible = expanded) {
                         Text(
-                            text = message.thinking,
+                            text = message.thinking.ifBlank { t("এখনো ভাবনার বিস্তারিত আসেনি — মডেল সরাসরি উত্তর দিচ্ছে।") },
                             color = Glass.textSecondary,
                             fontSize = 12.sp,
                             lineHeight = 17.sp,

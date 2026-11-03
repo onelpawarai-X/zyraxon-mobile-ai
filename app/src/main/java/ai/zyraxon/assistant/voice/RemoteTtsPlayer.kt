@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -189,16 +190,32 @@ class RemoteTtsPlayer(
         val ready = prefetched.remove(piece.url)
         if (ready != null) {
             return try {
-                playSource(ready.absolutePath)
+                playSource(ready.absolutePath, PREPARE_TIMEOUT_MS)
             } finally {
                 ready.delete()
             }
         }
-        if (!fetch(piece.url)) return false
-        if (playSource(piece.url)) return true
-        val file = download(piece.url) ?: return false
+        // The stream attempt and the download run at the same time. Pointing the
+        // player at the URL is the fast path — it starts on the first bytes — but
+        // not every device accepts a chunked stream with no declared length. The
+        // old code waited the whole prepare timeout (8s) before it even started
+        // the download, and that single wait, once per sentence, is what made the
+        // voice fall silent for seconds between words. Racing the two means the
+        // file is usually already in hand the moment the stream attempt gives up.
+        val downloadJob = downloadScope.async { download(piece.url) }
+        if (playSource(piece.url, STREAM_START_TIMEOUT_MS)) {
+            // The stream is playing. The parallel download may still land, so its
+            // file is deleted once it arrives rather than left in the cache.
+            downloadScope.launch { downloadJob.await()?.delete() }
+            return true
+        }
+        val file = downloadJob.await()
+        if (file == null) {
+            onError?.invoke("ভয়েস আনা যায়নি")
+            return false
+        }
         return try {
-            playSource(file.absolutePath)
+            playSource(file.absolutePath, PREPARE_TIMEOUT_MS)
         } finally {
             file.delete()
         }
@@ -214,7 +231,7 @@ class RemoteTtsPlayer(
      */
     private var enhancer: android.media.audiofx.LoudnessEnhancer? = null
 
-    private suspend fun playSource(source: String): Boolean = withContext(Dispatchers.Main) {
+    private suspend fun playSource(source: String, timeoutMs: Long = PREPARE_TIMEOUT_MS): Boolean = withContext(Dispatchers.Main) {
         val mp = MediaPlayer()
         try {
             mp.setAudioAttributes(
@@ -249,7 +266,7 @@ class RemoteTtsPlayer(
             }
             player = mp
             mp.prepareAsync()
-            val started = withTimeoutOrNull(PREPARE_TIMEOUT_MS) { prepared.await() } ?: false
+            val started = withTimeoutOrNull(timeoutMs) { prepared.await() } ?: false
             if (!started) {
                 release(mp)
                 return@withContext false
@@ -266,13 +283,27 @@ class RemoteTtsPlayer(
 
     /**
      * Saves one piece to the cache so the player can read it as a file. Used only
-     * when the streaming path did not start.
+     * when the streaming path did not start. This is also where the voice the
+     * endpoint actually used is read — from its `X-ZYRAXON-Voice` header — and
+     * where a 400/502 is turned into a plain reason for the UI.
      */
     private suspend fun download(url: String): File? = withContext(Dispatchers.IO) {
         try {
             val request = Request.Builder().url(url).header("Accept", "audio/mpeg").get().build()
             client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return@withContext null
+                val voice = response.header("X-ZYRAXON-Voice").orEmpty()
+                if (voice.isNotBlank()) onVoiceResolved?.invoke(voice)
+                if (!response.isSuccessful) {
+                    onError?.invoke(
+                        when (response.code) {
+                            400 -> "ভয়েস সেটিংস ঠিক নেই"
+                            413 -> "টেক্সট অনেক বড়"
+                            502, 503 -> "ভয়েস সার্ভিস ব্যস্ত"
+                            else -> "ভয়েস সার্ভিস ${response.code}"
+                        }
+                    )
+                    return@withContext null
+                }
                 val file = File.createTempFile("zyraxon-tts-", ".mp3", context.cacheDir)
                 response.body?.byteStream()?.use { input ->
                     file.outputStream().use { output -> input.copyTo(output) }
@@ -286,37 +317,8 @@ class RemoteTtsPlayer(
             }
         } catch (e: Exception) {
             Log.w(TAG, "download failed: ${e.message}")
-            null
-        }
-    }
-
-    /**
-     * Confirms the endpoint really answers before the player is pointed at it, so
-     * a 400 ("unknown voice") or a 502 is reported instead of sounding like a
-     * broken speaker. The body is not read — only the status and the voice header.
-     */
-    private suspend fun fetch(url: String): Boolean = withContext(Dispatchers.IO) {
-        try {
-            val request = Request.Builder().url(url).header("Accept", "audio/mpeg").get().build()
-            client.newCall(request).execute().use { response ->
-                val voice = response.header("X-ZYRAXON-Voice").orEmpty()
-                if (!response.isSuccessful) {
-                    val reason = when (response.code) {
-                        400 -> "ভয়েস সেটিংস ঠিক নেই"
-                        413 -> "টেক্সট অনেক বড়"
-                        502, 503 -> "ভয়েস সার্ভিস ব্যস্ত"
-                        else -> "ভয়েস সার্ভিস ${response.code}"
-                    }
-                    onError?.invoke(reason)
-                    return@withContext false
-                }
-                if (voice.isNotBlank()) onVoiceResolved?.invoke(voice)
-                true
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "tts fetch failed: ${e.message}")
             onError?.invoke("ইন্টারনেট সংযোগ নেই")
-            false
+            null
         }
     }
 
@@ -363,5 +365,12 @@ class RemoteTtsPlayer(
 
         /** How long a source may take to start before it is abandoned. */
         const val PREPARE_TIMEOUT_MS = 8_000L
+
+        /**
+         * How long the streaming path gets before the already-downloading file
+         * takes over. Kept short: the file usually arrives in about a second, and
+         * waiting longer is what put a silent gap between the sentences.
+         */
+        const val STREAM_START_TIMEOUT_MS = 1_800L
     }
 }
