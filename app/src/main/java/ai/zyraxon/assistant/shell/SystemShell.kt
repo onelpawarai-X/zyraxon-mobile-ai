@@ -3,6 +3,7 @@ package ai.zyraxon.assistant.shell
 import android.content.Context
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
+import moe.shizuku.server.IShizukuProcess
 import moe.shizuku.server.IShizukuService
 import rikka.shizuku.Shizuku
 import java.io.BufferedReader
@@ -106,7 +107,7 @@ object SystemShell {
         context: Context,
         command: String,
         level: Level = Level.SHELL,
-        timeoutMs: Long = 60_000
+        timeoutMs: Long = 0
     ): Result? {
         if (!available()) return null
         val started = System.currentTimeMillis()
@@ -128,7 +129,7 @@ object SystemShell {
             val tOut = Thread { outStream.bufferedReader().use { out.append(it.readText()) } }
             val tErr = Thread { errStream.bufferedReader().use { err.append(it.readText()) } }
             tOut.start(); tErr.start()
-            val finished = process.waitForTimeout(timeoutMs, "MILLISECONDS")
+            val finished = awaitProcess(process, timeoutMs)
             val code = if (finished) process.exitValue() else -1
             if (!finished) runCatching { process.destroy() }
             tOut.join(2_000); tErr.join(2_000)
@@ -152,7 +153,7 @@ object SystemShell {
      * rooted and Shizuku runs as root, otherwise shell, otherwise null so the
      * caller uses the sandboxed shell.
      */
-    fun runBest(context: Context, command: String, timeoutMs: Long = 60_000): Result? {
+    fun runBest(context: Context, command: String, timeoutMs: Long = 0): Result? {
         val levels = probe(context)
         val level = when {
             levels[Level.ROOT] == true -> Level.ROOT
@@ -178,7 +179,7 @@ object SystemShell {
         context: Context,
         command: String,
         level: Level = Level.SHELL,
-        timeoutMs: Long = 600_000,
+        timeoutMs: Long = 0,
         onChunk: (stream: String, text: String) -> Unit
     ): Result? {
         if (!available()) return null
@@ -201,7 +202,7 @@ object SystemShell {
             val tOut = Thread { pump(outStream.bufferedReader(), out, "out", onChunk) }
             val tErr = Thread { pump(errStream.bufferedReader(), err, "err", onChunk) }
             tOut.start(); tErr.start()
-            val finished = process.waitForTimeout(timeoutMs, "MILLISECONDS")
+            val finished = awaitProcess(process, timeoutMs)
             val code = if (finished) process.exitValue() else -1
             if (!finished) runCatching { process.destroy() }
             tOut.join(2_000); tErr.join(2_000)
@@ -218,6 +219,23 @@ object SystemShell {
             Result(command, -1, "", e.message ?: e.toString(), false, -1,
                 System.currentTimeMillis() - started)
         }
+    }
+
+    /**
+     * Waits for a Shizuku process. A timeout of zero or less means no deadline:
+     * the command runs until it finishes on its own, which is what a real shell
+     * does. Only a caller that expects a hang sets a number.
+     */
+    private fun awaitProcess(process: IShizukuProcess, timeoutMs: Long): Boolean {
+        if (timeoutMs <= 0) {
+            return try {
+                process.waitFor()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+        return process.waitForTimeout(timeoutMs, "MILLISECONDS")
     }
 
     /** Reads a stream line by line, appending to [sink] and calling [onChunk]. */

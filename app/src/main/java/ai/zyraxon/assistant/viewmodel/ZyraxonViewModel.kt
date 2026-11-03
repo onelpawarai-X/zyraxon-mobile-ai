@@ -2320,7 +2320,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /** The body of a terminal line, shared by the user's typing and `terminal_run`. */
-    private suspend fun runTerminalLine(line: String): TerminalLine {
+    private suspend fun runTerminalLine(line: String, timeoutMs: Long = 0): TerminalLine {
         val app = getApplication<Application>()
         val home = ShellRuntime.home(app)
         // `cd` is stateful: it changes where the *next* line runs, so it is
@@ -2362,7 +2362,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val r = ShellRuntime.runStreaming(
             app, line,
             cwd = currentTerminalDir(home),
-            timeoutMs = 120_000,
+            // No deadline unless the caller set one. A real terminal does not put
+            // a clock on the command you typed, so `apt upgrade`, `git clone` and
+            // a long build run to completion; the user's Ctrl-C is the way out.
+            timeoutMs = timeoutMs,
             onChunk = { _, text ->
                 synchronized(streamed) { streamed.append(text).append('\n') }
                 updateTerminalLine(lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
@@ -2537,8 +2540,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private suspend fun runInTerminalShell(args: JSONObject): JSONObject {
         val line = args.optString("command").trim()
         if (line.isEmpty()) return JSONObject().put("ok", false).put("summary", "খালি কমান্ড")
+        // No deadline unless the caller asked for one, matching the user's own
+        // typing: a long command in the watched terminal runs to completion.
+        val timeout = args.optLong("timeout_ms", 0)
         _activeTab.value = AppTab.TERMINAL
-        val entry = withContext(Dispatchers.IO) { runTerminalLine(line) }
+        val entry = withContext(Dispatchers.IO) { runTerminalLine(line, timeout) }
         return JSONObject()
             .put("ok", !entry.isError)
             .put("code", entry.exitCode)

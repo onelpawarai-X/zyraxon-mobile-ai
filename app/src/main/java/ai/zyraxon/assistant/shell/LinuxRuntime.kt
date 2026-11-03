@@ -387,7 +387,8 @@ object LinuxRuntime {
         context: Context,
         command: String,
         onChunk: (stream: String, text: String) -> Unit,
-        onSpawn: ((ShellRuntime.LiveProcess) -> Unit)? = null
+        onSpawn: ((ShellRuntime.LiveProcess) -> Unit)? = null,
+        timeoutMs: Long = 0
     ): ShellRuntime.Result? {
         if (!isInstalled(context)) return null
         val native = nativeLib(context).absolutePath
@@ -438,13 +439,14 @@ object LinuxRuntime {
             // layout into a shell the user is looking at.
             append("$GUEST_PREFIX/bin/bash -lc ${q("export PATH=$GUEST_PREFIX/bin:/system/bin; $command")}")
         }
-        // No timeout. A real terminal does not put a clock on the command you
-        // typed, and neither does Termux's interactive session: `apt upgrade`,
-        // `git clone` and a long build all run to completion. A deadline here was
-        // the thing that cut work off halfway.
+        // No deadline by default. A real terminal does not put a clock on the
+        // command you typed, and neither does Termux's interactive session:
+        // `apt upgrade`, `git clone` and a long build all run to completion. A
+        // deadline here was the thing that cut work off halfway. A caller that
+        // expects a hang may pass its own `timeoutMs`.
         return ShellRuntime.runStreaming(
             context, line,
-            timeoutMs = 0,
+            timeoutMs = timeoutMs,
             onChunk = onChunk,
             onSpawn = onSpawn
         )

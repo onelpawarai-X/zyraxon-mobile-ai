@@ -245,16 +245,16 @@ object ToolRegistry {
             .put("description", "Delete a file or folder.")
             .put("parameters", S(JSONObject().put("path", str()).put("recursive", bool()), listOf("path"))),
         "run_shell" to JSONObject()
-            .put("description", "Run a real command in YOUR OWN tool shell (bundled busybox, ~300 Unix commands) and return stdout, stderr and the exit code. It runs in the tool workspace, invisible to the user. Use this for the work behind the scenes. For a command the user should watch, use terminal_run instead.")
+            .put("description", "Run a real command in YOUR OWN tool shell (bundled busybox, ~300 Unix commands) and return stdout, stderr and the exit code. It runs in the tool workspace, invisible to the user. Use this for the work behind the scenes. For a command the user should watch, use terminal_run instead. There is NO time limit by default — a long command runs to completion. Pass `timeout_ms` only for a command you expect to hang.")
             .put("parameters", S(JSONObject().put("command", str()).put("cwd", str()).put("timeout_ms", num()), listOf("command"))),
         "terminal_run" to JSONObject()
-            .put("description", "Run one line in the Terminal shell the USER is watching (the ⌘ ZX tab), in the Terminal's own home directory. The line and its output appear in front of them, so they can watch or take over. Use this when working alongside the user, or when they asked for the terminal. Pair with terminal_open first.")
+            .put("description", "Run one line in the Terminal shell the USER is watching (the ⌘ ZX tab), in the Terminal's own home directory. The line and its output appear in front of them, so they can watch or take over. Use this when working alongside the user, or when they asked for the terminal. Pair with terminal_open first. There is NO time limit by default — a long command runs to completion; pass `timeout_ms` only for one you expect to hang.")
             .put("parameters", S(JSONObject().put("command", str()).put("timeout_ms", num()), listOf("command"))),
         "terminal_open" to JSONObject()
             .put("description", "Bring the Terminal tab to the front so the user watches the commands run in the real terminal instead of reading them in the chat.")
             .put("parameters", S(JSONObject(), emptyList())),
         "system_shell" to JSONObject()
-            .put("description", "Run a command at SYSTEM level, above the app sandbox — the way a system shell and adb do. With `level:\"root\"` it runs as uid 0 (full root: read every app's data, write /system, mount, iptables). With `level:\"shell\"` it runs as uid 2000 (the adb shell user: read most of /data, use pm/am/settings/dumpsys/input). Pass `level:\"auto\"` to use root when the phone is rooted and shell otherwise. It needs the user to have Shizuku running and to have granted ZYRAXON access — if that is missing the tool says exactly what to do, and run_shell still works. Returns the real exit code and real output.")
+            .put("description", "Run a command at SYSTEM level, above the app sandbox — the way a system shell and adb do. With `level:\"root\"` it runs as uid 0 (full root: read every app's data, write /system, mount, iptables). With `level:\"shell\"` it runs as uid 2000 (the adb shell user: read most of /data, use pm/am/settings/dumpsys/input). Pass `level:\"auto\"` to use root when the phone is rooted and shell otherwise. It needs the user to have Shizuku running and to have granted ZYRAXON access — if that is missing the tool says exactly what to do, and run_shell still works. Returns the real exit code and real output. There is NO time limit by default; pass `timeout_ms` only for a command you expect to hang.")
             .put("parameters", S(JSONObject().put("command", str()).put("level", str()).put("timeout_ms", num()), listOf("command"))),
         "linux_run" to JSONObject()
             .put("description", "Run a command inside ZYRAXON's own full Linux system — bash, apt, git, python, node and clang, not the bundled busybox. It is the same system the user sees in the Terminal tab, and it is installed straight from the APK, so it works with no network at all. Use `action:\"status\"` to see whether it is installed, `action:\"install\"` to unpack it from the APK, or `action:\"run\"` with a command. Installing needs Shizuku running and granted to ZYRAXON; until then the tool explains exactly what to do.")
@@ -1157,7 +1157,11 @@ object ToolRegistry {
     private fun runShell(context: Context, args: JSONObject): JSONObject {
         val cmd = args.optString("command")
         val cwd = resolve(context, args.optString("cwd").ifBlank { null })
-        val timeout = args.optLong("timeout_ms", 60_000)
+        // No default deadline: a command runs until it decides it is finished, the
+        // way a real shell behaves. `apt install`, `git clone` and a long build all
+        // run to completion instead of being cut off. Pass `timeout_ms` only when
+        // the command itself is expected to hang.
+        val timeout = args.optLong("timeout_ms", 0)
         // busybox has no git, so a `git` line is served by JGit here too —
         // otherwise `git clone` would fail with "applet not found".
         GitRuntime.runCommand(context, cmd, cwd)?.let { g ->
@@ -1233,7 +1237,8 @@ object ToolRegistry {
     private fun systemShell(context: Context, args: JSONObject): JSONObject {
         val command = args.optString("command").trim()
         if (command.isEmpty()) return err("bad-args", "Provide a command")
-        val timeout = args.optLong("timeout_ms", 60_000)
+        // Same rule as the other shells: no deadline unless the caller sets one.
+        val timeout = args.optLong("timeout_ms", 0)
         val requested = args.optString("level", "auto").trim().lowercase()
         if (!SystemShell.available()) {
             val hint = if (SystemShell.needsPermission()) {
@@ -1400,7 +1405,7 @@ object ToolRegistry {
                 val out = StringBuilder()
                 val r = LinuxRuntime.runStreaming(context, command, onChunk = { _, text ->
                     out.append(text)
-                })
+                }, timeoutMs = args.optLong("timeout_ms", 0))
                 if (r == null) {
                     return err(
                         "linux-shell",
