@@ -128,16 +128,16 @@ object SystemShell {
             val tOut = Thread { outStream.bufferedReader().use { out.append(it.readText()) } }
             val tErr = Thread { errStream.bufferedReader().use { err.append(it.readText()) } }
             tOut.start(); tErr.start()
-            val finished = waitForProcess(timeoutMs) { process.waitForTimeout(it, "MILLISECONDS") }
-            val code = if (finished) process.exitValue() else -1
-            if (!finished) runCatching { process.destroy() }
-            tOut.join(2_000); tErr.join(2_000)
+            // No time limit: the command runs to its own end, as in a real shell.
+            process.waitFor()
+            val code = process.exitValue()
+            tOut.join(); tErr.join()
             Result(
                 command = command,
                 code = code,
                 stdout = out.toString().take(120_000),
                 stderr = err.toString().take(40_000),
-                timedOut = !finished,
+                timedOut = false,
                 uid = if (level == Level.ROOT) 0 else 2000,
                 millis = System.currentTimeMillis() - started
             )
@@ -152,19 +152,25 @@ object SystemShell {
      * rooted and Shizuku runs as root, otherwise shell, otherwise null so the
      * caller uses the sandboxed shell.
      */
-    fun runBest(context: Context, command: String, timeoutMs: Long = 0): Result? {
+    fun runBest(
+        context: Context,
+        command: String,
+        timeoutMs: Long = 0,
+        onChunk: ((stream: String, text: String) -> Unit)? = null
+    ): Result? {
         val levels = probe(context)
         val level = when {
             levels[Level.ROOT] == true -> Level.ROOT
             levels[Level.SHELL] == true -> Level.SHELL
             else -> return null
         }
-        return run(context, command, level, timeoutMs)
+        return if (onChunk != null) runStreaming(context, command, level, timeoutMs, onChunk)
+        else run(context, command, level, timeoutMs)
     }
 
     /** Reads a file at system level — the thing the sandbox cannot do. */
     fun readFile(context: Context, path: String, level: Level = Level.ROOT): String? {
-        val r = run(context, "cat ${shellQuote(path)}", level, timeoutMs = 20_000) ?: return null
+        val r = run(context, "cat ${shellQuote(path)}", level, timeoutMs = 0) ?: return null
         return if (r.ok) r.stdout else null
     }
 
@@ -201,43 +207,25 @@ object SystemShell {
             val tOut = Thread { pump(outStream.bufferedReader(), out, "out", onChunk) }
             val tErr = Thread { pump(errStream.bufferedReader(), err, "err", onChunk) }
             tOut.start(); tErr.start()
-            val finished = waitForProcess(timeoutMs) { process.waitForTimeout(it, "MILLISECONDS") }
-            val code = if (finished) process.exitValue() else -1
-            if (!finished) runCatching { process.destroy() }
-            tOut.join(2_000); tErr.join(2_000)
+            // No time limit: the command runs until it ends on its own, exactly
+            // as it would in a real terminal. A process that outlives the turn
+            // keeps streaming through onChunk, so stopping it is the user's
+            // call, not a timer's.
+            process.waitFor()
+            val code = process.exitValue()
+            tOut.join(); tErr.join()
             Result(
                 command = command,
                 code = code,
                 stdout = out.toString().take(200_000),
                 stderr = err.toString().take(60_000),
-                timedOut = !finished,
+                timedOut = false,
                 uid = if (level == Level.ROOT) 0 else 2000,
                 millis = System.currentTimeMillis() - started
             )
         } catch (e: Throwable) {
             Result(command, -1, "", e.message ?: e.toString(), false, -1,
                 System.currentTimeMillis() - started)
-        }
-    }
-
-    /**
-     * Waits for a Shizuku process. A timeout of zero or less means no deadline:
-     * the command runs until it finishes on its own, which is what a real shell
-     * does. Only a caller that expects a hang sets a number.
-     *
-     * The wait only ever goes through `waitForTimeout`, the one method the AIDL
-     * is known to expose; a non-positive timeout is turned into a long wait that
-     * is repeated until the process ends, so nothing depends on a `waitFor` that
-     * may not exist in the interface.
-     */
-    private fun waitForProcess(timeoutMs: Long, waitChunk: (Long) -> Boolean): Boolean {
-        if (timeoutMs > 0) return waitChunk(timeoutMs)
-        while (true) {
-            try {
-                if (waitChunk(60L * 60L * 1000L)) return true
-            } catch (_: Exception) {
-                return false
-            }
         }
     }
 

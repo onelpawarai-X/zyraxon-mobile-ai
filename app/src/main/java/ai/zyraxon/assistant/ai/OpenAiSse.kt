@@ -43,15 +43,15 @@ class OpenAiSse(private val client: OkHttpClient) {
             .build()
 
         return try {
-            // A bounded *idle* timeout, not an infinite one. `readTimeout(0)`
-            // meant "wait forever", so a model that opened the socket and then
-            // said nothing held the turn for minutes — the stall the user saw.
-            // OkHttp resets this timer on every chunk that arrives, so a reply
-            // that keeps streaming never trips it, while a silent endpoint is
-            // given up on quickly and the caller can try the next provider.
             client.newBuilder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(READ_IDLE_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+                // No read limit. A thinking model can sit silent for a long time
+                // before its first token, and a timer that gives up mid-thought is
+                // a timer that cuts real work short — the exact thing the user
+                // asked to remove. The connection is still bounded by the socket's
+                // own failure, and the caller's own retry/failover handles a
+                // provider that is truly dead.
+                .connectTimeout(0, TimeUnit.MILLISECONDS)
+                .readTimeout(0, TimeUnit.MILLISECONDS)
                 .build()
                 .newCall(request).execute().use { response ->
                     if (!response.isSuccessful) {
@@ -80,8 +80,13 @@ class OpenAiSse(private val client: OkHttpClient) {
         // Reasoning first: the providers name it differently and it must never be
         // mistaken for the answer. `reasoning_content` is DeepSeek/Groq/Gemini's
         // OpenAI-compatible field; `reasoning` and `thinking` cover the rest.
+        // OpenRouter sends `reasoning_details[]` with `{type:"reasoning.text",
+        // text}` entries and only sometimes mirrors it into `reasoning`, so the
+        // array is read too — without it OpenRouter thinking models showed no
+        // thinking at all while still burning reasoning tokens.
         val reason = delta.optString("reasoning_content").ifBlank { delta.optString("reasoning") }
             .ifBlank { delta.optString("thinking") }
+            .ifBlank { reasoningDetailsText(delta.optJSONArray("reasoning_details")) }
         if (reason.isNotEmpty()) {
             turn.appendReasoning(reason)
             onReasoning(reason)
@@ -96,6 +101,24 @@ class OpenAiSse(private val client: OkHttpClient) {
         if (finish != null && finish != JSONObject.NULL) turn.finished = true
     }
 
+
+    /**
+     * Joins the text of every `reasoning.text` entry in an OpenRouter-style
+     * `reasoning_details` array. Encrypted or summary entries carry no readable
+     * text and are skipped, so a thinking block never shows base64 noise.
+     */
+    private fun reasoningDetailsText(details: JSONArray?): String {
+        if (details == null || details.length() == 0) return ""
+        val sb = StringBuilder()
+        for (i in 0 until details.length()) {
+            val item = details.optJSONObject(i) ?: continue
+            val type = item.optString("type")
+            if (type.isNotEmpty() && !type.contains("text")) continue
+            val text = item.optString("text")
+            if (text.isNotEmpty()) sb.append(text)
+        }
+        return sb.toString()
+    }
 
     /** Pulls the human-readable reason out of a provider error payload. */
     private fun extractError(raw: String): String? {
@@ -130,15 +153,5 @@ class OpenAiSse(private val client: OkHttpClient) {
         }
         if (data.isNotEmpty()) consume(data.toString(), turn, onText, onReasoning)
         return turn
-    }
-
-    companion object {
-        /**
-         * How long the stream may sit silent before the turn is abandoned. A
-         * real reply emits chunks continuously, so a gap this long means the
-         * endpoint is not going to answer; the failover then tries the next
-         * provider instead of leaving the user staring at a frozen cursor.
-         */
-        private const val READ_IDLE_TIMEOUT_MS = 45_000L
     }
 }

@@ -11,6 +11,7 @@ import ai.zyraxon.assistant.shell.ShizukuBundle
 import ai.zyraxon.assistant.shell.ShizukuState
 import ai.zyraxon.assistant.shell.SystemShell
 import ai.zyraxon.assistant.shell.LinuxRuntime
+import ai.zyraxon.assistant.shell.ScheduledCommandReceiver
 import ai.zyraxon.assistant.update.Updater
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -37,7 +38,6 @@ import java.net.Socket
 import java.net.URL
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import androidx.core.content.FileProvider
 
 /**
@@ -263,8 +263,16 @@ object ToolRegistry {
             .put("description", "Set up Shizuku, the system-access app ZYRAXON carries inside itself. Use `action:\"status\"` to see whether it is installed, running and granted; `action:\"install\"` to install the bundled copy (Android shows its own confirm dialog — the user taps Install once); `action:\"open\"` to open Shizuku so the user can start it; `action:\"request\"` to ask Shizuku for permission (the user taps Allow in Shizuku's dialog). Do this before the system-level tools (system_shell, linux_run) can work. The user must make the Install and Allow taps themselves — Android does not let an app make those two taps.")
             .put("parameters", S(JSONObject().put("action", str()), listOf("action"))),
         "background_command" to JSONObject()
-            .put("description", "Run one command in a background service so it keeps running after the user closes the app — for long jobs like a big download, a clone or a build. It shows a notification with a Stop button. Use `action:\"start\"` with a command, or `action:\"stop\"` to end the running one, or `action:\"status\"` to see whether one is running and how it ended.")
+            .put("description", "Run one command in a background service so it keeps running after the user closes the app — for long jobs like a big download, a clone or a build. It shows a notification with a Stop button. Use `action:\"start\"` with a command, or `action:\"stop\"` to end the running one, `action:\"status\"` to see whether one is running and how it ended, `action:\"logs\"` for the full output so far, or `action:\"kill\"` to force-kill the process tree.")
             .put("parameters", S(JSONObject().put("action", str()).put("command", str()), listOf("action"))),
+        "wait" to JSONObject()
+            .put("description", "Pause on purpose, then carry on — the one tool for timing. Use it instead of guessing: after you start a slow job (a build, an install, a server, a deploy) wait here for it instead of replying too early, and use it to poll for a condition that comes true on its own (a port that opens, a file that appears, a URL that starts answering). Give `seconds` to simply pause, and/or `until` with `command` to poll a command until its output contains `contains` (or until it exits 0 when `contains` is empty). Polls every `every_ms` (default 1000) and stops the moment the condition is met. There is no overall deadline: it keeps checking until the condition is true. Returns how long it waited and what it last saw.")
+            .put("parameters", S(JSONObject()
+                .put("seconds", num())
+                .put("until", str().put("description", "condition | command-exit — omit to only sleep"))
+                .put("command", str())
+                .put("contains", str())
+                .put("every_ms", num()), emptyList())),
         "publish_website" to JSONObject()
             .put("description", "Write a site to local storage and serve it on a public port. Returns a local URL. You write the HTML yourself with the `html` argument (or a map of files) — never ask the user for files, just build it.")
             .put("parameters", S(JSONObject().put("name", str()).put("html", str())
@@ -279,6 +287,28 @@ object ToolRegistry {
             .put("description", "Publish a site to the real internet with no account: writes the files, starts a Cloudflare quick tunnel and returns a public https URL, then opens it in the browser. You write the HTML yourself with the `html` argument — never ask the user to supply files; if they just said \"make a website\", build one and pass it here.")
             .put("parameters", S(JSONObject().put("name", str()).put("html", str())
                 .put("files", JSONObject().put("type", "object")), listOf("name"))),
+        "github_actions" to JSONObject()
+            .put("description", "Drive a repository's GitHub Actions from the phone — the CI side of a build, without a desktop. Use `action:\"list\"` to see the workflows, `action:\"dispatch\"` with `workflow` (file name or id) and `ref` to start one, `action:\"runs\"` to see recent runs (with their status and conclusion), `action:\"status\"` with `run_id` to watch one run, and `action:\"logs\"` with `run_id` to read its output. Needs a GitHub token saved in settings. Pair with `wait` to poll `status` until a run finishes instead of guessing.")
+            .put("parameters", S(JSONObject()
+                .put("action", str())
+                .put("repo", str())
+                .put("workflow", str())
+                .put("ref", str())
+                .put("run_id", str())
+                .put("inputs", JSONObject().put("type", "object")), listOf("action", "repo"))),
+        "schedule_command" to JSONObject()
+            .put("description", "Run a shell command later, at a real wall-clock time, surviving the app being closed — the OS holds the timer, not this app. Use `action:\"schedule\"` with `command` and either `in_seconds` or `at` (epoch seconds) to book it, `action:\"list\"` is not supported (only one alarm is held at a time per command), and `action:\"cancel\"` with the same `command` to drop it. When the alarm fires the command runs in the background and the assistant is woken with the result, exactly like `background_command`. Use this for \"১০ মিনিট পরে ফোন চেক করো\" style jobs; use `wait` only inside a turn that is already running.")
+            .put("parameters", S(JSONObject()
+                .put("action", str())
+                .put("command", str())
+                .put("in_seconds", num())
+                .put("at", num()), listOf("action", "command"))),
+        "build_app" to JSONObject()
+            .put("description", "Build this ZYRAXON project on the phone and install the result. Runs the project's own Gradle build in a real shell (`assembleDebug`, or `assembleRelease` with variant:\"release\") and then hands the produced APK to the Android installer, which the user confirms. Use `install:false` to build only. The build output is streamed to the live view, so the user sees progress. Long builds are expected — start it, then `wait` if you need to.")
+            .put("parameters", S(JSONObject()
+                .put("variant", str())
+                .put("install", bool())
+                .put("timeout_ms", num()), emptyList())),
         "sys_info" to JSONObject()
             .put("description", "Real facts about this phone: Android version, model, CPU, RAM, storage, and the current app.")
             .put("parameters", S(JSONObject(), emptyList())),
@@ -389,7 +419,20 @@ object ToolRegistry {
         return File(workspace(context), relative)
     }
 
-    suspend fun execute(context: Context, name: String, args: JSONObject): JSONObject = try {
+    suspend fun execute(context: Context, name: String, args: JSONObject): JSONObject =
+        execute(context, name, args, live = null)
+
+    /**
+     * Runs a tool. When [live] is given, a shell tool streams each line of its
+     * output to it as the line is produced, so the chat can show the output of a
+     * long command while it runs instead of only after it exits.
+     */
+    suspend fun execute(
+        context: Context,
+        name: String,
+        args: JSONObject,
+        live: ((String) -> Unit)?
+    ): JSONObject = try {
         when (name) {
             "open_app" -> openApp(context, args)
             "youtube_play" -> youtubePlay(context, args)
@@ -424,14 +467,18 @@ object ToolRegistry {
             "find_files" -> findFiles(context, args)
             "grep_files" -> grepFiles(context, args)
             "delete_file" -> deleteFile(context, args)
-            "run_shell" -> runShell(context, args)
-            "system_shell" -> systemShell(context, args)
+            "run_shell" -> runShell(context, args, live)
+            "system_shell" -> systemShell(context, args, live)
             "setup_shizuku" -> setupShizuku(context, args)
-            "linux_run" -> linuxRun(context, args)
+            "linux_run" -> linuxRun(context, args, live)
             "background_command" -> backgroundCommand(context, args)
+            "wait" -> waitTool(context, args, live)
             "publish_website" -> publish(context, args, tunnel = false)
             "publish_cloudflare" -> publish(context, args, tunnel = true)
             "publish_github" -> publishGithub(context, args)
+            "github_actions" -> githubActions(context, args)
+            "schedule_command" -> scheduleCommand(context, args)
+            "build_app" -> buildApp(context, args, live)
             "sys_info" -> ok(sysInfo(context), "ডিভাইসের তথ্য")
             "platform_info" -> ok(ShellRuntime.describe(context), "প্ল্যাটফর্ম")
             "process_list" -> runShell(context, JSONObject().put("command", "ps -A 2>/dev/null || ps"))
@@ -690,7 +737,7 @@ object ToolRegistry {
         return try {
             val c = (URL(url).openConnection() as HttpURLConnection).apply {
                 requestMethod = "HEAD"
-                connectTimeout = 12000; readTimeout = 12000
+                connectTimeout = 0; readTimeout = 0
                 instanceFollowRedirects = true
                 setRequestProperty("User-Agent", "Mozilla/5.0")
             }
@@ -716,7 +763,7 @@ object ToolRegistry {
     private fun fetch(url: String, maxBytes: Int = 300_000): Pair<Int, String> {
         val c = (URL(url).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
-            connectTimeout = 15000; readTimeout = 20000
+            connectTimeout = 0; readTimeout = 0
             instanceFollowRedirects = true
             setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14)")
             setRequestProperty("Accept", "text/html,application/json,*/*")
@@ -903,7 +950,7 @@ object ToolRegistry {
     private fun downloadToCache(context: Context, url: String, kindHint: String): File? = try {
         val conn = (URL(url).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
-            connectTimeout = 15000; readTimeout = 45000
+            connectTimeout = 0; readTimeout = 0
             instanceFollowRedirects = true
             setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14)")
         }
@@ -1002,7 +1049,7 @@ object ToolRegistry {
             val sendBody = body.isNotBlank() && method != "GET" && method != "HEAD"
             val c = (URL(url).openConnection() as HttpURLConnection).apply {
                 requestMethod = method
-                connectTimeout = 15000; readTimeout = 25000
+                connectTimeout = 0; readTimeout = 0
                 doOutput = sendBody
                 setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14)")
                 val h = args.optJSONObject("headers")
@@ -1025,7 +1072,7 @@ object ToolRegistry {
         return try {
             dest.parentFile?.mkdirs()
             val c = (URL(url).openConnection() as HttpURLConnection).apply {
-                connectTimeout = 15000; readTimeout = 60000
+                connectTimeout = 0; readTimeout = 0
                 setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14)")
             }
             c.inputStream.use { input -> dest.outputStream().use { input.copyTo(it) } }
@@ -1154,7 +1201,7 @@ object ToolRegistry {
         return if (okDel) ok(f.absolutePath, "${f.name} মোছে ফেলা হয়েছে") else err("failed", "${f.name} মোছা যায়নি")
     }
 
-    private fun runShell(context: Context, args: JSONObject): JSONObject {
+    private fun runShell(context: Context, args: JSONObject, live: ((String) -> Unit)? = null): JSONObject {
         val cmd = args.optString("command")
         val cwd = resolve(context, args.optString("cwd").ifBlank { null })
         // No default deadline: a command runs until it decides it is finished, the
@@ -1175,7 +1222,12 @@ object ToolRegistry {
                 "$ ${cmd.trim()} → ${if (g.ok) "ok" else "failed"}"
             )
         }
-        val r = ShellRuntime.run(context, cmd, cwd = cwd, timeoutMs = timeout)
+        val r = ShellRuntime.runStreaming(
+            context, cmd,
+            cwd = cwd,
+            timeoutMs = timeout,
+            onChunk = { _, text -> live?.invoke(text) }
+        )
         if (r.code == -1 && r.stderr.isEmpty() && r.stdout.isEmpty()) {
             return err("failed", "Could not run the command: $cmd")
         }
@@ -1216,16 +1268,109 @@ object ToolRegistry {
                 BackgroundCommandService.stop(context)
                 ok(JSONObject().put("running", false), "Background command stopped")
             }
-            else -> ok(
-                JSONObject()
-                    .put("running", BackgroundCommandService.running)
-                    .put("command", BackgroundCommandService.lastCommand)
-                    .put("exit", BackgroundCommandService.lastExit)
-                    .put("output", BackgroundCommandService.lastOutput),
-                if (BackgroundCommandService.running) "A command is running"
-                else "No background command is running"
-            )
+            "kill" -> {
+                BackgroundCommandService.kill(context)
+                ok(JSONObject().put("running", false), "Background command killed")
+            }
+            "logs" -> {
+                val out = BackgroundCommandService.lastOutput
+                ok(
+                    JSONObject()
+                        .put("running", BackgroundCommandService.running)
+                        .put("command", BackgroundCommandService.lastCommand)
+                        .put("exit", BackgroundCommandService.lastExit)
+                        .put("bytes", out.length)
+                        .put("output", out),
+                    if (out.isBlank()) "এখনো কোনো আউটপুট নেই"
+                    else "সর্বশেষ ${out.length} অক্ষরের আউটপুট"
+                )
+            }
+            "saved" -> {
+                val job = BackgroundCommandService.saved(context)
+                if (job == null) {
+                    ok(JSONObject().put("saved", false), "ডিস্কে সেভ করা কোনো কাজ নেই")
+                } else {
+                    ok(
+                        JSONObject()
+                            .put("saved", true)
+                            .put("command", job.command)
+                            .put("running", job.running)
+                            .put("interrupted", job.interrupted)
+                            .put("exit", job.exit)
+                            .put("started_at", job.startedAt)
+                            .put("output", job.output.takeLast(4_000)),
+                        if (job.running) "ডিস্কে সেভ করা কাজ এখনো চলছে"
+                        else if (job.interrupted) "সেভ করা কাজটি অ্যাপ বন্ধ হওয়ার সময় কাটা পড়েছিল"
+                        else "সেভ করা শেষ কাজ: ${job.command}"
+                    )
+                }
+            }
+            else -> {
+                val out = BackgroundCommandService.lastOutput
+                ok(
+                    JSONObject()
+                        .put("running", BackgroundCommandService.running)
+                        .put("command", BackgroundCommandService.lastCommand)
+                        .put("exit", BackgroundCommandService.lastExit)
+                        .put("elapsed_ms", BackgroundCommandService.elapsedMs())
+                        .put("output_tail", out.takeLast(2_000)),
+                    if (BackgroundCommandService.running) "একটি কমান্ড চলছে"
+                    else "কোনো ব্যাকগ্রাউন্ড কমান্ড চলছে না"
+                )
+            }
         }
+    }
+
+    /**
+     * `wait` — the one tool for timing. Either pauses for `seconds`, or polls a
+     * command until its output contains `contains` (or until it exits 0 when
+     * `contains` is empty). It never gives up on its own: the loop ends when the
+     * condition is met, exactly as asked — there is no deadline to race.
+     *
+     * The condition is checked through the same shell the model's own commands
+     * use, so a port, a file, a process or an HTTP reply can all be waited on.
+     */
+    private suspend fun waitTool(context: Context, args: JSONObject, live: ((String) -> Unit)?): JSONObject {
+        val started = System.currentTimeMillis()
+        val seconds = args.optDouble("seconds", 0.0)
+        val until = args.optString("until").trim().lowercase()
+        val command = args.optString("command").trim()
+        val contains = args.optString("contains")
+        val everyMs = args.optLong("every_ms", 1000L).coerceAtLeast(1L)
+
+        val polls = until.isNotEmpty() && command.isNotEmpty()
+        if (!polls && seconds <= 0.0) {
+            return err("bad-args", "Give `seconds`, or `until:\"condition\"` with a `command` to poll")
+        }
+
+        if (seconds > 0.0) kotlinx.coroutines.delay((seconds * 1000).toLong())
+
+        var attempt = 0
+        var lastCode = 0
+        var lastOut = ""
+        if (polls) {
+            while (true) {
+                attempt++
+                val r = ShellRuntime.runStreaming(context, command, timeoutMs = 0) { _, text -> live?.invoke(text) }
+                lastCode = r.code
+                lastOut = (r.stdout + r.stderr).trim()
+                val met = if (contains.isNotEmpty()) lastOut.contains(contains) else r.code == 0
+                if (met) break
+                kotlinx.coroutines.delay(everyMs)
+            }
+        }
+
+        val waited = System.currentTimeMillis() - started
+        val tail = lastOut.lines().lastOrNull { it.isNotBlank() }?.take(200)
+        return ok(
+            JSONObject()
+                .put("waited_ms", waited)
+                .put("polls", attempt)
+                .put("exit", lastCode)
+                .put("output", lastOut.takeLast(4_000)),
+            if (polls) "অপেক্ষা শেষ — শর্ত পূরণ (${attempt} বার চেক, ${waited}ms)"
+            else "অপেক্ষা শেষ — ${waited}ms"
+        ).also { if (polls && !tail.isNullOrBlank()) it.put("last", tail) }
     }
 
     /**
@@ -1234,7 +1379,7 @@ object ToolRegistry {
      * it. When it is not there, the reply says exactly what to do and the normal
      * `run_shell` still works, so nothing breaks for someone who never enables it.
      */
-    private fun systemShell(context: Context, args: JSONObject): JSONObject {
+    private fun systemShell(context: Context, args: JSONObject, live: ((String) -> Unit)? = null): JSONObject {
         val command = args.optString("command").trim()
         if (command.isEmpty()) return err("bad-args", "Provide a command")
         // Same rule as the other shells: no deadline unless the caller sets one.
@@ -1258,9 +1403,9 @@ object ToolRegistry {
         }
         val levels = SystemShell.probe(context)
         val result = when (requested) {
-            "root" -> SystemShell.run(context, command, SystemShell.Level.ROOT, timeout)
-            "shell" -> SystemShell.run(context, command, SystemShell.Level.SHELL, timeout)
-            else -> SystemShell.runBest(context, command, timeout)
+            "root" -> SystemShell.runStreaming(context, command, SystemShell.Level.ROOT, timeout) { _, text -> live?.invoke(text) }
+            "shell" -> SystemShell.runStreaming(context, command, SystemShell.Level.SHELL, timeout) { _, text -> live?.invoke(text) }
+            else -> SystemShell.runBest(context, command, timeout) { _, text -> live?.invoke(text) }
         } ?: return err("system-shell", "Could not run the command at system level")
         val levelLabel = when {
             levels[SystemShell.Level.ROOT] == true && requested != "shell" -> "root (uid 0)"
@@ -1371,7 +1516,7 @@ object ToolRegistry {
      * `apt install`, `python`, `node`, `clang` — instead of only the bundled
      * busybox. Everything comes from the APK, so it works with no network.
      */
-    private suspend fun linuxRun(context: Context, args: JSONObject): JSONObject {
+    private suspend fun linuxRun(context: Context, args: JSONObject, live: ((String) -> Unit)? = null): JSONObject {
         val action = args.optString("action", "status").trim().lowercase()
         return when (action) {
             "install" -> {
@@ -1405,6 +1550,7 @@ object ToolRegistry {
                 val out = StringBuilder()
                 val r = LinuxRuntime.runStreaming(context, command, onChunk = { _, text ->
                     out.append(text)
+                    live?.invoke(text)
                 }, timeoutMs = args.optLong("timeout_ms", 0))
                 if (r == null) {
                     return err(
@@ -1508,8 +1654,8 @@ object ToolRegistry {
         return try {
             val conn = (URL(url).openConnection() as HttpURLConnection).apply {
                 requestMethod = method
-                connectTimeout = 20_000
-                readTimeout = 30_000
+                connectTimeout = 0
+                readTimeout = 0
                 setRequestProperty("Authorization", "Bearer $token")
                 setRequestProperty("Accept", "application/vnd.github+json")
                 setRequestProperty("X-GitHub-Api-Version", "2022-11-28")
@@ -1531,6 +1677,223 @@ object ToolRegistry {
             }
         } catch (e: Exception) {
             JSONObject().put("message", e.message ?: "network-error")
+        }
+    }
+
+    /**
+     * `build_app` — build this project on the phone and install what comes out.
+     * The heavy lifting is the shell, so a real build is run rather than a
+     * pretend one; when a `KEYSTORE_PATH` and passwords are in the environment a
+     * release build is produced, otherwise the debug variant is used. The
+     * finished APK is installed through the normal Android installer, so the
+     * user always confirms the install.
+     */
+    private suspend fun buildApp(context: Context, args: JSONObject, live: ((String) -> Unit)?): JSONObject {
+        val root = workspace(context)
+        val variant = args.optString("variant", "debug").trim().lowercase()
+        val release = variant == "release"
+        val gradle = if (release) "assembleRelease" else "assembleDebug"
+        val out = StringBuilder()
+        val r = ShellRuntime.runStreaming(
+            context,
+            "./gradlew $gradle --console=plain --no-daemon",
+            onChunk = { _, text -> out.append(text); live?.invoke(text) },
+            timeoutMs = args.optLong("timeout_ms", 0),
+            cwd = root
+        )
+        if (r == null) return err("no-shell", "শেল শুরু করা গেল না")
+        if (r.code != 0) {
+            return err(
+                "build-failed",
+                "বিল্ড ব্যর্থ (exit ${r.code})। শেষ আউটপুট:\n" +
+                    out.toString().trim().lines().takeLast(25).joinToString("\n")
+            )
+        }
+        val apkDir = File(root, "app/build/outputs/apk/${if (release) "release" else "debug"}")
+        val apk = apkDir.listFiles()?.firstOrNull { it.name.endsWith(".apk") }
+            ?: return err("no-apk", "বিল্ড শেষ কিন্তু কোনো APK পাওয়া গেল না")
+        if (!args.optBoolean("install", true)) {
+            return ok(
+                JSONObject().put("apk", apk.absolutePath).put("bytes", apk.length()),
+                "বিল্ড শেষ: ${apk.name} (${apk.length() / 1024} KB) — ইনস্টল করা হয়নি"
+            )
+        }
+        if (!Updater(context).canInstall()) {
+            return err(
+                "needs-install-permission",
+                "APK তৈরি হয়েছে কিন্তু ইনস্টল করার অনুমতি নেই — Settings → আপডেট → অনুমতি সেটিংস খুলে \"এই সোর্স থেকে ইনস্টল\" চালু করুন"
+            )
+        }
+        val started = runCatching { Updater(context).installPackage(apk) }.getOrDefault(false)
+        if (!started) return err("install-failed", "APK তৈরি হলো কিন্তু ইনস্টলার খোলা গেল না")
+        return ok(
+            JSONObject().put("apk", apk.absolutePath).put("bytes", apk.length()),
+            "বিল্ড শেষ, ইনস্টলার খোলা হয়েছে — Android-এর পপ-আপে Install চাপুন"
+        )
+    }
+
+    /**
+     * `schedule_command` — book a shell command for later. The timer is given to
+     * Android's `AlarmManager`, so it fires even when this app is not running;
+     * the command then runs through the background service, which wakes the
+     * assistant with the result when it ends.
+     */
+    private fun scheduleCommand(context: Context, args: JSONObject): JSONObject {
+        val command = args.optString("command").trim()
+        if (command.isEmpty()) return err("bad-args", "কোন কমান্ড চালাবে বলোনি")
+        val action = args.optString("action", "schedule").trim().lowercase()
+        return when (action) {
+            "cancel" -> {
+                ScheduledCommandReceiver.cancel(context, command)
+                ok(JSONObject().put("cancelled", true), "সময়সূচি বাতিল হলো: $command")
+            }
+            else -> {
+                val inSeconds = args.optDouble("in_seconds", -1.0)
+                val at = args.optDouble("at", -1.0)
+                val afterMs = when {
+                    inSeconds >= 0 -> (inSeconds * 1000).toLong()
+                    at > 0 -> (at * 1000).toLong() - System.currentTimeMillis()
+                    else -> return err("bad-args", "in_seconds বা at দাও")
+                }
+                if (afterMs < 0) return err("bad-args", "যে সময় দিয়েছ তা আগেই চলে গেছে")
+                ScheduledCommandReceiver.schedule(context, command, afterMs)
+                ok(
+                    JSONObject()
+                        .put("command", command)
+                        .put("after_ms", afterMs)
+                        .put("fire_at", System.currentTimeMillis() + afterMs),
+                    "ঠিক আছে — ${afterMs / 1000} সেকেন্ড পরে কমান্ডটি চলবে, অ্যাপ বন্ধ থাকলেও"
+                )
+            }
+        }
+    }
+
+    /**
+     * `github_actions` — CI from the phone. Lists workflows, starts one with
+     * `workflow_dispatch`, and reports runs with their status, conclusion and
+     * logs, so a build can be driven end to end without a desktop. The `wait`
+     * tool is what polls `status` until a run finishes.
+     */
+    private fun githubActions(context: Context, args: JSONObject): JSONObject {
+        val token = context.getSharedPreferences("zyraxon_ai_prefs", Context.MODE_PRIVATE)
+            .getString("gh_token", "")?.trim().orEmpty()
+        if (token.isEmpty()) {
+            return err("no-github-token", "GitHub টোকেন নেই — সেটিংসে টোকেন দিন, তারপর আবার বলো")
+        }
+        val repoArg = args.optString("repo").trim()
+        if (repoArg.isEmpty()) return err("no-repo", "রিপোজিটরির নাম বলোনি")
+        val repo = repoArg.removePrefix("https://github.com/").removeSuffix(".git").trim('/')
+        val base = "https://api.github.com/repos/$repo/actions"
+        val action = args.optString("action", "list").trim().lowercase()
+
+        return when (action) {
+            "list" -> {
+                val res = githubRequest(token, "GET", "$base/workflows", null)
+                    ?: return err("network-error", "GitHub-এ পৌঁছানো গেল না")
+                if (res.has("message")) return err("github-error", res.optString("message"))
+                val arr = res.optJSONArray("workflows") ?: JSONArray()
+                val out = JSONArray()
+                for (i in 0 until arr.length()) {
+                    val w = arr.getJSONObject(i)
+                    out.put(JSONObject()
+                        .put("id", w.optLong("id"))
+                        .put("name", w.optString("name"))
+                        .put("path", w.optString("path"))
+                        .put("state", w.optString("state")))
+                }
+                ok(JSONObject().put("workflows", out), "${out.length()}টি workflow পাওয়া গেছে")
+            }
+
+            "dispatch" -> {
+                val workflow = args.optString("workflow").trim()
+                if (workflow.isEmpty()) return err("bad-args", "কোন workflow চালাবে বলোনি (file name বা id)")
+                val ref = args.optString("ref").trim().ifEmpty { "main" }
+                val body = JSONObject().put("ref", ref)
+                args.optJSONObject("inputs")?.let { body.put("inputs", it) }
+                val res = githubRequest(
+                    token, "POST",
+                    "$base/workflows/${Uri.encode(workflow)}/dispatches",
+                    body
+                )
+                if (res != null && res.has("message")) return err("dispatch-failed", res.optString("message"))
+                ok(
+                    JSONObject().put("workflow", workflow).put("ref", ref).put("dispatched", true),
+                    "CI চালু হলো: $workflow @ $ref — `runs` বা `status` দিয়ে দেখো"
+                )
+            }
+
+            "runs" -> {
+                val wf = args.optString("workflow").trim()
+                val url = if (wf.isEmpty()) "$base/runs?per_page=10"
+                else "$base/workflows/${Uri.encode(wf)}/runs?per_page=10"
+                val res = githubRequest(token, "GET", url, null)
+                    ?: return err("network-error", "GitHub-এ পৌঁছানো গেল না")
+                if (res.has("message")) return err("github-error", res.optString("message"))
+                val arr = res.optJSONArray("workflow_runs") ?: JSONArray()
+                val out = JSONArray()
+                for (i in 0 until arr.length()) {
+                    val r = arr.getJSONObject(i)
+                    out.put(JSONObject()
+                        .put("id", r.optLong("id"))
+                        .put("name", r.optString("name"))
+                        .put("branch", r.optString("head_branch"))
+                        .put("event", r.optString("event"))
+                        .put("status", r.optString("status"))
+                        .put("conclusion", r.optString("conclusion"))
+                        .put("url", r.optString("html_url")))
+                }
+                ok(JSONObject().put("runs", out), "${out.length()}টি সাম্প্রতিক রান")
+            }
+
+            "status" -> {
+                val id = args.optString("run_id").trim()
+                if (id.isEmpty()) return err("bad-args", "run_id দাও")
+                val r = githubRequest(token, "GET", "$base/runs/$id", null)
+                    ?: return err("network-error", "GitHub-এ পৌঁছানো গেল না")
+                if (r.has("message")) return err("github-error", r.optString("message"))
+                val status = r.optString("status")
+                val conclusion = r.optString("conclusion")
+                ok(
+                    JSONObject()
+                        .put("id", r.optLong("id"))
+                        .put("status", status)
+                        .put("conclusion", conclusion)
+                        .put("branch", r.optString("head_branch"))
+                        .put("url", r.optString("html_url")),
+                    "রান $id: $status${if (conclusion.isNotEmpty()) " / $conclusion" else ""}"
+                )
+            }
+
+            "logs" -> {
+                val id = args.optString("run_id").trim()
+                if (id.isEmpty()) return err("bad-args", "run_id দাও")
+                val jobs = githubRequest(token, "GET", "$base/runs/$id/jobs", null)
+                if (jobs == null || jobs.has("message")) {
+                    return err("github-error", jobs?.optString("message") ?: "চাকরির তালিকা পাওয়া গেল না")
+                }
+                val arr = jobs.optJSONArray("jobs") ?: JSONArray()
+                val out = JSONArray()
+                for (i in 0 until arr.length()) {
+                    val j = arr.getJSONObject(i)
+                    val steps = j.optJSONArray("steps") ?: JSONArray()
+                    val stepList = JSONArray()
+                    for (s in 0 until steps.length()) {
+                        val st = steps.getJSONObject(s)
+                        stepList.put(JSONObject()
+                            .put("name", st.optString("name"))
+                            .put("status", st.optString("status"))
+                            .put("conclusion", st.optString("conclusion")))
+                    }
+                    out.put(JSONObject()
+                        .put("name", j.optString("name"))
+                        .put("status", j.optString("status"))
+                        .put("conclusion", j.optString("conclusion"))
+                        .put("steps", stepList))
+                }
+                ok(JSONObject().put("jobs", out), "${out.length()}টি চাকরি — প্রতিটার ধাপ ও ফল")
+            }
+
+            else -> err("bad-args", "অজানা action: $action")
         }
     }
 
@@ -2077,7 +2440,9 @@ object ToolRegistry {
         }
         val handler = Handler(Looper.getMainLooper())
         if (Looper.myLooper() == Looper.getMainLooper()) post() else handler.post(post)
-        latch.await(3, TimeUnit.SECONDS)
+        // No deadline: the posted lambda always counts the latch down in its
+        // finally block, so this returns as soon as the launch has really run.
+        latch.await()
         return launched
     }
 

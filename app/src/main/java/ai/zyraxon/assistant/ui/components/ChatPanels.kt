@@ -60,6 +60,7 @@ fun BottomFloatingPanel(
     onOpenFile: (String) -> Unit,
     onPublishFile: (WorkspaceFile) -> Unit,
     onClose: () -> Unit,
+    activeToolCalls: List<ToolExecutionItem> = emptyList(),
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -77,7 +78,7 @@ fun BottomFloatingPanel(
         ) {
             val title = when (panelType) {
                 "todo" -> "📋 " + t("টুডু বোর্ড") + " (${tasks.count { !it.isCompleted }}/${tasks.size})"
-                "tool" -> "🛠️ " + t("টুল এক্সিকিউশন") + " (${toolExecutions.size})"
+                "tool" -> "🛠️ " + t("টুল এক্সিকিউশন") + " (${toolExecutions.size + activeToolCalls.size})"
                 "files" -> "📁 " + t("ফাইল ম্যানেজার") + " (${files.size})"
                 else -> t("প্যানেল")
             }
@@ -106,7 +107,7 @@ fun BottomFloatingPanel(
 
         when (panelType) {
             "todo" -> TodoPanelBody(tasks)
-            "tool" -> ToolPanelBody(toolExecutions)
+            "tool" -> ToolPanelBody(activeToolCalls + toolExecutions)
             "files" -> FilesPanelBody(files, onDeleteFile, onOpenFile, onPublishFile)
         }
     }
@@ -360,8 +361,24 @@ private fun ToolPanelBody(items: List<ToolExecutionItem>) {
                             overflow = TextOverflow.Ellipsis
                         )
                     }
+                    // The command's own output, so the panel shows what a call
+                    // actually printed and not only its one-line summary.
+                    if (item.output.isNotBlank()) {
+                        Text(
+                            text = item.output.trimEnd('\n'),
+                            color = Cyan.copy(alpha = 0.75f),
+                            fontSize = 10.sp,
+                            fontFamily = FontFamily.Monospace,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
-                Text(item.timestamp, color = TextFaint, fontSize = 10.sp)
+                Text(
+                    text = if (item.running) t("চলছে…") else item.timestamp,
+                    color = if (item.running) Cyan else TextFaint,
+                    fontSize = 10.sp
+                )
             }
         }
     }

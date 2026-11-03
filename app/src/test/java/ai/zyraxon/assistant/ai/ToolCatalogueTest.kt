@@ -79,4 +79,44 @@ class ToolCatalogueTest {
         assertTrue("floating_bubble UI টুল হতে হবে", "floating_bubble" in ToolRegistry.UI_TOOLS)
         assertFalse("read_media UI টুল নয়", "read_media" in ToolRegistry.UI_TOOLS)
     }
+
+    @Test
+    fun `the wait tool is advertised so the model can time its own work`() {
+        val params = schemaFor("wait").getJSONObject("function").getJSONObject("parameters")
+        val props = params.getJSONObject("properties")
+        assertTrue("seconds দরকার", props.has("seconds"))
+        assertTrue("until দরকার", props.has("until"))
+        assertTrue("command দরকার", props.has("command"))
+        assertTrue("contains দরকার", props.has("contains"))
+        // Nothing is required: a caller may sleep, poll, or both.
+        assertEquals(0, params.getJSONArray("required").length())
+    }
+
+    @Test
+    fun `the ci tool is advertised with its actions`() {
+        val params = schemaFor("github_actions").getJSONObject("function").getJSONObject("parameters")
+        val props = params.getJSONObject("properties")
+        assertTrue("action দরকার", props.has("action"))
+        assertTrue("repo দরকার", props.has("repo"))
+        assertTrue("workflow দরকার", props.has("workflow"))
+        assertTrue("run_id দরকার", props.has("run_id"))
+    }
+
+    @Test
+    fun `the scheduler tool is advertised with its timing fields`() {
+        val params = schemaFor("schedule_command").getJSONObject("function").getJSONObject("parameters")
+        val props = params.getJSONObject("properties")
+        assertTrue("action দরকার", props.has("action"))
+        assertTrue("command দরকার", props.has("command"))
+        assertTrue("in_seconds দরকার", props.has("in_seconds"))
+        assertTrue("at দরকার", props.has("at"))
+    }
+
+    @Test
+    fun `the build tool is advertised with variant and install`() {
+        val params = schemaFor("build_app").getJSONObject("function").getJSONObject("parameters")
+        val props = params.getJSONObject("properties")
+        assertTrue("variant দরকার", props.has("variant"))
+        assertTrue("install দরকার", props.has("install"))
+    }
 }

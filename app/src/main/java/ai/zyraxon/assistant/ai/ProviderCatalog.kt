@@ -49,7 +49,20 @@ data class ProviderSpec(
      */
     val realtimeModelPatterns: List<String> = emptyList(),
     /** Which wire protocol the realtime socket speaks. */
-    val realtimeProtocol: RealtimeProtocol = RealtimeProtocol.NONE
+    val realtimeProtocol: RealtimeProtocol = RealtimeProtocol.NONE,
+    /**
+     * True when this provider's chat endpoint accepts `reasoning_effort` to
+     * shorten a thinking model's wait. Sending it to a provider that does not
+     * understand it is a 400, so it is opt-in per provider and never assumed.
+     */
+    val supportsReasoningEffort: Boolean = false,
+    /**
+     * True when the provider wants Gemini's own shape,
+     * `extra_body.google.thinking_config.thinking_level`, instead of the
+     * OpenAI-style `reasoning_effort`. Google rejects the request when both are
+     * sent, so exactly one of the two is ever used.
+     */
+    val usesGeminiThinkingConfig: Boolean = false
 ) {
     enum class AuthStyle {
         /** `Authorization: Bearer <key>` */
@@ -149,7 +162,12 @@ object ProviderCatalog {
             // answers 404 "no longer available to new users"), so the first-run
             // seeds are the aliases Google keeps pointing at the current fast
             // model. The live catalogue replaces these as soon as it loads.
-            seedModels = listOf("gemini-flash-latest", "gemini-flash-lite-latest")
+            seedModels = listOf("gemini-flash-latest", "gemini-flash-lite-latest"),
+            // Google's OpenAI-compat layer takes Gemini's own thinking shape;
+            // `reasoning_effort` and `thinking_level` conflict, so only this one
+            // is sent. Without it a 2.5+ flash model thinks by default and the
+            // first token can take many seconds — the latency the user reported.
+            usesGeminiThinkingConfig = true
         ),
         ProviderSpec(
             id = "openai",
@@ -159,6 +177,9 @@ object ProviderCatalog {
             auth = ProviderSpec.AuthStyle.BEARER,
             speedRank = 3,
             category = "OpenAI",
+            // OpenAI reasoning models take `reasoning_effort`; non-reasoning
+            // models ignore it, so sending it is safe here.
+            supportsReasoningEffort = true,
             // Probed: wss://api.openai.com/v1/realtime answers.
             realtimeWsUrl = "wss://api.openai.com/v1/realtime",
             realtimeModelPatterns = listOf("realtime"),
@@ -209,7 +230,10 @@ object ProviderCatalog {
             // The directory is public, so models load even before a key is set.
             catalogIsPublic = true,
             speedRank = 7,
-            category = "OpenRouter"
+            category = "OpenRouter",
+            // OpenRouter normalises `reasoning_effort` across every reasoning
+            // model it proxies, which is exactly the knob that shortens the wait.
+            supportsReasoningEffort = true
         ),
         ProviderSpec(
             id = "opencode",

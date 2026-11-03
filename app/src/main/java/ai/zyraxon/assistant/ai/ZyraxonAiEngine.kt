@@ -96,12 +96,15 @@ class ZyraxonAiEngine(private val context: Context) {
     }
 
     private val client = OkHttpClient.Builder()
-        // A short connect timeout matters more than a long one: a provider that
-        // cannot be reached in eight seconds is not going to answer usefully, and
-        // waiting fifteen seconds per provider is what made a reply feel stuck.
-        .connectTimeout(8, TimeUnit.SECONDS)
-        .readTimeout(35, TimeUnit.SECONDS)
-        .writeTimeout(15, TimeUnit.SECONDS)
+        // No hardcoded limits anywhere. A fixed 35-second read cap used to cut
+        // off a model that was still thinking, and an 8-second connect cap gave
+        // up on a slow network before the request was even sent. Both are zero
+        // now, which means "wait for the socket's own result" — the OS still
+        // fails a genuinely unreachable host on its own, so nothing hangs
+        // forever, and no artificial timer decides when real work is over.
+        .connectTimeout(0, TimeUnit.MILLISECONDS)
+        .readTimeout(0, TimeUnit.MILLISECONDS)
+        .writeTimeout(0, TimeUnit.MILLISECONDS)
         .build()
 
     companion object {
@@ -273,6 +276,26 @@ class ZyraxonAiEngine(private val context: Context) {
     }
 
     /**
+     * Asks a thinking model to keep its thinking short, which is the single
+     * biggest lever on time-to-first-token. Only providers whose endpoint really
+     * accepts the parameter get it — an unknown field is a 400, not a hint — and
+     * Google takes its own shape instead of `reasoning_effort` (sending both is
+     * rejected). Thinking still happens and is still shown; only its length is
+     * capped, so the answer starts sooner without the user losing the reasoning.
+     */
+    private fun applyLatencyTuning(body: JSONObject, spec: ProviderSpec) {
+        if (spec.usesGeminiThinkingConfig) {
+            body.put("extra_body", JSONObject().put("google", JSONObject().put(
+                "thinking_config", JSONObject()
+                    .put("thinking_level", "low")
+                    .put("include_thoughts", true)
+            )))
+        } else if (spec.supportsReasoningEffort) {
+            body.put("reasoning_effort", "low")
+        }
+    }
+
+    /**
      * The headers for a provider call: the catalogue's static ones plus anything
      * that must be generated per request (OpenCode wants a fresh session id).
      */
@@ -387,7 +410,9 @@ class ZyraxonAiEngine(private val context: Context) {
                 .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36")
             ProviderCatalog.applyAuth(builder, spec, key, forCatalog = true)
             for ((name, value) in headersFor(spec)) builder.addHeader(name, value)
-            client.newBuilder().readTimeout(12, TimeUnit.SECONDS).build()
+            // Catalogue reads have no artificial cap either: a slow but working
+            // provider must still fill the model list instead of being dropped.
+            client.newBuilder().readTimeout(0, TimeUnit.MILLISECONDS).build()
                 .newCall(builder.build()).execute().use { response ->
                     val body = response.body?.string().orEmpty()
                     if (!response.isSuccessful) {
@@ -552,6 +577,16 @@ class ZyraxonAiEngine(private val context: Context) {
         append("কমান্ড-নির্ভর সবচেয়ে শক্তিশালী কাজগুলোর জন্য টার্মিনাল ব্যবহার করবে এবং কাজ শেষ না হওয়া পর্যন্ত থামবে না। ")
         append("কোথায় চালাচ্ছ, কী আছে, কীভাবে — এসব তুমি নিজেই টুল কল করে জেনে নেবে।\n")
         append("- Call tools through the function-calling interface, never as text.\n")
+        append("- সময় ধরে কাজ: কমান্ড চালু করে সাথে সাথে সিদ্ধান্ত নিও না। ধীর কাজ (বিল্ড, ইনস্টল, সার্ভার, ডিপ্লয়) শুরু করার পর `wait` দিয়ে অপেক্ষা করো, ")
+        append("আর যা নিজে নিজে সত্যি হবে (পোর্ট খোলা, ফাইল আসা, URL সাড়া দেওয়া) তা `wait` দিয়ে পোল করো — ")
+        append("অনুমান করে আগেই \"হয়ে গেছে\" বলো না, আর বারবার চেক করতে লুপে ঘুরোও না।\n")
+        append("- অনেক দীর্ঘ কাজ (বড় ডাউনলোড, ক্লোন, বিল্ড) `background_command` দিয়ে চালাও যাতে অ্যাপ বন্ধ হলেও চলে; ")
+        append("শেষ হলে নোটিফিকেশন আসে — ততক্ষণ অন্য দরকারি কাজ করো বা `wait`-এ অপেক্ষা করো।\n")
+        append("- পরে নিজে থেকে চালাতে হবে (\"১০ মিনিট পরে\", \"রাত ২টায়\") — এমন কাজ `schedule_command` দিয়ে সময় দিয়ে বুক করো; ")
+        append("টাইমারটা অ্যান্ড্রয়েড ধরে রাখে, তাই অ্যাপ বন্ধ থাকলেও কাজ চলবে আর শেষে তোমাকে জানানো হবে।\n")
+        append("- CI/CD: GitHub Actions আছে `github_actions` দিয়ে (list/dispatch/runs/status/logs) — ")
+        append("dispatch করে `wait` দিয়ে status পোল করো, লাল হলে logs পড়ে কারণ নিজে বুঝে ঠিক করো।\n")
+        append("- অ্যাপ নিজে বানাতে/ইনস্টল করতে `build_app` আছে — আসল Gradle বিল্ড চালিয়ে তৈরি APK ইনস্টলারের কাছে দেয়।\n")
 
         // MCP: the connected servers' tools are already injected as real tool
         // schemas this turn, so nothing about them is repeated here. The model
@@ -613,6 +648,9 @@ class ZyraxonAiEngine(private val context: Context) {
         screenContext: String = "",
         imageDataUrl: String = "",
         imageDataUrls: List<String> = emptyList(),
+        // Whether the running job may re-read the phone's screen between steps.
+        // One picture per round, never two; a screen action's own frame counts
+        // as that round's picture.
         alwaysSeeScreen: Boolean = true,
         onToolCall: suspend (name: String, args: JSONObject) -> JSONObject = { _, _ ->
             JSONObject().put("ok", false).put("summary", "টুল চালানোর অনুমতি নেই")
@@ -672,8 +710,6 @@ class ZyraxonAiEngine(private val context: Context) {
                 }
                 val (name, args) = call
                 val outcome = onToolCall(name, args)
-                val summary = outcome.optString("summary").take(160).ifBlank { "সম্পন্ন" }
-                trySend("\n\n⚙️ `$name` → $summary\n\n")
                 val result = outcome.toString().let { if (it.length > 1200) it.take(1200) + "…" else it }
                 convo.append(" ").append(out.trim()).append("\nTool result: ").append(result).append("\nAssistant:")
                 answered = true
@@ -715,9 +751,9 @@ class ZyraxonAiEngine(private val context: Context) {
         // the turn.
         var nudges = 0
         var lastActionWasScreenChange = false
-        // Whether the previous round already pushed a fresh frame in. The
-        // always-see injection below skips a round that already has one, so the
-        // same picture is never sent twice in a row.
+        // Whether this round already carries a picture of the phone. The
+        // running-screen injection below adds one only when this is false, so a
+        // round never sends two shots — a screen action's own frame is enough.
         var screenFrameInjected = false
         // What the judge is shown: what was done so far, and what the screen looks like.
         val actionLog = mutableListOf<String>()
@@ -750,34 +786,25 @@ class ZyraxonAiEngine(private val context: Context) {
                     "⚠️ এখনো অসম্পূর্ণ কাজ (todo):\n" + open.joinToString("\n") { "- $it" } +
                         "\nএই কাজ শেষ না হওয়া পর্যন্ত তুমি থামবে না। পরের ধাপ নিজেই বেছে নাও এবং টুল কল করো।"))
             }
-            // Always-see mode: a long running job re-reads the screen every round,
-            // so the model keeps working from what is actually on the phone rather
-            // than from what it remembers a few steps back. The user's "every two
-            // seconds while it is running" is served by the live frame channel
-            // below; this is the once-per-round version that costs one picture
-            // instead of one every two seconds. A round that already carries a
-            // fresh frame (the tool path just above) is skipped so nothing is
-            // sent twice.
+            // While a job is actually running, the phone's screen is re-read so
+            // the model keeps working from what is on it now rather than from
+            // what it remembers a few steps back. Exactly one picture per round:
+            // the ticker's newest frame leads (it was captured while the model
+            // was still thinking about the last one), and a fresh capture is
+            // taken only when the ticker produced nothing. The user's rule is
+            // "one shot in the background while it runs" — two shots per round
+            // was the bug this replaces.
             if (alwaysSeeScreen && !screenFrameInjected) {
-                // The ticker's frames lead: they are the newest picture of the
-                // phone, captured while the model was still thinking about the
-                // last one. When the ticker produced nothing (screen unchanged),
-                // take a fresh capture now so the model is never working blind.
                 val liveFrames = try { drainScreenFrames() } catch (_: Exception) { emptyList() }
-                val shots = liveFrames.takeLast(2).toMutableList()
-                if (shots.isEmpty()) {
-                    val liveShot = try { screenFrame() } catch (_: Exception) { "" }
-                    if (liveShot.isNotBlank()) shots.add(liveShot)
-                }
-                if (shots.isNotEmpty()) {
+                val shot = liveFrames.lastOrNull()
+                    ?: (try { screenFrame() } catch (_: Exception) { "" })
+                if (shot.isNotBlank()) {
                     val parts = JSONArray().apply {
                         put(JSONObject().put("type", "text")
-                            .put("text", "📱 এখনকার স্ক্রিন (প্রতি ধাপে নিজে থেকে দেখা)। " +
+                            .put("text", "📱 এখনকার স্ক্রিন (চলমান কাজ — প্রতি ধাপে একটি ছবি)। " +
                                 "এই ছবি দেখে ঠিক করো পরের ধাপ কী — ব্যবহারকারীকে জিজ্ঞাসা কোরো না।"))
-                        for (shot in shots) {
-                            put(JSONObject().put("type", "image_url")
-                                .put("image_url", JSONObject().put("url", shot)))
-                        }
+                        put(JSONObject().put("type", "image_url")
+                            .put("image_url", JSONObject().put("url", shot)))
                     }
                     messages.put(JSONObject().put("role", "user").put("content", parts))
                     screenFrameInjected = true
@@ -940,11 +967,10 @@ class ZyraxonAiEngine(private val context: Context) {
 
             for ((id, name, args) in parsed) {
                 val outcome = outcomes[id] ?: continue
-                // Show what the tool actually returned, so the user watches the
-                // work happen instead of staring at a frozen cursor.
-                val summary = outcome.optString("summary").take(200)
-                trySend("\n\n⚙️ `$name` → ${summary.ifBlank { "সম্পন্ন" }}\n\n")
-                actionLog.add("$name → ${summary.ifBlank { "সম্পন্ন" }}" +
+                // The chat shows a live row for this call while it runs and its
+                // result when it ends, so nothing is echoed into the answer text —
+                // a "⚙️ tool → …" line here would only be noise beside it.
+                actionLog.add("$name → ${outcome.optString("summary").take(200).ifBlank { "সম্পন্ন" }}" +
                     (if (outcome.optBoolean("ok", true)) "" else " [ব্যর্থ]"))
                 if (actionLog.size > 25) actionLog.removeAt(0)
 
@@ -1251,6 +1277,7 @@ class ZyraxonAiEngine(private val context: Context) {
             .put("tool_choice", "auto")
             .put("max_tokens", 8000)
             .put("stream", true)
+        applyLatencyTuning(body, spec)
         sse.stream(
             ProviderCatalog.urlFor(spec, key, forCatalog = false),
             key,
@@ -1289,6 +1316,7 @@ class ZyraxonAiEngine(private val context: Context) {
             .put("tool_choice", "auto")
             .put("max_tokens", 8000)
             .put("stream", true)
+        applyLatencyTuning(body, spec)
         sse.stream(
             ProviderCatalog.urlFor(spec, key, forCatalog = false),
             key,
@@ -1414,6 +1442,7 @@ class ZyraxonAiEngine(private val context: Context) {
                 .put("tools", tools)
                 .put("tool_choice", "auto")
                 .put("max_tokens", 8000)
+            applyLatencyTuning(body, spec)
             builder.post(body.toString().toRequestBody("application/json".toMediaType()))
             client.newCall(builder.build()).execute().use { response ->
                 val raw = response.body?.string().orEmpty()

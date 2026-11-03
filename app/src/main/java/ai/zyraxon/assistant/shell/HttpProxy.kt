@@ -94,7 +94,7 @@ object HttpProxy {
 
     private fun handle(client: Socket) {
         try {
-            client.soTimeout = 60_000
+            client.soTimeout = 0
             val input = BufferedInputStream(client.getInputStream())
             val head = readHead(input) ?: run { client.close(); return }
             val requestLine = head.lineSequence().firstOrNull()?.trim() ?: ""
@@ -143,7 +143,7 @@ object HttpProxy {
         val host = target.substring(0, idx)
         val portNum = target.substring(idx + 1).toIntOrNull() ?: 443
         val upstream = Socket(host, portNum)
-        upstream.soTimeout = 60_000
+        upstream.soTimeout = 0
         client.getOutputStream().apply {
             write("HTTP/1.1 200 Connection established\r\n\r\n".toByteArray())
             flush()
@@ -167,8 +167,8 @@ object HttpProxy {
         val conn = (URL(target).openConnection() as HttpURLConnection)
         try {
             conn.requestMethod = method
-            conn.connectTimeout = 30_000
-            conn.readTimeout = 60_000
+            conn.connectTimeout = 0
+            conn.readTimeout = 0
             conn.instanceFollowRedirects = true
             conn.setRequestProperty("User-Agent", "ZYRAXON/1.0 (Android)")
             // Pass the client's own headers through, minus hop-by-hop ones.
@@ -247,8 +247,8 @@ object HttpProxy {
     fun download(url: String, dest: File, userAgent: String = "ZYRAXON/1.0 (Android)"): Long {
         dest.parentFile?.mkdirs()
         val conn = (URL(url).openConnection() as HttpURLConnection).apply {
-            connectTimeout = 30_000
-            readTimeout = 120_000
+            connectTimeout = 0
+            readTimeout = 0
             instanceFollowRedirects = true
             setRequestProperty("User-Agent", userAgent)
         }

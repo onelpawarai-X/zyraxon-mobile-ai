@@ -102,8 +102,10 @@ data class Version(val major: Int, val minor: Int, val patch: Int) : Comparable<
 class Updater(private val context: Context) {
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(20, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
+        // No deadline: a slow update check must not be cut off, and nothing here
+        // is on the critical path of a reply.
+        .connectTimeout(0, TimeUnit.MILLISECONDS)
+        .readTimeout(0, TimeUnit.MILLISECONDS)
         .build()
 
     val currentVersion: Version =

@@ -13,6 +13,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
@@ -43,9 +44,9 @@ class RemoteTtsPlayer(
     private val client = OkHttpClient.Builder()
         // The first bytes must arrive quickly or the voice feels late; a hung
         // connection is abandoned so the phone's engine can take over.
-        .connectTimeout(6, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
-        .writeTimeout(10, TimeUnit.SECONDS)
+        .connectTimeout(0, TimeUnit.MILLISECONDS)
+        .readTimeout(0, TimeUnit.MILLISECONDS)
+        .writeTimeout(0, TimeUnit.MILLISECONDS)
         .build()
 
     private val queue = ArrayDeque<Piece>()
@@ -207,17 +208,28 @@ class RemoteTtsPlayer(
         // The stream attempt and the download run at the same time. Pointing the
         // player at the URL is the fast path — it starts on the first bytes — but
         // not every device accepts a chunked stream with no declared length. The
-        // old code waited the whole prepare timeout (8s) before it even started
-        // the download, and that single wait, once per sentence, is what made the
-        // voice fall silent for seconds between words. Racing the two means the
-        // file is usually already in hand the moment the stream attempt gives up.
+        // old code waited a fixed timeout (8s) before it even started the
+        // download, and that single wait, once per sentence, is what made the
+        // voice fall silent between words.
+        //
+        // The race is decided by events, not by a clock: whichever finishes first
+        // wins. If the stream is ready first it plays; if the file lands first the
+        // stream attempt is dropped and the file plays. No timer is involved, so
+        // nothing is cut off early and nothing waits on a number someone guessed.
         //
         // Once a stream attempt has failed, the device has proven it will not take
-        // this shape, so later pieces skip the attempt and go straight to the file
-        // — no repeated wait for a path that cannot work here.
+        // this shape, so later pieces skip the attempt and go straight to the file.
         if (streamUsable) {
             val downloadJob = downloadScope.async { download(piece.url) }
-            if (playSource(piece.url, STREAM_START_TIMEOUT_MS)) {
+            val dropStream = CompletableDeferred<Unit>()
+            // The file landing first is the signal that this device is not going
+            // to accept the stream, so the attempt is released rather than left to
+            // hang.
+            downloadScope.launch {
+                val landed = downloadJob.await()
+                if (landed != null) dropStream.complete(Unit)
+            }
+            if (playSource(piece.url, 0L, dropStream)) {
                 // The stream is playing. The parallel download may still land, so
                 // its file is deleted once it arrives rather than left in the cache.
                 downloadScope.launch { downloadJob.await()?.delete() }
@@ -246,16 +258,24 @@ class RemoteTtsPlayer(
     }
 
     /**
-     * Points a fresh player at [source] and waits for the last note. A source
-     * that has not started within the timeout is given up on, so a stream the
-     * device will not accept costs a few seconds, not the whole reply.
+     * Points a fresh player at [source] and waits for the last note.
+     *
+     * There is no fixed deadline. [timeoutMs] of zero means wait for the player
+     * itself to say it is ready or failed. [dropStream] is an event, not a clock:
+     * when the parallel download lands first, this attempt is released because
+     * the device has shown it will not accept a chunked stream, and waiting
+     * longer would only delay the sentence.
      *
      * `prepareAsync` is used, never `prepare`: a synchronous prepare on the main
      * thread would freeze the UI for as long as the network takes.
      */
     private var enhancer: android.media.audiofx.LoudnessEnhancer? = null
 
-    private suspend fun playSource(source: String, timeoutMs: Long = PREPARE_TIMEOUT_MS): Boolean = withContext(Dispatchers.Main) {
+    private suspend fun playSource(
+        source: String,
+        timeoutMs: Long = PREPARE_TIMEOUT_MS,
+        dropStream: CompletableDeferred<Unit>? = null
+    ): Boolean = withContext(Dispatchers.Main) {
         val mp = MediaPlayer()
         try {
             mp.setAudioAttributes(
@@ -290,7 +310,25 @@ class RemoteTtsPlayer(
             }
             player = mp
             mp.prepareAsync()
-            val started = withTimeoutOrNull(timeoutMs) { prepared.await() } ?: false
+            val started = when {
+                timeoutMs > 0L -> withTimeoutOrNull(timeoutMs) { prepared.await() } ?: false
+                dropStream != null -> {
+                    // Whichever speaks first wins: the player, or the download
+                    // that already made this attempt unnecessary.
+                    val released = CompletableDeferred<Boolean>()
+                    val watcher = launch {
+                        dropStream.await()
+                        if (!prepared.isCompleted) released.complete(false)
+                    }
+                    val ok = select<Boolean> {
+                        prepared.onAwait { it }
+                        released.onAwait { it }
+                    }
+                    watcher.cancel()
+                    ok
+                }
+                else -> prepared.await()
+            }
             if (!started) {
                 release(mp)
                 return@withContext false
@@ -387,14 +425,11 @@ class RemoteTtsPlayer(
         /** Extra loudness for the voice, in millibels (1000 = +10 dB). */
         const val VOICE_GAIN_MB = 1200
 
-        /** How long a source may take to start before it is abandoned. */
-        const val PREPARE_TIMEOUT_MS = 8_000L
-
         /**
-         * How long the streaming path gets before the already-downloading file
-         * takes over. Kept short: the file usually arrives in about a second, and
-         * waiting longer is what put a silent gap between the sentences.
+         * How long a source may take to start before it is abandoned. Zero means
+         * no deadline: a slow network is allowed to finish instead of the voice
+         * being cut off mid-sentence.
          */
-        const val STREAM_START_TIMEOUT_MS = 1_800L
+        const val PREPARE_TIMEOUT_MS = 0L
     }
 }

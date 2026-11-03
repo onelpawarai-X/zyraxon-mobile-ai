@@ -301,7 +301,7 @@ class McpClientTest {
                 }
             }.apply { isDaemon = true; start() }
 
-            assertEquals("abc123", listener.awaitCode(timeoutSeconds = 20))
+            assertEquals("abc123", listener.awaitCode())
             worker.join(2000)
         } finally {
             listener.close()
@@ -321,7 +321,7 @@ class McpClientTest {
                         .openConnection() as HttpURLConnection).inputStream.readBytes()
                 }
             }.apply { isDaemon = true; start() }
-            assertEquals("real-code", listener.awaitCode(timeoutSeconds = 20))
+            assertEquals("real-code", listener.awaitCode())
             worker.join(2000)
         } finally {
             listener.close()

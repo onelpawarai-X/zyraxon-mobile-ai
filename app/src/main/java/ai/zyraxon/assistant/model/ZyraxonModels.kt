@@ -104,7 +104,11 @@ data class ToolExecutionItem(
     val description: String,
     val icon: String,
     val status: String,
-    val timestamp: String
+    val timestamp: String,
+    /** The call's own output so far, streamed while it runs. */
+    val output: String = "",
+    /** True from the instant the call is made until its result arrives. */
+    val running: Boolean = false
 )
 
 data class MemoryItem(

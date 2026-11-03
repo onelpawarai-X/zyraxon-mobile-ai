@@ -3,13 +3,14 @@ package ai.zyraxon.assistant.ui.components
 import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.model.ChatMessage
 import ai.zyraxon.assistant.model.MessageRole
+import ai.zyraxon.assistant.model.ToolExecutionItem
 import ai.zyraxon.assistant.ui.theme.Glass
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
-import ai.zyraxon.assistant.ui.components.rememberLiveTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -58,6 +59,7 @@ fun MessageBubble(
     message: ChatMessage,
     onSpeak: (String) -> Unit,
     onCopy: (String) -> Unit,
+    liveTools: List<ToolExecutionItem> = emptyList(),
     modifier: Modifier = Modifier
 ) {
     val isUser = message.role == MessageRole.USER
@@ -169,6 +171,24 @@ fun MessageBubble(
                 }
             }
 
+            // Live tool rows. Each call the model makes gets a row the moment it
+            // starts, with a spinner and the command's own output growing under it
+            // as the output arrives, so a long job is visibly working instead of
+            // looking like a frozen cursor. Rows disappear when the call ends —
+            // the result is kept in the Tools tab.
+            if (!isUser && liveTools.isNotEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 6.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    liveTools.forEach { tool ->
+                        LiveToolRow(tool)
+                    }
+                }
+            }
+
             // Text Body. Selectable, so a word or the whole answer can be picked
             // the way a chat app does it; a long press copies the whole message.
             SelectionContainer {
@@ -235,6 +255,100 @@ fun MessageBubble(
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * One live tool call: a spinner, the tool's name and a one-line description, and
+ * the output it has produced so far, scrollable and growing as the call runs.
+ * The whole row is tappable so the output can be read in full.
+ */
+@Composable
+fun LiveToolRow(tool: ToolExecutionItem) {
+    var expanded by remember(tool.id) { mutableStateOf(true) }
+    val transition = rememberLiveTransition(label = "tool_spin")
+    val spin by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "tool_spin_angle"
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color(0x33000000))
+            .border(1.dp, Glass.cyanFill.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
+            .padding(horizontal = 8.dp, vertical = 6.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = !expanded },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            // The ring only turns while the call is running; a finished call shows
+            // a static dot. The rotation is the "working" signal.
+            if (tool.running) {
+                androidx.compose.foundation.Canvas(modifier = Modifier.size(14.dp)) {
+                    val stroke = 2.dp.toPx()
+                    val inset = stroke / 2f
+                    drawArc(
+                        color = Color(0xFF38E8FF),
+                        startAngle = spin,
+                        sweepAngle = 260f,
+                        useCenter = false,
+                        topLeft = androidx.compose.ui.geometry.Offset(inset, inset),
+                        size = androidx.compose.ui.geometry.Size(
+                            size.width - stroke, size.height - stroke
+                        ),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(
+                            width = stroke, cap = androidx.compose.ui.graphics.StrokeCap.Round
+                        )
+                    )
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(Glass.cyanFill)
+                )
+            }
+            Text(
+                text = tool.icon + " " + tool.name,
+                color = Glass.textPrimary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+            if (tool.description.isNotBlank()) {
+                Text(
+                    text = tool.description,
+                    color = Glass.textMuted,
+                    fontSize = 11.sp,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+        if (expanded && tool.output.isNotBlank()) {
+            Text(
+                text = tool.output.trimEnd('\n'),
+                color = Glass.cyanFill.copy(alpha = 0.9f),
+                fontSize = 10.5.sp,
+                lineHeight = 14.sp,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                maxLines = 12,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp)
+            )
         }
     }
 }

@@ -154,6 +154,12 @@
             </intent-filter>
         </receiver>
 
+        <!-- Fires a command the user booked for later. The timer lives in
+             AlarmManager, so it survives this app being closed. -->
+        <receiver
+            android:name="ai.zyraxon.assistant.shell.ScheduledCommandReceiver"
+            android:exported="false" />
+
         <!-- Lets a shared image be attached to a channel post without exposing
              the app's private storage. -->
         <provider

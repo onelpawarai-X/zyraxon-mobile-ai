@@ -66,9 +66,11 @@ class McpClient(
         /** Shared: MCP servers are often slow to answer a tools/list. */
         private val http: OkHttpClient by lazy {
             OkHttpClient.Builder()
-                .connectTimeout(20, TimeUnit.SECONDS)
-                .readTimeout(90, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
+                // No deadline: a slow server must be allowed to finish rather
+                // than being cut off mid-answer.
+                .connectTimeout(0, TimeUnit.MILLISECONDS)
+                .readTimeout(0, TimeUnit.MILLISECONDS)
+                .writeTimeout(0, TimeUnit.MILLISECONDS)
                 .retryOnConnectionFailure(true)
                 .build()
         }
@@ -76,9 +78,9 @@ class McpClient(
         /** The notification channel is meant to stay open, so it never times out. */
         private val longLived: OkHttpClient by lazy {
             OkHttpClient.Builder()
-                .connectTimeout(20, TimeUnit.SECONDS)
+                .connectTimeout(0, TimeUnit.MILLISECONDS)
                 .readTimeout(0, TimeUnit.MILLISECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(0, TimeUnit.MILLISECONDS)
                 .retryOnConnectionFailure(true)
                 .build()
         }

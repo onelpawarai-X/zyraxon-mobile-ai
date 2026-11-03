@@ -25,6 +25,7 @@ import ai.zyraxon.assistant.model.TerminalShell
 import ai.zyraxon.assistant.model.ToolExecutionItem
 import ai.zyraxon.assistant.model.WorkspaceFile
 import ai.zyraxon.assistant.shell.GitRuntime
+import ai.zyraxon.assistant.shell.BackgroundCommandService
 import ai.zyraxon.assistant.shell.ShellRuntime
 import ai.zyraxon.assistant.shell.ShizukuBundle
 import ai.zyraxon.assistant.shell.ShizukuState
@@ -61,6 +62,14 @@ import org.json.JSONObject
 import java.util.UUID
 
 class ZyraxonViewModel(application: Application) : AndroidViewModel(application) {
+
+    /**
+     * Panel tools that only rearrange the UI. They are instant, so they get no
+     * live row on the chat — the panel opening is its own feedback.
+     */
+    private val UI_ONLY_TOOLS = setOf(
+        "todo_write", "code_box", "files_panel", "terminal_open", "floating_bubble"
+    )
 
     private val prefs = application.getSharedPreferences("zyraxon_vm_prefs", Context.MODE_PRIVATE)
 
@@ -522,6 +531,91 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     )
     val toolExecutions: StateFlow<List<ToolExecutionItem>> = _toolExecutions.asStateFlow()
 
+    /**
+     * The tool calls running right now, newest first.
+     *
+     * A call is added the instant it is made and removed when its result
+     * arrives, so the chat can show a live row with a spinner and the command's
+     * own output as it streams. This is what makes a long call visible while it
+     * runs instead of only after it has finished.
+     */
+    private val _activeToolCalls = MutableStateFlow<List<ToolExecutionItem>>(emptyList())
+    val activeToolCalls: StateFlow<List<ToolExecutionItem>> = _activeToolCalls.asStateFlow()
+
+    /**
+     * Tool calls run in parallel, so several threads touch the live list at once.
+     * Every mutation is done inside this lock, which is a plain synchronized
+     * block and never suspends, so it is safe on any dispatcher.
+     */
+    private val toolCallsLock = Any()
+
+    private inline fun updateActiveToolCalls(block: (List<ToolExecutionItem>) -> List<ToolExecutionItem>) {
+        synchronized(toolCallsLock) { _activeToolCalls.value = block(_activeToolCalls.value) }
+    }
+
+    /** Icon per tool family, for the live row. */
+    private fun toolIcon(name: String): String = when {
+        name == "run_shell" || name == "system_shell" || name == "linux_run" || name == "terminal_run" -> "⌨️"
+        name == "read_file" || name == "write_file" || name == "edit_file" || name == "list_dir" ||
+            name == "find_files" || name == "grep_files" || name == "delete_file" -> "📄"
+        name == "web_search" || name == "read_url" || name == "http_request" || name == "verify_url" -> "🌐"
+        name == "download_file" || name == "publish_website" || name == "publish_github" -> "☁️"
+        name.startsWith("publish_") -> "🚀"
+        name == "screen_shot" || name == "read_screen" || name == "look_camera" -> "👁"
+        name == "tap" || name == "tap_text" || name == "swipe" || name == "type_text" || name == "press_key" -> "👆"
+        name.startsWith("git") -> "🌿"
+        name.contains("__") -> "🔌"
+        else -> "⚙️"
+    }
+
+    /** Opens a live row for a call the moment it is made. */
+    private fun beginToolCall(name: String, args: JSONObject): String {
+        val id = UUID.randomUUID().toString()
+        val item = ToolExecutionItem(
+            id = id,
+            name = name,
+            description = describeToolCall(name, args),
+            icon = toolIcon(name),
+            status = "চলছে…",
+            timestamp = currentTimeString(),
+            running = true
+        )
+        updateActiveToolCalls { list -> listOf(item) + list }
+        return id
+    }
+
+    /** Streams a line of a running call's output into its live row. */
+    private fun appendToolOutput(id: String, line: String) {
+        if (line.isBlank()) return
+        updateActiveToolCalls { list ->
+            list.map { item ->
+                if (item.id != id) item
+                else item.copy(output = (item.output + line.trimEnd('\n') + "\n").takeLast(8_000))
+            }
+        }
+    }
+
+    /** Closes the live row and moves it into the Tools history. */
+    private fun finishToolCall(id: String, name: String, result: JSONObject) {
+        val live = _activeToolCalls.value.firstOrNull { it.id == id }
+        updateActiveToolCalls { list -> list.filterNot { it.id == id } }
+        recordToolExecution(
+            name = name,
+            result = result,
+            output = live?.output.orEmpty()
+        )
+    }
+
+    /** A short, human line for the live row, taken from the call's arguments. */
+    private fun describeToolCall(name: String, args: JSONObject): String {
+        val keys = listOf("command", "path", "url", "query", "text", "name", "title", "action", "prompt", "package", "app")
+        for (k in keys) {
+            val v = args.optString(k).trim()
+            if (v.isNotBlank()) return "$k: ${v.take(120)}"
+        }
+        return name
+    }
+
     // Live panels the model opens through tools
     // While a turn is running, new user words are injected into that same turn
     // instead of starting a second one, so the assistant never stops mid-task.
@@ -622,6 +716,26 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     init {
         active = this
+        // A background command outlives this screen, so the callback is registered
+        // here, not per turn. When such a command ends, the assistant is woken in
+        // a fresh turn with the real result, instead of waiting for the user to
+        // ask what happened — the reason `background_command` was worth having.
+        BackgroundCommandService.onFinished = { command, exit, output ->
+            onBackgroundFinished(command, exit, output)
+        }
+        // A job that was running when the app was last killed is reported once,
+        // here, instead of being silently forgotten.
+        viewModelScope.launch(Dispatchers.IO) {
+            val saved = BackgroundCommandService.saved(getApplication())
+            if (saved != null && saved.interrupted) {
+                BackgroundCommandService.clearSaved(getApplication())
+                val note = "[সেভ করা ব্যাকগ্রাউন্ড কাজ] `" + saved.command +
+                    "` অ্যাপ বন্ধ হওয়ার সময় কাটা পড়েছিল (শেষ exit " + saved.exit + ")।\n" +
+                    "আউটপুট (শেষ অংশ):\n```\n" + saved.output.takeLast(2_000) + "\n```\n" +
+                    "কাজটি সম্পূর্ণ হয়নি — কী করবে বলো বা নিজে আবার শুরু করো।"
+                withContext(Dispatchers.Main) { sendMessage(note) }
+            }
+        }
         // A server's sampling request runs on whatever model the user picked, so
         // it is answered by the same brain as the chat rather than a fixed one.
         aiEngine.samplingModelProvider = { _selectedModel.value }
@@ -1462,6 +1576,33 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch { repository.saveMessage(finished) }
     }
 
+    /**
+     * A background command has ended. Rather than waiting to be asked, the
+     * assistant starts a fresh turn with the real command, exit code and output,
+     * so it can read the result and carry the job forward on its own.
+     *
+     * When a turn is already in flight the result is queued into that turn's
+     * injection slot — the engine picks it up at the next round — so two turns
+     * never run at once.
+     */
+    private fun onBackgroundFinished(command: String, exit: Int, output: String) {
+        val tail = output.takeLast(4_000)
+        val wake = buildString {
+            append("[ব্যাকগ্রাউন্ড কমান্ড শেষ] `").append(command).append("` — exit ").append(exit).append("।\n")
+            append("আউটপুট (শেষ অংশ):\n```\n").append(tail).append("\n```\n")
+            append("ফলাফল দেখে নিজে পরের ধাপ নাও; দরকার হলে আবার টুল কল করো।")
+        }
+        // The callback arrives on the service's own thread; the chat state is
+        // touched on the main thread, as every other turn does.
+        android.os.Handler(android.os.Looper.getMainLooper()).post {
+            if (_isGenerating.value) {
+                pendingInjections.add(wake)
+            } else {
+                sendMessage(wake)
+            }
+        }
+    }
+
     fun sendMessage(overridePrompt: String? = null) {
         val hasAttachments = _attachedImages.value.isNotEmpty()
         val prompt = (overridePrompt ?: _inputText.value).trim()
@@ -1641,6 +1782,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             } finally {
                 _isGenerating.value = false
                 stopLiveFrameTicker()
+                // A row can only be left behind if a call threw outside the tool
+                // wrapper; clearing here means the chat never keeps a stale
+                // "running" row after the turn has ended.
+                updateActiveToolCalls { emptyList() }
                 // Speak the leftover sentence, then hand the microphone back
                 // exactly once, after the engine has finished the last word.
                 if (speakingReply && spokenBuffer.isNotBlank()) {
@@ -1893,17 +2038,31 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /**
-     * Run one tool the model asked for and show it on the Tools tab. The result
-     * is what actually happened — the model reads it back on the next round.
+     * Runs one tool the model asked for and keeps a live row for it on the chat
+     * and the Tools tab: the row opens the moment the call is made, the tool's
+     * own output streams into it while it runs, and it closes into the history
+     * when the result arrives. A panel tool that only changes the UI (opening the
+     * terminal, the code box, the file panel) is instant and needs no row.
      */
     private suspend fun runTool(name: String, args: JSONObject): JSONObject {
+        if (name in UI_ONLY_TOOLS) return runToolInner(name, args, null)
+        val id = beginToolCall(name, args)
+        val result = try {
+            runToolInner(name, args) { line -> appendToolOutput(id, line) }
+        } catch (e: Exception) {
+            JSONObject().put("ok", false)
+                .put("summary", "টুল চলেনি: ${e.message ?: e.toString()}")
+        }
+        finishToolCall(id, name, result)
+        return result
+    }
+
+    private suspend fun runToolInner(name: String, args: JSONObject, live: ((String) -> Unit)? = null): JSONObject {
         // MCP: a name carrying "<serverId>__<tool>" is a tool a connected server
         // advertised, so it goes straight to that server. The three management
         // tools below let the assistant connect and inspect servers by itself.
         if (name.contains("__")) {
-            val result = aiEngine.mcp.callTool(name, args)
-            recordToolExecution(name, result)
-            return result
+            return aiEngine.mcp.callTool(name, args)
         }
         when (name) {
             "mcp_connect" -> return runMcpConnect(args)
@@ -1957,7 +2116,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 _activeTab.value = AppTab.TERMINAL
                 return JSONObject().put("ok", true).put("summary", "টার্মিনাল খোলা হয়েছে")
             }
-            "terminal_run" -> return runInTerminalShell(args)
+            "terminal_run" -> return runInTerminalShell(args, live)
             "memory_write" -> {
                 val key = args.optString("key").trim()
                 val value = args.optString("value").trim()
@@ -2009,21 +2168,25 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             }
         }
 
-        val result = ToolRegistry.execute(getApplication(), name, args)
-        recordToolExecution(name, result)
-        return result
+        // The live sink is handed to the registry so `run_shell`, `system_shell`
+        // and `linux_run` can stream their output into the live row as it is
+        // produced, instead of only when they return.
+        return ToolRegistry.execute(getApplication(), name, args, live)
     }
 
     /** Shows a tool on the Tools tab and keeps any picture it produced. */
-    private fun recordToolExecution(name: String, result: JSONObject) {
+    private fun recordToolExecution(name: String, result: JSONObject, output: String = "") {
         val item = ToolExecutionItem(
             name = name,
             description = result.optString("summary"),
             icon = if (result.optBoolean("ok")) "✅" else "⚠️",
             status = if (result.optBoolean("ok")) "সম্পন্ন" else "ব্যর্থ",
-            timestamp = currentTimeString()
+            timestamp = currentTimeString(),
+            output = output.takeLast(8_000)
         )
-        _toolExecutions.value = listOf(item) + _toolExecutions.value.take(49)
+        synchronized(toolCallsLock) {
+            _toolExecutions.value = listOf(item) + _toolExecutions.value.take(49)
+        }
 
         // When a tool returns a picture, keep it so the next model turn can look
         // at it. Without this the camera and media tools would capture an image
@@ -2158,7 +2321,6 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val uri = resolveQualifiedUri(args.optString("uri").trim())
             ?: return JSONObject().put("ok", false).put("summary", "uri দরকার")
         val result = aiEngine.mcp.readResource(uri)
-        recordToolExecution("mcp_read_resource", result)
         return result
     }
 
@@ -2189,7 +2351,6 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             if (owner != null) name = "${owner.serverId}__$name"
         }
         val result = aiEngine.mcp.getPrompt(name, args.optJSONObject("arguments") ?: JSONObject())
-        recordToolExecution("mcp_prompt", result)
         return result
     }
 
@@ -2206,7 +2367,6 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         } else {
             aiEngine.mcp.unsubscribeResource(serverId, uri)
         }
-        recordToolExecution("mcp_subscribe", result)
         return result
     }
 
@@ -2225,7 +2385,6 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         }
         if (ref.isBlank()) return JSONObject().put("ok", false).put("summary", "কোনো ref পাওয়া যায়নি")
         val result = aiEngine.mcp.complete(server, kind, ref, argument, args.optString("value"))
-        recordToolExecution("mcp_complete", result)
         return result
     }
 
@@ -2233,7 +2392,6 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val server = args.optString("server").trim().lowercase()
         if (server.isBlank()) return JSONObject().put("ok", false).put("summary", "server দরকার")
         val result = aiEngine.mcp.ping(server)
-        recordToolExecution("mcp_ping", result)
         return result
     }
 
@@ -2244,7 +2402,6 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             return JSONObject().put("ok", false).put("summary", "server আর level দরকার")
         }
         val result = aiEngine.mcp.setLogLevel(server, level)
-        recordToolExecution("mcp_log_level", result)
         return result
     }
 
@@ -2330,7 +2487,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /** The body of a terminal line, shared by the user's typing and `terminal_run`. */
-    private suspend fun runTerminalLine(line: String, timeoutMs: Long = 0): TerminalLine {
+    private suspend fun runTerminalLine(
+        line: String,
+        timeoutMs: Long = 0,
+        onOutput: ((String) -> Unit)? = null
+    ): TerminalLine {
         val app = getApplication<Application>()
         val home = ShellRuntime.home(app)
         // `cd` is stateful: it changes where the *next* line runs, so it is
@@ -2352,7 +2513,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // A Linux session is the real guest: every line goes into it, and `git`
         // there is the real git with real remotes, not the JGit shortcut below.
         if (activeTerminalShell() == TerminalShell.LINUX) {
-            return runLinuxLine(app, line, timeoutMs)
+            return runLinuxLine(app, line, timeoutMs, onOutput)
         }
         // busybox has no git, so in the Android session a `git` line is served by
         // JGit instead of failing with "applet not found".
@@ -2363,7 +2524,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // The explicit `linux` / `linux-install` verbs still work in an Android
         // session, so nothing that worked before is lost.
         if (isLinuxCommand(line)) {
-            return runLinuxLine(app, line, timeoutMs)
+            return runLinuxLine(app, line, timeoutMs, onOutput)
         }
         // A live entry is appended first and its output grows as the command
         // prints, so the terminal behaves like a real one — progress appears
@@ -2381,6 +2542,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             onChunk = { _, text ->
                 synchronized(streamed) { streamed.append(text).append('\n') }
                 updateTerminalLine(lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
+                onOutput?.invoke(text)
             },
             // A host command can prompt too (`read`, a password), so it gets the
             // same answerable input as a Linux one.
@@ -2433,13 +2595,19 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * Runs one line of the bundled Linux system. The system is unpacked on first
      * launch, so this only ever drives it; every line goes into the guest.
      */
-    private suspend fun runLinuxLine(app: Application, line: String, timeoutMs: Long = 0): TerminalLine {
+    private suspend fun runLinuxLine(
+        app: Application,
+        line: String,
+        timeoutMs: Long = 0,
+        onOutput: ((String) -> Unit)? = null
+    ): TerminalLine {
         val lineId = UUID.randomUUID().toString()
         appendTerminal(TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
         val streamed = StringBuilder()
         val push: (String, String) -> Unit = { _, text ->
             synchronized(streamed) { streamed.append(text).append('\n') }
             updateTerminalLine(lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
+            onOutput?.invoke(text)
         }
 
         val status = buildString {
@@ -2570,7 +2738,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * `terminal_run` — the assistant driving the shell the user is watching.
      * Same shell, same cwd, same scrollback as the user's own typing.
      */
-    private suspend fun runInTerminalShell(args: JSONObject): JSONObject {
+    private suspend fun runInTerminalShell(args: JSONObject, live: ((String) -> Unit)? = null): JSONObject {
         val line = args.optString("command").trim()
         if (line.isEmpty()) return JSONObject().put("ok", false).put("summary", "খালি কমান্ড")
         // No deadline unless the caller asked for one, matching the user's own
@@ -2591,7 +2759,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             }
         }
         _activeTab.value = AppTab.TERMINAL
-        val entry = withContext(Dispatchers.IO) { runTerminalLine(line, timeout) }
+        val entry = withContext(Dispatchers.IO) { runTerminalLine(line, timeout, live) }
         return JSONObject()
             .put("ok", !entry.isError)
             .put("code", entry.exitCode)
@@ -2882,6 +3050,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     override fun onCleared() {
         super.onCleared()
         if (active === this) active = null
+        // No screen is alive any more, so nothing would receive a finished
+        // command. Dropping the callback stops a dead ViewModel being woken.
+        if (active == null) BackgroundCommandService.onFinished = null
         // Every MCP server holds an SSE channel and a thread. Releasing them here
         // is what stops them outliving the screen.
         runCatching { aiEngine.mcp.close() }

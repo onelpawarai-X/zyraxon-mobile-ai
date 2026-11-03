@@ -908,13 +908,6 @@ class NativeVoiceManager(
         private const val RESTART_MAX_MS = 4000L
 
         /**
-         * How long a deferred reopen may wait for the assistant to stop speaking
-         * before it gives up. It only ever lapses if the "speaking" flag sticks,
-         * which the watchdog prevents, so this is a safety net, not a routine path.
-         */
-        private const val SPEAK_MAX_WAIT_MS = 60_000L
-
-        /**
          * The shortest gap between two recognizer sessions while idle. The engine
          * ends a session after every phrase, so without a floor the ear was torn
          * down and rebuilt in a tight loop. One smooth, occasional reopen instead.

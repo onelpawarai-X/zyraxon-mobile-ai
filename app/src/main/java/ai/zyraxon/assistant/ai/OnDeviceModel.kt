@@ -176,7 +176,7 @@ class OnDeviceModel(context: Context) {
         val part = File(modelsDir(), "$fileName.part")
         return try {
             val client = okhttp3.OkHttpClient.Builder()
-                .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                .connectTimeout(0, java.util.concurrent.TimeUnit.MILLISECONDS)
                 .readTimeout(0, java.util.concurrent.TimeUnit.MILLISECONDS)
                 .build()
             val request = okhttp3.Request.Builder().url(url)

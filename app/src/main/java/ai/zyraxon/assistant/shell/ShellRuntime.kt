@@ -207,7 +207,7 @@ object ShellRuntime {
         context: Context,
         command: String,
         cwd: File? = null,
-        timeoutMs: Long = 60_000,
+        timeoutMs: Long = 0,
         extraEnv: Map<String, String> = emptyMap()
     ): Result {
         ensureReady(context)
@@ -229,7 +229,7 @@ object ShellRuntime {
             tOut.start(); tErr.start()
             val finished = awaitProcess(p, timeoutMs)
             if (!finished) p.destroy()
-            tOut.join(2_000); tErr.join(2_000)
+            tOut.join(); tErr.join()
             Result(
                 command = command,
                 code = if (finished) p.exitValue() else -1,
@@ -280,7 +280,7 @@ object ShellRuntime {
         context: Context,
         command: String,
         cwd: File? = null,
-        timeoutMs: Long = 60_000,
+        timeoutMs: Long = 0,
         extraEnv: Map<String, String> = emptyMap(),
         onChunk: (stream: String, text: String) -> Unit
     ): Result = runStreaming(context, command, cwd, timeoutMs, extraEnv, onChunk, null)
@@ -299,7 +299,7 @@ object ShellRuntime {
         context: Context,
         command: String,
         cwd: File? = null,
-        timeoutMs: Long = 60_000,
+        timeoutMs: Long = 0,
         extraEnv: Map<String, String> = emptyMap(),
         onChunk: (stream: String, text: String) -> Unit,
         onSpawn: ((LiveProcess) -> Unit)?
@@ -324,7 +324,7 @@ object ShellRuntime {
             tOut.start(); tErr.start()
             val finished = awaitProcess(p, timeoutMs)
             if (!finished) p.destroy()
-            tOut.join(2_000); tErr.join(2_000)
+            tOut.join(); tErr.join()
             Result(
                 command = command,
                 code = if (finished) p.exitValue() else -1,

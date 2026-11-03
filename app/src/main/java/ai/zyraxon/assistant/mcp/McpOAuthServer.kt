@@ -66,7 +66,7 @@ class McpOAuthServer(private val expectedPath: String = "/callback") {
      * `/favicon.ico` probe right after the redirect. Answering that probe and
      * stopping would throw away the real callback.
      */
-    fun awaitCode(timeoutSeconds: Long = 300): String {
+    fun awaitCode(): String {
         Thread {
             try {
                 while (!socket.isClosed) {
@@ -82,10 +82,10 @@ class McpOAuthServer(private val expectedPath: String = "/callback") {
             }
         }.apply { isDaemon = true; name = "mcp-oauth"; start() }
 
-        if (!received.await(timeoutSeconds, TimeUnit.SECONDS)) {
-            close()
-            throw McpError("সময় শেষ — ব্রাউজারে অনুমতি দেওয়া হয়নি")
-        }
+        // No deadline: the browser is the user's own pace. The wait ends when
+        // they approve, close the tab, or the socket itself fails — never on a
+        // timer this app invented.
+        received.await()
         error?.let { throw McpError(it) }
         return code ?: throw McpError("অনুমতির কোড পাওয়া যায়নি")
     }

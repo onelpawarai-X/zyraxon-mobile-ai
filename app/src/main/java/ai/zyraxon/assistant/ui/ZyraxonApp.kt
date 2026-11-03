@@ -167,6 +167,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     val systemStatus by viewModel.systemStatus.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
     val toolExecutions by viewModel.toolExecutions.collectAsState()
+    val activeToolCalls by viewModel.activeToolCalls.collectAsState()
     val codeBoxOpen by viewModel.codeBoxOpen.collectAsState()
     val codeBoxTitle by viewModel.codeBoxTitle.collectAsState()
     val codeBoxText by viewModel.codeBoxText.collectAsState()
@@ -306,6 +307,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                             panelAlpha = panelAlpha,
                             tasks = tasks,
                             toolExecutions = toolExecutions,
+                            activeToolCalls = activeToolCalls,
                             files = workspaceFiles,
                             onCopyText = {
                                 clipboardManager.setText(AnnotatedString(it))
@@ -382,6 +384,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                     panelType = activeDockPanel!!,
                     tasks = tasks,
                     toolExecutions = toolExecutions,
+                    activeToolCalls = activeToolCalls,
                     files = workspaceFiles,
                     onDeleteFile = { viewModel.deleteWorkspaceFile(it) },
                     onOpenFile = { viewModel.openWorkspaceFile(it) },
@@ -751,6 +754,7 @@ fun ChatTabContent(
     panelAlpha: Float,
     tasks: List<TaskItem>,
     toolExecutions: List<ToolExecutionItem>,
+    activeToolCalls: List<ToolExecutionItem> = emptyList(),
     files: List<WorkspaceFile>,
     onCopyText: (String) -> Unit,
     onSpeakText: (String) -> Unit,
@@ -889,10 +893,12 @@ fun ChatTabContent(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(messages, key = { it.id }) { message ->
+                    val isLast = message.id == messages.lastOrNull()?.id
                     MessageBubble(
                         message = message,
                         onCopy = { onCopyText(message.text) },
-                        onSpeak = { onSpeakText(message.text) }
+                        onSpeak = { onSpeakText(message.text) },
+                        liveTools = if (isLast && message.isStreaming) activeToolCalls else emptyList()
                     )
                 }
             }

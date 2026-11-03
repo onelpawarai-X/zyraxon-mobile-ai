@@ -96,9 +96,12 @@ class TerminalViewModelTest {
         assertEquals("~/work", vm.terminalCwd.value)
 
         // Open a second shell: it starts clean and at home, not in the first
-        // shell's directory.
+        // shell's directory. The count is asserted relative to the baseline —
+        // the app opens the phone shell and the Linux shell up front, so a fixed
+        // number here would pin the test to that baseline.
+        val before = vm.terminalSessions.value.size
         vm.newTerminalSession()
-        assertEquals(2, vm.terminalSessions.value.size)
+        assertEquals(before + 1, vm.terminalSessions.value.size)
         assertEquals("~", vm.terminalCwd.value)
         assertTrue("নতুন শেল খালি নয়", vm.terminalLines.value.isEmpty())
 
