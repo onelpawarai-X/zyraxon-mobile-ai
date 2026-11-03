@@ -45,12 +45,28 @@ object ShellRuntime {
      * applet name, so the raw binary refuses to start. Going through a link
      * called `busybox` is what makes `busybox sh`, `busybox --install` and every
      * applet symlink work.
+     *
+     * An app update can move `applicationInfo.nativeLibraryDir`, which leaves the
+     * link pointing at the previous install's binary. A stale link is repaired
+     * here, before the shell is launched, or the very first command would run
+     * busybox under the wrong `argv[0]` and fail with "applet not found".
      */
     fun command(context: Context): File? {
         val bb = binary(context) ?: return null
         val link = File(binDir(context), "busybox")
         if (!link.exists()) {
             runCatching { java.nio.file.Files.createSymbolicLink(link.toPath(), bb.toPath()) }
+        } else {
+            // Only the symlink target can go stale. A real file (or a hard link,
+            // which shares the inode and therefore cannot dangle) is left alone.
+            val target = runCatching { java.nio.file.Files.readSymbolicLink(link.toPath()) }
+                .getOrNull()
+            if (target != null && !java.io.File(target.toString()).canonicalFile.exists()) {
+                runCatching {
+                    java.nio.file.Files.delete(link.toPath())
+                    java.nio.file.Files.createSymbolicLink(link.toPath(), bb.toPath())
+                }
+            }
         }
         return if (link.exists()) link else bb
     }

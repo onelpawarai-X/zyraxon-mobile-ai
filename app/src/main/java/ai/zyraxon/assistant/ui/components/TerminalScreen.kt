@@ -805,7 +805,7 @@ private fun TerminalEntry(line: TerminalLine) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = TerminalPrompt, fontWeight = FontWeight.Bold)) { append("☠ zyraxon# ") }
+                withStyle(SpanStyle(color = TerminalPrompt, fontWeight = FontWeight.Bold)) { append("☠ zyraxon$ ") }
                 withStyle(SpanStyle(color = TerminalText)) { append(line.command) }
             },
             fontSize = 12.5.sp,
