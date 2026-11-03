@@ -3,7 +3,6 @@ package ai.zyraxon.assistant.shell
 import android.content.Context
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
-import moe.shizuku.server.IShizukuProcess
 import moe.shizuku.server.IShizukuService
 import rikka.shizuku.Shizuku
 import java.io.BufferedReader
@@ -129,7 +128,7 @@ object SystemShell {
             val tOut = Thread { outStream.bufferedReader().use { out.append(it.readText()) } }
             val tErr = Thread { errStream.bufferedReader().use { err.append(it.readText()) } }
             tOut.start(); tErr.start()
-            val finished = awaitProcess(process, timeoutMs)
+            val finished = waitForProcess(timeoutMs) { process.waitForTimeout(it, "MILLISECONDS") }
             val code = if (finished) process.exitValue() else -1
             if (!finished) runCatching { process.destroy() }
             tOut.join(2_000); tErr.join(2_000)
@@ -202,7 +201,7 @@ object SystemShell {
             val tOut = Thread { pump(outStream.bufferedReader(), out, "out", onChunk) }
             val tErr = Thread { pump(errStream.bufferedReader(), err, "err", onChunk) }
             tOut.start(); tErr.start()
-            val finished = awaitProcess(process, timeoutMs)
+            val finished = waitForProcess(timeoutMs) { process.waitForTimeout(it, "MILLISECONDS") }
             val code = if (finished) process.exitValue() else -1
             if (!finished) runCatching { process.destroy() }
             tOut.join(2_000); tErr.join(2_000)
@@ -225,17 +224,21 @@ object SystemShell {
      * Waits for a Shizuku process. A timeout of zero or less means no deadline:
      * the command runs until it finishes on its own, which is what a real shell
      * does. Only a caller that expects a hang sets a number.
+     *
+     * The wait only ever goes through `waitForTimeout`, the one method the AIDL
+     * is known to expose; a non-positive timeout is turned into a long wait that
+     * is repeated until the process ends, so nothing depends on a `waitFor` that
+     * may not exist in the interface.
      */
-    private fun awaitProcess(process: IShizukuProcess, timeoutMs: Long): Boolean {
-        if (timeoutMs <= 0) {
-            return try {
-                process.waitFor()
-                true
+    private fun waitForProcess(timeoutMs: Long, waitChunk: (Long) -> Boolean): Boolean {
+        if (timeoutMs > 0) return waitChunk(timeoutMs)
+        while (true) {
+            try {
+                if (waitChunk(60L * 60L * 1000L)) return true
             } catch (_: Exception) {
-                false
+                return false
             }
         }
-        return process.waitForTimeout(timeoutMs, "MILLISECONDS")
     }
 
     /** Reads a stream line by line, appending to [sink] and calling [onChunk]. */
