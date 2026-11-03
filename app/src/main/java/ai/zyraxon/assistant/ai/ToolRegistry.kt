@@ -248,8 +248,8 @@ object ToolRegistry {
             .put("description", "Run a real command in YOUR OWN tool shell (bundled busybox, ~300 Unix commands) and return stdout, stderr and the exit code. It runs in the tool workspace, invisible to the user. Use this for the work behind the scenes. For a command the user should watch, use terminal_run instead. There is NO time limit by default — a long command runs to completion. Pass `timeout_ms` only for a command you expect to hang.")
             .put("parameters", S(JSONObject().put("command", str()).put("cwd", str()).put("timeout_ms", num()), listOf("command"))),
         "terminal_run" to JSONObject()
-            .put("description", "Run one line in the Terminal shell the USER is watching (the ⌘ ZX tab), in the Terminal's own home directory. The line and its output appear in front of them, so they can watch or take over. Use this when working alongside the user, or when they asked for the terminal. Pair with terminal_open first. There is NO time limit by default — a long command runs to completion; pass `timeout_ms` only for one you expect to hang.")
-            .put("parameters", S(JSONObject().put("command", str()).put("timeout_ms", num()), listOf("command"))),
+            .put("description", "Run one line in a Terminal the USER is watching (the ⌘ ZX tab). The line and its output appear in front of them, so they can watch or take over. Pass `shell:\"linux\"` to run it in ZYRAXON's full Linux system (bash, apt/pkg, git, python, node, clang) or `shell:\"android\"` for the phone's own shell; without it, the shell already on screen is used. Pair with terminal_open first. There is NO time limit by default — a long command runs to completion; pass `timeout_ms` only for one you expect to hang.")
+            .put("parameters", S(JSONObject().put("command", str()).put("shell", str()).put("timeout_ms", num()), listOf("command"))),
         "terminal_open" to JSONObject()
             .put("description", "Bring the Terminal tab to the front so the user watches the commands run in the real terminal instead of reading them in the chat.")
             .put("parameters", S(JSONObject(), emptyList())),

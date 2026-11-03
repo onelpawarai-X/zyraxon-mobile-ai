@@ -130,13 +130,26 @@ data class TerminalLine(
 )
 
 /**
- * One terminal session: its own scrollback and its own working directory. The
- * sidebar lists these, so a user can keep several shells open at once and come
- * back to an earlier one without losing where they were.
+ * Which real shell a terminal session drives.
+ *
+ * Both are real and both are always available; the user picks by picking a tab.
+ *  - [ANDROID] is the phone's own shell: the bundled busybox applets plus the
+ *    app's `sh`, run in the app's sandbox. It is the shell the phone itself has.
+ *  - [LINUX] is ZYRAXON's own full Unix system shipped inside the APK — bash,
+ *    apt/pkg, git, python, node, clang — unpacked from the APK so it needs no
+ *    network. It is the same system `linux_run` drives.
+ */
+enum class TerminalShell { ANDROID, LINUX }
+
+/**
+ * One terminal session: its own scrollback, its own working directory and the
+ * shell it drives. The sidebar lists these, so a user can keep several shells
+ * open at once and come back to an earlier one without losing where they were.
  */
 data class TerminalSession(
     val id: String,
     val title: String,
     val lines: List<TerminalLine> = emptyList(),
-    val cwd: String = "~"
+    val cwd: String = "~",
+    val shell: TerminalShell = TerminalShell.ANDROID
 )

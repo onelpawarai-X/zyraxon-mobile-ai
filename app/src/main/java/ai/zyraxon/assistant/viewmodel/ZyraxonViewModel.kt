@@ -21,6 +21,7 @@ import ai.zyraxon.assistant.model.SystemStatus
 import ai.zyraxon.assistant.model.TaskItem
 import ai.zyraxon.assistant.model.TerminalLine
 import ai.zyraxon.assistant.model.TerminalSession
+import ai.zyraxon.assistant.model.TerminalShell
 import ai.zyraxon.assistant.model.ToolExecutionItem
 import ai.zyraxon.assistant.model.WorkspaceFile
 import ai.zyraxon.assistant.shell.GitRuntime
@@ -562,8 +563,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     // and its own working directory, so switching away and back never loses the
     // place the user was at. The sidebar lists them.
 
+    /**
+     * Two real shells, open from the start: the phone's own shell and ZYRAXON's
+     * own Linux system. Neither is a placeholder and both always work — the user
+     * switches between them from the sidebar, and `terminal_run` can target
+     * either one.
+     */
     private val _terminalSessions = MutableStateFlow(
-        listOf(TerminalSession(id = UUID.randomUUID().toString(), title = "shell 1"))
+        listOf(
+            TerminalSession(id = UUID.randomUUID().toString(), title = "android", shell = TerminalShell.ANDROID),
+            TerminalSession(id = UUID.randomUUID().toString(), title = "linux", shell = TerminalShell.LINUX)
+        )
     )
     val terminalSessions: StateFlow<List<TerminalSession>> = _terminalSessions.asStateFlow()
 
@@ -2339,19 +2349,21 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             appendTerminal(entry)
             return entry
         }
-        // busybox has no git, so a `git` line is served by JGit instead of
-        // failing with "applet not found".
+        // A Linux session is the real guest: every line goes into it, and `git`
+        // there is the real git with real remotes, not the JGit shortcut below.
+        if (activeTerminalShell() == TerminalShell.LINUX) {
+            return runLinuxLine(app, line, timeoutMs)
+        }
+        // busybox has no git, so in the Android session a `git` line is served by
+        // JGit instead of failing with "applet not found".
         runGitLine(app, line)?.let { result ->
             appendTerminal(result)
             return result
         }
-        // A `linux` / `linux-install` line installs and drives ZYRAXON's own full
-        // Unix system. It is the complete userland — bash, apt, dpkg, git, python,
-        // node, clang — shipped inside the APK and installed from there, so it
-        // works with no network at all and at shell/root level is strictly more
-        // powerful than the app's own sandbox.
+        // The explicit `linux` / `linux-install` verbs still work in an Android
+        // session, so nothing that worked before is lost.
         if (isLinuxCommand(line)) {
-            return runLinuxLine(app, line)
+            return runLinuxLine(app, line, timeoutMs)
         }
         // A live entry is appended first and its output grows as the command
         // prints, so the terminal behaves like a real one — progress appears
@@ -2421,7 +2433,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * Runs one line of the bundled Linux system. The system is unpacked on first
      * launch, so this only ever drives it; every line goes into the guest.
      */
-    private suspend fun runLinuxLine(app: Application, line: String): TerminalLine {
+    private suspend fun runLinuxLine(app: Application, line: String, timeoutMs: Long = 0): TerminalLine {
         val lineId = UUID.randomUUID().toString()
         appendTerminal(TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
         val streamed = StringBuilder()
@@ -2471,7 +2483,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 push("out", "Preparing ZYRAXON Linux…")
                 val ok = LinuxRuntime.install(app) { msg -> push("out", msg) }
                 if (ok) {
-                    runLinuxGuest(app, lineId, streamed, push, line.removePrefix("linux").trim().ifEmpty { "bash -l" })
+                    runLinuxGuest(app, lineId, streamed, push, guestCommand(line), timeoutMs)
                 } else {
                     TerminalLine(
                         id = lineId,
@@ -2483,8 +2495,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             }
 
             else -> {
-                val cmd = line.removePrefix("linux").trim().ifEmpty { "bash -l" }
-                runLinuxGuest(app, lineId, streamed, push, cmd)
+                runLinuxGuest(app, lineId, streamed, push, guestCommand(line), timeoutMs)
             }
         }
         // The entry is finalised in place, so the running cursor stops and the
@@ -2493,19 +2504,41 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         return result
     }
 
+    /**
+     * The command to hand the guest. A line typed in a Linux session goes in
+     * verbatim — a real terminal does not need a `linux` prefix. The explicit
+     * `linux <cmd>` form is still accepted and has its prefix removed, so both
+     * ways of driving the system keep working.
+     */
+    private fun guestCommand(line: String): String {
+        val trimmed = line.trim()
+        if (activeTerminalShell() == TerminalShell.LINUX && !isLinuxVerb(trimmed)) {
+            return trimmed.ifEmpty { "bash -l" }
+        }
+        return trimmed.removePrefix("linux").trim().ifEmpty { "bash -l" }
+    }
+
+    /** True only for the explicit `linux`/`linux-install` verbs, not `apt`/`git`. */
+    private fun isLinuxVerb(line: String): Boolean {
+        val first = line.split(Regex("\\s+")).firstOrNull() ?: return false
+        return first in setOf("linux", "linux-install", "linux-status", "linux-shell")
+    }
+
     /** Runs a command inside the installed guest, streaming its output live. */
     private suspend fun runLinuxGuest(
         app: Application,
         lineId: String,
         streamed: StringBuilder,
         push: (String, String) -> Unit,
-        command: String
+        command: String,
+        timeoutMs: Long = 0
     ): TerminalLine {
         val r = LinuxRuntime.runStreaming(
             app, command,
             onChunk = { stream, text -> push(stream, text) },
             // Hold the command's input while it runs, so a prompt can be answered.
-            onSpawn = { live -> terminalProcess = live }
+            onSpawn = { live -> terminalProcess = live },
+            timeoutMs = timeoutMs
         )
         terminalProcess = null
         if (r == null) {
@@ -2543,6 +2576,20 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // No deadline unless the caller asked for one, matching the user's own
         // typing: a long command in the watched terminal runs to completion.
         val timeout = args.optLong("timeout_ms", 0)
+        // The caller may name the shell: "linux" drives ZYRAXON's own Unix system,
+        // "android" the phone's own shell. Without a name, the session already on
+        // screen is used, which is what a user watching the terminal expects.
+        val requested = args.optString("shell").trim().lowercase()
+        if (requested == "linux" || requested == "android") {
+            val want = if (requested == "linux") TerminalShell.LINUX else TerminalShell.ANDROID
+            val existing = _terminalSessions.value.firstOrNull { it.shell == want }
+            if (existing != null) {
+                _activeTerminalId.value = existing.id
+                syncActiveTerminal()
+            } else {
+                newTerminalSession(want)
+            }
+        }
         _activeTab.value = AppTab.TERMINAL
         val entry = withContext(Dispatchers.IO) { runTerminalLine(line, timeout) }
         return JSONObject()
@@ -2550,7 +2597,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             .put("code", entry.exitCode)
             .put("stdout", if (entry.isError) "" else entry.output)
             .put("stderr", if (entry.isError) entry.output else "")
-            .put("shell", "terminal")
+            .put("shell", if (activeTerminalShell() == TerminalShell.LINUX) "linux" else "android")
             .put("summary", "$ $line → exit ${entry.exitCode}")
     }
 
@@ -2579,16 +2626,37 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         updateActiveSession { it.copy(lines = emptyList()) }
     }
 
-    /** Opens a fresh shell and switches to it. */
-
-    /** Opens a fresh shell and switches to it. */
+    /** Opens a fresh shell and switches to it. It inherits the active shell type. */
     fun newTerminalSession() {
-        val n = _terminalSessions.value.size + 1
-        val session = TerminalSession(id = UUID.randomUUID().toString(), title = "shell $n")
+        val same = activeTerminalShell()
+        val n = _terminalSessions.value.count { it.shell == same } + 1
+        val session = TerminalSession(
+            id = UUID.randomUUID().toString(),
+            title = (if (same == TerminalShell.LINUX) "linux" else "android") + " $n",
+            shell = same
+        )
         _terminalSessions.value = _terminalSessions.value + session
         _activeTerminalId.value = session.id
         syncActiveTerminal()
     }
+
+    /** Opens a shell of the given type and switches to it. */
+    fun newTerminalSession(shell: TerminalShell) {
+        val n = _terminalSessions.value.count { it.shell == shell } + 1
+        val session = TerminalSession(
+            id = UUID.randomUUID().toString(),
+            title = (if (shell == TerminalShell.LINUX) "linux" else "android") + " $n",
+            shell = shell
+        )
+        _terminalSessions.value = _terminalSessions.value + session
+        _activeTerminalId.value = session.id
+        syncActiveTerminal()
+    }
+
+    /** The shell the terminal on screen is driving. */
+    fun activeTerminalShell(): TerminalShell =
+        _terminalSessions.value.firstOrNull { it.id == _activeTerminalId.value }?.shell
+            ?: TerminalShell.ANDROID
 
     fun selectTerminalSession(id: String) {
         if (_terminalSessions.value.any { it.id == id }) {
@@ -2599,9 +2667,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     /** Closes a shell. The last one is never closed — there is always a shell. */
     fun closeTerminalSession(id: String) {
+        val closing = _terminalSessions.value.firstOrNull { it.id == id }
         val remaining = _terminalSessions.value.filterNot { it.id == id }
         if (remaining.isEmpty()) {
-            _terminalSessions.value = listOf(TerminalSession(id = UUID.randomUUID().toString(), title = "shell 1"))
+            val shell = closing?.shell ?: TerminalShell.ANDROID
+            _terminalSessions.value = listOf(
+                TerminalSession(
+                    id = UUID.randomUUID().toString(),
+                    title = if (shell == TerminalShell.LINUX) "linux" else "android",
+                    shell = shell
+                )
+            )
             _activeTerminalId.value = _terminalSessions.value.first().id
             syncActiveTerminal()
             return
