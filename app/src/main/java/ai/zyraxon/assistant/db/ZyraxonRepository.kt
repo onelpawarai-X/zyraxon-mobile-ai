@@ -1,6 +1,8 @@
 package ai.zyraxon.assistant.db
 
+import ai.zyraxon.assistant.model.AgentMode
 import ai.zyraxon.assistant.model.ChatMessage
+import ai.zyraxon.assistant.model.Conversation
 import ai.zyraxon.assistant.model.MemoryItem
 import ai.zyraxon.assistant.model.MessageRole
 import ai.zyraxon.assistant.model.TaskItem
@@ -9,28 +11,56 @@ import kotlinx.coroutines.flow.map
 
 class ZyraxonRepository(private val dao: ZyraxonDao) {
 
-    val allMessages: Flow<List<ChatMessage>> = dao.getAllMessages().map { list ->
-        list.map { entity ->
-            ChatMessage(
-                id = entity.id,
-                role = when (entity.role) {
-                    "USER" -> MessageRole.USER
-                    "SYSTEM" -> MessageRole.SYSTEM
-                    else -> MessageRole.ASSISTANT
-                },
-                text = entity.text,
-                timestamp = entity.timestamp,
-                isStreaming = false,
-                modelName = entity.modelName
-            )
+    fun messages(conversationId: String): Flow<List<ChatMessage>> =
+        dao.getMessages(conversationId).map { list -> list.map { it.toModel() } }
+
+    private fun ChatMessageEntity.toModel() = ChatMessage(
+        id = id,
+        role = when (role) {
+            "USER" -> MessageRole.USER
+            "SYSTEM" -> MessageRole.SYSTEM
+            else -> MessageRole.ASSISTANT
+        },
+        text = text,
+        timestamp = timestamp,
+        isStreaming = false,
+        modelName = modelName,
+        createdAt = createdAt,
+        durationMs = durationMs,
+        toolCalls = MessageMeta.toolCalls(meta),
+        media = MessageMeta.media(meta)
+    )
+
+    // ---- conversations -------------------------------------------------
+    val chats: Flow<List<Conversation>> = dao.getChats().map { list ->
+        list.map { Conversation(it.id, it.title, AgentMode.parse(it.mode), it.updatedAt) }
+    }
+
+    suspend fun conversation(id: String): Conversation? = dao.getConversation(id)?.let {
+        Conversation(it.id, it.title, AgentMode.parse(it.mode), it.updatedAt)
+    }
+
+    suspend fun ensureConversation(id: String, title: String, mode: AgentMode, kind: String = "chat", parentId: String = "") {
+        if (dao.getConversation(id) == null) {
+            dao.insertConversation(ConversationEntity(id = id, title = title, mode = mode.name, kind = kind, parentId = parentId))
         }
+    }
+
+    suspend fun renameConversation(id: String, title: String) = dao.renameConversation(id, title.take(60), System.currentTimeMillis())
+    suspend fun setConversationMode(id: String, mode: AgentMode) = dao.setConversationMode(id, mode.name, System.currentTimeMillis())
+    suspend fun touchConversation(id: String) = dao.touchConversation(id, System.currentTimeMillis())
+
+    suspend fun deleteConversation(id: String) {
+        dao.clearMessages(id)
+        dao.deleteTasksOf(id)
+        dao.deleteConversation(id)
     }
 
     val allMemories: Flow<List<MemoryItem>> = dao.getAllMemories().map { list ->
         list.map { MemoryItem(key = it.key, value = it.value) }
     }
 
-    val allTasks: Flow<List<TaskItem>> = dao.getAllTasks().map { list ->
+    fun tasks(conversationId: String): Flow<List<TaskItem>> = dao.getTasks(conversationId).map { list ->
         list.map {
             TaskItem(
                 id = it.id,
@@ -41,19 +71,27 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
         }
     }
 
-    suspend fun saveMessage(msg: ChatMessage) {
+    suspend fun openTasks(conversationId: String): List<String> =
+        dao.getOpenTasks(conversationId).map { it.text }
+
+    suspend fun saveMessage(msg: ChatMessage, conversationId: String = "main") {
         val entity = ChatMessageEntity(
             id = msg.id,
             role = msg.role.name,
             text = msg.text,
             timestamp = msg.timestamp,
-            modelName = msg.modelName
+            modelName = msg.modelName,
+            createdAt = msg.createdAt,
+            conversationId = conversationId,
+            durationMs = msg.durationMs,
+            meta = MessageMeta.encode(msg.toolCalls, msg.media)
         )
         dao.insertMessage(entity)
+        dao.touchConversation(conversationId, System.currentTimeMillis())
     }
 
-    suspend fun clearMessages() {
-        dao.clearAllMessages()
+    suspend fun clearMessages(conversationId: String = "main") {
+        dao.clearMessages(conversationId)
     }
 
     suspend fun saveMemory(key: String, value: String) {
@@ -73,12 +111,13 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
         dao.clearAllMemories()
     }
 
-    suspend fun addTask(task: TaskItem) {
+    suspend fun addTask(task: TaskItem, conversationId: String = "main") {
         val entity = TaskEntity(
             id = task.id,
             text = task.text,
             isCompleted = task.isCompleted,
-            createdAt = task.createdAt
+            createdAt = task.createdAt,
+            conversationId = conversationId
         )
         dao.insertTask(entity)
     }
@@ -92,9 +131,9 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
     }
 
     /** Replace the whole board — what `todo_write` does every round. */
-    suspend fun replaceTasks(tasks: List<TaskItem>) {
-        dao.deleteAllTasks()
-        for (t in tasks) addTask(t)
+    suspend fun replaceTasks(tasks: List<TaskItem>, conversationId: String = "main") {
+        dao.deleteTasksFor(conversationId)
+        for (t in tasks) addTask(t, conversationId)
     }
 
     suspend fun getMemoriesPromptContext(): String {

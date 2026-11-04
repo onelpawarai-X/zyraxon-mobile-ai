@@ -674,6 +674,7 @@ fun SettingsSheet(
             "mic" to t("মাইক")
         ),
         Triple("aura", "🔮", t("ওরা ও ইফেক্ট")) to listOf(
+            "theme" to t("থিম"),
             "aura" to t("ওরা ও ব্যাকগ্রাউন্ড")
         ),
         Triple("system", "🛡️", t("সিস্টেম ও এক্সেস")) to listOf(
@@ -695,7 +696,7 @@ fun SettingsSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = Color(0xFA0A0104),
+        containerColor = Glass.screen.copy(alpha = 0.98f),
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -1186,7 +1187,11 @@ fun SettingsSheet(
                         }
                     }
 
+                    "theme" -> ai.zyraxon.assistant.ui.shell.ThemePane(viewModel)
+
                     "voice" -> {
+                        ai.zyraxon.assistant.ui.shell.VoiceLab(viewModel)
+                        Spacer(modifier = Modifier.height(16.dp))
                         // VOICE (TTS) CONTROLS
                         HorrorSectionTitle(t("ভয়েস সেটিংস ও কণ্ঠের প্রকার (Text-to-Speech)"))
                         Spacer(modifier = Modifier.height(8.dp))
@@ -1608,12 +1613,21 @@ fun SettingsSheet(
                                             .padding(vertical = 8.dp),
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        AuraPreview(
-                                            style = styleId,
-                                            hue = auraHue,
-                                            clock = galleryClock,
-                                            modifier = Modifier.size(84.dp)
-                                        )
+                                        if (isAvatarStyle(styleId)) {
+                                            Box(modifier = Modifier.size(84.dp), contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    text = avatarSpec(styleId)?.emoji ?: "👩",
+                                                    fontSize = 44.sp
+                                                )
+                                            }
+                                        } else {
+                                            AuraPreview(
+                                                style = styleId,
+                                                hue = auraHue,
+                                                clock = galleryClock,
+                                                modifier = Modifier.size(84.dp)
+                                            )
+                                        }
                                         Text(
                                             text = t(auraStyleLabel(styleId)),
                                             color = if (picked) BoneWhite else Glass.textSecondary,

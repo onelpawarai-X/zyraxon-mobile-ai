@@ -3,6 +3,7 @@ package ai.zyraxon.assistant.voice
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.media.audiofx.Visualizer
 import android.util.Log
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -162,6 +163,7 @@ class RemoteTtsPlayer(
             if (mine == generation) {
                 isSpeaking = false
                 onSpeakingChanged?.invoke(false)
+                AvatarBridge.end()
             }
         }
     }
@@ -200,7 +202,7 @@ class RemoteTtsPlayer(
         val ready = prefetched.remove(piece.url)
         if (ready != null) {
             return try {
-                playSource(ready.absolutePath, PREPARE_TIMEOUT_MS)
+                playSource(ready.absolutePath, piece.text, PREPARE_TIMEOUT_MS)
             } finally {
                 ready.delete()
             }
@@ -229,7 +231,7 @@ class RemoteTtsPlayer(
                 val landed = downloadJob.await()
                 if (landed != null) dropStream.complete(Unit)
             }
-            if (playSource(piece.url, 0L, dropStream)) {
+            if (playSource(piece.url, piece.text, 0L, dropStream)) {
                 // The stream is playing. The parallel download may still land, so
                 // its file is deleted once it arrives rather than left in the cache.
                 downloadScope.launch { downloadJob.await()?.delete() }
@@ -239,7 +241,7 @@ class RemoteTtsPlayer(
             val raced = downloadJob.await()
             if (raced != null) {
                 return try {
-                    playSource(raced.absolutePath, PREPARE_TIMEOUT_MS)
+                    playSource(raced.absolutePath, piece.text, PREPARE_TIMEOUT_MS)
                 } finally {
                     raced.delete()
                 }
@@ -251,7 +253,7 @@ class RemoteTtsPlayer(
             return false
         }
         return try {
-            playSource(file.absolutePath, PREPARE_TIMEOUT_MS)
+            playSource(file.absolutePath, piece.text, PREPARE_TIMEOUT_MS)
         } finally {
             file.delete()
         }
@@ -273,10 +275,13 @@ class RemoteTtsPlayer(
 
     private suspend fun playSource(
         source: String,
+        text: String = "",
         timeoutMs: Long = PREPARE_TIMEOUT_MS,
         dropStream: CompletableDeferred<Unit>? = null
     ): Boolean = withContext(Dispatchers.Main) {
         val mp = MediaPlayer()
+        var levelJob: Job? = null
+        var viz: Visualizer? = null
         try {
             mp.setAudioAttributes(
                 AudioAttributes.Builder()
@@ -299,6 +304,28 @@ class RemoteTtsPlayer(
                     }
                 } catch (_: Exception) {}
                 try { it.setVolume(1f, 1f) } catch (_: Exception) {}
+                // The 3D avatar speaks this exact text for exactly this long, and
+                // follows the loudness of the real audio so pauses close the mouth.
+                try { AvatarBridge.speak(text, it.duration.toLong()) } catch (_: Exception) {}
+                try {
+                    viz = Visualizer(it.audioSessionId).apply {
+                        captureSize = Visualizer.getCaptureSizeRange()[0]
+                        enabled = true
+                    }
+                    val v = viz
+                    levelJob = scope.launch(Dispatchers.Default) {
+                        val buf = ByteArray(v?.captureSize ?: 0)
+                        while (true) {
+                            if (v != null && v.getWaveForm(buf) == Visualizer.SUCCESS) {
+                                var sum = 0.0
+                                for (b in buf) { val x = (b.toInt() and 0xFF) - 128; sum += x * x }
+                                val rms = Math.sqrt(sum / buf.size) / 128.0
+                                AvatarBridge.level((rms * 3.4).toFloat())
+                            }
+                            delay(50L)
+                        }
+                    }
+                } catch (_: Throwable) { viz = null }
                 prepared.complete(true)
                 try { it.start() } catch (_: Exception) { done.complete(false) }
             }
@@ -334,10 +361,14 @@ class RemoteTtsPlayer(
                 return@withContext false
             }
             val finished = done.await()
+            levelJob?.cancel()
+            try { viz?.release() } catch (_: Throwable) {}
             release(mp)
             finished
         } catch (e: Exception) {
             Log.w(TAG, "playback failed: ${e.message}")
+            levelJob?.cancel()
+            try { viz?.release() } catch (_: Throwable) {}
             release(mp)
             false
         }
@@ -386,6 +417,7 @@ class RemoteTtsPlayer(
 
     /** Cuts the voice off and drops everything waiting. */
     fun stop() {
+        AvatarBridge.end()
         generation++
         queue.clear()
         running = false

@@ -463,6 +463,18 @@ class LiveVoiceSession(
     private fun playPcm(pcm: ByteArray) {
         val audioTrack = track ?: return
         try {
+            // Live voice has no text to read, so the avatar follows the loudness of the
+            // audio itself: the mouth opens and closes with the real sound.
+            var sum = 0.0
+            var n = 0
+            var i = 0
+            while (i + 1 < pcm.size) {
+                val sample = (pcm[i].toInt() and 0xFF) or (pcm[i + 1].toInt() shl 8)
+                sum += sample.toDouble() * sample
+                n++
+                i += 8
+            }
+            if (n > 0) AvatarBridge.talk((Math.sqrt(sum / n) / 32768.0 * 4.0).toFloat())
             audioTrack.write(pcm, 0, pcm.size)
         } catch (_: Throwable) {}
     }

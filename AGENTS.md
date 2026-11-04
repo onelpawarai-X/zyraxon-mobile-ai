@@ -15,7 +15,10 @@ The APK is a **native Jetpack Compose** app. The runtime path is:
 
 **The old `app/src/main/assets/js|css/*` web/PWA layer was deleted** (dead weight for the APK). Only `aura/aura.html` is loaded in a WebView. Do not recreate the JS layer; port anything needed to Kotlin.
 
-## System prompt — single source of truth
+## System prompts — three mode files
+Runtime prompts live in `app/src/main/assets/knowledge/`: `prompt-chat.txt`, `prompt-build.txt`, `prompt-agent.txt` (one per mode) and `prompt-live.txt` (live voice). They supersede the single-md rule below. `zyraxon-system-prompt.md` is kept only because tests read it. Tool access is gated in code per mode (`ToolRegistry.allowed/schemas(mode)`), never by prompt text alone.
+
+## System prompt (legacy md) — kept for tests
 
 **All prompt text lives in exactly one file:** `app/src/main/assets/knowledge/zyraxon-system-prompt.md`.
 

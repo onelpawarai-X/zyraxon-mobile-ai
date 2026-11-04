@@ -15,8 +15,8 @@ class AuraStyleIdsTest {
     }
 
     @Test
-    fun `sixteen distinct styles`() {
-        assertEquals(16, AuraStyleIds.size)
+    fun `twenty-three distinct styles`() {
+        assertEquals(23, AuraStyleIds.size)
         assertEquals(AuraStyleIds.size, AuraStyleIds.toSet().size)
     }
 

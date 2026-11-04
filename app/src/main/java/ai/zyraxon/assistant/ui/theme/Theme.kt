@@ -37,13 +37,31 @@ private val DarkColorScheme = darkColorScheme(
     onSurfaceVariant = TextSecondary
 )
 
+private val NeutralDarkScheme = darkColorScheme(
+    primary = Color(0xFF8B7BFF), onPrimary = Color.White,
+    background = Color(0xFF0A0C12), onBackground = Color(0xFFF2F4FA),
+    surface = Color(0xFF151923), onSurface = Color(0xFFF2F4FA),
+    surfaceVariant = Color(0xFF1E2330), onSurfaceVariant = Color(0xFFB9C0D4)
+)
+
+private val LightScheme = androidx.compose.material3.lightColorScheme(
+    primary = Color(0xFF5B3DF5), onPrimary = Color.White,
+    background = Color(0xFFF3F4F9), onBackground = Color(0xFF14161C),
+    surface = Color(0xFFFFFFFF), onSurface = Color(0xFF14161C),
+    surfaceVariant = Color(0xFFEEF0F6), onSurfaceVariant = Color(0xFF3F4558)
+)
+
 @Composable
 fun ZyraxonTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = when (Glass.mode) {
+            ZyThemeMode.HORROR -> DarkColorScheme
+            ZyThemeMode.DARK -> NeutralDarkScheme
+            ZyThemeMode.LIGHT -> LightScheme
+        },
         content = content
     )
 }

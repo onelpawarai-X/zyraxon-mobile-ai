@@ -257,7 +257,7 @@ private fun DrawScope.drawLivingPinkAuraStage(
     )
 
     // 6. 36 Rising Living Blood-Red Embers / Sparks floating upward through the smoke
-    for (i in 0 until 36) {
+    for (i in 0 until 14) {
         val emberSeed = (i * 29) % 100 / 100f
         val driftOffset = sin((drift * 6.28f + i * 1.3f).toDouble()).toFloat() * 30f
         val emberX = (width * emberSeed + driftOffset + width) % width

@@ -15,6 +15,25 @@ class StreamedTurn {
     val toolCalls = JSONArray()
     var finished = false
 
+    // Arguments are appended to a builder, not to the JSON string: a model that
+    // writes a 40 KB file sends thousands of deltas, and re-copying the whole
+    // string on every one is quadratic. The JSON slot is filled by [finalizeArgs].
+    private val argBuf = HashMap<Int, StringBuilder>()
+
+    /** The arguments of call [index] as they stand right now. */
+    fun argsSoFar(index: Int): String = argBuf[index]?.toString() ?: ""
+
+    /** The tool name of call [index], once it has arrived. */
+    fun nameOf(index: Int): String =
+        toolCalls.optJSONObject(index)?.optJSONObject("function")?.optString("name").orEmpty()
+
+    /** Writes the buffered arguments into the tool-call objects. Call once the stream ends. */
+    fun finalizeArgs() {
+        for ((i, sb) in argBuf) {
+            toolCalls.optJSONObject(i)?.optJSONObject("function")?.put("arguments", sb.toString())
+        }
+    }
+
     fun appendText(delta: String) { text.append(delta) }
 
     fun appendReasoning(delta: String) { reasoning.append(delta) }
@@ -43,7 +62,7 @@ class StreamedTurn {
             fn.optString("name").takeIf { it.isNotBlank() }?.let { slotFn.put("name", it) }
             val argDelta = fn.optString("arguments")
             if (argDelta.isNotEmpty()) {
-                slotFn.put("arguments", slotFn.optString("arguments", "") + argDelta)
+                argBuf.getOrPut(index) { StringBuilder(slotFn.optString("arguments", "")) }.append(argDelta)
             }
         }
     }
