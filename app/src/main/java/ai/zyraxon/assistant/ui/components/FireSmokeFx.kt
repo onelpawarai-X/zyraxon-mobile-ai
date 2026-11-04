@@ -45,9 +45,9 @@ fun FireSmokeLayer(
     val seeds = remember {
         val r = Random(1313)
         FireSeeds(
-            smoke = List(10) { Plume(r.nextFloat(), r.nextFloat(), 0.025f + r.nextFloat() * 0.03f, r.nextFloat() * 6.28f) },
-            embers = List(46) { Ember(r.nextFloat(), r.nextFloat(), 0.05f + r.nextFloat() * 0.12f, 1.2f + r.nextFloat() * 2.6f, r.nextFloat() * 6.28f) },
-            tongues = List(17) { r.nextFloat() * 6.28f }
+            smoke = List(4) { Plume(r.nextFloat(), r.nextFloat(), 0.025f + r.nextFloat() * 0.03f, r.nextFloat() * 6.28f) },
+            embers = List(18) { Ember(r.nextFloat(), r.nextFloat(), 0.05f + r.nextFloat() * 0.12f, 1.2f + r.nextFloat() * 2.6f, r.nextFloat() * 6.28f) },
+            tongues = List(8) { r.nextFloat() * 6.28f }
         )
     }
 

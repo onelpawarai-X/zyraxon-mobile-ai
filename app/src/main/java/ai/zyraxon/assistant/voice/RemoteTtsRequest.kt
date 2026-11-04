@@ -23,6 +23,10 @@ object RemoteTtsRequest {
     const val VOICES_PATH = "/api/public/tts/voices"
 
     const val TTS_URL = BASE_URL + TTS_PATH
+
+    /** A voice picked in Settings from the server's own list; blank means "the default for the locale". */
+    @Volatile var voiceName: String = ""
+    @Volatile var voiceAge: String = ""
     const val VOICES_URL = BASE_URL + VOICES_PATH
 
     /**
@@ -87,6 +91,8 @@ object RemoteTtsRequest {
         append("&locale=").append(encode(localeFor(bcp47)))
         append("&gender=").append(encode(genderFor(gender)))
         append("&tone=").append(encode(tone))
+        if (voiceName.isNotBlank()) append("&voice=").append(encode(voiceName))
+        if (voiceAge.isNotBlank()) append("&age=").append(encode(voiceAge))
     }
 
     /**

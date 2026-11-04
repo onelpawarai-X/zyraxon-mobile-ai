@@ -62,7 +62,8 @@ object ToolRegistry {
     private fun bool() = JSONObject().put("type", "boolean")
 
     /** Tools the UI layer owns; the engine routes these to the ViewModel. */
-    val UI_TOOLS = setOf("todo_write", "code_box", "files_panel", "floating_bubble", "terminal_open", "terminal_run")
+    val UI_TOOLS = setOf("todo_write", "code_box", "files_panel", "floating_bubble", "terminal_open", "terminal_run",
+        "preview", "sub_agent", "memory_delete", "generate_image", "generate_audio", "generate_video", "ffmpeg", "git", "github_pr")
 
     private val defs: List<Pair<String, JSONObject>> by lazy { listOf(
         "mcp_connect" to JSONObject()
@@ -225,9 +226,9 @@ object ToolRegistry {
             .put("parameters", S(JSONObject().put("path", str()).put("content", str())
                 .put("mode", str().put("enum", JSONArray(listOf("overwrite", "append")))), listOf("path", "content"))),
         "edit_file" to JSONObject()
-            .put("description", "Change part of a file by finding text and replacing it. Use this for edits; use write_file for a new file.")
-            .put("parameters", S(JSONObject().put("path", str()).put("find", str()).put("replace", str()).put("all", bool()),
-                listOf("path", "find", "replace"))),
+            .put("description", "Write code. One tool does it all. (1) New file or full rewrite: pass `path` and `content`. (2) Change part of a file: pass `path`, `find` (exact text) and `replace`; set `all` to replace every match. (3) Add to the end: `content` with `append` true. Missing folders are created. The code you pass is shown live in the chat as it is written — never paste code into your reply.")
+            .put("parameters", S(JSONObject().put("path", str()).put("content", str()).put("find", str()).put("replace", str())
+                .put("all", bool()).put("append", bool()), listOf("path"))),
         "read_file" to JSONObject()
             .put("description", "Read a file. An optional line range is allowed.")
             .put("parameters", S(JSONObject().put("path", str()).put("from_line", num()).put("to_line", num()), listOf("path"))),
@@ -257,7 +258,7 @@ object ToolRegistry {
             .put("description", "Run a command at SYSTEM level, above the app sandbox — the way a system shell and adb do. With `level:\"root\"` it runs as uid 0 (full root: read every app's data, write /system, mount, iptables). With `level:\"shell\"` it runs as uid 2000 (the adb shell user: read most of /data, use pm/am/settings/dumpsys/input). Pass `level:\"auto\"` to use root when the phone is rooted and shell otherwise. It needs the user to have Shizuku running and to have granted ZYRAXON access — if that is missing the tool says exactly what to do, and run_shell still works. Returns the real exit code and real output. There is NO time limit by default; pass `timeout_ms` only for a command you expect to hang.")
             .put("parameters", S(JSONObject().put("command", str()).put("level", str()).put("timeout_ms", num()), listOf("command"))),
         "linux_run" to JSONObject()
-            .put("description", "Run a command inside ZYRAXON's own full Linux system — bash, apt, git, python, node and clang, not the bundled busybox. It is the same system the user sees in the Terminal tab, and it is installed straight from the APK, so it works with no network at all. Use `action:\"status\"` to see whether it is installed, `action:\"install\"` to unpack it from the APK, or `action:\"run\"` with a command. Installing needs Shizuku running and granted to ZYRAXON; until then the tool explains exactly what to do.")
+            .put("description", "Run a command inside ZYRAXON's own full Linux system — bash, apt, git, python, node and clang, not the bundled busybox. It is the same system the user sees in the Terminal tab, and it is installed straight from the APK, so it works with no network at all. Use `action:\"status\"` to see whether it is installed, `action:\"install\"` to unpack it from the APK, or `action:\"run\"` with a command. If it is not installed yet, `run` installs it automatically first.")
             .put("parameters", S(JSONObject().put("action", str()).put("command", str()).put("timeout_ms", num()), listOf("action"))),
         "setup_shizuku" to JSONObject()
             .put("description", "Set up Shizuku, the system-access app ZYRAXON carries inside itself. Use `action:\"status\"` to see whether it is installed, running and granted; `action:\"install\"` to install the bundled copy (Android shows its own confirm dialog — the user taps Install once); `action:\"open\"` to open Shizuku so the user can start it; `action:\"request\"` to ask Shizuku for permission (the user taps Allow in Shizuku's dialog). Do this before the system-level tools (system_shell, linux_run) can work. The user must make the Install and Allow taps themselves — Android does not let an app make those two taps.")
@@ -371,6 +372,63 @@ object ToolRegistry {
             .put("description", "Switch between the two ways you speak. `on` opens a live speech-to-speech session with a realtime model: the model hears the microphone and answers with its own voice, and the phone's text-to-speech is silenced so only one voice is heard. `off` returns to normal text turns read by the phone's voice. Call `on` when the user asks for a real conversation, the fastest back-and-forth, or a live call; call `off` when they want the normal assistant back.")
             .put("parameters", S(JSONObject()
                 .put("action", str().put("enum", JSONArray(listOf("on", "off")))), listOf("action"))),
+        "memory_delete" to JSONObject()
+            .put("description", "Forget one remembered fact by its key (use when the user says it is wrong, or asks you to forget it).")
+            .put("parameters", S(JSONObject().put("key", str()), listOf("key"))),
+        "generate_image" to JSONObject()
+            .put("description", "Create a picture from a text description and save it to the project. The picture appears in the chat with share buttons. Write the prompt in English, rich in detail (subject, style, light, mood). Call once per picture.")
+            .put("parameters", S(JSONObject()
+                .put("prompt", str()).put("width", num()).put("height", num()).put("seed", num())
+                .put("model", str().put("description", "flux (default, best quality) | turbo (faster)"))
+                .put("name", str().put("description", "File name without extension")),
+                listOf("prompt"))),
+        "generate_audio" to JSONObject()
+            .put("description", "Make spoken audio (an .mp3) from any text with the app's own voices. For several voices (a dialogue, a story with characters) pass `segments`, each with its own `text` and `voice`. `voice` = {gender: female|male, age: child|teen|adult|senior, language: bn|hi|en|ur|ar|... , tone: calm|cheerful|serious|..., name}. Use action `voices` to list the voices the server really has. The audio appears in the chat with a player and share buttons.")
+            .put("parameters", S(JSONObject()
+                .put("action", str().put("enum", JSONArray(listOf("speak", "voices"))))
+                .put("text", str()).put("language", str()).put("gender", str()).put("age", str()).put("tone", str()).put("name", str())
+                .put("segments", JSONObject().put("type", "array").put("items", JSONObject().put("type", "object")
+                    .put("properties", JSONObject().put("text", str()).put("voice", JSONObject().put("type", "object")))
+                    .put("required", JSONArray(listOf("text"))))),
+                emptyList())),
+        "generate_video" to JSONObject()
+            .put("description", "Edit a real video (not AI-generated footage) from scenes, using ffmpeg inside ZYRAXON Linux. Each scene: {type: image|video|text|color, source (a file path/URL, or for image an image prompt to generate), text (on-screen), caption, narration (spoken by the app's voices), duration (seconds), transition}. Optional `music` (file or URL), `voice` (narration voice), `width`/`height`/`fps`, `name`. Runs in the background with a live percentage in the chat and can take 5–10 minutes for long videos. Returns the .mp4.")
+            .put("parameters", S(JSONObject()
+                .put("title", str()).put("name", str()).put("music", str()).put("width", num()).put("height", num()).put("fps", num())
+                .put("voice", JSONObject().put("type", "object"))
+                .put("scenes", JSONObject().put("type", "array").put("items", JSONObject().put("type", "object"))),
+                listOf("scenes"))),
+        "ffmpeg" to JSONObject()
+            .put("description", "Run ffmpeg directly inside ZYRAXON Linux for any media edit: cut, join, overlay, subtitles, speed, audio mix, convert. `args` is the argument string after `ffmpeg` (paths relative to `cwd`, default is the project folder). It installs itself the first time. Progress shows in the chat.")
+            .put("parameters", S(JSONObject().put("args", str()).put("cwd", str()).put("output", str().put("description", "Path of the file this command produces, so the chat can show it")), listOf("args"))),
+        "git" to JSONObject()
+            .put("description", "Real git on the phone. Actions: clone (url[, dir, branch]), init, status, add (files, default all), commit (message), push (remote, branch; uses the saved GitHub token), pull, branch (name; creates), checkout (branch), log (count), diff, remote (url to set origin), scan (a summary of all repos in the workspace). `dir` is the repo folder (default: the current project).")
+            .put("parameters", S(JSONObject()
+                .put("action", str().put("enum", JSONArray(listOf("clone", "init", "status", "add", "commit", "push", "pull", "branch", "checkout", "log", "diff", "remote", "scan"))))
+                .put("dir", str()).put("url", str()).put("branch", str()).put("message", str())
+                .put("files", str()).put("remote", str()).put("name", str()).put("count", num()),
+                listOf("action"))),
+        "github_pr" to JSONObject()
+            .put("description", "GitHub pull requests through the API with the saved token. Actions: create (title, body, head, base), list, get (number), merge (number; method merge|squash|rebase), comment (number, body), close (number). `repo` is owner/name; omit it to use the current repo's origin.")
+            .put("parameters", S(JSONObject()
+                .put("action", str().put("enum", JSONArray(listOf("create", "list", "get", "merge", "comment", "close"))))
+                .put("repo", str()).put("title", str()).put("body", str()).put("head", str()).put("base", str())
+                .put("number", num()).put("method", str()),
+                listOf("action"))),
+        "preview" to JSONObject()
+            .put("description", "Drive the app's real browser (the Preview panel), and see what it shows. Actions: open (url — a web address, `localhost:PORT` for a server you started, or a file path), search (query; Google), reload, back, forward, screenshot (you receive the picture), scroll (dy pixels, positive is down), click (selector, or text, or x/y), type (selector, text), read (the page's visible text), console (JS errors and logs), eval (script), problems (collected load/JS errors), close. Always open what you built and look at it before you say it works.")
+            .put("parameters", S(JSONObject()
+                .put("action", str().put("enum", JSONArray(listOf("open", "search", "reload", "back", "forward", "screenshot", "scroll", "click", "type", "read", "console", "eval", "problems", "close"))))
+                .put("url", str()).put("query", str()).put("selector", str()).put("text", str())
+                .put("x", num()).put("y", num()).put("dy", num()).put("script", str()),
+                listOf("action"))),
+        "sub_agent" to JSONObject()
+            .put("description", "Run other agents in the background on parts of a big job. Actions: spawn (task — everything the helper needs; title; model optional: any model id you can see; mode optional chat|build|agent, default build), status (id — progress %, current step), list, result (id — final output), message (id, text — extra instruction), stop (id), wait (id, seconds). The user sees each helper with its model and percentage. Several can run at once. When one finishes you are told automatically.")
+            .put("parameters", S(JSONObject()
+                .put("action", str().put("enum", JSONArray(listOf("spawn", "status", "list", "result", "message", "stop", "wait"))))
+                .put("task", str()).put("title", str()).put("model", str()).put("mode", str())
+                .put("id", str()).put("text", str()).put("seconds", num()),
+                listOf("action"))),
         "on_device_model" to JSONObject()
             .put("description", "Run a language model on the phone itself, with no network at all. Actions: list (show which bundles are already downloaded), load (load one by file name so it can answer offline), unload, generate (produce text from the loaded model — use it only when the user asked for offline or private answers), download (fetch a suggested bundle; every suggested bundle is public and needs no token), import (register a .task file already on the phone). Use this when the user asks for offline answers or says their internet is down.")
             .put("parameters", S(JSONObject()
@@ -380,6 +438,58 @@ object ToolRegistry {
                 .put("token", str().put("description", "Optional Hugging Face read token, only needed for a gated bundle")),
                 listOf("action")))
     ) }
+
+
+    // ---- Modes ------------------------------------------------------------
+    // The mode decides which tools the model is offered AND which it may run.
+    // Both are enforced here, in code: the prompt can ask a model to behave, but
+    // it is this list that makes a Chat-mode model unable to touch a file.
+
+    private val MEMORY_TOOLS = setOf("memory_write", "memory_read", "memory_delete")
+
+    private val BUILD_TOOLS = MEMORY_TOOLS + setOf(
+        "edit_file", "read_file", "list_dir", "find_files", "grep_files", "delete_file", "download_file",
+        "run_shell", "terminal_run", "terminal_open", "linux_run", "background_command", "wait",
+        "serve_local", "publish_website", "publish_cloudflare", "publish_github", "github_actions", "build_app",
+        "git", "github_pr", "preview", "generate_image", "generate_audio", "generate_video", "ffmpeg",
+        "todo_write", "read_url", "web_search", "http_request", "verify_url",
+        "sys_info", "platform_info", "process_list", "share", "notify",
+        "mcp_connect", "mcp_list", "mcp_disconnect", "mcp_resources", "mcp_read_resource",
+        "mcp_prompts", "mcp_prompt", "mcp_subscribe", "mcp_complete", "mcp_ping", "mcp_log_level"
+    )
+
+    /** What Agent mode never gets: the old Write tool, and panels now owned by the chat itself. */
+    private val AGENT_EXCLUDED = setOf("write_file", "code_box", "files_panel")
+
+    /** Tools that only exist in Agent mode on top of Build's. */
+    private val SUB_AGENT_TOOLS = setOf("sub_agent")
+
+    fun toolNamesFor(mode: ai.zyraxon.assistant.model.AgentMode): Set<String> = when (mode) {
+        ai.zyraxon.assistant.model.AgentMode.CHAT -> MEMORY_TOOLS
+        ai.zyraxon.assistant.model.AgentMode.BUILD -> BUILD_TOOLS
+        ai.zyraxon.assistant.model.AgentMode.AGENT -> names().toSet() - AGENT_EXCLUDED
+    }
+
+    /** True when [name] may run in [mode]. A server's own MCP tools follow the mode too. */
+    fun allowed(mode: ai.zyraxon.assistant.model.AgentMode, name: String): Boolean =
+        if (name.contains("__")) mode != ai.zyraxon.assistant.model.AgentMode.CHAT
+        else name in toolNamesFor(mode)
+
+    /** The tool schemas the model is offered in [mode]. */
+    fun schemas(mode: ai.zyraxon.assistant.model.AgentMode): JSONArray {
+        val allow = toolNamesFor(mode)
+        val arr = JSONArray()
+        for ((name, d) in defs) {
+            if (name !in allow) continue
+            arr.put(JSONObject()
+                .put("type", "function")
+                .put("function", JSONObject()
+                    .put("name", name)
+                    .put("description", d.getString("description"))
+                    .put("parameters", d.getJSONObject("parameters"))))
+        }
+        return arr
+    }
 
     fun schemas(): JSONArray {
         val arr = JSONArray()
@@ -494,6 +604,12 @@ object ToolRegistry {
             "device_lock" -> deviceLock(context, args)
             "live_voice" -> liveVoice(args)
             "on_device_model" -> onDeviceModel(context, args)
+            "git" -> kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { ai.zyraxon.assistant.tools.GitTools.run(context, args, live) }
+            "github_pr" -> kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { ai.zyraxon.assistant.tools.GitTools.pr(context, args) }
+            "generate_image" -> kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { ai.zyraxon.assistant.tools.MediaTools.image(context, args, live) }
+            "generate_audio" -> kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { ai.zyraxon.assistant.tools.MediaTools.audio(context, args, live) }
+            "generate_video" -> kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { ai.zyraxon.assistant.tools.MediaTools.video(context, args, live) }
+            "ffmpeg" -> kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { ai.zyraxon.assistant.tools.MediaTools.ffmpegTool(context, args, live) }
             else -> err("unknown-tool", "অজানা টুল: $name")
         }
     } catch (e: Exception) {
@@ -1116,6 +1232,13 @@ object ToolRegistry {
     }
 
     private fun editFile(context: Context, args: JSONObject): JSONObject {
+        // `content` means write (create, overwrite or append); `find` means patch.
+        if (args.has("content") && !args.has("find")) {
+            return writeFile(context, JSONObject()
+                .put("path", args.optString("path")).put("content", args.optString("content"))
+                .put("mode", if (args.optBoolean("append")) "append" else "overwrite"))
+        }
+        if (!args.has("find")) return err("bad-args", "edit_file-এ `content` (লেখা) বা `find`+`replace` (বদল) দিতে হবে")
         val f = resolve(context, args.optString("path"))
         if (!f.exists()) return err("not-found", "ফাইলটি নেই: ${f.name}")
         return try {

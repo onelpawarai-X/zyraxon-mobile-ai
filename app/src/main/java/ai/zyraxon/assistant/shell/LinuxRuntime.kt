@@ -118,8 +118,21 @@ object LinuxRuntime {
     fun isInstalled(context: Context): Boolean {
         val bash = File(root(context), "bin/bash")
         val marker = File(root(context), MARKER)
-        return bash.isFile && marker.isFile && proot(context).canExecute()
+        if (!(bash.isFile && marker.isFile && proot(context).canExecute())) return false
+        // An install writes DONE as its very last step, so a run that was killed
+        // half-way (the app swiped away, storage full) is never mistaken for a
+        // finished one. A guest installed by an older build has no DONE file but
+        // does carry the package manager, which only a complete install unpacks.
+        return File(root(context), DONE).isFile || File(root(context), "bin/dpkg").isFile
     }
+
+    private const val DONE = ".zyraxon-installed"
+
+    /** One install at a time: startup, the Terminal and the tool all call [install]. */
+    private val installLock = Any()
+
+    /** Free bytes in the app's storage, or -1 when it cannot be read. */
+    private fun freeBytes(context: Context): Long = try { context.filesDir.usableSpace } catch (_: Exception) { -1L }
 
     /**
      * Installs the bundled userland into the app's own storage. Nothing here
@@ -129,7 +142,11 @@ object LinuxRuntime {
      * [log] receives one line per step so the Terminal shows the install live.
      * Every line is plain English — a real terminal does not speak Bengali.
      */
-    fun install(context: Context, log: (String) -> Unit): Boolean {
+    fun install(context: Context, log: (String) -> Unit): Boolean = synchronized(installLock) {
+        installLocked(context, log)
+    }
+
+    private fun installLocked(context: Context, log: (String) -> Unit): Boolean {
         if (isInstalled(context)) {
             log("Linux is already installed.")
             return true
@@ -144,6 +161,17 @@ object LinuxRuntime {
             return false
         }
 
+        val free = freeBytes(context)
+        if (free in 0..(700L * 1024 * 1024)) {
+            log("Not enough free storage: ${free / (1024 * 1024)} MB free, about 700 MB needed. Free some space and open the Terminal again.")
+            return false
+        }
+        // A half-finished earlier attempt is wiped, so unpacking starts clean
+        // instead of layering new files over a broken tree.
+        if (root(context).exists()) {
+            log("Cleaning up an incomplete earlier install…")
+            root(context).deleteRecursively()
+        }
         val root = root(context).apply { mkdirs() }
         log("Installing ZYRAXON Linux (${android.os.Build.SUPPORTED_ABIS.firstOrNull()})…")
         log("Payload: $assets (bundled in the APK)")
@@ -163,8 +191,11 @@ object LinuxRuntime {
         File(root, "tmp").mkdirs()
         home(context).mkdirs()
 
-        log("ZYRAXON Linux is ready. Run a command with: linux <command>")
-        return isInstalled(context)
+        try { File(root, DONE).writeText(System.currentTimeMillis().toString()) } catch (_: Exception) {}
+        val ready = isInstalled(context)
+        log(if (ready) "ZYRAXON Linux is ready. Run a command with: linux <command>"
+            else "Install did not finish; open the Terminal again to retry.")
+        return ready
     }
 
     /**

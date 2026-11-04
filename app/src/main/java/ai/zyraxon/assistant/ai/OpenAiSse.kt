@@ -20,18 +20,29 @@ class OpenAiSse(private val client: OkHttpClient) {
     var lastError: String? = null
         private set
 
+    private var toolArgsHook: ((Int, String, String) -> Unit)? = null
+    private val lastArgEmit = HashMap<Int, Long>()
+
     fun stream(
         url: String,
         apiKey: String,
         body: JSONObject,
         extraHeaders: Map<String, String> = emptyMap(),
         onText: (String) -> Unit,
-        onReasoning: (String) -> Unit = {}
+        onReasoning: (String) -> Unit = {},
+        // Called while a tool call's arguments are still arriving: (index, name,
+        // arguments so far). Throttled, so the UI can show a file being written.
+        onToolArgs: ((Int, String, String) -> Unit)? = null
     ): StreamedTurn? {
+        toolArgsHook = onToolArgs
         val request = Request.Builder()
             .url(url)
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "text/event-stream")
+            // A compressed stream is buffered by the gzip decoder until a block
+            // fills, which delays the first tokens. Streams are small; ask for
+            // them plain so every delta arrives the moment the server sends it.
+            .addHeader("Accept-Encoding", "identity")
             .apply {
                 if (apiKey.isNotEmpty()) {
                     addHeader("Authorization", "Bearer " + apiKey)
@@ -96,7 +107,21 @@ class OpenAiSse(private val client: OkHttpClient) {
             turn.appendText(text)
             onText(text)
         }
-        delta.optJSONArray("tool_calls")?.let { turn.mergeToolCalls(it) }
+        delta.optJSONArray("tool_calls")?.let { calls ->
+            turn.mergeToolCalls(calls)
+            val hook = toolArgsHook
+            if (hook != null) {
+                val now = System.nanoTime()
+                for (k in 0 until calls.length()) {
+                    val idx = calls.optJSONObject(k)?.optInt("index", k) ?: continue
+                    val last = lastArgEmit[idx] ?: 0L
+                    if (now - last >= 60_000_000L) {
+                        lastArgEmit[idx] = now
+                        try { hook(idx, turn.nameOf(idx), turn.argsSoFar(idx)) } catch (_: Exception) {}
+                    }
+                }
+            }
+        }
         val finish = choice.opt("finish_reason")
         if (finish != null && finish != JSONObject.NULL) turn.finished = true
     }
@@ -152,6 +177,7 @@ class OpenAiSse(private val client: OkHttpClient) {
             line = reader.readLine()
         }
         if (data.isNotEmpty()) consume(data.toString(), turn, onText, onReasoning)
+        turn.finalizeArgs()
         return turn
     }
 }

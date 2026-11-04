@@ -244,12 +244,21 @@ class NativeVoiceManager(
         textToSpeech?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) {
                 _isSpeaking.value = true
+                // The avatar's mouth starts with the first sound, not with the request.
+                utteranceId?.let { id -> avatarTexts.remove(id) }?.let { (text, rate) ->
+                    AvatarBridge.speak(text, (text.length * 64L / rate.coerceIn(0.4f, 2.5f)).toLong())
+                }
                 // The ear is deliberately NOT closed here. Closing it for the
                 // whole reply is what stopped the user interrupting: they could
                 // say nothing until the last word. The microphone stays open and
                 // the assistant's own voice is filtered out by text instead
                 // (`EchoMatcher`), so a genuine interruption still gets through.
                 micGate.onUtteranceStart()
+            }
+
+            // Word positions (Android 8+): keeps the lips locked to the voice.
+            override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
+                AvatarBridge.boundary(start)
             }
 
             override fun onDone(utteranceId: String?) {
@@ -278,7 +287,7 @@ class NativeVoiceManager(
         val reopen = micGate.onUtteranceDone(busy)
         // Keep the "speaking" flag up across the gap between two sentences of the
         // same reply, so the UI does not flicker to "listening" mid-answer.
-        if (!busy && !micGate.replyActive) _isSpeaking.value = false
+        if (!busy && !micGate.replyActive) { _isSpeaking.value = false; AvatarBridge.end() }
         if (reopen) resumeAfterSpeech()
     }
 
@@ -288,6 +297,9 @@ class NativeVoiceManager(
      * at the instant `onDone` fires is racy — trusting it could leave the ear shut
      * after the last word, which reads as the microphone never coming back.
      */
+    /** Text of each piece waiting for its first sound, so the avatar can speak it in sync. */
+    private val avatarTexts = java.util.concurrent.ConcurrentHashMap<String, Pair<String, Float>>()
+
     private fun engineBusy(): Boolean = !speechQueue.isEmpty() || remoteVoice.hasPending()
 
     /**
@@ -817,6 +829,7 @@ class NativeVoiceManager(
         }
         if (res == TextToSpeech.SUCCESS) {
             speechQueue.markSpoken(utterance.id)
+            avatarTexts[utterance.id] = utterance.text to utterance.rate
             _isSpeaking.value = true
             armSpeechWatchdog(utterance)
         } else {
@@ -886,6 +899,8 @@ class NativeVoiceManager(
 
     fun stopSpeaking() {
         remoteVoice.stop()
+        avatarTexts.clear()
+        AvatarBridge.end()
         stopEngineOnly()
         micGate.reset()
         _isSpeaking.value = false

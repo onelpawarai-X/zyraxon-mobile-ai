@@ -11,6 +11,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,7 +58,9 @@ import kotlin.random.Random
 val AuraStyleIds = listOf(
     "orb", "twin", "vortex", "bloom", "helix", "core",
     "sigil", "heart", "storm", "void", "inferno", "swarm",
-    "crown", "rift", "ghost", "mandala"
+    "crown", "rift", "ghost", "mandala",
+    // Real 3D people that talk, instead of an abstract aura (see AvatarView).
+    "avatar_ruhi", "avatar_pori", "avatar_arian", "avatar_tisha", "avatar_maya", "avatar_arnab", "avatar_nazia"
 )
 
 /** Bengali display name for an aura style id. */
@@ -76,7 +81,7 @@ fun auraStyleLabel(id: String): String = when (id) {
     "rift" -> "চিড়"
     "ghost" -> "প্রেত"
     "mandala" -> "মণ্ডল"
-    else -> id
+    else -> avatarSpec(id)?.label ?: id
 }
 
 private const val TAU = 6.2831855f
@@ -858,6 +863,20 @@ fun ZyraxonAura(
     modifier: Modifier = Modifier
 ) {
     val sz = scaleFactor.coerceIn(0.6f, 1.5f)
+    if (isAvatarStyle(style)) {
+        // A real 3D person fills the space the aura used to float in. Its mouth
+        // and hands follow the assistant's voice through AvatarBridge.
+        AvatarView(
+            style = style,
+            onClick = onClick,
+            modifier = modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(top = 30.dp, bottom = 34.dp)
+                .graphicsLayer { scaleX = sz.coerceAtMost(1.15f); scaleY = sz.coerceAtMost(1.15f) }
+        )
+        return
+    }
     if (style == "orb" || style !in AuraStyleIds) {
         LivingAuraSphere(
             isListening = isListening,
@@ -937,6 +956,6 @@ fun AuraPreview(
             speaking = false,
             level = 0f
         )
-        drawStyle(style, ctx)
+        drawStyle(if (isAvatarStyle(style)) "mandala" else style, ctx)
     }
 }

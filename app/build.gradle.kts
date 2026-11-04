@@ -83,7 +83,7 @@ android {
   // storing it as-is skips a pointless second pass at build time and lets it be
   // streamed out of the APK without inflating the whole member into memory.
   androidResources {
-    noCompress += listOf("zip", "deb", "xz", "gz", "Packages")
+    noCompress += listOf("zip", "deb", "xz", "gz", "Packages", "glb")
   }
 }
 
@@ -127,6 +127,8 @@ dependencies {
   // is in maintenance mode and stays only for older .task bundles.
   implementation(libs.litertlm.android)
   implementation(libs.okhttp)
+  // Serves the 3D avatar page and models from assets to a WebView over a safe https origin.
+  implementation(libs.androidx.webkit)
   // Real `git clone` in the terminal. busybox has no git, so the terminal would
   // otherwise be the one shell that cannot clone a repository.
   implementation(libs.jgit)

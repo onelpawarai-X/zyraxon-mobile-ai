@@ -15,7 +15,37 @@ data class ChatMessage(
      * on screen only — the user can tap to read exactly what it was thinking — and
      * never spoken.
      */
-    val thinking: String = ""
+    val thinking: String = "",
+    /** When the line was written, in epoch millis — shown as a clock time. */
+    val createdAt: Long = System.currentTimeMillis(),
+    /** How long the assistant took to answer (0 for lines the user wrote). */
+    val durationMs: Long = 0,
+    /** The tool calls this turn made, kept so the chat shows them after the fact. */
+    val toolCalls: List<ToolCallRecord> = emptyList(),
+    /** Pictures, audio and videos the assistant produced in this turn. */
+    val media: List<MediaItem> = emptyList()
+)
+
+/** One tool call as it appears under an assistant message. */
+data class ToolCallRecord(
+    val id: String = "",
+    val name: String,
+    /** The command, path or url the call acted on. */
+    val detail: String = "",
+    val icon: String = "🛠️",
+    val summary: String = "",
+    /** "running", "ok" or "error". */
+    val status: String = "ok",
+    val output: String = "",
+    val ms: Long = 0
+)
+
+/** A file the assistant made for the user: an image, a sound, a video or any file. */
+data class MediaItem(
+    /** "image", "audio", "video" or "file". */
+    val kind: String,
+    val path: String,
+    val title: String = ""
 )
 
 enum class MessageRole {
@@ -50,12 +80,67 @@ data class AiModel(
 )
 
 enum class AppTab(val title: String) {
+    /** The home: the 3D person fills the middle. No panel is open. */
+    HOME("হোম"),
     CHAT("চ্যাট"),
-    TASKS("টাস্ক"),
-    TOOLS("টুল"),
+    TERMINAL("টার্মিনাল"),
+    CODE("কোড"),
+    PREVIEW("প্রিভিউ"),
     MCP("MCP"),
-    TERMINAL("ZX")
+
+    // Kept only so an old saved value or a tool that still names them does not
+    // crash; both are folded into the chat panel's own sections (see setTab).
+    TASKS("টাস্ক"),
+    TOOLS("টুল")
 }
+
+/** The three ways a chat can work; each has its own system prompt and its own tools. */
+enum class AgentMode(val title: String, val subtitle: String, val icon: String) {
+    CHAT("চ্যাট", "শুধু কথা ও পরামর্শ", "💬"),
+    BUILD("বিল্ড", "ফুল-স্ট্যাক অ্যাপ ও ওয়েবসাইট", "🛠️"),
+    AGENT("এজেন্ট", "ফোন ও সিস্টেমের পূর্ণ অটোমেশন", "🤖");
+
+    companion object {
+        fun parse(v: String?): AgentMode = entries.firstOrNull { it.name == v } ?: AGENT
+    }
+}
+
+/** One chat in the sidebar. */
+data class Conversation(
+    val id: String,
+    val title: String,
+    val mode: AgentMode = AgentMode.AGENT,
+    val updatedAt: Long = 0L,
+    /** True while this chat has a turn running — it keeps working in the background. */
+    val busy: Boolean = false
+)
+
+/** What the panel shows for a sub-agent the main agent launched. */
+data class SubAgentInfo(
+    val id: String,
+    val parentId: String,
+    val title: String,
+    val task: String,
+    val model: String,
+    /** "running", "done", "error" or "stopped". */
+    val state: String,
+    /** 0..100, from the sub-agent's own to-do list and tool calls. */
+    val percent: Int,
+    val lastAction: String,
+    val result: String = ""
+)
+
+/** A picture, sound or video being made, so the chat can show a live progress bar. */
+data class MediaJob(
+    val id: String,
+    val conversationId: String,
+    val kind: String,
+    val label: String,
+    val percent: Int,
+    val done: Boolean = false,
+    val path: String = "",
+    val error: String = ""
+)
 
 enum class BgAnimationMode(val displayName: String) {
     LIVING_PINK_AURA("পিংক লিভিং ওরা"),

@@ -2,6 +2,7 @@ package ai.zyraxon.assistant.ai
 
 import ai.zyraxon.assistant.mcp.McpManager
 import ai.zyraxon.assistant.model.AiModel
+import ai.zyraxon.assistant.model.AgentMode
 import ai.zyraxon.assistant.model.ChatMessage
 import ai.zyraxon.assistant.model.MessageRole
 import ai.zyraxon.assistant.model.Persona
@@ -105,7 +106,26 @@ class ZyraxonAiEngine(private val context: Context) {
         .connectTimeout(0, TimeUnit.MILLISECONDS)
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .writeTimeout(0, TimeUnit.MILLISECONDS)
+        // A warm pool: the next turn reuses the TLS connection the last one
+        // opened instead of paying the handshake again (the first-token delay).
+        .connectionPool(okhttp3.ConnectionPool(8, 30, TimeUnit.MINUTES))
+        .retryOnConnectionFailure(true)
         .build()
+
+    /**
+     * Opens (and keeps) the TLS connection to the chosen provider before the
+     * user sends anything, so the first request of a turn does not wait for DNS
+     * and the handshake. Fire-and-forget; failure is silent.
+     */
+    fun prewarm(model: AiModel) {
+        Thread {
+            try {
+                val spec = ProviderCatalog.find(model.provider) ?: return@Thread
+                val req = okhttp3.Request.Builder().url(spec.chatUrl).head().build()
+                client.newBuilder().callTimeout(8, TimeUnit.SECONDS).build().newCall(req).execute().close()
+            } catch (_: Exception) {}
+        }.apply { isDaemon = true }.start()
+    }
 
     companion object {
         /**
@@ -489,8 +509,13 @@ class ZyraxonAiEngine(private val context: Context) {
     }
 
     /** The last real reason a provider gave, surfaced instead of a guess. */
-    var lastProviderError: String? = null
-        private set
+    private val providerErrorTl = ThreadLocal<String?>()
+
+    // Several chats run at once, each on its own thread; a shared field would
+    // let one chat's failure be reported as another's.
+    var lastProviderError: String?
+        get() = providerErrorTl.get()
+        private set(v) { providerErrorTl.set(v) }
 
     /**
      * Whether the user's own ZYRAXON line answers chat yet. While the gate is
@@ -524,13 +549,25 @@ class ZyraxonAiEngine(private val context: Context) {
             true to "${spec.label}: ${models.size}টি মডেল পাওয়া গেছে"
         }
 
-    /** The bundled operating contract. One source of truth, shared with the web layer. */
-    private val bundledContract: String by lazy {
-        try {
-            context.assets.open("knowledge/zyraxon-system-prompt.md")
-                .bufferedReader(Charsets.UTF_8).use { it.readText() }
-        } catch (_: Exception) { "" }
+    private fun asset(path: String): String = try {
+        context.assets.open(path).bufferedReader(Charsets.UTF_8).use { it.readText() }
+    } catch (_: Exception) { "" }
+
+    /**
+     * The operating contract of each mode, a plain .txt file of its own:
+     * `prompt-chat.txt`, `prompt-build.txt`, `prompt-agent.txt`. Chat is a
+     * conversation only, Build makes whole apps, Agent runs the whole device.
+     */
+    private val modeContracts: Map<AgentMode, String> by lazy {
+        mapOf(
+            AgentMode.CHAT to asset("knowledge/prompt-chat.txt"),
+            AgentMode.BUILD to asset("knowledge/prompt-build.txt"),
+            AgentMode.AGENT to asset("knowledge/prompt-agent.txt").ifBlank { asset("knowledge/zyraxon-system-prompt.md") }
+        )
     }
+
+    private fun contractFor(mode: AgentMode): String =
+        modeContracts[mode].orEmpty().ifBlank { asset("knowledge/prompt-agent.txt") }
 
     /**
      * The live speech-to-speech section of the one contract file, taken from the
@@ -538,9 +575,12 @@ class ZyraxonAiEngine(private val context: Context) {
      * is ever injected from a second place.
      */
     val liveVoiceContract: String by lazy {
-        val marker = "<!-- ==================== LIVE VOICE ==================== -->"
-        val at = bundledContract.indexOf(marker)
-        if (at < 0) "" else bundledContract.substring(at + marker.length).trim()
+        asset("knowledge/prompt-live.txt").trim().ifBlank {
+            val md = asset("knowledge/zyraxon-system-prompt.md")
+            val marker = "<!-- ==================== LIVE VOICE ==================== -->"
+            val at = md.indexOf(marker)
+            if (at < 0) "" else md.substring(at + marker.length).trim()
+        }
     }
 
     /**
@@ -567,10 +607,21 @@ class ZyraxonAiEngine(private val context: Context) {
         persona: Persona,
         memoriesContext: String,
         screenContext: String,
-        mcpTools: List<ai.zyraxon.assistant.mcp.McpTool> = emptyList()
+        mcpTools: List<ai.zyraxon.assistant.mcp.McpTool> = emptyList(),
+        mode: AgentMode = AgentMode.AGENT
     ): String = buildString {
-        append(bundledContract)
+        append(contractFor(mode))
+        if (mode == AgentMode.CHAT) {
+            append("\n\n---\n\n## Platform\n- Android phone (APK), Android ${Build.VERSION.RELEASE}. Mode: CHAT (conversation only).\n")
+            append("\n## Active character\n").append(persona.systemPrompt).append("\n")
+            if (memoriesContext.isNotBlank()) {
+                append("\n## The user's durable memory (local DB)\n").append(memoriesContext).append("\n")
+            }
+            append("\n## ভাষা\n- ইউজার যে ভাষায় কথা বলে, তুমি সেই ভাষায় উত্তর দাও।\n")
+            return@buildString
+        }
         append("\n\n---\n\n## Platform (the truth about where you are running)\n")
+        append("- Mode: ").append(mode.name).append("\n")
         append("- Device: Android phone (APK), Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}), ${Build.MANUFACTURER} ${Build.MODEL}\n")
         append("- This app is Android only. It ships as an APK and nothing else — never propose, plan or build a desktop (Windows EXE, Linux, AppImage, DMG) version of ZYRAXON itself.\n")
         append("- শেল/টার্মিনাল: তোমার কাছে আসল শেল আর টার্মিনাল আছে — কমান্ড দিয়েই যেকোনো কাজ করা যায়। ")
@@ -659,10 +710,21 @@ class ZyraxonAiEngine(private val context: Context) {
         openTodos: () -> List<String> = { emptyList() },
         drainScreenFrames: () -> List<String> = { emptyList() },
         screenNow: suspend () -> String = { "" },
-        screenFrame: suspend () -> String = { "" }
+        screenFrame: suspend () -> String = { "" },
+        mode: AgentMode = AgentMode.AGENT,
+        // (callIndex, toolName, argumentsSoFar) while a tool call is still being written.
+        onToolArgs: ((Int, String, String) -> Unit)? = null
     ): Flow<String> = channelFlow {
-        val mcpTools = mcp.allTools()
-        val systemPrompt = buildComprehensiveSystemPrompt(persona, memoriesContext, screenContext, mcpTools)
+        val mcpTools = if (mode == AgentMode.CHAT) emptyList() else mcp.allTools()
+        val systemPrompt = buildComprehensiveSystemPrompt(persona, memoriesContext, screenContext, mcpTools, mode)
+        // Every tool call passes through the mode gate, so a model that names a
+        // tool it was not offered still cannot run it.
+        val callTool: suspend (String, JSONObject) -> JSONObject = { n, a ->
+            if (!ToolRegistry.allowed(mode, n)) {
+                JSONObject().put("ok", false).put("error", "not-in-mode")
+                    .put("summary", "'$n' এই মোডে (${mode.title}) বন্ধ। ইউজারকে মোড বদলাতে বলো।")
+            } else onToolCall(n, a)
+        }
         // The on-device model is the offline fallback: with no internet the turn is
         // answered by the best downloaded model, and it can still use the phone's
         // tools (see LocalAgent). While the network is up, the hosted providers
@@ -709,7 +771,7 @@ class ZyraxonAiEngine(private val context: Context) {
                     break
                 }
                 val (name, args) = call
-                val outcome = onToolCall(name, args)
+                val outcome = callTool(name, args)
                 val result = outcome.toString().let { if (it.length > 1200) it.take(1200) + "…" else it }
                 convo.append(" ").append(out.trim()).append("\nTool result: ").append(result).append("\nAssistant:")
                 answered = true
@@ -721,7 +783,7 @@ class ZyraxonAiEngine(private val context: Context) {
         // Built-in device tools first, then every tool a connected MCP server
         // advertised. They are offered on every turn, so the model reaches for
         // them without the user having to mention them.
-        val tools = ToolRegistry.schemas().apply {
+        val tools = ToolRegistry.schemas(mode).apply {
             for (tool in mcpTools) put(tool.toOpenAiSchema())
         }
 
@@ -794,7 +856,7 @@ class ZyraxonAiEngine(private val context: Context) {
             // taken only when the ticker produced nothing. The user's rule is
             // "one shot in the background while it runs" — two shots per round
             // was the bug this replaces.
-            if (alwaysSeeScreen && !screenFrameInjected) {
+            if (alwaysSeeScreen && mode == AgentMode.AGENT && !screenFrameInjected) {
                 val liveFrames = try { drainScreenFrames() } catch (_: Exception) { emptyList() }
                 val shot = liveFrames.lastOrNull()
                     ?: (try { screenFrame() } catch (_: Exception) { "" })
@@ -820,11 +882,11 @@ class ZyraxonAiEngine(private val context: Context) {
                 callModelWithFailover(model, messages, tools, { delta ->
                     producedText = true
                     trySend(delta)
-                }, { switched ->
+                }, onToolArgs = onToolArgs, onSwitch = { switched ->
                     // Say the switch out loud: answering from a different model than
                     // the one on screen would otherwise be invisible.
                     trySend("\n\n🔁 `$switched` — আগের প্রোভাইডার সীমায় পৌঁছেছে, তাই এখান থেকে চালিয়ে যাচ্ছি।\n\n")
-                }, { reason ->
+                }, onReasoning = { reason ->
                     // Reasoning is shown on screen and never spoken, so it travels
                     // in its own envelope the UI can tell apart from the answer.
                     trySend(REASONING_PREFIX + reason)
@@ -843,7 +905,7 @@ class ZyraxonAiEngine(private val context: Context) {
                 trySend("\n\n⏳ Connection problem — retry $retries/3 in ")
                 for (s in retries downTo 1) {
                     trySend("$s… ")
-                    kotlinx.coroutines.delay(1000L)
+                    kotlinx.coroutines.delay(500L)
                 }
                 trySend("\n\n")
                 attempt = callOnce()
@@ -954,7 +1016,7 @@ class ZyraxonAiEngine(private val context: Context) {
                 coroutineScope {
                     val jobs = parallel.map { (id, name, args) ->
                         launch {
-                            val outcome = onToolCall(name, args)
+                            val outcome = callTool(name, args)
                             synchronized(outcomes) { outcomes[id] = outcome }
                         }
                     }
@@ -962,7 +1024,7 @@ class ZyraxonAiEngine(private val context: Context) {
                 }
             }
             for ((id, name, args) in sequential) {
-                outcomes[id] = onToolCall(name, args)
+                outcomes[id] = callTool(name, args)
             }
 
             for ((id, name, args) in parsed) {
@@ -1257,12 +1319,13 @@ class ZyraxonAiEngine(private val context: Context) {
         messages: JSONArray,
         tools: JSONArray,
         onText: (String) -> Unit,
-        onReasoning: (String) -> Unit = {}
+        onReasoning: (String) -> Unit = {},
+        onToolArgs: ((Int, String, String) -> Unit)? = null
     ): StreamedTurn? {
         val sse = OpenAiSse(client)
         lastProviderError = null
         val spec = ProviderCatalog.find(model.provider)
-            ?: return callModelStreamingLegacy(model, messages, tools, onText, onReasoning)
+            ?: return callModelStreamingLegacy(model, messages, tools, onText, onReasoning, onToolArgs)
         val key = getApiKey(model.provider)
         // A key-less public provider is still worth a try; only a provider that
         // requires a key and has none is skipped, so the caller reports it.
@@ -1283,7 +1346,9 @@ class ZyraxonAiEngine(private val context: Context) {
             key,
             body,
             headersFor(spec),
-            onText
+            onText,
+            onReasoning,
+            onToolArgs
         )?.let { return it }
         lastProviderError = sse.lastError ?: "${spec.label}: সংযোগ ব্যর্থ"
         return null
@@ -1299,7 +1364,8 @@ class ZyraxonAiEngine(private val context: Context) {
         messages: JSONArray,
         tools: JSONArray,
         onText: (String) -> Unit,
-        onReasoning: (String) -> Unit = {}
+        onReasoning: (String) -> Unit = {},
+        onToolArgs: ((Int, String, String) -> Unit)? = null
     ): StreamedTurn? {
         val sse = OpenAiSse(client)
         val fallbackId = when {
@@ -1323,7 +1389,8 @@ class ZyraxonAiEngine(private val context: Context) {
             body,
             headersFor(spec),
             onText,
-            onReasoning
+            onReasoning,
+            onToolArgs
         )?.let { return it }
         lastProviderError = sse.lastError ?: "${spec.label}: সংযোগ ব্যর্থ"
         return null
@@ -1338,9 +1405,10 @@ class ZyraxonAiEngine(private val context: Context) {
         messages: JSONArray,
         tools: JSONArray,
         onText: (String) -> Unit,
-        onReasoning: (String) -> Unit = {}
+        onReasoning: (String) -> Unit = {},
+        onToolArgs: ((Int, String, String) -> Unit)? = null
     ): StreamedTurn? {
-        callModelStreaming(model, messages, tools, onText, onReasoning)?.let {
+        callModelStreaming(model, messages, tools, onText, onReasoning, onToolArgs)?.let {
             if (it.text.isNotEmpty() || it.toolCalls.length() > 0) return it
         }
         val blocking = callModel(model, messages, tools) ?: return null
@@ -1348,6 +1416,7 @@ class ZyraxonAiEngine(private val context: Context) {
         return StreamedTurn().also {
             it.appendText(blocking.text)
             it.mergeToolCalls(blocking.toolCalls)
+            it.finalizeArgs()
         }
     }
 
@@ -1364,9 +1433,10 @@ class ZyraxonAiEngine(private val context: Context) {
         tools: JSONArray,
         onText: (String) -> Unit,
         onSwitch: (String) -> Unit,
-        onReasoning: (String) -> Unit = {}
+        onReasoning: (String) -> Unit = {},
+        onToolArgs: ((Int, String, String) -> Unit)? = null
     ): StreamedTurn? {
-        callModelAny(model, messages, tools, onText, onReasoning)?.let {
+        callModelAny(model, messages, tools, onText, onReasoning, onToolArgs)?.let {
             if (it.text.isNotEmpty() || it.toolCalls.length() > 0) return it
         }
         val firstError = lastProviderError
@@ -1376,7 +1446,7 @@ class ZyraxonAiEngine(private val context: Context) {
         if (!ProviderCatalog.isRetryableError(firstError)) return null
 
         for (candidate in failoverCandidates(model)) {
-            val attempt = callModelAny(candidate, messages, tools, onText, onReasoning)
+            val attempt = callModelAny(candidate, messages, tools, onText, onReasoning, onToolArgs)
             if (attempt != null && (attempt.text.isNotEmpty() || attempt.toolCalls.length() > 0)) {
                 onSwitch("${model.provider} → ${candidate.provider} (${candidate.id})")
                 return attempt

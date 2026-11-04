@@ -9,5 +9,6 @@ data class TaskEntity(
     val text: String,
     val isCompleted: Boolean = false,
     val createdAt: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val conversationId: String = "main"
 )
