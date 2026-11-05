@@ -55,9 +55,16 @@ class OpenHandsContinuityTest {
         server = MockWebServer()
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
-                val body = request.body.readUtf8()
-                if (body.isNotBlank()) bodies += body
-                return route(request.path ?: "")
+                val path = request.path ?: ""
+                // A websocket upgrade is not an ordinary request: its body is the
+                // raw socket, and reading it here throws and kills the connection.
+                if (!path.contains("/sockets/events/")) {
+                    runCatching { request.body.readUtf8() }
+                        .getOrNull()
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { bodies += it }
+                }
+                return route(path)
             }
         }
         server.start()
