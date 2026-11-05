@@ -203,11 +203,6 @@ class OverlayChatService : android.app.Service() {
 
     // ------------------------------------------------------------------- eye
 
-    private companion object {
-        /** How often the eye checks that the bound conversation is still awake. */
-        const val HEARTBEAT_MS = 90_000L
-    }
-
     private fun assistant(): ZyraxonViewModel? =
         ZyraxonViewModel.active ?: runCatching { ZyraxonViewModel.shared(application) }.getOrNull()
 
@@ -668,6 +663,9 @@ class OverlayChatService : android.app.Service() {
     }
 
     companion object {
+        /** How often the eye checks that the bound conversation is still awake. */
+        private const val HEARTBEAT_MS = 90_000L
+
         fun start(context: Context) {
             val intent = Intent(context, OverlayChatService::class.java)
             // The service promotes itself to foreground at once; from a visible
