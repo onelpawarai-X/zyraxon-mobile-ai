@@ -162,7 +162,15 @@ class OpenHandsBridge(
                         // A phone-owned tool runs here; the cloud's own tools are
                         // left alone, because their result is already on the way.
                         val alreadyDone = e.id.isNotBlank() && e.id in history
-                        if (e.name in PHONE_TOOLS && !alreadyDone && toolRounds < MAX_TOOL_ROUNDS) {
+                        // A tool the phone owns runs here. The check is against the
+                        // live registry rather than a written-out list, so a tool
+                        // the app can run is never silently skipped, and a name the
+                        // app cannot run is never awaited forever.
+                        val runnable = e.name !in CLOUD_EXCLUDED && (
+                            e.name.contains("__") ||
+                                ai.zyraxon.assistant.ai.ToolRegistry.allowed(mode, e.name)
+                            )
+                        if (runnable && !alreadyDone && toolRounds < MAX_TOOL_ROUNDS) {
                             toolRounds++
                             val result = runCatching { onToolCall(e.name, e.args) }
                                 .getOrElse { JSONObject().put("ok", false).put("error", it.message) }
@@ -269,17 +277,49 @@ class OpenHandsBridge(
         private const val MAX_TOOL_ROUNDS = 25
 
         /**
-         * Tools that only exist on the phone. The cloud has its own terminal and
-         * files; these are the ones that must run here, on the device the user is
-         * holding, and are therefore handled locally.
+         * Tools the cloud is NOT offered, because the cloud already owns them or
+         * because their result could never come back into the conversation.
+         *
+         * Everything else in the live registry is published. The list used to be
+         * written out by hand, and it drifted: it offered the cloud a
+         * `look_at_screen` tool that had no implementation anywhere, and it hid
+         * the browser, the terminal, the file tools and every publishing tool, so
+         * a cloud turn could drive WhatsApp but could not build anything. Taking
+         * the list from the registry means a capability added to the app is
+         * reachable from the cloud the moment it exists.
          */
-        val PHONE_TOOLS = setOf(
-            "open_app", "list_apps", "launch_url", "read_screen", "screen_shot",
-            "tap", "tap_text", "swipe", "type_text", "press_key", "notify",
-            "clipboard_read", "clipboard_write", "read_sms", "share",
-            "look_camera", "read_media", "call_state", "call_answer", "call_hangup",
-            "call_dial", "open_settings", "device_lock", "voice_change",
-            "setup_shizuku", "live_voice", "look_at_screen"
+        private val CLOUD_EXCLUDED = setOf(
+            // The cloud has its own brain and its own delegation; running another
+            // agent on the phone would nest two agents over one screen.
+            "on_device_model", "sub_agent",
+            // Changing which MCP servers exist mid-turn would pull tools out from
+            // under the run that is using them.
+            "mcp_connect", "mcp_disconnect",
+            // The cloud conversation already had its approvals turned off; a
+            // second approval channel is a loop.
+            "request_permission",
+            // A job scheduled for later outlives the turn, and its result has no
+            // way back into the conversation — the cloud would be told it started
+            // and never learn it finished.
+            "schedule_command",
+            // A live voice session would take over the turn that is already
+            // streaming text to the phone.
+            "live_voice"
         )
+
+        /**
+         * The phone's own tools, as the cloud should see them: every tool the app
+         * can really run in [mode], minus the few the cloud must not be handed.
+         * MCP tools are appended by the caller, which knows the live connections.
+         */
+        fun phoneTools(mode: AgentMode): JSONArray {
+            val out = JSONArray()
+            for (s in ai.zyraxon.assistant.ai.ToolRegistry.schemas(mode)) {
+                val name = s.optJSONObject("function")?.optString("name") ?: continue
+                if (name in CLOUD_EXCLUDED) continue
+                out.put(s)
+            }
+            return out
+        }
     }
 }

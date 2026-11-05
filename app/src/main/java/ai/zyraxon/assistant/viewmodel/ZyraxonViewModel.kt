@@ -2161,10 +2161,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                         // The phone's own tools, published to the cloud. The agent
                         // then calls them by name and the bridge runs them here, so
                         // "open WhatsApp" is done on the phone, not described.
-                        clientTools = openHandsClient.clientToolSpecs(
-                            ai.zyraxon.assistant.ai.ToolRegistry.schemas(mode),
-                            ai.zyraxon.assistant.openhands.OpenHandsBridge.PHONE_TOOLS
-                        ),
+                        // Every tool the app can really run, taken from the live
+                        // registry so the cloud can build, browse, use the terminal
+                        // and publish — not only drive the phone's UI. MCP tools the
+                        // user has connected travel with them.
+                        clientTools = ai.zyraxon.assistant.openhands.OpenHandsBridge
+                            .phoneTools(mode).apply {
+                                if (mode != AgentMode.CHAT) {
+                                    for (t in aiEngine.mcp.allTools()) put(t.toOpenAiSchema())
+                                }
+                            },
                         existing = { stage -> existingCloudConversation(c, stage) },
                         onToolCall = { name, args -> runTool(name, args, c) },
                         onProgress = { _cloudStage.value = it },

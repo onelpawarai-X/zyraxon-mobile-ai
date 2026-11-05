@@ -189,33 +189,6 @@ class OpenHandsClient(
         return call(key, "POST", "/app-conversations", body)
     }
 
-    /**
-     * Turns the phone's tool schemas into the cloud's `ClientToolSpec` shape.
-     *
-     * The app already describes every tool it can run — that is what the local
-     * model is offered — so the same descriptions are reused rather than written
-     * twice. [allow] narrows that to the subset the bridge really executes on this
-     * device, so the agent is never handed a tool that nobody will answer.
-     */
-    fun clientToolSpecs(schemas: JSONArray, allow: Set<String>): JSONArray {
-        val out = JSONArray()
-        for (i in 0 until schemas.length()) {
-            val fn = schemas.optJSONObject(i)?.optJSONObject("function") ?: continue
-            val name = fn.optString("name")
-            // Only tools this app can actually execute are published. Offering the
-            // cloud a name nothing here answers would leave the agent waiting on a
-            // result that never arrives.
-            if (name.isBlank() || name !in allow) continue
-            out.put(
-                JSONObject()
-                    .put("name", name)
-                    .put("description", fn.optString("description"))
-                    .put("parameters", fn.optJSONObject("parameters") ?: JSONObject().put("type", "object"))
-            )
-        }
-        return out
-    }
-
     /** The live state of one conversation, including its rotating session key. */
     suspend fun getConversation(key: String, id: String): OhConversation {
         val o = call(key, "GET", "/app-conversations?ids=$id")
