@@ -2049,6 +2049,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun stopCloudScreenTicker() {
+        // A sub-agent turn can still be running when the outer one finishes, and
+        // its screen feed must not be cut off by the first turn's end.
+        if (activeTurns.get() > 0) return
         cloudScreenJob?.cancel()
         cloudScreenJob = null
         cloudScreenRef.set("")
