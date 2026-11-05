@@ -339,8 +339,9 @@ class OpenHandsBridge(
          */
         fun phoneTools(mode: AgentMode): JSONArray {
             val out = JSONArray()
-            for (schema in ai.zyraxon.assistant.ai.ToolRegistry.schemas(mode)) {
-                val fn = schema.optJSONObject("function") ?: continue
+            val schemas = ai.zyraxon.assistant.ai.ToolRegistry.schemas(mode)
+            for (i in 0 until schemas.length()) {
+                val fn = schemas.optJSONObject(i)?.optJSONObject("function") ?: continue
                 val name = fn.optString("name")
                 if (name.isBlank() || name in CLOUD_EXCLUDED) continue
                 out.put(
