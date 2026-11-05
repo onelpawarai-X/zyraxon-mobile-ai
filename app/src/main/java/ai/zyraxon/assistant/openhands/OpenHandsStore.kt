@@ -40,7 +40,11 @@ class OpenHandsStore(context: Context) {
     fun unbind(chatId: String, keepWarm: Boolean = true) {
         val sandbox = prefs.getString("sandbox_$chatId", null)
         prefs.edit().remove("conv_$chatId").remove("sandbox_$chatId").apply()
-        if (keepWarm && !sandbox.isNullOrBlank() && sandbox !in allSandboxes()) warmSandboxes.add(sandbox)
+        if (sandbox.isNullOrBlank()) return
+        // A sandbox known to be gone must leave the pool as well as the binding, or
+        // the next chat takes it out of the pool and pays a failed start for it.
+        warmSandboxes.remove(sandbox)
+        if (keepWarm && sandbox !in allSandboxes()) warmSandboxes.add(sandbox)
     }
 
     /**
