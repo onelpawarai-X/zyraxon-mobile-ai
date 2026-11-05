@@ -110,10 +110,10 @@ class SettingsPersistenceTest {
     @Test
     fun `the open tab survives a restart`() {
         val first = newViewModel()
-        first.setTab(AppTab.TOOLS)
+        first.setTab(AppTab.TERMINAL)
 
         val second = newViewModel()
-        assertEquals("খোলা ট্যাব রিস্টার্টে ফিরে যায়নি", AppTab.TOOLS, second.activeTab.value)
+        assertEquals("খোলা ট্যাব রিস্টার্টে ফিরে যায়নি", AppTab.TERMINAL, second.activeTab.value)
     }
 
     @Test

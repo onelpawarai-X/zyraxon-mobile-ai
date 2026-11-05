@@ -42,6 +42,7 @@ fun Composer(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
     val images by vm.attachedImages.collectAsState()
     val notice by vm.imageNotice.collectAsState()
     val seeScreen by vm.alwaysSeeScreen.collectAsState()
+    val micOn by vm.alwaysListening.collectAsState()
     var attach by remember { mutableStateOf(false) }
     var modeMenu by remember { mutableStateOf(false) }
     var modelSheet by remember { mutableStateOf(false) }
@@ -92,6 +93,8 @@ fun Composer(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                     }
                 }
             }
+            ComposerMicButton(isListening = micOn, onMicToggle = { vm.toggleListening() })
+            Spacer(Modifier.width(6.dp))
             Pill("🧠 ${model.name.take(16)} ▾", onClick = { modelSheet = true }, modifier = Modifier.weight(1f, fill = false), tag = "model_button")
             Spacer(Modifier.weight(1f))
             if (generating && text.isBlank()) {
@@ -114,6 +117,23 @@ fun Composer(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         }
     }
     if (modelSheet) ModelPicker(vm) { modelSheet = false }
+}
+
+/**
+ * The composer's microphone button: one tap holds the mic closed, the next opens
+ * it again. It is a composable of its own so the shell can place it and a test
+ * can render it without building a whole ViewModel.
+ */
+@Composable
+fun ComposerMicButton(isListening: Boolean, onMicToggle: () -> Unit, modifier: Modifier = Modifier) {
+    Box(
+        modifier.size(40.dp).clip(CircleShape)
+            .background(if (isListening) Glass.pinkFill else Glass.rowFill(0.5f))
+            .clickable { onMicToggle() }.testTag("mic_button"),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(if (isListening) "🎙" else "🔇", fontSize = 16.sp)
+    }
 }
 
 @Composable

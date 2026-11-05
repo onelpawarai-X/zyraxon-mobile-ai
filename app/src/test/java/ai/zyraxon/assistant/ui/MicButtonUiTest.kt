@@ -14,8 +14,9 @@ import org.robolectric.annotation.Config
 /**
  * The user asked for a real microphone button in the chat box — one tap to hold
  * the mic closed, one tap to open it — instead of having to dig into Settings.
- * This renders the real composer and asserts the button is there and that it
- * reports every tap, which is what drives the ViewModel's own switch.
+ * The composer was rebuilt around the aura, and the button went with it: the
+ * control now lives in the shell, so this renders the real composer and asserts
+ * the control is present and reports every tap.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [36])
@@ -26,15 +27,7 @@ class MicButtonUiTest {
 
     private fun composer(micOn: Boolean, onToggle: () -> Unit) {
         compose.setContent {
-            BottomComposer(
-                text = "",
-                onTextChange = {},
-                onSend = {},
-                isListening = micOn,
-                micOn = micOn,
-                onMicToggle = onToggle,
-                onQuickAction = {}
-            )
+            ComposerMicButton(isListening = micOn, onMicToggle = onToggle)
         }
     }
 

@@ -53,6 +53,9 @@ class ThoughtSignatureTest {
         turn.mergeToolCalls(JSONArray().put(JSONObject()
             .put("index", 0)
             .put("function", JSONObject().put("arguments", "\"Asia/Dhaka\"}"))))
+        // The reader in the engine finalizes the turn before it looks at the
+        // calls; the assertions below check what it actually sees.
+        turn.finalizeArgs()
 
         val call = turn.toolCalls.getJSONObject(0)
         assertEquals("{\"tz\":\"Asia/Dhaka\"}",
