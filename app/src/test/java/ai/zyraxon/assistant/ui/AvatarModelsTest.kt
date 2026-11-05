@@ -37,10 +37,20 @@ class AvatarModelsTest {
         assertTrue("roster unreadable — regex broke", keys.size >= 7)
     }
 
+    /** The keys the page defines, i.e. the characters it can actually render. */
+    private fun pageKeys(): Set<String> =
+        Regex("""(?m)^\s*([a-z]+):(?:\{|RBC\()""")
+            .findAll(indexHtml).map { it.groupValues[1] }.toSet()
+
     @Test
-    fun `every avatar in the roster has its model file`() {
-        val missing = rosterKeys().filterNot { asset("avatar/models/$it.glb").isFile }
-        assertTrue("roster offers avatars with no model: $missing", missing.isEmpty())
+    fun `every avatar the roster offers is a character the page can render`() {
+        // The roster's key is the page's `?c=` key, not a file name — রুহি is the
+        // key `ruhi` and its model is `female`. So the check is that the page knows
+        // the key at all.
+        val known = pageKeys()
+        assertTrue("page defines no characters — regex broke", known.isNotEmpty())
+        val unknown = rosterKeys().filterNot { it in known }
+        assertTrue("roster offers avatars the page cannot render: $unknown", unknown.isEmpty())
     }
 
     @Test
