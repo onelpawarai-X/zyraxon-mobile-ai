@@ -141,14 +141,6 @@ class ZyraxonAiEngine(private val context: Context) {
         /** The id of the phone's cloud agent model, always first in the picker. */
         const val APEX_MODEL_ID = "zyraxon/apex"
 
-        /**
-         * The user's rule is that the assistant keeps working until the job is
-         * done, so this is deliberately generous. The guard exists only to stop a
-         * genuinely stuck model from spinning forever.
-         */
-        /** Effectively unlimited: a job runs until the goal is verified done. */
-        private const val MAX_TOOL_ROUNDS = 100_000
-
         /** Lookups and launches that gain nothing from running twice with the same arguments. */
         private val REPEAT_GUARDED = setOf(
             "youtube_play", "web_search", "open_app", "launch_url", "read_url",
@@ -857,7 +849,10 @@ class ZyraxonAiEngine(private val context: Context) {
         var lastScreenText = ""
         var stalls = 0
         val callCounts = mutableMapOf<String, Int>()
-        while (round < MAX_TOOL_ROUNDS) {
+        // No round budget: the loop ends when the work is verified done, and the
+        // user can always stop a turn from the chat. A cap here would end a job
+        // mid-way for no reason the user could see.
+        while (true) {
             round++
             // Each round starts with a clean slate: whether a frame is pushed in
             // below is decided fresh, so a screen action that adds one is not
@@ -1155,10 +1150,6 @@ class ZyraxonAiEngine(private val context: Context) {
             }
         }
 
-        // Reaching here means the round budget ran out with tools still pending.
-        // Saying so is the honest end state: the user can just say "চালিয়ে যাও"
-        // and the conversation continues from exactly this point.
-        trySend("\n\n⚠️ অনেক ধাপ কাজ করার পরও কাজ শেষ হয়নি। \"চালিয়ে যাও\" বললে ঠিক এখান থেকেই আবার শুরু করব।")
     }.flowOn(Dispatchers.IO)
 
 

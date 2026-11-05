@@ -166,11 +166,9 @@ class OpenHandsBridge(
         // placeholder ("dispatched to client") and ends that run, so the real
         // outcome has to be handed back as a fresh message — which means one turn
         // can end more than once. [pendingTool] says a run is about to be restarted
-        // and must not be treated as the end. [toolRounds] is only counted, never
-        // capped: the cloud's runtime has no limit on how many tools a turn may
-        // use, so neither does the phone.
+        // and must not be treated as the end. Nothing counts the phone tools a turn
+        // uses: the cloud's runtime has no limit, so the phone does not either.
         var pendingTool = false
-        var toolRounds = 0
 
         // The turn is over — unless the user typed something while it ran. Those
         // words were queued, not dropped, and are sent here as the next turn so a
@@ -238,7 +236,6 @@ class OpenHandsBridge(
                                 ai.zyraxon.assistant.ai.ToolRegistry.allowed(mode, tool)
                             )
                         if (runnable && !alreadyDone) {
-                            toolRounds++
                             val result = runCatching { onToolCall(tool, e.args) }
                                 .getOrElse { JSONObject().put("ok", false).put("error", it.message) }
                             trySend(toolNote(tool, result))
