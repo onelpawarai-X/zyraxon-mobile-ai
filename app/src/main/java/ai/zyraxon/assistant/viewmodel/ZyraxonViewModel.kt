@@ -118,6 +118,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     val openHandsBridge = OpenHandsBridge(openHandsClient, openHandsStore) { aiEngine.isOnline() }
 
     /** The cloud's own provisioning stage during a first turn, for the loader. */
+    private val _cloudNotice = MutableStateFlow("")
+    val cloudNotice: StateFlow<String> = _cloudNotice.asStateFlow()
+    private val cloudRefreshBusy = MutableStateFlow(false)
+
     private val _cloudStage = MutableStateFlow("")
     val cloudStage: StateFlow<String> = _cloudStage.asStateFlow()
 
@@ -3499,6 +3503,52 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * abandoned here: otherwise the card stayed on "কানেক্ট হচ্ছে…" forever and
      * there was no way back to the Connect button.
      */
+    /**
+     * The user's own "fix it now" button on the home screen.
+     *
+     * Everything here self-heals without being asked, but a person who thinks a
+     * chat is stuck should not have to wait for the next timer: this wakes the
+     * cloud sandbox, re-reads the model list and the conversation list, and says
+     * what it found. It never throws at the user — the result is a sentence.
+     */
+    fun refreshCloud() {
+        if (cloudRefreshBusy.value) return
+        cloudRefreshBusy.value = true
+        viewModelScope.launch {
+            val key = aiEngine.getApiKey(ZYRAXON_APEX)
+            if (key.isBlank()) {
+                _cloudNotice.value = "আগে Apex কী বসাও"
+                cloudRefreshBusy.value = false
+                return@launch
+            }
+            if (!aiEngine.isOnline()) {
+                _cloudNotice.value = "ইন্টারনেট নেই — অনলাইনে এলে নিজেই ঠিক হয়ে যাবে"
+                cloudRefreshBusy.value = false
+                return@launch
+            }
+            _cloudNotice.value = "দেখা হচ্ছে…"
+            val id = openHandsStore.lastConversationId
+            if (id.isNullOrBlank()) {
+                _cloudNotice.value = "ক্লাউড প্রস্তুত — নতুন চ্যাট শুরু করো"
+                cloudRefreshBusy.value = false
+                return@launch
+            }
+            val conv = runCatching {
+                withContext(Dispatchers.IO) {
+                    openHandsClient.ensureRunning(key, id) { stage -> _cloudStage.value = stage }
+                }
+            }.getOrNull()
+            _cloudNotice.value = when {
+                conv == null -> "কনভার্সেশন পাওয়া যায়নি — পরের মেসেজে নতুনটা তৈরি হবে"
+                conv.sandboxStatus == "RUNNING" -> "ক্লাউড কানেক্টেড ✅"
+                else -> "স্যান্ডবক্স এখনো জাগছে (${conv.sandboxStatus})"
+            }
+            withContext(Dispatchers.IO) { runCatching { refreshModels() } }
+            delay(2500)
+            _cloudStage.value = ""
+        }.invokeOnCompletion { cloudRefreshBusy.value = false }
+    }
+
     fun onAppReturnedToForeground() {
         // Coming back from a swipe or a long sleep is the moment a cloud chat is
         // most likely to be pointing at a sandbox that has since been paused, so

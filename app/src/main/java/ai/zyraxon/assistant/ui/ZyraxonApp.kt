@@ -61,6 +61,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     val auraGlow by viewModel.auraGlow.collectAsState()
     val auraSpeed by viewModel.auraSpeed.collectAsState()
     val cloudStage by viewModel.cloudStage.collectAsState()
+    val cloudNotice by viewModel.cloudNotice.collectAsState()
     val terminalLines by viewModel.terminalLines.collectAsState()
     val terminalBusy by viewModel.terminalBusy.collectAsState()
     val terminalCwd by viewModel.terminalCwd.collectAsState()
@@ -109,6 +110,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                                 // A cloud turn spends its first seconds waking a
                                 // sandbox; saying so is the difference between a
                                 // wait and a screen that looks broken.
+                                cloudNotice.isNotBlank() -> t("☁ " + cloudNotice)
                                 cloudStage.isNotBlank() -> t("☁ " + cloudStage)
                                 isSpeaking -> t("বলছে… থামাতে ট্যাপ করো")
                                 !alwaysListening -> t("🔇 মাইক বন্ধ — ট্যাপ করো")
@@ -119,6 +121,15 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp).clip(RoundedCornerShape(14.dp))
                                 .background(Glass.fill(0.6f)).border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
                                 .padding(horizontal = 12.dp, vertical = 5.dp)
+                        )
+                        Text(
+                            "⟳ " + t("রিফ্রেশ"),
+                            color = Glass.textPrimary, fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.align(Alignment.BottomEnd).padding(end = 6.dp, bottom = 2.dp)
+                                .clip(RoundedCornerShape(14.dp)).background(Glass.fill(0.6f))
+                                .border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
+                                .clickable { viewModel.refreshCloud() }
+                                .padding(horizontal = 10.dp, vertical = 5.dp).testTag("cloud_refresh")
                         )
                     }
                 }
