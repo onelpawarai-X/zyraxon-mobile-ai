@@ -118,6 +118,9 @@ class ZyraxonAiEngine(private val context: Context) {
      * and the handshake. Fire-and-forget; failure is silent.
      */
     fun prewarm(model: AiModel) {
+        // The cloud agent is warmed by opening its conversation, not by a TLS
+        // handshake against a chat endpoint it does not use.
+        if (model.provider == "zyraxon_apex") return
         Thread {
             try {
                 val spec = ProviderCatalog.find(model.provider) ?: return@Thread
@@ -134,6 +137,9 @@ class ZyraxonAiEngine(private val context: Context) {
          * The marker cannot occur in real prose, so a plain answer is unaffected.
          */
         const val REASONING_PREFIX = "\u0001zyraxon-reasoning\u0001"
+
+        /** The id of the phone's cloud agent model, always first in the picker. */
+        const val APEX_MODEL_ID = "zyraxon/apex"
 
         /**
          * The user's rule is that the assistant keeps working until the job is
@@ -366,13 +372,37 @@ class ZyraxonAiEngine(private val context: Context) {
             }
 
             val result = snapshot()
-            if (result.isNotEmpty()) {
-                cacheModels(result)
-                result
+            // The phone's cloud agent is always present. It has no catalogue to
+            // fetch, so it is added after the network pass rather than raced with
+            // it; this is what keeps it in the picker even offline.
+            val withApex = ensureApex(result)
+            if (withApex.isNotEmpty()) {
+                cacheModels(withApex)
+                withApex
             } else {
-                readCachedModels()
+                ensureApex(readCachedModels())
             }
         }
+
+    /**
+     * Puts ZYRAXON Apex at the head of the list.
+     *
+     * The head position is deliberate: it is the default, and the default is the
+     * strongest thing the phone can reach. It is also always "connected", because
+     * the moment a key is saved the cloud answers — so unlike every other
+     * provider there is no state in which it should disappear from the list.
+     */
+    private fun ensureApex(models: List<AiModel>): List<AiModel> {
+        val apex = AiModel(
+            id = APEX_MODEL_ID,
+            name = "ZYRAXON Apex",
+            category = "ZYRAXON Apex",
+            description = "ক্লাউড এজেন্ট — ফোন ও ক্লাউড মিলিয়ে পূর্ণ শক্তি",
+            provider = "zyraxon_apex",
+            isFree = false
+        )
+        return listOf(apex) + models.filter { it.provider != "zyraxon_apex" }
+    }
 
     /** Stores the real catalogue so a later offline launch still has a list. */
     private fun cacheModels(models: List<AiModel>) {
@@ -423,6 +453,10 @@ class ZyraxonAiEngine(private val context: Context) {
     private fun fetchProviderModels(spec: ProviderSpec): List<AiModel>? {
         val key = getApiKey(spec.id)
         if (spec.needsKeyForCatalog && key.isBlank()) return null
+        // A provider with no catalogue URL has nothing to fetch: ZYRAXON Apex is
+        // reached through the conversation API, not an OpenAI-compatible list, and
+        // its models are supplied by the app rather than read from the network.
+        if (spec.modelsUrl.isBlank()) return null
         return try {
             val builder = Request.Builder()
                 .url(ProviderCatalog.urlFor(spec, key, forCatalog = true))

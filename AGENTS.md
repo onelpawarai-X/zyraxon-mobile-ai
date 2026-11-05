@@ -182,3 +182,30 @@ timeout.
 
 Do not put a token in the git remote URL. Pass it per command:
 `git -c credential.helper= push https://x-access-token:$GH_TOKEN@github.com/...`
+
+## Cloud agent → phone tool bridge (verified against the live API)
+
+The cloud conversation API accepts a `client_tools` array on
+`POST /api/v1/app-conversations`, using `ClientToolSpec` shape:
+`{name, description, parameters}` where `parameters` is a JSON Schema object.
+Tools declared there get registered as real tools of the conversation
+(`ClientAction_<name>` appears in the agent-server OpenAPI and in the event log).
+
+Verified round trip (Python probe, live endpoint):
+1. create conversation with `client_tools` + `sandbox_id` → 200
+2. open WS `wss://<host>/sockets/events/<conv_id>` with header
+   `X-Session-API-Key: <session_api_key>` (from `GET /app-conversations?ids=<id>`)
+3. send a message asking for the client tool
+4. receive `ActionEvent` whose `action.kind` is `ClientAction_<name>`
+5. the server immediately emits its own stub `ObservationEvent`
+   ("Tool call dispatched to client.") and finishes the run
+6. to continue, send the real result back as a normal user message and run again
+
+So one turn can end several times; the bridge must not treat a `finished` status
+that follows a phone-tool call as the end of the turn.
+
+Two things that wasted time, now known:
+- WS handshake can return 403 for a few seconds right after the sandbox starts.
+  Retry the connect; it succeeds on its own.
+- `sandbox_id` must be passed when reusing a warm sandbox, otherwise a new
+  sandbox is provisioned and can hit the daily sandbox limit.

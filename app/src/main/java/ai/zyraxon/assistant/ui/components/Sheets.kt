@@ -647,6 +647,7 @@ fun SettingsSheet(
     var editGeminiKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("gemini")) }
     var editOpenCodeKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("opencode")) }
     var editZyraxonKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("zyraxon")) }
+    var editApexKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("zyraxon_apex")) }
     var editClaudeKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("anthropic")) }
     var editGroqKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("groq")) }
     var editOpenRouterKey by remember { mutableStateOf(viewModel.aiEngine.getApiKey("openrouter")) }
@@ -1842,6 +1843,18 @@ fun SettingsSheet(
                         HorrorSectionTitle(t("এআই প্রোভাইডার ও নিজস্ব API Keys"))
                         Text(t("কী সেভ করলে অ্যাপ নিজেই প্রোভাইডারের ক্যাটালগ পড়ে যাচাই করে — সত্যি কানেক্টেড হলে সবুজ, নাহলে আসল কারণ লাল রঙে দেখাবে।"), color = Glass.textMuted, fontSize = 11.5.sp)
                         Spacer(modifier = Modifier.height(10.dp))
+
+                        // The phone's own cloud agent. Unlike every other provider it
+                        // has no catalogue to verify against, so the status is proved
+                        // by reading the account instead: a key that answers is a key
+                        // that works, and from then on it is always connected.
+                        ProviderKeyRow(
+                            t("ZYRAXON Apex — ক্লাউড এজেন্ট (সবসময় কানেক্টেড)"),
+                            editApexKey, { editApexKey = it },
+                            providerStatus["zyraxon_apex"], "zyraxon_apex" in providerBusy
+                        ) {
+                            viewModel.saveProviderKey("zyraxon_apex", editApexKey)
+                        }
 
                         // The ZYRAXON line is the user's own provider. Its catalogue
                         // is public, so its ten models load before any key is set.

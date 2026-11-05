@@ -244,6 +244,25 @@ object ProviderCatalog {
             extraHeaders = mapOf("x-opencode-client" to "cli"),
             speedRank = 8,
             category = "OpenCode"
+        ),
+        // ZYRAXON Apex is the phone's own cloud agent, not an OpenAI-compatible
+        // chat endpoint: a turn creates or reuses a whole remote conversation and
+        // streams its events over a socket. It is listed here so it appears in the
+        // same picker as every other provider, but its turns are routed by
+        // OpenHandsBridge, not by the SSE path. The two URLs are the cloud's own
+        // base — nothing is ever fetched from them, because the model list below is
+        // what the app supplies — they exist only so the entry is a complete,
+        // well-formed provider rather than a special case with holes in it.
+        // `speedRank` is 0 so the default choice is always the strongest one here.
+        ProviderSpec(
+            id = "zyraxon_apex",
+            label = "ZYRAXON Apex",
+            modelsUrl = "https://app.all-hands.dev/api/v1",
+            chatUrl = "https://app.all-hands.dev/api/v1",
+            auth = ProviderSpec.AuthStyle.BEARER,
+            speedRank = 0,
+            category = "ZYRAXON Apex",
+            seedModels = listOf("openhands/deepseek-v4.1-flash")
         )
     )
 

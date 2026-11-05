@@ -16,6 +16,7 @@ import ai.zyraxon.assistant.tools.PreviewBridge
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
@@ -58,6 +59,10 @@ import ai.zyraxon.assistant.voice.SttDecision
 import ai.zyraxon.assistant.update.Updater
 import ai.zyraxon.assistant.update.UpdateRelease
 import ai.zyraxon.assistant.update.UpdateState
+import ai.zyraxon.assistant.openhands.OpenHandsBridge
+import ai.zyraxon.assistant.openhands.OpenHandsClient
+import ai.zyraxon.assistant.openhands.OpenHandsStore
+import ai.zyraxon.assistant.openhands.OhConversation
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
@@ -100,6 +105,24 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     val aiEngine = ZyraxonAiEngine(application)
     val voiceManager = NativeVoiceManager(application, viewModelScope)
+
+    /**
+     * The cloud agent. A turn routed here runs a whole remote conversation: the
+     * sandbox does the heavy work and streams its thinking, its tool calls and its
+     * answer back over a socket, while tools that belong to this phone are still
+     * executed here. It shares the engine's contract, so nothing downstream needs
+     * to know which brain answered.
+     */
+    val openHandsClient = OpenHandsClient()
+    val openHandsStore = OpenHandsStore(application)
+    val openHandsBridge = OpenHandsBridge(openHandsClient, openHandsStore)
+
+    /** The cloud's own provisioning stage during a first turn, for the loader. */
+    private val _cloudStage = MutableStateFlow("")
+    val cloudStage: StateFlow<String> = _cloudStage.asStateFlow()
+
+    /** One-shot: the cloud model takes the default the first time a key exists. */
+    @Volatile private var apexDefaulted = false
 
     /**
      * Speech-to-speech with a live model. While it runs the model's own voice is
@@ -1299,6 +1322,20 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             if (complete) setModel(models[0])
             return
         }
+        // A key that has just been saved for the cloud agent is a clear statement of
+        // intent, so the first time one exists the cloud model takes the default —
+        // it is the strongest thing the phone can reach, and the user asked for it.
+        // After that the saved choice wins, exactly like every other provider.
+        if (complete && !apexDefaulted &&
+            aiEngine.getApiKey(ZYRAXON_APEX).isNotBlank() &&
+            current.provider != ZYRAXON_APEX
+        ) {
+            models.firstOrNull { it.provider == ZYRAXON_APEX }?.let {
+                apexDefaulted = true
+                setModel(it)
+                return
+            }
+        }
         val match = models.firstOrNull { it.id == current.id }
         if (match != null) {
             // A saved model keeps its place; its friendly name is refreshed from
@@ -1543,11 +1580,50 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // before the network call starts rather than after it returns.
         _providerStatus.value = _providerStatus.value + (provider to "যাচাই করা হচ্ছে…")
         viewModelScope.launch {
-            val (ok, message) = aiEngine.verifyProviderKey(provider)
+            // The cloud agent has no catalogue to read, so it is proved a different
+            // way: reading the account with the key. That is the same call every
+            // later turn makes, so a key that verifies here is a key that will work.
+            val (ok, message) = if (provider == ZYRAXON_APEX) verifyApexKey(trimmed)
+                else aiEngine.verifyProviderKey(provider)
             _providerStatus.value = _providerStatus.value + (provider to message)
             _providerBusy.value = _providerBusy.value - provider
             if (ok) refreshModels()
         }
+    }
+
+    /**
+     * Saves and verifies a key, reporting the outcome to the caller instead of to
+     * the settings row. The first-run prompt needs the answer itself: it must keep
+     * the user on the screen with the reason when a key is wrong, which a status
+     * string in a settings list cannot do.
+     */
+    fun saveProviderKeyAwait(provider: String, key: String, onResult: (Boolean, String) -> Unit) {
+        aiEngine.setApiKey(provider, key)
+        val trimmed = key.trim()
+        _providerBusy.value = _providerBusy.value + provider
+        _providerStatus.value = _providerStatus.value + (provider to "যাচাই করা হচ্ছে…")
+        viewModelScope.launch {
+            val (ok, message) = if (provider == ZYRAXON_APEX) verifyApexKey(trimmed)
+                else aiEngine.verifyProviderKey(provider)
+            _providerStatus.value = _providerStatus.value + (provider to message)
+            _providerBusy.value = _providerBusy.value - provider
+            if (ok) refreshModels()
+            onResult(ok, message)
+        }
+    }
+
+    /**
+     * Proves a cloud key by reading the account it belongs to. The conversation
+     * list is the cheapest honest check: it needs no sandbox, costs no quota, and
+     * fails with the cloud's own words when the key is wrong.
+     */
+    private suspend fun verifyApexKey(key: String): Pair<Boolean, String> = try {
+        val list = withContext(Dispatchers.IO) { openHandsClient.listConversations(key, limit = 1) }
+        true to "কানেক্টেড (${list.size}টি কনভার্সেশন)"
+    } catch (e: ai.zyraxon.assistant.openhands.OhAuthError) {
+        false to "কী গ্রহণ করা হয়নি"
+    } catch (e: Exception) {
+        false to (e.message ?: "সংযোগ ব্যর্থ")
     }
 
     fun saveGithubToken(token: String) {
@@ -1996,7 +2072,31 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 val history = ContextWindow.assemble(recalled, recent)
                 val firstFrame = if (mode == AgentMode.AGENT) _screenFrameDataUrl.value else ""
 
-                aiEngine.streamAiResponse(
+                val turnFlow: Flow<String> = if (model.provider == ZYRAXON_APEX) {
+                    // A cloud turn: the sandbox is created or resumed here and its
+                    // live event socket then drives the very same token stream the
+                    // local engine would have produced, so nothing downstream of
+                    // this point knows which brain answered.
+                    _cloudStage.value = ""
+                    openHandsBridge.runTurn(
+                        apiKey = aiEngine.getApiKey(ZYRAXON_APEX),
+                        chatId = c.id,
+                        prompt = effectivePrompt,
+                        mode = mode,
+                        systemSuffix = cloudSuffix(mode),
+                        // The phone's own tools, published to the cloud. The agent
+                        // then calls them by name and the bridge runs them here, so
+                        // "open WhatsApp" is done on the phone, not described.
+                        clientTools = openHandsClient.clientToolSpecs(
+                            ai.zyraxon.assistant.ai.ToolRegistry.schemas(mode),
+                            ai.zyraxon.assistant.openhands.OpenHandsBridge.PHONE_TOOLS
+                        ),
+                        existing = existingCloudConversation(c),
+                        onToolCall = { name, args -> runTool(name, args, c) },
+                        onProgress = { _cloudStage.value = it }
+                    )
+                } else {
+                    aiEngine.streamAiResponse(
                     prompt = effectivePrompt,
                     history = history,
                     persona = _selectedPersona.value,
@@ -2018,7 +2118,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     screenFrame = { withContext(Dispatchers.IO) { ToolRegistry.screenFrame() } },
                     mode = mode,
                     onToolArgs = { _, name, raw -> onToolArgs(c, name, raw) }
-                ).collect { chunk ->
+                    )
+                }
+                turnFlow.collect { chunk ->
                     if (chunk.startsWith(ZyraxonAiEngine.REASONING_PREFIX)) {
                         thinkingBuf.append(chunk.removePrefix(ZyraxonAiEngine.REASONING_PREFIX))
                         val nowR = System.currentTimeMillis()
@@ -2078,6 +2180,51 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 onFinished?.invoke(fullReply)
             }
         }
+    }
+
+    // ---- ZYRAXON Apex (cloud) --------------------------------------------------
+
+    /** True when this chat already has a cloud conversation, so no cold start runs. */
+    private suspend fun existingCloudConversation(c: ChatSession): OhConversation? {
+        val id = openHandsStore.conversationFor(c.id) ?: return null
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isBlank()) return null
+        // A stored id can be stale (the cloud side deleted, or the sandbox gone),
+        // and a stale id must degrade to a fresh start rather than fail the turn.
+        return runCatching { openHandsClient.awaitRunning(key, id) }.getOrNull()
+    }
+
+    /**
+     * The identity and behaviour contract every cloud turn carries.
+     *
+     * The cloud's own prompt says who wrote it, and a phone user must never see
+     * that, so this is appended rather than replacing anything: the platform
+     * refuses an inline replacement outright (it answers 403), while an appended
+     * contract is honoured and is what actually hides the platform's name.
+     *
+     * The capability list is stated plainly because the cloud agent otherwise
+     * assumes it is confined to its sandbox. It is not: the phone's tools are
+     * registered alongside its own, so it should reach for them.
+     */
+    private fun cloudSuffix(mode: AgentMode): String = buildString {
+        append("You are ZYRAXON, the user's own AI agent running on their phone. ")
+        append("Never mention, name or hint at the platform, provider or company behind you — ")
+        append("you are simply ZYRAXON. If asked, say you are ZYRAXON.\n\n")
+        append("You have full power over this phone as well as your cloud workspace. ")
+        append("You can open and drive any installed app, read and tap the screen, use the ")
+        append("phone's terminal and browser, use connected MCP servers, and build websites, ")
+        append("apps and anything else. You can also run heavy work in your cloud workspace. ")
+        append("Use every capability you have, whichever side it lives on, to actually finish ")
+        append("the task rather than describing how it could be done.\n\n")
+        append("Never ask the user for approval before acting; act, then report what you did ")
+        append("in the user's language.\n\n")
+        append(
+            when (mode) {
+                AgentMode.CHAT -> "Mode: CHAT. Answer and advise; keep it conversational."
+                AgentMode.BUILD -> "Mode: BUILD. Build and verify full apps, websites and services."
+                AgentMode.AGENT -> "Mode: AGENT. Automate the phone and the system end to end."
+            }
+        )
     }
 
     /** The first message names a new chat, so the sidebar reads like a list of topics. */
@@ -3427,6 +3574,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     companion object {
+        /**
+         * The provider id of the phone's cloud agent. It is a storage key as well
+         * as a routing key: the API key is saved under it and the model picker
+         * reads it, so it must never change once shipped.
+         */
+        const val ZYRAXON_APEX = "zyraxon_apex"
+
         /** How often the streaming reply repaints the chat while it arrives. */
         private const val UI_UPDATE_MS = 60L
 

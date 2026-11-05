@@ -184,9 +184,22 @@ class MainActivity : ComponentActivity() {
             key(language) {
                 ZyraxonTheme {
                     var booting by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
+                    // Asked once, on the first launch that has no key at all. A user
+                    // who already has one never sees it again, which is what "set it
+                    // once and it stays connected" means in practice.
+                    var needKey by androidx.compose.runtime.remember {
+                        androidx.compose.runtime.mutableStateOf(
+                            viewModel.aiEngine.getApiKey("zyraxon_apex").isBlank()
+                        )
+                    }
                     androidx.compose.foundation.layout.Box {
                         ZyraxonApp(viewModel = viewModel)
                         if (booting) ai.zyraxon.assistant.ui.components.BootScreen { booting = false }
+                        if (!booting && needKey) {
+                            ai.zyraxon.assistant.ui.components.ApexKeyPrompt(viewModel) {
+                                needKey = false
+                            }
+                        }
                     }
                 }
             }
