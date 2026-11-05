@@ -44,7 +44,9 @@ class OhApiError(val code: Int, message: String) : Exception(message)
  *    for `RUNNING` before it opens instead of failing the turn.
  */
 class OpenHandsClient(
-    private val http: OkHttpClient = defaultHttp()
+    private val http: OkHttpClient = defaultHttp(),
+    /** The account API root. Overridable so a test can point at its own server. */
+    private val base: String = CLOUD
 ) {
     companion object {
         const val CLOUD = "https://app.all-hands.dev/api/v1"
@@ -72,7 +74,7 @@ class OpenHandsClient(
     }
 
     private fun req(path: String, key: String): Request.Builder =
-        Request.Builder().url(if (path.startsWith("http")) path else CLOUD + path)
+        Request.Builder().url(if (path.startsWith("http")) path else base + path)
             .header("Authorization", "Bearer $key")
             .header("Accept", "application/json")
 
