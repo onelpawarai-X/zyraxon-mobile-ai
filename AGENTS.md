@@ -235,6 +235,27 @@ The recovery lives in `OpenHandsClient.sendMessage` (a 409 is woken through and
 the message is resent) and `ensureRunning` (wake, then wait for RUNNING). The
 overlay's 90s heartbeat and `refreshCloud()` keep a bound conversation warm.
 
+## Phone tools must be published to the cloud with a prefix
+
+The cloud agent already has its own tools called `read_file`, `write_file`,
+`edit_file`, `list_dir`, `git`, `terminal_run`, `run_shell`, `grep_files` and
+`find_files`. Handing it a client tool with one of those names makes its own server
+reject the **whole conversation** with `422` before the first turn starts. Measured
+live, twice, with controls:
+
+```
+client_tools: [read_file, write_file, git, terminal_run]  → 422 (conversation dies)
+client_tools: [zzz_alpha, zzz_beta, zzz_gamma, zzz_delta] → accepted
+client_tools: [phone_read_file, phone_write_file, …]      → accepted
+client_tools: all 79 phone tools, prefixed                → accepted
+```
+
+So every phone tool is published as `phone_<name>` (`OpenHandsBridge.PHONE_PREFIX`,
+`publishedName`/`localName`) and the prefix is stripped before the app runs it.
+Nothing else uses that prefix, so a collision is impossible rather than unlikely.
+MCP tools keep their own `server__tool` names — a server cannot collide with the
+agent's built-ins — but are sent in the flat spec shape the cloud wants.
+
 ## How the cloud agent sees the phone (measured live)
 
 The cloud conversation API takes **text only**. Probed against the live endpoint:
