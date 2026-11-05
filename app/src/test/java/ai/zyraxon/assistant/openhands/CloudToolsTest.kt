@@ -87,8 +87,10 @@ class CloudToolsTest {
     fun `the cloud can build, browse and publish, not only drive the ui`() {
         val build = localNames(AgentMode.BUILD)
         for (t in listOf(
+            // `edit_file` is the app's file writer — `write_file` exists in the
+            // registry but no mode offers it, so it is not asserted here.
             "preview", "terminal_run", "linux_run", "run_shell",
-            "write_file", "read_file", "edit_file", "publish_website",
+            "read_file", "edit_file", "publish_website",
             "web_search", "read_url", "build_app", "git", "github_pr"
         )) {
             assertTrue("the cloud is missing a real capability: $t", t in build)
