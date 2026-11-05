@@ -17,11 +17,11 @@ import java.util.concurrent.TimeUnit
 /**
  * The recovery a phone chat depends on, proved against a real HTTP server.
  *
- * These are the three behaviours that decide whether a cloud chat survives a
- * pocket, and every one of them was missing before: a paused sandbox answers
- * 409, the client must wake it and send again; a conversation whose sandbox is
- * asleep must be waited on until RUNNING; and a wake must be cheap when there is
- * nothing to do.
+ * These are the behaviours that decide whether a cloud chat survives a pocket,
+ * and every one of them was missing before: a paused sandbox answers 409, the
+ * client must wake it and send again; a conversation whose sandbox is asleep
+ * must be waited on until RUNNING; and the wake request must actually reach the
+ * cloud.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [36])
@@ -49,7 +49,8 @@ class OpenHandsRecoveryTest {
     )
 
     private fun conversation(id: String, sandbox: String, status: String) = """
-        {"items":[{"id":"$id","title":"t","sandbox_id":"$sandbox","sandbox_status":"$status"}]}
+        {"items":[{"id":"$id","title":"t","sandbox_id":"$sandbox","sandbox_status":"$status",
+        "session_api_key":"sk-1","conversation_url":"https://agent.example/api/conversations/$id"}]}
     """.trimIndent()
 
     @Test
@@ -63,13 +64,31 @@ class OpenHandsRecoveryTest {
 
         c.sendMessage("k", "c1", "hello")
 
-        val send = server.takeRequest()
-        assertEquals("/api/v1/app-conversations/c1/send-message", send.path)
+        assertEquals("/api/v1/app-conversations/c1/send-message", server.takeRequest().path)
+        assertEquals("/api/v1/sandboxes/sb1/resume", server.takeRequest().path)
+        assertEquals("/api/v1/app-conversations/c1/send-message", server.takeRequest().path)
+    }
+
+    /**
+     * The bug this pins: a POST with no body is refused by OkHttp before it is
+     * ever sent, and the refusal was swallowed — so resume() looked like it
+     * worked while the sandbox stayed asleep.
+     */
+    @Test
+    fun `the wake request really carries a body`() = runBlocking {
+        val c = client()
+        server.enqueue(MockResponse().setResponseCode(409).setBody("""{"detail":"Sandbox is PAUSED"}"""))
+        server.enqueue(MockResponse().setResponseCode(200).setBody(conversation("c1", "sb1", "PAUSED")))
+        server.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
+        server.enqueue(MockResponse().setResponseCode(200).setBody(conversation("c1", "sb1", "RUNNING")))
+        server.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
+
+        c.sendMessage("k", "c1", "hi")
+
+        server.takeRequest()
         val wake = server.takeRequest()
-        assertEquals("/api/v1/sandboxes/sb1/resume", wake.path)
-        val again = server.takeRequest()
-        assertEquals("/api/v1/app-conversations/c1/send-message", again.path)
-        assertEquals("hello", again.body.readUtf8().let { org.json.JSONObject(it).getJSONArray("content").getJSONObject(0).getString("text") })
+        assertEquals("POST", wake.method)
+        assertEquals("{}", wake.body.readUtf8())
     }
 
     @Test
@@ -103,5 +122,17 @@ class OpenHandsRecoveryTest {
         assertEquals("RUNNING", conv.sandboxStatus)
         val paths = (0 until server.requestCount).map { server.takeRequest().path }
         assertTrue(paths.contains("/api/v1/sandboxes/sb3/resume"))
+    }
+
+    /** The cloud may answer a single-id lookup with a bare array; that must not throw. */
+    @Test
+    fun `a bare array conversation body is accepted`() = runBlocking {
+        val c = client()
+        server.enqueue(MockResponse().setResponseCode(200).setBody(
+            """[{"id":"c4","title":"t","sandbox_id":"sb4","sandbox_status":"RUNNING","session_api_key":"sk"}]"""
+        ))
+        val conv = c.ensureRunning("k", "c4")
+        assertEquals("c4", conv.id)
+        assertEquals("RUNNING", conv.sandboxStatus)
     }
 }

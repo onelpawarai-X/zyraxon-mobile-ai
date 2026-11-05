@@ -51,6 +51,9 @@ class OpenHandsClient(
     companion object {
         const val CLOUD = "https://app.all-hands.dev/api/v1"
 
+        /** Methods OkHttp requires a body on, even when there is nothing to say. */
+        private val BODIED_METHODS = setOf("POST", "PUT", "PATCH")
+
         /** How long a first turn may wait for its sandbox before giving up. */
         private const val START_TIMEOUT_MS = 180_000L
 
@@ -90,9 +93,13 @@ class OpenHandsClient(
         path: String,
         body: JSONObject? = null
     ): JSONObject = withContext(Dispatchers.IO) {
+        // A POST/PUT/PATCH must carry a body: OkHttp refuses `method("POST", null)`
+        // outright, and that refusal was being swallowed, so a body-less resume
+        // never left the phone and a paused sandbox could not actually be woken.
+        val json = body?.toString() ?: if (method in BODIED_METHODS) "{}" else null
         val b = req(path, key).method(
             method,
-            body?.toString()?.toRequestBody("application/json".toMediaType())
+            json?.toRequestBody("application/json".toMediaType())
         )
         http.newCall(b.build()).execute().use { r ->
             val text = r.body?.string().orEmpty()
