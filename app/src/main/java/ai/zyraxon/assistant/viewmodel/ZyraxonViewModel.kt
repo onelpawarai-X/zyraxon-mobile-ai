@@ -2015,6 +2015,66 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private fun acquireFrameTicker() { if (activeTurns.incrementAndGet() == 1) startLiveFrameTicker() }
     private fun releaseFrameTicker() { if (activeTurns.decrementAndGet() <= 0) { activeTurns.set(0); stopLiveFrameTicker() } }
 
+    // ---- the cloud agent's view of the phone -------------------------------
+
+    private val cloudScreenRef = java.util.concurrent.atomic.AtomicReference("")
+    private var cloudScreenJob: kotlinx.coroutines.Job? = null
+    private var lastOcrFrameHash = 0
+    private var lastOcrText = ""
+
+    /**
+     * Captures the phone's screen as text every two seconds while a cloud turn
+     * runs, so the agent acts on the screen as it is now rather than as it was
+     * when the turn began.
+     *
+     * The digest comes from the accessibility tree — every element's own label
+     * and coordinate, read by Android, so Bangla arrives as Bangla. OCR is layered
+     * on top only when the picture actually changed: a still screen costs nothing,
+     * and a moving one gains the words drawn inside its images.
+     */
+    private fun startCloudScreenTicker() {
+        if (cloudScreenJob?.isActive == true) return
+        cloudScreenJob = viewModelScope.launch {
+            while (activeTurns.get() > 0) {
+                val digest = withContext(Dispatchers.IO) {
+                    runCatching { buildCloudScreenDigest() }.getOrNull().orEmpty()
+                }
+                cloudScreenRef.set(digest)
+                kotlinx.coroutines.delay(LIVE_FRAME_INTERVAL_MS)
+            }
+        }
+    }
+
+    private fun stopCloudScreenTicker() {
+        cloudScreenJob?.cancel()
+        cloudScreenJob = null
+        cloudScreenRef.set("")
+        lastOcrFrameHash = 0
+        lastOcrText = ""
+    }
+
+    /** The newest digest, or "" when the user turned screen-watching off. */
+    private fun cloudScreenDigest(): String =
+        if (_alwaysSeeScreen.value) cloudScreenRef.get() else ""
+
+    private suspend fun buildCloudScreenDigest(): String {
+        val label = DeviceBridge.foregroundLabel()
+        val pkg = DeviceBridge.foregroundPackage()
+        val nodes = runCatching { DeviceBridge.readScreen() }.getOrNull().orEmpty()
+        // OCR only when the picture changed: while the agent thinks the screen is
+        // usually still, and re-reading an identical frame every two seconds would
+        // spend the battery on text that is already known.
+        val frame = runCatching { ToolRegistry.screenFrame() }.getOrNull().orEmpty()
+        if (frame.isNotBlank()) {
+            val hash = frame.hashCode()
+            if (hash != lastOcrFrameHash) {
+                lastOcrFrameHash = hash
+                lastOcrText = runCatching { ScreenOcr.read(frame) }.getOrNull().orEmpty()
+            }
+        }
+        return CloudScreen.block(label, pkg, nodes, lastOcrText)
+    }
+
     /**
      * One turn of one chat. It runs on its own job with its own state, so any
      * number of chats can be answering at once without touching each other.
@@ -2045,6 +2105,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         c.turnStartedAt = startedAt
         busyIds.update { it + c.id }
         if (mode == AgentMode.AGENT) acquireFrameTicker()
+        // The cloud agent's model has no eyes, so it is sent the screen as text
+        // instead — refreshed for every step of the turn.
+        if (mode == AgentMode.AGENT && model.provider == ZYRAXON_APEX) startCloudScreenTicker()
 
         c.job = viewModelScope.launch {
             repository.saveMessage(userMsg, c.id)
@@ -2098,7 +2161,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                         ),
                         existing = { stage -> existingCloudConversation(c, stage) },
                         onToolCall = { name, args -> runTool(name, args, c) },
-                        onProgress = { _cloudStage.value = it }
+                        onProgress = { _cloudStage.value = it },
+                        screenDigest = { cloudScreenDigest() }
                     )
                 } else {
                     aiEngine.streamAiResponse(
@@ -2108,8 +2172,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     model = model,
                     memoriesContext = memoriesWithHistory,
                     screenContext = screen,
-                    imageDataUrl = firstFrame,
-                    imageDataUrls = images,
+                    // A picture goes only to a model that can look at one: an
+                    // image part sent to a text-only model is a hard 400 that
+                    // fails the whole turn. The model still receives the screen
+                    // as text through `screenContext`, so nothing is lost.
+                    imageDataUrl = if (VisionSupport.seesImages(model.id)) firstFrame else "",
+                    imageDataUrls = VisionSupport.picturesFor(model.id, images),
                     alwaysSeeScreen = _alwaysSeeScreen.value,
                     onToolCall = { name, args -> runTool(name, args, c) },
                     drainInjections = {
@@ -2167,6 +2235,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     _cloudStage.value = ""
                     busyIds.update { it - c.id }
                     if (mode == AgentMode.AGENT) releaseFrameTicker()
+                    stopCloudScreenTicker()
                     c.activeToolCalls.value = emptyList()
                     c.liveCode.value = null
                     if (speakingReply && spokenBuffer.isNotBlank()) voiceManager.speakQueued(spokenBuffer.toString())

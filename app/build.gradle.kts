@@ -147,6 +147,9 @@ dependencies {
   coreLibraryDesugaring(libs.desugar.jdk.libs.nio)
   // implementation(libs.play.services.location)
   implementation(libs.retrofit)
+  // On-device OCR for words drawn inside pictures, where the accessibility tree
+  // has no element to read. Runs offline; nothing leaves the phone for it.
+  implementation(libs.mlkit.text.recognition)
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)

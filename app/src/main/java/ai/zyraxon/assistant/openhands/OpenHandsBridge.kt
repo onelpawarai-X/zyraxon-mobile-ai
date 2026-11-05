@@ -53,7 +53,16 @@ class OpenHandsBridge(
         clientTools: JSONArray? = null,
         existing: (suspend ((String) -> Unit) -> OhConversation?)? = null,
         onToolCall: suspend (name: String, args: JSONObject) -> JSONObject = { _, _ -> JSONObject() },
-        onProgress: (String) -> Unit = {}
+        onProgress: (String) -> Unit = {},
+        /**
+         * The phone's screen as text, refreshed as the turn runs. The cloud agent
+         * is driven by a model with no eyes (measured live: a DeepSeek text
+         * model), so a screenshot is a blob it cannot read. This digest carries
+         * every element with its own coordinate instead, and it is re-read for
+         * every step — the initial message and every tool result — so the agent
+         * acts on the phone as it is now, not as it was when the turn began.
+         */
+        screenDigest: () -> String = { "" }
     ): Flow<String> = channelFlow {
         // Resolved inside the flow, not by the caller: waking a sleeping sandbox
         // takes tens of seconds, and this is the only place where those seconds
@@ -163,7 +172,9 @@ class OpenHandsBridge(
                             pendingTool = true
                             val delivered = withContext(Dispatchers.IO) {
                                 runCatching {
-                                    client.sendMessage(apiKey, live.id, toolResult(e.name, result)) { stage ->
+                                    client.sendMessage(
+                                        apiKey, live.id, toolResult(e.name, result) + screenDigest()
+                                    ) { stage ->
                                         trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
                                     }
                                 }.isSuccess
@@ -191,7 +202,7 @@ class OpenHandsBridge(
         delay(600)
         withContext(Dispatchers.IO) {
             runCatching { client.neverConfirm(live) }
-            client.sendMessage(apiKey, live.id, prompt) { stage ->
+            client.sendMessage(apiKey, live.id, prompt + screenDigest()) { stage ->
                 onProgress(stage)
                 trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
             }
