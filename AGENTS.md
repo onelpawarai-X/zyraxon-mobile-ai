@@ -235,6 +235,36 @@ The recovery lives in `OpenHandsClient.sendMessage` (a 409 is woken through and
 the message is resent) and `ensureRunning` (wake, then wait for RUNNING). The
 overlay's 90s heartbeat and `refreshCloud()` keep a bound conversation warm.
 
+## How the cloud agent sees the phone (measured live)
+
+The cloud conversation API takes **text only**. Probed against the live endpoint:
+
+```
+POST /app-conversations/<id>/send-message
+  content: [{type:"text",…}, {type:"image_url",…}]
+→ 422  "Input should be 'text'"   (loc: body.content.1.type)
+```
+
+So "send a picture when the model supports vision" is **not possible for the
+cloud**, whatever model it runs — the endpoint rejects an image part outright.
+The cloud model also has no eyes by default (measured: `openhands/deepseek-v4.1-
+flash`), so a screenshot would be a blob it cannot read even if it were accepted.
+
+What works instead, and what is implemented:
+
+- `ai/CloudScreen.kt` turns the accessibility tree into a digest — every element's
+  own label with the centre of its bounds, e.g. `- "Send" @(540,1820) [tap]`.
+  Android supplies the labels, so Bangla arrives as Bangla with no OCR step, and
+  the same coordinates that name a button also tap it.
+- `ai/ScreenOcr.kt` (ML Kit, on-device) adds words drawn *inside* a picture, which
+  the tree cannot see. It runs only when the frame actually changed.
+- The digest is refreshed every 2s (`LIVE_FRAME_INTERVAL_MS`) while a cloud turn
+  runs and is attached to the opening message **and every tool result**, so the
+  agent acts on the screen as it is now. `OpenHandsBridge.runTurn(screenDigest)`.
+- Local providers are routed by `ai/VisionSupport.kt`: a picture for a model that
+  can see, text for one that cannot (an image part to a text-only model is a hard
+  400 that fails the turn).
+
 ## Building: use GitHub Actions, not the local container
 
 The local container lost its JDK/Android SDK/Gradle after a restart and building
