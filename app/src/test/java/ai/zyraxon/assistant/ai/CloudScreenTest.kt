@@ -63,12 +63,22 @@ class CloudScreenTest {
     }
 
     @Test
-    fun `a very long screen is cut rather than dropped`() {
+    fun `a long list is capped at the line limit and says so`() {
         val many = (1..400).joinToString(",", "[", "]") { """{"text":"item $it","x":$it,"y":$it}""" }
         val d = CloudScreen.digest("App", "com.app", many)
         assertTrue("must not be empty", d.isNotEmpty())
-        assertTrue("must be capped", d.length <= CloudScreen.DEFAULT_MAX_CHARS + 2)
-        assertTrue("must say it was cut", d.endsWith("…"))
+        // One entry per distinct label, capped, and the agent is told there is more.
+        assertTrue("must say it was cut", d.contains("আরও আছে"))
+        assertEquals(CloudScreen.DEFAULT_MAX_LINES + 2, d.lines().size)
+    }
+
+    @Test
+    fun `a screen whose labels are enormous is cut by characters too`() {
+        val long = "x".repeat(300)
+        val many = (1..60).joinToString(",", "[", "]") { """{"text":"$long$it","x":$it,"y":$it}""" }
+        val d = CloudScreen.digest("App", "com.app", many)
+        assertTrue(d.length <= CloudScreen.DEFAULT_MAX_CHARS + 2)
+        assertTrue("the cut must be visible", d.endsWith("…"))
     }
 
     @Test
