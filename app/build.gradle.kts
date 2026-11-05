@@ -58,7 +58,12 @@ android {
     compose = true
     buildConfig = true
   }
-  testOptions { unitTests { isIncludeAndroidResources = true } }
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
+      all { it.systemProperty("zyraxon.wakeTimeoutMs", "3000") }
+    }
+  }
   // Robolectric loads its native runtime into a shared temp directory. Parallel
   // forks race on it (`FileSystemAlreadyExistsException`), so the suite runs in
   // one fork. Correctness over speed: 188 tests still finish in under a minute.

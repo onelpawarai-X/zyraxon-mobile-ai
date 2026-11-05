@@ -57,8 +57,14 @@ class OpenHandsClient(
         /** How many socket reconnects a single turn tolerates before it fails. */
         private const val MAX_RECONNECTS = 8
 
-        /** How long a sleeping sandbox may take to wake. Measured 13–26s live. */
-        private const val WAKE_TIMEOUT_MS = 90_000L
+        /**
+         * How long a sleeping sandbox may take to wake. Measured 13–26s live.
+         *
+         * A system property overrides it so a unit test can watch the retry loop
+         * without spending the real interval waiting.
+         */
+        private val WAKE_TIMEOUT_MS: Long =
+            System.getProperty("zyraxon.wakeTimeoutMs")?.toLongOrNull() ?: 90_000L
 
         /**
          * No read timeout: a turn can think for minutes without a byte arriving,
