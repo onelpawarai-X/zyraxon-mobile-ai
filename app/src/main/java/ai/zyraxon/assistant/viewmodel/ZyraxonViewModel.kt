@@ -2186,7 +2186,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                         existing = { stage -> existingCloudConversation(c, stage) },
                         onToolCall = { name, args -> runTool(name, args, c) },
                         onProgress = { _cloudStage.value = it },
-                        screenDigest = { cloudScreenDigest() }
+                        screenDigest = { cloudScreenDigest() },
+                    drainInjections = {
+                        val out = mutableListOf<String>()
+                        while (true) out.add(c.pendingInjections.poll() ?: break)
+                        out
+                    },
+                    // Only used when the cloud conversation is built from nothing —
+                    // a brand-new chat, or one whose sandbox could not be brought
+                    // back. The conversation that already exists holds its own
+                    // history, so this is empty for it.
+                    historySeed = { historySeedFor(c) }
                     )
                 } else {
                     aiEngine.streamAiResponse(
@@ -2280,12 +2290,50 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 repository.saveMessage(finalMsg, c.id)
                 onFinished?.invoke(fullReply)
             }
+
+            // A message that arrived in the instant between the bridge's last check
+            // and the turn ending is still queued. It starts its own turn here, so
+            // nothing the user typed while the agent worked is ever dropped.
+            val leftover = mutableListOf<String>()
+            while (true) leftover.add(c.pendingInjections.poll() ?: break)
+            if (leftover.isNotEmpty()) {
+                runTurn(c, leftover.joinToString("\n\n"), emptyList(), speak = true)
+            }
         }
     }
 
     // ---- ZYRAXON Apex (cloud) --------------------------------------------------
 
     /** True when this chat already has a cloud conversation, so no cold start runs. */
+    /**
+     * The chat's own past, as plain text, for a cloud conversation being built
+     * from nothing.
+     *
+     * A new conversation starts with no memory of the phone's chat, so without
+     * this the agent would meet a user mid-task and not know what had been said.
+     * The tail is taken, not the whole log: the cloud's own context window is the
+     * limit, and the most recent turns are what a task continues from.
+     */
+    private fun historySeedFor(c: ChatSession): String {
+        val lines = c.messages.value
+            .filter { it.text.isNotBlank() && !it.isStreaming }
+            .takeLast(20)
+            .mapNotNull { m ->
+                val who = when (m.role) {
+                    MessageRole.USER -> "ব্যবহারকারী"
+                    MessageRole.ASSISTANT -> "সহকারী"
+                    else -> null
+                } ?: return@mapNotNull null
+                "$who: ${m.text.take(600)}"
+            }
+        if (lines.isEmpty()) return ""
+        return buildString {
+            append("[এই চ্যাটে আগে যা বলা হয়েছে — ধারাবাহিকতা ধরে রাখো]\n")
+            append(lines.joinToString("\n"))
+            append("\n[এখান থেকে আগের কাজ চালিয়ে যাও]\n\n")
+        }
+    }
+
     private suspend fun existingCloudConversation(
         c: ChatSession,
         onStage: (String) -> Unit = {}

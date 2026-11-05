@@ -31,10 +31,16 @@ class OpenHandsStore(context: Context) {
             .apply()
     }
 
-    fun unbind(chatId: String) {
+    /**
+     * @param keepWarm whether this sandbox may host a future conversation. True
+     *   for an ordinary detach, where the machine is still usable. False when the
+     *   sandbox is known to be gone: offering a dead id as the reuse candidate
+     *   costs a whole failed start attempt before the cloud falls back.
+     */
+    fun unbind(chatId: String, keepWarm: Boolean = true) {
         val sandbox = prefs.getString("sandbox_$chatId", null)
         prefs.edit().remove("conv_$chatId").remove("sandbox_$chatId").apply()
-        if (!sandbox.isNullOrBlank() && sandbox !in allSandboxes()) warmSandboxes.add(sandbox)
+        if (keepWarm && !sandbox.isNullOrBlank() && sandbox !in allSandboxes()) warmSandboxes.add(sandbox)
     }
 
     /**

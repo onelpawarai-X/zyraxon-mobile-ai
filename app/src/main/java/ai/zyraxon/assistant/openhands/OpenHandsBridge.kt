@@ -62,7 +62,22 @@ class OpenHandsBridge(
          * every step — the initial message and every tool result — so the agent
          * acts on the phone as it is now, not as it was when the turn began.
          */
-        screenDigest: () -> String = { "" }
+        screenDigest: () -> String = { "" },
+        /**
+         * Words the user typed while the turn was running. They are queued rather
+         * than dropped, and are handed back here when the turn ends so they start
+         * the next turn instead of vanishing.
+         */
+        drainInjections: () -> List<String> = { emptyList() },
+        /**
+         * What this chat said before, as text. It is used **only** when the cloud
+         * conversation has to be built from nothing — a brand-new chat, or one
+         * whose sandbox was reclaimed and could not be brought back. An existing
+         * conversation already holds its own history, so seeding it again would
+         * repeat everything; a fresh one holds none, and without this the agent
+         * would meet the user for the first time mid-task.
+         */
+        historySeed: () -> String = { "" }
     ): Flow<String> = channelFlow {
         // Resolved inside the flow, not by the caller: waking a sleeping sandbox
         // takes tens of seconds, and this is the only place where those seconds
@@ -72,8 +87,40 @@ class OpenHandsBridge(
             trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
         }
 
-        // ---- cold start, shown as it happens -------------------------------
+        // ---- the conversation, brought to life ----------------------------
+        // Whether the prompt at the end must carry this chat's past: only a
+        // conversation built from nothing needs it. One that already exists holds
+        // its own history, and seeding it again would repeat everything.
+        var coldStart = false
+
+        // A stored conversation can be gone for good — the cloud side deleted it,
+        // or its sandbox was reclaimed and the resume did not bring it back. That
+        // is not a reason to lose the chat: the binding is dropped and a fresh
+        // conversation is built, seeded with this chat's history, so the agent
+        // still knows what was said and simply has a new machine underneath it.
+        if (conv != null) {
+            // The session key rotates whenever a sandbox resumes, so the one held
+            // from last time is refreshed before anything is sent. The cloud pauses
+            // an idle sandbox on its own, and a paused one refuses every call, so
+            // this is where the chat is brought back to life rather than failing:
+            // measured 13-26s to wake, shown to the user as it happens.
+            val revived = withContext(Dispatchers.IO) {
+                client.ensureRunning(apiKey, conv!!.id) { stage ->
+                    onProgress(stage)
+                    trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+                }
+            }
+            if (revived != null && revived.sandboxStatus == "RUNNING") {
+                conv = revived
+            } else {
+                store.unbind(chatId, keepWarm = false)
+                trySend(ZyraxonAiEngine.REASONING_PREFIX +
+                    "⏳ আগের স্যান্ডবক্স আর নেই — নতুন মেশিনে কথোপকথন আবার গড়া হচ্ছে…")
+            }
+        }
+
         if (conv == null) {
+            coldStart = true
             // Prefer a sandbox the account says is up right now; fall back to the
             // one this chat used before only if the list could not be read.
             val warm = withContext(Dispatchers.IO) {
@@ -89,7 +136,7 @@ class OpenHandsBridge(
                     // The cold start is shown where thinking will appear, because
                     // that is exactly what it is: the turn working before it can
                     // answer. A user who sees the real stage knows the wait is work,
-                    // not a hang — and it is the same block that then fills with the
+                    // not a hang - and it is the same block that then fills with the
                     // agent's own reasoning.
                     onProgress = { stage ->
                         onProgress(stage)
@@ -101,17 +148,6 @@ class OpenHandsBridge(
             store.bind(chatId, started.id, started.sandboxId)
             store.lastConversationId = started.id
         } else {
-            // The session key rotates whenever a sandbox resumes, so the one held
-            // from last time is refreshed before anything is sent. The cloud
-            // pauses an idle sandbox on its own, and a paused one refuses every
-            // call, so this is where the chat is brought back to life rather than
-            // failing: measured 13–26s to wake, shown to the user as it happens.
-            conv = withContext(Dispatchers.IO) {
-                client.ensureRunning(apiKey, conv!!.id) { stage ->
-                    onProgress(stage)
-                    trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
-                }
-            }
             // Remembered here too, not only on a cold start: the heartbeat and the
             // refresh button both need to know which conversation to keep awake.
             conv?.let { store.lastConversationId = it.id }
@@ -126,14 +162,36 @@ class OpenHandsBridge(
         // message arrives, and tokens produced before anything is listening are
         // simply not delivered.
         //
-        // Two counters make the loop safe. The cloud answers a phone tool with a
+        // One flag makes the loop safe. The cloud answers a phone tool with a
         // placeholder ("dispatched to client") and ends that run, so the real
         // outcome has to be handed back as a fresh message — which means one turn
         // can end more than once. [pendingTool] says a run is about to be restarted
-        // and must not be treated as the end, and [toolRounds] stops an agent that
-        // calls phone tools forever.
+        // and must not be treated as the end. [toolRounds] is only counted, never
+        // capped: the cloud's runtime has no limit on how many tools a turn may
+        // use, so neither does the phone.
         var pendingTool = false
         var toolRounds = 0
+
+        // The turn is over — unless the user typed something while it ran. Those
+        // words were queued, not dropped, and are sent here as the next turn so a
+        // mid-task message is answered instead of lost.
+        fun finishTurn() {
+            val late = drainInjections()
+            if (late.isEmpty()) {
+                close()
+                return
+            }
+            launch {
+                withContext(Dispatchers.IO) {
+                    runCatching {
+                        client.sendMessage(apiKey, live.id, late.joinToString("\n\n") + screenDigest()) { stage ->
+                            onProgress(stage)
+                            trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+                        }
+                    }
+                }
+            }
+        }
 
         val watcher = launch {
             // If the socket dies because the sandbox slept, the same wake that a
@@ -168,12 +226,18 @@ class OpenHandsBridge(
                         // written-out list, so a tool the app can run is never
                         // silently skipped and a name it cannot run is never
                         // awaited forever.
+                        //
+                        // There is no cap on how many phone tools one turn may
+                        // run. A cap was here, and it ended long automations
+                        // silently: past it the call was skipped and the turn
+                        // simply stopped. The cloud's own runtime has no such
+                        // limit, so neither does the phone.
                         val tool = localName(e.name)
                         val runnable = tool !in CLOUD_EXCLUDED && (
                             e.name.contains("__") ||
                                 ai.zyraxon.assistant.ai.ToolRegistry.allowed(mode, tool)
                             )
-                        if (runnable && !alreadyDone && toolRounds < MAX_TOOL_ROUNDS) {
+                        if (runnable && !alreadyDone) {
                             toolRounds++
                             val result = runCatching { onToolCall(tool, e.args) }
                                 .getOrElse { JSONObject().put("ok", false).put("error", it.message) }
@@ -190,7 +254,7 @@ class OpenHandsBridge(
                                     }
                                 }.isSuccess
                             }
-                            if (!delivered) close()
+                            if (!delivered) finishTurn()
                         }
                     }
 
@@ -199,7 +263,7 @@ class OpenHandsBridge(
                             // A finish that follows a phone tool is the end of the
                             // placeholder run, not of the turn: the result message
                             // has just started the real one.
-                            if (pendingTool) pendingTool = false else close()
+                            if (pendingTool) pendingTool = false else finishTurn()
                         }
                     }
 
@@ -211,9 +275,10 @@ class OpenHandsBridge(
         // A moment for the socket to be accepted before the message can start the
         // answer; without it the very first tokens race the connection.
         delay(600)
+        val seed = if (coldStart) historySeed() else ""
         withContext(Dispatchers.IO) {
             runCatching { client.neverConfirm(live) }
-            client.sendMessage(apiKey, live.id, prompt + screenDigest()) { stage ->
+            client.sendMessage(apiKey, live.id, seed + prompt + screenDigest()) { stage ->
                 onProgress(stage)
                 trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
             }
@@ -272,13 +337,6 @@ class OpenHandsBridge(
     }
 
     companion object {
-        /**
-         * How many phone tools one turn may run. Each one costs a round trip to the
-         * cloud, so a generous cap keeps a long automation working while still
-         * stopping a loop that would never end.
-         */
-        private const val MAX_TOOL_ROUNDS = 25
-
         /**
          * Tools the cloud is NOT offered, because the cloud already owns them or
          * because their result could never come back into the conversation.
