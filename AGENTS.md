@@ -210,6 +210,31 @@ Two things that wasted time, now known:
 - `sandbox_id` must be passed when reusing a warm sandbox, otherwise a new
   sandbox is provisioned and can hit the daily sandbox limit.
 
+## Sandbox lifecycle — measured live (a chat must never look dead)
+
+Probed against `app.all-hands.dev/api/v1` with a throwaway conversation, not the
+user's own:
+
+- The cloud **pauses an idle sandbox on its own**. A send to a paused one answers
+  `409 {"detail":"Sandbox is PAUSED. Use POST /api/v1/sandboxes/<id>/resume …"}`.
+- Waking it takes **13–26s** (`POST /sandboxes/<id>/resume` → poll
+  `GET /app-conversations?ids=<id>` until `sandbox_status == "RUNNING"`).
+- The conversation **survives the pause**: same id, same title, whole event log.
+  Only the sandbox sleeps, and the `session_api_key` rotates on resume, so the
+  socket must re-read the conversation before reconnecting.
+- After a wake, send is accepted immediately (200, ~0.4s warm).
+
+Two traps that were live bugs in this app:
+- `POST` with no body: OkHttp refuses `method("POST", null)`, and the refusal was
+  swallowed by `runCatching`, so `resume()` silently never left the phone. A
+  body-less POST now sends `{}`.
+- `GET /app-conversations?ids=<id>` can answer with a bare JSON array as well as
+  `{"items":[…]}`. Both are normalised in `OpenHandsClient.call`.
+
+The recovery lives in `OpenHandsClient.sendMessage` (a 409 is woken through and
+the message is resent) and `ensureRunning` (wake, then wait for RUNNING). The
+overlay's 90s heartbeat and `refreshCloud()` keep a bound conversation warm.
+
 ## Building: use GitHub Actions, not the local container
 
 The local container lost its JDK/Android SDK/Gradle after a restart and building
