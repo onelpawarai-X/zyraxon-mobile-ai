@@ -98,7 +98,11 @@ class OpenHandsClient(
             val text = r.body?.string().orEmpty()
             if (r.code == 401 || r.code == 403) throw OhAuthError("কী গ্রহণ করা হয়নি (HTTP ${r.code})")
             if (!r.isSuccessful) throw OhApiError(r.code, text.take(400).ifBlank { "HTTP ${r.code}" })
-            if (text.isBlank()) JSONObject() else JSONObject(text)
+            if (text.isBlank()) JSONObject()
+            // A single-id lookup comes back as either {"items":[…]} or a bare […];
+            // both are normalised to the first shape so every reader sees one form.
+            else if (text.trimStart().startsWith("[")) JSONObject().put("items", JSONArray(text))
+            else JSONObject(text)
         }
     }
 
@@ -307,12 +311,12 @@ class OpenHandsClient(
         onStage("স্যান্ডবক্স জাগানো হচ্ছে…")
         resumeSandbox(key, conv.sandboxId)
         val started = System.currentTimeMillis()
-        while (System.currentTimeMillis() - started < WAKE_TIMEOUT_MS) {
+        while (true) {
             delay(1500)
             conv = runCatching { getConversation(key, id) }.getOrElse { return conv }
             if (conv.sandboxStatus == "RUNNING") return conv
+            if (System.currentTimeMillis() - started >= WAKE_TIMEOUT_MS) return conv
         }
-        return conv
     }
 
     // ---- agent server ------------------------------------------------------
@@ -491,7 +495,8 @@ class OpenHandsClient(
     suspend fun awaitRunning(key: String, id: String, timeoutMs: Long = 120_000): OhConversation {
         val started = System.currentTimeMillis()
         var conv = getConversation(key, id)
-        while (conv.sandboxStatus != "RUNNING" && System.currentTimeMillis() - started < timeoutMs) {
+        while (conv.sandboxStatus != "RUNNING") {
+            if (System.currentTimeMillis() - started >= timeoutMs) return conv
             delay(1500)
             conv = getConversation(key, id)
         }
