@@ -37,6 +37,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -72,6 +74,7 @@ class OverlayChatService : android.app.Service() {
     private var scope: CoroutineScope? = null
     private var replyJob: Job? = null
     private var stateJob: Job? = null
+    private var heartbeatJob: Job? = null
     private lateinit var statusLine: TextView
     private lateinit var replyLine: TextView
     private lateinit var input: EditText
@@ -94,6 +97,7 @@ class OverlayChatService : android.app.Service() {
         }
         if (eye == null) showEye()
         bindState()
+        startHeartbeat()
         return START_STICKY
     }
 
@@ -175,7 +179,34 @@ class OverlayChatService : android.app.Service() {
         }
     }
 
+    /**
+     * Keeps the bound conversation awake while the app is away.
+     *
+     * The eye outlives the activity, so it is the one thing that can notice a
+     * sandbox has gone to sleep while the phone was in a pocket. It checks every
+     * [HEARTBEAT_MS] and wakes the conversation in the background, so the next
+     * message — from the eye or from the app after a swipe — lands on a machine
+     * that is already up instead of paying the 13–26s wake itself. It is silent:
+     * nothing is said unless a wake is actually needed, and a failure is left for
+     * the turn to report.
+     */
+    private fun startHeartbeat() {
+        if (heartbeatJob?.isActive == true) return
+        heartbeatJob = scope?.launch {
+            while (isActive) {
+                delay(HEARTBEAT_MS)
+                val vm = assistant() ?: continue
+                runCatching { vm.keepCloudAwake() }
+            }
+        }
+    }
+
     // ------------------------------------------------------------------- eye
+
+    private companion object {
+        /** How often the eye checks that the bound conversation is still awake. */
+        const val HEARTBEAT_MS = 90_000L
+    }
 
     private fun assistant(): ZyraxonViewModel? =
         ZyraxonViewModel.active ?: runCatching { ZyraxonViewModel.shared(application) }.getOrNull()

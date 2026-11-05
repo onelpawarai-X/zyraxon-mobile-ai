@@ -103,6 +103,9 @@ class OpenHandsBridge(
                     trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
                 }
             }
+            // Remembered here too, not only on a cold start: the heartbeat and the
+            // refresh button both need to know which conversation to keep awake.
+            conv?.let { store.lastConversationId = it.id }
         }
 
         val live = conv!!

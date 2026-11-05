@@ -2240,9 +2240,23 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         append("the task rather than describing how it could be done.\n\n")
         append("Never ask the user for approval before acting; act, then report what you did ")
         append("in the user's language.\n\n")
+        val lang = voiceLanguage.value
+        val langName = when {
+            lang.startsWith("bn") -> "Bangla (বাংলা)"
+            lang.startsWith("en") -> "English"
+            lang.startsWith("hi") -> "Hindi"
+            else -> null
+        }
         append("Reply in the language the user writes in — Bangla, English or any other. ")
         append("Do not switch language on your own and do not mix scripts: if the user ")
-        append("writes Bangla, every sentence you say is Bangla.\n\n")
+        append("writes Bangla, every sentence you say is Bangla. Never translate or ")
+        append("replace the user's own words, file names or commands — quote them as ")
+        append("they are. ")
+        if (langName != null) {
+            append("This user's interface and voice are set to $langName, so when the ")
+            append("language is not clear from their message, answer in $langName. ")
+        }
+        append("\n\n")
         append(
             when (mode) {
                 AgentMode.CHAT -> "Mode: CHAT. Answer and advise; keep it conversational."
@@ -3504,6 +3518,19 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * abandoned here: otherwise the card stayed on "কানেক্ট হচ্ছে…" forever and
      * there was no way back to the Connect button.
      */
+    /**
+     * The overlay's silent heartbeat: make sure the bound conversation is awake,
+     * without starting a turn and without saying anything. A chat that is already
+     * up costs one cheap read; only a sleeping sandbox pays the wake, and doing
+     * that here means the user's next message never waits for it.
+     */
+    suspend fun keepCloudAwake() {
+        val id = openHandsStore.lastConversationId ?: return
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isBlank() || !aiEngine.isOnline()) return
+        runCatching { openHandsClient.ensureRunning(key, id) }
+    }
+
     /**
      * The user's own "fix it now" button on the home screen.
      *
