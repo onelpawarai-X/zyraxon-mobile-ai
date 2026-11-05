@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.ai.ToolRegistry
 import ai.zyraxon.assistant.model.SubAgentInfo
 import ai.zyraxon.assistant.model.WorkspaceFile
@@ -45,10 +46,10 @@ fun ChatPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
             .border(1.dp, Glass.borderSoft, RoundedCornerShape(22.dp))
     ) {
         Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            SectionTab("💬 চ্যাট", section == "chat", Modifier.weight(1f)) { vm.setChatSection("chat") }
-            SectionTab("✅ টুডু ${tasks.count { !it.isCompleted }.takeIf { it > 0 } ?: ""}", section == "todo", Modifier.weight(1f)) { vm.setChatSection("todo") }
-            SectionTab("🛠 টুল ${(execs.size + active.size).takeIf { it > 0 } ?: ""}", section == "tools", Modifier.weight(1f)) { vm.setChatSection("tools") }
-            SectionTab("📁 ফাইল ${files.size.takeIf { it > 0 } ?: ""}", section == "files", Modifier.weight(1f)) { vm.setChatSection("files") }
+            SectionTab(t("💬 চ্যাট"), section == "chat", Modifier.weight(1f)) { vm.setChatSection("chat") }
+            SectionTab(t("✅ টুডু {0}", tasks.count { !it.isCompleted }.takeIf { it > 0 } ?: ""), section == "todo", Modifier.weight(1f)) { vm.setChatSection("todo") }
+            SectionTab(t("🛠 টুল {0}", (execs.size + active.size).takeIf { it > 0 } ?: ""), section == "tools", Modifier.weight(1f)) { vm.setChatSection("tools") }
+            SectionTab(t("📁 ফাইল {0}", files.size.takeIf { it > 0 } ?: ""), section == "files", Modifier.weight(1f)) { vm.setChatSection("files") }
         }
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (section) {
@@ -103,7 +104,7 @@ private fun MessageList(vm: ZyraxonViewModel) {
                 turnStartedAt = m.createdAt,
                 onCopy = {
                     clip.setText(AnnotatedString(m.text))
-                    android.widget.Toast.makeText(ctx, "কপি হয়েছে", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(ctx, t("কপি হয়েছে"), android.widget.Toast.LENGTH_SHORT).show()
                 },
                 onSpeak = { vm.speak(m.text) }
             )
@@ -120,7 +121,7 @@ private fun SubAgentStrip(subs: List<SubAgentInfo>, onStop: (String) -> Unit) {
             .border(1.dp, Glass.violet.copy(alpha = 0.5f), RoundedCornerShape(14.dp)).padding(10.dp)
     ) {
         Row(Modifier.clickable { open = !open }, verticalAlignment = Alignment.CenterVertically) {
-            Text("🧩 সাব-এজেন্ট (${subs.count { it.state == "running" }}/${subs.size} চলছে)", color = Glass.textPrimary,
+            Text(t("🧩 সাব-এজেন্ট ({0}/{1} চলছে)", subs.count { it.state == "running" }, subs.size), color = Glass.textPrimary,
                 fontWeight = FontWeight.Bold, fontSize = 12.5.sp, modifier = Modifier.weight(1f))
             Text(if (open) "▾" else "▸", color = Glass.textMuted)
         }
@@ -151,7 +152,7 @@ private fun TodoSection(vm: ZyraxonViewModel) {
     var text by remember { mutableStateOf("") }
     val done = tasks.count { it.isCompleted }
     Column(Modifier.fillMaxSize().padding(10.dp)) {
-        Text(if (tasks.isEmpty()) "এজেন্ট যে কাজের পরিকল্পনা করবে, এখানে দেখা যাবে" else "$done/${tasks.size} শেষ",
+        Text(if (tasks.isEmpty()) t("এজেন্ট যে কাজের পরিকল্পনা করবে, এখানে দেখা যাবে") else t("{0}/{1} শেষ", done, tasks.size),
             color = Glass.textSecondary, fontSize = 12.sp)
         if (tasks.isNotEmpty()) LinearProgressIndicator(progress = { done / tasks.size.toFloat() },
             modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).height(6.dp).clip(CircleShape),
@@ -174,7 +175,7 @@ private fun TodoSection(vm: ZyraxonViewModel) {
         Row(Modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             BasicTextField(text, { text = it }, Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(Glass.rowFill(0.3f)).padding(10.dp),
                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 13.sp), cursorBrush = SolidColor(Glass.pink),
-                decorationBox = { inner -> if (text.isEmpty()) Text("নিজের কাজ যোগ করো…", color = Glass.textMuted, fontSize = 13.sp); inner() })
+                decorationBox = { inner -> if (text.isEmpty()) Text(t("নিজের কাজ যোগ করো…"), color = Glass.textMuted, fontSize = 13.sp); inner() })
             Text("＋", color = Glass.pink, fontSize = 24.sp, modifier = Modifier.clickable { vm.addTask(text); text = "" }.padding(horizontal = 12.dp))
         }
     }
@@ -185,9 +186,9 @@ private fun ToolsSection(vm: ZyraxonViewModel) {
     val execs by vm.toolExecutions.collectAsState()
     val active by vm.activeToolCalls.collectAsState()
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        if (execs.isEmpty() && active.isEmpty()) item { Text("এজেন্ট যে টুল কল করবে তার তালিকা এখানে আসবে", color = Glass.textMuted, fontSize = 12.sp) }
+        if (execs.isEmpty() && active.isEmpty()) item { Text(t("এজেন্ট যে টুল কল করবে তার তালিকা এখানে আসবে"), color = Glass.textMuted, fontSize = 12.sp) }
         items(active, key = { "a" + it.id }) { e ->
-            ToolRow(e.icon, e.name, e.description, "চলছে…", e.timestamp, e.output, true)
+            ToolRow(e.icon, e.name, e.description, t("চলছে…"), e.timestamp, e.output, true)
         }
         items(execs, key = { it.id }) { e ->
             ToolRow(e.icon, e.name, e.description, e.status, e.timestamp, e.output, false)
@@ -210,7 +211,7 @@ private fun ToolRow(icon: String, name: String, desc: String, status: String, ti
                 Text(desc, color = Glass.textMuted, fontSize = 11.sp, maxLines = if (open) 5 else 1)
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text(status, color = if (running) Glass.pink else if (status == "সম্পন্ন" || status == "সফল") Glass.green else Glass.red, fontSize = 11.sp)
+                Text(status, color = if (running) Glass.pink else if (status == t("সম্পন্ন") || status == t("সফল")) Glass.green else Glass.red, fontSize = 11.sp)
                 Text(time, color = Glass.textMuted, fontSize = 9.5.sp)
             }
         }
@@ -239,18 +240,18 @@ private fun FilesSection(vm: ZyraxonViewModel) {
         ) {
             Text("📂", fontSize = 22.sp); Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
-                Text("ফাইল সেভ হয় এখানে", color = Glass.textMuted, fontSize = 10.5.sp)
+                Text(t("ফাইল সেভ হয় এখানে"), color = Glass.textMuted, fontSize = 10.5.sp)
                 Text(root.absolutePath.substringAfter("/Android/", root.absolutePath), color = Glass.textPrimary, fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold, maxLines = 2)
             }
-            Text("খোলো ↗", color = Glass.pink, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            Text(t("খোলো ↗"), color = Glass.pink, fontWeight = FontWeight.Bold, fontSize = 12.sp)
         }
         BasicTextField(query, { query = it }, Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(RoundedCornerShape(12.dp))
             .background(Glass.rowFill(0.3f)).padding(10.dp),
             textStyle = TextStyle(color = Glass.textPrimary, fontSize = 13.sp), cursorBrush = SolidColor(Glass.pink),
-            decorationBox = { inner -> if (query.isEmpty()) Text("🔎 ফাইল খোঁজো…", color = Glass.textMuted, fontSize = 13.sp); inner() })
+            decorationBox = { inner -> if (query.isEmpty()) Text(t("🔎 ফাইল খোঁজো…"), color = Glass.textMuted, fontSize = 13.sp); inner() })
         LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            if (shown.isEmpty()) item { Text("এখনো কোনো ফাইল নেই — এজেন্ট যা বানাবে এখানে জমা হবে", color = Glass.textMuted, fontSize = 12.sp) }
+            if (shown.isEmpty()) item { Text(t("এখনো কোনো ফাইল নেই — এজেন্ট যা বানাবে এখানে জমা হবে"), color = Glass.textMuted, fontSize = 12.sp) }
             groups.forEach { (folder, list) ->
                 item("h$folder") { Text("📁 $folder · ${list.size}", color = Glass.textSecondary, fontSize = 11.5.sp, fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 6.dp)) }
@@ -307,8 +308,8 @@ private fun FileRow(f: WorkspaceFile, vm: ZyraxonViewModel) {
     }
     if (del) AlertDialog(
         onDismissRequest = { del = false }, containerColor = Glass.sheetFill(0.9f),
-        title = { Text("মুছবে?", color = Glass.textPrimary) }, text = { Text(f.relative, color = Glass.textMuted) },
-        confirmButton = { TextButton({ vm.deleteWorkspaceFile(f.path); del = false }) { Text("মোছো", color = Glass.red) } },
-        dismissButton = { TextButton({ del = false }) { Text("না", color = Glass.textMuted) } }
+        title = { Text(t("মুছবে?"), color = Glass.textPrimary) }, text = { Text(f.relative, color = Glass.textMuted) },
+        confirmButton = { TextButton({ vm.deleteWorkspaceFile(f.path); del = false }) { Text(t("মোছো"), color = Glass.red) } },
+        dismissButton = { TextButton({ del = false }) { Text(t("না"), color = Glass.textMuted) } }
     )
 }

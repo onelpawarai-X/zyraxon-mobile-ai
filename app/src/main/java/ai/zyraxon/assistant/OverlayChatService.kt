@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.viewmodel.ZyraxonViewModel
 import android.annotation.SuppressLint
 import android.app.Notification
@@ -142,7 +143,7 @@ class OverlayChatService : android.app.Service() {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= 26) {
             nm.createNotificationChannel(
-                NotificationChannel(chan, "ZYRAXON চোখ", NotificationManager.IMPORTANCE_MIN)
+                NotificationChannel(chan, t("ZYRAXON চোখ"), NotificationManager.IMPORTANCE_MIN)
             )
         }
         val open = Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -152,8 +153,8 @@ class OverlayChatService : android.app.Service() {
         )
         val note: Notification = (if (Build.VERSION.SDK_INT >= 26) Notification.Builder(this, chan)
         else @Suppress("DEPRECATION") Notification.Builder(this))
-            .setContentTitle("ZYRAXON জেগে আছে")
-            .setContentText("চোখে ট্যাপ করলেই মাইক চালু")
+            .setContentTitle(t("ZYRAXON জেগে আছে"))
+            .setContentText(t("চোখে ট্যাপ করলেই মাইক চালু"))
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setContentIntent(pi)
             .setOngoing(true)
@@ -296,7 +297,7 @@ class OverlayChatService : android.app.Service() {
         buzz(15)
         val vm = assistant()
         if (vm == null) {
-            eye?.setNote("এখনো প্রস্তুত নয়")
+            eye?.setNote(t("এখনো প্রস্তুত নয়"))
             return
         }
         vm.toggleListening()
@@ -333,7 +334,7 @@ class OverlayChatService : android.app.Service() {
         statusLine = TextView(this).apply {
             setTextColor(Color.parseColor("#FF9BA0"))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
-            text = if (vm == null) "প্রস্তুত নয়" else "প্রস্তুত"
+            text = if (vm == null) t("প্রস্তুত নয়") else t("প্রস্তুত")
         }
         replyLine = TextView(this).apply {
             setTextColor(Color.WHITE)
@@ -342,7 +343,7 @@ class OverlayChatService : android.app.Service() {
             text = ""
         }
         input = EditText(this).apply {
-            hint = "কী করতে চাও লিখো…"
+            hint = t("কী করতে চাও লিখো…")
             setHintTextColor(Color.parseColor("#99FFFFFF"))
             setTextColor(Color.WHITE)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
@@ -352,7 +353,7 @@ class OverlayChatService : android.app.Service() {
         }
 
         val send = TextView(this).apply {
-            text = "পাঠাও"
+            text = t("পাঠাও")
             setTextColor(Color.WHITE)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
             gravity = Gravity.CENTER
@@ -457,7 +458,7 @@ class OverlayChatService : android.app.Service() {
             }
             launch {
                 vm.isGenerating.collectLatest { busy ->
-                    statusLine.text = if (busy) "কাজ করছি…" else "প্রস্তুত"
+                    statusLine.text = if (busy) t("কাজ করছি…") else t("প্রস্তুত")
                 }
             }
         }
@@ -466,10 +467,10 @@ class OverlayChatService : android.app.Service() {
     private fun sendToAssistant(text: String) {
         val vm = assistant()
         if (vm == null) {
-            statusLine.text = "প্রস্তুত নয়"
+            statusLine.text = t("প্রস্তুত নয়")
             return
         }
-        statusLine.text = "পাঠানো হয়েছে…"
+        statusLine.text = t("পাঠানো হয়েছে…")
         // Reuses the real chat path, so tools, memory and voice all behave exactly
         // as they do on the main screen.
         vm.sendMessage(text)

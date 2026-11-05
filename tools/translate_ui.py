@@ -9,7 +9,7 @@ without a rebuild.
 Two things matter for correctness:
 
 * `$name` is Kotlin string interpolation, so it must survive translation
-  untouched. `$` is swapped for a `__N__` token, which every script keeps
+  untouched. `$` is swapped for a `[[N]]` token, which every script keeps
   verbatim, and swapped back afterwards.
 * The translation endpoint returns one string per `q=` parameter in the same
   order, so a batch is a straight index-to-index map. The count is checked
@@ -41,6 +41,39 @@ ENDPOINT = "https://clients5.google.com/translate_a/t"
 SOURCE = "bn"
 
 
+def braced_end(text, brace):
+    """The index just past the `}` matching the `{` at [brace].
+
+    A Kotlin interpolation can nest braces and strings —
+    `${tasks.count { !it.isCompleted }.takeIf { it > 0 } ?: ""}` is real code in
+    this app — so the match cannot be a regex that stops at the first `}`. Nested
+    string literals are skipped whole, because a brace inside one is not a brace
+    to the Kotlin parser.
+    """
+    depth = 0
+    index = brace
+    length = len(text)
+    while index < length:
+        char = text[index]
+        if char == '"':
+            index += 1
+            while index < length:
+                if text[index] == "\\":
+                    index += 2
+                    continue
+                if text[index] == '"':
+                    break
+                index += 1
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return index + 1
+        index += 1
+    return length
+
+
 def tokenize(text):
     """Turn every Kotlin interpolation into a positional `{N}` token.
 
@@ -50,17 +83,42 @@ def tokenize(text):
     is numbered by the order it appears.
 
     Returns the key and the ordered list of expression sources, which become the
-    arguments of the generated `Loc.t(...)` call.
+    arguments of the generated `t(...)` call.
     """
     exprs = []
+    out = []
+    index = 0
+    length = len(text)
+    while index < length:
+        char = text[index]
+        if char == "$" and index + 1 < length and text[index + 1] == "{":
+            end = braced_end(text, index + 1)
+            exprs.append(text[index:end])
+            out.append("{%d}" % (len(exprs) - 1))
+            index = end
+            continue
+        if char == "$" and index + 1 < length and (
+            text[index + 1].isalpha() or text[index + 1] == "_"
+        ):
+            end = index + 1
+            while end < length and (text[end].isalnum() or text[end] == "_"):
+                end += 1
+            exprs.append(text[index:end])
+            out.append("{%d}" % (len(exprs) - 1))
+            index = end
+            continue
+        out.append(char)
+        index += 1
+    return "".join(out), exprs
 
-    def repl(match):
-        exprs.append(match.group(0))
-        return "{%d}" % (len(exprs) - 1)
 
-    # Braced form first, so the `$name` inside it is not matched separately.
-    masked = re.sub(r"\$\{[^}]*\}", repl, text)
-    return re.sub(r"\$([A-Za-z_][A-Za-z0-9_]*)", repl, masked), exprs
+# The positional tokens are wrapped in double brackets while they travel through
+# the endpoint. A bare `{0}` is rewritten by several languages, and an ASCII
+# underscore mask (`__0__`) loses an underscore in others, both of which end as a
+# placeholder mismatch and a silent fall back to Bengali. Brackets survive every
+# endpoint tested; the restore below accepts one or two on each side because a
+# few languages collapse the pair.
+MASKED = re.compile(r"\[{1,2}\s*(\d+)\s*\]{1,2}")
 
 
 def protect(text):
@@ -69,15 +127,41 @@ def protect(text):
 
     def repl(match):
         names.append(match.group(0))
-        return "__%d__" % (len(names) - 1)
+        return "[[%d]]" % (len(names) - 1)
 
     return re.sub(r"\{\d+\}", repl, text), names
 
 
 def restore(text, names):
-    for index, name in enumerate(names):
-        text = text.replace("__%d__" % index, name)
-    return text
+    """Put the `{N}` tokens back, tolerating the brackets the endpoint ate."""
+    def repl(match):
+        index = int(match.group(1))
+        return names[index] if index < len(names) else match.group(0)
+
+    return MASKED.sub(repl, text)
+
+
+BRAND = re.compile(r"ZYRAXON|জাইরাক্সন", re.I)
+# The endpoint transliterates the product name — Latin `ZYRAXON` comes back as
+# Cyrillic `Ксираксон`, Japanese katakana, or even the trademark `Xerox`. Holding
+# it as a bracketed marker keeps it out of the translator's reach; the marker
+# itself survives every script, including Serbian, which is the one language that
+# transliterates an ASCII marker instead of passing it through.
+BRAND_MARK = "[[B]]"
+# Amharic collapses the marker to a single pair (`[ለ]`), so one or two brackets
+# on either side are accepted. The window is small, so an ordinary bracketed word
+# in a translation cannot be swallowed by mistake.
+_BRAND_BACK = re.compile(r"\[{1,2}[^\]]{0,6}\]{1,2}")
+
+
+def guard_brand(text):
+    """Replace the product name with a marker the endpoint cannot rewrite."""
+    return BRAND.sub(BRAND_MARK, text)
+
+
+def restore_brand(text):
+    """Put the product name back, accepting the marker the endpoint mangled."""
+    return _BRAND_BACK.sub("ZYRAXON", text)
 
 
 def fetch(batch, target, attempt=0):

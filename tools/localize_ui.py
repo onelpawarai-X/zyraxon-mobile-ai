@@ -37,13 +37,21 @@ IMPORT_ANCHOR = re.compile(r"^import ", re.MULTILINE)
 
 
 def _expression(source):
-    """The bare Kotlin expression behind a `$name` or `${ … }` interpolation."""
+    """The bare Kotlin expression behind a `$name` or `${ … }` interpolation.
+
+    The closing brace is found by matching, not by taking the last character:
+    `${a.count { it.x }.takeIf { it > 0 } ?: ""}` has braces inside the
+    expression, and slicing to the final `}` would emit a call the compiler
+    rejects.
+    """
     text = source.strip()
-    if text.startswith("$"):
-        text = text[1:]
-    if text.startswith("{") and text.endswith("}"):
-        text = text[1:-1]
-    return text.strip()
+    if not text.startswith("$"):
+        return text
+    text = text[1:].strip()
+    if not text.startswith("{"):
+        return text
+    end = T.braced_end(text, 0)
+    return text[1 : end - 1].strip()
 
 
 def to_call(literal):
@@ -56,9 +64,24 @@ def to_call(literal):
     return "t(%s, %s)" % (key_literal, args)
 
 
+# A literal that a previous run already wrapped. The scan is span-based, so the
+# `t(` it was wrapped in is not part of the literal and the tool would wrap it
+# again on every run; the call has to be recognised by looking just before the
+# opening quote.
+_ALREADY = re.compile(r"\bt\(\s*$")
+
+
+def _already_translated(source, lit):
+    return _ALREADY.search(source[: lit.start]) is not None
+
+
 def rewrite(path):
     source = open(path, encoding="utf-8").read()
-    literals = [lit for lit in K.scan(source) if K.BENGALI.search(lit.value)]
+    literals = [
+        lit
+        for lit in K.scan(source)
+        if K.BENGALI.search(lit.value) and not _already_translated(source, lit)
+    ]
     if not literals:
         return 0
 

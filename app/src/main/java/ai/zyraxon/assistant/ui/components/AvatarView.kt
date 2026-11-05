@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.voice.AvatarBridge
 import android.annotation.SuppressLint
 import android.graphics.Color as AColor
@@ -30,18 +31,18 @@ data class AvatarSpec(
     val female: Boolean
 ) {
     /** "মায়া · ৩২" */
-    val label: String get() = "$name · ${age.toString().map { '০' + (it - '0') }.joinToString("")}"
+    val label: String get() = t("{0} · {1}", name, age.toString().map { '০' + (it - '0') }.joinToString(""))
 }
 
 /** Every avatar, youngest first. Names follow the person's age. */
 val AvatarRoster: List<AvatarSpec> = listOf(
-    AvatarSpec("avatar_ruhi", "ruhi", "রুহি", 20, "👩", true),
-    AvatarSpec("avatar_pori", "pori", "পরী", 22, "👱\u200D♀️", true),
-    AvatarSpec("avatar_arian", "arian", "আরিয়ান", 24, "🧑", false),
-    AvatarSpec("avatar_tisha", "tisha", "তিশা", 26, "🧢", true),
-    AvatarSpec("avatar_maya", "maya", "মায়া", 32, "👩\u200D💼", true),
-    AvatarSpec("avatar_arnab", "arnab", "অর্ণব", 35, "👨\u200D💼", false),
-    AvatarSpec("avatar_nazia", "nazia", "নাজিয়া", 42, "🧕", true)
+    AvatarSpec("avatar_ruhi", "ruhi", t("রুহি"), 20, "👩", true),
+    AvatarSpec("avatar_pori", "pori", t("পরী"), 22, "👱\u200D♀️", true),
+    AvatarSpec("avatar_arian", "arian", t("আরিয়ান"), 24, "🧑", false),
+    AvatarSpec("avatar_tisha", "tisha", t("তিশা"), 26, "🧢", true),
+    AvatarSpec("avatar_maya", "maya", t("মায়া"), 32, "👩\u200D💼", true),
+    AvatarSpec("avatar_arnab", "arnab", t("অর্ণব"), 35, "👨\u200D💼", false),
+    AvatarSpec("avatar_nazia", "nazia", t("নাজিয়া"), 42, "🧕", true)
 )
 
 fun avatarSpec(id: String): AvatarSpec? = AvatarRoster.firstOrNull { it.id == id }

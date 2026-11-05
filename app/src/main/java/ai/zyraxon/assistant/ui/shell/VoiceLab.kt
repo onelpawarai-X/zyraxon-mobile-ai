@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.ui.components.AvatarRoster
 import ai.zyraxon.assistant.ui.components.AvatarView
 import ai.zyraxon.assistant.ui.theme.Glass
@@ -24,7 +25,7 @@ import androidx.compose.ui.unit.sp
 fun ThemePane(vm: ZyraxonViewModel) {
     val theme by vm.themeMode.collectAsState()
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("🎨 থিম", color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
+        Text(t("🎨 থিম"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
         ZyThemeMode.values().forEach { m ->
             val sel = m == theme
             Row(
@@ -36,7 +37,7 @@ fun ThemePane(vm: ZyraxonViewModel) {
                 Text(m.icon, fontSize = 24.sp); Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(m.title, color = Glass.textPrimary, fontWeight = FontWeight.Bold)
-                    Text(when (m) { ZyThemeMode.HORROR -> "রক্ত, আগুন ও ছায়া — আসল ভয়ঙ্কর লুক"; ZyThemeMode.DARK -> "পরিষ্কার কালচে গ্লাস, চোখে আরাম"; ZyThemeMode.LIGHT -> "উজ্জ্বল ও পরিচ্ছন্ন গ্লাস" },
+                    Text(when (m) { ZyThemeMode.HORROR -> t("রক্ত, আগুন ও ছায়া — আসল ভয়ঙ্কর লুক"); ZyThemeMode.DARK -> t("পরিষ্কার কালচে গ্লাস, চোখে আরাম"); ZyThemeMode.LIGHT -> t("উজ্জ্বল ও পরিচ্ছন্ন গ্লাস") },
                         color = Glass.textMuted, fontSize = 11.5.sp)
                 }
                 if (sel) Text("✓", color = Glass.pink, fontWeight = FontWeight.Bold)
@@ -69,30 +70,30 @@ fun VoiceLab(vm: ZyraxonViewModel) {
     val face = AvatarRoster.filter { it.female == female }.minByOrNull { kotlin.math.abs(it.age - wantAge) } ?: AvatarRoster.first()
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("🎙 ভয়েস চেঞ্জার", color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
+        Text(t("🎙 ভয়েস চেঞ্জার"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
         Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Glass.rowFill(0.3f)).border(1.dp, Glass.pink.copy(alpha = 0.5f), RoundedCornerShape(18.dp)).padding(10.dp),
             verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(110.dp).clip(RoundedCornerShape(14.dp)).background(Color.Black)) {
-                AvatarView(style = face.id, onClick = { vm.speak("হ্যালো") }, modifier = Modifier.fillMaxSize())
+                AvatarView(style = face.id, onClick = { vm.speak(t("হ্যালো")) }, modifier = Modifier.fillMaxSize())
             }
             Spacer(Modifier.width(12.dp))
             Column {
-                Text(face.name + " · " + face.age + " বছর", color = Glass.textPrimary, fontWeight = FontWeight.Bold)
-                Text(current?.name ?: "ডিফল্ট কণ্ঠ", color = Glass.textSecondary, fontSize = 12.sp)
+                Text(face.name + " · " + face.age + t(" বছর"), color = Glass.textPrimary, fontWeight = FontWeight.Bold)
+                Text(current?.name ?: t("ডিফল্ট কণ্ঠ"), color = Glass.textSecondary, fontSize = 12.sp)
                 Text(listOfNotNull(current?.gender?.takeIf { it.isNotBlank() }, current?.age?.takeIf { it.isNotBlank() }, current?.locale?.takeIf { it.isNotBlank() }).joinToString(" · "),
                     color = Glass.textMuted, fontSize = 11.sp)
-                if (picked.isNotBlank()) Text("↺ ডিফল্টে ফেরো", color = Glass.pink, fontSize = 11.5.sp, modifier = Modifier.clickable { vm.clearVoicePick() }.padding(top = 4.dp))
+                if (picked.isNotBlank()) Text(t("↺ ডিফল্টে ফেরো"), color = Glass.pink, fontSize = 11.5.sp, modifier = Modifier.clickable { vm.clearVoicePick() }.padding(top = 4.dp))
             }
         }
-        FilterRow("লিঙ্গ", listOf("" to "সব", "f" to "মেয়ে", "m" to "ছেলে"), gender) { gender = it }
-        if (ages.isNotEmpty()) FilterRow("বয়স", listOf("" to "সব") + ages.map { it to when (it) { "child" -> "শিশু"; "teen" -> "কিশোর"; "adult" -> "প্রাপ্তবয়স্ক"; "senior" -> "বয়স্ক"; else -> it } }, ageF) { ageF = it }
-        else FilterRow("বয়স", listOf("" to "ডিফল্ট", "child" to "শিশু", "teen" to "কিশোর", "adult" to "প্রাপ্তবয়স্ক", "senior" to "বয়স্ক"), age) { vm.setVoiceAge(it) }
-        FilterRow("ভাষা", listOf("" to "সব") + langs.map { it to langName(it) }, lang) { lang = it }
+        FilterRow(t("লিঙ্গ"), listOf("" to t("সব"), "f" to t("মেয়ে"), "m" to t("ছেলে")), gender) { gender = it }
+        if (ages.isNotEmpty()) FilterRow(t("বয়স"), listOf("" to t("সব")) + ages.map { it to when (it) { "child" -> t("শিশু"); "teen" -> t("কিশোর"); "adult" -> t("প্রাপ্তবয়স্ক"); "senior" -> t("বয়স্ক"); else -> it } }, ageF) { ageF = it }
+        else FilterRow(t("বয়স"), listOf("" to t("ডিফল্ট"), "child" to t("শিশু"), "teen" to t("কিশোর"), "adult" to t("প্রাপ্তবয়স্ক"), "senior" to t("বয়স্ক")), age) { vm.setVoiceAge(it) }
+        FilterRow(t("ভাষা"), listOf("" to t("সব")) + langs.map { it to langName(it) }, lang) { lang = it }
         when {
-            state == "loading" -> Text("⏳ সার্ভার থেকে কণ্ঠ আনছি…", color = Glass.textMuted)
+            state == "loading" -> Text(t("⏳ সার্ভার থেকে কণ্ঠ আনছি…"), color = Glass.textMuted)
             state.isNotBlank() -> Text(state + "  ↻", color = Glass.red, fontSize = 12.sp, modifier = Modifier.clickable { vm.loadVoices() })
         }
-        Text("${shown.size}টি কণ্ঠ", color = Glass.textMuted, fontSize = 11.sp)
+        Text(t("{0}টি কণ্ঠ", shown.size), color = Glass.textMuted, fontSize = 11.sp)
         shown.forEach { v ->
             val sel = v.id == picked
             Row(
@@ -108,13 +109,13 @@ fun VoiceLab(vm: ZyraxonViewModel) {
                 Text("▶", color = Glass.pink)
             }
         }
-        Text("একাধিক কণ্ঠে অডিও বানাতে এজেন্টকে বলো — সংলাপের প্রতিটা অংশে আলাদা কণ্ঠ, ভাষা ও বয়স সে নিজে বেছে নেয়।", color = Glass.textMuted, fontSize = 11.sp)
+        Text(t("একাধিক কণ্ঠে অডিও বানাতে এজেন্টকে বলো — সংলাপের প্রতিটা অংশে আলাদা কণ্ঠ, ভাষা ও বয়স সে নিজে বেছে নেয়।"), color = Glass.textMuted, fontSize = 11.sp)
     }
 }
 
 private fun langName(c: String) = when (c) {
-    "bn" -> "বাংলা"; "hi" -> "হিন্দি"; "en" -> "ইংরেজি"; "ur" -> "উর্দু"; "ar" -> "আরবি"; "ta" -> "তামিল"; "ne" -> "নেপালি"
-    "es" -> "স্প্যানিশ"; "fr" -> "ফরাসি"; "de" -> "জার্মান"; "ja" -> "জাপানি"; "ko" -> "কোরিয়ান"; "zh" -> "চীনা"; "ru" -> "রুশ"; "tr" -> "তুর্কি"
+    "bn" -> t("বাংলা"); "hi" -> t("হিন্দি"); "en" -> t("ইংরেজি"); "ur" -> t("উর্দু"); "ar" -> t("আরবি"); "ta" -> t("তামিল"); "ne" -> t("নেপালি")
+    "es" -> t("স্প্যানিশ"); "fr" -> t("ফরাসি"); "de" -> t("জার্মান"); "ja" -> t("জাপানি"); "ko" -> t("কোরিয়ান"); "zh" -> t("চীনা"); "ru" -> t("রুশ"); "tr" -> t("তুর্কি")
     else -> c
 }
 

@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.ai.ToolRegistry
 import ai.zyraxon.assistant.tools.GitTools
 import ai.zyraxon.assistant.ui.theme.Glass
@@ -67,7 +68,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
 
     fun load(path: String) {
         scope.launch {
-            val body = withContext(Dispatchers.IO) { runCatching { File(path).readText() }.getOrDefault("(এই ফাইল পড়া যায়নি)") }
+            val body = withContext(Dispatchers.IO) { runCatching { File(path).readText() }.getOrDefault(t("(এই ফাইল পড়া যায়নি)")) }
             openPath = path; text = TextFieldValue(body.take(400_000)); saved = text.text
         }
     }
@@ -89,7 +90,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         scope.launch {
             withContext(Dispatchers.IO) { runCatching { File(p).writeText(text.text) } }
             saved = text.text
-            android.widget.Toast.makeText(ctx, "সেভ হয়েছে", android.widget.Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(ctx, t("সেভ হয়েছে"), android.widget.Toast.LENGTH_SHORT).show()
         }
     }
     fun git(args: JSONObject) {
@@ -112,18 +113,18 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
     Column(modifier.clip(RoundedCornerShape(22.dp)).background(Glass.fill(0.78f)).border(1.dp, Glass.borderSoft, RoundedCornerShape(22.dp))) {
         // toolbar
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Btn(if (treeOpen) "◧ ফাইল" else "▯ ফাইল") { treeOpen = !treeOpen }
-            Btn("💾 সেভ", enabled = openPath != null && text.text != saved) { save() }
-            Btn("⬇ ক্লোন") { dialog = "clone" }
-            Btn("🔎 স্ক্যান") { git(JSONObject().put("action", "scan")) }
-            Btn("≡ স্ট্যাটাস") { git(JSONObject().put("action", "status")) }
-            Btn("✔ কমিট") { dialog = "commit" }
-            Btn("⬆ পুশ") { git(JSONObject().put("action", "push")) }
-            Btn("⬇ পুল") { git(JSONObject().put("action", "pull")) }
-            Btn("⑂ ব্রাঞ্চ") { dialog = "branch" }
+            Btn(if (treeOpen) t("◧ ফাইল") else t("▯ ফাইল")) { treeOpen = !treeOpen }
+            Btn(t("💾 সেভ"), enabled = openPath != null && text.text != saved) { save() }
+            Btn(t("⬇ ক্লোন")) { dialog = "clone" }
+            Btn(t("🔎 স্ক্যান")) { git(JSONObject().put("action", "scan")) }
+            Btn(t("≡ স্ট্যাটাস")) { git(JSONObject().put("action", "status")) }
+            Btn(t("✔ কমিট")) { dialog = "commit" }
+            Btn(t("⬆ পুশ")) { git(JSONObject().put("action", "push")) }
+            Btn(t("⬇ পুল")) { git(JSONObject().put("action", "pull")) }
+            Btn(t("⑂ ব্রাঞ্চ")) { dialog = "branch" }
             Btn("⇄ PR") { dialog = "pr" }
             Btn("⚙ Actions") { dialog = "actions" }
-            Btn("🔑 টোকেন") { dialog = "token" }
+            Btn(t("🔑 টোকেন")) { dialog = "token" }
         }
         Row(Modifier.weight(1f).fillMaxWidth()) {
             if (treeOpen) {
@@ -141,13 +142,13 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                             Text(n.file.name, color = if (n.file.isDirectory) Glass.textSecondary else Glass.textPrimary, fontSize = 11.5.sp, maxLines = 1)
                         }
                     }
-                    if (nodes.isEmpty()) item { Text("ফাইল নেই। ক্লোন করো বা এজেন্টকে বানাতে বলো।", color = Glass.textMuted, fontSize = 11.sp, modifier = Modifier.padding(8.dp)) }
+                    if (nodes.isEmpty()) item { Text(t("ফাইল নেই। ক্লোন করো বা এজেন্টকে বানাতে বলো।"), color = Glass.textMuted, fontSize = 11.sp, modifier = Modifier.padding(8.dp)) }
                 }
             }
             Column(Modifier.weight(1f).fillMaxHeight()) {
                 val p = openPath
                 if (p == null) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("বাঁ দিক থেকে ফাইল বেছে নাও", color = Glass.textMuted, fontSize = 13.sp) }
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(t("বাঁ দিক থেকে ফাইল বেছে নাও"), color = Glass.textMuted, fontSize = 13.sp) }
                 } else {
                     Text(File(p).name + if (text.text != saved) "  ●" else "", color = Glass.textSecondary, fontSize = 11.5.sp, modifier = Modifier.padding(8.dp))
                     val v = rememberScrollState(); val h = rememberScrollState()
@@ -160,7 +161,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                     }
                 }
                 if (log.isNotBlank() || busy) Column(Modifier.fillMaxWidth().heightIn(max = 140.dp).background(Color(0xFF0A0A0C)).padding(8.dp)) {
-                    Row { Text(if (busy) "⏳ চলছে…" else "লগ", color = CodeColors.dim, fontSize = 10.sp, modifier = Modifier.weight(1f)); Text("✕", color = CodeColors.dim, modifier = Modifier.clickable { log = "" }) }
+                    Row { Text(if (busy) t("⏳ চলছে…") else t("লগ"), color = CodeColors.dim, fontSize = 10.sp, modifier = Modifier.weight(1f)); Text("✕", color = CodeColors.dim, modifier = Modifier.clickable { log = "" }) }
                     Text(log.takeLast(2500), color = Color(0xFFB8C0CC), fontSize = 10.5.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.verticalScroll(rememberScrollState()))
                 }
             }
@@ -168,18 +169,18 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
     }
 
     when (dialog) {
-        "clone" -> InputDialog("GitHub থেকে ক্লোন", listOf("রিপো URL"), "ক্লোন", { dialog = null }) { git(JSONObject().put("action", "clone").put("url", it[0])); dialog = null }
-        "commit" -> InputDialog("কমিট", listOf("বার্তা"), "কমিট", { dialog = null }) { git(JSONObject().put("action", "commit").put("message", it[0])); dialog = null }
-        "branch" -> InputDialog("নতুন ব্রাঞ্চ (খালি = তালিকা)", listOf("নাম"), "ঠিক আছে", { dialog = null }) { git(JSONObject().put("action", "branch").put("name", it[0])); dialog = null }
-        "pr" -> InputDialog("Pull Request", listOf("শিরোনাম (তৈরির জন্য)", "PR নম্বর (মার্জ/বন্ধ)"), "তৈরি", { dialog = null },
-            extra = "মার্জ", onExtra = { tool("github_pr", JSONObject().put("action", "merge").put("number", it[1].toIntOrNull() ?: 0)); dialog = null }) {
+        "clone" -> InputDialog(t("GitHub থেকে ক্লোন"), listOf(t("রিপো URL")), t("ক্লোন"), { dialog = null }) { git(JSONObject().put("action", "clone").put("url", it[0])); dialog = null }
+        "commit" -> InputDialog(t("কমিট"), listOf(t("বার্তা")), t("কমিট"), { dialog = null }) { git(JSONObject().put("action", "commit").put("message", it[0])); dialog = null }
+        "branch" -> InputDialog(t("নতুন ব্রাঞ্চ (খালি = তালিকা)"), listOf(t("নাম")), t("ঠিক আছে"), { dialog = null }) { git(JSONObject().put("action", "branch").put("name", it[0])); dialog = null }
+        "pr" -> InputDialog("Pull Request", listOf(t("শিরোনাম (তৈরির জন্য)"), t("PR নম্বর (মার্জ/বন্ধ)")), t("তৈরি"), { dialog = null },
+            extra = t("মার্জ"), onExtra = { tool("github_pr", JSONObject().put("action", "merge").put("number", it[1].toIntOrNull() ?: 0)); dialog = null }) {
             tool("github_pr", JSONObject().put("action", "create").put("title", it[0])); dialog = null
         }
-        "actions" -> InputDialog("GitHub Actions", listOf("রিপো (owner/name)", "ওয়ার্কফ্লো ফাইল (চালাতে)"), "রান তালিকা", { dialog = null },
-            extra = "চালাও", onExtra = { tool("github_actions", JSONObject().put("action", "dispatch").put("repo", it[0]).put("workflow", it[1])); dialog = null }) {
+        "actions" -> InputDialog("GitHub Actions", listOf(t("রিপো (owner/name)"), t("ওয়ার্কফ্লো ফাইল (চালাতে)")), t("রান তালিকা"), { dialog = null },
+            extra = t("চালাও"), onExtra = { tool("github_actions", JSONObject().put("action", "dispatch").put("repo", it[0]).put("workflow", it[1])); dialog = null }) {
             tool("github_actions", JSONObject().put("action", "runs").put("repo", it[0])); dialog = null
         }
-        "token" -> InputDialog("GitHub টোকেন", listOf("Personal access token"), "সেভ", { dialog = null }, secret = true) { GitTools.setToken(ctx, it[0]); log += "✓ টোকেন সেভ হয়েছে\n"; dialog = null }
+        "token" -> InputDialog(t("GitHub টোকেন"), listOf("Personal access token"), t("সেভ"), { dialog = null }, secret = true) { GitTools.setToken(ctx, it[0]); log += t("✓ টোকেন সেভ হয়েছে\n"); dialog = null }
     }
 }
 
@@ -208,6 +209,6 @@ internal fun InputDialog(
             }
         },
         confirmButton = { Row { if (extra != null) TextButton({ onExtra(values.toList()) }) { Text(extra, color = Glass.green) }; TextButton({ onOk(values.toList()) }) { Text(ok, color = Glass.pink, fontWeight = FontWeight.Bold) } } },
-        dismissButton = { TextButton(onDismiss) { Text("বাতিল", color = Glass.textMuted) } }
+        dismissButton = { TextButton(onDismiss) { Text(t("বাতিল"), color = Glass.textMuted) } }
     )
 }

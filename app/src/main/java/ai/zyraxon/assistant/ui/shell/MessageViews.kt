@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.chat.LiveCode
 import ai.zyraxon.assistant.model.ChatMessage
 import ai.zyraxon.assistant.model.MediaItem
@@ -73,7 +74,7 @@ internal enum class ShareTarget(val label: String, val pkg: String) {
     FACEBOOK("Facebook", "com.facebook.katana"),
     TELEGRAM("Telegram", "org.telegram.messenger"),
     MESSENGER("Messenger", "com.facebook.orca"),
-    OTHER("অন্য অ্যাপ…", "")
+    OTHER(t("অন্য অ্যাপ…"), "")
 }
 
 internal fun share(context: Context, target: ShareTarget, text: String? = null, path: String? = null) {
@@ -82,7 +83,7 @@ internal fun share(context: Context, target: ShareTarget, text: String? = null, 
         val f = File(path)
         val uri = try { FileProvider.getUriForFile(context, context.packageName + ".fileprovider", f) } catch (_: Exception) { null }
         if (uri == null) {
-            android.widget.Toast.makeText(context, "ফাইলটি শেয়ার করা গেল না", android.widget.Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(context, t("ফাইলটি শেয়ার করা গেল না"), android.widget.Toast.LENGTH_SHORT).show()
             return
         }
         send.type = mimeOf(path)
@@ -98,16 +99,16 @@ internal fun share(context: Context, target: ShareTarget, text: String? = null, 
         if (installed) {
             context.startActivity(send.setPackage(target.pkg).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         } else {
-            context.startActivity(Intent.createChooser(send, "শেয়ার করো").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            context.startActivity(Intent.createChooser(send, t("শেয়ার করো")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
     } catch (e: Exception) {
-        android.widget.Toast.makeText(context, "শেয়ার করা গেল না: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+        android.widget.Toast.makeText(context, t("শেয়ার করা গেল না: {0}", e.message), android.widget.Toast.LENGTH_SHORT).show()
     }
 }
 
 /** The share button: a small menu of apps. */
 @Composable
-internal fun ShareButton(text: String? = null, path: String? = null, label: String = "↗ শেয়ার") {
+internal fun ShareButton(text: String? = null, path: String? = null, label: String = t("↗ শেয়ার")) {
     val ctx = LocalContext.current
     var open by remember { mutableStateOf(false) }
     Box {
@@ -130,10 +131,10 @@ internal fun ShareButton(text: String? = null, path: String? = null, label: Stri
 @Composable
 private fun MessageActions(message: ChatMessage, onCopy: () -> Unit, onSpeak: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text("⧉ কপি", color = Glass.textMuted, fontSize = 11.5.sp,
+        Text(t("⧉ কপি"), color = Glass.textMuted, fontSize = 11.5.sp,
             modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { onCopy() }.padding(horizontal = 7.dp, vertical = 4.dp))
         if (message.role == MessageRole.ASSISTANT) {
-            Text("🔊 শোনো", color = Glass.textMuted, fontSize = 11.5.sp,
+            Text(t("🔊 শোনো"), color = Glass.textMuted, fontSize = 11.5.sp,
                 modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { onSpeak() }.padding(horizontal = 7.dp, vertical = 4.dp))
         }
         ShareButton(text = message.text)
@@ -200,7 +201,7 @@ fun MessageItem(
             }
             message.toolCalls.forEach { ToolCard(it) }
             if (isLastStreaming && liveCode != null && !liveCode.done) {
-                CodeBox(liveCode.text, langOf(liveCode.path), liveCode.path.ifBlank { "নতুন ফাইল" }, live = true)
+                CodeBox(liveCode.text, langOf(liveCode.path), liveCode.path.ifBlank { t("নতুন ফাইল") }, live = true)
             }
             jobs.filter { !it.done }.forEach { MediaProgress(it) }
             message.media.forEach { MediaView(it) }
@@ -229,7 +230,7 @@ private fun ThinkingBlock(text: String, live: Boolean) {
         Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(Glass.rowFill(0.25f))
             .clickable { open = !open }.padding(horizontal = 10.dp, vertical = 6.dp).animateContentSize()
     ) {
-        Text(if (live) "💭 ভাবছে…" else if (open) "💭 ভাবনা ▾" else "💭 ভাবনা ▸", color = Glass.textMuted, fontSize = 11.5.sp)
+        Text(if (live) t("💭 ভাবছে…") else if (open) t("💭 ভাবনা ▾") else t("💭 ভাবনা ▸"), color = Glass.textMuted, fontSize = 11.5.sp)
         if (open || live) Text(text.takeLast(if (open) 4000 else 280), color = Glass.textMuted, fontSize = 11.5.sp, lineHeight = 16.sp)
     }
 }
@@ -241,7 +242,7 @@ fun ToolCard(rec: ToolCallRecord) {
     when {
         rec.name == "edit_file" && rec.output.isNotBlank() -> {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                CodeBox(rec.output, langOf(rec.detail), rec.detail.ifBlank { "ফাইল" }, live = false)
+                CodeBox(rec.output, langOf(rec.detail), rec.detail.ifBlank { t("ফাইল") }, live = false)
                 Text(
                     (if (ok) "✅ " else "⚠️ ") + rec.summary, color = if (ok) Glass.textMuted else Glass.red, fontSize = 11.sp
                 )
@@ -292,7 +293,7 @@ fun MediaProgress(job: MediaJob) {
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(
-                    when (job.kind) { "image" -> "ছবি তৈরি হচ্ছে"; "audio" -> "অডিও তৈরি হচ্ছে"; else -> "ভিডিও তৈরি হচ্ছে" },
+                    when (job.kind) { "image" -> t("ছবি তৈরি হচ্ছে"); "audio" -> t("অডিও তৈরি হচ্ছে"); else -> t("ভিডিও তৈরি হচ্ছে") },
                     color = Glass.textPrimary, fontWeight = FontWeight.SemiBold, fontSize = 13.sp
                 )
                 Text(job.label.take(80), color = Glass.textMuted, fontSize = 11.sp, maxLines = 1)
@@ -367,7 +368,7 @@ private fun AudioPlayer(path: String, title: String) {
         ) { Text(if (playing) "❚❚" else "▶", color = Color.White, fontSize = 15.sp) }
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
-            Text(title.ifBlank { "অডিও" }, color = Glass.textPrimary, fontSize = 12.5.sp, maxLines = 1)
+            Text(title.ifBlank { t("অডিও") }, color = Glass.textPrimary, fontSize = 12.5.sp, maxLines = 1)
             LinearProgressIndicator(progress = { pos }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
                 color = Glass.pink, trackColor = Glass.rowFill(0.5f))
         }

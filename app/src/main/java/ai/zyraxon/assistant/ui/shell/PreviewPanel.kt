@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.tools.PreviewBridge
 import ai.zyraxon.assistant.ui.theme.Glass
 import ai.zyraxon.assistant.viewmodel.ZyraxonViewModel
@@ -81,21 +82,21 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                     singleLine = true, textStyle = TextStyle(color = Glass.textPrimary, fontSize = 12.5.sp), cursorBrush = SolidColor(Glass.pink),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go, keyboardType = KeyboardType.Uri),
                     keyboardActions = KeyboardActions(onGo = { editing = false; PreviewBridge.clearProblems(); PreviewBridge.open(ctx, field) }),
-                    decorationBox = { inner -> if (field.isEmpty()) Text("🔎 গুগলে খোঁজো বা URL / localhost:3000", color = Glass.textMuted, fontSize = 12.5.sp); inner() }
+                    decorationBox = { inner -> if (field.isEmpty()) Text(t("🔎 গুগলে খোঁজো বা URL / localhost:3000"), color = Glass.textMuted, fontSize = 12.5.sp); inner() }
                 )
                 Ic(if (full) "🗗" else "⛶", true) { full = !full }
                 Ic("➖", true) { mini = true }
             }
             if (progress < 100) LinearProgressIndicator(progress = { progress / 100f }, modifier = Modifier.fillMaxWidth().height(2.dp), color = Glass.pink, trackColor = Color.Transparent)
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(title.ifBlank { "প্রিভিউ" }, color = Glass.textMuted, fontSize = 11.sp, maxLines = 1, modifier = Modifier.weight(1f))
+                Text(title.ifBlank { t("প্রিভিউ") }, color = Glass.textMuted, fontSize = 11.sp, maxLines = 1, modifier = Modifier.weight(1f))
                 Text(
-                    if (problems.isEmpty()) "🔧 ফিক্স" else "🔧 ফিক্স (${problems.size})",
+                    if (problems.isEmpty()) t("🔧 ফিক্স") else t("🔧 ফিক্স ({0})", problems.size),
                     color = if (problems.isEmpty()) Glass.textSecondary else Color.White, fontSize = 11.5.sp, fontWeight = FontWeight.Bold,
                     modifier = Modifier.clip(RoundedCornerShape(14.dp)).background(if (problems.isEmpty()) Glass.rowFill(0.4f) else Glass.red)
                         .clickable { vm.fixPreviewProblems() }.padding(horizontal = 10.dp, vertical = 5.dp)
                 )
-                Text("🤖 এজেন্ট", color = Glass.textPrimary, fontSize = 11.5.sp, fontWeight = FontWeight.Bold,
+                Text(t("🤖 এজেন্ট"), color = Glass.textPrimary, fontSize = 11.5.sp, fontWeight = FontWeight.Bold,
                     modifier = Modifier.clip(RoundedCornerShape(14.dp)).background(Glass.pinkFill.copy(alpha = 0.3f)).border(1.dp, Glass.pink, RoundedCornerShape(14.dp))
                         .clickable { agent = !agent }.padding(horizontal = 10.dp, vertical = 5.dp))
             }
@@ -105,8 +106,8 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
     if (mini) {
         Row(modifier.clip(RoundedCornerShape(18.dp)).background(Glass.fill(0.8f)).border(1.dp, Glass.borderSoft, RoundedCornerShape(18.dp)).padding(10.dp),
             verticalAlignment = Alignment.CenterVertically) {
-            Text("🌐 ${title.ifBlank { url.ifBlank { "প্রিভিউ" } }}", color = Glass.textPrimary, fontSize = 12.sp, maxLines = 1, modifier = Modifier.weight(1f))
-            Text("▢ বড় করো", color = Glass.pink, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { mini = false }.padding(6.dp))
+            Text(t("🌐 {0}", title.ifBlank { url.ifBlank { t("প্রিভিউ") } }), color = Glass.textPrimary, fontSize = 12.sp, maxLines = 1, modifier = Modifier.weight(1f))
+            Text(t("▢ বড় করো"), color = Glass.pink, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { mini = false }.padding(6.dp))
         }
         return
     }
@@ -116,7 +117,7 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 6.dp).clip(RoundedCornerShape(14.dp))) {
             if (!full) WebHost(Modifier.fillMaxSize())
             if (url.isBlank() || url == "about:blank") Box(Modifier.fillMaxSize().background(Glass.screen2), contentAlignment = Alignment.Center) {
-                Text("এজেন্ট যা বানাবে বা তুমি যা খুলবে, এখানে দেখা যাবে\nউপরে URL বা খোঁজার শব্দ লেখো", color = Glass.textMuted, fontSize = 13.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Text(t("এজেন্ট যা বানাবে বা তুমি যা খুলবে, এখানে দেখা যাবে\nউপরে URL বা খোঁজার শব্দ লেখো"), color = Glass.textMuted, fontSize = 13.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
             if (agent) MiniAgent(vm, Modifier.align(Alignment.BottomCenter)) { agent = false }
         }
@@ -153,17 +154,17 @@ private fun MiniAgent(vm: ZyraxonViewModel, modifier: Modifier, onClose: () -> U
             .border(1.dp, Glass.pink.copy(alpha = 0.6f), RoundedCornerShape(18.dp)).padding(10.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("🤖 এজেন্ট এই পেজ দেখছে", color = Glass.textPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            Text(t("🤖 এজেন্ট এই পেজ দেখছে"), color = Glass.textPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
             Text("✕", color = Glass.textMuted, modifier = Modifier.clickable { onClose() }.padding(4.dp))
         }
         if (last != null && last.text.isNotBlank()) {
             Box(Modifier.heightIn(max = 130.dp).padding(vertical = 6.dp).androidxScroll()) { Text(last.text.takeLast(900), color = Glass.textSecondary, fontSize = 12.sp) }
         }
-        if (generating) Text("⏳ ভাবছে…", color = Glass.pink, fontSize = 11.sp)
+        if (generating) Text(t("⏳ ভাবছে…"), color = Glass.pink, fontSize = 11.sp)
         Row(verticalAlignment = Alignment.CenterVertically) {
             BasicTextField(q, { q = it }, Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(Glass.rowFill(0.4f)).padding(9.dp),
                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 13.sp), cursorBrush = SolidColor(Glass.pink),
-                decorationBox = { inner -> if (q.isEmpty()) Text("এই পেজ নিয়ে বলো…", color = Glass.textMuted, fontSize = 13.sp); inner() })
+                decorationBox = { inner -> if (q.isEmpty()) Text(t("এই পেজ নিয়ে বলো…"), color = Glass.textMuted, fontSize = 13.sp); inner() })
             Text("➤", color = Glass.pink, fontSize = 20.sp, modifier = Modifier.clickable { if (q.isNotBlank()) { vm.askAboutPreview(q); q = "" } }.padding(horizontal = 10.dp))
         }
     }

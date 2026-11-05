@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.i18n.t
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -37,10 +38,10 @@ import kotlin.math.min
 import kotlin.math.sin
 
 private val bootLines = listOf(
-    "জাগিয়ে তোলা হচ্ছে…",
-    "ইন্দ্রিয় খুলছে…",
-    "চোখ খুলছে…",
-    "সব দেখতে পাচ্ছি…"
+    t("জাগিয়ে তোলা হচ্ছে…"),
+    t("ইন্দ্রিয় খুলছে…"),
+    t("চোখ খুলছে…"),
+    t("সব দেখতে পাচ্ছি…")
 )
 
 /**

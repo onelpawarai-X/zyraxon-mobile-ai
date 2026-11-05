@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.model.AgentMode
 import ai.zyraxon.assistant.ui.theme.Glass
 import ai.zyraxon.assistant.viewmodel.ZyraxonViewModel
@@ -61,7 +62,7 @@ fun Composer(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                         Text("✕", color = Color.White, fontSize = 9.sp, modifier = Modifier.align(Alignment.TopEnd).background(Color(0xAA000000)).clickable { vm.removeAttachedImage(i) }.padding(2.dp))
                     }
                 }
-                Text("সব মুছো", color = Glass.textMuted, fontSize = 11.sp, modifier = Modifier.clickable { vm.clearAttachedImage() }.padding(6.dp))
+                Text(t("সব মুছো"), color = Glass.textMuted, fontSize = 11.sp, modifier = Modifier.clickable { vm.clearAttachedImage() }.padding(6.dp))
             }
         }
         if (notice.isNotBlank()) Text(notice, color = Glass.textMuted, fontSize = 11.sp, modifier = Modifier.padding(bottom = 4.dp))
@@ -73,7 +74,7 @@ fun Composer(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
             keyboardActions = KeyboardActions(onSend = { if (text.isNotBlank()) vm.sendMessage() }),
             decorationBox = { inner ->
                 if (text.isEmpty()) Text(
-                    when (mode) { AgentMode.CHAT -> "কথা বলো বা প্রশ্ন করো…"; AgentMode.BUILD -> "কী বানাবে? ছোট করে বলো…"; AgentMode.AGENT -> "কী করতে হবে বলো…" },
+                    when (mode) { AgentMode.CHAT -> t("কথা বলো বা প্রশ্ন করো…"); AgentMode.BUILD -> t("কী বানাবে? ছোট করে বলো…"); AgentMode.AGENT -> t("কী করতে হবে বলো…") },
                     color = Glass.textMuted, fontSize = 15.sp
                 )
                 inner()
@@ -110,10 +111,10 @@ fun Composer(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
             }
         }
         if (attach) Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Pill("🖼 গ্যালারি", { attach = false; picker.launch("*/*") })
-            Pill("📷 ক্যামেরা", { attach = false; vm.captureImageFromTool("look_camera") })
-            Pill("📱 স্ক্রিন", { attach = false; vm.captureImageFromTool("screen_shot") })
-            Pill(if (seeScreen) "👁 স্ক্রিন দেখছে" else "🙈 স্ক্রিন বন্ধ", { vm.setAlwaysSeeScreen(!seeScreen) })
+            Pill(t("🖼 গ্যালারি"), { attach = false; picker.launch("*/*") })
+            Pill(t("📷 ক্যামেরা"), { attach = false; vm.captureImageFromTool("look_camera") })
+            Pill(t("📱 স্ক্রিন"), { attach = false; vm.captureImageFromTool("screen_shot") })
+            Pill(if (seeScreen) t("👁 স্ক্রিন দেখছে") else t("🙈 স্ক্রিন বন্ধ"), { vm.setAlwaysSeeScreen(!seeScreen) })
         }
     }
     if (modelSheet) ModelPicker(vm) { modelSheet = false }
@@ -161,16 +162,16 @@ fun ModelPicker(vm: ZyraxonViewModel, onDismiss: () -> Unit) {
             Modifier.fillMaxWidth().heightIn(max = 560.dp).clip(RoundedCornerShape(22.dp)).background(Glass.sheetFill(0.7f))
                 .border(1.dp, Glass.border, RoundedCornerShape(22.dp)).padding(14.dp)
         ) {
-            Text("🧠 মডেল বেছে নাও", color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
+            Text(t("🧠 মডেল বেছে নাও"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
             BasicTextField(q, { q = it }, Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(RoundedCornerShape(12.dp)).background(Glass.rowFill(0.3f)).padding(10.dp),
                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 13.sp), cursorBrush = SolidColor(Glass.pink),
-                decorationBox = { inner -> if (q.isEmpty()) Text("🔎 খোঁজো…", color = Glass.textMuted, fontSize = 13.sp); inner() })
+                decorationBox = { inner -> if (q.isEmpty()) Text(t("🔎 খোঁজো…"), color = Glass.textMuted, fontSize = 13.sp); inner() })
             androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                item { Chip("সব", provider.isBlank()) { provider = "" } }
+                item { Chip(t("সব"), provider.isBlank()) { provider = "" } }
                 items(providers) { p -> Chip(p, provider == p) { provider = p } }
             }
             Spacer(Modifier.height(8.dp))
-            if (loading && models.isEmpty()) Text("মডেল লোড হচ্ছে…", color = Glass.textMuted)
+            if (loading && models.isEmpty()) Text(t("মডেল লোড হচ্ছে…"), color = Glass.textMuted)
             LazyColumn(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 items(list, key = { it.provider + it.id }) { m ->
                     val sel = m.id == selected.id && m.provider == selected.provider
@@ -183,7 +184,7 @@ fun ModelPicker(vm: ZyraxonViewModel, onDismiss: () -> Unit) {
                     ) {
                         Column(Modifier.weight(1f)) {
                             Text(m.name, color = Glass.textPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
-                            Text(m.provider + if (m.isRealtime) " · 🎙 লাইভ" else "", color = Glass.textMuted, fontSize = 10.5.sp)
+                            Text(m.provider + if (m.isRealtime) t(" · 🎙 লাইভ") else "", color = Glass.textMuted, fontSize = 10.5.sp)
                         }
                         if (sel) Text("✓", color = Glass.pink, fontWeight = FontWeight.Bold)
                     }

@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.theme
 
+import ai.zyraxon.assistant.i18n.t
 import android.content.Context
 import android.os.Build
 import android.os.VibrationEffect
@@ -11,9 +12,9 @@ import androidx.compose.ui.graphics.Color
 
 /** The three looks of the app. */
 enum class ZyThemeMode(val title: String, val icon: String) {
-    HORROR("ভয়ঙ্কর", "🩸"),
-    DARK("ডার্ক", "🌙"),
-    LIGHT("লাইট", "☀️")
+    HORROR(t("ভয়ঙ্কর"), "🩸"),
+    DARK(t("ডার্ক"), "🌙"),
+    LIGHT(t("লাইট"), "☀️")
 }
 
 private class Pal(

@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.ui.theme.Glass
 import ai.zyraxon.assistant.ui.theme.ZyThemeMode
 import ai.zyraxon.assistant.viewmodel.ZyraxonViewModel
@@ -38,12 +39,12 @@ fun Sidebar(vm: ZyraxonViewModel) {
             Text("ZYRAXON", color = Glass.textPrimary, fontWeight = FontWeight.Black, letterSpacing = 2.sp, fontSize = 15.sp)
             Spacer(Modifier.height(10.dp))
             Text(
-                "＋  নতুন চ্যাট", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp,
+                t("＋  নতুন চ্যাট"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Glass.pinkFill)
                     .clickable { vm.newChat(); vm.setSidebarOpen(false) }.padding(12.dp).androidTag("new_chat_button")
             )
             Spacer(Modifier.height(10.dp))
-            Text("চ্যাট (${chats.size})", color = Glass.textMuted, fontSize = 11.sp)
+            Text(t("চ্যাট ({0})", chats.size), color = Glass.textMuted, fontSize = 11.sp)
             LazyColumn(Modifier.weight(1f).padding(top = 6.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 items(chats, key = { it.id }) { c ->
                     val sel = c.id == active
@@ -63,7 +64,7 @@ fun Sidebar(vm: ZyraxonViewModel) {
                 }
             }
             Spacer(Modifier.height(8.dp))
-            Text("থিম", color = Glass.textMuted, fontSize = 11.sp)
+            Text(t("থিম"), color = Glass.textMuted, fontSize = 11.sp)
             Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                 ZyThemeMode.values().forEach { m ->
                     Text(
@@ -80,10 +81,10 @@ fun Sidebar(vm: ZyraxonViewModel) {
     confirmDelete?.let { id ->
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { confirmDelete = null }, containerColor = Glass.sheetFill(0.9f),
-            title = { Text("চ্যাট মুছবে?", color = Glass.textPrimary) },
-            text = { Text("এই চ্যাটের সব বার্তা মুছে যাবে।", color = Glass.textMuted) },
-            confirmButton = { androidx.compose.material3.TextButton({ vm.deleteChat(id); confirmDelete = null }) { Text("মোছো", color = Glass.red) } },
-            dismissButton = { androidx.compose.material3.TextButton({ confirmDelete = null }) { Text("না", color = Glass.textMuted) } }
+            title = { Text(t("চ্যাট মুছবে?"), color = Glass.textPrimary) },
+            text = { Text(t("এই চ্যাটের সব বার্তা মুছে যাবে।"), color = Glass.textMuted) },
+            confirmButton = { androidx.compose.material3.TextButton({ vm.deleteChat(id); confirmDelete = null }) { Text(t("মোছো"), color = Glass.red) } },
+            dismissButton = { androidx.compose.material3.TextButton({ confirmDelete = null }) { Text(t("না"), color = Glass.textMuted) } }
         )
     }
 }

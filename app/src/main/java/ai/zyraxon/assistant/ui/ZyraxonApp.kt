@@ -110,8 +110,8 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                                 // A cloud turn spends its first seconds waking a
                                 // sandbox; saying so is the difference between a
                                 // wait and a screen that looks broken.
-                                cloudNotice.isNotBlank() -> t("☁ " + cloudNotice)
-                                cloudStage.isNotBlank() -> t("☁ " + cloudStage)
+                                cloudNotice.isNotBlank() -> t("☁ {0}", cloudNotice)
+                                cloudStage.isNotBlank() -> t("☁ {0}", cloudStage)
                                 isSpeaking -> t("বলছে… থামাতে ট্যাপ করো")
                                 !alwaysListening -> t("🔇 মাইক বন্ধ — ট্যাপ করো")
                                 isListening -> t("🎙️ শুনছি…")
@@ -210,8 +210,8 @@ private fun RoundBtn(label: String, tag: String, onClick: () -> Unit) {
 @Composable
 private fun BottomNav(active: AppTab, onSelect: (AppTab) -> Unit) {
     val items = listOf(
-        Triple(AppTab.CHAT, "💬", "চ্যাট"), Triple(AppTab.TERMINAL, "⌨️", "টার্মিনাল"), Triple(AppTab.CODE, "</>", "কোড"),
-        Triple(AppTab.PREVIEW, "🌐", "প্রিভিউ"), Triple(AppTab.MCP, "⬡", "MCP")
+        Triple(AppTab.CHAT, "💬", t("চ্যাট")), Triple(AppTab.TERMINAL, "⌨️", t("টার্মিনাল")), Triple(AppTab.CODE, "</>", t("কোড")),
+        Triple(AppTab.PREVIEW, "🌐", t("প্রিভিউ")), Triple(AppTab.MCP, "⬡", "MCP")
     )
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp).clip(RoundedCornerShape(22.dp))

@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.i18n.t
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -69,7 +70,7 @@ fun ApexKeyPrompt(vm: ZyraxonViewModel, onDone: () -> Unit) {
         ) {
             Text("ZYRAXON", color = Glass.pink, fontSize = 26.sp)
             Text(
-                "শুরু করতে আপনার ZYRAXON API কী দিন। একবার দিলে এটাই সবসময় কানেক্টেড থাকবে।",
+                t("শুরু করতে আপনার ZYRAXON API কী দিন। একবার দিলে এটাই সবসময় কানেক্টেড থাকবে।"),
                 color = Glass.textMuted, fontSize = 12.5.sp, lineHeight = 18.sp
             )
             Spacer(Modifier.height(4.dp))
@@ -112,12 +113,12 @@ fun ApexKeyPrompt(vm: ZyraxonViewModel, onDone: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    if (busy) "যাচাই করা হচ্ছে…" else "কানেক্ট করুন",
+                    if (busy) t("যাচাই করা হচ্ছে…") else t("কানেক্ট করুন"),
                     color = Glass.textPrimary, fontSize = 14.sp
                 )
             }
             Text(
-                if (reveal) "কী লুকাও" else "কী দেখাও",
+                if (reveal) t("কী লুকাও") else t("কী দেখাও"),
                 color = Glass.textMuted, fontSize = 11.sp,
                 modifier = Modifier
                     .fillMaxWidth()

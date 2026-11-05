@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
-"""Add only the keys a language table is still missing.
+"""Add the keys a language table is still missing, and repair the untranslated ones.
 
 `translate_ui.py` rebuilds every table from scratch, which is the right thing
 when the key set changes a lot but costs a full re-translation. This script
 keeps the existing translations and fills the gaps: it unions the UI literals
 with the runtime display strings in `tools/runtime_keys.json`, then translates
 just the keys absent from each table and merges them in.
+
+A key that is *present* but still holds the Bengali source is treated as
+missing too. That is what a failed request leaves behind — the caller falls back
+to the source so nothing is blank — and without this the failure would be
+permanent, because the entry looks translated to a check that only asks whether
+the key exists. Assamese is the one language the endpoint will not answer for,
+so its table keeps whatever it already has rather than being blanked.
 
 Keys are the *evaluated* strings, so a `$name` interpolation is `{0}` here, the
 same shape the Kotlin call site looks up.
@@ -57,7 +64,17 @@ def main():
             continue
         path = os.path.join(OUT_DIR, code + ".json")
         table = json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {}
-        missing = [k for k in keys if k not in table] if not force else list(keys)
+        # Every key the app can ask for, plus every key already in the table: a
+        # stale entry that nothing looks up any more is still repaired, so no
+        # language can show Bengali through a path the key list does not see.
+        if force:
+            missing = sorted(set(keys) | set(table))
+        else:
+            missing = [
+                k
+                for k in sorted(set(keys) | set(table))
+                if k not in table or (table[k] == k and K.BENGALI.search(k))
+            ]
         if not missing:
             print("%-6s up to date" % code, flush=True)
             continue

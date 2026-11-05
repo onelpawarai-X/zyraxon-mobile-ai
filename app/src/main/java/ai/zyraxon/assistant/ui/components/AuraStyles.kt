@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.ui.theme.Glass
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -65,22 +66,22 @@ val AuraStyleIds = listOf(
 
 /** Bengali display name for an aura style id. */
 fun auraStyleLabel(id: String): String = when (id) {
-    "orb" -> "চোখ"
-    "twin" -> "টুইন রিং"
-    "vortex" -> "ভর্টেক্স"
-    "bloom" -> "রক্ত-গোলাপ"
-    "helix" -> "হেলিক্স"
-    "core" -> "রিয়্যাক্টর"
-    "sigil" -> "সিগিল"
-    "heart" -> "হৃদয়"
-    "storm" -> "ঝড়"
-    "void" -> "ভয়েড"
-    "inferno" -> "ইনফার্নো"
-    "swarm" -> "চক্ষু-ঝাঁক"
-    "crown" -> "কাঁটার মুকুট"
-    "rift" -> "চিড়"
-    "ghost" -> "প্রেত"
-    "mandala" -> "মণ্ডল"
+    "orb" -> t("চোখ")
+    "twin" -> t("টুইন রিং")
+    "vortex" -> t("ভর্টেক্স")
+    "bloom" -> t("রক্ত-গোলাপ")
+    "helix" -> t("হেলিক্স")
+    "core" -> t("রিয়্যাক্টর")
+    "sigil" -> t("সিগিল")
+    "heart" -> t("হৃদয়")
+    "storm" -> t("ঝড়")
+    "void" -> t("ভয়েড")
+    "inferno" -> t("ইনফার্নো")
+    "swarm" -> t("চক্ষু-ঝাঁক")
+    "crown" -> t("কাঁটার মুকুট")
+    "rift" -> t("চিড়")
+    "ghost" -> t("প্রেত")
+    "mandala" -> t("মণ্ডল")
     else -> avatarSpec(id)?.label ?: id
 }
 
