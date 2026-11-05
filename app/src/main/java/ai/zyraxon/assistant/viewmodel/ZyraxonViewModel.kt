@@ -20,7 +20,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
+import ai.zyraxon.assistant.ai.CloudScreen
 import ai.zyraxon.assistant.ai.ContextWindow
+import ai.zyraxon.assistant.ai.ScreenOcr
+import ai.zyraxon.assistant.ai.VisionSupport
 import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.mcp.McpAuth
 import ai.zyraxon.assistant.mcp.McpCatalog
