@@ -53,6 +53,10 @@ class OpenHandsRecoveryTest {
         "session_api_key":"sk-1","conversation_url":"https://agent.example/api/conversations/$id"}]}
     """.trimIndent()
 
+    /** Every path the client called, in order. */
+    private fun paths(): List<String> =
+        (0 until server.requestCount).map { server.takeRequest().path ?: "" }
+
     @Test
     fun `a paused sandbox is woken and the message is sent again`() = runBlocking {
         val c = client()
@@ -64,9 +68,11 @@ class OpenHandsRecoveryTest {
 
         c.sendMessage("k", "c1", "hello")
 
-        assertEquals("/api/v1/app-conversations/c1/send-message", server.takeRequest().path)
-        assertEquals("/api/v1/sandboxes/sb1/resume", server.takeRequest().path)
-        assertEquals("/api/v1/app-conversations/c1/send-message", server.takeRequest().path)
+        val p = paths()
+        // send refused -> read the sandbox id -> wake it -> confirm it is up -> send again
+        assertEquals("/api/v1/app-conversations/c1/send-message", p[0])
+        assertEquals("/api/v1/sandboxes/sb1/resume", p[2])
+        assertEquals("/api/v1/app-conversations/c1/send-message", p[4])
     }
 
     /**
@@ -85,8 +91,8 @@ class OpenHandsRecoveryTest {
 
         c.sendMessage("k", "c1", "hi")
 
-        server.takeRequest()
-        val wake = server.takeRequest()
+        val requests = (0 until server.requestCount).map { server.takeRequest() }
+        val wake = requests.single { it.path == "/api/v1/sandboxes/sb1/resume" }
         assertEquals("POST", wake.method)
         assertEquals("{}", wake.body.readUtf8())
     }
