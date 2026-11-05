@@ -50,10 +50,12 @@ object CloudScreen {
         if (where.isNotEmpty()) lines.add(where)
 
         val seen = HashSet<String>()
+        var bodyCount = 0
+        var truncated = false
         val arr = runCatching { JSONArray(nodesJson) }.getOrNull()
         if (arr != null) {
             for (i in 0 until arr.length()) {
-                if (lines.size >= maxLines + 1) break
+                if (bodyCount >= maxLines) { truncated = true; break }
                 val o = arr.optJSONObject(i) ?: continue
                 val text = o.optString("text").trim()
                 if (text.isEmpty()) continue
@@ -70,11 +72,14 @@ object CloudScreen {
                 }
                 val suffix = if (flags.isEmpty()) "" else " [$flags]"
                 lines.add("- \"$text\" @(${o.optInt("x")},${o.optInt("y")})$suffix")
+                bodyCount++
             }
         }
 
-        val bodyLines = if (where.isNotEmpty()) lines.size - 1 else lines.size
-        if (bodyLines <= 0) return ""
+        if (bodyCount <= 0) return ""
+        // The agent is told the list was cut, so it knows there is more on the
+        // screen than it was shown rather than assuming it saw everything.
+        if (truncated) lines.add("- … (আরও আছে)")
 
         var out = lines.joinToString("\n")
         if (out.length > maxChars) {

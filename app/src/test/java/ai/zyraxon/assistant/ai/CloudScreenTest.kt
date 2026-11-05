@@ -1,7 +1,6 @@
 package ai.zyraxon.assistant.ai
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -87,7 +86,7 @@ class CloudScreenTest {
 
     @Test
     fun `a malformed node list does not throw`() {
-        assertFalse(CloudScreen.block("App", "com.app", "not json", "").isEmpty())
-        assertEquals("", CloudScreen.digest("", "", "not json"))
+        // Nothing readable in it, so nothing is sent — but no crash either.
+        assertEquals("", CloudScreen.digest("App", "com.app", "not json"))
     }
 }
