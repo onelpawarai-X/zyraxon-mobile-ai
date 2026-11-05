@@ -209,3 +209,29 @@ Two things that wasted time, now known:
   Retry the connect; it succeeds on its own.
 - `sandbox_id` must be passed when reusing a warm sandbox, otherwise a new
   sandbox is provisioned and can hit the daily sandbox limit.
+
+## Building: use GitHub Actions, not the local container
+
+The local container lost its JDK/Android SDK/Gradle after a restart and building
+the APK there costs ~480 MB of memory, which has caused restarts mid-build. The
+supported path is the `TEST-CI` workflow (`workflow_dispatch`):
+
+```bash
+curl -s -X POST -H "Authorization: Bearer $GITHUB_TOKEN" \
+  -H "Accept: application/vnd.github+json" \
+  "https://api.github.com/repos/onelpawarai-X/zyraxon-mobile-ai/actions/workflows/TEST-CI.yml/dispatches" \
+  -d '{"ref":"main","inputs":{"note":"what to test"}}'
+```
+
+It runs `:app:testDebugUnitTest` then builds and uploads a debug APK artifact.
+The Unit tests step gates everything: a failing test means no APK, so the suite
+must be green before a test build is worth dispatching.
+
+Two tests were already broken on `main` before the Apex work and were repaired:
+- `ThoughtSignatureTest` read `arguments` without calling `finalizeArgs()`, which
+  every production reader calls first — the assertion was wrong, not the code.
+- `SettingsPersistenceTest` asserted a round trip for `AppTab.TOOLS`, but TOOLS
+  is folded into the chat panel now and never comes back as a tab.
+- `MicButtonUiTest` referenced `BottomComposer`, renamed away in v6.21.0. The
+  microphone control had been dropped from the app entirely; it is now
+  `ComposerMicButton` in `ui/shell/Composer.kt`.
