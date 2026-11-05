@@ -55,6 +55,9 @@ class OpenHandsClient(
         /** How many socket reconnects a single turn tolerates before it fails. */
         private const val MAX_RECONNECTS = 8
 
+        /** How long a sleeping sandbox may take to wake. Measured 13–26s live. */
+        private const val WAKE_TIMEOUT_MS = 90_000L
+
         /**
          * No read timeout: a turn can think for minutes without a byte arriving,
          * and a timeout here would kill work that is still going well. The socket
@@ -233,14 +236,75 @@ class OpenHandsClient(
      * Queues a user message. The account endpoint is used rather than the agent
      * server's, because this one also wakes a paused sandbox, which is exactly
      * what a message into an idle chat must do.
+     *
+     * A sleeping sandbox answers `409 Sandbox is PAUSED`, and it is the one
+     * refusal worth waking through rather than surfacing: the user typed into a
+     * chat that was alive a minute ago, and from their side nothing changed. The
+     * wake is done here so every caller — the first message, a tool result handed
+     * back mid-turn — gets the same recovery instead of each having to know about
+     * it.
      */
-    suspend fun sendMessage(key: String, id: String, text: String) {
-        call(
-            key, "POST", "/app-conversations/$id/send-message",
-            JSONObject().put("role", "user")
-                .put("content", JSONArray().put(JSONObject().put("type", "text").put("text", text)))
-                .put("run", true)
-        )
+    suspend fun sendMessage(
+        key: String,
+        id: String,
+        text: String,
+        onStage: (String) -> Unit = {}
+    ) {
+        val body = JSONObject().put("role", "user")
+            .put("content", JSONArray().put(JSONObject().put("type", "text").put("text", text)))
+            .put("run", true)
+        try {
+            call(key, "POST", "/app-conversations/$id/send-message", body)
+        } catch (e: OhApiError) {
+            if (e.code != 409) throw e
+            val conv = runCatching { getConversation(key, id) }.getOrNull()
+                ?: throw e
+            if (conv.sandboxId.isBlank()) throw e
+            onStage("স্যান্ডবক্স জাগানো হচ্ছে…")
+            resumeSandbox(key, conv.sandboxId)
+            awaitRunning(key, id, WAKE_TIMEOUT_MS)
+            onStage("স্যান্ডবক্স চালু — কাজ শুরু হচ্ছে…")
+            call(key, "POST", "/app-conversations/$id/send-message", body)
+        }
+    }
+
+    /**
+     * Wakes a sleeping sandbox. The cloud pauses an idle one on its own, so this
+     * is the normal path after the phone has been in a pocket, not an error path.
+     */
+    suspend fun resumeSandbox(key: String, sandboxId: String) {
+        runCatching { call(key, "POST", "/sandboxes/$sandboxId/resume") }
+    }
+
+    /**
+     * The conversation, but only once its sandbox is actually RUNNING.
+     *
+     * A conversation outlives its sandbox: the id, the title and the whole event
+     * log stay, while the machine behind it is paused and the session key stops
+     * working. Everything that talks to the agent server — the live socket, the
+     * interrupt — needs the machine up, so this wakes it and waits rather than
+     * letting the first request fail and the chat look broken.
+     *
+     * Waking measured 13–26s against the live cloud, which is why the caller is
+     * told what is happening instead of staring at a dead screen.
+     */
+    suspend fun ensureRunning(
+        key: String,
+        id: String,
+        onStage: (String) -> Unit = {}
+    ): OhConversation {
+        var conv = getConversation(key, id)
+        if (conv.sandboxStatus == "RUNNING") return conv
+        if (conv.sandboxId.isBlank()) return conv
+        onStage("স্যান্ডবক্স জাগানো হচ্ছে…")
+        resumeSandbox(key, conv.sandboxId)
+        val started = System.currentTimeMillis()
+        while (System.currentTimeMillis() - started < WAKE_TIMEOUT_MS) {
+            delay(1500)
+            conv = runCatching { getConversation(key, id) }.getOrElse { return conv }
+            if (conv.sandboxStatus == "RUNNING") return conv
+        }
+        return conv
     }
 
     // ---- agent server ------------------------------------------------------
@@ -311,7 +375,19 @@ class OpenHandsClient(
      * while [keepAlive] is true, because a socket dropped mid-turn would otherwise
      * freeze the screen with the work still running on the other side.
      */
-    fun events(conv: OhConversation, keepAlive: () -> Boolean = { true }): Flow<OhEvent> = callbackFlow {
+    fun events(
+        conv: OhConversation,
+        keepAlive: () -> Boolean = { true },
+        /**
+         * Called before a reconnect. The common reason a socket dies mid-turn is
+         * that the sandbox went to sleep, and its host — and therefore the socket
+         * URL and the session key — only come back with it. Returning the woken
+         * conversation re-points the socket at the live host; returning null keeps
+         * the old one and lets the retry fail on its own.
+         */
+        reconnect: (suspend () -> OhConversation?)? = null
+    ): Flow<OhEvent> = callbackFlow {
+        var current = conv
         var attempt = 0
         var socket: WebSocket? = null
         var closed = AtomicBoolean(false)
@@ -325,8 +401,8 @@ class OpenHandsClient(
         fun open() {
             closed = AtomicBoolean(false)
             ready.set(false)
-            val url = conv.agentBase.replaceFirst("https://", "wss://")
-                .replaceFirst("http://", "ws://") + "/sockets/events/${conv.id}"
+            val url = current.agentBase.replaceFirst("https://", "wss://")
+                .replaceFirst("http://", "ws://") + "/sockets/events/${current.id}"
             val listener = object : WebSocketListener() {
                 override fun onMessage(ws: WebSocket, text: String) {
                     val e = OhEvent.parse(text) ?: return
@@ -369,7 +445,7 @@ class OpenHandsClient(
                 }
             }
             socket = http.newWebSocket(
-                Request.Builder().url(url).header("X-Session-API-Key", conv.sessionKey).build(),
+                Request.Builder().url(url).header("X-Session-API-Key", current.sessionKey).build(),
                 listener
             )
         }
@@ -388,6 +464,9 @@ class OpenHandsClient(
                         break
                     }
                     delay(backoffMs(attempt))
+                    // A sleeping sandbox takes the socket host with it, so the
+                    // connection is only worth retrying against a woken one.
+                    reconnect?.invoke()?.let { current = it }
                     open()
                 }
             }

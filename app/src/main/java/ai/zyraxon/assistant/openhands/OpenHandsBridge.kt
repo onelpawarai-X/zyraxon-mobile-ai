@@ -29,15 +29,18 @@ import org.json.JSONObject
  */
 class OpenHandsBridge(
     private val client: OpenHandsClient,
-    private val store: OpenHandsStore
+    private val store: OpenHandsStore,
+    /** False while the phone has no usable network. A wake is not attempted then. */
+    private val online: () -> Boolean = { true }
 ) {
 
     /**
      * One user turn.
      *
-     * @param existing a conversation already bound to this chat. When present the
-     *   cold start is skipped entirely — this is what makes the second message in
-     *   a chat instant while the first one shows real progress.
+     * @param existing resolves a conversation already bound to this chat, and is
+     *   invoked inside the flow so a wake it triggers is narrated to the user.
+     *   When it returns one the cold start is skipped entirely — this is what
+     *   makes the second message in a chat instant while the first shows progress.
      * @param onToolCall runs a phone-owned tool; the cloud never executes these.
      * @param onProgress the cloud's own provisioning stage, for the first turn.
      */
@@ -48,11 +51,17 @@ class OpenHandsBridge(
         mode: AgentMode,
         systemSuffix: String,
         clientTools: JSONArray? = null,
-        existing: OhConversation? = null,
+        existing: (suspend ((String) -> Unit) -> OhConversation?)? = null,
         onToolCall: suspend (name: String, args: JSONObject) -> JSONObject = { _, _ -> JSONObject() },
         onProgress: (String) -> Unit = {}
     ): Flow<String> = channelFlow {
-        var conv = existing
+        // Resolved inside the flow, not by the caller: waking a sleeping sandbox
+        // takes tens of seconds, and this is the only place where those seconds
+        // can be narrated to the user while they happen.
+        var conv = existing?.invoke { stage ->
+            onProgress(stage)
+            trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+        }
 
         // ---- cold start, shown as it happens -------------------------------
         if (conv == null) {
@@ -84,8 +93,16 @@ class OpenHandsBridge(
             store.lastConversationId = started.id
         } else {
             // The session key rotates whenever a sandbox resumes, so the one held
-            // from last time is refreshed before anything is sent.
-            conv = withContext(Dispatchers.IO) { client.awaitRunning(apiKey, conv!!.id) }
+            // from last time is refreshed before anything is sent. The cloud
+            // pauses an idle sandbox on its own, and a paused one refuses every
+            // call, so this is where the chat is brought back to life rather than
+            // failing: measured 13–26s to wake, shown to the user as it happens.
+            conv = withContext(Dispatchers.IO) {
+                client.ensureRunning(apiKey, conv!!.id) { stage ->
+                    onProgress(stage)
+                    trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+                }
+            }
         }
 
         val live = conv!!
@@ -107,7 +124,15 @@ class OpenHandsBridge(
         var toolRounds = 0
 
         val watcher = launch {
-            client.events(live) { true }.collect { e ->
+            // If the socket dies because the sandbox slept, the same wake that a
+            // cold message uses is run again before reconnecting, so a long job
+            // survives the phone being idle rather than dying with the socket.
+            client.events(live, { true }, reconnect = {
+                client.ensureRunning(apiKey, live.id) { stage ->
+                    onProgress(stage)
+                    trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+                }
+            }).collect { e ->
                 when (e) {
                     is OhEvent.Delta -> {
                         if (e.reasoning.isNotEmpty()) trySend(ZyraxonAiEngine.REASONING_PREFIX + e.reasoning)
@@ -135,7 +160,9 @@ class OpenHandsBridge(
                             pendingTool = true
                             val delivered = withContext(Dispatchers.IO) {
                                 runCatching {
-                                    client.sendMessage(apiKey, live.id, toolResult(e.name, result))
+                                    client.sendMessage(apiKey, live.id, toolResult(e.name, result)) { stage ->
+                                        trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+                                    }
                                 }.isSuccess
                             }
                             if (!delivered) close()
@@ -161,10 +188,26 @@ class OpenHandsBridge(
         delay(600)
         withContext(Dispatchers.IO) {
             runCatching { client.neverConfirm(live) }
-            client.sendMessage(apiKey, live.id, prompt)
+            client.sendMessage(apiKey, live.id, prompt) { stage ->
+                onProgress(stage)
+                trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+            }
         }
         awaitClose { watcher.cancel() }
     }.flowOn(Dispatchers.IO)
+
+    /**
+     * Wakes the conversation behind a chat, for callers outside a turn (the app
+     * coming back to the foreground, the overlay waking up). Returns null when
+     * there is nothing to wake or the phone is offline.
+     */
+    suspend fun wake(apiKey: String, chatId: String, onStage: (String) -> Unit = {}): OhConversation? {
+        val id = store.conversationFor(chatId) ?: return null
+        if (apiKey.isBlank() || !online()) return null
+        return runCatching {
+            client.ensureRunning(apiKey, id, onStage)
+        }.getOrNull()
+    }
 
     /**
      * The name of a conversation to show in the phone's own chat list, taken from

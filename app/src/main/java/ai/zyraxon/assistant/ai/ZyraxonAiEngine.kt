@@ -709,7 +709,8 @@ class ZyraxonAiEngine(private val context: Context) {
     }
 
     /** True when the phone has a working internet connection right now. */
-    private fun isOnline(): Boolean = try {
+    /** True when the phone has a validated internet connection right now. */
+    fun isOnline(): Boolean = try {
         val cm = context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
         val caps = cm.getNetworkCapabilities(cm.activeNetwork)
         caps != null && caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) &&

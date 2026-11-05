@@ -292,6 +292,7 @@ class OverlayChatService : android.app.Service() {
             launch { vm.isListening.collectLatest { eye?.hearing = it } }
             launch { vm.isSpeaking.collectLatest { eye?.speaking = it } }
             launch { vm.isGenerating.collectLatest { eye?.thinking = it } }
+            launch { vm.cloudStage.collectLatest { eye?.stage = it } }
             launch { vm.audioLevel.collectLatest { eye?.level = it } }
         }
     }
@@ -481,6 +482,13 @@ class OverlayChatService : android.app.Service() {
         @Volatile var speaking = false
         @Volatile var thinking = false
         @Volatile var level = 0f
+
+        /** The cloud's own stage ("স্যান্ডবক্স জাগানো হচ্ছে…"), shown while a turn waits. */
+        @Volatile var stage: String = ""
+            set(v) {
+                if (v.isNotBlank() && v != field) note = v
+                field = v
+            }
 
         private var running = true
         private var note: String? = null

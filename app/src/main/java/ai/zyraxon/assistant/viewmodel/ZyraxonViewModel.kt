@@ -115,7 +115,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      */
     val openHandsClient = OpenHandsClient()
     val openHandsStore = OpenHandsStore(application)
-    val openHandsBridge = OpenHandsBridge(openHandsClient, openHandsStore)
+    val openHandsBridge = OpenHandsBridge(openHandsClient, openHandsStore) { aiEngine.isOnline() }
 
     /** The cloud's own provisioning stage during a first turn, for the loader. */
     private val _cloudStage = MutableStateFlow("")
@@ -2091,7 +2091,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                             ai.zyraxon.assistant.ai.ToolRegistry.schemas(mode),
                             ai.zyraxon.assistant.openhands.OpenHandsBridge.PHONE_TOOLS
                         ),
-                        existing = existingCloudConversation(c),
+                        existing = { stage -> existingCloudConversation(c, stage) },
                         onToolCall = { name, args -> runTool(name, args, c) },
                         onProgress = { _cloudStage.value = it }
                     )
@@ -2157,6 +2157,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             } finally {
                 withContext(NonCancellable) {
                     c.isGenerating.value = false
+                    // The stage caption lives only as long as the turn that set it,
+                    // or it would sit on the home screen after the answer arrived.
+                    _cloudStage.value = ""
                     busyIds.update { it - c.id }
                     if (mode == AgentMode.AGENT) releaseFrameTicker()
                     c.activeToolCalls.value = emptyList()
@@ -2185,13 +2188,27 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     // ---- ZYRAXON Apex (cloud) --------------------------------------------------
 
     /** True when this chat already has a cloud conversation, so no cold start runs. */
-    private suspend fun existingCloudConversation(c: ChatSession): OhConversation? {
+    private suspend fun existingCloudConversation(
+        c: ChatSession,
+        onStage: (String) -> Unit = {}
+    ): OhConversation? {
         val id = openHandsStore.conversationFor(c.id) ?: return null
         val key = aiEngine.getApiKey(ZYRAXON_APEX)
         if (key.isBlank()) return null
-        // A stored id can be stale (the cloud side deleted, or the sandbox gone),
-        // and a stale id must degrade to a fresh start rather than fail the turn.
-        return runCatching { openHandsClient.awaitRunning(key, id) }.getOrNull()
+        // A stored id can be stale — the cloud side deleted it, or the sandbox was
+        // reclaimed — and a stale id must degrade to a fresh start rather than fail
+        // the turn. A wake is attempted first, because a sleeping sandbox is the
+        // common case and its history is worth keeping; only a conversation that is
+        // really gone (404) is dropped, and then the binding is cleared so the next
+        // turn builds a new one instead of retrying a dead id forever.
+        val woken = runCatching {
+            openHandsClient.ensureRunning(key, id, onStage)
+        }.getOrNull()
+        if (woken != null) return woken
+        runCatching {
+            if (openHandsClient.getConversation(key, id).id.isBlank()) openHandsStore.unbind(c.id)
+        }.onFailure { openHandsStore.unbind(c.id) }
+        return null
     }
 
     /**
@@ -2218,6 +2235,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         append("the task rather than describing how it could be done.\n\n")
         append("Never ask the user for approval before acting; act, then report what you did ")
         append("in the user's language.\n\n")
+        append("Reply in the language the user writes in — Bangla, English or any other. ")
+        append("Do not switch language on your own and do not mix scripts: if the user ")
+        append("writes Bangla, every sentence you say is Bangla.\n\n")
         append(
             when (mode) {
                 AgentMode.CHAT -> "Mode: CHAT. Answer and advise; keep it conversational."
@@ -3480,6 +3500,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * there was no way back to the Connect button.
      */
     fun onAppReturnedToForeground() {
+        // Coming back from a swipe or a long sleep is the moment a cloud chat is
+        // most likely to be pointing at a sandbox that has since been paused, so
+        // it is woken here — in the background, without a turn — rather than left
+        // for the user's next message to discover.
+        viewModelScope.launch(Dispatchers.IO) {
+            val id = openHandsStore.lastConversationId ?: return@launch
+            val key = aiEngine.getApiKey(ZYRAXON_APEX)
+            if (key.isBlank()) return@launch
+            runCatching { openHandsClient.ensureRunning(key, id) }
+        }
         if (!aiEngine.mcp.isAwaitingRedirect()) return
         aiEngine.mcp.cancelPending()
         _mcpNotice.value = "কানেক্ট করার ফ্লো বাতিল হলো — আবার কানেক্ট চাপো"

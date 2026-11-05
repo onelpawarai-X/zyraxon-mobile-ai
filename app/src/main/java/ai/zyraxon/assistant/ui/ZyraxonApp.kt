@@ -60,6 +60,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     val auraSize by viewModel.auraSize.collectAsState()
     val auraGlow by viewModel.auraGlow.collectAsState()
     val auraSpeed by viewModel.auraSpeed.collectAsState()
+    val cloudStage by viewModel.cloudStage.collectAsState()
     val terminalLines by viewModel.terminalLines.collectAsState()
     val terminalBusy by viewModel.terminalBusy.collectAsState()
     val terminalCwd by viewModel.terminalCwd.collectAsState()
@@ -105,6 +106,10 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                     if (activeTab == AppTab.HOME) {
                         Text(
                             when {
+                                // A cloud turn spends its first seconds waking a
+                                // sandbox; saying so is the difference between a
+                                // wait and a screen that looks broken.
+                                cloudStage.isNotBlank() -> t("☁ " + cloudStage)
                                 isSpeaking -> t("বলছে… থামাতে ট্যাপ করো")
                                 !alwaysListening -> t("🔇 মাইক বন্ধ — ট্যাপ করো")
                                 isListening -> t("🎙️ শুনছি…")
