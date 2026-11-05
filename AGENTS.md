@@ -311,3 +311,41 @@ Two tests were already broken on `main` before the Apex work and were repaired:
 - `MicButtonUiTest` referenced `BottomComposer`, renamed away in v6.21.0. The
   microphone control had been dropped from the app entirely; it is now
   `ComposerMicButton` in `ui/shell/Composer.kt`.
+
+## Localisation (assets/i18n)
+
+Every UI string is a Bengali key looked up through `t(...)` /
+`Loc.t(...)` (`i18n/Localization.kt`). The tables live in
+`app/src/main/assets/i18n/<code>.json`, one per language in
+`languages.json`, and Bengali is the identity table.
+
+Pipeline: `tools/localize_ui.py` wraps raw Bengali literals in `t(...)`,
+then `tools/translate_missing.py` fills the tables. The two tools must
+agree on how a string is tokenised, so both use
+`translate_ui.braced_end` / `translate_ui.tokenize`.
+
+Three traps, each of which silently leaves Bengali on screen:
+
+* A Kotlin interpolation can nest braces — `${a.count { it.x }.takeIf { it > 0 } ?: ""}`
+  is real code here. Match braces with `braced_end`, never with `\{[^}]*\}`;
+  a wrong match rewrites the call into one the compiler rejects.
+* A failed translation is stored as the Bengali source. A check that only
+  asks whether the key exists sees that as translated, so the failure
+  becomes permanent. `translate_missing.py` repairs any entry whose value
+  still equals its Bengali key, and scans the whole table rather than just
+  the keys the current code looks up.
+* The endpoint rewrites or drops positional tokens. `{0}` comes back
+  renumbered in several languages and `__0__` loses an underscore in
+  others, so the mask is `[[N]]` (`translate_ui.protect`/`restore` accept
+  one or two brackets). The product name is masked the same way, because
+  the endpoint transliterates it — into Cyrillic, katakana, or the
+  trademark `Xerox`; `guard_brand`/`restore_brand` hold it.
+
+Runtime display strings (enum titles, view-model status, `OverlayChatService`)
+are looked up with `t(...)` too, but they are not literals in the `ui/`
+package, so `localize_ui.py` cannot see them. Keep `tools/runtime_keys.json`
+current and re-run `translate_missing.py` after adding one.
+
+Audit after any change: all 60 tables must carry the same key set as
+`bn.json`, with no blank value, no `{N}` mismatch, and no value still equal
+to its Bengali key except where the word is genuinely the same (Assamese).
