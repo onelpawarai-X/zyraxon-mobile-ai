@@ -12,8 +12,8 @@ android {
     applicationId = "com.zyraxon.assistant"
     minSdk = 21
     targetSdk = 36
-    versionCode = 38
-    versionName = "6.22.0"
+    versionCode = 39
+    versionName = "6.23.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
