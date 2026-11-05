@@ -349,3 +349,13 @@ current and re-run `translate_missing.py` after adding one.
 Audit after any change: all 60 tables must carry the same key set as
 `bn.json`, with no blank value, no `{N}` mismatch, and no value still equal
 to its Bengali key except where the word is genuinely the same (Assamese).
+
+`localize_ui.py` only wraps *literals*; a `t("… $var …")` written by hand
+still compiles but never matches a table key, because Kotlin evaluates the
+`$` before `t()` runs. Grep for it before a build:
+
+```bash
+grep -rn 't(".*\$' app/src/main/java --include=*.kt
+```
+
+Every hit must become `t("… {0} …", var)`.
