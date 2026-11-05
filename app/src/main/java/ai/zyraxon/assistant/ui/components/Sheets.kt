@@ -1325,8 +1325,8 @@ fun SettingsSheet(
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             when {
-                                voiceErr.isNotBlank() -> t("⚠️ $voiceErr — ফোনের কণ্ঠে পড়া হচ্ছে।")
-                                useRemote && remoteName.isNotBlank() -> t("🎙️ এখন বলছে: $remoteName")
+                                voiceErr.isNotBlank() -> t("⚠️ {0} — ফোনের কণ্ঠে পড়া হচ্ছে।", voiceErr)
+                                useRemote && remoteName.isNotBlank() -> t("🎙️ এখন বলছে: {0}", remoteName)
                                 useRemote -> t("🎙️ ওয়েবসাইটের কণ্ঠ প্রস্তুত (প্রথম বাক্য এলেই কণ্ঠের নাম দেখা যাবে)।")
                                 else -> t("🎙️ ফোনের নিজের ইঞ্জিন কথা বলছে।")
                             },
