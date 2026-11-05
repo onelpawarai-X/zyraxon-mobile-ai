@@ -3,6 +3,7 @@ package ai.zyraxon.assistant.openhands
 import ai.zyraxon.assistant.ai.ToolRegistry
 import ai.zyraxon.assistant.model.AgentMode
 import org.json.JSONArray
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -26,33 +27,65 @@ import org.robolectric.annotation.Config
 @Config(sdk = [36])
 class CloudToolsTest {
 
+    /** The names exactly as the cloud receives them (so, with the phone_ prefix). */
     private fun names(mode: AgentMode): List<String> {
         val arr: JSONArray = OpenHandsBridge.phoneTools(mode)
-        return (0 until arr.length()).mapNotNull {
-            arr.optJSONObject(it)?.optJSONObject("function")?.optString("name")
-        }
+        return (0 until arr.length()).mapNotNull { arr.optJSONObject(it)?.optString("name") }
     }
+
+    /** The names with the prefix taken back off, i.e. what the app really runs. */
+    private fun localNames(mode: AgentMode): List<String> =
+        names(mode).map { OpenHandsBridge.localName(it) }
 
     @Test
     fun `every tool the cloud is offered really exists in the registry`() {
         val known = ToolRegistry.names().toSet()
         for (mode in listOf(AgentMode.CHAT, AgentMode.BUILD, AgentMode.AGENT)) {
-            for (n in names(mode)) {
+            for (n in localNames(mode)) {
                 assertTrue("offered but not implemented: $n (${mode.name})", n in known)
             }
         }
     }
 
     @Test
+    fun `every published name carries the prefix, so none can collide`() {
+        // The cloud agent has its own read_file, write_file, git and terminal_run,
+        // and a second tool with one of those names makes its server reject the
+        // whole conversation with a 422 — measured live. The prefix is what makes
+        // that impossible, so it is asserted on every name rather than assumed.
+        val collisions = setOf(
+            "read_file", "write_file", "edit_file", "list_dir", "git",
+            "terminal_run", "run_shell", "grep_files", "find_files"
+        )
+        for (mode in listOf(AgentMode.CHAT, AgentMode.BUILD, AgentMode.AGENT)) {
+            for (n in names(mode)) {
+                if (n.contains("__")) continue
+                assertTrue("published without the prefix: $n", n.startsWith(OpenHandsBridge.PHONE_PREFIX))
+                assertFalse("would collide with a cloud tool: $n", n in collisions)
+            }
+        }
+    }
+
+    @Test
+    fun `the prefix is reversible, so a tool the cloud calls really runs`() {
+        assertEquals("preview", OpenHandsBridge.localName("phone_preview"))
+        assertEquals("terminal_run", OpenHandsBridge.localName("phone_terminal_run"))
+        assertEquals("phone_preview", OpenHandsBridge.publishedName("preview"))
+        // An MCP tool keeps the name its own server gave it, on both sides.
+        assertEquals("myserver__do", OpenHandsBridge.localName("myserver__do"))
+        assertEquals("myserver__do", OpenHandsBridge.publishedName("myserver__do"))
+    }
+
+    @Test
     fun `the phantom tool is gone`() {
         for (mode in listOf(AgentMode.CHAT, AgentMode.BUILD, AgentMode.AGENT)) {
-            assertFalse("look_at_screen has no implementation", "look_at_screen" in names(mode))
+            assertFalse("look_at_screen has no implementation", "look_at_screen" in localNames(mode))
         }
     }
 
     @Test
     fun `the cloud can build, browse and publish, not only drive the ui`() {
-        val build = names(AgentMode.BUILD)
+        val build = localNames(AgentMode.BUILD)
         for (t in listOf(
             "preview", "terminal_run", "linux_run", "run_shell",
             "write_file", "read_file", "edit_file", "publish_website",
@@ -64,7 +97,7 @@ class CloudToolsTest {
 
     @Test
     fun `the cloud can still drive the phone itself`() {
-        val agent = names(AgentMode.AGENT)
+        val agent = localNames(AgentMode.AGENT)
         for (t in listOf(
             "open_app", "read_screen", "tap", "type_text", "swipe",
             "look_camera", "share", "notify", "device_lock", "read_sms"
@@ -76,7 +109,7 @@ class CloudToolsTest {
     @Test
     fun `tools the cloud must not be handed are withheld`() {
         for (mode in listOf(AgentMode.BUILD, AgentMode.AGENT)) {
-            val n = names(mode)
+            val n = localNames(mode)
             // These would either nest two agents, pull tools out from under the
             // running turn, or produce a result that can never come back.
             for (t in listOf(
@@ -90,7 +123,7 @@ class CloudToolsTest {
 
     @Test
     fun `chat mode stays small — it is not an agent turn`() {
-        val chat = names(AgentMode.CHAT)
+        val chat = localNames(AgentMode.CHAT)
         assertTrue("chat should not carry the browser", "preview" !in chat)
         assertTrue("chat should not carry the terminal", "terminal_run" !in chat)
         assertTrue("chat should keep memory", "memory_read" in chat)
@@ -101,7 +134,7 @@ class CloudToolsTest {
         // The whole point of the fix: a cloud turn is not less capable than a
         // local one. It gets everything the local model gets, minus the handful
         // that cannot work over the cloud, plus nothing invented.
-        val agent = names(AgentMode.AGENT).toSet()
+        val agent = localNames(AgentMode.AGENT).toSet()
         val local = ToolRegistry.toolNamesFor(AgentMode.AGENT)
         val missing = local - agent
         assertTrue("unexpected tools withheld: $missing", missing.all {

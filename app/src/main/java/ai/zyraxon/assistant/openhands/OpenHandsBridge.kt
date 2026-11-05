@@ -162,19 +162,22 @@ class OpenHandsBridge(
                         // A phone-owned tool runs here; the cloud's own tools are
                         // left alone, because their result is already on the way.
                         val alreadyDone = e.id.isNotBlank() && e.id in history
-                        // A tool the phone owns runs here. The check is against the
-                        // live registry rather than a written-out list, so a tool
-                        // the app can run is never silently skipped, and a name the
-                        // app cannot run is never awaited forever.
-                        val runnable = e.name !in CLOUD_EXCLUDED && (
+                        // A tool the phone owns runs here. The name arrives
+                        // prefixed, so it is stripped back to the app's own name;
+                        // the check is against the live registry rather than a
+                        // written-out list, so a tool the app can run is never
+                        // silently skipped and a name it cannot run is never
+                        // awaited forever.
+                        val tool = localName(e.name)
+                        val runnable = tool !in CLOUD_EXCLUDED && (
                             e.name.contains("__") ||
-                                ai.zyraxon.assistant.ai.ToolRegistry.allowed(mode, e.name)
+                                ai.zyraxon.assistant.ai.ToolRegistry.allowed(mode, tool)
                             )
                         if (runnable && !alreadyDone && toolRounds < MAX_TOOL_ROUNDS) {
                             toolRounds++
-                            val result = runCatching { onToolCall(e.name, e.args) }
+                            val result = runCatching { onToolCall(tool, e.args) }
                                 .getOrElse { JSONObject().put("ok", false).put("error", it.message) }
-                            trySend(toolNote(e.name, result))
+                            trySend(toolNote(tool, result))
                             // The agent must learn what really happened, so the
                             // outcome is sent back as the next thing it sees.
                             pendingTool = true
@@ -308,16 +311,45 @@ class OpenHandsBridge(
         )
 
         /**
+         * Marks a tool as the phone's. Every phone tool is published under this
+         * prefix and no other name is ever sent.
+         *
+         * The prefix is not cosmetic. The cloud agent already has its own tools
+         * called `read_file`, `write_file`, `git`, `terminal_run` and more, and
+         * handing it a second tool with the same name makes its own server reject
+         * the whole conversation with a 422 before it starts — measured live: the
+         * four colliding names fail, four made-up names do not. `phone_` cannot
+         * collide with anything, because nothing else uses it.
+         */
+        const val PHONE_PREFIX = "phone_"
+
+        /** The name the cloud sees for a phone tool, and the reverse of it. */
+        fun publishedName(tool: String): String =
+            if (tool.contains("__")) tool else PHONE_PREFIX + tool
+
+        /** The phone's real tool name behind a name the cloud sent back. */
+        fun localName(published: String): String =
+            if (published.contains("__")) published else published.removePrefix(PHONE_PREFIX)
+
+        /**
          * The phone's own tools, as the cloud should see them: every tool the app
-         * can really run in [mode], minus the few the cloud must not be handed.
-         * MCP tools are appended by the caller, which knows the live connections.
+         * can really run in [mode], minus the few the cloud must not be handed,
+         * each renamed with [PHONE_PREFIX]. MCP tools are appended by the caller,
+         * which knows the live connections.
          */
         fun phoneTools(mode: AgentMode): JSONArray {
             val out = JSONArray()
-            for (s in ai.zyraxon.assistant.ai.ToolRegistry.schemas(mode)) {
-                val name = s.optJSONObject("function")?.optString("name") ?: continue
-                if (name in CLOUD_EXCLUDED) continue
-                out.put(s)
+            for (schema in ai.zyraxon.assistant.ai.ToolRegistry.schemas(mode)) {
+                val fn = schema.optJSONObject("function") ?: continue
+                val name = fn.optString("name")
+                if (name.isBlank() || name in CLOUD_EXCLUDED) continue
+                out.put(
+                    JSONObject()
+                        .put("name", publishedName(name))
+                        .put("description", fn.optString("description"))
+                        .put("parameters", fn.optJSONObject("parameters")
+                            ?: JSONObject().put("type", "object"))
+                )
             }
             return out
         }

@@ -2168,7 +2168,19 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                         clientTools = ai.zyraxon.assistant.openhands.OpenHandsBridge
                             .phoneTools(mode).apply {
                                 if (mode != AgentMode.CHAT) {
-                                    for (t in aiEngine.mcp.allTools()) put(t.toOpenAiSchema())
+                                    // MCP tools keep the name their own server gave
+                                    // them (it already cannot collide), but the
+                                    // cloud wants the flat spec shape, not the
+                                    // OpenAI function wrapper.
+                                    for (t in aiEngine.mcp.allTools()) {
+                                        val fn = t.toOpenAiSchema().optJSONObject("function")
+                                            ?: continue
+                                        put(JSONObject()
+                                            .put("name", fn.optString("name"))
+                                            .put("description", fn.optString("description"))
+                                            .put("parameters", fn.optJSONObject("parameters")
+                                                ?: JSONObject().put("type", "object")))
+                                    }
                                 }
                             },
                         existing = { stage -> existingCloudConversation(c, stage) },
