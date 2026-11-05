@@ -67,8 +67,10 @@ class OpenHandsContinuityTest {
         store.clear()
         val client = OpenHandsClient(
             OkHttpClient.Builder()
-                .connectTimeout(2, TimeUnit.SECONDS)
-                .readTimeout(2, TimeUnit.SECONDS)
+                .connectTimeout(5, TimeUnit.SECONDS)
+                // No read timeout: a websocket carries frames only when something
+                // happens, so a short one kills the very socket this test needs.
+                .readTimeout(0, TimeUnit.MILLISECONDS)
                 .build(),
             base = server.url("/api/v1").toString().trimEnd('/')
         )
