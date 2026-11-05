@@ -174,13 +174,16 @@ class OpenHandsContinuityTest {
                         ).collect { }
                     }
                 },
-                done = { bodies.any { it.contains("নতুন কাজ") } }
+                // The prompt's own words are not enough to wait for: they are also
+                // the title of the conversation being created. Only the seed proves
+                // the message that starts the new conversation has gone out.
+                done = { bodies.any { it.contains("আগে যা বলেছিলাম") } }
             )
 
             assertTrue("a fresh conversation must be built", store.conversationFor("chat-1") == "conv-new")
             assertTrue("the chat's past must be seeded into the new conversation", seedAsked)
-            val started = bodies.first { it.contains("নতুন কাজ") }
-            assertTrue("the seed must ride with the prompt: $started", started.contains("আগে যা বলেছিলাম"))
+            val started = bodies.first { it.contains("আগে যা বলেছিলাম") }
+            assertTrue("the seed must ride with the prompt: $started", started.contains("নতুন কাজ"))
             assertTrue("the dead sandbox must be forgotten", store.takeWarmSandbox() != "sb-old")
         }
 
