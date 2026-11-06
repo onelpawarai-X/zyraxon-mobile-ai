@@ -117,10 +117,10 @@ fun Composer(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
             }
         }
         if (attach) Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            IconPill(AppIcons.image, t("গ্যালারি"), { attach = false; picker.launch("*/*") })
-            IconPill(AppIcons.camera, t("ক্যামেরা"), { attach = false; vm.captureImageFromTool("look_camera") })
-            IconPill(AppIcons.smartphone, t("স্ক্রিন"), { attach = false; vm.captureImageFromTool("screen_shot") })
-            IconPill(if (seeScreen) AppIcons.visibility else AppIcons.visibilityOff, if (seeScreen) t("স্ক্রিন দেখছে") else t("স্ক্রিন বন্ধ"), { vm.setAlwaysSeeScreen(!seeScreen) })
+            IconPill(AppIcons.image, t("গ্যালারি"), onClick = { attach = false; picker.launch("*/*") })
+            IconPill(AppIcons.camera, t("ক্যামেরা"), onClick = { attach = false; vm.captureImageFromTool("look_camera") })
+            IconPill(AppIcons.smartphone, t("স্ক্রিন"), onClick = { attach = false; vm.captureImageFromTool("screen_shot") })
+            IconPill(if (seeScreen) AppIcons.visibility else AppIcons.visibilityOff, if (seeScreen) t("স্ক্রিন দেখছে") else t("স্ক্রিন বন্ধ"), onClick = { vm.setAlwaysSeeScreen(!seeScreen) })
         }
     }
     if (modelSheet) ModelPicker(vm) { modelSheet = false }
