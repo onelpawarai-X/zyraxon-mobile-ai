@@ -17,6 +17,22 @@ import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.ChatBubble
+import androidx.compose.material.icons.rounded.Badge
+import androidx.compose.material.icons.rounded.Boy
+import androidx.compose.material.icons.rounded.ChildCare
+import androidx.compose.material.icons.rounded.Elderly
+import androidx.compose.material.icons.rounded.Face2
+import androidx.compose.material.icons.rounded.Face3
+import androidx.compose.material.icons.rounded.Face4
+import androidx.compose.material.icons.rounded.Face5
+import androidx.compose.material.icons.rounded.Face6
+import androidx.compose.material.icons.rounded.Girl
+import androidx.compose.material.icons.rounded.Man
+import androidx.compose.material.icons.rounded.Man2
+import androidx.compose.material.icons.rounded.Man3
+import androidx.compose.material.icons.rounded.Man4
+import androidx.compose.material.icons.rounded.Woman
+import androidx.compose.material.icons.rounded.Woman2
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckBox
 import androidx.compose.material.icons.rounded.CheckBoxOutlineBlank
@@ -55,6 +71,7 @@ import androidx.compose.material.icons.rounded.Hub
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.Key
+import androidx.compose.material.icons.rounded.Keyboard
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.KeyboardReturn
@@ -136,6 +153,22 @@ import androidx.compose.ui.graphics.vector.ImageVector
 object AppIcons {
 
     val add = Icons.Rounded.Add
+    val badge = Icons.Rounded.Badge
+    val boy = Icons.Rounded.Boy
+    val childCare = Icons.Rounded.ChildCare
+    val elderly = Icons.Rounded.Elderly
+    val face2 = Icons.Rounded.Face2
+    val face3 = Icons.Rounded.Face3
+    val face4 = Icons.Rounded.Face4
+    val face5 = Icons.Rounded.Face5
+    val face6 = Icons.Rounded.Face6
+    val girl = Icons.Rounded.Girl
+    val man = Icons.Rounded.Man
+    val man2 = Icons.Rounded.Man2
+    val man3 = Icons.Rounded.Man3
+    val man4 = Icons.Rounded.Man4
+    val woman = Icons.Rounded.Woman
+    val woman2 = Icons.Rounded.Woman2
     val apps = Icons.Rounded.Apps
     val archive = Icons.Rounded.Archive
     val arrowBack = Icons.Rounded.ArrowBack
@@ -189,6 +222,7 @@ object AppIcons {
     val image = Icons.Rounded.Image
     val inventory = Icons.Rounded.Inventory2
     val key = Icons.Rounded.Key
+    val keyboard = Icons.Rounded.Keyboard
     val keyboardDown = Icons.Rounded.KeyboardArrowDown
     val language = Icons.Rounded.Language
     val laptop = Icons.Rounded.Laptop
@@ -264,6 +298,22 @@ object AppIcons {
         fun put(icon: ImageVector, vararg keys: String) = keys.forEach { put(it, icon) }
 
         put(add, "add", "＋", "+", "➕")
+        put(badge, "badge", "🪪")
+        put(boy, "boy", "👦")
+        put(childCare, "child", "👶")
+        put(elderly, "elderly", "🧓")
+        put(face2, "face2", "🙂")
+        put(face3, "face3", "😊")
+        put(face4, "face4", "😄")
+        put(face5, "face5", "😌")
+        put(face6, "face6", "😐")
+        put(girl, "girl", "👧")
+        put(man, "man", "👨")
+        put(man2, "man2", "🧑")
+        put(man3, "man3", "👨‍🦱")
+        put(man4, "man4", "👨‍🦰")
+        put(woman, "woman", "👩")
+        put(woman2, "woman2", "👩‍🦰")
         put(apps, "apps", "🪟")
         put(archive, "archive")
         put(arrowBack, "back", "←", "◀")
@@ -317,6 +367,8 @@ object AppIcons {
         put(image, "image", "🖼")
         put(inventory, "package", "📦")
         put(key, "key", "🔑")
+        put(keyboard, "keyboard", "⌨")
+        put(keyboardDown, "keyboard_down", "⌄")
         put(language, "language", "🇧🇩", "🇺🇸", "🇧", "🇩", "🇺", "🇸")
         put(laptop, "laptop")
         put(lightMode, "light", "☀")

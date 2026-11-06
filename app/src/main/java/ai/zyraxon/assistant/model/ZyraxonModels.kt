@@ -243,5 +243,14 @@ data class TerminalSession(
     val title: String,
     val lines: List<TerminalLine> = emptyList(),
     val cwd: String = "~",
-    val shell: TerminalShell = TerminalShell.ANDROID
+    val shell: TerminalShell = TerminalShell.ANDROID,
+    /**
+     * True while a command is running in *this* session.
+     *
+     * Busy is a property of one shell, not of the Terminal. A single shared flag
+     * meant a long command in the Linux tab marked the Android tab busy too, so
+     * every line typed there was written into that command's standard input and
+     * silently lost — the screen showed the line echoed and nothing else.
+     */
+    val busy: Boolean = false
 )

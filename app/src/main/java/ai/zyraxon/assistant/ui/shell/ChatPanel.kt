@@ -324,7 +324,15 @@ private fun FileRow(f: WorkspaceFile, vm: ZyraxonViewModel) {
     if (del) AlertDialog(
         onDismissRequest = { del = false }, containerColor = Glass.sheetFill(0.9f),
         title = { Text(t("মুছবে?"), color = Glass.textPrimary) }, text = { Text(f.relative, color = Glass.textMuted) },
-        confirmButton = { TextButton({ vm.deleteWorkspaceFile(f.path); del = false }) { Text(t("মোছো"), color = Glass.red) } },
-        dismissButton = { TextButton({ del = false }) { Text(t("না"), color = Glass.textMuted) } }
+        confirmButton = { TextButton({ vm.deleteWorkspaceFile(f.path); del = false }) {
+            AppIcon(AppIcons.delete, null, size = 15.dp, tint = Glass.red)
+            Spacer(Modifier.width(5.dp))
+            Text(t("মোছো"), color = Glass.red)
+        } },
+        dismissButton = { TextButton({ del = false }) {
+            AppIcon(AppIcons.close, null, size = 15.dp, tint = Glass.textMuted)
+            Spacer(Modifier.width(5.dp))
+            Text(t("না"), color = Glass.textMuted)
+        } }
     )
 }

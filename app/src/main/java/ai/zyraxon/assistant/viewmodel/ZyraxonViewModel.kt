@@ -463,8 +463,25 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     val sidebarOpen: StateFlow<Boolean> = _sidebarOpen.asStateFlow()
     fun setSidebarOpen(open: Boolean) { _sidebarOpen.value = open }
 
-    /** Stops the turn of the chat on screen. Other chats keep running. */
-    fun stopTurn() { activeSession.job?.cancel() }
+    /**
+     * Stops the turn of the chat on screen. Other chats keep running.
+     *
+     * Cancelling the local job only stops the phone from *reading* the answer.
+     * A cloud turn (Apex) is running on the agent server, and it keeps going —
+     * running commands and calling tools — so it is interrupted there too, and
+     * the speaker is cut off, or a stopped answer carries on talking.
+     */
+    fun stopTurn() {
+        val s = activeSession
+        s.job?.cancel()
+        voiceManager.stopSpeaking()
+        if (_selectedModel.value.provider != ZYRAXON_APEX) return
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isBlank()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            openHandsBridge.interruptCloud(key, s.id)
+        }
+    }
 
     private val _inputText = MutableStateFlow("")
     val inputText: StateFlow<String> = _inputText.asStateFlow()
@@ -519,6 +536,29 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      */
     private val _alwaysListening = MutableStateFlow(prefs.getBoolean("always_listening", true))
     val alwaysListening: StateFlow<Boolean> = _alwaysListening.asStateFlow()
+
+    /**
+     * App lock. When on, coming back to the app asks for the phone's own PIN,
+     * pattern, password or fingerprint before anything is shown — so a phone
+     * handed to someone else, or left unlocked on a table, does not hand over
+     * the whole assistant and everything it can reach.
+     *
+     * It reuses the device credential rather than inventing a second password:
+     * the user already trusts the one that unlocks the phone, and a separate
+     * secret is one more thing to forget. The cost is that it needs a device
+     * credential to exist; with none set, Android cannot ask for one, so the
+     * switch reports that instead of pretending to be on.
+     */
+    private val _appLockEnabled = MutableStateFlow(prefs.getBoolean("app_lock_enabled", false))
+    val appLockEnabled: StateFlow<Boolean> = _appLockEnabled.asStateFlow()
+
+    /**
+     * True while the lock screen is actually covering the UI. Separate from
+     * [appLockEnabled] because the setting can be on while the app is in front of
+     * the user and already unlocked.
+     */
+    private val _appLocked = MutableStateFlow(false)
+    val appLocked: StateFlow<Boolean> = _appLocked.asStateFlow()
 
     /**
      * Whether a live spoken session is open. This is now derived from the model
@@ -1019,18 +1059,33 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private val _terminalLines = MutableStateFlow<List<TerminalLine>>(emptyList())
     val terminalLines: StateFlow<List<TerminalLine>> = _terminalLines.asStateFlow()
 
+    /**
+     * True while the *active* session has a command running.
+     *
+     * Derived from the sessions, not kept as one shared flag: busy belongs to one
+     * shell, and a global flag let a command in the Linux tab swallow the lines
+     * typed into the Android tab. It is a plain flow refreshed by
+     * [syncActiveTerminal], so it changes the instant a session's busy does
+     * instead of waiting on a collector.
+     */
     private val _terminalBusy = MutableStateFlow(false)
     val terminalBusy: StateFlow<Boolean> = _terminalBusy.asStateFlow()
 
     /**
-     * The command that is running right now, if any.
+     * The command running in each session, keyed by session id.
      *
-     * A running command owns the terminal: whatever the user types next is an
-     * answer to that command's question, not a new command, and Ctrl-C stops it.
-     * It is null whenever nothing is running.
+     * A running command owns *its* terminal: whatever the user types there is an
+     * answer to that command's question, and Ctrl-C stops that one. Keyed rather
+     * than single because the Terminal can hold an Android session and a Linux
+     * session at once, and they must not share input or a stop signal.
      */
-    @Volatile
-    private var terminalProcess: ShellRuntime.LiveProcess? = null
+    private val terminalProcesses = java.util.concurrent.ConcurrentHashMap<String, ShellRuntime.LiveProcess>()
+
+    /** Marks a session busy, or not, and re-publishes the derived flows. */
+    private fun setSessionBusy(id: String, value: Boolean) {
+        _terminalSessions.update { list -> list.map { if (it.id == id) it.copy(busy = value) else it } }
+        syncActiveTerminal()
+    }
 
     private val _terminalCwd = MutableStateFlow("~")
     val terminalCwd: StateFlow<String> = _terminalCwd.asStateFlow()
@@ -1040,6 +1095,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val active = _terminalSessions.value.firstOrNull { it.id == _activeTerminalId.value }
         _terminalLines.value = active?.lines ?: emptyList()
         _terminalCwd.value = active?.cwd ?: "~"
+        // The busy flag is the active session's, refreshed here so a reader sees
+        // the change at once rather than through a collector's schedule.
+        _terminalBusy.value = active?.busy == true
     }
 
     /** Files the assistant has written, shown in the Files panel. */
@@ -1470,6 +1528,26 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun setTtsEnabled(enabled: Boolean) {
         _ttsEnabled.value = enabled
         prefs.edit().putBoolean("tts_enabled", enabled).apply()
+    }
+
+    /**
+     * Turns the app lock on or off, and drops the cover immediately when it is
+     * turned on so the user sees it working rather than discovering it later.
+     */
+    fun setAppLockEnabled(enabled: Boolean) {
+        _appLockEnabled.value = enabled
+        prefs.edit().putBoolean("app_lock_enabled", enabled).apply()
+        _appLocked.value = enabled
+    }
+
+    /** Marks the cover as answered. Called once the device credential is accepted. */
+    fun unlockApp() {
+        _appLocked.value = false
+    }
+
+    /** Drops the cover again, e.g. when the app comes back to the foreground. */
+    fun lockApp() {
+        _appLocked.value = _appLockEnabled.value
     }
 
     /**
@@ -3160,16 +3238,22 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // to the shell. This is what makes a prompt answerable: `apt install` asks
         // "Do you want to continue? [Y/n]", and the "y" the user types goes to the
         // program that asked, instead of being rejected as a new command.
-        if (_terminalBusy.value) {
+        // Busy is read from the *active* session. With one shared flag a command
+        // running in another tab made this tab look busy, so the line was written
+        // into that other command's input and never ran.
+        val sessionId = _activeTerminalId.value
+        if (terminalProcesses.containsKey(sessionId)) {
             sendTerminalInput(line)
             return
         }
+        // Marked busy before the coroutine starts, so a second Enter pressed in
+        // the same frame is treated as input rather than as a new command.
+        setSessionBusy(sessionId, true)
         viewModelScope.launch(Dispatchers.IO) {
-            _terminalBusy.value = true
             try {
                 runTerminalLine(line)
             } finally {
-                _terminalBusy.value = false
+                setSessionBusy(sessionId, false)
             }
         }
     }
@@ -3182,7 +3266,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * line, and the user pressing Enter is what this represents.
      */
     fun sendTerminalInput(text: String) {
-        val sink = terminalProcess?.input ?: return
+        // Only the active session's command can be answered: a line typed here
+        // belongs to the shell on screen, never to one running in another tab.
+        val sink = terminalProcesses[_activeTerminalId.value]?.input ?: return
         try {
             synchronized(sink) {
                 sink.write((text + "\n").toByteArray())
@@ -3202,22 +3288,26 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * `git clone` of the wrong repository. A no-op when nothing is running.
      */
     fun interruptTerminal() {
-        terminalProcess?.interrupt()
+        terminalProcesses[_activeTerminalId.value]?.interrupt()
     }
 
     /** The body of a terminal line, shared by the user's typing and `terminal_run`. */
     private suspend fun runTerminalLine(
         line: String,
         timeoutMs: Long = 0,
-        onOutput: ((String) -> Unit)? = null
+        onOutput: ((String) -> Unit)? = null,
+        sessionId: String = ""
     ): TerminalLine {
+        // Pinned at entry: the user may switch tabs while the command runs, and the
+        // process must stay filed under the session that started it.
+        val sid = sessionId.ifBlank { _activeTerminalId.value }
         val app = getApplication<Application>()
         val home = ShellRuntime.home(app)
         // `cd` is stateful: it changes where the *next* line runs, so it is
         // applied here rather than left to die with the process it started.
         parseCd(line, home)?.let { target ->
             val entry = if (target.isDirectory) {
-                updateActiveSession { it.copy(cwd = displayPath(home, target)) }
+                updateSession(sid) { it.copy(cwd = displayPath(home, target)) }
                 TerminalLine(command = line, output = "", exitCode = 0, isError = false)
             } else {
                 TerminalLine(
@@ -3226,30 +3316,30 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     exitCode = 1, isError = true
                 )
             }
-            appendTerminal(entry)
+            appendTerminalIn(sid, entry)
             return entry
         }
         // A Linux session is the real guest: every line goes into it, and `git`
         // there is the real git with real remotes, not the JGit shortcut below.
-        if (activeTerminalShell() == TerminalShell.LINUX) {
-            return runLinuxLine(app, line, timeoutMs, onOutput)
+        if (shellOf(sid) == TerminalShell.LINUX) {
+            return runLinuxLine(app, line, timeoutMs, onOutput, sid)
         }
         // busybox has no git, so in the Android session a `git` line is served by
         // JGit instead of failing with "applet not found".
         runGitLine(app, line)?.let { result ->
-            appendTerminal(result)
+            appendTerminalIn(sid, result)
             return result
         }
         // The explicit `linux` / `linux-install` verbs still work in an Android
         // session, so nothing that worked before is lost.
         if (isLinuxCommand(line)) {
-            return runLinuxLine(app, line, timeoutMs, onOutput)
+            return runLinuxLine(app, line, timeoutMs, onOutput, sid)
         }
         // A live entry is appended first and its output grows as the command
         // prints, so the terminal behaves like a real one — progress appears
         // while the command runs instead of after it exits.
         val lineId = UUID.randomUUID().toString()
-        appendTerminal(TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
+        appendTerminalIn(sid, TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
         val streamed = StringBuilder()
         val r = ShellRuntime.runStreaming(
             app, line,
@@ -3260,14 +3350,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             timeoutMs = timeoutMs,
             onChunk = { _, text ->
                 synchronized(streamed) { streamed.append(text).append('\n') }
-                updateTerminalLine(lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
+                updateTerminalLineIn(sid, lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
                 onOutput?.invoke(text)
             },
             // A host command can prompt too (`read`, a password), so it gets the
             // same answerable input as a Linux one.
-            onSpawn = { live -> terminalProcess = live }
+            onSpawn = { live -> terminalProcesses[sid] = live }
         )
-        terminalProcess = null
+        terminalProcesses.remove(sid)
         val body = buildString {
             if (r.stdout.isNotEmpty()) append(r.stdout.trimEnd())
             if (r.stderr.isNotEmpty()) {
@@ -3284,13 +3374,19 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             id = lineId, command = line, output = body, exitCode = r.code,
             isError = r.code != 0 || r.timedOut, timedOut = r.timedOut, millis = r.millis
         )
-        updateTerminalLine(lineId) { entry }
+        updateTerminalLineIn(sid, lineId) { entry }
         return entry
     }
 
-    /** Replaces one terminal entry in place, used to grow a running command's output. */
-    private fun updateTerminalLine(id: String, transform: (TerminalLine) -> TerminalLine) {
-        updateActiveSession { session ->
+    /**
+     * Replaces one terminal entry in place, aimed at a named session.
+     *
+     * A command keeps writing to the shell that started it even if the user has
+     * switched to another tab, so its progress must not be redirected onto
+     * whatever is on screen when a line arrives.
+     */
+    private fun updateTerminalLineIn(sessionId: String, id: String, transform: (TerminalLine) -> TerminalLine) {
+        updateSession(sessionId) { session ->
             session.copy(lines = session.lines.map { if (it.id == id) transform(it) else it })
         }
     }
@@ -3318,14 +3414,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         app: Application,
         line: String,
         timeoutMs: Long = 0,
-        onOutput: ((String) -> Unit)? = null
+        onOutput: ((String) -> Unit)? = null,
+        sessionId: String = ""
     ): TerminalLine {
+        val sid = sessionId.ifBlank { _activeTerminalId.value }
         val lineId = UUID.randomUUID().toString()
-        appendTerminal(TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
+        appendTerminalIn(sid, TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
         val streamed = StringBuilder()
         val push: (String, String) -> Unit = { _, text ->
             synchronized(streamed) { streamed.append(text).append('\n') }
-            updateTerminalLine(lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
+            updateTerminalLineIn(sid, lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
             onOutput?.invoke(text)
         }
 
@@ -3370,7 +3468,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 push("out", "Preparing ZYRAXON Linux…")
                 val ok = LinuxRuntime.install(app) { msg -> push("out", msg) }
                 if (ok) {
-                    runLinuxGuest(app, lineId, streamed, push, guestCommand(line), timeoutMs)
+                    runLinuxGuest(app, lineId, streamed, push, guestCommand(sid, line), timeoutMs, sid)
                 } else {
                     TerminalLine(
                         id = lineId,
@@ -3382,12 +3480,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             }
 
             else -> {
-                runLinuxGuest(app, lineId, streamed, push, guestCommand(line), timeoutMs)
+                runLinuxGuest(app, lineId, streamed, push, guestCommand(sid, line), timeoutMs, sid)
             }
         }
         // The entry is finalised in place, so the running cursor stops and the
-        // exit code is shown under the output that already streamed in.
-        updateTerminalLine(lineId) { result }
+        // exit code is shown under the output that already streamed in. Aimed at
+        // the session that ran it, not at whichever tab is on screen now.
+        updateTerminalLineIn(sid, lineId) { result }
         return result
     }
 
@@ -3397,9 +3496,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * `linux <cmd>` form is still accepted and has its prefix removed, so both
      * ways of driving the system keep working.
      */
-    private fun guestCommand(line: String): String {
+    private fun guestCommand(sessionId: String, line: String): String {
         val trimmed = line.trim()
-        if (activeTerminalShell() == TerminalShell.LINUX && !isLinuxVerb(trimmed)) {
+        if (shellOf(sessionId) == TerminalShell.LINUX && !isLinuxVerb(trimmed)) {
             return trimmed.ifEmpty { "bash -l" }
         }
         return trimmed.removePrefix("linux").trim().ifEmpty { "bash -l" }
@@ -3418,16 +3517,18 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         streamed: StringBuilder,
         push: (String, String) -> Unit,
         command: String,
-        timeoutMs: Long = 0
+        timeoutMs: Long = 0,
+        sessionId: String = ""
     ): TerminalLine {
+        val sid = sessionId.ifBlank { _activeTerminalId.value }
         val r = LinuxRuntime.runStreaming(
             app, command,
             onChunk = { stream, text -> push(stream, text) },
             // Hold the command's input while it runs, so a prompt can be answered.
-            onSpawn = { live -> terminalProcess = live },
+            onSpawn = { live -> terminalProcesses[sid] = live },
             timeoutMs = timeoutMs
         )
-        terminalProcess = null
+        terminalProcesses.remove(sid)
         if (r == null) {
             return TerminalLine(
                 command = command,
@@ -3478,7 +3579,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             }
         }
         _activeTab.value = AppTab.TERMINAL
-        val entry = withContext(Dispatchers.IO) { runTerminalLine(line, timeout, live) }
+        // The agent's command owns the session it was sent to, exactly as a typed
+        // one does: while it runs, a line the user types there answers its prompt
+        // instead of starting a second command on top of it.
+        val sid = _activeTerminalId.value
+        setSessionBusy(sid, true)
+        val entry = try {
+            withContext(Dispatchers.IO) { runTerminalLine(line, timeout, live, sid) }
+        } finally {
+            setSessionBusy(sid, false)
+        }
         return JSONObject()
             .put("ok", !entry.isError)
             .put("code", entry.exitCode)
@@ -3505,8 +3615,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         )
     }
 
-    private fun appendTerminal(entry: TerminalLine) {
-        updateActiveSession { it.copy(lines = (it.lines + entry).takeLast(400)) }
+    /** Appends to a named session, for a command that outlives a tab switch. */
+    private fun appendTerminalIn(sessionId: String, entry: TerminalLine) {
+        updateSession(sessionId) { it.copy(lines = (it.lines + entry).takeLast(400)) }
     }
 
     fun clearTerminal() {
@@ -3576,8 +3687,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     /** Replaces the active session with [transform]'s result, leaving the rest be. */
     private fun updateActiveSession(transform: (TerminalSession) -> TerminalSession) {
-        val id = _activeTerminalId.value
-        _terminalSessions.value = _terminalSessions.value.map { if (it.id == id) transform(it) else it }
+        updateSession(_activeTerminalId.value, transform)
+    }
+
+    /** The shell a named session is running, so a command never reads the wrong tab. */
+    private fun shellOf(id: String): TerminalShell =
+        _terminalSessions.value.firstOrNull { it.id == id }?.shell ?: TerminalShell.ANDROID
+
+    /** Applies an edit to one named session and re-publishes the active view. */
+    private fun updateSession(id: String, transform: (TerminalSession) -> TerminalSession) {
+        _terminalSessions.update { list -> list.map { if (it.id == id) transform(it) else it } }
         syncActiveTerminal()
     }
 

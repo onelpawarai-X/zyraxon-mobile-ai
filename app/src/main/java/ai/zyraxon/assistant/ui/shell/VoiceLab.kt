@@ -85,7 +85,11 @@ fun VoiceLab(vm: ZyraxonViewModel) {
                 Text(current?.name ?: t("ডিফল্ট কণ্ঠ"), color = Glass.textSecondary, fontSize = 12.sp)
                 Text(listOfNotNull(current?.gender?.takeIf { it.isNotBlank() }, current?.age?.takeIf { it.isNotBlank() }, current?.locale?.takeIf { it.isNotBlank() }).joinToString(" · "),
                     color = Glass.textMuted, fontSize = 11.sp)
-                if (picked.isNotBlank()) Text(t("ডিফল্টে ফেরো"), color = Glass.pink, fontSize = 11.5.sp, modifier = Modifier.clickable { vm.clearVoicePick() }.padding(top = 4.dp))
+                if (picked.isNotBlank()) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.clearVoicePick() }.padding(top = 4.dp)) {
+                    AppIcon(AppIcons.restart, null, size = 13.dp, tint = Glass.pink)
+                    Spacer(Modifier.width(4.dp))
+                    Text(t("ডিফল্টে ফেরো"), color = Glass.pink, fontSize = 11.5.sp)
+                }
             }
         }
         FilterRow(t("লিঙ্গ"), listOf("" to t("সব"), "f" to t("মেয়ে"), "m" to t("ছেলে")), gender) { gender = it }

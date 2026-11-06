@@ -121,25 +121,34 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(t("কোড"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
             Text(root.name, color = Glass.textMuted, fontSize = 11.sp, maxLines = 1, modifier = Modifier.weight(1f))
-            Btn(if (treeOpen) t("লুকাও") else t("গাছ")) { treeOpen = !treeOpen }
-            Btn(t("নতুন ফাইল")) { dialog = "newfile" }
-            Btn(t("সেভ"), enabled = openPath != null && text.text != saved) { save() }
+            Btn(if (treeOpen) t("লুকাও") else t("গাছ"), if (treeOpen) AppIcons.visibilityOff else AppIcons.folderOpen) { treeOpen = !treeOpen }
+            Btn(t("নতুন ফাইল"), AppIcons.add) { dialog = "newfile" }
+            Btn(t("সেভ"), AppIcons.save, enabled = openPath != null && text.text != saved) { save() }
             Box {
-                Btn(t("Git")) { menu = true }
+                Btn(t("Git"), AppIcons.hub) { menu = true }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }, containerColor = Glass.sheetFill(0.95f)) {
-                    listOf(
-                        t("ক্লোন") to { dialog = "clone" },
-                        t("স্ক্যান") to { git(JSONObject().put("action", "scan")) },
-                        t("স্ট্যাটাস") to { git(JSONObject().put("action", "status")) },
-                        t("কমিট") to { dialog = "commit" },
-                        t("পুশ") to { git(JSONObject().put("action", "push")) },
-                        t("পুল") to { git(JSONObject().put("action", "pull")) },
-                        t("ব্রাঞ্চ") to { dialog = "branch" },
-                        "Pull Request" to { dialog = "pr" },
-                        "GitHub Actions" to { dialog = "actions" },
-                        t("টোকেন") to { dialog = "token" }
-                    ).forEach { (label, action) ->
-                        DropdownMenuItem(text = { Text(label, color = Glass.textPrimary, fontSize = 13.sp) }, onClick = { menu = false; action() })
+                    // Every entry carries its own icon: the menu used to be a wall
+                    // of identical grey words, so the action the user wanted had to
+                    // be found by reading all of them.
+                    val items = listOf(
+                        Triple(t("নতুন রিপো"), AppIcons.add) { git(JSONObject().put("action", "init")) },
+                        Triple(t("ক্লোন"), AppIcons.download) { dialog = "clone" },
+                        Triple(t("স্ক্যান"), AppIcons.search) { git(JSONObject().put("action", "scan")) },
+                        Triple(t("স্ট্যাটাস"), AppIcons.inventory) { git(JSONObject().put("action", "status")) },
+                        Triple(t("কমিট"), AppIcons.save) { dialog = "commit" },
+                        Triple(t("পুশ"), AppIcons.upload) { git(JSONObject().put("action", "push")) },
+                        Triple(t("পুল"), AppIcons.arrowDown) { git(JSONObject().put("action", "pull")) },
+                        Triple(t("ব্রাঞ্চ"), AppIcons.hub) { dialog = "branch" },
+                        Triple("Pull Request", AppIcons.handshake) { dialog = "pr" },
+                        Triple("GitHub Actions", AppIcons.bolt) { dialog = "actions" },
+                        Triple(t("টোকেন"), AppIcons.key) { dialog = "token" }
+                    )
+                    items.forEach { (label, icon, action) ->
+                        DropdownMenuItem(
+                            leadingIcon = { Icon(icon, contentDescription = null, tint = Glass.textMuted, modifier = Modifier.size(17.dp)) },
+                            text = { Text(label, color = Glass.textPrimary, fontSize = 13.sp) },
+                            onClick = { menu = false; action() }
+                        )
                     }
                 }
             }
@@ -172,7 +181,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                         Spacer(Modifier.height(8.dp))
                         Text(t("কোনো ফাইল খোলা নেই"), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Text(t("বাঁ দিক থেকে ফাইল বেছে নাও, নতুন ফাইল বানাও, বা রিপো ক্লোন করো।"), color = Glass.textMuted, fontSize = 12.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(top = 4.dp, bottom = 12.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Btn(t("ক্লোন")) { dialog = "clone" }; Btn(t("নতুন ফাইল")) { dialog = "newfile" } }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Btn(t("নতুন রিপো"), AppIcons.add) { git(JSONObject().put("action", "init")) }; Btn(t("ক্লোন"), AppIcons.download) { dialog = "clone" }; Btn(t("নতুন ফাইল"), AppIcons.description) { dialog = "newfile" } }
                     }
                 } else {
                     Row(Modifier.fillMaxWidth().background(Glass.rowFill(0.25f)).padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -225,10 +234,16 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun Btn(label: String, enabled: Boolean = true, onClick: () -> Unit) {
-    Text(label, color = if (enabled) Glass.textPrimary else Glass.textDisabled, fontSize = 11.5.sp, maxLines = 1,
+private fun Btn(label: String, icon: ImageVector? = null, enabled: Boolean = true, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
         modifier = Modifier.clip(RoundedCornerShape(14.dp)).background(Glass.rowFill(0.35f)).border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
-            .clickable(enabled = enabled) { onClick() }.padding(horizontal = 11.dp, vertical = 7.dp))
+            .clickable(enabled = enabled) { onClick() }.padding(horizontal = 11.dp, vertical = 7.dp)
+    ) {
+        if (icon != null) AppIcon(icon, null, Modifier.size(14.dp), if (enabled) Glass.textPrimary else Glass.textDisabled)
+        Text(label, color = if (enabled) Glass.textPrimary else Glass.textDisabled, fontSize = 11.5.sp, maxLines = 1)
+    }
 }
 
 @Composable
@@ -248,7 +263,19 @@ internal fun InputDialog(
                 }
             }
         },
-        confirmButton = { Row { if (extra != null) TextButton({ onExtra(values.toList()) }) { Text(extra, color = Glass.green) }; TextButton({ onOk(values.toList()) }) { Text(ok, color = Glass.pink, fontWeight = FontWeight.Bold) } } },
-        dismissButton = { TextButton(onDismiss) { Text(t("বাতিল"), color = Glass.textMuted) } }
+        confirmButton = { Row { if (extra != null) TextButton({ onExtra(values.toList()) }) {
+            AppIcon(AppIcons.add, null, size = 15.dp, tint = Glass.green)
+            Spacer(Modifier.width(5.dp))
+            Text(extra, color = Glass.green)
+        }; TextButton({ onOk(values.toList()) }) {
+            AppIcon(AppIcons.check, null, size = 15.dp, tint = Glass.pink)
+            Spacer(Modifier.width(5.dp))
+            Text(ok, color = Glass.pink, fontWeight = FontWeight.Bold)
+        } } },
+        dismissButton = { TextButton(onDismiss) {
+            AppIcon(AppIcons.close, null, size = 15.dp, tint = Glass.textMuted)
+            Spacer(Modifier.width(5.dp))
+            Text(t("বাতিল"), color = Glass.textMuted)
+        } }
     )
 }

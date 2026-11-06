@@ -239,7 +239,28 @@
       A.fing = {};
       for (const side of ['Left', 'Right']) {
         const hand = bones[side + 'Hand']; if (!hand) continue; hand.updateWorldMatrix(true, true);
-        const hq = hand.getWorldQuaternion(new T.Quaternion()), hi = hq.clone().invert(), nWorld = new T.Vector3(0, -1, 0);   // rest pose: palms face the floor
+        const hq = hand.getWorldQuaternion(new T.Quaternion()), hi = hq.clone().invert();
+        // The palm's own normal, read off the model. Assuming "palms face the
+        // floor" is only true in a T-pose; these avatars rest with their arms
+        // down, so the palm actually faces the thigh. Hinging the fingers about a
+        // normal 90 degrees out of the palm plane bent them sideways, and
+        // neighbouring fingers drove through each other.
+        const pIdx = bones[side + 'HandIndex1'], pPky = bones[side + 'HandPinky1'], pTh = bones[side + 'HandThumb1'];
+        const nWorld = new T.Vector3(0, -1, 0);
+        if (pIdx && pPky) {
+          const pMid2 = bones[side + 'HandMiddle2'];
+          const knuckle = pIdx.getWorldPosition(new T.Vector3()).sub(pPky.getWorldPosition(new T.Vector3()));
+          const along = (pMid2 || pIdx).getWorldPosition(new T.Vector3())
+            .sub(pIdx.getWorldPosition(new T.Vector3()));
+          const n = new T.Vector3().crossVectors(knuckle, along);
+          if (n.lengthSq() > 1e-10) {
+            n.normalize();
+            // Face it out of the palm: the thumb sits on the palm side, so the
+            // normal must point the same way the thumb does.
+            if (pTh && n.dot(pTh.getWorldPosition(new T.Vector3()).sub(hand.getWorldPosition(new T.Vector3()))) < 0) n.negate();
+            nWorld.copy(n);
+          }
+        }
         const fr = { n: nWorld.clone().applyQuaternion(hi) };
         for (const fn of ['Index', 'Middle', 'Ring', 'Pinky', 'Thumb']) {
           const b1 = bones[side + 'Hand' + fn + '1'], b2 = bones[side + 'Hand' + fn + '2']; if (!b1 || !b2) continue;

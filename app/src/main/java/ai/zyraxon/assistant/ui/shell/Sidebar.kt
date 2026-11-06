@@ -86,8 +86,16 @@ fun Sidebar(vm: ZyraxonViewModel) {
             onDismissRequest = { confirmDelete = null }, containerColor = Glass.sheetFill(0.9f),
             title = { Text(t("চ্যাট মুছবে?"), color = Glass.textPrimary) },
             text = { Text(t("এই চ্যাটের সব বার্তা মুছে যাবে।"), color = Glass.textMuted) },
-            confirmButton = { androidx.compose.material3.TextButton({ vm.deleteChat(id); confirmDelete = null }) { Text(t("মোছো"), color = Glass.red) } },
-            dismissButton = { androidx.compose.material3.TextButton({ confirmDelete = null }) { Text(t("না"), color = Glass.textMuted) } }
+            confirmButton = { androidx.compose.material3.TextButton({ vm.deleteChat(id); confirmDelete = null }) {
+                AppIcon(AppIcons.delete, null, size = 15.dp, tint = Glass.red)
+                Spacer(Modifier.width(5.dp))
+                Text(t("মোছো"), color = Glass.red)
+            } },
+            dismissButton = { androidx.compose.material3.TextButton({ confirmDelete = null }) {
+                AppIcon(AppIcons.close, null, size = 15.dp, tint = Glass.textMuted)
+                Spacer(Modifier.width(5.dp))
+                Text(t("না"), color = Glass.textMuted)
+            } }
         )
     }
 }

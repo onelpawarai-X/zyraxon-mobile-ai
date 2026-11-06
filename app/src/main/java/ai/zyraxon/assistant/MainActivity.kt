@@ -16,6 +16,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.setValue
@@ -81,6 +82,7 @@ class MainActivity : ComponentActivity() {
                 android.net.Uri.parse("package:$packageName")
             )
             "accessibility" -> Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            "security" -> Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS)
             "battery" -> Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
             "play_protect" -> Intent(
                 android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
@@ -200,6 +202,13 @@ class MainActivity : ComponentActivity() {
                                 needKey = false
                             }
                         }
+                        // The lock sits above everything, including the key prompt,
+                        // so nothing behind it is readable or tappable while it is
+                        // up.
+                        val locked by viewModel.appLocked.collectAsState()
+                        if (!booting && locked) {
+                            ai.zyraxon.assistant.ui.components.AppLockScreen(viewModel)
+                        }
                     }
                 }
             }
@@ -239,6 +248,10 @@ class MainActivity : ComponentActivity() {
         if (viewModel.overlayEnabled.value && android.provider.Settings.canDrawOverlays(this)) {
             OverlayChatService.start(this)
         }
+        // The lock covers the app again each time it comes back to the front, so
+        // handing the phone over mid-session does not leave the conversation and
+        // the tools behind it open. unlockApp is what clears it, and only the
+        // system credential screen can lead there.
         viewModel.onAppReturnedToForeground()
         // Prepare the cloud conversation in the background while the app is open,
         // so the user's first message streams immediately instead of waiting for
@@ -251,5 +264,20 @@ class MainActivity : ComponentActivity() {
         if (instance == this) {
             instance = null
         }
+    }
+
+    /**
+     * Locking here rather than in [onResume] is deliberate. The device-credential
+     * screen is a separate activity, so asking for it stops this one; locking on
+     * the way out means the cover is already up when the credential is accepted
+     * or cancelled, and the answer alone decides whether it lifts. Locking in
+     * [onResume] instead would put the cover back over a user who had just
+     * unlocked, and they could never get past it.
+     *
+     * A configuration change is not leaving the app, so it does not lock.
+     */
+    override fun onStop() {
+        super.onStop()
+        if (!isChangingConfigurations) viewModel.lockApp()
     }
 }

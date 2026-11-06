@@ -241,7 +241,10 @@ class OverlayChatService : android.app.Service() {
             if (!dragged) {
                 longFired = true
                 buzz(25)
-                openPanel()
+                // A long press toggles the box. It used to only open it, so once
+                // the box was up a long press did nothing and the only way out was
+                // its own close button — which is not what a press on the eye means.
+                if (panel != null) closePanel() else openPanel()
             }
         }
 

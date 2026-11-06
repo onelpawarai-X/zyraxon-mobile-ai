@@ -48,6 +48,23 @@ object PreviewBridge {
 
     val problemFlow: StateFlow<List<Problem>> get() = problems
 
+    /**
+     * A site the app has just published, waiting for the UI to show it.
+     *
+     * A published site belongs in the app's own browser: handing it to Chrome
+     * opened a second window on top of the assistant, so the page the agent had
+     * just built disappeared behind an external app. The UI observes this,
+     * switches to the preview panel and loads the URL there; the value is
+     * cleared as soon as it is taken so a rotation does not reopen it.
+     */
+    val publishedSite = MutableStateFlow<String?>(null)
+
+    fun offerPublishedSite(url: String) {
+        publishedSite.value = url
+    }
+
+    fun takePublishedSite(): String? = publishedSite.value?.also { publishedSite.value = null }
+
     private fun <T> onMain(block: () -> T): T {
         if (Looper.myLooper() == Looper.getMainLooper()) return block()
         val done = java.util.concurrent.CountDownLatch(1)
