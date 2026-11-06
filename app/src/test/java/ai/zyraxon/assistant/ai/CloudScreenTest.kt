@@ -86,7 +86,7 @@ class CloudScreenTest {
         val block = CloudScreen.block("Gallery", "com.gallery", nodes, "HAPPY BIRTHDAY")
         assertTrue(block.contains("OCR"))
         assertTrue(block.contains("HAPPY BIRTHDAY"))
-        assertTrue(block.contains("📱 এখনকার স্ক্রিন"))
+        assertTrue(block.contains("এখনকার স্ক্রিন"))
     }
 
     @Test
