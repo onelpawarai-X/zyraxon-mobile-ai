@@ -359,3 +359,23 @@ grep -rn 't(".*\$' app/src/main/java --include=*.kt
 ```
 
 Every hit must become `t("… {0} …", var)`.
+
+## Testing traps
+
+* `JSONArray(listOf("""{"id":"e1"}"""))` stores each element as a **string**,
+  not an object, and `optJSONObject(i)` then returns null for every one. A
+  fixture written that way answers every page empty, which looks exactly like
+  a client that drops events. Parse each event into a `JSONObject` first:
+  `JSONArray(events.map { JSONObject(it) })`.
+* `MockWebServer` runs its dispatcher on its **own thread**, while the test
+  writes the fixture on the test thread. Fields the dispatcher reads must be
+  `@Volatile`, or it can answer from the stale default and the failure looks
+  like a client bug.
+* Answer a request from the **query it carries**, not from a queue popped in
+  arrival order. A client that pages makes more than one request, and a queue
+  silently pairs an answer with the wrong question — a wrong read then looks
+  correct.
+* The build logs a failing assertion as `AssertionError at File.kt:line` with
+  no values by default. `app/build.gradle.kts` now sets
+  `exceptionFormat = FULL`, so a failure prints what it actually saw. Do not
+  remove it: without it every diagnosis is a guess.
