@@ -2,14 +2,15 @@ package ai.zyraxon.assistant.openhands
 
 import ai.zyraxon.assistant.ai.ZyraxonAiEngine
 import ai.zyraxon.assistant.model.AgentMode
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -170,6 +171,12 @@ class OpenHandsBridge(
         // uses: the cloud's runtime has no limit, so the phone does not either.
         var pendingTool = false
 
+        // Completed the moment the event socket is accepted. The first message
+        // waits on it so the answer cannot start before anything is listening —
+        // the tokens produced in that gap are never delivered, and that gap is
+        // exactly the first seconds of every turn.
+        val socketOpen = CompletableDeferred<Unit>()
+
         // The turn is over — unless the user typed something while it ran. Those
         // words were queued, not dropped, and are sent here as the next turn so a
         // mid-task message is answered instead of lost.
@@ -195,12 +202,12 @@ class OpenHandsBridge(
             // If the socket dies because the sandbox slept, the same wake that a
             // cold message uses is run again before reconnecting, so a long job
             // survives the phone being idle rather than dying with the socket.
-            client.events(live, { true }, reconnect = {
+            client.events(apiKey, live, { true }, reconnect = {
                 client.ensureRunning(apiKey, live.id) { stage ->
                     onProgress(stage)
                     trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
                 }
-            }).collect { e ->
+            }, onOpen = { socketOpen.complete(Unit) }).collect { e ->
                 when (e) {
                     is OhEvent.Delta -> {
                         if (e.reasoning.isNotEmpty()) trySend(ZyraxonAiEngine.REASONING_PREFIX + e.reasoning)
@@ -217,7 +224,7 @@ class OpenHandsBridge(
                     is OhEvent.Action -> {
                         // A phone-owned tool runs here; the cloud's own tools are
                         // left alone, because their result is already on the way.
-                        val alreadyDone = e.id.isNotBlank() && e.id in history
+                        val alreadyDone = e.callId.isNotBlank() && e.callId in history
                         // A tool the phone owns runs here. The name arrives
                         // prefixed, so it is stripped back to the app's own name;
                         // the check is against the live registry rather than a
@@ -269,11 +276,16 @@ class OpenHandsBridge(
                 }
             }
         }
-        // A moment for the socket to be accepted before the message can start the
-        // answer; without it the very first tokens race the connection.
-        delay(600)
+        // The first message must not be sent into a stream that is not listening
+        // yet: the cloud answers the instant the message lands, and every token it
+        // produces before the socket is up is never delivered. The socket signals
+        // its acceptance, and this waits for it — but only briefly, so a socket
+        // that cannot be opened at all still lets the turn run and be read by the
+        // REST fallback instead of failing outright.
+        val socketOpen = CompletableDeferred<Unit>()
         val seed = if (coldStart) historySeed() else ""
         withContext(Dispatchers.IO) {
+            withTimeoutOrNull(15_000) { socketOpen.await() }
             runCatching { client.neverConfirm(live) }
             client.sendMessage(apiKey, live.id, seed + prompt + screenDigest()) { stage ->
                 onProgress(stage)
@@ -282,6 +294,46 @@ class OpenHandsBridge(
         }
         awaitClose { watcher.cancel() }
     }.flowOn(Dispatchers.IO)
+
+    /**
+     * Builds the conversation and brings its sandbox to RUNNING **before** the
+     * user says anything, and binds it to [chatId].
+     *
+     * Provisioning is the slow part of a cloud turn — measured at tens of
+     * seconds. Doing it here, in the background while the app is open, means the
+     * first message finds a live machine and streams immediately instead of
+     * waiting on a cold start. Idempotent: a chat that already has a bound
+     * conversation is only woken, never duplicated.
+     */
+    suspend fun prewarm(
+        apiKey: String,
+        chatId: String,
+        suffix: String,
+        clientTools: JSONArray? = null,
+        onStage: (String) -> Unit = {}
+    ): OhConversation? = withContext(Dispatchers.IO) {
+        if (apiKey.isBlank() || !online()) return@withContext null
+        val bound = store.conversationFor(chatId)
+        if (bound != null) {
+            return@withContext runCatching {
+                client.ensureRunning(apiKey, bound, onStage)
+            }.getOrNull()
+        }
+        runCatching {
+            val warm = client.findWarmSandbox(apiKey) ?: store.takeWarmSandbox()
+            val started = client.startConversation(
+                key = apiKey,
+                title = "ZYRAXON",
+                suffix = suffix,
+                reuseSandboxId = warm,
+                clientTools = clientTools,
+                onProgress = onStage
+            )
+            store.bind(chatId, started.id, started.sandboxId)
+            store.lastConversationId = started.id
+            started
+        }.getOrNull()
+    }
 
     /**
      * Wakes the conversation behind a chat, for callers outside a turn (the app

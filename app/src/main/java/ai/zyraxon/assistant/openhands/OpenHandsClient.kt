@@ -356,7 +356,12 @@ class OpenHandsClient(
             buildSet {
                 for (i in 0 until items.length()) {
                     val e = items.optJSONObject(i) ?: continue
-                    if (e.optString("kind") == "ActionEvent") add(e.optString("id"))
+                    // The tool call's own id, not the event's: it is what a live
+                    // ActionEvent carries, so the two can be compared.
+                    if (e.optString("kind") == "ActionEvent") {
+                        val cid = e.optJSONObject("tool_call")?.optString("id").orEmpty()
+                        if (cid.isNotBlank()) add(cid)
+                    }
                 }
             }
         }.getOrDefault(emptySet())
@@ -374,6 +379,7 @@ class OpenHandsClient(
      * freeze the screen with the work still running on the other side.
      */
     fun events(
+        apiKey: String,
         conv: OhConversation,
         keepAlive: () -> Boolean = { true },
         /**
@@ -383,53 +389,46 @@ class OpenHandsClient(
          * conversation re-points the socket at the live host; returning null keeps
          * the old one and lets the retry fail on its own.
          */
-        reconnect: (suspend () -> OhConversation?)? = null
+        reconnect: (suspend () -> OhConversation?)? = null,
+        /**
+         * Fired the moment the socket is accepted, every time it is (re)opened.
+         *
+         * The caller uses this to hold the first message until the stream is
+         * actually listening: the cloud starts answering the instant a message
+         * arrives, and tokens produced before the socket is up are simply never
+         * delivered — which is the difference between a live screen and a silent
+         * one for the first seconds of every turn.
+         */
+        onOpen: () -> Unit = {}
     ): Flow<OhEvent> = callbackFlow {
         var current = conv
         var attempt = 0
         var socket: WebSocket? = null
         var closed = AtomicBoolean(false)
         var lastError: Exception? = null
-        // Attaching the socket replays the stored log, so nothing that arrives
-        // before the server's first state frame is news. The listener opens
-        // immediately after the subscribe call, which is well before that frame.
-        val ready = AtomicBoolean(false)
-        val replaySeen = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+        // Every event carries its own id, and a duplicate delivery is dropped
+        // here. Without this a repeated action would run its tool twice, and a
+        // repeated token would be shown twice.
+        val seen = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
         fun open() {
             closed = AtomicBoolean(false)
-            ready.set(false)
+            // No `resend_mode`: the socket is attached *before* the message is
+            // sent, so there is no history to catch up on. A replay is precisely
+            // what breaks this — a stored `execution_status: finished` from the
+            // previous turn arrives as though it were this turn ending, and the
+            // turn is declared over before it starts. With nothing replayed,
+            // every frame on this socket is live by construction.
             val url = current.agentBase.replaceFirst("https://", "wss://")
                 .replaceFirst("http://", "ws://") + "/sockets/events/${current.id}"
             val listener = object : WebSocketListener() {
+                override fun onOpen(ws: WebSocket, response: Response) {
+                    onOpen()
+                }
+
                 override fun onMessage(ws: WebSocket, text: String) {
                     val e = OhEvent.parse(text) ?: return
-                    // The server replays the stored conversation before anything
-                    // live. The replay ends with a state frame — `full_state` on
-                    // attach, or an `execution_status` update — and that frame is
-                    // the boundary: everything before it is history.
-                    val isStateFrame = e is OhEvent.Status ||
-                        (e is OhEvent.Other && e.kind == "ConversationStateUpdateEvent")
-                    if (isStateFrame) {
-                        if (!ready.get()) {
-                            // Still the replay. Its status describes the previous
-                            // run, so forwarding it would end this turn before it
-                            // started.
-                            ready.set(true)
-                            return
-                        }
-                        if (e is OhEvent.Status) trySend(e)
-                        return
-                    }
-                    if (!ready.get()) {
-                        // Replayed action: the tool it names may already have run
-                        // before the socket dropped, so it is never run twice.
-                        if (e is OhEvent.Action && e.id.isNotBlank()) replaySeen.add(e.id)
-                        return
-                    }
-                    // Belt and braces: a replay that arrives late is still caught by
-                    // the id, which the bridge seeds with everything already stored.
-                    if (e is OhEvent.Action && e.id.isNotBlank() && !replaySeen.add(e.id)) return
+                    if (e.id.isNotBlank() && !seen.add(e.id)) return
                     trySend(e)
                 }
 
@@ -448,7 +447,22 @@ class OpenHandsClient(
             )
         }
 
-        open()
+        // The sandbox host is not live the instant the conversation is ready, so
+        // the first attach waits for RUNNING and refreshes the session key (which
+        // rotates on every resume) before it opens. Racing a host that is still
+        // starting is the one connect that always fails, and its failure is
+        // indistinguishable from a dead network.
+        launch(Dispatchers.IO) {
+            runCatching {
+                val running = awaitRunning(apiKey, current.id)
+                if (running.sandboxStatus == "RUNNING") current = running
+                open()
+            }.onFailure {
+                // Could not even reach the host: let the reconnect loop take over
+                // rather than leaving the flow attached to nothing.
+                closed.set(true)
+            }
+        }
         // A dropped socket does not end the turn: the work continues on the cloud,
         // so the flow reconnects rather than leaving the screen frozen.
         val watcher = launch(Dispatchers.IO) {

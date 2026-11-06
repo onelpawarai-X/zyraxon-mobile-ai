@@ -3673,6 +3673,33 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /**
+     * Builds the cloud conversation — and brings its sandbox to RUNNING — as soon
+     * as the app is open, so the first message of a chat finds a live machine and
+     * streams at once instead of waiting through a cold start.
+     *
+     * Runs off the UI thread, is safe to call more than once, and reports its
+     * stage into the same [cloudStage] the turn shows, so the user can see the
+     * preparation happening rather than wondering why the first message is slow.
+     */
+    fun prewarmCloud() {
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isBlank() || !aiEngine.isOnline()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            val chatId = _activeConversationId.value
+            runCatching {
+                openHandsBridge.prewarm(
+                    apiKey = key,
+                    chatId = chatId,
+                    suffix = cloudSuffix(AgentMode.AGENT),
+                    clientTools = ai.zyraxon.assistant.openhands.OpenHandsBridge.phoneTools(AgentMode.AGENT),
+                    onStage = { stage -> _cloudStage.value = stage }
+                )
+            }
+            if (openHandsStore.conversationFor(chatId) != null) _cloudStage.value = ""
+        }
+    }
+
+    /**
      * The user's own "fix it now" button on the home screen.
      *
      * Everything here self-heals without being asked, but a person who thinks a

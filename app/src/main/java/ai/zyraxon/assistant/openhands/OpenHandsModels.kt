@@ -80,26 +80,29 @@ data class OhTask(
  * change at every call site.
  */
 sealed class OhEvent {
+    /** The server's id for this event, used to drop a duplicate delivery. */
+    abstract val id: String
+
     /** A token (or a few) of the answer, and/or of the thinking that precedes it. */
-    data class Delta(val text: String, val reasoning: String) : OhEvent()
+    data class Delta(override val id: String, val text: String, val reasoning: String) : OhEvent()
 
     /** The agent decided to call a tool. */
-    data class Action(val name: String, val args: JSONObject, val id: String) : OhEvent()
+    data class Action(override val id: String, val name: String, val args: JSONObject, val callId: String) : OhEvent()
 
     /** What that tool returned. */
-    data class Observation(val name: String, val text: String) : OhEvent()
+    data class Observation(override val id: String, val name: String, val text: String) : OhEvent()
 
     /** A finished message (user, assistant or tool). */
-    data class Message(val role: String, val text: String, val reasoning: String) : OhEvent()
+    data class Message(override val id: String, val role: String, val text: String, val reasoning: String) : OhEvent()
 
     /** A lifecycle change: running, finished, paused, idle. */
-    data class Status(val value: String) : OhEvent()
+    data class Status(override val id: String, val value: String) : OhEvent()
 
     /** The turn died; [detail] carries the cloud's own words. */
-    data class Failure(val code: String, val detail: String) : OhEvent()
+    data class Failure(override val id: String, val code: String, val detail: String) : OhEvent()
 
     /** Anything else, so nothing is silently dropped. */
-    data class Other(val kind: String, val json: JSONObject) : OhEvent()
+    data class Other(override val id: String, val kind: String, val json: JSONObject) : OhEvent()
 
     companion object {
         fun parse(raw: String): OhEvent? {
@@ -108,8 +111,10 @@ sealed class OhEvent {
             } catch (_: Exception) {
                 return null
             }
+            val id = o.str("id")
             return when (val kind = o.str("kind")) {
                 "StreamingDeltaEvent" -> Delta(
+                    id = id,
                     text = o.str("content"),
                     reasoning = o.str("reasoning_content")
                 )
@@ -117,13 +122,15 @@ sealed class OhEvent {
                 "ActionEvent" -> {
                     val call = o.optJSONObject("tool_call") ?: JSONObject()
                     Action(
+                        id = id,
                         name = o.str("tool_name").ifBlank { call.str("name") },
                         args = parseArgs(call.opt("arguments")),
-                        id = call.str("id")
+                        callId = call.str("id")
                     )
                 }
 
                 "ObservationEvent" -> Observation(
+                    id = id,
                     name = o.str("tool_name"),
                     text = observationText(o.opt("observation"))
                 )
@@ -131,6 +138,7 @@ sealed class OhEvent {
                 "MessageEvent" -> {
                     val m = o.optJSONObject("llm_message") ?: JSONObject()
                     Message(
+                        id = id,
                         role = m.str("role"),
                         text = contentText(m.opt("content")),
                         reasoning = m.str("reasoning_content")
@@ -139,15 +147,16 @@ sealed class OhEvent {
                 }
 
                 "ConversationStateUpdateEvent" ->
-                    if (o.str("key") == "execution_status") Status(o.str("value"))
-                    else Other(kind, o)
+                    if (o.str("key") == "execution_status") Status(id, o.str("value"))
+                    else Other(id, kind, o)
 
                 "ConversationErrorEvent" -> Failure(
+                    id = id,
                     code = o.str("code"),
                     detail = o.str("detail")
                 )
 
-                else -> Other(kind, o)
+                else -> Other(id, kind, o)
             }
         }
 

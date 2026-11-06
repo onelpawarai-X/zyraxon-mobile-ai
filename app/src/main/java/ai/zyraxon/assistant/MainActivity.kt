@@ -240,6 +240,10 @@ class MainActivity : ComponentActivity() {
             OverlayChatService.start(this)
         }
         viewModel.onAppReturnedToForeground()
+        // Prepare the cloud conversation in the background while the app is open,
+        // so the user's first message streams immediately instead of waiting for
+        // a cold start. Idempotent, and silent when there is no key or network.
+        viewModel.prewarmCloud()
     }
 
     override fun onDestroy() {
