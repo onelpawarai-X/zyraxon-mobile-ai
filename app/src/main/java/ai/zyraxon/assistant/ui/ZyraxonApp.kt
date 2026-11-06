@@ -108,7 +108,13 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                     val shownStyle = if (calm && (auraStyle == "orb" || auraStyle == "swarm" || auraStyle == "crown" ||
                             auraStyle !in ai.zyraxon.assistant.ui.components.AuraStyleIds)) "twin" else auraStyle
                     val shownHue = if (calm && auraHue == 325) 255 else auraHue
-                    Box(Modifier.fillMaxSize().graphicsLayer { alpha = if (activeTab == AppTab.HOME) 1f else 0f }) {
+                    Box(
+                        Modifier.fillMaxSize().graphicsLayer { alpha = if (activeTab == AppTab.HOME) 1f else 0f },
+                        // Without this the aura's 240.dp box is placed at the
+                        // default top-left of its fill, so the orb and the eye
+                        // styles sat in the corner instead of the middle.
+                        contentAlignment = Alignment.Center
+                    ) {
                         ZyraxonAura(
                             style = shownStyle, hue = shownHue, scaleFactor = auraSize, glow = auraGlow, speed = auraSpeed,
                             isListening = isListening, isSpeaking = isSpeaking, audioLevel = audioLevel,

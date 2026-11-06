@@ -71,6 +71,7 @@ class RemoteTtsPlayer(
     private val downloadScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val prefetched = ConcurrentHashMap<String, File>()
     private val inFlight = ConcurrentHashMap.newKeySet<String>()
+    private var prefetchFailures = 0
 
     /** How many not-yet-playing pieces may be downloaded at once. */
     private val prefetchDepth = 4
@@ -125,7 +126,9 @@ class RemoteTtsPlayer(
         // A fresh reply gets a fresh chance to prefetch and to stream, so one bad
         // moment on the network does not cost the gap-free voice for the session.
         prefetchEnabled = true
+        prefetchFailures = 0
         streamUsable = true
+        clearPrefetched()
         enqueue(text, bcp47, gender)
     }
 
@@ -199,8 +202,18 @@ class RemoteTtsPlayer(
                 inFlight.remove(next.url)
                 if (file != null && mine == generation) {
                     prefetched[next.url] = file
-                } else if (file == null) {
-                    prefetchEnabled = false
+                    prefetchFailures = 0
+                } else if (file != null) {
+                    // The reply moved on while this was downloading, so the file
+                    // is for a queue that no longer exists. Deleted here, or it
+                    // would sit in the cache until the process died.
+                    file.delete()
+                } else {
+                    // One failure is not a reason to stop: the piece is simply
+                    // fetched on demand when its turn comes. Only a run of failures
+                    // means the endpoint is not answering, and that is when
+                    // prefetching is switched off for the rest of the reply.
+                    if (++prefetchFailures >= 3) prefetchEnabled = false
                 }
             }
         }

@@ -192,6 +192,11 @@ class OpenHandsBridge(
         // streamed for it — a provider that does not stream, or a tool-only step.
         val sawDeltaText = java.util.concurrent.atomic.AtomicBoolean(false)
         val sawDeltaReasoning = java.util.concurrent.atomic.AtomicBoolean(false)
+        // A stored "finished" from the turn before can be replayed before this
+        // turn has ever run, and acting on it would end the turn on the phone
+        // while the cloud was still working. A finish only counts once this turn
+        // has actually been seen running.
+        val sawRunning = java.util.concurrent.atomic.AtomicBoolean(false)
 
         // The turn is over — unless the user typed something while it ran. Those
         // words were queued, not dropped, and are sent here as the next turn so a
@@ -294,11 +299,14 @@ class OpenHandsBridge(
                     }
 
                     is OhEvent.Status -> {
-                        if (e.value == "finished" || e.value == "idle") {
+                        if (e.value == "running" || e.value == "working") {
+                            sawRunning.set(true)
+                        } else if (e.value == "finished" || e.value == "idle") {
                             // A finish that follows a phone tool is the end of the
                             // placeholder run, not of the turn: the result message
                             // has just started the real one.
-                            if (pendingTool) pendingTool = false else finishTurn()
+                            if (!sawRunning.get()) Unit
+                            else if (pendingTool) pendingTool = false else finishTurn()
                         }
                     }
 
@@ -314,18 +322,24 @@ class OpenHandsBridge(
         // deliver is replayed through the very same handling. The de-duplication
         // by event id makes this a no-op in the normal case.
         val fallback = launch {
-            var last = 0
+            // Tracked by the last event id, not by the list's size: the log is
+            // read with a limit, so once a conversation holds more events than
+            // that limit the size stops changing and a size comparison would call
+            // every later tick "nothing new" — the safety net would go blind
+            // exactly on the long chats that need it most.
+            var lastId = ""
             var quiet = 0
             while (isActive) {
                 delay(5000)
-                val events = runCatching { client.recentEvents(live) }.getOrDefault(emptyList())
-                if (events.size == last) {
+                val events = runCatching { client.recentEvents(live, limit = 100) }.getOrDefault(emptyList())
+                val newest = events.lastOrNull()
+                if (newest == null || newest.id == lastId) {
                     // Nothing new for a while: a live socket still sending would
                     // have moved this, so it is worth checking whether the cloud
                     // considers the turn over.
                     quiet++
                     if (quiet >= 4) {
-                        val finished = events.lastOrNull()?.let {
+                        val finished = newest?.let {
                             it is OhEvent.Status && (it.value == "finished" || it.value == "idle")
                         } ?: false
                         if (finished && !pendingTool) finishTurn()
@@ -334,8 +348,17 @@ class OpenHandsBridge(
                     continue
                 }
                 quiet = 0
-                last = events.size
-                for (e in events) {
+                // Only the events after the last one already handled are replayed.
+                // The first look starts from the beginning of the window, because
+                // the socket has already delivered everything up to now — the
+                // message is not even sent until it is attached — and the id
+                // de-duplication below turns that replay into a no-op. A window
+                // that has slid past the cursor starts at the beginning too.
+                val from = if (lastId.isBlank()) 0
+                    else events.indexOfFirst { it.id == lastId }.let { if (it >= 0) it + 1 else 0 }
+                lastId = newest.id
+                for (i in from until events.size) {
+                    val e = events[i]
                     // The socket is authoritative and already delivered these;
                     // only an event it did not is worth replaying.
                     if (e.id.isNotBlank() && !delivered.add(e.id)) continue
@@ -361,8 +384,12 @@ class OpenHandsBridge(
                             }
                         }
                         is OhEvent.Status -> {
-                            if (e.value == "finished" || e.value == "idle") {
-                                if (pendingTool) pendingTool = false else finishTurn()
+                            if (e.value == "running" || e.value == "working") {
+                                sawRunning.set(true)
+                            } else if (e.value == "finished" || e.value == "idle") {
+                                if (sawRunning.get()) {
+                                    if (pendingTool) pendingTool = false else finishTurn()
+                                }
                             }
                         }
                         else -> Unit

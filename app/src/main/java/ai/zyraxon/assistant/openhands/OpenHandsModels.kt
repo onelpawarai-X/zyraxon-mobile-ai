@@ -116,8 +116,12 @@ sealed class OhEvent {
             return when (val kind = o.str("kind")) {
                 "StreamingDeltaEvent" -> Delta(
                     id = id,
-                    text = o.str("content"),
-                    reasoning = o.str("reasoning_content")
+                    // A delta's body is usually a plain string, but a provider
+                    // that streams typed parts sends it as a list — reading only
+                    // the string form dropped those tokens silently, which is a
+                    // live screen that suddenly shows nothing.
+                    text = contentText(o.opt("content")),
+                    reasoning = o.str("reasoning_content").ifBlank { o.str("reasoning") }
                 )
 
                 "ActionEvent" -> {
