@@ -5,6 +5,7 @@ import ai.zyraxon.assistant.model.AgentMode
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
@@ -177,6 +178,18 @@ class OpenHandsBridge(
         // exactly the first seconds of every turn.
         val socketOpen = CompletableDeferred<Unit>()
 
+        // Every event the live socket has already handed over. The REST safety
+        // net reads the same log, and this is what keeps it from showing a token
+        // twice.
+        val delivered = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+        // The cloud streams the answer token by token and then records the whole
+        // answer again as one assistant message. Appending both would show every
+        // reply twice, so the finished message is only used when nothing was
+        // streamed for it — a provider that does not stream, or a tool-only step.
+        val sawDeltaText = java.util.concurrent.atomic.AtomicBoolean(false)
+        val sawDeltaReasoning = java.util.concurrent.atomic.AtomicBoolean(false)
+
         // The turn is over — unless the user typed something while it ran. Those
         // words were queued, not dropped, and are sent here as the next turn so a
         // mid-task message is answered instead of lost.
@@ -208,17 +221,32 @@ class OpenHandsBridge(
                     trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
                 }
             }, onOpen = { socketOpen.complete(Unit) }).collect { e ->
+                // Marked as delivered by the socket so the REST safety net does not
+                // show it a second time.
+                if (e.id.isNotBlank()) delivered.add(e.id)
                 when (e) {
                     is OhEvent.Delta -> {
-                        if (e.reasoning.isNotEmpty()) trySend(ZyraxonAiEngine.REASONING_PREFIX + e.reasoning)
-                        if (e.text.isNotEmpty()) trySend(e.text)
+                        if (e.reasoning.isNotEmpty()) {
+                            sawDeltaReasoning.set(true)
+                            trySend(ZyraxonAiEngine.REASONING_PREFIX + e.reasoning)
+                        }
+                        if (e.text.isNotEmpty()) {
+                            sawDeltaText.set(true)
+                            trySend(e.text)
+                        }
                     }
 
                     is OhEvent.Message -> {
-                        if (e.role == "assistant" && e.reasoning.isNotEmpty()) {
+                        // Only a message that was not already streamed is appended;
+                        // otherwise the answer would appear twice.
+                        if (e.role == "assistant" && e.reasoning.isNotEmpty() && !sawDeltaReasoning.get()) {
+                            sawDeltaReasoning.set(true)
                             trySend(ZyraxonAiEngine.REASONING_PREFIX + e.reasoning)
                         }
-                        if (e.role == "assistant" && e.text.isNotEmpty()) trySend(e.text)
+                        if (e.role == "assistant" && e.text.isNotEmpty() && !sawDeltaText.get()) {
+                            sawDeltaText.set(true)
+                            trySend(e.text)
+                        }
                     }
 
                     is OhEvent.Action -> {
@@ -276,13 +304,76 @@ class OpenHandsBridge(
                 }
             }
         }
+
+        // Safety net under the socket. A network that drops the WebSocket without
+        // a close frame leaves the screen frozen while the cloud works on, so the
+        // REST event log is read on a timer and any event the socket did not
+        // deliver is replayed through the very same handling. The de-duplication
+        // by event id makes this a no-op in the normal case.
+        val fallback = launch {
+            var last = 0
+            var quiet = 0
+            while (isActive) {
+                delay(5000)
+                if (!keepAlive()) break
+                val events = runCatching { client.recentEvents(live) }.getOrDefault(emptyList())
+                if (events.size == last) {
+                    // Nothing new for a while: a live socket still sending would
+                    // have moved this, so it is worth checking whether the cloud
+                    // considers the turn over.
+                    quiet++
+                    if (quiet >= 4) {
+                        val finished = events.lastOrNull()?.let {
+                            it is OhEvent.Status && (it.value == "finished" || it.value == "idle")
+                        } ?: false
+                        if (finished && !pendingTool) finishTurn()
+                        quiet = 0
+                    }
+                    continue
+                }
+                quiet = 0
+                last = events.size
+                for (e in events) {
+                    // The socket is authoritative and already delivered these;
+                    // only an event it did not is worth replaying.
+                    if (e.id.isNotBlank() && !delivered.add(e.id)) continue
+                    when (e) {
+                        is OhEvent.Delta -> {
+                            if (e.reasoning.isNotEmpty()) {
+                                sawDeltaReasoning.set(true)
+                                trySend(ZyraxonAiEngine.REASONING_PREFIX + e.reasoning)
+                            }
+                            if (e.text.isNotEmpty()) {
+                                sawDeltaText.set(true)
+                                trySend(e.text)
+                            }
+                        }
+                        is OhEvent.Message -> {
+                            if (e.role == "assistant" && e.reasoning.isNotEmpty() && !sawDeltaReasoning.get()) {
+                                sawDeltaReasoning.set(true)
+                                trySend(ZyraxonAiEngine.REASONING_PREFIX + e.reasoning)
+                            }
+                            if (e.role == "assistant" && e.text.isNotEmpty() && !sawDeltaText.get()) {
+                                sawDeltaText.set(true)
+                                trySend(e.text)
+                            }
+                        }
+                        is OhEvent.Status -> {
+                            if (e.value == "finished" || e.value == "idle") {
+                                if (pendingTool) pendingTool = false else finishTurn()
+                            }
+                        }
+                        else -> Unit
+                    }
+                }
+            }
+        }
         // The first message must not be sent into a stream that is not listening
         // yet: the cloud answers the instant the message lands, and every token it
         // produces before the socket is up is never delivered. The socket signals
         // its acceptance, and this waits for it — but only briefly, so a socket
         // that cannot be opened at all still lets the turn run and be read by the
         // REST fallback instead of failing outright.
-        val socketOpen = CompletableDeferred<Unit>()
         val seed = if (coldStart) historySeed() else ""
         withContext(Dispatchers.IO) {
             withTimeoutOrNull(15_000) { socketOpen.await() }
@@ -292,7 +383,10 @@ class OpenHandsBridge(
                 trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
             }
         }
-        awaitClose { watcher.cancel() }
+        awaitClose {
+            watcher.cancel()
+            fallback.cancel()
+        }
     }.flowOn(Dispatchers.IO)
 
     /**

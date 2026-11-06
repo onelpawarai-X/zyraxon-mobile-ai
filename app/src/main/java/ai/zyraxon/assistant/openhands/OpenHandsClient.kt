@@ -491,6 +491,30 @@ class OpenHandsClient(
 
     // ---- helpers -----------------------------------------------------------
 
+    /**
+     * The most recent events the conversation has recorded, read over REST.
+     *
+     * This is the safety net under the socket: a phone whose network drops the
+     * WebSocket silently would otherwise show a frozen screen while the cloud
+     * kept working. The same events arrive here, so the caller can fill the gap
+     * and the turn still ends when the cloud says it did.
+     */
+    suspend fun recentEvents(conv: OhConversation, limit: Int = 30): List<OhEvent> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val o = JSONObject(
+                    Request.Builder()
+                        .url(conv.agentBase + "/api/conversations/${conv.id}/events/search?limit=$limit")
+                        .header("X-Session-API-Key", conv.sessionKey).build()
+                        .let { http.newCall(it).execute().use { r -> r.body?.string() ?: "{}" } }
+                )
+                val items = o.optJSONArray("items") ?: JSONArray()
+                (0 until items.length()).mapNotNull { i ->
+                    items.optJSONObject(i)?.let { OhEvent.parse(it.toString()) }
+                }
+            }.getOrDefault(emptyList())
+        }
+
     /** Waits until the sandbox is RUNNING, which is when the socket will accept. */
     suspend fun awaitRunning(key: String, id: String, timeoutMs: Long = 120_000): OhConversation {
         val started = System.currentTimeMillis()
