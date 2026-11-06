@@ -446,11 +446,10 @@ class ZyraxonAiEngine(private val context: Context) {
      */
     private fun fetchProviderModels(spec: ProviderSpec): List<AiModel>? {
         val key = getApiKey(spec.id)
+        // A key is only required where the catalogue is private: `catalogIsPublic`
+        // marks a directory that answers without one (OpenRouter's, for example),
+        // and a provider with no auth at all never needs a key either.
         if (spec.needsKeyForCatalog && key.isBlank()) return null
-        // A provider whose model list is public (OpenRouter's, for one) used to fill
-        // the picker even though the user never connected it. Only providers that
-        // are free to use without a key may appear without one.
-        if (key.isBlank() && spec.id != "zyraxon" && spec.id != "opencode" && spec.auth != ProviderSpec.AuthStyle.NONE) return null
         // A provider with no catalogue URL has nothing to fetch: ZYRAXON Apex is
         // reached through the conversation API, not an OpenAI-compatible list, and
         // its models are supplied by the app rather than read from the network.
