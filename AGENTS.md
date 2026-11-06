@@ -176,6 +176,28 @@ PY
 Bump `versionCode` for every shipped build or the APK will not install over the
 previous one.
 
+### Version numbers
+
+The version the user sees is `versionName`, and it must follow the **last
+released** version by one — not the last version you happened to write into the
+file. Before tagging, read what is actually released:
+
+```bash
+gh release list --limit 5          # the released versions, newest first
+git show <last-tag>:app/build.gradle.kts | grep -E 'versionCode|versionName'
+```
+
+Then set `versionName` to the next number in that line and `versionCode` to one
+more than the released `versionCode`. `versionCode` is the integer Android
+compares, so a build with a code that is not greater will not install over the
+one on the phone.
+
+Do **not** invent versions from the working tree (that produced a jump from
+6.23.2 to 6.23.7), and do **not** add a suffix such as `-test1` to a release
+tag. Every release carries the plain `vX.Y.Z` form, and its notes are written in
+English. A test build is produced by `TEST-CI.yml`, which publishes no release at
+all — the release workflow is the only thing that tags.
+
 The release APK is ~445 MB and the debug APK ~480 MB, because each ABI carries
 its own ~30 MB Linux payload. Any step that builds an APK needs a generous
 timeout.
