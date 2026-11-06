@@ -211,7 +211,8 @@ private fun ToolRow(icon: String, name: String, desc: String, status: String, ti
             .clickable { open = !open }.padding(10.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(icon, fontSize = 15.sp); Spacer(Modifier.width(8.dp))
+            AppIcon(AppIcons.of(icon) ?: AppIcons.build, null, size = 15.dp, tint = Glass.textMuted)
+            Spacer(Modifier.width(8.dp))
             Column(Modifier.weight(1f)) {
                 Text(name, color = Glass.textPrimary, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                 Text(desc, color = Glass.textMuted, fontSize = 11.sp, maxLines = if (open) 5 else 1)

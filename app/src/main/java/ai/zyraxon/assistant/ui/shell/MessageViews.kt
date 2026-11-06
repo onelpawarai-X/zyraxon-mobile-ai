@@ -291,7 +291,7 @@ fun ToolCard(rec: ToolCallRecord) {
                     .clickable { open = !open }.padding(10.dp).animateContentSize()
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(rec.icon, fontSize = 15.sp)
+                    AppIcon(AppIcons.of(rec.icon) ?: AppIcons.build, null, size = 15.dp, tint = Glass.textMuted)
                     Spacer(Modifier.width(8.dp))
                     Column(Modifier.weight(1f)) {
                         Text(rec.name, color = Glass.textPrimary, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Monospace)

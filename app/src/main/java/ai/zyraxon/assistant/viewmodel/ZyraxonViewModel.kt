@@ -847,19 +847,25 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         initialValue = emptyList()
     )
 
-    /** Icon per tool family, for the live row. */
+    /**
+     * The [AppIcons] registry key for a tool family, drawn beside the tool's name.
+     *
+     * A key rather than a glyph: the UI resolves it through `AppIcons.of`, which
+     * has a vector icon for every key and renders nothing for a key it does not
+     * know. An emoji here would be a string the font may or may not have.
+     */
     private fun toolIcon(name: String): String = when {
-        name == "run_shell" || name == "system_shell" || name == "linux_run" || name == "terminal_run" -> "⌨"
+        name == "run_shell" || name == "system_shell" || name == "linux_run" || name == "terminal_run" -> "keyboard"
         name == "read_file" || name == "write_file" || name == "edit_file" || name == "list_dir" ||
-            name == "find_files" || name == "grep_files" || name == "delete_file" -> ""
-        name == "web_search" || name == "read_url" || name == "http_request" || name == "verify_url" -> ""
-        name == "download_file" || name == "publish_website" || name == "publish_github" -> ""
-        name.startsWith("publish_") -> ""
-        name == "screen_shot" || name == "read_screen" || name == "look_camera" -> ""
-        name == "tap" || name == "tap_text" || name == "swipe" || name == "type_text" || name == "press_key" -> ""
-        name.startsWith("git") -> ""
-        name.contains("__") -> ""
-        else -> ""
+            name == "find_files" || name == "grep_files" || name == "delete_file" -> "file"
+        name == "web_search" || name == "read_url" || name == "http_request" || name == "verify_url" -> "search"
+        name == "download_file" || name == "publish_website" || name == "publish_github" -> "upload"
+        name.startsWith("publish_") -> "upload"
+        name == "screen_shot" || name == "read_screen" || name == "look_camera" -> "camera"
+        name == "tap" || name == "tap_text" || name == "swipe" || name == "type_text" || name == "press_key" -> "touch"
+        name.startsWith("git") -> "code"
+        name.contains("__") -> "hub"
+        else -> "build"
     }
 
     private val recUpdateAt = java.util.concurrent.ConcurrentHashMap<String, Long>()
