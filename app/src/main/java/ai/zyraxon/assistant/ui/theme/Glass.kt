@@ -12,9 +12,9 @@ import androidx.compose.ui.graphics.Color
 
 /** The three looks of the app. */
 enum class ZyThemeMode(val title: String, val icon: String) {
-    HORROR(t("ভয়ঙ্কর"), "🩸"),
-    DARK(t("ডার্ক"), "🌙"),
-    LIGHT(t("লাইট"), "☀️")
+    HORROR(t("ভয়ঙ্কর"), ""),
+    DARK(t("ডার্ক"), ""),
+    LIGHT(t("লাইট"), "")
 }
 
 private class Pal(

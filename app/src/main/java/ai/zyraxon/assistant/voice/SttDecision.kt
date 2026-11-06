@@ -3,13 +3,15 @@ package ai.zyraxon.assistant.voice
 /**
  * What the assistant should do with one recognized phrase.
  *
- * This is the rule the user asked for, made explicit and testable: the
- * assistant's own spoken reply must never end up in the chat as if the user had
- * said it, and it must never stop the assistant mid-sentence. A short fragment
- * heard while the speaker is talking is the reply coming back through the mic —
- * the recognizer turns the assistant's own voice into text — so acting on every
- * one of those is what produced the off/on/off/on churn and the stray chat
- * bubbles.
+ * The rule the user asked for, made explicit and testable: the assistant's own
+ * spoken reply must never end up in the chat as if the user had said it — and the
+ * user must still be able to talk while it is speaking. Those two are separated
+ * by *when* a phrase arrives. The assistant's own voice comes back as a **final**
+ * result (a whole sentence the recognizer closed), so finals during speech are
+ * dropped. A person cutting in arrives as a **partial** and keeps growing as they
+ * talk, so a partial that is long enough — or a stop command — is a real
+ * interruption: the assistant stops, and the phrase is shown. Once it is quiet the
+ * user's final arrives with the speaker off and is sent normally.
  *
  * Pure: it reads only the phrase and two booleans, so it is testable without a
  * recognizer, an engine or a phone.
@@ -40,7 +42,7 @@ object SttDecision {
      * @param isFinal true for a final result, false for a partial.
      * @param speakerActive true while the assistant is speaking (or its echo tail
      *   is still ringing), which is when the mic mostly hears the assistant.
-     * @param repeatsReply true when [text] already appears in the last reply.
+     * @param repeatsReply true when [text] mostly appears in the last reply.
      */
     fun decide(
         text: String,
@@ -54,21 +56,24 @@ object SttDecision {
         // the part that was wrong — never allowed to cut the answer off.
         if (repeatsReply) return Action.IGNORE
 
-        // While the assistant is speaking (and while its echo tail rings), the
-        // microphone hears the assistant, not the user. Whatever the recognizer
-        // produces then — partial or final — is dropped: it is never shown in
-        // the box, never sent, and never cuts the answer off. This is what
-        // closed the loop where the assistant's own voice was transcribed into
-        // the chat box and sent back to it. To cut the assistant off, the user
-        // taps the aura, which is the microphone, instead of talking over it.
-        if (speakerActive) return Action.IGNORE
-
-        if (!isFinal) {
-            // A partial only ever interrupts; it is never sent on its own.
-            return Action.INTERRUPT
+        if (!speakerActive) {
+            // The ear is hearing the room. A final phrase is the user's and is
+            // sent; a partial only interrupts, never sent on its own.
+            return if (isFinal) Action.SUBMIT else Action.INTERRUPT
         }
 
-        return Action.SUBMIT
+        // While the assistant is talking a *final* result is its own sentence
+        // coming back through the mic — the user talking over it only ever
+        // arrives as a partial — so it is dropped: never shown, never sent,
+        // never allowed to cut the answer off.
+        if (isFinal) return Action.IGNORE
+
+        // A partial long enough to be a real sentence — or a stop command — is the
+        // user cutting in. The assistant stops so the user can finish, and the
+        // phrase is shown in the box; the final result then arrives once the
+        // assistant is quiet and is sent normally. This is the interruption the
+        // user asked for: the microphone stays open the whole time it talks.
+        return if (isRealInterruption(text)) Action.INTERRUPT else Action.IGNORE
     }
 
     /**

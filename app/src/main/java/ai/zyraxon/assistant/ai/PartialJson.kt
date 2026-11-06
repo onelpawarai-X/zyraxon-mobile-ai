@@ -26,16 +26,16 @@ object PartialJson {
             while (i < raw.length && raw[i].isWhitespace()) i++
             if (i >= raw.length) return ""
             if (raw[i] != '"') return null
-            return decode(raw, i + 1)
-        }
-    }
+ return decode(raw, i + 1)
+ }
+ }
 
-    private fun decode(raw: String, start: Int): String {
-        val sb = StringBuilder()
-        var i = start
-        while (i < raw.length) {
-            val c = raw[i]
-            if (c == '"') break
+ private fun decode(raw: String, start: Int): String {
+ val sb = StringBuilder()
+ var i = start
+ while (i < raw.length) {
+ val c = raw[i]
+ if (c == '"') break
             if (c != '\\') { sb.append(c); i++; continue }
             if (i + 1 >= raw.length) break // a lone backslash: the escape is still arriving
             when (val e = raw[i + 1]) {

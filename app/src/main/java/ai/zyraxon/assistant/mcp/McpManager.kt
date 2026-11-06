@@ -698,7 +698,7 @@ class McpManager(
 
         return JSONObject()
             .put("ok", !isError)
-            .put("summary", "$serverId → $toolName")
+            .put("summary", "$serverId $toolName")
             .put("output", body.take(20000))
             .apply { imageDataUrl?.let { put("image_data_url", it) } }
     }
@@ -726,7 +726,7 @@ class McpManager(
         val body = text.toString().trim().ifBlank { "খালি রিসোর্স" }
         return JSONObject()
             .put("ok", true)
-            .put("summary", "$serverId → $uri")
+            .put("summary", "$serverId $uri")
             .put("output", body.take(20000))
             .apply { imageDataUrl?.let { put("image_data_url", it) } }
     }
@@ -752,7 +752,7 @@ class McpManager(
         val body = text.toString().trim().ifBlank { description.ifBlank { "খালি প্রম্পট" } }
         return JSONObject()
             .put("ok", true)
-            .put("summary", "$serverId → $name")
+            .put("summary", "$serverId $name")
             .put("output", body.take(20000))
     }
 
@@ -1104,7 +1104,7 @@ class McpManager(
     }
 
     private fun accountLabel(server: McpServer, token: String?): String =
-        if (token.isNullOrBlank()) "" else "টোকেন ••••${token.takeLast(4)}"
+        if (token.isNullOrBlank()) "" else "টোকেন ${token.takeLast(4)}"
 
     // ---- pref keys ---------------------------------------------------------
 

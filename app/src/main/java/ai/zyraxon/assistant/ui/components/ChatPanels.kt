@@ -1,5 +1,8 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
+import androidx.compose.ui.graphics.vector.ImageVector
 import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.model.TaskItem
 import ai.zyraxon.assistant.model.ToolExecutionItem
@@ -77,11 +80,16 @@ fun BottomFloatingPanel(
             verticalAlignment = Alignment.CenterVertically
         ) {
             val title = when (panelType) {
-                "todo" -> "📋 " + t("টুডু বোর্ড") + " (${tasks.count { !it.isCompleted }}/${tasks.size})"
-                "tool" -> "🛠️ " + t("টুল এক্সিকিউশন") + " (${toolExecutions.size + activeToolCalls.size})"
-                "files" -> "📁 " + t("ফাইল ম্যানেজার") + " (${files.size})"
+                "todo" -> t("টুডু বোর্ড") + " (${tasks.count { !it.isCompleted }}/${tasks.size})"
+                "tool" -> t("টুল এক্সিকিউশন") + " (${toolExecutions.size + activeToolCalls.size})"
+                "files" -> t("ফাইল ম্যানেজার") + " (${files.size})"
                 else -> t("প্যানেল")
             }
+            AppIcon(
+                when (panelType) { "todo" -> AppIcons.checkCircle; "tool" -> AppIcons.build; "files" -> AppIcons.folder; else -> AppIcons.viewModule },
+                null, size = 15.dp, tint = Color(0xFFFF4D6D)
+            )
+            Spacer(Modifier.width(6.dp))
             Text(
                 text = title,
                 color = Color(0xFFFF4D6D),
@@ -96,11 +104,9 @@ fun BottomFloatingPanel(
                     .clickable { onClose() }
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
-                Text(
-                    text = "✕",
-                    color = Color(0xFFFF1E44),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
+                AppIcon(
+                    AppIcons.close, t("বন্ধ করো"),
+                    size = 14.dp, tint = Color(0xFFFF1E44)
                 )
             }
         }
@@ -140,35 +146,35 @@ fun BloodCyberDockBar(
     ) {
         DockItem(
             label = t("চ্যাট"),
-            icon = "💬",
+            icon = AppIcons.chat,
             badge = null,
             isSelected = activePanel == null,
             onClick = { onPanelSelect(null) }
         )
         DockItem(
             label = t("টুডু"),
-            icon = "📋",
+            icon = AppIcons.checkCircle,
             badge = if (todoCount > 0) todoCount.toString() else null,
             isSelected = activePanel == "todo",
             onClick = { onPanelSelect(if (activePanel == "todo") null else "todo") }
         )
         DockItem(
             label = t("টুল"),
-            icon = "🛠️",
+            icon = AppIcons.build,
             badge = if (toolCount > 0) toolCount.toString() else null,
             isSelected = activePanel == "tool",
             onClick = { onPanelSelect(if (activePanel == "tool") null else "tool") }
         )
         DockItem(
             label = t("ফাইল"),
-            icon = "📁",
+            icon = AppIcons.folder,
             badge = if (fileCount > 0) fileCount.toString() else null,
             isSelected = activePanel == "files",
             onClick = { onPanelSelect(if (activePanel == "files") null else "files") }
         )
         DockItem(
             label = t("টার্মিনাল"),
-            icon = "⌘",
+            icon = AppIcons.terminal,
             badge = null,
             isSelected = false,
             onClick = { onOpenTerminal() }
@@ -179,7 +185,7 @@ fun BloodCyberDockBar(
 @Composable
 private fun DockItem(
     label: String,
-    icon: String,
+    icon: ImageVector?,
     badge: String?,
     isSelected: Boolean,
     onClick: () -> Unit
@@ -198,7 +204,7 @@ private fun DockItem(
         contentAlignment = Alignment.Center
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(icon, fontSize = 12.sp)
+            AppIcon(icon, null, size = 13.dp, tint = if (isSelected) Color(0xFFFF4D6D) else Color(0xFFD0BAC0))
             Spacer(Modifier.width(3.dp))
             Text(
                 text = label,
@@ -251,13 +257,13 @@ fun ChatPanels(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            PanelTab(t("✅ টুডু"), tasks.count { !it.isCompleted }, tasks.size, openPanel == "todo", Pink, panelAlpha) {
+            PanelTab(AppIcons.checkCircle, t("টুডু"), tasks.count { !it.isCompleted }, tasks.size, openPanel == "todo", Pink, panelAlpha) {
                 openPanel = if (openPanel == "todo") null else "todo"
             }
-            PanelTab(t("🛠️ টুল"), toolExecutions.size, toolExecutions.size, openPanel == "tool", Cyan, panelAlpha) {
+            PanelTab(AppIcons.build, t("টুল"), toolExecutions.size, toolExecutions.size, openPanel == "tool", Cyan, panelAlpha) {
                 openPanel = if (openPanel == "tool") null else "tool"
             }
-            PanelTab(t("📁 ফাইল"), files.size, files.size, openPanel == "files", Glass.violet, panelAlpha) {
+            PanelTab(AppIcons.folder, t("ফাইল"), files.size, files.size, openPanel == "files", Glass.violet, panelAlpha) {
                 openPanel = if (openPanel == "files") null else "files"
             }
         }
@@ -272,6 +278,7 @@ fun ChatPanels(
 
 @Composable
 private fun RowScope.PanelTab(
+    icon: ImageVector?,
     label: String,
     activeCount: Int,
     total: Int,
@@ -280,15 +287,17 @@ private fun RowScope.PanelTab(
     panelAlpha: Float,
     onClick: () -> Unit
 ) {
-    Box(
+    Row(
         modifier = Modifier
             .weight(1f)
             .clip(RoundedCornerShape(12.dp))
             .background(if (selected) accent.copy(alpha = 0.16f) else Glass.rowFill(panelAlpha))
             .clickable { onClick() }
             .padding(vertical = 9.dp),
-        contentAlignment = Alignment.Center
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally)
     ) {
+        AppIcon(icon, null, size = 14.dp, tint = if (selected) accent else TextSub)
         Text(
             text = if (total > 0) "$label $activeCount/$total" else label,
             color = if (selected) accent else TextSub,
@@ -312,10 +321,9 @@ private fun TodoPanelBody(tasks: List<TaskItem>) {
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 5.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = if (task.isCompleted) "☑" else "☐",
-                    color = if (task.isCompleted) Glass.green else TextFaint,
-                    fontSize = 13.sp
+                AppIcon(
+                    if (task.isCompleted) AppIcons.checkBox else AppIcons.checkBoxBlank,
+                    null, size = 15.dp, tint = if (task.isCompleted) Glass.green else TextFaint
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(

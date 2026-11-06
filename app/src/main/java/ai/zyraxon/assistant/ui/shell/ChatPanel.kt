@@ -1,5 +1,8 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
+import androidx.compose.ui.graphics.vector.ImageVector
 import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.ai.ToolRegistry
 import ai.zyraxon.assistant.model.SubAgentInfo
@@ -46,10 +49,10 @@ fun ChatPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
             .border(1.dp, Glass.borderSoft, RoundedCornerShape(22.dp))
     ) {
         Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            SectionTab(t("💬 চ্যাট"), section == "chat", Modifier.weight(1f)) { vm.setChatSection("chat") }
-            SectionTab(t("✅ টুডু {0}", tasks.count { !it.isCompleted }.takeIf { it > 0 } ?: ""), section == "todo", Modifier.weight(1f)) { vm.setChatSection("todo") }
-            SectionTab(t("🛠 টুল {0}", (execs.size + active.size).takeIf { it > 0 } ?: ""), section == "tools", Modifier.weight(1f)) { vm.setChatSection("tools") }
-            SectionTab(t("📁 ফাইল {0}", files.size.takeIf { it > 0 } ?: ""), section == "files", Modifier.weight(1f)) { vm.setChatSection("files") }
+            SectionTab(AppIcons.chat, t("চ্যাট"), section == "chat", Modifier.weight(1f)) { vm.setChatSection("chat") }
+            SectionTab(AppIcons.checkCircle, t("টুডু {0}", tasks.count { !it.isCompleted }.takeIf { it > 0 } ?: ""), section == "todo", Modifier.weight(1f)) { vm.setChatSection("todo") }
+            SectionTab(AppIcons.build, t("টুল {0}", (execs.size + active.size).takeIf { it > 0 } ?: ""), section == "tools", Modifier.weight(1f)) { vm.setChatSection("tools") }
+            SectionTab(AppIcons.folder, t("ফাইল {0}", files.size.takeIf { it > 0 } ?: ""), section == "files", Modifier.weight(1f)) { vm.setChatSection("files") }
         }
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (section) {
@@ -63,14 +66,16 @@ fun ChatPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun SectionTab(label: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
-    Box(
+private fun SectionTab(icon: ImageVector?, label: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    Row(
         modifier.clip(RoundedCornerShape(12.dp))
             .background(if (selected) Glass.pinkFill.copy(alpha = if (Glass.isLight) 0.16f else 0.3f) else Glass.rowFill(0.2f))
             .border(1.dp, if (selected) Glass.pink else Glass.borderSoft, RoundedCornerShape(12.dp))
             .clickable { onClick() }.padding(vertical = 7.dp),
-        contentAlignment = Alignment.Center
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally)
     ) {
+        AppIcon(icon, null, size = 15.dp, tint = if (selected) Glass.textPrimary else Glass.textMuted)
         Text(label.trim(), color = if (selected) Glass.textPrimary else Glass.textMuted, fontSize = 11.5.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium, maxLines = 1)
     }
@@ -121,16 +126,17 @@ private fun SubAgentStrip(subs: List<SubAgentInfo>, onStop: (String) -> Unit) {
             .border(1.dp, Glass.violet.copy(alpha = 0.5f), RoundedCornerShape(14.dp)).padding(10.dp)
     ) {
         Row(Modifier.clickable { open = !open }, verticalAlignment = Alignment.CenterVertically) {
-            Text(t("🧩 সাব-এজেন্ট ({0}/{1} চলছে)", subs.count { it.state == "running" }, subs.size), color = Glass.textPrimary,
+            Text(t("সাব-এজেন্ট ({0}/{1} চলছে)", subs.count { it.state == "running" }, subs.size), color = Glass.textPrimary,
                 fontWeight = FontWeight.Bold, fontSize = 12.5.sp, modifier = Modifier.weight(1f))
-            Text(if (open) "▾" else "▸", color = Glass.textMuted)
+            AppIcon(if (open) AppIcons.chevronDown else AppIcons.chevronRight, null, size = 16.dp, tint = Glass.textMuted)
         }
         if (open) subs.forEach { s ->
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    when (s.state) { "running" -> "⏳"; "done" -> "✅"; "stopped" -> "⏹"; else -> "⚠️" },
-                    fontSize = 14.sp
+                AppIcon(
+                    when (s.state) { "running" -> AppIcons.hourglass; "done" -> AppIcons.checkCircle; "stopped" -> AppIcons.stop; else -> AppIcons.warning },
+                    s.state, size = 15.dp,
+                    tint = when (s.state) { "done" -> Glass.green; "stopped" -> Glass.textMuted; else -> Glass.textPrimary }
                 )
                 Spacer(Modifier.width(6.dp))
                 Column(Modifier.weight(1f)) {
@@ -138,7 +144,7 @@ private fun SubAgentStrip(subs: List<SubAgentInfo>, onStop: (String) -> Unit) {
                     Text("${s.model} · ${s.lastAction}", color = Glass.textMuted, fontSize = 10.5.sp, maxLines = 1)
                 }
                 Text("${s.percent}%", color = Glass.violet, fontWeight = FontWeight.Black, fontSize = 14.sp)
-                if (s.state == "running") Text("  ⏹", color = Glass.red, modifier = Modifier.clickable { onStop(s.id) }.padding(4.dp))
+                if (s.state == "running") AppIcon(AppIcons.stop, t("থামাও"), size = 15.dp, tint = Glass.red, modifier = Modifier.clickable { onStop(s.id) }.padding(4.dp))
             }
             LinearProgressIndicator(progress = { s.percent / 100f }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
                 color = Glass.violet, trackColor = Glass.rowFill(0.5f))
@@ -168,7 +174,7 @@ private fun TodoSection(vm: ZyraxonViewModel) {
                     Text(t.text, color = if (t.isCompleted) Glass.textMuted else Glass.textPrimary, fontSize = 13.sp,
                         textDecoration = if (t.isCompleted) androidx.compose.ui.text.style.TextDecoration.LineThrough else null,
                         modifier = Modifier.weight(1f))
-                    Text("✕", color = Glass.textMuted, modifier = Modifier.clickable { vm.deleteTask(t.id) }.padding(6.dp))
+                    AppIcon(AppIcons.close, t("মুছো"), size = 15.dp, tint = Glass.textMuted, modifier = Modifier.clickable { vm.deleteTask(t.id) }.padding(6.dp))
                 }
             }
         }
@@ -176,7 +182,7 @@ private fun TodoSection(vm: ZyraxonViewModel) {
             BasicTextField(text, { text = it }, Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(Glass.rowFill(0.3f)).padding(10.dp),
                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 13.sp), cursorBrush = SolidColor(Glass.pink),
                 decorationBox = { inner -> if (text.isEmpty()) Text(t("নিজের কাজ যোগ করো…"), color = Glass.textMuted, fontSize = 13.sp); inner() })
-            Text("＋", color = Glass.pink, fontSize = 24.sp, modifier = Modifier.clickable { vm.addTask(text); text = "" }.padding(horizontal = 12.dp))
+            AppIcon(AppIcons.add, t("কাজ যোগ করো"), size = 22.dp, tint = Glass.pink, modifier = Modifier.clickable { vm.addTask(text); text = "" }.padding(horizontal = 12.dp))
         }
     }
 }
@@ -238,23 +244,28 @@ private fun FilesSection(vm: ZyraxonViewModel) {
                 .clickable { openFileManager(ctx, root) }.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("📂", fontSize = 22.sp); Spacer(Modifier.width(10.dp))
+            AppIcon(AppIcons.folderOpen, null, size = 22.dp, tint = Glass.textPrimary); Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(t("ফাইল সেভ হয় এখানে"), color = Glass.textMuted, fontSize = 10.5.sp)
                 Text(root.absolutePath.substringAfter("/Android/", root.absolutePath), color = Glass.textPrimary, fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold, maxLines = 2)
             }
-            Text(t("খোলো ↗"), color = Glass.pink, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(t("খোলো"), color = Glass.pink, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                AppIcon(AppIcons.arrowOut, null, size = 13.dp, tint = Glass.pink)
+            }
         }
         BasicTextField(query, { query = it }, Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(RoundedCornerShape(12.dp))
             .background(Glass.rowFill(0.3f)).padding(10.dp),
             textStyle = TextStyle(color = Glass.textPrimary, fontSize = 13.sp), cursorBrush = SolidColor(Glass.pink),
-            decorationBox = { inner -> if (query.isEmpty()) Text(t("🔎 ফাইল খোঁজো…"), color = Glass.textMuted, fontSize = 13.sp); inner() })
+            decorationBox = { inner -> if (query.isEmpty()) Text(t("ফাইল খোঁজো…"), color = Glass.textMuted, fontSize = 13.sp); inner() })
         LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             if (shown.isEmpty()) item { Text(t("এখনো কোনো ফাইল নেই — এজেন্ট যা বানাবে এখানে জমা হবে"), color = Glass.textMuted, fontSize = 12.sp) }
             groups.forEach { (folder, list) ->
-                item("h$folder") { Text("📁 $folder · ${list.size}", color = Glass.textSecondary, fontSize = 11.5.sp, fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 6.dp)) }
+                item("h$folder") { Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                    AppIcon(AppIcons.folder, null, size = 13.dp, tint = Glass.textSecondary)
+                    Text("$folder · ${list.size}", color = Glass.textSecondary, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
+                } }
                 items(list, key = { it.path }) { f -> FileRow(f, vm) }
             }
         }
@@ -280,10 +291,14 @@ internal fun openFileManager(ctx: android.content.Context, dir: java.io.File) {
     android.widget.Toast.makeText(ctx, dir.absolutePath, android.widget.Toast.LENGTH_LONG).show()
 }
 
-private fun iconFor(name: String): String = when (langOf(name)) {
-    "html", "htm" -> "🌐"; "css" -> "🎨"; "js", "ts", "jsx", "tsx" -> "🟨"; "py" -> "🐍"; "kt", "java" -> "☕"
-    "json", "yml", "yaml", "toml" -> "⚙️"; "md", "txt" -> "📝"; "png", "jpg", "jpeg", "gif", "webp", "svg" -> "🖼️"
-    "mp3", "wav", "m4a", "ogg" -> "🎧"; "mp4", "webm", "mkv" -> "🎬"; "apk" -> "📦"; "zip" -> "🗜️"; "sh" -> "⌨️"; else -> "📄"
+private fun iconFor(name: String): ImageVector = when (langOf(name)) {
+    "html", "htm" -> AppIcons.publicGlobe; "css" -> AppIcons.palette
+    "js", "ts", "jsx", "tsx" -> AppIcons.code; "py" -> AppIcons.code; "kt", "java" -> AppIcons.code
+    "json", "yml", "yaml", "toml" -> AppIcons.settings; "md", "txt" -> AppIcons.description
+    "png", "jpg", "jpeg", "gif", "webp", "svg" -> AppIcons.image
+    "mp3", "wav", "m4a", "ogg" -> AppIcons.headphones; "mp4", "webm", "mkv" -> AppIcons.theater
+    "apk" -> AppIcons.inventory; "zip" -> AppIcons.compress; "sh" -> AppIcons.terminal
+    else -> AppIcons.description
 }
 
 @Composable
@@ -296,15 +311,15 @@ private fun FileRow(f: WorkspaceFile, vm: ZyraxonViewModel) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(Modifier.size(36.dp).clip(RoundedCornerShape(10.dp)).background(Glass.pink.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
-            Text(iconFor(f.name), fontSize = 18.sp)
+            AppIcon(iconFor(f.name), null, size = 18.dp, tint = Glass.textPrimary)
         }
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
             Text(f.name, color = Glass.textPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
             Text("${f.relative.substringBeforeLast('/', "")} · ${f.sizeLabel}", color = Glass.textMuted, fontSize = 10.5.sp, maxLines = 1)
         }
-        ShareButton(path = f.path, label = "↗")
-        Text("🗑", modifier = Modifier.clickable { del = true }.padding(6.dp))
+        ShareButton(path = f.path, label = t("শেয়ার"))
+        AppIcon(AppIcons.delete, t("মুছো"), size = 16.dp, tint = Glass.textMuted, modifier = Modifier.clickable { del = true }.padding(6.dp))
     }
     if (del) AlertDialog(
         onDismissRequest = { del = false }, containerColor = Glass.sheetFill(0.9f),

@@ -133,8 +133,8 @@ object GitTools {
                 val text = buildString {
                     append("On branch ").append(g.repository.branch).append('\n')
                     val rows = mutableListOf<String>()
-                    st.added.forEach { rows.add("A  $it") }; st.changed.forEach { rows.add("M  $it") }
-                    st.modified.forEach { rows.add(" M $it") }; st.removed.forEach { rows.add("D  $it") }
+                    st.added.forEach { rows.add("A $it") }; st.changed.forEach { rows.add("M $it") }
+                    st.modified.forEach { rows.add(" M $it") }; st.removed.forEach { rows.add("D $it") }
                     st.missing.forEach { rows.add(" D $it") }; st.untracked.forEach { rows.add("?? $it") }
                     st.conflicting.forEach { rows.add("UU $it") }
                     if (rows.isEmpty()) append("working tree clean") else rows.sorted().forEach { append(it).append('\n') }
@@ -167,7 +167,7 @@ object GitTools {
                 val res = cmd.call()
                 val msgs = res.flatMap { r -> r.remoteUpdates.map { "${it.remoteName}: ${it.status}" } }
                 val bad = res.flatMap { it.remoteUpdates }.firstOrNull { it.status.name !in setOf("OK", "UP_TO_DATE") }
-                if (bad != null) err("push ব্যর্থ: ${bad.status} ${bad.message.orEmpty()}") else ok("push হয়েছে → $branch", msgs.joinToString("\n"))
+                if (bad != null) err("push ব্যর্থ: ${bad.status} ${bad.message.orEmpty()}") else ok("push হয়েছে $branch", msgs.joinToString("\n"))
             }
             "pull" -> {
                 val c = g.pull().setProgressMonitor(monitor)
@@ -178,7 +178,7 @@ object GitTools {
             "branch" -> {
                 val name = args.safe("name").ifBlank { args.safe("branch") }
                 if (name.isBlank()) {
-                    ok("ব্রাঞ্চ", g.branchList().call().joinToString("\n") { (if (it.name == "refs/heads/" + g.repository.branch) "* " else "  ") + it.name.removePrefix("refs/heads/") })
+                    ok("ব্রাঞ্চ", g.branchList().call().joinToString("\n") { (if (it.name == "refs/heads/" + g.repository.branch) "* " else " ") + it.name.removePrefix("refs/heads/") })
                 } else { g.checkout().setCreateBranch(true).setName(name).call(); ok("নতুন ব্রাঞ্চ: $name") }
             }
             "checkout" -> {

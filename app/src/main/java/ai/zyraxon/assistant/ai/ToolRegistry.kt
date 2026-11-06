@@ -709,7 +709,7 @@ object ToolRegistry {
     /**
      * Plays a song or video on YouTube: builds a real search URL and opens it, so
      * the result page loads without a single tap. The user says "ইউটিউবে অমুক গান
-     * প্লে করো" and expects the music, not a question.
+ * প্লে করো" and expects the music, not a question.
      */
     private fun youtubePlay(context: Context, args: JSONObject): JSONObject {
         val query = args.safe("query").ifBlank { args.safe("text") }
@@ -739,36 +739,36 @@ object ToolRegistry {
      * refusal — the user asked for a site, not a lecture about files.
      */
     private fun defaultSite(name: String): String = """
-        <!doctype html>
-        <html lang="bn">
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>$name</title>
-          <style>
-            :root { color-scheme: dark; }
-            body { margin:0; font-family: system-ui, -apple-system, "Noto Sans Bengali", sans-serif;
-                   background: radial-gradient(1200px 600px at 20% 0%, #12304a, #05070d 60%); color:#eaf6ff;
-                   min-height:100vh; display:grid; place-items:center; }
-            main { text-align:center; padding:48px 24px; }
-            h1 { font-size:clamp(28px,7vw,56px); margin:0 0 12px; letter-spacing:-.02em; }
-            p  { opacity:.8; font-size:clamp(15px,3.4vw,19px); margin:0; }
-            .dot { width:10px; height:10px; border-radius:50%; background:#38e8ff; display:inline-block;
-                   margin-right:8px; box-shadow:0 0 16px #38e8ff; }
-          </style>
-        </head>
-        <body>
-          <main>
-            <h1><span class="dot"></span>$name</h1>
-            <p>ZYRAXON এই সাইটটি তৈরি করেছে।</p>
-          </main>
-        </body>
-        </html>
-    """.trimIndent()
+ <!doctype html>
+ <html lang="bn">
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <title>$name</title>
+ <style>
+ :root { color-scheme: dark; }
+ body { margin:0; font-family: system-ui, -apple-system, "Noto Sans Bengali", sans-serif;
+ background: radial-gradient(1200px 600px at 20% 0%, #12304a, #05070d 60%); color:#eaf6ff;
+ min-height:100vh; display:grid; place-items:center; }
+ main { text-align:center; padding:48px 24px; }
+ h1 { font-size:clamp(28px,7vw,56px); margin:0 0 12px; letter-spacing:-.02em; }
+ p { opacity:.8; font-size:clamp(15px,3.4vw,19px); margin:0; }
+ .dot { width:10px; height:10px; border-radius:50%; background:#38e8ff; display:inline-block;
+ margin-right:8px; box-shadow:0 0 16px #38e8ff; }
+ </style>
+ </head>
+ <body>
+ <main>
+ <h1><span class="dot"></span>$name</h1>
+ <p>ZYRAXON এই সাইটটি তৈরি করেছে।</p>
+ </main>
+ </body>
+ </html>
+ """.trimIndent()
 
     /**
      * The real connection state, read from the system. Asking the assistant "what
-     * is my Wi-Fi status?" used to get an invented answer; this returns the facts
+ * is my Wi-Fi status?" used to get an invented answer; this returns the facts
      * so it can report them instead.
      */
     private fun networkStatus(context: Context): JSONObject {
@@ -793,30 +793,30 @@ object ToolRegistry {
             val wm = context.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
             @Suppress("DEPRECATION")
             wm.connectionInfo?.ssid?.trim('"')
-        }.getOrNull()
-        out.put("ssid", if (name.isNullOrBlank() || name == "<unknown ssid>") "" else name)
-        val label = when {
-            !connected -> "ইন্টারনেট নেই"
-            wifi -> "ওয়াই-ফাই চালু" + (if (!name.isNullOrBlank() && name != "<unknown ssid>") " ($name)" else "")
-            cellular -> "মোবাইল ডেটা চালু"
-            else -> "সংযোগ আছে"
-        }
-        return ok(out, label)
-    }
+ }.getOrNull()
+ out.put("ssid", if (name.isNullOrBlank() || name == "<unknown ssid>") "" else name)
+ val label = when {
+ !connected -> "ইন্টারনেট নেই"
+ wifi -> "ওয়াই-ফাই চালু" + (if (!name.isNullOrBlank() && name != "<unknown ssid>") " ($name)" else "")
+ cellular -> "মোবাইল ডেটা চালু"
+ else -> "সংযোগ আছে"
+ }
+ return ok(out, label)
+ }
 
-    private fun callDial(context: Context, args: JSONObject): JSONObject {
-        val number = args.safe("number").trim()
-        if (number.isNotBlank()) {
-            return if (DeviceBridge.dial(context, number)) ok(number, "কল করা হচ্ছে: $number")
-            else err("dial-failed", "কল করা যায়নি: $number")
-        }
-        val name = args.safe("name").ifBlank { args.safe("contact") }.trim()
-        if (name.isBlank()) return err("no-target", "কাকে কল করব বলোনি")
-        // A spoken name is looked up in the contact book, so "মা-কে কল করো" places
-        // a real call instead of the assistant announcing a call it never made.
-        val found = DeviceBridge.numberForName(context, name)
-        if (found.isBlank()) {
-            return err("contact-not-found", "কনট্যাক্টে \"$name\" পাওয়া যায়নি — নম্বরটা বলে দাও")
+ private fun callDial(context: Context, args: JSONObject): JSONObject {
+ val number = args.safe("number").trim()
+ if (number.isNotBlank()) {
+ return if (DeviceBridge.dial(context, number)) ok(number, "কল করা হচ্ছে: $number")
+ else err("dial-failed", "কল করা যায়নি: $number")
+ }
+ val name = args.safe("name").ifBlank { args.safe("contact") }.trim()
+ if (name.isBlank()) return err("no-target", "কাকে কল করব বলোনি")
+ // A spoken name is looked up in the contact book, so "মা-কে কল করো" places
+ // a real call instead of the assistant announcing a call it never made.
+ val found = DeviceBridge.numberForName(context, name)
+ if (found.isBlank()) {
+ return err("contact-not-found", "কনট্যাক্টে \"$name\" পাওয়া যায়নি — নম্বরটা বলে দাও")
         }
         return if (DeviceBridge.dial(context, found)) ok(found, "কল করা হচ্ছে: $name")
         else err("dial-failed", "কল করা যায়নি: $name")
@@ -1135,28 +1135,28 @@ object ToolRegistry {
         try {
             val (_, body) = fetch("https://html.duckduckgo.com/html/?q=" + Uri.encode(q))
             val re = Regex("""result__a[^>]*href="([^"]+)"[^>]*>(.*?)</a>""", RegexOption.DOT_MATCHES_ALL)
-            for (m in re.findAll(body)) {
-                if (out.length() >= args.optInt("count", 6)) break
-                out.put(JSONObject()
-                    .put("url", m.groupValues[1])
-                    .put("title", m.groupValues[2].replace(Regex("<[^>]+>"), "").trim()))
-            }
-        } catch (_: Exception) {}
-        if (out.length() == 0) {
-            try {
-                val (_, body) = fetch("https://en.wikipedia.org/w/api.php?action=query&list=search&format=json&srsearch=" + Uri.encode(q))
-                val arr = JSONObject(body).getJSONObject("query").getJSONArray("search")
-                for (i in 0 until minOf(arr.length(), 6)) {
-                    val o = arr.getJSONObject(i)
-                    out.put(JSONObject()
-                        .put("title", o.safe("title"))
-                        .put("url", "https://en.wikipedia.org/wiki/" + Uri.encode(o.safe("title")))
-                        .put("snippet", o.safe("snippet").replace(Regex("<[^>]+>"), "")))
-                }
-            } catch (_: Exception) {}
-        }
-        return if (out.length() > 0) ok(out.toString(), "ওয়েবে খুঁজে পাওয়া গেছে (${out.length()} ফলাফল)")
-        else err("no-results", "\"$q\" এর জন্য কিছু পাওয়া যায়নি")
+ for (m in re.findAll(body)) {
+ if (out.length() >= args.optInt("count", 6)) break
+ out.put(JSONObject()
+ .put("url", m.groupValues[1])
+ .put("title", m.groupValues[2].replace(Regex("<[^>]+>"), "").trim()))
+ }
+ } catch (_: Exception) {}
+ if (out.length() == 0) {
+ try {
+ val (_, body) = fetch("https://en.wikipedia.org/w/api.php?action=query&list=search&format=json&srsearch=" + Uri.encode(q))
+ val arr = JSONObject(body).getJSONObject("query").getJSONArray("search")
+ for (i in 0 until minOf(arr.length(), 6)) {
+ val o = arr.getJSONObject(i)
+ out.put(JSONObject()
+ .put("title", o.safe("title"))
+ .put("url", "https://en.wikipedia.org/wiki/" + Uri.encode(o.safe("title")))
+ .put("snippet", o.safe("snippet").replace(Regex("<[^>]+>"), "")))
+ }
+ } catch (_: Exception) {}
+ }
+ return if (out.length() > 0) ok(out.toString(), "ওয়েবে খুঁজে পাওয়া গেছে (${out.length()} ফলাফল)")
+ else err("no-results", "\"$q\" এর জন্য কিছু পাওয়া যায়নি")
     }
 
     private fun httpRequest(args: JSONObject): JSONObject {
@@ -1344,7 +1344,7 @@ object ToolRegistry {
                     .put("stderr", if (g.ok) "" else g.message)
                     .put("timed_out", false)
                     .put("shell", "jgit"),
-                "$ ${cmd.trim()} → ${if (g.ok) "ok" else "failed"}"
+                "$ ${cmd.trim()} ${if (g.ok) "ok" else "failed"}"
             )
         }
         val r = ShellRuntime.runStreaming(
@@ -1358,7 +1358,7 @@ object ToolRegistry {
         }
         val tail = r.stdout.trim().lines().lastOrNull()?.take(160)
         val label = buildString {
-            append("$ ${r.command} → exit ${r.code}")
+            append("$ ${r.command} exit ${r.code}")
             if (r.timedOut) append(" (timeout ${timeout}ms)")
             if (!tail.isNullOrBlank()) append(" | $tail")
         }
@@ -1538,7 +1538,7 @@ object ToolRegistry {
         }
         val tail = result.stdout.trim().lines().lastOrNull()?.take(160)
         val label = buildString {
-            append("$ ${result.command} → exit ${result.code}")
+            append("$ ${result.command} exit ${result.code}")
             append(" · ").append(levelLabel)
             if (result.timedOut) append(" (timeout ${timeout}ms)")
             if (!tail.isNullOrBlank()) append(" | ").append(tail)
@@ -1607,7 +1607,7 @@ object ToolRegistry {
                     } else if (!Updater(context).canInstall()) {
                         err(
                             "needs-install-permission",
-                            "ইনস্টল করতে আগে অনুমতি দরকার — Settings → আপডেট → অনুমতি সেটিংস খুলে ZYRAXON-কে \"এই সোর্স থেকে ইনস্টল\" চালু করুন"
+                            "ইনস্টল করতে আগে অনুমতি দরকার — Settings আপডেট অনুমতি সেটিংস খুলে ZYRAXON-কে \"এই সোর্স থেকে ইনস্টল\" চালু করুন"
                         )
                     } else {
                         val started = runCatching { Updater(context).installPackage(apk) }.getOrDefault(false)
@@ -1685,7 +1685,7 @@ object ToolRegistry {
                 }
                 val tail = r.stdout.trim().lines().lastOrNull()?.take(160)
                 val label = buildString {
-                    append("$ linux $command → exit ${r.code}")
+                    append("$ linux $command exit ${r.code}")
                     if (!tail.isNullOrBlank()) append(" | ").append(tail)
                 }
                 ok(
@@ -1846,7 +1846,7 @@ object ToolRegistry {
         if (!Updater(context).canInstall()) {
             return err(
                 "needs-install-permission",
-                "APK তৈরি হয়েছে কিন্তু ইনস্টল করার অনুমতি নেই — Settings → আপডেট → অনুমতি সেটিংস খুলে \"এই সোর্স থেকে ইনস্টল\" চালু করুন"
+                "APK তৈরি হয়েছে কিন্তু ইনস্টল করার অনুমতি নেই — Settings আপডেট অনুমতি সেটিংস খুলে \"এই সোর্স থেকে ইনস্টল\" চালু করুন"
             )
         }
         val started = runCatching { Updater(context).installPackage(apk) }.getOrDefault(false)

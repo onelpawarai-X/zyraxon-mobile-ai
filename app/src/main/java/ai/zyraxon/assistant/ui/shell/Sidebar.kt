@@ -1,5 +1,8 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
+import androidx.compose.ui.graphics.vector.ImageVector
 import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.ui.theme.Glass
 import ai.zyraxon.assistant.ui.theme.ZyThemeMode
@@ -39,7 +42,7 @@ fun Sidebar(vm: ZyraxonViewModel) {
             Text("ZYRAXON", color = Glass.textPrimary, fontWeight = FontWeight.Black, letterSpacing = 2.sp, fontSize = 15.sp)
             Spacer(Modifier.height(10.dp))
             Text(
-                t("＋  নতুন চ্যাট"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp,
+                t("＋ নতুন চ্যাট"), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Glass.pinkFill)
                     .clickable { vm.newChat(); vm.setSidebarOpen(false) }.padding(12.dp).androidTag("new_chat_button")
             )
@@ -55,11 +58,11 @@ fun Sidebar(vm: ZyraxonViewModel) {
                             .clickable { vm.switchChat(c.id); vm.setSidebarOpen(false) }.padding(horizontal = 10.dp, vertical = 9.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(c.mode.icon, fontSize = 14.sp)
+                        AppIcon(AppIcons.of(c.mode.icon), null, size = 15.dp, tint = Glass.textPrimary)
                         Spacer(Modifier.width(8.dp))
                         Text(c.title, color = Glass.textPrimary, fontSize = 12.5.sp, maxLines = 1, modifier = Modifier.weight(1f))
-                        if (c.busy) Text("●", color = Glass.green, fontSize = 11.sp)
-                        Text("✕", color = Glass.textMuted, fontSize = 12.sp, modifier = Modifier.clickable { confirmDelete = c.id }.padding(start = 8.dp))
+                        if (c.busy) AppIcon(AppIcons.sync, t("চলছে"), size = 13.dp, tint = Glass.green)
+                        AppIcon(AppIcons.close, t("মুছো"), size = 14.dp, tint = Glass.textMuted, modifier = Modifier.clickable { confirmDelete = c.id }.padding(start = 8.dp))
                     }
                 }
             }

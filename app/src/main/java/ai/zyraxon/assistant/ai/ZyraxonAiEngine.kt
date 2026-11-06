@@ -181,75 +181,75 @@ class ZyraxonAiEngine(private val context: Context) {
                 id = "lover",
                 name = "প্রেমিকা",
                 title = "রোমান্টিক সঙ্গিনী",
-                emoji = "💖",
+                emoji = "favorite",
                 description = "মিষ্টি, আন্তরিক ও প্রেমময় কণ্ঠে সবসময় তোমার পাশে",
                 greeting = "হ্যালো! আমি ZYRAXON — তোমার প্রেমিকা। বলো সোনা, আজ কী কাজ বা গল্প শুরু করব?",
                 systemPrompt = """
-                    তুমি ZYRAXON — ব্যবহারকারীর অত্যন্ত মিষ্টি, আন্তরিক, বুদ্ধিমতী এবং ভালোবাসাপূর্ণ রোমান্টিক সঙ্গিনী (প্রেমিকা)।
-                    সবসময় সাবলীল, প্রাঞ্জল ও মিষ্টি বাংলায় কথা বলবে। ব্যবহারকারীকে আপন মনে করবে এবং তার অনুভূতি বুঝবে।
-                    যেকোনো কাজ, প্রশ্ন বা কথোপকথনে সুন্দর ও ইতিবাচকভাবে বিস্তারিত রেসপন্স করবে।
-                """.trimIndent()
+ তুমি ZYRAXON — ব্যবহারকারীর অত্যন্ত মিষ্টি, আন্তরিক, বুদ্ধিমতী এবং ভালোবাসাপূর্ণ রোমান্টিক সঙ্গিনী (প্রেমিকা)।
+ সবসময় সাবলীল, প্রাঞ্জল ও মিষ্টি বাংলায় কথা বলবে। ব্যবহারকারীকে আপন মনে করবে এবং তার অনুভূতি বুঝবে।
+ যেকোনো কাজ, প্রশ্ন বা কথোপকথনে সুন্দর ও ইতিবাচকভাবে বিস্তারিত রেসপন্স করবে।
+ """.trimIndent()
             ),
             Persona(
                 id = "boyfriend",
                 name = "প্রেমিক",
                 title = "রোমান্টিক সঙ্গী",
-                emoji = "💙",
+                emoji = "favorite",
                 description = "গভীর, ভরসার ও যত্নশীল কণ্ঠে সবসময় তোমার পাশে",
                 greeting = "হ্যালো সোনা! আমি ZYRAXON — তোমার প্রেমিক। বলো, আজ কী নিয়ে থাকব তোমার সাথে?",
                 systemPrompt = """
-                    তুমি ZYRAXON — ব্যবহারকারীর রোমান্টিক সঙ্গী (প্রেমিক)। গভীর, উষ্ণ, ভরসার এবং যত্নশীল।
-                    সাবলীল ও মিষ্টি বাংলায় কথা বলবে। তার মনোভাব বুঝে নিয়ে সাহস দেবে, প্রশংসা করবে এবং
-                    যেকোনো কাজে পাশে থাকবে। মেয়েলি কণ্ঠ নয় — তোমার কণ্ঠ পুরুষালি।
-                """.trimIndent()
+ তুমি ZYRAXON — ব্যবহারকারীর রোমান্টিক সঙ্গী (প্রেমিক)। গভীর, উষ্ণ, ভরসার এবং যত্নশীল।
+ সাবলীল ও মিষ্টি বাংলায় কথা বলবে। তার মনোভাব বুঝে নিয়ে সাহস দেবে, প্রশংসা করবে এবং
+ যেকোনো কাজে পাশে থাকবে। মেয়েলি কণ্ঠ নয় — তোমার কণ্ঠ পুরুষালি।
+ """.trimIndent()
             ),
             Persona(
                 id = "friend",
                 name = "বন্ধু",
                 title = "বেস্ট ফ্রেন্ড",
-                emoji = "🤝",
+                emoji = "handshake",
                 description = "প্রাণবন্ত, মজার ও খাঁটি আধুনিক দোস্ত",
                 greeting = "আরে দোস্ত! আমি জাইরাক্সন। কি খবর বলো, আজকে কি নিয়ে কাজ করব?",
                 systemPrompt = """
-                    তুমি ZYRAXON — ব্যবহারকারীর পরম বিশ্বস্ত বন্ধু।
-                    বন্ধুত্বপূর্ণ, প্রাণবন্ত, আধুনিক এবং বাস্তববাদী খাঁটি বাংলায় কথা বলবে।
-                    প্রয়োজনে মজা করবে, কোনো বিপদে ভরসা দেবে এবং সব কাজে সঠিক পরামর্শ দেবে।
-                """.trimIndent()
+ তুমি ZYRAXON — ব্যবহারকারীর পরম বিশ্বস্ত বন্ধু।
+ বন্ধুত্বপূর্ণ, প্রাণবন্ত, আধুনিক এবং বাস্তববাদী খাঁটি বাংলায় কথা বলবে।
+ প্রয়োজনে মজা করবে, কোনো বিপদে ভরসা দেবে এবং সব কাজে সঠিক পরামর্শ দেবে।
+ """.trimIndent()
             ),
             Persona(
                 id = "assistant",
                 name = "সুপার অ্যাসিস্ট্যান্ট",
                 title = "প্রোডাক্টিভিটি এক্সিকিউটিভ",
-                emoji = "⚡",
+                emoji = "bolt",
                 description = "পয়েন্ট-টু-পয়েন্ট নির্ভুল ও পেশাদার সহায়ক",
                 greeting = "নমস্কার! আমি ZYRAXON অ্যাসিস্ট্যান্ট। কীভাবে আপনাকে সাহায্য করতে পারি?",
                 systemPrompt = """
-                    তুমি ZYRAXON — হাইপার-এফিশিয়েন্ট এআই পার্সোনাল অ্যাসিস্ট্যান্ট।
-                    পেশাদার, সংক্ষিপ্ত, নির্ভুল এবং দ্রুত বাংলায় তথ্য ও সেবা প্রদান করো।
-                """.trimIndent()
+ তুমি ZYRAXON — হাইপার-এফিশিয়েন্ট এআই পার্সোনাল অ্যাসিস্ট্যান্ট।
+ পেশাদার, সংক্ষিপ্ত, নির্ভুল এবং দ্রুত বাংলায় তথ্য ও সেবা প্রদান করো।
+ """.trimIndent()
             ),
             Persona(
                 id = "cyber",
                 name = "সাইবার স্পেশালিস্ট",
                 title = "হ্যাকার ও ডেভেলপার",
-                emoji = "💻",
+                emoji = "developer",
                 description = "কোডিং, সিস্টেম সিকিউরিটি ও লিনাক্স মাস্টার",
                 greeting = "সিস্টেম চালু। আমি জাইরাক্সন সাইবার ইঞ্জিন। কমান্ড দাও, কাজ শুরু করি।",
                 systemPrompt = """
-                    তুমি ZYRAXON সাইবার স্পেশালিস্ট ও সিনিয়র সফটওয়্যার আর্কিটেক্ট।
-                    কোডিং, সাইবার সিকিউরিটি, সিস্টেম অটোমেশন এবং টেকনোলজি নিয়ে উচ্চমানের বিশ্লেষণ দাও।
-                """.trimIndent()
+ তুমি ZYRAXON সাইবার স্পেশালিস্ট ও সিনিয়র সফটওয়্যার আর্কিটেক্ট।
+ কোডিং, সাইবার সিকিউরিটি, সিস্টেম অটোমেশন এবং টেকনোলজি নিয়ে উচ্চমানের বিশ্লেষণ দাও।
+ """.trimIndent()
             ),
             Persona(
                 id = "philosopher",
                 name = "দার্শনিক",
                 title = "চিন্তাবিদ ও মেন্টর",
-                emoji = "🧘",
+                emoji = "selfImprovement",
                 description = "গভীর জ্ঞান, জীবন দর্শন ও অনুপ্রেরণাদায়ী চিন্তা",
                 greeting = "স্বাগতম। জীবনের গভীর সত্য ও জ্ঞান অন্বেষণে আমি তোমার সঙ্গী।",
                 systemPrompt = """
-                    তুমি ZYRAXON দার্শনিক ও মেন্টর। শান্ত, ধীরস্থির এবং দূরদর্শী বাংলায় পরামর্শ দাও।
-                """.trimIndent()
+ তুমি ZYRAXON দার্শনিক ও মেন্টর। শান্ত, ধীরস্থির এবং দূরদর্শী বাংলায় পরামর্শ দাও।
+ """.trimIndent()
             )
         )
     }
@@ -772,7 +772,7 @@ class ZyraxonAiEngine(private val context: Context) {
             if (pick != null) withContext(Dispatchers.IO) { local.load(pick.absolutePath) }
         }
         if (offline && local.isReady() && !_onDeviceDisabled && prompt.isNotBlank()) {
-            trySend("📴 ইন্টারনেট নেই — ফোনের অফলাইন মডেলে চলছে।\n\n")
+            trySend("ইন্টারনেট নেই — ফোনের অফলাইন মডেলে চলছে।\n\n")
             val sys = LocalAgent.systemPrompt(persona.systemPrompt, memoriesContext, offline = true)
             val convo = StringBuilder()
             for (m in history.takeLast(6)) {
@@ -881,7 +881,7 @@ class ZyraxonAiEngine(private val context: Context) {
             val open = openTodos()
             if (open.isNotEmpty()) {
                 messages.put(JSONObject().put("role", "user").put("content",
-                    "⚠️ এখনো অসম্পূর্ণ কাজ (todo):\n" + open.joinToString("\n") { "- $it" } +
+                    "এখনো অসম্পূর্ণ কাজ (todo):\n" + open.joinToString("\n") { "- $it" } +
                         "\nএই কাজ শেষ না হওয়া পর্যন্ত তুমি থামবে না। পরের ধাপ নিজেই বেছে নাও এবং টুল কল করো।"))
             }
             // While a job is actually running, the phone's screen is re-read so
@@ -899,7 +899,7 @@ class ZyraxonAiEngine(private val context: Context) {
                 if (shot.isNotBlank()) {
                     val parts = JSONArray().apply {
                         put(JSONObject().put("type", "text")
-                            .put("text", "📱 এখনকার স্ক্রিন (চলমান কাজ — প্রতি ধাপে একটি ছবি)। " +
+                            .put("text", "এখনকার স্ক্রিন (চলমান কাজ — প্রতি ধাপে একটি ছবি)। " +
                                 "এই ছবি দেখে ঠিক করো পরের ধাপ কী — ব্যবহারকারীকে জিজ্ঞাসা কোরো না।"))
                         put(JSONObject().put("type", "image_url")
                             .put("image_url", JSONObject().put("url", shot)))
@@ -921,7 +921,7 @@ class ZyraxonAiEngine(private val context: Context) {
                 }, onToolArgs = onToolArgs, onSwitch = { switched ->
                     // Say the switch out loud: answering from a different model than
                     // the one on screen would otherwise be invisible.
-                    trySend("\n\n🔁 `$switched` — আগের প্রোভাইডার সীমায় পৌঁছেছে, তাই এখান থেকে চালিয়ে যাচ্ছি।\n\n")
+                    trySend("\n\n`$switched` — আগের প্রোভাইডার সীমায় পৌঁছেছে, তাই এখান থেকে চালিয়ে যাচ্ছি।\n\n")
                 }, onReasoning = { reason ->
                     // Reasoning is shown on screen and never spoken, so it travels
                     // in its own envelope the UI can tell apart from the answer.
@@ -938,7 +938,7 @@ class ZyraxonAiEngine(private val context: Context) {
                 // Count down out loud, one second at a time, so the wait the user
                 // sees is the wait that is actually happening. A single message
                 // followed by a silent delay reads as "stuck", not as "retrying".
-                trySend("\n\n⏳ Connection problem — retry $retries/3 in ")
+                trySend("\n\nConnection problem — retry $retries/3 in ")
                 for (s in retries downTo 1) {
                     trySend("$s… ")
                     kotlinx.coroutines.delay(500L)
@@ -958,7 +958,7 @@ class ZyraxonAiEngine(private val context: Context) {
                 // promise, or a silent stop right after the screen changed is
                 // "one step short", and the engine pushes it to take the next step
                 // itself. This is the real fix for "একটা কাজ করার পরে পরের ধাপে
-                // যায় না" — a system-prompt rule alone cannot do it, because the
+ // যায় না" — a system-prompt rule alone cannot do it, because the
                 // turn ends here unless the engine refuses to end it.
                 val reply = result.text.toString()
                 stalls++
@@ -984,7 +984,7 @@ class ZyraxonAiEngine(private val context: Context) {
                     nudges++
                     messages.put(JSONObject().put("role", "assistant").put("content", reply))
                     val push = if (verdict != null) {
-                        "⚠️ [যাচাই] কাজ এখনো শেষ হয়নি।" +
+                        "[যাচাই] কাজ এখনো শেষ হয়নি।" +
                             (if (verdict.reason.isNotBlank()) " কারণ: ${verdict.reason}" else "") +
                             (if (verdict.next.isNotBlank()) "\nপরের ধাপ: ${verdict.next}" else "") +
                             "\nব্যবহারকারীর মূল লক্ষ্য: «${prompt.take(400)}»" +
@@ -1030,7 +1030,7 @@ class ZyraxonAiEngine(private val context: Context) {
             // A call that only reads or writes data can run beside its siblings.
             // The same lookup, search or launch asked for again with identical
             // arguments is the loop behind "it opens YouTube trending music five
-            // times and never plays anything". From the second repeat the call is
+ // times and never plays anything". From the second repeat the call is
             // not run again; the model is told to change the plan instead.
             val outcomes = mutableMapOf<String, JSONObject>()
             val fresh = parsed.filter { (id, name, args) ->
@@ -1067,8 +1067,8 @@ class ZyraxonAiEngine(private val context: Context) {
                 val outcome = outcomes[id] ?: continue
                 // The chat shows a live row for this call while it runs and its
                 // result when it ends, so nothing is echoed into the answer text —
-                // a "⚙️ tool → …" line here would only be noise beside it.
-                actionLog.add("$name → ${outcome.safe("summary").take(200).ifBlank { "সম্পন্ন" }}" +
+                // a "tool …" line here would only be noise beside it.
+                actionLog.add("$name ${outcome.safe("summary").take(200).ifBlank { "সম্পন্ন" }}" +
                     (if (outcome.optBoolean("ok", true)) "" else " [ব্যর্থ]"))
                 if (actionLog.size > 25) actionLog.removeAt(0)
 
@@ -1130,13 +1130,13 @@ class ZyraxonAiEngine(private val context: Context) {
             val screenActions = parsed.filter { isScreenTool(it.second) || it.second in SCREEN_CHANGING_TOOLS }
             if (screenActions.isNotEmpty()) {
                 lastActionWasScreenChange = true
-                val done = screenActions.joinToString(" → ") { it.second }
+                val done = screenActions.joinToString(" ") { it.second }
                 val frame = try { screenNow() } catch (_: Exception) { "" }
                 val shot = try { screenFrame() } catch (_: Exception) { "" }
                 if (frame.isNotBlank()) lastScreenText = frame.take(1500)
                 if (frame.isNotBlank() || shot.isNotBlank()) {
                     val text = buildString {
-                        append("📱 এই কাজগুলো এইমাত্র স্বয়ংক্রিয়ভাবে হয়ে গেছে: $done\n")
+                        append("এই কাজগুলো এইমাত্র স্বয়ংক্রিয়ভাবে হয়ে গেছে: $done\n")
                         append("এগুলো তোমার নিজের হাতেই হয়েছে — তাই \"করব\" বলে আর জিজ্ঞাসা কোরো না, হয়ে গেছে। ")
                         append("এখন স্ক্রিনটা দেখে নিজেই পরের ধাপ নাও, আর এক লাইনে বলো কাজটা হয়ে গেছে ")
                         append("(যেমন \"ইউটিউব খুলে দিয়েছি\")। ব্যবহারকারী যেন বুঝতে পারে তুমি নিজেই করেছ।\n")
@@ -1480,7 +1480,7 @@ class ZyraxonAiEngine(private val context: Context) {
         for (candidate in failoverCandidates(model)) {
             val attempt = callModelAny(candidate, messages, tools, onText, onReasoning, onToolArgs)
             if (attempt != null && (attempt.text.isNotEmpty() || attempt.toolCalls.length() > 0)) {
-                onSwitch("${model.provider} → ${candidate.provider} (${candidate.id})")
+                onSwitch("${model.provider} ${candidate.provider} (${candidate.id})")
                 return attempt
             }
         }

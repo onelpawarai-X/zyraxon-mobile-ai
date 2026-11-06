@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
@@ -576,11 +578,8 @@ fun HorrorSheetBackdrop(modifier: Modifier = Modifier, seed: Int = 3) {
 fun HorrorSectionTitle(text: String, modifier: Modifier = Modifier) {
     androidx.compose.foundation.layout.Column(modifier = modifier.fillMaxWidth()) {
         androidx.compose.foundation.layout.Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            androidx.compose.material3.Text(
-                text = if (ai.zyraxon.assistant.ui.theme.Glass.isHorror) "☠" else "◆",
-                color = BloodRedHot,
-                fontSize = 15.sp,
-                style = androidx.compose.ui.text.TextStyle(shadow = BloodGlow),
+            AppIcon(
+                AppIcons.dangerous, null, size = 15.dp, tint = BloodRedHot,
                 modifier = Modifier.horrorFlicker()
             )
             androidx.compose.foundation.layout.Spacer(Modifier.width(8.dp))

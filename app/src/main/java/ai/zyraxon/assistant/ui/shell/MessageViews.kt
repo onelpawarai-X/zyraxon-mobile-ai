@@ -1,5 +1,8 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
+import androidx.compose.ui.graphics.vector.ImageVector
 import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.chat.LiveCode
 import ai.zyraxon.assistant.model.ChatMessage
@@ -108,15 +111,32 @@ internal fun share(context: Context, target: ShareTarget, text: String? = null, 
 }
 
 /** The share button: a small menu of apps. */
+/** A small tappable chip: an icon and a word, for a message's actions. */
 @Composable
-internal fun ShareButton(text: String? = null, path: String? = null, label: String = t("↗ শেয়ার")) {
+private fun ActionChip(icon: ImageVector?, label: String, onClick: () -> Unit) {
+    Row(
+        Modifier.clip(RoundedCornerShape(8.dp)).clickable { onClick() }.padding(horizontal = 7.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        AppIcon(icon, null, size = 13.dp, tint = Glass.textMuted)
+        Text(label, color = Glass.textMuted, fontSize = 11.5.sp, maxLines = 1, softWrap = false)
+    }
+}
+
+@Composable
+internal fun ShareButton(text: String? = null, path: String? = null, label: String = t("শেয়ার")) {
     val ctx = LocalContext.current
     var open by remember { mutableStateOf(false) }
     Box {
-        Text(
-            label, color = Glass.textMuted, fontSize = 11.5.sp, maxLines = 1, softWrap = false,
-            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { open = true }.padding(horizontal = 7.dp, vertical = 4.dp)
-        )
+        Row(
+            Modifier.clip(RoundedCornerShape(8.dp)).clickable { open = true }.padding(horizontal = 7.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            AppIcon(AppIcons.arrowOut, label, size = 12.dp, tint = Glass.textMuted)
+            if (label.isNotBlank()) Text(
+                label, color = Glass.textMuted, fontSize = 11.5.sp, maxLines = 1, softWrap = false
+            )
+        }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = Glass.sheetFill(0.9f)) {
             ShareTarget.values().forEach { t ->
                 DropdownMenuItem(
@@ -132,11 +152,9 @@ internal fun ShareButton(text: String? = null, path: String? = null, label: Stri
 @Composable
 private fun MessageActions(message: ChatMessage, onCopy: () -> Unit, onSpeak: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(t("⧉ কপি"), color = Glass.textMuted, fontSize = 11.5.sp, maxLines = 1, softWrap = false,
-            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { onCopy() }.padding(horizontal = 7.dp, vertical = 4.dp))
+        ActionChip(AppIcons.copy, t("কপি"), onCopy)
         if (message.role == MessageRole.ASSISTANT) {
-            Text(t("🔊 শোনো"), color = Glass.textMuted, fontSize = 11.5.sp, maxLines = 1, softWrap = false,
-                modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { onSpeak() }.padding(horizontal = 7.dp, vertical = 4.dp))
+            ActionChip(AppIcons.volumeUp, t("শোনো"), onSpeak)
         }
         ShareButton(text = message.text)
     }
@@ -152,7 +170,7 @@ private fun TimeLine(message: ChatMessage, streaming: Boolean, startedAt: Long) 
             append(clockOf(message.createdAt))
             if (message.role == MessageRole.ASSISTANT) {
                 append(" · ").append(message.modelName)
-                if (took > 0) append(" · ⏱ ").append(durationOf(took))
+                if (took > 0) append(" · ").append(durationOf(took))
             }
         },
         color = Glass.textMuted, fontSize = 10.5.sp
@@ -182,7 +200,7 @@ fun MessageItem(
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 TimeLine(message, false, 0)
-                ShareButton(text = message.text, label = "↗")
+                ShareButton(text = message.text, label = "")
             }
             return@Column
         }
@@ -223,7 +241,7 @@ fun MessageItem(
 private fun TypingDots() {
     var step by remember { mutableStateOf(0) }
     LaunchedEffect(Unit) { while (true) { delay(350); step = (step + 1) % 4 } }
-    Text("●".repeat(step.coerceAtLeast(1)), color = Glass.pink, fontSize = 12.sp)
+    Text("".repeat(step.coerceAtLeast(1)), color = Glass.pink, fontSize = 12.sp)
 }
 
 @Composable
@@ -237,7 +255,11 @@ private fun ThinkingBlock(text: String, live: Boolean) {
         Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(Glass.rowFill(0.25f))
             .clickable { open = !open }.padding(horizontal = 10.dp, vertical = 6.dp).animateContentSize()
     ) {
-        Text(if (live) t("💭 ভাবছে…") else if (open) t("💭 ভাবনা ▾") else t("💭 ভাবনা ▸"), color = Glass.textMuted, fontSize = 11.5.sp)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+            AppIcon(AppIcons.comment, null, size = 14.dp, tint = Glass.textMuted)
+            Text(if (live) t("ভাবছে…") else t("ভাবনা"), color = Glass.textMuted, fontSize = 11.5.sp)
+            AppIcon(if (open) AppIcons.chevronDown else AppIcons.chevronRight, null, size = 14.dp, tint = Glass.textMuted)
+        }
         val shown = when {
             open -> text.takeLast(4000)
             live -> text.takeLast(280)
@@ -256,7 +278,7 @@ fun ToolCard(rec: ToolCallRecord) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 CodeBox(rec.output, langOf(rec.detail), rec.detail.ifBlank { t("ফাইল") }, live = false)
                 Text(
-                    (if (ok) "✅ " else "⚠️ ") + rec.summary, color = if (ok) Glass.textMuted else Glass.red, fontSize = 11.sp
+                    rec.summary, color = if (ok) Glass.textMuted else Glass.red, fontSize = 11.sp
                 )
             }
         }
@@ -278,10 +300,10 @@ fun ToolCard(rec: ToolCallRecord) {
                     }
                     when {
                         running -> CircularProgressIndicator(Modifier.size(15.dp), strokeWidth = 2.dp, color = Glass.pink)
-                        ok -> Text("✓", color = Glass.green, fontWeight = FontWeight.Bold)
-                        else -> Text("✕", color = Glass.red, fontWeight = FontWeight.Bold)
+                        ok -> AppIcon(AppIcons.check, t("সফল"), size = 15.dp, tint = Glass.green)
+                        else -> AppIcon(AppIcons.close, t("ব্যর্থ"), size = 15.dp, tint = Glass.red)
                     }
-                    if (rec.ms > 0) Text("  " + durationOf(rec.ms), color = Glass.textMuted, fontSize = 10.sp)
+                    if (rec.ms > 0) Text(" " + durationOf(rec.ms), color = Glass.textMuted, fontSize = 10.sp)
                 }
                 if (open && rec.output.isNotBlank()) {
                     Spacer(Modifier.height(6.dp))
@@ -295,13 +317,13 @@ fun ToolCard(rec: ToolCallRecord) {
 @Composable
 fun MediaProgress(job: MediaJob) {
     val pct by animateFloatAsState(job.percent / 100f, label = "p")
-    val icon = when (job.kind) { "image" -> "🖼️"; "audio" -> "🎧"; else -> "🎬" }
+    val icon = when (job.kind) { "image" -> AppIcons.image; "audio" -> AppIcons.headphones; else -> AppIcons.theater }
     Column(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Glass.rowFill(0.3f))
             .border(1.dp, Glass.pink.copy(alpha = 0.5f), RoundedCornerShape(14.dp)).padding(12.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(icon, fontSize = 20.sp)
+            AppIcon(icon, null, size = 20.dp, tint = Glass.textPrimary)
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(
@@ -347,7 +369,10 @@ fun MediaView(item: MediaItem) {
             }
             "audio" -> AudioPlayer(item.path, item.title)
             "video" -> VideoPlayer(item.path)
-            else -> Text("📎 ${file.name}", color = Glass.textPrimary, fontSize = 13.sp)
+            else -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                AppIcon(AppIcons.description, null, size = 16.dp, tint = Glass.textPrimary)
+                Text(file.name, color = Glass.textPrimary, fontSize = 13.sp)
+            }
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(item.title.ifBlank { file.name }, color = Glass.textMuted, fontSize = 11.sp, maxLines = 1, modifier = Modifier.weight(1f))
@@ -377,7 +402,7 @@ private fun AudioPlayer(path: String, title: String) {
                 if (player == null) return@clickable
                 if (playing) { player.pause(); playing = false } else { player.start(); playing = true }
             }, contentAlignment = Alignment.Center
-        ) { Text(if (playing) "❚❚" else "▶", color = Color.White, fontSize = 15.sp) }
+        ) { AppIcon(if (playing) AppIcons.pause else AppIcons.play, t("চালাও"), size = 18.dp, tint = Color.White) }
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
             Text(title.ifBlank { t("অডিও") }, color = Glass.textPrimary, fontSize = 12.5.sp, maxLines = 1)

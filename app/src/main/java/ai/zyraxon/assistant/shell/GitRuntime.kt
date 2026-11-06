@@ -55,7 +55,7 @@ object GitRuntime {
             val branch = git.repository.branch
             val files = target.listFiles()?.size ?: 0
             git.close()
-            Outcome(true, "Cloned $url → ${target.name} (branch $branch, $files entries)", target)
+            Outcome(true, "Cloned $url ${target.name} (branch $branch, $files entries)", target)
         } catch (e: Exception) {
             Outcome(false, e.message ?: e.toString())
         }
@@ -87,7 +87,7 @@ object GitRuntime {
         val body = buildString {
             append("On branch $branch\n")
             if (changed.isEmpty()) append("nothing to commit, working tree clean")
-            else changed.forEach { append("  $it\n") }
+            else changed.forEach { append(" $it\n") }
         }.trimEnd()
         Outcome(true, body, repo)
     } catch (e: Exception) {

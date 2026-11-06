@@ -105,6 +105,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     private val prefs = application.getSharedPreferences("zyraxon_vm_prefs", Context.MODE_PRIVATE)
 
+    /** When the user last cut the assistant off by talking over it. */
+    private var lastUserInterruptMs = 0L
+
     // SQLite Local Room Database & Repository
     val database = ZyraxonDatabase.getDatabase(application)
     val repository = ZyraxonRepository(database.dao())
@@ -806,17 +809,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     /** Icon per tool family, for the live row. */
     private fun toolIcon(name: String): String = when {
-        name == "run_shell" || name == "system_shell" || name == "linux_run" || name == "terminal_run" -> "⌨️"
+        name == "run_shell" || name == "system_shell" || name == "linux_run" || name == "terminal_run" -> "⌨"
         name == "read_file" || name == "write_file" || name == "edit_file" || name == "list_dir" ||
-            name == "find_files" || name == "grep_files" || name == "delete_file" -> "📄"
-        name == "web_search" || name == "read_url" || name == "http_request" || name == "verify_url" -> "🌐"
-        name == "download_file" || name == "publish_website" || name == "publish_github" -> "☁️"
-        name.startsWith("publish_") -> "🚀"
-        name == "screen_shot" || name == "read_screen" || name == "look_camera" -> "👁"
-        name == "tap" || name == "tap_text" || name == "swipe" || name == "type_text" || name == "press_key" -> "👆"
-        name.startsWith("git") -> "🌿"
-        name.contains("__") -> "🔌"
-        else -> "⚙️"
+            name == "find_files" || name == "grep_files" || name == "delete_file" -> ""
+        name == "web_search" || name == "read_url" || name == "http_request" || name == "verify_url" -> ""
+        name == "download_file" || name == "publish_website" || name == "publish_github" -> ""
+        name.startsWith("publish_") -> ""
+        name == "screen_shot" || name == "read_screen" || name == "look_camera" -> ""
+        name == "tap" || name == "tap_text" || name == "swipe" || name == "type_text" || name == "press_key" -> ""
+        name.startsWith("git") -> ""
+        name.contains("__") -> ""
+        else -> ""
     }
 
     private val recUpdateAt = java.util.concurrent.ConcurrentHashMap<String, Long>()
@@ -1138,14 +1141,27 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             // The live session has its own mic and transcripts; the phone's
             // recognizer must not also feed the chat.
             if (liveVoice.isActive) return@stt
-            val speakerActive = voiceManager.isSpeakerActive()
-            val repeatsReply = looksLikeOwnSpeech(text, speakerActive)
+            // The tail after a stop: once the user has cut the assistant off, its
+            // voice is gone, so the phrase arriving next is the user's even if the
+            // "speaking" flag has not fallen yet. Without this the final result of
+            // the very interruption that just happened would be dropped as echo.
+            val sinceInterrupt = System.currentTimeMillis() - lastUserInterruptMs
+            val speakerActive = voiceManager.isSpeakerActive() && sinceInterrupt > INTERRUPT_GRACE_MS
+            // Never the strict form here. Strict echo matching flags a phrase
+            // that shares even one content word with the reply, which is right
+            // for the assistant's own sentence coming back but would swallow a
+            // genuine interruption that happens to reuse a word ("আজকের আবহাওয়া
+ // কেমন?" over an answer about the weather). The assistant's own
+            // sentence is dropped by the final/partial rule instead.
+            val repeatsReply = looksLikeOwnSpeech(text)
             when (SttDecision.decide(text, isFinal, speakerActive, repeatsReply)) {
                 SttDecision.Action.IGNORE -> return@stt
                 SttDecision.Action.INTERRUPT -> {
                     // A partial only ever interrupts: it stops the assistant so
                     // the user can finish their sentence, and it is shown in the
-                    // box. It is never sent on its own.
+                    // box. It is never sent on its own; the final result that
+                    // follows, now that the speaker is quiet, is sent normally.
+                    lastUserInterruptMs = System.currentTimeMillis()
                     onUserStartedSpeaking()
                     _inputText.value = text
                     return@stt
@@ -1358,7 +1374,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // a provider that has since been removed) cannot be judged gone. Both are
         // kept and re-listed instead of being replaced — silently swapping the
         // user's choice for the first catalogue model is the "my model resets on
-        // every launch" report.
+ // every launch" report.
         val providerKnown = models.any { it.provider == current.provider }
         if (current.provider == "custom" || !providerKnown) {
             _availableModels.value = (listOf(current) + _availableModels.value.filter { it.id != current.id })
@@ -2258,7 +2274,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 }
             } catch (e: Exception) {
                 fullReply = if (e is kotlinx.coroutines.CancellationException) {
-                    (fullReply + "\n\n⏹ থামানো হয়েছে").trim()
+                    (fullReply + "\n\nথামানো হয়েছে").trim()
                 } else {
                     val reason = e.message ?: "সংযোগে সমস্যা হয়েছে"
                     if (fullReply.isBlank()) reason else fullReply
@@ -2451,7 +2467,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 val brief = "[সাব-এজেন্ট] তুমি মূল এজেন্টের সহকারী। শুধু নিচের কাজটি সম্পূর্ণ শেষ করো (ফাইল লেখো, চালাও, যাচাই করো), " +
                     "আর শেষে সংক্ষেপে বলো কী করেছ ও ফাইল/ফল কোথায়।\n\nকাজ: $task"
                 runTurn(child, brief, emptyList(), speak = false, modelOverride = model) { result ->
-                    val failed = result.startsWith("⏹") || result.contains("সংযোগে সমস্যা")
+                    val failed = result.startsWith("") || result.contains("সংযোগে সমস্যা")
                     subUpdate(id) { it.copy(state = if (failed) "error" else "done", percent = if (failed) it.percent else 100, result = result, lastAction = "শেষ") }
                     val note = "[সাব-এজেন্ট শেষ] «$title» ($id):\n${result.take(1800)}"
                     android.os.Handler(android.os.Looper.getMainLooper()).post {
@@ -2876,7 +2892,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val item = ToolExecutionItem(
             name = name,
             description = result.safe("summary"),
-            icon = if (result.optBoolean("ok")) "✅" else "⚠️",
+            icon = if (result.optBoolean("ok")) "" else "",
             status = if (result.optBoolean("ok")) "সম্পন্ন" else "ব্যর্থ",
             timestamp = currentTimeString(),
             output = output.takeLast(8_000)
@@ -3313,12 +3329,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             append("\n\n")
             append("The system is already installed — nothing to set up. Type any Linux command.\n\n")
             append("Examples:\n")
-            append("  pkg install nmap        — install a tool from the Termux repository\n")
-            append("  pkg upgrade             — update every installed package\n")
-            append("  ls, cd, cat, nano       — the usual shell\n")
-            append("  git clone <url>         — clone a repository\n")
-            append("  python, node, clang     — run code\n")
-            append("  linux-status            — show this status\n")
+            append(" pkg install nmap — install a tool from the Termux repository\n")
+            append(" pkg upgrade — update every installed package\n")
+            append(" ls, cd, cat, nano — the usual shell\n")
+            append(" git clone <url> — clone a repository\n")
+            append(" python, node, clang — run code\n")
+            append(" linux-status — show this status\n")
         }
 
         val result = when {
@@ -3463,7 +3479,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             .put("stdout", if (entry.isError) "" else entry.output)
             .put("stderr", if (entry.isError) entry.output else "")
             .put("shell", if (activeTerminalShell() == TerminalShell.LINUX) "linux" else "android")
-            .put("summary", "$ $line → exit ${entry.exitCode}")
+            .put("summary", "$ $line exit ${entry.exitCode}")
     }
 
     /**
@@ -3631,7 +3647,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     _mcpNotice.value = "${server.name}: কানেক্ট করা হচ্ছে…"
                     val conn = aiEngine.mcp.connectWithToken(server, token)
                     _mcpNotice.value = if (conn.status == McpStatus.CONNECTED) {
-                        "${server.name} কানেক্টেড — ${conn.toolCount}টি টুল পাওয়া গেছে ✅"
+                        "${server.name} কানেক্টেড — ${conn.toolCount}টি টুল পাওয়া গেছে "
                     } else {
                         "${server.name}: ${conn.error.ifBlank { "কানেক্ট করা যায়নি" }}"
                     }
@@ -3741,7 +3757,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             }.getOrNull()
             _cloudNotice.value = when {
                 conv == null -> t("কনভার্সেশন পাওয়া যায়নি — পরের মেসেজে নতুনটা তৈরি হবে")
-                conv.sandboxStatus == "RUNNING" -> t("ক্লাউড কানেক্টেড ✅")
+                conv.sandboxStatus == "RUNNING" -> t("ক্লাউড কানেক্টেড ")
                 else -> "স্যান্ডবক্স এখনো জাগছে (${conv.sandboxStatus})"
             }
             withContext(Dispatchers.IO) { runCatching { refreshModels() } }
@@ -3772,7 +3788,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             _mcpNotice.value = "${server.name}: কানেক্ট করা হচ্ছে…"
             val conn = aiEngine.mcp.connectWithToken(server, token.takeIf { it.isNotBlank() })
             _mcpNotice.value = if (conn.status == McpStatus.CONNECTED) {
-                "${server.name} কানেক্টেড — ${conn.toolCount}টি টুল ✅"
+                "${server.name} কানেক্টেড — ${conn.toolCount}টি টুল "
             } else {
                 "${server.name}: ${conn.error.ifBlank { "কানেক্ট করা যায়নি" }}"
             }
@@ -3864,6 +3880,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
         /** How often the streaming reply repaints the chat while it arrives. */
         private const val UI_UPDATE_MS = 60L
+
+        /**
+         * How long after the user cuts the assistant off its voice is still
+         * treated as gone. Covers the moment between the stop and the recognizer
+         * delivering the final result of that same interruption.
+         */
+        private const val INTERRUPT_GRACE_MS = 4_000L
 
         /** How long a screen read is reused. Long enough to serve one turn's two
          * asks, short enough that a screen the user just changed is re-read. */

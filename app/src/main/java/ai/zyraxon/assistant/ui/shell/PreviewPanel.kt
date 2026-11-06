@@ -1,5 +1,8 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
+import androidx.compose.ui.graphics.vector.ImageVector
 import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.tools.PreviewBridge
 import ai.zyraxon.assistant.ui.theme.Glass
@@ -74,9 +77,9 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         Column {
             // Row 1: the address bar gets the whole width, so it never wraps.
             Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                Ic("◀", canBack) { PreviewBridge.back(ctx) }
-                Ic("▶", canFwd) { PreviewBridge.forward(ctx) }
-                Ic(if (progress < 100) "✕" else "⟳", true) { if (progress < 100) PreviewBridge.stop() else PreviewBridge.reload(ctx) }
+                Ic(AppIcons.arrowBack, t("পিছনে"), canBack) { PreviewBridge.back(ctx) }
+                Ic(AppIcons.arrowForward, t("সামনে"), canFwd) { PreviewBridge.forward(ctx) }
+                Ic(if (progress < 100) AppIcons.close else AppIcons.refresh, if (progress < 100) t("থামাও") else t("রিলোড"), true) { if (progress < 100) PreviewBridge.stop() else PreviewBridge.reload(ctx) }
                 Box(
                     Modifier.weight(1f).height(38.dp).clip(RoundedCornerShape(19.dp)).background(Glass.rowFill(0.4f))
                         .border(1.dp, Glass.borderSoft, RoundedCornerShape(19.dp)).padding(horizontal = 14.dp),
@@ -95,10 +98,10 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
             // Row 2: page title on the left, tools on the right.
             Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 3.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(title.ifBlank { t("প্রিভিউ") }, color = Glass.textMuted, fontSize = 11.sp, maxLines = 1, modifier = Modifier.weight(1f))
-                Pill(if (full) "🗗" else "⛶", false) { full = !full }
-                Pill("➖", false) { mini = true }
-                Pill(if (problems.isEmpty()) t("🔧 ফিক্স") else t("🔧 ফিক্স ({0})", problems.size), problems.isNotEmpty(), Glass.red) { vm.fixPreviewProblems() }
-                Pill(t("🤖 এজেন্ট"), agent, Glass.pink) { agent = !agent }
+                Pill(t("সাইজ"), false, icon = if (full) AppIcons.compress else AppIcons.fullscreen) { full = !full }
+                Pill(t("ছোট করো"), false, icon = AppIcons.remove) { mini = true }
+                Pill(if (problems.isEmpty()) t("ফিক্স") else t("ফিক্স ({0})", problems.size), problems.isNotEmpty(), Glass.red, AppIcons.build) { vm.fixPreviewProblems() }
+                Pill(t("এজেন্ট"), agent, Glass.pink, AppIcons.smartToy) { agent = !agent }
             }
         }
     }
@@ -106,8 +109,8 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
     if (mini) {
         Row(modifier.clip(RoundedCornerShape(18.dp)).background(Glass.fill(0.8f)).border(1.dp, Glass.borderSoft, RoundedCornerShape(18.dp)).padding(10.dp),
             verticalAlignment = Alignment.CenterVertically) {
-            Text(t("🌐 {0}", title.ifBlank { url.ifBlank { t("প্রিভিউ") } }), color = Glass.textPrimary, fontSize = 12.sp, maxLines = 1, modifier = Modifier.weight(1f))
-            Text(t("▢ বড় করো"), color = Glass.pink, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { mini = false }.padding(6.dp))
+            Text(title.ifBlank { url.ifBlank { t("প্রিভিউ") } }, color = Glass.textPrimary, fontSize = 12.sp, maxLines = 1, modifier = Modifier.weight(1f))
+            Text(t("বড় করো"), color = Glass.pink, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { mini = false }.padding(6.dp))
         }
         return
     }
@@ -120,7 +123,7 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                 Modifier.fillMaxSize().background(Glass.screen2).padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
             ) {
-                Text("🌐", fontSize = 40.sp)
+                AppIcon(AppIcons.publicGlobe, null, size = 40.dp, tint = Glass.textMuted)
                 Text(t("এজেন্ট যা বানাবে বা তুমি যা খুলবে, এখানে দেখা যাবে"), color = Glass.textSecondary, fontSize = 13.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(top = 8.dp, bottom = 14.dp))
                 Text(t("দ্রুত খোলো"), color = Glass.textMuted, fontSize = 11.sp)
                 Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -148,16 +151,22 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun Pill(label: String, active: Boolean, tint: Color = Glass.pink, onClick: () -> Unit) {
-    Text(label, color = if (active) Color.White else Glass.textSecondary, fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1,
-        modifier = Modifier.clip(RoundedCornerShape(14.dp)).background(if (active) tint else Glass.rowFill(0.4f))
-            .border(1.dp, if (active) tint else Glass.borderSoft, RoundedCornerShape(14.dp)).clickable { onClick() }.padding(horizontal = 10.dp, vertical = 6.dp))
+private fun Pill(label: String, active: Boolean, tint: Color = Glass.pink, icon: ImageVector? = null, onClick: () -> Unit) {
+    Row(
+        Modifier.clip(RoundedCornerShape(14.dp)).background(if (active) tint else Glass.rowFill(0.4f))
+            .border(1.dp, if (active) tint else Glass.borderSoft, RoundedCornerShape(14.dp)).clickable { onClick() }
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        AppIcon(icon, null, size = 14.dp, tint = if (active) Color.White else Glass.textSecondary)
+        Text(label, color = if (active) Color.White else Glass.textSecondary, fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+    }
 }
 
 @Composable
-private fun Ic(label: String, enabled: Boolean, onClick: () -> Unit) {
+private fun Ic(icon: ImageVector?, desc: String, enabled: Boolean, onClick: () -> Unit) {
     Box(Modifier.size(34.dp).clip(CircleShape).background(Glass.rowFill(0.4f)).clickable(enabled = enabled) { onClick() }, contentAlignment = Alignment.Center) {
-        Text(label, color = if (enabled) Glass.textPrimary else Glass.textDisabled, fontSize = 13.sp)
+        AppIcon(icon, desc, size = 17.dp, tint = if (enabled) Glass.textPrimary else Glass.textDisabled)
     }
 }
 
@@ -173,18 +182,18 @@ private fun MiniAgent(vm: ZyraxonViewModel, modifier: Modifier, onClose: () -> U
             .border(1.dp, Glass.pink.copy(alpha = 0.6f), RoundedCornerShape(18.dp)).padding(10.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(t("🤖 এজেন্ট এই পেজ দেখছে"), color = Glass.textPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            Text("✕", color = Glass.textMuted, modifier = Modifier.clickable { onClose() }.padding(4.dp))
+            Text(t("এজেন্ট এই পেজ দেখছে"), color = Glass.textPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            AppIcon(AppIcons.close, t("বন্ধ করো"), size = 16.dp, tint = Glass.textMuted, modifier = Modifier.clickable { onClose() }.padding(4.dp))
         }
         if (last != null && last.text.isNotBlank()) {
             Box(Modifier.heightIn(max = 130.dp).padding(vertical = 6.dp).androidxScroll()) { Text(last.text.takeLast(900), color = Glass.textSecondary, fontSize = 12.sp) }
         }
-        if (generating) Text(t("⏳ ভাবছে…"), color = Glass.pink, fontSize = 11.sp)
+        if (generating) Text(t("ভাবছে…"), color = Glass.pink, fontSize = 11.sp)
         Row(verticalAlignment = Alignment.CenterVertically) {
             BasicTextField(q, { q = it }, Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(Glass.rowFill(0.4f)).padding(9.dp),
                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 13.sp), cursorBrush = SolidColor(Glass.pink),
                 decorationBox = { inner -> if (q.isEmpty()) Text(t("এই পেজ নিয়ে বলো…"), color = Glass.textMuted, fontSize = 13.sp); inner() })
-            Text("➤", color = Glass.pink, fontSize = 20.sp, modifier = Modifier.clickable { if (q.isNotBlank()) { vm.askAboutPreview(q); q = "" } }.padding(horizontal = 10.dp))
+            AppIcon(AppIcons.send, t("পাঠাও"), size = 20.dp, tint = Glass.pink, modifier = Modifier.clickable { if (q.isNotBlank()) { vm.askAboutPreview(q); q = "" } }.padding(horizontal = 10.dp))
         }
     }
 }

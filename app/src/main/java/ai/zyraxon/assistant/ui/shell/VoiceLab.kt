@@ -1,5 +1,8 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
+import androidx.compose.ui.graphics.vector.ImageVector
 import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.ui.components.AvatarRoster
 import ai.zyraxon.assistant.ui.components.AvatarView
@@ -25,7 +28,7 @@ import androidx.compose.ui.unit.sp
 fun ThemePane(vm: ZyraxonViewModel) {
     val theme by vm.themeMode.collectAsState()
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(t("🎨 থিম"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
+        Text(t("থিম"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
         ZyThemeMode.values().forEach { m ->
             val sel = m == theme
             Row(
@@ -40,7 +43,7 @@ fun ThemePane(vm: ZyraxonViewModel) {
                     Text(when (m) { ZyThemeMode.HORROR -> t("রক্ত, আগুন ও ছায়া — আসল ভয়ঙ্কর লুক"); ZyThemeMode.DARK -> t("পরিষ্কার কালচে গ্লাস, চোখে আরাম"); ZyThemeMode.LIGHT -> t("উজ্জ্বল ও পরিচ্ছন্ন গ্লাস") },
                         color = Glass.textMuted, fontSize = 11.5.sp)
                 }
-                if (sel) Text("✓", color = Glass.pink, fontWeight = FontWeight.Bold)
+                if (sel) AppIcon(AppIcons.check, t("নির্বাচিত"), size = 16.dp, tint = Glass.pink)
             }
         }
     }
@@ -70,7 +73,7 @@ fun VoiceLab(vm: ZyraxonViewModel) {
     val face = AvatarRoster.filter { it.female == female }.minByOrNull { kotlin.math.abs(it.age - wantAge) } ?: AvatarRoster.first()
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(t("🎙 ভয়েস চেঞ্জার"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
+        Text(t("ভয়েস চেঞ্জার"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
         Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Glass.rowFill(0.3f)).border(1.dp, Glass.pink.copy(alpha = 0.5f), RoundedCornerShape(18.dp)).padding(10.dp),
             verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(110.dp).clip(RoundedCornerShape(14.dp)).background(Color.Black)) {
@@ -82,7 +85,7 @@ fun VoiceLab(vm: ZyraxonViewModel) {
                 Text(current?.name ?: t("ডিফল্ট কণ্ঠ"), color = Glass.textSecondary, fontSize = 12.sp)
                 Text(listOfNotNull(current?.gender?.takeIf { it.isNotBlank() }, current?.age?.takeIf { it.isNotBlank() }, current?.locale?.takeIf { it.isNotBlank() }).joinToString(" · "),
                     color = Glass.textMuted, fontSize = 11.sp)
-                if (picked.isNotBlank()) Text(t("↺ ডিফল্টে ফেরো"), color = Glass.pink, fontSize = 11.5.sp, modifier = Modifier.clickable { vm.clearVoicePick() }.padding(top = 4.dp))
+                if (picked.isNotBlank()) Text(t("ডিফল্টে ফেরো"), color = Glass.pink, fontSize = 11.5.sp, modifier = Modifier.clickable { vm.clearVoicePick() }.padding(top = 4.dp))
             }
         }
         FilterRow(t("লিঙ্গ"), listOf("" to t("সব"), "f" to t("মেয়ে"), "m" to t("ছেলে")), gender) { gender = it }
@@ -90,8 +93,8 @@ fun VoiceLab(vm: ZyraxonViewModel) {
         else FilterRow(t("বয়স"), listOf("" to t("ডিফল্ট"), "child" to t("শিশু"), "teen" to t("কিশোর"), "adult" to t("প্রাপ্তবয়স্ক"), "senior" to t("বয়স্ক")), age) { vm.setVoiceAge(it) }
         FilterRow(t("ভাষা"), listOf("" to t("সব")) + langs.map { it to langName(it) }, lang) { lang = it }
         when {
-            state == "loading" -> Text(t("⏳ সার্ভার থেকে কণ্ঠ আনছি…"), color = Glass.textMuted)
-            state.isNotBlank() -> Text(state + "  ↻", color = Glass.red, fontSize = 12.sp, modifier = Modifier.clickable { vm.loadVoices() })
+            state == "loading" -> Text(t("সার্ভার থেকে কণ্ঠ আনছি…"), color = Glass.textMuted)
+            state.isNotBlank() -> Text(state, color = Glass.red, fontSize = 12.sp, modifier = Modifier.clickable { vm.loadVoices() })
         }
         Text(t("{0}টি কণ্ঠ", shown.size), color = Glass.textMuted, fontSize = 11.sp)
         shown.forEach { v ->
@@ -101,12 +104,12 @@ fun VoiceLab(vm: ZyraxonViewModel) {
                     .border(1.dp, if (sel) Glass.pink else Glass.borderSoft, RoundedCornerShape(12.dp)).clickable { vm.pickVoice(v) }.padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(if (v.gender.startsWith("m")) "👨" else "👩", fontSize = 20.sp); Spacer(Modifier.width(10.dp))
+                AppIcon(if (v.gender.startsWith("m")) AppIcons.person else AppIcons.female, null, size = 20.dp, tint = Glass.textPrimary); Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(v.name, color = Glass.textPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
                     Text(listOf(langName(v.locale.substringBefore('-').lowercase()), v.age, v.label).filter { it.isNotBlank() }.joinToString(" · "), color = Glass.textMuted, fontSize = 10.5.sp, maxLines = 1)
                 }
-                Text("▶", color = Glass.pink)
+                AppIcon(AppIcons.play, t("শুনো"), size = 18.dp, tint = Glass.pink)
             }
         }
         Text(t("একাধিক কণ্ঠে অডিও বানাতে এজেন্টকে বলো — সংলাপের প্রতিটা অংশে আলাদা কণ্ঠ, ভাষা ও বয়স সে নিজে বেছে নেয়।"), color = Glass.textMuted, fontSize = 11.sp)

@@ -17,7 +17,7 @@ package ai.zyraxon.assistant.ai
  *    so a reply like "ইউটিউব খোলা হয়েছে" ended the turn before the video was
  *    ever started. Only words that name a finished *goal* count now.
  *  - A promise is checked before a completion, so "ফাইল লেখা হয়েছে, এখন সাইট
- *    বানাচ্ছি" is read as unfinished.
+ * বানাচ্ছি" is read as unfinished.
  *  - A real human-only blocker (OTP, captcha, password, a permission only the
  *    user can grant) ends the turn instead of being nudged into a loop.
  *  - The nudge now repeats the user's original goal, so the model is pulled back
@@ -119,11 +119,11 @@ object ContinuationPolicy {
             ?.let { "\nব্যবহারকারীর মূল লক্ষ্য: «${it.take(400)}»\nএই পুরো লক্ষ্যটা পূরণ না হওয়া পর্যন্ত থামবে না।" }
             ?: ""
         return if (failed) {
-            "⚠️ তুমি এইমাত্র ব্যর্থতার কথা বলেছ, কিন্তু কাজ এখনো শেষ হয়নি। " +
+            "তুমি এইমাত্র ব্যর্থতার কথা বলেছ, কিন্তু কাজ এখনো শেষ হয়নি। " +
                 "ব্যর্থতা থামার কারণ নয় — ভিন্ন উপায়ে আবার চেষ্টা করো (অন্য টুল, অন্য আর্গুমেন্ট, " +
                 "অন্য পথ)। এখনই পরের ধাপের টুল কল করো, ব্যবহারকারীকে কিছু জিজ্ঞাসা কোরো না।" + anchor
         } else {
-            "⚠️ কাজ এখনো শেষ হয়নি। তুমি একটা মাঝের ধাপের কথা বলেছ, লক্ষ্য পূরণের কথা নয়। " +
+            "কাজ এখনো শেষ হয়নি। তুমি একটা মাঝের ধাপের কথা বলেছ, লক্ষ্য পূরণের কথা নয়। " +
                 "পরের ধাপ নিজেই বেছে নাও এবং এখনই টুল কল করো। ব্যবহারকারীকে জিজ্ঞাসা কোরো না, " +
                 "শুধু কাজ চালিয়ে যাও। লক্ষ্য সত্যিই পূরণ হয়েছে বলে নিশ্চিত হলে তবেই থামো।" + anchor
         }

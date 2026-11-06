@@ -31,8 +31,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -88,7 +91,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
 
         Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding()) {
             TopBar(
-                title = "ZYRAXON", modeLabel = "${mode.icon} ${mode.title}", busy = generating,
+                title = "ZYRAXON", modeLabel = mode.title, busy = generating,
                 onMenu = { viewModel.setSidebarOpen(!sidebarOpen) },
                 onSettings = { showSettingsSheet = true }
             )
@@ -127,11 +130,11 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                                 // A cloud turn spends its first seconds waking a
                                 // sandbox; saying so is the difference between a
                                 // wait and a screen that looks broken.
-                                cloudNotice.isNotBlank() -> t("☁ {0}", cloudNotice)
-                                cloudStage.isNotBlank() -> t("☁ {0}", cloudStage)
+                                cloudNotice.isNotBlank() -> cloudNotice
+                                cloudStage.isNotBlank() -> cloudStage
                                 isSpeaking -> t("বলছে… থামাতে ট্যাপ করো")
-                                !alwaysListening -> t("🔇 মাইক বন্ধ — ট্যাপ করো")
-                                isListening -> t("🎙️ শুনছি…")
+                                !alwaysListening -> t("মাইক বন্ধ — ট্যাপ করো")
+                                isListening -> t("শুনছি…")
                                 else -> t("মাইক চালু — বন্ধ করতে ট্যাপ করো")
                             },
                             color = Glass.textPrimary, fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold,
@@ -143,9 +146,9 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                             Modifier.align(Alignment.CenterEnd).padding(end = 2.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            SideBtn(if (alwaysListening) "🎙️" else "🔇", Modifier.testTag("aura_mic")) { viewModel.toggleListening() }
-                            SideBtn("💬", Modifier.testTag("aura_chat")) { viewModel.setTab(AppTab.CHAT) }
-                            SideBtn("⟳", Modifier.testTag("cloud_refresh")) { viewModel.refreshCloud() }
+                            SideBtn(if (alwaysListening) AppIcons.mic else AppIcons.micOff, "মাইক", Modifier.testTag("aura_mic")) { viewModel.toggleListening() }
+                            SideBtn(AppIcons.chat, "চ্যাট", Modifier.testTag("aura_chat")) { viewModel.setTab(AppTab.CHAT) }
+                            SideBtn(AppIcons.refresh, "রিফ্রেশ", Modifier.testTag("cloud_refresh")) { viewModel.refreshCloud() }
                         }
                     }
                 }
@@ -200,44 +203,44 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
 private fun TopBar(title: String, modeLabel: String, busy: Boolean, onMenu: () -> Unit, onSettings: () -> Unit) {
     val ctx = LocalContext.current
     Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-        RoundBtn("☰", "menu_button") { Glass.vibrate(ctx, 12); onMenu() }
+        RoundBtn(AppIcons.menu, "মেনু", "menu_button") { Glass.vibrate(ctx, 12); onMenu() }
         Spacer(Modifier.width(10.dp))
         Text(title, color = Glass.textPrimary, fontSize = 15.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
         Spacer(Modifier.width(8.dp))
         Text(
-            modeLabel + if (busy) " ⏳" else "", color = Glass.pink, fontSize = 10.5.sp, fontWeight = FontWeight.Bold,
+            modeLabel, color = Glass.pink, fontSize = 10.5.sp, fontWeight = FontWeight.Bold,
             modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(Glass.pinkFill.copy(alpha = 0.18f)).padding(horizontal = 7.dp, vertical = 3.dp)
         )
         Spacer(Modifier.weight(1f))
-        RoundBtn("⚙", "settings_button") { Glass.vibrate(ctx, 14); onSettings() }
+        RoundBtn(AppIcons.settings, "সেটিংস", "settings_button") { Glass.vibrate(ctx, 14); onSettings() }
     }
 }
 
 @Composable
-private fun RoundBtn(label: String, tag: String, onClick: () -> Unit) {
+private fun RoundBtn(icon: ImageVector?, desc: String, tag: String, onClick: () -> Unit) {
     Box(
         Modifier.size(36.dp).clip(CircleShape).background(Glass.rowFill(0.4f)).border(1.dp, Glass.borderSoft, CircleShape)
             .clickable { onClick() }.testTag(tag),
         contentAlignment = Alignment.Center
-    ) { Text(label, color = Glass.textPrimary, fontSize = 16.sp) }
+    ) { AppIcon(icon, desc, size = 19.dp, tint = Glass.textPrimary) }
 }
 
 @Composable
-private fun SideBtn(label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+private fun SideBtn(icon: ImageVector?, desc: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier.size(46.dp).clip(RoundedCornerShape(23.dp)).background(Glass.fill(0.7f))
             .border(1.dp, Glass.borderSoft, RoundedCornerShape(23.dp)).clickable(onClick = onClick),
         contentAlignment = Alignment.Center
-    ) { Text(label, color = Glass.textPrimary, fontSize = 18.sp) }
+    ) { AppIcon(icon, desc, size = 22.dp, tint = Glass.textPrimary) }
 }
 
 /** Aura view, then Chat, Terminal, Code, Preview, MCP. */
 @Composable
 private fun BottomNav(active: AppTab, onSelect: (AppTab) -> Unit) {
     val items = listOf(
-        Triple(AppTab.HOME, "🔮", t("ওরা")),
-        Triple(AppTab.CHAT, "💬", t("চ্যাট")), Triple(AppTab.TERMINAL, "⌨️", t("টার্মিনাল")), Triple(AppTab.CODE, "</>", t("কোড")),
-        Triple(AppTab.PREVIEW, "🌐", t("প্রিভিউ")), Triple(AppTab.MCP, "⬡", "MCP")
+        Triple(AppTab.HOME, AppIcons.diamond, t("ওরা")),
+        Triple(AppTab.CHAT, AppIcons.chat, t("চ্যাট")), Triple(AppTab.TERMINAL, AppIcons.terminal, t("টার্মিনাল")), Triple(AppTab.CODE, AppIcons.code, t("কোড")),
+        Triple(AppTab.PREVIEW, AppIcons.publicGlobe, t("প্রিভিউ")), Triple(AppTab.MCP, AppIcons.hub, "MCP")
     )
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp).clip(RoundedCornerShape(22.dp))
@@ -253,7 +256,7 @@ private fun BottomNav(active: AppTab, onSelect: (AppTab) -> Unit) {
                     .clickable { onSelect(tab) }.padding(vertical = 7.dp).testTag("nav_" + tab.name.lowercase()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(icon, fontSize = 17.sp, color = if (sel) Glass.textPrimary else Glass.textMuted)
+                AppIcon(icon, label, size = 19.dp, tint = if (sel) Glass.textPrimary else Glass.textMuted)
                 Text(label, fontSize = 10.sp, color = if (sel) Glass.textPrimary else Glass.textMuted, fontWeight = if (sel) FontWeight.Bold else FontWeight.Normal)
             }
         }
@@ -287,11 +290,11 @@ fun UpdateBanner(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 when (state) {
-                    is UpdateState.Available -> t("🎉 নতুন আপডেট পাওয়া গেছে — {0}", state.release.tag)
-                    is UpdateState.Downloading -> t("⬇️ আপডেট ডাউনলোড হচ্ছে... {0}%", (state.progress * 100).toInt())
-                    is UpdateState.Downloaded -> t("✅ ডাউনলোড শেষ — ইনস্টল করুন")
-                    is UpdateState.NeedsPermission -> t("🔓 ইনস্টল করতে অনুমতি দরকার")
-                    else -> t("🎉 নতুন আপডেট পাওয়া গেছে")
+                    is UpdateState.Available -> t("নতুন আপডেট পাওয়া গেছে — {0}", state.release.tag)
+                    is UpdateState.Downloading -> t("আপডেট ডাউনলোড হচ্ছে... {0}%", (state.progress * 100).toInt())
+                    is UpdateState.Downloaded -> t("ডাউনলোড শেষ — ইনস্টল করুন")
+                    is UpdateState.NeedsPermission -> t("ইনস্টল করতে অনুমতি দরকার")
+                    else -> t("নতুন আপডেট পাওয়া গেছে")
                 },
                 color = Glass.textPrimary,
                 fontWeight = FontWeight.Bold,
@@ -363,10 +366,8 @@ fun McpTabContent(viewModel: ZyraxonViewModel, panelAlpha: Float, onClose: () ->
                     fontSize = 11.5.sp,
                     modifier = Modifier.weight(1f)
                 )
-                Text(
-                    "✕",
-                    color = Glass.textMuted,
-                    fontSize = 13.sp,
+                AppIcon(
+                    AppIcons.close, "বন্ধ করো", size = 16.dp, tint = Glass.textMuted,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { viewModel.clearMcpNotice() }
@@ -435,7 +436,7 @@ private fun McpTokenDialog(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    t("টোকেন বানাও →"),
+                    t("টোকেন বানাও"),
                     color = Glass.pinkFill,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,

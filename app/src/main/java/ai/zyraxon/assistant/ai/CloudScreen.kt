@@ -108,6 +108,6 @@ object CloudScreen {
             }
         }
         if (body.isBlank()) return ""
-        return "\n\n📱 এখনকার স্ক্রিন (লাইভ, প্রতি ২ সেকেন্ডে হালনাগাদ):\n$body"
+        return "\n\nএখনকার স্ক্রিন (লাইভ, প্রতি ২ সেকেন্ডে হালনাগাদ):\n$body"
     }
 }

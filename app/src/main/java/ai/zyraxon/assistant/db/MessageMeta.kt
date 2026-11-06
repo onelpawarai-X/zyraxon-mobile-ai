@@ -35,7 +35,7 @@ object MessageMeta {
         (0 until a.length()).map {
             val j = a.getJSONObject(it)
             ToolCallRecord(
-                name = j.safe("n"), detail = j.safe("d"), icon = j.safe("i", "🛠️"), summary = j.safe("s"),
+                name = j.safe("n"), detail = j.safe("d"), icon = j.safe("i", ""), summary = j.safe("s"),
                 status = j.safe("st", "ok"), output = j.safe("o"), ms = j.optLong("ms")
             )
         }

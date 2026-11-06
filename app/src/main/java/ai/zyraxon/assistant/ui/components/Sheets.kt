@@ -1,5 +1,8 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
+import androidx.compose.ui.graphics.vector.ImageVector
 import ai.zyraxon.assistant.i18n.Loc
 import ai.zyraxon.assistant.i18n.setLanguage
 import ai.zyraxon.assistant.i18n.t
@@ -126,7 +129,7 @@ fun PersonaSelectionSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "☠ " + t("পরিচয় নির্বাচন (Persona)"),
+                    text = t("পরিচয় নির্বাচন (Persona)"),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Black,
                     color = BoneWhite,
@@ -175,7 +178,7 @@ fun PersonaList(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = persona.emoji, fontSize = 28.sp)
+                AppIcon(AppIcons.of(persona.emoji), null, size = 28.dp, tint = Glass.textPrimary)
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -190,7 +193,7 @@ fun PersonaList(
                         )
                         Spacer(modifier = Modifier.size(6.dp))
                         Text(
-                            text = "• " + t(persona.title),
+                            text = t(persona.title),
                             fontSize = 12.sp,
                             color = Glass.cyanFill
                         )
@@ -217,22 +220,9 @@ fun PersonaList(
  * Centered Dynamic Model Selector Modal (Zero Hardcoded Models).
  * Loads live models from OpenCode server endpoints and supports custom model entries.
  */
-/** A short chip label with an emoji for a provider id, falling back to the id. */
-private fun providerChipLabel(providerId: String): String {
-    val emoji = when (providerId) {
-        "zyraxon" -> "🧠"
-        "opencode" -> "⚡"
-        "gemini" -> "💎"
-        "groq" -> "🚀"
-        "openai" -> "🤖"
-        "anthropic" -> "🎭"
-        "deepseek" -> "🐋"
-        "openrouter" -> "🌐"
-        else -> "🔹"
-    }
-    val label = ai.zyraxon.assistant.ai.ProviderCatalog.find(providerId)?.label ?: providerId
-    return "$emoji $label"
-}
+/** A short chip label for a provider id, falling back to the id itself. */
+private fun providerChipLabel(providerId: String): String =
+    ai.zyraxon.assistant.ai.ProviderCatalog.find(providerId)?.label ?: providerId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -396,7 +386,7 @@ fun ModelListPane(
                 // provider with no models never shows an empty tab.
                 val providerChips = availableModels.map { it.provider }.distinct()
                     .map { id -> id to providerChipLabel(id) }
-                listOf("all" to t("সব মডেল")) + providerChips + listOf("custom" to t("✨ কাস্টম"))
+                listOf("all" to t("সব মডেল")) + providerChips + listOf("custom" to t("কাস্টম"))
                 .forEach { (catId, label) ->
                     val isCatActive = selectedCategory == catId
                     Box(
@@ -485,7 +475,7 @@ fun ModelListPane(
                                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                                         ) {
                                             Text(
-                                                text = "🎙️ " + t("রিয়েলটাইম"),
+                                                text = t("রিয়েলটাইম"),
                                                 fontSize = 9.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = Glass.textPrimary
@@ -513,9 +503,9 @@ fun ModelListPane(
                                 // to tell apart from plain text models at a glance.
                                 Text(
                                     text = if (model.isRealtime) {
-                                        t(model.category) + " • " + t("সরাসরি কথা বলে")
+                                        t(model.category) + " " + t("সরাসরি কথা বলে")
                                     } else {
-                                        t(model.category) + " • " + t("লেখা পড়ে শোনায়")
+                                        t(model.category) + " " + t("লেখা পড়ে শোনায়")
                                     },
                                     fontSize = 10.sp,
                                     color = if (model.isRealtime) Glass.pinkFill else Glass.cyanFill
@@ -660,33 +650,33 @@ fun SettingsSheet(
     var newMemVal by remember { mutableStateOf("") }
 
     val masterSections = listOf(
-        Triple("ai", "🎭", t("মডেল ও পরিচয়")) to listOf(
+        Triple("ai", AppIcons.theater, t("মডেল ও পরিচয়")) to listOf(
             "persona" to t("পরিচয়"),
             "model" to t("মডেল"),
             "ondevice" to t("অন-ডিভাইস")
         ),
-        Triple("keys", "🔑", t("এপিআই ও গিট")) to listOf(
+        Triple("keys", AppIcons.key, t("এপিআই ও গিট")) to listOf(
             "providers" to t("এআই প্রোভাইডার্স"),
             "github" to "GitHub"
         ),
-        Triple("audio", "🎙️", t("ভয়েস ও মাইক")) to listOf(
+        Triple("audio", AppIcons.mic, t("ভয়েস ও মাইক")) to listOf(
             "voice" to t("ভয়েস (TTS)"),
             "live" to t("লাইভ ভয়েস"),
             "mic" to t("মাইক")
         ),
-        Triple("aura", "🔮", t("ওরা ও ইফেক্ট")) to listOf(
+        Triple("aura", AppIcons.diamond, t("ওরা ও ইফেক্ট")) to listOf(
             "theme" to t("থিম"),
             "aura" to t("ওরা ও ব্যাকগ্রাউন্ড")
         ),
-        Triple("system", "🛡️", t("সিস্টেম ও এক্সেস")) to listOf(
+        Triple("system", AppIcons.shield, t("সিস্টেম ও এক্সেস")) to listOf(
             "session" to t("নেভিগেশন"),
             "perms" to t("পারমিশন")
         ),
-        Triple("knowledge", "🧠", t("মেমরি ও স্কিল")) to listOf(
+        Triple("knowledge", AppIcons.psychology, t("মেমরি ও স্কিল")) to listOf(
             "memory" to t("মেমরি"),
             "skills" to t("স্কিল গাইড")
         ),
-        Triple("updates", "🚀", t("আপডেট")) to listOf(
+        Triple("updates", AppIcons.rocket, t("আপডেট")) to listOf(
             "updates" to t("আপডেট")
         )
     )
@@ -724,11 +714,8 @@ fun SettingsSheet(
             ) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "☠",
-                            fontSize = 18.sp,
-                            color = BloodRedHot,
-                            style = TextStyle(shadow = BloodGlow),
+                        AppIcon(
+                            AppIcons.dangerous, null, size = 18.dp, tint = BloodRedHot,
                             modifier = Modifier.horrorFlicker()
                         )
                         Spacer(modifier = Modifier.width(7.dp))
@@ -788,7 +775,7 @@ fun SettingsSheet(
                             .padding(horizontal = 12.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = masterIcon, fontSize = 13.sp)
+                        AppIcon(masterIcon, null, size = 14.dp, tint = if (isMasterActive) Color.White else Glass.textPrimary)
                         Spacer(modifier = Modifier.width(5.dp))
                         Text(
                             text = masterTitle,
@@ -989,7 +976,7 @@ fun SettingsSheet(
                                         )
                                     }
                                 }
-                                Text(if (liveOn) "🎙️" else "🔇", fontSize = 20.sp)
+                                AppIcon(if (liveOn) AppIcons.mic else AppIcons.micOff, null, size = 20.dp, tint = Glass.textPrimary)
                             }
                         }
 
@@ -1005,7 +992,7 @@ fun SettingsSheet(
 
                         if (realtimeModels.isEmpty()) {
                             Text(
-                                t("এখন কোনো রিয়েলটাইম মডেল লোড হয়নি। 🔑 এআই প্রোভাইডার্স ট্যাবে Gemini, OpenAI বা Grok-এর কী দিলে তাদের লাইভ মডেল এখানে আসবে।"),
+                                t("এখন কোনো রিয়েলটাইম মডেল লোড হয়নি। এআই প্রোভাইডার্স ট্যাবে Gemini, OpenAI বা Grok-এর কী দিলে তাদের লাইভ মডেল এখানে আসবে।"),
                                 color = Glass.amber,
                                 fontSize = 11.sp
                             )
@@ -1100,7 +1087,7 @@ fun SettingsSheet(
                                     Column {
                                         Text(f.name, color = Glass.textPrimary, fontSize = 11.5.sp)
                                         Text(
-                                            (f.length() / (1024 * 1024)).toString() + " MB" + if (loaded) " • " + t("লোড করা আছে") else "",
+                                            (f.length() / (1024 * 1024)).toString() + " MB" + if (loaded) " " + t("লোড করা আছে") else "",
                                             color = Glass.textSecondary,
                                             fontSize = 10.sp
                                         )
@@ -1161,7 +1148,7 @@ fun SettingsSheet(
                                 Column {
                                     Text(info.name, color = Glass.textPrimary, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                                     Text(
-                                        "${info.approxMb} MB • " + if (info.requiresToken) t("টোকেন লাগবে") else t("টোকেন ছাড়াই"),
+                                        "${info.approxMb} MB " + if (info.requiresToken) t("টোকেন লাগবে") else t("টোকেন ছাড়াই"),
                                         color = if (info.requiresToken) Glass.amber else Glass.textSecondary,
                                         fontSize = 10.sp
                                     )
@@ -1227,7 +1214,7 @@ fun SettingsSheet(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text("👩", fontSize = 26.sp)
+                                    AppIcon(AppIcons.female, null, size = 26.dp, tint = Glass.textPrimary)
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(t("মেয়ের কণ্ঠ"), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     Text(t("মিষ্টি ও রোমান্টিক"), color = Glass.pinkFill, fontSize = 10.5.sp)
@@ -1256,7 +1243,7 @@ fun SettingsSheet(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text("👨", fontSize = 26.sp)
+                                    AppIcon(AppIcons.person, null, size = 26.dp, tint = Glass.textPrimary)
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(t("ছেলের কণ্ঠ"), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     Text(t("গম্ভীর ও স্পষ্ট"), color = Glass.cyanFill, fontSize = 10.5.sp)
@@ -1298,7 +1285,7 @@ fun SettingsSheet(
                                     .testTag("voice_source_remote")
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                                    Text("🌐", fontSize = 24.sp)
+                                    AppIcon(AppIcons.publicGlobe, null, size = 24.dp, tint = Glass.textPrimary)
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(t("ওয়েবসাইটের কণ্ঠ"), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
                                     Text(t("রিয়েল-টাইম, ৩২২ কণ্ঠ, ৭৫ ভাষা"), color = Glass.pinkFill, fontSize = 10.sp)
@@ -1315,7 +1302,7 @@ fun SettingsSheet(
                                     .testTag("voice_source_phone")
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                                    Text("📱", fontSize = 24.sp)
+                                    AppIcon(AppIcons.smartphone, null, size = 24.dp, tint = Glass.textPrimary)
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(t("ফোনের কণ্ঠ"), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 12.5.sp)
                                     Text(t("অফলাইনেও কাজ করে"), color = Glass.cyanFill, fontSize = 10.sp)
@@ -1325,10 +1312,10 @@ fun SettingsSheet(
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             when {
-                                voiceErr.isNotBlank() -> t("⚠️ {0} — ফোনের কণ্ঠে পড়া হচ্ছে।", voiceErr)
-                                useRemote && remoteName.isNotBlank() -> t("🎙️ এখন বলছে: {0}", remoteName)
-                                useRemote -> t("🎙️ ওয়েবসাইটের কণ্ঠ প্রস্তুত (প্রথম বাক্য এলেই কণ্ঠের নাম দেখা যাবে)।")
-                                else -> t("🎙️ ফোনের নিজের ইঞ্জিন কথা বলছে।")
+                                voiceErr.isNotBlank() -> t("{0} — ফোনের কণ্ঠে পড়া হচ্ছে।", voiceErr)
+                                useRemote && remoteName.isNotBlank() -> t("এখন বলছে: {0}", remoteName)
+                                useRemote -> t("ওয়েবসাইটের কণ্ঠ প্রস্তুত (প্রথম বাক্য এলেই কণ্ঠের নাম দেখা যাবে)।")
+                                else -> t("ফোনের নিজের ইঞ্জিন কথা বলছে।")
                             },
                             color = if (voiceErr.isNotBlank()) Glass.amber else Glass.textMuted,
                             fontSize = 10.5.sp
@@ -1347,7 +1334,7 @@ fun SettingsSheet(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            listOf("bn-BD" to t("🇧🇩 বাংলা"), "en-US" to "🇺🇸 English").forEach { (tag, label) ->
+                            listOf("bn-BD" to t("বাংলা"), "en-US" to "English").forEach { (tag, label) ->
                                 val active = currentLang == tag
                                 Box(
                                     modifier = Modifier
@@ -1454,7 +1441,7 @@ fun SettingsSheet(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
-                                        "${language.flag}  ${language.name}",
+                                        "${language.flag} ${language.name}",
                                         color = Glass.textPrimary,
                                         fontSize = 13.sp,
                                         fontWeight = if (active) FontWeight.Bold else FontWeight.Normal
@@ -1564,7 +1551,7 @@ fun SettingsSheet(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                if (alwaysListening) t("🎙️ মাইক চালু — বন্ধ করতে চাপুন") else t("🔇 মাইক বন্ধ — চালু করতে চাপুন"),
+                                if (alwaysListening) t("মাইক চালু — বন্ধ করতে চাপুন") else t("মাইক বন্ধ — চালু করতে চাপুন"),
                                 color = Glass.textPrimary,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 13.sp
@@ -1616,10 +1603,7 @@ fun SettingsSheet(
                                     ) {
                                         if (isAvatarStyle(styleId)) {
                                             Box(modifier = Modifier.size(84.dp), contentAlignment = Alignment.Center) {
-                                                Text(
-                                                    text = avatarSpec(styleId)?.emoji ?: "👩",
-                                                    fontSize = 44.sp
-                                                )
+                                                AppIcon(AppIcons.of(avatarSpec(styleId)?.icon ?: "person"), null, size = 44.dp, tint = Glass.textPrimary)
                                             }
                                         } else {
                                             AuraPreview(
@@ -1767,7 +1751,7 @@ fun SettingsSheet(
                                 .padding(12.dp)
                         ) {
                             Text(
-                                text = if (overlayOn) t("● চালু আছে — বন্ধ করতে চাপো") else t("○ চালু করো (উপর থেকে Allow দিতে হবে)"),
+                                text = if (overlayOn) t("চালু আছে — বন্ধ করতে চাপো") else t("চালু করো (উপর থেকে Allow দিতে হবে)"),
                                 color = if (overlayOn) Glass.greenFill else Glass.textPrimary,
                                 fontSize = 12.5.sp
                             )
@@ -2014,7 +1998,7 @@ fun SettingsSheet(
                                 .border(1.dp, Glass.greenFill.copy(alpha = 0.28f), RoundedCornerShape(8.dp))
                                 .padding(horizontal = 10.dp, vertical = 6.dp)
                         ) {
-                            Text(t("💾 লোকাল এসকিউএল ডাটাবেজে সংরক্ষিত — অ্যাপ বন্ধ বা রিস্টার্ট করলেও চিরতরে স্মৃতি বজায় থাকে।"), color = Glass.greenFill, fontSize = 11.sp)
+                            Text(t("লোকাল এসকিউএল ডাটাবেজে সংরক্ষিত — অ্যাপ বন্ধ বা রিস্টার্ট করলেও চিরতরে স্মৃতি বজায় থাকে।"), color = Glass.greenFill, fontSize = 11.sp)
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -2111,12 +2095,12 @@ fun SettingsSheet(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         listOf(
-                            t("📱 ফেসবুক মেসেজিং") to t("বলুন 'ফেসবুক খোলো' বা যেকোনো মেসেজ সেন্ড কমান্ড।"),
-                            t("🌐 ওয়েবসাইট নির্মাণ") to t("বলুন 'ওয়েবসাইট বানাও' — ZYRAXON সম্পূর্ণ কোড তৈরি ও গিটহাবে পাবলিশ করবে।"),
-                            t("👁️ স্ক্রিন রিডার") to t("অ্যাক্সেসিবিলিটি সার্ভিসের মাধ্যমে স্ক্রিনের সকল লেখা বিশ্লেষণ করে।"),
-                            t("🔦 টর্চলাইট কন্ট্রোল") to t("বলুন 'টর্চ জ্বালাও' অথবা 'টর্চ বন্ধ করো'।"),
-                            t("📸 ক্যামেরা ও ছবি বিশ্লেষণ") to t("বলুন 'ক্যামেরা চালু করো' কিংবা যেকোনো ফটো ক্যাপচার করুন।"),
-                            t("📶 ওয়াইফাই ও সেটিংস") to t("ভয়েস কমান্ডের মাধ্যমে সরাসরি সিস্টেম সেটিংস দ্রুত ওপেন হয়।")
+                            t("ফেসবুক মেসেজিং") to t("বলুন 'ফেসবুক খোলো' বা যেকোনো মেসেজ সেন্ড কমান্ড।"),
+                            t("ওয়েবসাইট নির্মাণ") to t("বলুন 'ওয়েবসাইট বানাও' — ZYRAXON সম্পূর্ণ কোড তৈরি ও গিটহাবে পাবলিশ করবে।"),
+                            t("স্ক্রিন রিডার") to t("অ্যাক্সেসিবিলিটি সার্ভিসের মাধ্যমে স্ক্রিনের সকল লেখা বিশ্লেষণ করে।"),
+                            t("টর্চলাইট কন্ট্রোল") to t("বলুন 'টর্চ জ্বালাও' অথবা 'টর্চ বন্ধ করো'।"),
+                            t("ক্যামেরা ও ছবি বিশ্লেষণ") to t("বলুন 'ক্যামেরা চালু করো' কিংবা যেকোনো ফটো ক্যাপচার করুন।"),
+                            t("ওয়াইফাই ও সেটিংস") to t("ভয়েস কমান্ডের মাধ্যমে সরাসরি সিস্টেম সেটিংস দ্রুত ওপেন হয়।")
                         ).forEach { (title, desc) ->
                             Column(
                                 modifier = Modifier
@@ -2145,7 +2129,7 @@ fun SettingsSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "☠ ZYRAXON Native Engine v3.0.0 (Zero Lag) ☠",
+                    text = "ZYRAXON Native Engine v3.0.0 (Zero Lag) ",
                     color = Glass.textSecondary,
                     fontSize = 11.sp
                 )
@@ -2246,7 +2230,7 @@ fun SessionNavPane(viewModel: ZyraxonViewModel, onDismiss: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            t("🆕 নতুন সেশন শুরু করো"),
+            t("নতুন সেশন শুরু করো"),
             color = Glass.textPrimary,
             fontSize = 13.5.sp,
             fontWeight = FontWeight.SemiBold
@@ -2269,7 +2253,7 @@ fun SessionNavPane(viewModel: ZyraxonViewModel, onDismiss: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            if (alwaysListening) t("🎙️ মাইক চালু — বন্ধ করতে চাপুন") else t("🔇 মাইক বন্ধ — চালু করতে চাপুন"),
+            if (alwaysListening) t("মাইক চালু — বন্ধ করতে চাপুন") else t("মাইক বন্ধ — চালু করতে চাপুন"),
             color = Glass.textPrimary,
             fontWeight = FontWeight.SemiBold,
             fontSize = 13.sp
@@ -2326,7 +2310,7 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
                 .padding(14.dp)
         ) {
             Text(
-                t("✨ নতুন আপডেট পাওয়া গেছে — {0}", release.tag),
+                t("নতুন আপডেট পাওয়া গেছে — {0}", release.tag),
                 color = Glass.textPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.5.sp
@@ -2377,7 +2361,7 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
         }
 
         is UpdateState.Available -> {
-            UpdateButton(t("⬇️ ডাউনলোড ও ইনস্টল"), enabled = true) {
+            UpdateButton(t("ডাউনলোড ও ইনস্টল"), enabled = true) {
                 viewModel.downloadUpdate()
             }
         }
@@ -2416,7 +2400,7 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
                 fontSize = 12.5.sp
             )
             Spacer(modifier = Modifier.height(12.dp))
-            UpdateButton(t("✅ ইনস্টল করুন"), enabled = true) {
+            UpdateButton(t("ইনস্টল করুন"), enabled = true) {
                 viewModel.installUpdate()
             }
         }
@@ -2481,7 +2465,7 @@ private fun ShizukuCard(viewModel: ZyraxonViewModel) {
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                t("⚙️ সিস্টেম অ্যাক্সেস (Shizuku)"),
+                t("সিস্টেম অ্যাক্সেস (Shizuku)"),
                 color = Glass.textPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.5.sp
@@ -2501,7 +2485,7 @@ private fun ShizukuCard(viewModel: ZyraxonViewModel) {
             }
 
             ShizukuState.NotInstalled -> {
-                UpdateButton(t("⬇️ Shizuku ইনস্টল করুন"), enabled = true) {
+                UpdateButton(t("Shizuku ইনস্টল করুন"), enabled = true) {
                     viewModel.installShizuku()
                 }
                 Spacer(Modifier.height(8.dp))
@@ -2537,7 +2521,7 @@ private fun ShizukuCard(viewModel: ZyraxonViewModel) {
                     fontSize = 11.5.sp
                 )
                 Spacer(Modifier.height(10.dp))
-                UpdateButton(t("▶️ Shizuku খুলুন"), enabled = true) { viewModel.openShizuku() }
+                UpdateButton(t("Shizuku খুলুন"), enabled = true) { viewModel.openShizuku() }
                 Spacer(Modifier.height(8.dp))
                 UpdateButton(t("চালু করেছি — আবার দেখুন"), enabled = true) { viewModel.refreshShizuku() }
             }
@@ -2549,14 +2533,14 @@ private fun ShizukuCard(viewModel: ZyraxonViewModel) {
                     fontSize = 11.5.sp
                 )
                 Spacer(Modifier.height(10.dp))
-                UpdateButton(t("🔓 অনুমতি দিন"), enabled = true) { viewModel.requestShizukuPermission() }
+                UpdateButton(t("অনুমতি দিন"), enabled = true) { viewModel.requestShizukuPermission() }
                 Spacer(Modifier.height(8.dp))
                 UpdateButton(t("আবার দেখুন"), enabled = true) { viewModel.refreshShizuku() }
             }
 
             ShizukuState.Active -> {
                 Text(
-                    t("✔ সিস্টেম অ্যাক্সেস চালু — এখন এজেন্ট সিস্টেম লেভেলে কাজ করতে পারবে।"),
+                    t("সিস্টেম অ্যাক্সেস চালু — এখন এজেন্ট সিস্টেম লেভেলে কাজ করতে পারবে।"),
                     color = Glass.greenFill,
                     fontSize = 12.5.sp
                 )
@@ -2695,7 +2679,7 @@ fun PermissionRow(
             )
         ) {
             Text(
-                if (granted) t("অনুমোদিত ✓") else t("অনুমতি দিন"),
+                if (granted) t("অনুমোদিত ") else t("অনুমতি দিন"),
                 color = if (granted) Glass.greenFill else Glass.textOnAccent,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold

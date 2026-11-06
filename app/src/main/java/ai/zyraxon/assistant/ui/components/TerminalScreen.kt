@@ -3,6 +3,8 @@ package ai.zyraxon.assistant.ui.components
 import ai.zyraxon.assistant.model.TerminalLine
 import ai.zyraxon.assistant.model.TerminalSession
 import ai.zyraxon.assistant.shell.AnsiText
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -92,7 +94,7 @@ private val TerminalFont: FontFamily by lazy {
  * What it does is exactly what a terminal does: one continuous black surface of
  * monospace text, each command echoed on a prompt line with its output directly
  * beneath it, the live prompt always the last line, a block cursor, long-press
- * to select and copy, ↑/↓ for history, and a row of the symbols a phone keyboard
+ * to select and copy, up/down for history, and a row of the symbols a phone keyboard
  * hides (`/ ~ | > $`). Lines run through the bundled busybox shell (and the
  * ZYRAXON Linux system once installed) — the assistant runs lines through the
  * very same scrollback.
@@ -103,7 +105,7 @@ private val TerminalFont: FontFamily by lazy {
  * still reads like any real terminal. No fake system claims — the only facts
  * shown are real: the working directory and the busy state.
  *
- * The ✕ returns to the main menu without killing the session, so scrollback and
+ * The close control returns to the main menu without killing the session, so scrollback and
  * working directory are still there when the user comes back. A sidebar lists the
  * open shells; each keeps its own scrollback and working directory.
  */
@@ -138,7 +140,7 @@ fun TerminalScreen(
     // Pure atmosphere: a line that changes under the cursor. Nothing here claims
     // anything about the system — the only facts shown are cwd and busy state.
     val whispers = remember {
-        listOf("☠ BLOOD MODE", "IT IS WATCHING", "YOU ARE NOT ALONE", "THE SHELL REMEMBERS", "DO NOT STOP TYPING", "IT HUNGERS FOR COMMANDS")
+        listOf("BLOOD MODE", "IT IS WATCHING", "YOU ARE NOT ALONE", "THE SHELL REMEMBERS", "DO NOT STOP TYPING", "IT HUNGERS FOR COMMANDS")
     }
     var whisper by remember { mutableStateOf(0) }
     LaunchedEffect(Unit) {
@@ -316,10 +318,10 @@ fun TerminalScreen(
             "TAB" -> complete()
             "CTRL" -> ctrl = !ctrl
             "ALT" -> alt = !alt
-            "↑" -> recall(-1)
-            "↓" -> recall(1)
-            "←" -> moveCursor(if (alt) wordBack(cur) else cur - 1)
-            "→" -> moveCursor(if (alt) wordForward(cur) else cur + 1)
+            "UP" -> recall(-1)
+            "DOWN" -> recall(1)
+            "LEFT" -> moveCursor(if (alt) wordBack(cur) else cur - 1)
+            "RIGHT" -> moveCursor(if (alt) wordForward(cur) else cur + 1)
             "HOME" -> moveCursor(0)
             "END" -> moveCursor(input.text.length)
             "PGUP" -> scope.launch { scroll.animateScrollBy(-600f) }
@@ -348,7 +350,7 @@ fun TerminalScreen(
             }
             Column(modifier = Modifier.fillMaxSize()) {
                 // Header — a real terminal's title bar: the shells as tabs, the
-                // keyboard switch, and the ✕ back to the main menu.
+                // keyboard switch, and the close control back to the main menu.
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -356,11 +358,8 @@ fun TerminalScreen(
                         .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "☰",
-                        color = TerminalText,
-                        fontSize = 15.sp,
-                        fontFamily = TerminalFont,
+                    AppIcon(
+                        AppIcons.menu, null, size = 17.dp, tint = TerminalText,
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .clickable { sidebar = !sidebar }
@@ -376,7 +375,7 @@ fun TerminalScreen(
                         for (session in sessions) {
                             val active = session.id == activeId
                             Text(
-                                text = (if (active && busy) "● " else if (active) "☠ " else "") + session.title,
+                                text = (if (active && busy) "> " else if (active) "* " else "") + session.title,
                                 color = if (active) BoneWhite else TerminalDim,
                                 fontSize = 11.5.sp,
                                 fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
@@ -408,13 +407,14 @@ fun TerminalScreen(
                         )
                     }
                     Text(
-                        text = if (kbMode == 0) "⌨" else "⌨•",
+                        text = if (kbMode == 0) "kbd" else "kbd+",
                         color = if (kbMode == 1) TerminalPrompt else TerminalDim,
-                        fontSize = 15.sp,
+                        fontSize = 11.sp,
+                        fontFamily = TerminalFont,
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .clickable { kbMode = 1 - kbMode }
-                            .padding(horizontal = 7.dp, vertical = 2.dp)
+                            .padding(horizontal = 7.dp, vertical = 4.dp)
                     )
                     Text(
                         text = "fx",
@@ -436,15 +436,12 @@ fun TerminalScreen(
                             .clickable { onClear() }
                             .padding(horizontal = 6.dp, vertical = 4.dp)
                     )
-                    Text(
-                        text = "✕",
-                        color = TerminalError,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
+                    AppIcon(
+                        AppIcons.close, null, size = 16.dp, tint = TerminalError,
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .clickable { onClose() }
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
                 Box(
@@ -501,7 +498,7 @@ fun TerminalScreen(
                     if (true) {
                         Row(verticalAlignment = Alignment.Top) {
                             Text(
-                                text = if (busy) "… " else "☠ $promptText",
+                                text = if (busy) "… " else "$promptText",
                                 color = TerminalPrompt,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Bold,
@@ -559,7 +556,7 @@ fun TerminalScreen(
                                 )
                             }
                             Text(
-                                text = "↵ UNLEASH",
+                                text = "UNLEASH",
                                 color = TerminalPrompt,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
@@ -588,7 +585,7 @@ fun TerminalScreen(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        for (k in listOf("ESC", "/", "-", "HOME", "↑", "END", "PGUP")) {
+                        for (k in listOf("ESC", "/", "-", "HOME", "UP", "END", "PGUP")) {
                             KbKey(k, false) { pressExtra(k) }
                         }
                     }
@@ -596,7 +593,7 @@ fun TerminalScreen(
                         KbKey("TAB", false) { pressExtra("TAB") }
                         KbKey("CTRL", ctrl) { pressExtra("CTRL") }
                         KbKey("ALT", alt) { pressExtra("ALT") }
-                        for (k in listOf("←", "↓", "→", "PGDN")) {
+                        for (k in listOf("LEFT", "DOWN", "RIGHT", "PGDN")) {
                             KbKey(k, false) { pressExtra(k) }
                         }
                     }
@@ -621,7 +618,7 @@ fun TerminalScreen(
                             for (k in rows[1]) KbKey(if (shift && !symbols) k.uppercase() else k, false) { typeKey(k) }
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            if (!symbols) KbKey("⇧", shift, 1.4f) { shift = !shift } else Spacer(Modifier.weight(0.4f))
+                            if (!symbols) KbKey("SHIFT", shift, 1.4f) { shift = !shift } else Spacer(Modifier.weight(0.4f))
                             for (k in rows[2]) KbKey(if (shift && !symbols) k.uppercase() else k, false) { typeKey(k) }
                             KbKey("⌫", false, 1.4f) { backspace() }
                         }
@@ -630,7 +627,7 @@ fun TerminalScreen(
                             KbKey(",", false) { typeKey(",") }
                             KbKey("space", false, 4f) { insert(" ") }
                             KbKey(".", false) { typeKey(".") }
-                            KbKey("↵", true, 1.5f) { submit() }
+                            KbKey("ENTER", true, 1.5f) { submit() }
                         }
                     }
                 }
@@ -703,7 +700,7 @@ private fun RowScope.KbKey(label: String, active: Boolean, weight: Float = 1f, o
 
 /**
  * The left sidebar: every open shell as a row, the active one highlighted, and
- * an ✕ to close each. Closing the last shell opens a fresh one instead, so the
+ * a close control on each. Closing the last shell opens a fresh one instead, so the
  * terminal is never left without somewhere to type.
  */
 @Composable
@@ -734,11 +731,8 @@ private fun TerminalSidebar(
                 fontFamily = TerminalFont
             )
             Spacer(Modifier.weight(1f))
-            Text(
-                text = "‹",
-                color = TerminalText,
-                fontSize = 15.sp,
-                fontFamily = TerminalFont,
+            AppIcon(
+                AppIcons.chevronLeft, null, size = 17.dp, tint = TerminalText,
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
                     .clickable { onCloseSidebar() }
@@ -757,7 +751,7 @@ private fun TerminalSidebar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (active) "▸ " else "  ",
+                    text = if (active) "> " else "  ",
                     color = TerminalPrompt,
                     fontSize = 11.sp,
                     fontFamily = TerminalFont
@@ -769,11 +763,8 @@ private fun TerminalSidebar(
                     fontFamily = TerminalFont,
                     modifier = Modifier.weight(1f)
                 )
-                Text(
-                    text = "✕",
-                    color = TerminalDim,
-                    fontSize = 11.sp,
-                    fontFamily = TerminalFont,
+                AppIcon(
+                    AppIcons.close, null, size = 13.dp, tint = TerminalDim,
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
                         .clickable { onCloseSession(session.id) }
@@ -783,7 +774,7 @@ private fun TerminalSidebar(
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            text = "+  new shell",
+            text = "+ new shell",
             color = TerminalPrompt,
             fontSize = 12.sp,
             fontFamily = TerminalFont,
@@ -806,7 +797,7 @@ private fun TerminalEntry(line: TerminalLine) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = TerminalPrompt, fontWeight = FontWeight.Bold)) { append("☠ zyraxon$ ") }
+                withStyle(SpanStyle(color = TerminalPrompt, fontWeight = FontWeight.Bold)) { append("zyraxon$ ") }
                 withStyle(SpanStyle(color = TerminalText)) { append(line.command) }
             },
             fontSize = 12.5.sp,
@@ -857,12 +848,12 @@ private fun TerminalEntry(line: TerminalLine) {
 }
 
 private fun welcomeBanner(): String = """
-   ███████╗██╗   ██╗██████╗  █████╗ ██╗  ██╗ ██████╗ ███╗   ██╗
-   ╚══███╔╝╚██╗ ██╔╝██╔══██╗██╔══██╗╚██╗██╔╝██╔═══██╗████╗  ██║
-     ███╔╝  ╚████╔╝ ██████╔╝███████║ ╚███╔╝ ██║   ██║██╔██╗ ██║
-    ███╔╝    ╚██╔╝  ██╔══██╗██╔══██║ ██╔██╗ ██║   ██║██║╚██╗██║
-   ███████╗   ██║   ██║  ██║██║  ██║██╔╝ ██╗╚██████╔╝██║ ╚████║
-   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
+ ███████╗██╗ ██╗██████╗ █████╗ ██╗ ██╗ ██████╗ ███╗ ██╗
+ ╚══███╔╝╚██╗ ██╔╝██╔══██╗██╔══██╗╚██╗██╔╝██╔═══██╗████╗ ██║
+ ███╔╝ ╚████╔╝ ██████╔╝███████║ ╚███╔╝ ██║ ██║██╔██╗ ██║
+ ███╔╝ ╚██╔╝ ██╔══██╗██╔══██║ ██╔██╗ ██║ ██║██║╚██╗██║
+ ███████╗ ██║ ██║ ██║██║ ██║██╔╝ ██╗╚██████╔╝██║ ╚████║
+ ╚══════╝ ╚═╝ ╚═╝ ╚═╝╚═╝ ╚═╝╚═╝ ╚═╝ ╚═════╝ ╚═╝ ╚═══╝
 """.trimIndent()
 
 private fun welcomeBody(): String = """
@@ -873,15 +864,15 @@ find, xargs, sort, xxd, base64, gzip, diff, md5sum, and the rest.
 
 git clone / git pull / git status work too (served by JGit), so you can
 fetch a repository straight into ~. Example:
-  git clone https://github.com/onelpawarai-X/zyraxon-mobile-ai
+ git clone https://github.com/onelpawarai-X/zyraxon-mobile-ai
 
 The full ZYRAXON Linux system is one command away — a complete Unix
 userland with bash, apt, git, python, node and clang, installed straight
 from the APK, so it needs no network at all:
-  linux-install
+ linux-install
 
 Working directory starts at ~ (the app's own storage). The assistant can
 run lines here too, in this same shell.
 
-Try:   busybox --list | head -40
+Try: busybox --list | head -40
 """.trimIndent()

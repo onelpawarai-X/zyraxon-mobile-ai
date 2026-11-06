@@ -139,26 +139,26 @@ class McpOAuthServer(private val expectedPath: String = "/callback") {
     }
 
     private fun page(ok: Boolean, detail: String): String = """
-        <!doctype html><html><head><meta charset="utf-8">
-        <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>ZYRAXON</title>
-        <style>
-          body{margin:0;height:100vh;display:grid;place-items:center;
-               font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-               background:#0a0c14;color:#f4f6fb}
-          .card{max-width:22rem;padding:2rem;border-radius:1.25rem;text-align:center;
-                background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14)}
-          .mark{font-size:2.5rem}
-          h1{font-size:1.1rem;margin:.75rem 0 .4rem}
-          p{opacity:.7;font-size:.85rem;line-height:1.5;margin:0}
-          .err{color:#ff9aa2}
-        </style></head><body>
-        <div class="card">
-          <div class="mark">${if (ok) "✅" else "⚠️"}</div>
-          <h1>${if (ok) "কানেক্টেড!" else "কানেক্ট করা যায়নি"}</h1>
-          <p>${if (ok) "ZYRAXON অ্যাপে ফিরে যাও — টুলগুলো এখন পাওয়া যাচ্ছে।" else detail.ifBlank { "আবার চেষ্টা করো।" }}</p>
-        </div>
-        <script>setTimeout(function(){try{window.close()}catch(e){}},1200)</script>
-        </body></html>
-    """.trimIndent()
+ <!doctype html><html><head><meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>ZYRAXON</title>
+ <style>
+ body{margin:0;height:100vh;display:grid;place-items:center;
+ font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+ background:#0a0c14;color:#f4f6fb}
+ .card{max-width:22rem;padding:2rem;border-radius:1.25rem;text-align:center;
+ background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14)}
+ .mark{font-size:2.5rem}
+ h1{font-size:1.1rem;margin:.75rem 0 .4rem}
+ p{opacity:.7;font-size:.85rem;line-height:1.5;margin:0}
+ .err{color:#ff9aa2}
+ </style></head><body>
+ <div class="card">
+ <div class="mark">${if (ok) "&#10003;" else "!"}</div>
+ <h1>${if (ok) "কানেক্টেড!" else "কানেক্ট করা যায়নি"}</h1>
+ <p>${if (ok) "ZYRAXON অ্যাপে ফিরে যাও — টুলগুলো এখন পাওয়া যাচ্ছে।" else detail.ifBlank { "আবার চেষ্টা করো।" }}</p>
+ </div>
+ <script>setTimeout(function(){try{window.close()}catch(e){}},1200)</script>
+ </body></html>
+ """.trimIndent()
 }

@@ -1,5 +1,8 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
+import androidx.compose.ui.graphics.vector.ImageVector
 import ai.zyraxon.assistant.core.safe
 
 import ai.zyraxon.assistant.i18n.t
@@ -99,7 +102,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         busy = true
         scope.launch {
             val r = withContext(Dispatchers.IO) { GitTools.run(ctx, args) { l -> log += l } }
-            log += (if (r.optBoolean("ok")) "✓ " else "✗ ") + r.safe("summary") + "\n" + (r.opt("data")?.toString().orEmpty().take(3000)) + "\n"
+            log += r.safe("summary") + "\n" + (r.opt("data")?.toString().orEmpty().take(3000)) + "\n"
             busy = false; tick++
         }
     }
@@ -107,7 +110,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         busy = true
         scope.launch {
             val r = withContext(Dispatchers.IO) { ToolRegistry.execute(ctx, name, args) }
-            log += (if (r.optBoolean("ok")) "✓ " else "✗ ") + r.safe("summary") + "\n" + (r.opt("data")?.toString().orEmpty().take(3000)) + "\n"
+            log += (if (r.optBoolean("ok")) "" else "") + r.safe("summary") + "\n" + (r.opt("data")?.toString().orEmpty().take(3000)) + "\n"
             busy = false
         }
     }
@@ -118,23 +121,23 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(t("কোড"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
             Text(root.name, color = Glass.textMuted, fontSize = 11.sp, maxLines = 1, modifier = Modifier.weight(1f))
-            Btn(if (treeOpen) "◧" else "▯") { treeOpen = !treeOpen }
-            Btn("＋") { dialog = "newfile" }
-            Btn("💾", enabled = openPath != null && text.text != saved) { save() }
+            Btn(if (treeOpen) t("লুকাও") else t("গাছ")) { treeOpen = !treeOpen }
+            Btn(t("নতুন ফাইল")) { dialog = "newfile" }
+            Btn(t("সেভ"), enabled = openPath != null && text.text != saved) { save() }
             Box {
-                Btn("⑂ Git ▾") { menu = true }
+                Btn(t("Git")) { menu = true }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }, containerColor = Glass.sheetFill(0.95f)) {
                     listOf(
-                        t("⬇ ক্লোন") to { dialog = "clone" },
-                        t("🔎 স্ক্যান") to { git(JSONObject().put("action", "scan")) },
-                        t("≡ স্ট্যাটাস") to { git(JSONObject().put("action", "status")) },
-                        t("✔ কমিট") to { dialog = "commit" },
-                        t("⬆ পুশ") to { git(JSONObject().put("action", "push")) },
-                        t("⬇ পুল") to { git(JSONObject().put("action", "pull")) },
-                        t("⑂ ব্রাঞ্চ") to { dialog = "branch" },
-                        "⇄ Pull Request" to { dialog = "pr" },
-                        "⚙ GitHub Actions" to { dialog = "actions" },
-                        t("🔑 টোকেন") to { dialog = "token" }
+                        t("ক্লোন") to { dialog = "clone" },
+                        t("স্ক্যান") to { git(JSONObject().put("action", "scan")) },
+                        t("স্ট্যাটাস") to { git(JSONObject().put("action", "status")) },
+                        t("কমিট") to { dialog = "commit" },
+                        t("পুশ") to { git(JSONObject().put("action", "push")) },
+                        t("পুল") to { git(JSONObject().put("action", "pull")) },
+                        t("ব্রাঞ্চ") to { dialog = "branch" },
+                        "Pull Request" to { dialog = "pr" },
+                        "GitHub Actions" to { dialog = "actions" },
+                        t("টোকেন") to { dialog = "token" }
                     ).forEach { (label, action) ->
                         DropdownMenuItem(text = { Text(label, color = Glass.textPrimary, fontSize = 13.sp) }, onClick = { menu = false; action() })
                     }
@@ -154,7 +157,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                                     else load(n.file.absolutePath)
                                 }.padding(start = (6 + n.depth * 10).dp, top = 5.dp, bottom = 5.dp, end = 4.dp)
                         ) {
-                            Text(if (n.file.isDirectory) (if (n.file.absolutePath in expanded) "📂 " else "📁 ") else "📄 ", fontSize = 11.sp)
+                            AppIcon(if (n.file.isDirectory) (if (n.file.absolutePath in expanded) AppIcons.folderOpen else AppIcons.folder) else AppIcons.description, null, size = 14.dp, tint = Glass.textSecondary)
                             Text(n.file.name, color = if (n.file.isDirectory) Glass.textSecondary else Glass.textPrimary, fontSize = 11.5.sp, maxLines = 1)
                         }
                     }
@@ -169,11 +172,11 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                         Spacer(Modifier.height(8.dp))
                         Text(t("কোনো ফাইল খোলা নেই"), color = Glass.textPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Text(t("বাঁ দিক থেকে ফাইল বেছে নাও, নতুন ফাইল বানাও, বা রিপো ক্লোন করো।"), color = Glass.textMuted, fontSize = 12.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(top = 4.dp, bottom = 12.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Btn(t("⬇ ক্লোন")) { dialog = "clone" }; Btn(t("＋ নতুন ফাইল")) { dialog = "newfile" } }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Btn(t("ক্লোন")) { dialog = "clone" }; Btn(t("নতুন ফাইল")) { dialog = "newfile" } }
                     }
                 } else {
                     Row(Modifier.fillMaxWidth().background(Glass.rowFill(0.25f)).padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(File(p).relativeTo(root).path + if (text.text != saved) "  ●" else "", color = Glass.textPrimary, fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.weight(1f))
+                        Text(File(p).relativeTo(root).path + if (text.text != saved) " " else "", color = Glass.textPrimary, fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.weight(1f))
                         Text(File(p).extension.uppercase().ifBlank { "TXT" }, color = Glass.pink, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                     val v = rememberScrollState(); val h = rememberScrollState()
@@ -193,7 +196,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                     Text(t("{0} লাইন · {1} অক্ষর", lineCount, text.text.length), color = Glass.textMuted, fontSize = 10.sp, modifier = Modifier.fillMaxWidth().background(Glass.rowFill(0.25f)).padding(horizontal = 10.dp, vertical = 4.dp))
                 }
                 if (log.isNotBlank() || busy) Column(Modifier.fillMaxWidth().heightIn(max = 140.dp).background(Color(0xFF0A0A0C)).padding(8.dp)) {
-                    Row { Text(if (busy) t("⏳ চলছে…") else t("লগ"), color = CodeColors.dim, fontSize = 10.sp, modifier = Modifier.weight(1f)); Text("✕", color = CodeColors.dim, modifier = Modifier.clickable { log = "" }) }
+                    Row { Text(if (busy) t("চলছে…") else t("লগ"), color = CodeColors.dim, fontSize = 10.sp, modifier = Modifier.weight(1f)); AppIcon(AppIcons.close, t("মুছো"), size = 14.dp, tint = CodeColors.dim, modifier = Modifier.clickable { log = "" }) }
                     Text(log.takeLast(2500), color = Color(0xFFB8C0CC), fontSize = 10.5.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.verticalScroll(rememberScrollState()))
                 }
             }
@@ -217,7 +220,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
             scope.launch { withContext(Dispatchers.IO) { runCatching { f.parentFile?.mkdirs(); if (!f.exists()) f.createNewFile() } }; tick++; if (f.isFile) load(f.absolutePath) }
             dialog = null
         }
-        "token" -> InputDialog(t("GitHub টোকেন"), listOf("Personal access token"), t("সেভ"), { dialog = null }, secret = true) { GitTools.setToken(ctx, it[0]); log += t("✓ টোকেন সেভ হয়েছে\n"); dialog = null }
+        "token" -> InputDialog(t("GitHub টোকেন"), listOf("Personal access token"), t("সেভ"), { dialog = null }, secret = true) { GitTools.setToken(ctx, it[0]); log += t("টোকেন সেভ হয়েছে\n"); dialog = null }
     }
 }
 

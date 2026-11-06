@@ -129,9 +129,9 @@ object RemoteTtsRequest {
 
     private fun quote(value: String): String = buildString {
         append('"')
-        for (c in value) {
-            when (c) {
-                '"' -> append("\\\"")
+ for (c in value) {
+ when (c) {
+ '"' -> append("\\\"")
                 '\\' -> append("\\\\")
                 '\n' -> append("\\n")
                 '\r' -> append("\\r")

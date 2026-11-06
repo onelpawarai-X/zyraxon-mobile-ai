@@ -142,7 +142,7 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
         if (list.isEmpty()) return ""
         val sb = StringBuilder()
         for (m in list) {
-            sb.append("• ").append(m.key).append(": ").append(m.value).append("\n")
+            sb.append("- ").append(m.key).append(": ").append(m.value).append("\n")
         }
         return sb.toString().trim()
     }
@@ -158,7 +158,7 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
     suspend fun memoryContextFor(topic: String): String {
         val list = dao.getMemoriesList()
         if (list.isEmpty()) return ""
-        val base = list.joinToString("\n") { "• ${it.key}: ${it.value}" }
+        val base = list.joinToString("\n") { "${it.key}: ${it.value}" }
         val words = topic.lowercase()
             .split(Regex("[^\\p{L}\\p{M}\\p{N}]+"))
             .filter { it.length >= 3 && it !in STOP_WORDS }
@@ -167,7 +167,7 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
         val recalled = list.filter { m ->
             val hay = (m.key + " " + m.value).lowercase()
             words.any { hay.contains(it) }
-        }.take(8).joinToString("\n") { "• ${it.key}: ${it.value}" }
+        }.take(8).joinToString("\n") { "${it.key}: ${it.value}" }
         return if (recalled.isBlank()) base else base + "\n" + recalled
     }
 
@@ -231,7 +231,7 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
             words.any { hay.contains(it) }
         }.take(limit)
         if (hits.isEmpty()) return ""
-        return hits.joinToString("\n") { "• ${it.key}: ${it.value}" }
+        return hits.joinToString("\n") { "${it.key}: ${it.value}" }
     }
 
     companion object {

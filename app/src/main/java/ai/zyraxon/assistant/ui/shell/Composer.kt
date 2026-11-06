@@ -2,6 +2,8 @@ package ai.zyraxon.assistant.ui.shell
 
 import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.model.AgentMode
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
 import ai.zyraxon.assistant.ui.theme.Glass
 import ai.zyraxon.assistant.viewmodel.ZyraxonViewModel
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -24,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
@@ -59,7 +62,7 @@ fun Composer(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                 images.take(6).forEachIndexed { i, url ->
                     Box(Modifier.size(44.dp).clip(RoundedCornerShape(10.dp)).border(1.dp, Glass.pink, RoundedCornerShape(10.dp))) {
                         coil.compose.AsyncImage(url, null, Modifier.fillMaxSize(), contentScale = androidx.compose.ui.layout.ContentScale.Crop)
-                        Text("✕", color = Color.White, fontSize = 9.sp, modifier = Modifier.align(Alignment.TopEnd).background(Color(0xAA000000)).clickable { vm.removeAttachedImage(i) }.padding(2.dp))
+                        AppIcon(AppIcons.close, t("সরাও"), size = 10.dp, tint = Color.White, modifier = Modifier.align(Alignment.TopEnd).background(Color(0xAA000000)).clickable { vm.removeAttachedImage(i) }.padding(2.dp))
                     }
                 }
                 Text(t("সব মুছো"), color = Glass.textMuted, fontSize = 11.sp, modifier = Modifier.clickable { vm.clearAttachedImage() }.padding(6.dp))
@@ -82,13 +85,16 @@ fun Composer(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         )
         Spacer(Modifier.height(6.dp))
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Pill("＋", onClick = { attach = !attach }, tag = "attach_button")
+            IconPill(AppIcons.attach, t("সংযুক্তি"), onClick = { attach = !attach }, tag = "attach_button")
             Box {
-                Pill("${mode.icon} ${mode.title} ▾", onClick = { modeMenu = true }, tag = "mode_button")
+                IconPill(AppIcons.of(mode.icon), mode.title, chevron = true, onClick = { modeMenu = true }, tag = "mode_button")
                 DropdownMenu(expanded = modeMenu, onDismissRequest = { modeMenu = false }, containerColor = Glass.sheetFill(0.9f)) {
                     AgentMode.values().forEach { m ->
                         DropdownMenuItem(
-                            text = { Column { Text("${m.icon} ${m.title}", color = Glass.textPrimary, fontWeight = FontWeight.Bold); Text(m.subtitle, color = Glass.textMuted, fontSize = 11.sp) } },
+                            text = { Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                AppIcon(AppIcons.of(m.icon), null, size = 20.dp, tint = Glass.textPrimary)
+                                Column { Text(m.title, color = Glass.textPrimary, fontWeight = FontWeight.Bold); Text(m.subtitle, color = Glass.textMuted, fontSize = 11.sp) }
+                            } },
                             onClick = { vm.setMode(m); modeMenu = false }
                         )
                     }
@@ -96,25 +102,25 @@ fun Composer(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
             }
             ComposerMicButton(isListening = micOn, onMicToggle = { vm.toggleListening() })
             Spacer(Modifier.width(6.dp))
-            Pill("🧠 ${model.name.take(16)} ▾", onClick = { modelSheet = true }, modifier = Modifier.weight(1f, fill = false), tag = "model_button")
+            IconPill(AppIcons.psychology, model.name.take(16), chevron = true, onClick = { modelSheet = true }, modifier = Modifier.weight(1f, fill = false), tag = "model_button")
             Spacer(Modifier.weight(1f))
             if (generating && text.isBlank()) {
                 Box(Modifier.size(40.dp).clip(CircleShape).background(Glass.red).clickable { vm.stopTurn() }.testTag("stop_button"), contentAlignment = Alignment.Center) {
-                    Text("■", color = Color.White, fontSize = 15.sp)
+                    AppIcon(AppIcons.stop, t("থামাও"), size = 20.dp, tint = Color.White)
                 }
             } else {
                 Box(
                     Modifier.size(40.dp).clip(CircleShape).background(if (text.isBlank() && images.isEmpty()) Glass.rowFill(0.5f) else Glass.pinkFill)
                         .clickable { if (text.isNotBlank() || images.isNotEmpty()) vm.sendMessage() }.testTag("send_button"),
                     contentAlignment = Alignment.Center
-                ) { Text("➤", color = Color.White, fontSize = 16.sp) }
+                ) { AppIcon(AppIcons.send, t("পাঠাও"), size = 19.dp, tint = Color.White) }
             }
         }
         if (attach) Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Pill(t("🖼 গ্যালারি"), { attach = false; picker.launch("*/*") })
-            Pill(t("📷 ক্যামেরা"), { attach = false; vm.captureImageFromTool("look_camera") })
-            Pill(t("📱 স্ক্রিন"), { attach = false; vm.captureImageFromTool("screen_shot") })
-            Pill(if (seeScreen) t("👁 স্ক্রিন দেখছে") else t("🙈 স্ক্রিন বন্ধ"), { vm.setAlwaysSeeScreen(!seeScreen) })
+            IconPill(AppIcons.image, t("গ্যালারি"), { attach = false; picker.launch("*/*") })
+            IconPill(AppIcons.camera, t("ক্যামেরা"), { attach = false; vm.captureImageFromTool("look_camera") })
+            IconPill(AppIcons.smartphone, t("স্ক্রিন"), { attach = false; vm.captureImageFromTool("screen_shot") })
+            IconPill(if (seeScreen) AppIcons.visibility else AppIcons.visibilityOff, if (seeScreen) t("স্ক্রিন দেখছে") else t("স্ক্রিন বন্ধ"), { vm.setAlwaysSeeScreen(!seeScreen) })
         }
     }
     if (modelSheet) ModelPicker(vm) { modelSheet = false }
@@ -133,7 +139,30 @@ fun ComposerMicButton(isListening: Boolean, onMicToggle: () -> Unit, modifier: M
             .clickable { onMicToggle() }.testTag("mic_button"),
         contentAlignment = Alignment.Center
     ) {
-        Text(if (isListening) "🎙" else "🔇", fontSize = 16.sp)
+        AppIcon(if (isListening) AppIcons.mic else AppIcons.micOff, t("মাইক"), size = 19.dp, tint = Color.White)
+    }
+}
+
+/** A pill with a vector icon and an optional chevron, for the composer's row. */
+@Composable
+private fun IconPill(
+    icon: ImageVector?,
+    label: String,
+    chevron: Boolean = false,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    tag: String = ""
+) {
+    Row(
+        modifier.clip(RoundedCornerShape(18.dp)).background(Glass.rowFill(0.35f))
+            .border(1.dp, Glass.borderSoft, RoundedCornerShape(18.dp)).clickable { onClick() }
+            .padding(horizontal = 11.dp, vertical = 8.dp).testTag(tag),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        AppIcon(icon, null, size = 16.dp, tint = Glass.textPrimary)
+        Text(label, color = Glass.textPrimary, fontSize = 12.sp, maxLines = 1, fontWeight = FontWeight.Medium)
+        if (chevron) AppIcon(AppIcons.chevronDown, null, size = 14.dp, tint = Glass.textMuted)
     }
 }
 
@@ -162,10 +191,10 @@ fun ModelPicker(vm: ZyraxonViewModel, onDismiss: () -> Unit) {
             Modifier.fillMaxWidth().heightIn(max = 560.dp).clip(RoundedCornerShape(22.dp)).background(Glass.sheetFill(0.7f))
                 .border(1.dp, Glass.border, RoundedCornerShape(22.dp)).padding(14.dp)
         ) {
-            Text(t("🧠 মডেল বেছে নাও"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
+            Text(t("মডেল বেছে নাও"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
             BasicTextField(q, { q = it }, Modifier.fillMaxWidth().padding(vertical = 8.dp).clip(RoundedCornerShape(12.dp)).background(Glass.rowFill(0.3f)).padding(10.dp),
                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 13.sp), cursorBrush = SolidColor(Glass.pink),
-                decorationBox = { inner -> if (q.isEmpty()) Text(t("🔎 খোঁজো…"), color = Glass.textMuted, fontSize = 13.sp); inner() })
+                decorationBox = { inner -> if (q.isEmpty()) Text(t("খোঁজো…"), color = Glass.textMuted, fontSize = 13.sp); inner() })
             androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 item { Chip(t("সব"), provider.isBlank()) { provider = "" } }
                 items(providers) { p -> Chip(p, provider == p) { provider = p } }
@@ -184,9 +213,9 @@ fun ModelPicker(vm: ZyraxonViewModel, onDismiss: () -> Unit) {
                     ) {
                         Column(Modifier.weight(1f)) {
                             Text(m.name, color = Glass.textPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
-                            Text(m.provider + if (m.isRealtime) t(" · 🎙 লাইভ") else "", color = Glass.textMuted, fontSize = 10.5.sp)
+                            Text(m.provider + if (m.isRealtime) t(" · লাইভ") else "", color = Glass.textMuted, fontSize = 10.5.sp)
                         }
-                        if (sel) Text("✓", color = Glass.pink, fontWeight = FontWeight.Bold)
+                        if (sel) AppIcon(AppIcons.check, t("নির্বাচিত"), size = 16.dp, tint = Glass.pink)
                     }
                 }
             }

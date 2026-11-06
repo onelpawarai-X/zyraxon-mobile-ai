@@ -372,7 +372,7 @@ class OverlayChatService : android.app.Service() {
         }
 
         val close = TextView(this).apply {
-            text = "✕"
+            text = ""
             setTextColor(Color.parseColor("#CCFFFFFF"))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
             gravity = Gravity.CENTER

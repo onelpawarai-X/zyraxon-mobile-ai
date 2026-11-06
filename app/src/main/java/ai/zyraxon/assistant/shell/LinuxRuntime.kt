@@ -185,7 +185,7 @@ object LinuxRuntime {
 
         log("Installing bundled packages…")
         val installed = installBundledDebs(context, assets, root, log)
-        log("  $installed packages ready")
+        log(" $installed packages ready")
 
         // First-run setup: HOME, TMPDIR and the guest's own tmp.
         File(root, "tmp").mkdirs()
@@ -215,7 +215,7 @@ object LinuxRuntime {
             emptyArray()
         }
         if (names.isEmpty()) {
-            log("  No packages found in the APK")
+            log(" No packages found in the APK")
             return 0
         }
         var done = 0
@@ -236,7 +236,7 @@ object LinuxRuntime {
         }
         true
     } catch (e: Exception) {
-        log("  Could not open asset ($path): ${e.message}")
+        log(" Could not open asset ($path): ${e.message}")
         false
     }
 
@@ -250,7 +250,7 @@ object LinuxRuntime {
     private fun extractDeb(context: Context, deb: File, dest: File, log: (String) -> Unit): Boolean {
         return try {
             val bb = ShellRuntime.command(context)?.absolutePath ?: run {
-                log("  busybox not found"); return false
+                log(" busybox not found"); return false
             }
             val work = File(deb.parentFile, deb.nameWithoutExtension).apply { deleteRecursively(); mkdirs() }
             val payload = readArMember(deb, "data.tar") ?: return false
@@ -277,7 +277,7 @@ object LinuxRuntime {
             work.deleteRecursively()
             true
         } catch (e: Exception) {
-            log("  Could not unpack deb (${deb.name}): ${e.message}")
+            log(" Could not unpack deb (${deb.name}): ${e.message}")
             false
         }
     }
@@ -362,12 +362,12 @@ object LinuxRuntime {
                         }
                         entry = zis.nextEntry
                     }
-                    log("  $count files")
+                    log(" $count files")
                 }
             }
             true
         } catch (e: Exception) {
-            log("  Unpack failed: ${e.message}")
+            log(" Unpack failed: ${e.message}")
             false
         }
     }
@@ -395,7 +395,7 @@ object LinuxRuntime {
             // `-f` replaces an existing link, so there is nothing to clean up first.
             if (run(bb, dest, "ln", "-sf", target, link.absolutePath)) made++
         }
-        log("  $made symlinks")
+        log(" $made symlinks")
     }
 
     /**

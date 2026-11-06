@@ -1,5 +1,8 @@
 package ai.zyraxon.assistant.ui.components
 
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
+import androidx.compose.ui.graphics.vector.ImageVector
 import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.mcp.McpAuth
 import ai.zyraxon.assistant.mcp.McpConnection
@@ -144,7 +147,7 @@ private fun McpHeader(
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("🔌", fontSize = 26.sp)
+            AppIcon(AppIcons.hub, null, size = 26.dp, tint = Glass.textPrimary)
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -179,7 +182,7 @@ private fun McpHeader(
                     .clickable(onClick = onClose)
                     .padding(horizontal = 10.dp, vertical = 8.dp)
             ) {
-                Text("✕", color = Glass.textPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                AppIcon(AppIcons.close, t("বন্ধ করো"), size = 16.dp, tint = Glass.textPrimary)
             }
         }
 
@@ -258,7 +261,7 @@ private fun McpServerCard(
                     .background(Glass.rowFill(0.40f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(server.emoji, fontSize = 22.sp)
+                AppIcon(AppIcons.of(server.emoji), null, size = 22.dp, tint = Glass.textPrimary)
             }
             Spacer(modifier = Modifier.width(11.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -309,12 +312,13 @@ private fun McpServerCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    if (expanded) t("কী কী পারবে ▾") else t("কী কী পারবে ▸"),
+                    t("কী কী পারবে"),
                     color = Glass.textSecondary,
                     fontSize = 11.5.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f)
                 )
+                AppIcon(if (expanded) AppIcons.chevronDown else AppIcons.chevronRight, null, size = 15.dp, tint = Glass.textSecondary)
                 if (isConnected) {
                     Text(
                         t("{0} টুল", connection.toolCount),
@@ -331,7 +335,7 @@ private fun McpServerCard(
                             modifier = Modifier.padding(vertical = 2.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("•", color = Glass.cyanFill, fontSize = 13.sp)
+                            AppIcon(AppIcons.check, null, size = 13.dp, tint = Glass.cyanFill)
                             Spacer(modifier = Modifier.width(7.dp))
                             Text(line, color = Glass.textSecondary, fontSize = 11.5.sp)
                         }
@@ -373,7 +377,7 @@ private fun McpServerCard(
                         Spacer(modifier = Modifier.height(4.dp))
                         connection.resources.take(8).forEach { r ->
                             Text(
-                                (if (r.template) "◈ " else "· ") + r.name,
+                                "\u00B7 " + r.name,
                                 color = Glass.textSecondary,
                                 fontSize = 10.5.sp,
                                 maxLines = 1
@@ -528,7 +532,7 @@ private fun AddCustomServerDialog(
                 Spacer(modifier = Modifier.height(9.dp))
                 McpField(name, { name = it }, t("নাম (ইচ্ছা হলে)"), "My Server")
                 Spacer(modifier = Modifier.height(9.dp))
-                McpField(token, { token = it }, t("অ্যাক্সেস টোকেন (ইচ্ছা হলে)"), "••••••", secret = true)
+                McpField(token, { token = it }, t("অ্যাক্সেস টোকেন (ইচ্ছা হলে)"), "", secret = true)
             }
         },
         confirmButton = {

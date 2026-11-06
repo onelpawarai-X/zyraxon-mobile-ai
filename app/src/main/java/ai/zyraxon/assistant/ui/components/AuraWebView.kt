@@ -158,56 +158,56 @@ internal object AuraWebViewRegistry {
  */
 internal const val AURA_BRIDGE_JS = """
 (function () {
-  if (window.ZyraxonAuraState) return;
-  var stage = document.querySelector('.aura-stage');
-  var orb = document.querySelector('.orb');
+ if (window.ZyraxonAuraState) return;
+ var stage = document.querySelector('.aura-stage');
+ var orb = document.querySelector('.orb');
 
-  // The video sits behind the WebView, so the page's own backdrop must go.
-  var s = document.createElement('style');
-  s.textContent = 'html,body{background:transparent !important;}';
-  document.head.appendChild(s);
+ // The video sits behind the WebView, so the page's own backdrop must go.
+ var s = document.createElement('style');
+ s.textContent = 'html,body{background:transparent !important;}';
+ document.head.appendChild(s);
 
-  document.body.addEventListener('click', function () {
-    if (window.ZyraxonAura && window.ZyraxonAura.onTap) window.ZyraxonAura.onTap();
-  });
+ document.body.addEventListener('click', function () {
+ if (window.ZyraxonAura && window.ZyraxonAura.onTap) window.ZyraxonAura.onTap();
+ });
 
-  // hue/size/glow/speed are written straight onto :root; aura.html does the rest.
-  window.ZyraxonAuraLook = function (hue, size, glow, speed) {
-    var r = document.documentElement;
-    if (hue !== undefined && hue !== null) r.style.setProperty('--aura-hue', String(hue));
-    if (size) r.style.setProperty('--aura-size', String(size));
-    if (glow) r.style.setProperty('--aura-glow', String(glow));
-    if (speed) r.style.setProperty('--aura-speed', String(speed));
-    if (window.ZyraxonShaders) window.ZyraxonShaders.look(hue, glow, speed);
-  };
+ // hue/size/glow/speed are written straight onto :root; aura.html does the rest.
+ window.ZyraxonAuraLook = function (hue, size, glow, speed) {
+ var r = document.documentElement;
+ if (hue !== undefined && hue !== null) r.style.setProperty('--aura-hue', String(hue));
+ if (size) r.style.setProperty('--aura-size', String(size));
+ if (glow) r.style.setProperty('--aura-glow', String(glow));
+ if (speed) r.style.setProperty('--aura-speed', String(speed));
+ if (window.ZyraxonShaders) window.ZyraxonShaders.look(hue, glow, speed);
+ };
 
-  // Which of the designed looks is showing. The attribute is what the CSS above
-  // keys off, so switching is a single attribute write with no reload.
-  window.ZyraxonAuraStyle = function (style) {
-    if (!style) return;
-    document.documentElement.setAttribute('data-aura', String(style));
-  };
+ // Which of the designed looks is showing. The attribute is what the CSS above
+ // keys off, so switching is a single attribute write with no reload.
+ window.ZyraxonAuraStyle = function (style) {
+ if (!style) return;
+ document.documentElement.setAttribute('data-aura', String(style));
+ };
 
-  // The shader mode. "none" (or empty) restores the CSS aura; the WebGL engine
-  // in aura.html removes the attribute itself if a shader cannot start, so the
-  // aura is never left blank.
-  window.ZyraxonAuraShader = function (shader) {
-    if (!window.ZyraxonShaders) return;
-    window.ZyraxonShaders.resize();
-    window.ZyraxonShaders.set(shader ? String(shader) : 'none');
-  };
+ // The shader mode. "none" (or empty) restores the CSS aura; the WebGL engine
+ // in aura.html removes the attribute itself if a shader cannot start, so the
+ // aura is never left blank.
+ window.ZyraxonAuraShader = function (shader) {
+ if (!window.ZyraxonShaders) return;
+ window.ZyraxonShaders.resize();
+ window.ZyraxonShaders.set(shader ? String(shader) : 'none');
+ };
 
-  window.ZyraxonAuraState = function (listening, speaking, level) {
-    if (window.ZyraxonShaders) window.ZyraxonShaders.state(listening, speaking, level);
-    if (!stage || !orb) return;
-    // The stage transform is owned by CSS (it carries the centring translate),
-    // so the live pulse is applied to the orb's own scale instead of fighting it.
-    var lv = level || 0;
-    var boost = listening ? 1 + lv * 0.16 : (speaking ? 1 + lv * 0.11 : 1);
-    orb.style.transform = 'scale(' + boost.toFixed(3) + ')';
-    orb.style.filter = (listening || speaking)
-      ? 'brightness(' + (1 + lv * 0.45).toFixed(3) + ')'
-      : 'brightness(1)';
-  };
+ window.ZyraxonAuraState = function (listening, speaking, level) {
+ if (window.ZyraxonShaders) window.ZyraxonShaders.state(listening, speaking, level);
+ if (!stage || !orb) return;
+ // The stage transform is owned by CSS (it carries the centring translate),
+ // so the live pulse is applied to the orb's own scale instead of fighting it.
+ var lv = level || 0;
+ var boost = listening ? 1 + lv * 0.16 : (speaking ? 1 + lv * 0.11 : 1);
+ orb.style.transform = 'scale(' + boost.toFixed(3) + ')';
+ orb.style.filter = (listening || speaking)
+ ? 'brightness(' + (1 + lv * 0.45).toFixed(3) + ')'
+ : 'brightness(1)';
+ };
 })();
 """

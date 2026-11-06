@@ -89,7 +89,7 @@ class OpenHandsBridge(
         // can be narrated to the user while they happen.
         var conv = existing?.invoke { stage ->
             onProgress(stage)
-            trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+            trySend(ZyraxonAiEngine.REASONING_PREFIX + "$stage")
         }
 
         // ---- the conversation, brought to life ----------------------------
@@ -112,7 +112,7 @@ class OpenHandsBridge(
             val revived = withContext(Dispatchers.IO) {
                 client.ensureRunning(apiKey, conv!!.id) { stage ->
                     onProgress(stage)
-                    trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+                    trySend(ZyraxonAiEngine.REASONING_PREFIX + "$stage")
                 }
             }
             if (revived != null && revived.sandboxStatus == "RUNNING") {
@@ -120,7 +120,7 @@ class OpenHandsBridge(
             } else {
                 store.unbind(chatId, keepWarm = false)
                 trySend(ZyraxonAiEngine.REASONING_PREFIX +
-                    "⏳ আগের স্যান্ডবক্স আর নেই — নতুন মেশিনে কথোপকথন আবার গড়া হচ্ছে…")
+                    "আগের স্যান্ডবক্স আর নেই — নতুন মেশিনে কথোপকথন আবার গড়া হচ্ছে…")
             }
         }
 
@@ -145,7 +145,7 @@ class OpenHandsBridge(
                     // agent's own reasoning.
                     onProgress = { stage ->
                         onProgress(stage)
-                        trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+                        trySend(ZyraxonAiEngine.REASONING_PREFIX + "$stage")
                     }
                 )
             }
@@ -212,7 +212,7 @@ class OpenHandsBridge(
                     runCatching {
                         client.sendMessage(apiKey, live.id, late.joinToString("\n\n") + screenDigest()) { stage ->
                             onProgress(stage)
-                            trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+                            trySend(ZyraxonAiEngine.REASONING_PREFIX + "$stage")
                         }
                     }
                 }
@@ -226,7 +226,7 @@ class OpenHandsBridge(
             client.events(apiKey, live, { true }, reconnect = {
                 client.ensureRunning(apiKey, live.id) { stage ->
                     onProgress(stage)
-                    trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+                    trySend(ZyraxonAiEngine.REASONING_PREFIX + "$stage")
                 }
             }, onOpen = { socketOpen.complete(Unit) }).collect { e ->
                 // Marked as delivered by the socket so the REST safety net does not
@@ -290,7 +290,7 @@ class OpenHandsBridge(
                                     client.sendMessage(
                                         apiKey, live.id, toolResult(e.name, result) + screenDigest()
                                     ) { stage ->
-                                        trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+                                        trySend(ZyraxonAiEngine.REASONING_PREFIX + "$stage")
                                     }
                                 }.isSuccess
                             }
@@ -409,7 +409,7 @@ class OpenHandsBridge(
             runCatching { client.neverConfirm(live) }
             client.sendMessage(apiKey, live.id, seed + prompt + screenDigest()) { stage ->
                 onProgress(stage)
-                trySend(ZyraxonAiEngine.REASONING_PREFIX + "⏳ $stage")
+                trySend(ZyraxonAiEngine.REASONING_PREFIX + "$stage")
             }
         }
         awaitClose {
@@ -484,7 +484,7 @@ class OpenHandsBridge(
         val summary = result.safe("summary")
             .ifBlank { result.safe("error") }
             .ifBlank { result.toString() }
-        return "\n\n`$name` ${if (ok) "✓" else "✗"} ${summary.take(200)}\n\n"
+        return "\n\n`$name` ${if (ok) "ok" else "failed"} \u2014 ${summary.take(200)}\n\n"
     }
 
     /**
@@ -498,7 +498,7 @@ class OpenHandsBridge(
         val summary = result.safe("summary").ifBlank { result.toString() }
         val data = result.opt("data")
         return buildString {
-            append("[phone tool result] ").append(name).append(" → ")
+            append("[phone tool result] ").append(name).append(" ")
             append(if (ok) "success" else "failure").append("\n")
             append(summary.take(1500))
             if (data != null && data.toString() != "null") {

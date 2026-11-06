@@ -27,7 +27,8 @@ data class AvatarSpec(
     val key: String,       // page key: ?c=<key> in assets/avatar/index.html and models/<key>.glb
     val name: String,      // Bengali first name
     val age: Int,
-    val emoji: String,
+    /** Icon key resolved through [AppIcons.of]. */
+    val icon: String,
     val female: Boolean
 ) {
     /** "মায়া · ৩২" */
@@ -36,13 +37,13 @@ data class AvatarSpec(
 
 /** Every avatar, youngest first. Names follow the person's age. */
 val AvatarRoster: List<AvatarSpec> = listOf(
-    AvatarSpec("avatar_ruhi", "ruhi", t("রুহি"), 20, "👩", true),
-    AvatarSpec("avatar_pori", "pori", t("পরী"), 22, "👱\u200D♀️", true),
-    AvatarSpec("avatar_arian", "arian", t("আরিয়ান"), 24, "🧑", false),
-    AvatarSpec("avatar_tisha", "tisha", t("তিশা"), 26, "🧢", true),
-    AvatarSpec("avatar_maya", "maya", t("মায়া"), 32, "👩\u200D💼", true),
-    AvatarSpec("avatar_arnab", "arnab", t("অর্ণব"), 35, "👨\u200D💼", false),
-    AvatarSpec("avatar_nazia", "nazia", t("নাজিয়া"), 42, "🧕", true)
+    AvatarSpec("avatar_ruhi", "ruhi", t("রুহি"), 20, "person", true),
+    AvatarSpec("avatar_pori", "pori", t("পরী"), 22, "female", true),
+    AvatarSpec("avatar_arian", "arian", t("আরিয়ান"), 24, "person", false),
+    AvatarSpec("avatar_tisha", "tisha", t("তিশা"), 26, "person", true),
+    AvatarSpec("avatar_maya", "maya", t("মায়া"), 32, "work", true),
+    AvatarSpec("avatar_arnab", "arnab", t("অর্ণব"), 35, "work", false),
+    AvatarSpec("avatar_nazia", "nazia", t("নাজিয়া"), 42, "person", true)
 )
 
 fun avatarSpec(id: String): AvatarSpec? = AvatarRoster.firstOrNull { it.id == id }

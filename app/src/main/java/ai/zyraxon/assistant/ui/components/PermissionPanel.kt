@@ -62,16 +62,16 @@ fun PermissionPanel(
 
     val rows = remember(refresh, accessibilityOn) {
         listOf(
-            PermissionRow("mic", t("🎙️ মাইক্রোফোন"), t("কথা শোনার জন্য — মাইক সবসময় চালু থাকবে"), Manifest.permission.RECORD_AUDIO),
-            PermissionRow("camera", t("📷 ক্যামেরা"), t("ছবি ও ভিডিও দেখতে"), Manifest.permission.CAMERA),
-            PermissionRow("location", t("📍 লোকেশন"), t("ম্যাপ ও স্থানীয় তথ্যের জন্য"), Manifest.permission.ACCESS_FINE_LOCATION),
-            PermissionRow("notifications", t("🔔 নোটিফিকেশন"), t("ব্যাকগ্রাউন্ডে কাজ চললে জানাতে"), Manifest.permission.POST_NOTIFICATIONS),
+            PermissionRow("mic", t("মাইক্রোফোন"), t("কথা শোনার জন্য — মাইক সবসময় চালু থাকবে"), Manifest.permission.RECORD_AUDIO),
+            PermissionRow("camera", t("ক্যামেরা"), t("ছবি ও ভিডিও দেখতে"), Manifest.permission.CAMERA),
+            PermissionRow("location", t("লোকেশন"), t("ম্যাপ ও স্থানীয় তথ্যের জন্য"), Manifest.permission.ACCESS_FINE_LOCATION),
+            PermissionRow("notifications", t("নোটিফিকেশন"), t("ব্যাকগ্রাউন্ডে কাজ চললে জানাতে"), Manifest.permission.POST_NOTIFICATIONS),
             // Android 13+ needs the three media types separately; older versions
             // only understand READ_EXTERNAL_STORAGE. Declaring the right set for
             // the running version is what makes "read my photos" actually work.
             if (Build.VERSION.SDK_INT >= 33)
                 PermissionRow(
-                    "files", t("📁 ফাইল ও মিডিয়া"), t("ছবি, ভিডিও, অডিও ও ডকুমেন্ট পড়তে"),
+                    "files", t("ফাইল ও মিডিয়া"), t("ছবি, ভিডিও, অডিও ও ডকুমেন্ট পড়তে"),
                     androidPermissions = listOf(
                         "android.permission.READ_MEDIA_IMAGES",
                         "android.permission.READ_MEDIA_VIDEO",
@@ -80,12 +80,12 @@ fun PermissionPanel(
                 )
             else
                 PermissionRow(
-                    "files", t("📁 ফাইল ও মিডিয়া"), t("ছবি, ভিডিও ও ডকুমেন্ট পড়তে"),
+                    "files", t("ফাইল ও মিডিয়া"), t("ছবি, ভিডিও ও ডকুমেন্ট পড়তে"),
                     androidPermission = Manifest.permission.READ_EXTERNAL_STORAGE
                 ),
-            PermissionRow("overlay", t("🪟 ওভারলে"), t("অন্য অ্যাপের উপরে কাজ দেখাতে"), specialAction = "overlay"),
-            PermissionRow("accessibility", t("♿ অ্যাক্সেসিবিলিটি"), t("স্ক্রিন দেখে ট্যাপ করতে — এটাই আসল অটোমেশন"), specialAction = "accessibility"),
-            PermissionRow("battery", t("🔋 ব্যাটারি অপটিমাইজেশন"), t("ব্যাকগ্রাউন্ডে থেমে না যাওয়ার জন্য"), specialAction = "battery")
+            PermissionRow("overlay", t("ওভারলে"), t("অন্য অ্যাপের উপরে কাজ দেখাতে"), specialAction = "overlay"),
+            PermissionRow("accessibility", t("অ্যাক্সেসিবিলিটি"), t("স্ক্রিন দেখে ট্যাপ করতে — এটাই আসল অটোমেশন"), specialAction = "accessibility"),
+            PermissionRow("battery", t("ব্যাটারি অপটিমাইজেশন"), t("ব্যাকগ্রাউন্ডে থেমে না যাওয়ার জন্য"), specialAction = "battery")
         )
     }
 
@@ -154,7 +154,7 @@ fun PermissionPanel(
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = if (granted) t("✓ দেওয়া আছে") else "Allow",
+                        text = if (granted) t("দেওয়া আছে") else "Allow",
                         color = if (granted) Glass.greenFill else Glass.pinkFill,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -178,7 +178,7 @@ fun PermissionPanel(
         ) {
             Column {
                 Text(
-                    t("⚠️ গুগল প্লে প্রটেক্টর"),
+                    t("গুগল প্লে প্রটেক্টর"),
                     color = Glass.amber,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -187,7 +187,7 @@ fun PermissionPanel(
                 Text(
                     t("প্লে প্রটেক্টর কোনো কাজ আটকে দিলে এআই নিজেই এই পেজে গিয়ে স্ক্রিন দেখে ধাপে ধাপে বন্ধ করে দিতে পারে — ") +
                         t("কিন্তু সিদ্ধান্তটা তোমার, তাই সে আগে জিজ্ঞেস করবে। বন্ধ করলে ফোনে কোনো অ্যাপ চেক ছাড়াই চলবে। ") +
-                        t("নিজে করতে চাইলে: Play Store → প্রোফাইল ছবি → Play Protect → ⚙️ সেটিং → ") +
+                        t("নিজে করতে চাইলে: Play Store প্রোফাইল ছবি Play Protect সেটিং ") +
                         t("\"Scan apps with Play Protect\" বন্ধ করো।"),
                     color = Glass.amber,
                     fontSize = 10.5.sp,
@@ -195,7 +195,7 @@ fun PermissionPanel(
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    t("Play Store খুলে দাও →"),
+                    t("Play Store খুলে দাও "),
                     color = Glass.amber,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,

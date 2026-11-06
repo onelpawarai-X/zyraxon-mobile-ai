@@ -135,7 +135,7 @@ fun MessageBubble(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            text = (if (expanded) "▾ " else "▸ ") + t("ভাবছে"),
+                            text = t("ভাবছে"),
                             color = Glass.textMuted,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold

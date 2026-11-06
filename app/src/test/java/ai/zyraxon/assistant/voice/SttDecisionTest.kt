@@ -60,17 +60,33 @@ class SttDecisionTest {
     }
 
     @Test
-    fun `a spoken interruption during speech is ignored, the aura tap cuts in`() {
+    fun `a spoken interruption during speech cuts the assistant off`() {
+        // The user talking over the assistant is heard as a partial; a full
+        // sentence — or a stop command — is a real interruption and stops it so
+        // the user can finish.
         for (word in listOf("একটু থামো", "থামো", "stop", "বন্ধ", "তোমার কথা শুনছি না")) {
-            for (final in listOf(true, false)) {
-                val action = SttDecision.decide(
-                    text = word,
-                    isFinal = final,
-                    speakerActive = true,
-                    repeatsReply = false
-                )
-                assertEquals("'$word' বলার সময় বক্সে বা চ্যাটে গেছে", Action.IGNORE, action)
-            }
+            val action = SttDecision.decide(
+                text = word,
+                isFinal = false,
+                speakerActive = true,
+                repeatsReply = false
+            )
+            assertEquals("'$word' বলে থামানো যায়নি", Action.INTERRUPT, action)
+        }
+    }
+
+    @Test
+    fun `a final heard while the assistant speaks is dropped, never sent`() {
+        // The assistant's own sentence comes back as a final; the user cutting in
+        // never does. A final during speech is therefore never the user's turn.
+        for (word in listOf("আমি তোমাকে ভালোবাসি", "তোমার কথা শুনছি না")) {
+            val action = SttDecision.decide(
+                text = word,
+                isFinal = true,
+                speakerActive = true,
+                repeatsReply = false
+            )
+            assertEquals("'$word' বলার সময় চ্যাটে গেছে", Action.IGNORE, action)
         }
     }
 

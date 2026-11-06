@@ -32,7 +32,7 @@ data class ToolCallRecord(
     val name: String,
     /** The command, path or url the call acted on. */
     val detail: String = "",
-    val icon: String = "🛠️",
+    val icon: String = "",
     val summary: String = "",
     /** "running", "ok" or "error". */
     val status: String = "ok",
@@ -95,10 +95,10 @@ enum class AppTab(val title: String) {
 }
 
 /** The three ways a chat can work; each has its own system prompt and its own tools. */
-enum class AgentMode(private val titleBn: String, private val subtitleBn: String, val icon: String) {
-    CHAT("চ্যাট", "শুধু কথা ও পরামর্শ", "💬"),
-    BUILD("বিল্ড", "ফুল-স্ট্যাক অ্যাপ ও ওয়েবসাইট", "🛠️"),
-    AGENT("এজেন্ট", "ফোন ও সিস্টেমের পূর্ণ অটোমেশন", "🤖");
+enum class AgentMode(private val titleBn: String, private val subtitleBn: String, /** Icon key resolved through [AppIcons.of]. */ val icon: String) {
+    CHAT("চ্যাট", "শুধু কথা ও পরামর্শ", "chat"),
+    BUILD("বিল্ড", "ফুল-স্ট্যাক অ্যাপ ও ওয়েবসাইট", "build"),
+    AGENT("এজেন্ট", "ফোন ও সিস্টেমের পূর্ণ অটোমেশন", "smartToy");
 
     val title: String get() = ai.zyraxon.assistant.i18n.t(titleBn)
     val subtitle: String get() = ai.zyraxon.assistant.i18n.t(subtitleBn)
