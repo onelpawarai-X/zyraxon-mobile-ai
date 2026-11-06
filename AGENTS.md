@@ -550,6 +550,10 @@ different piece reads strong.
 5. Business, finance and legal — company registration, grant paperwork, financial
    projections, pitch deck.
 
+**The founder is 16 now, so the runway is about two years.** Not a waiting
+period — the window to build real usage, gather installs and record the agent
+working, and to assemble the team at college. NID is issued at 18.
+
 **What to accumulate before turning 18.** The strongest evidence for a grant is not
 a polished demo but real usage: real installs, real sessions, real things the agent
 did. Screen recordings of the agent genuinely working are worth more than a scripted
