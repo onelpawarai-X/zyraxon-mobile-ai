@@ -10,57 +10,57 @@ package ai.zyraxon.assistant.voice
  * one. Keeping the queue here and releasing one piece per `onDone` is what makes
  * a mixed Bangla/English answer play from its first word to its last.
  *
- * Pure state, so the drain order is testable without a phone or a speech engine.
+ * Every field is guarded by [lock]: text is appended from the thread that is
+ * writing the answer while the engine's own callback drains the queue, and an
+ * unguarded deque mutated from both at once corrupts its links — heard as the
+ * voice stopping dead mid-answer. The drain order stays testable without a phone.
  */
 class SpeechQueue {
 
+    private val lock = Any()
     private val pending = ArrayDeque<SpeechUtterance>()
 
     /** The piece the engine is speaking right now, or null when it is idle. */
-    var activeId: String? = null
-        private set
+    private var _activeId: String? = null
+    val activeId: String? get() = synchronized(lock) { _activeId }
 
-    val size: Int get() = pending.size
+    val size: Int get() = synchronized(lock) { pending.size }
 
-    fun isEmpty(): Boolean = pending.isEmpty() && activeId == null
+    fun isEmpty(): Boolean = synchronized(lock) { pending.isEmpty() && _activeId == null }
 
     /** Appends [utterances] to the back of the queue, preserving their order. */
-    fun enqueue(utterances: List<SpeechUtterance>) {
-        pending.addAll(utterances)
-    }
+    fun enqueue(utterances: List<SpeechUtterance>) = synchronized(lock) { pending.addAll(utterances) }
 
     /**
      * The next piece to speak, or null when there is nothing to do or a piece is
      * still playing. The caller marks it spoken with [markSpoken].
      */
-    fun takeNext(): SpeechUtterance? {
-        if (activeId != null) return null
-        return pending.removeFirstOrNull()
+    fun takeNext(): SpeechUtterance? = synchronized(lock) {
+        if (_activeId != null) return null
+        pending.removeFirstOrNull()
     }
 
     /** Records that [id] is now being spoken, so no second piece starts. */
-    fun markSpoken(id: String) {
-        activeId = id
-    }
+    fun markSpoken(id: String) = synchronized(lock) { _activeId = id }
 
     /**
      * True while [id] is the piece the engine is speaking. The speech watchdog
      * uses this to tell a stalled engine from one that finished normally.
      */
-    fun isAwaiting(id: String): Boolean = activeId == id
+    fun isAwaiting(id: String): Boolean = synchronized(lock) { _activeId == id }
 
     /**
      * The piece with [id] finished. Only the piece that is actually active is
      * cleared, so a stale callback from an interrupted utterance cannot free the
      * queue early and let two voices overlap.
      */
-    fun onFinished(id: String?) {
-        if (id != null && id == activeId) activeId = null
+    fun onFinished(id: String?) = synchronized(lock) {
+        if (id != null && id == _activeId) _activeId = null
     }
 
     /** Drops everything, for when the user starts a new reply or cuts speech off. */
-    fun clear() {
+    fun clear() = synchronized(lock) {
         pending.clear()
-        activeId = null
+        _activeId = null
     }
 }

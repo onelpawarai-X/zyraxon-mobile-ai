@@ -27,6 +27,7 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
         modelName = modelName,
         createdAt = createdAt,
         durationMs = durationMs,
+        thinking = MessageMeta.thinking(meta),
         toolCalls = MessageMeta.toolCalls(meta),
         media = MessageMeta.media(meta)
     )
@@ -84,7 +85,7 @@ class ZyraxonRepository(private val dao: ZyraxonDao) {
             createdAt = msg.createdAt,
             conversationId = conversationId,
             durationMs = msg.durationMs,
-            meta = MessageMeta.encode(msg.toolCalls, msg.media)
+            meta = MessageMeta.encode(msg.toolCalls, msg.media, msg.thinking)
         )
         dao.insertMessage(entity)
         dao.touchConversation(conversationId, System.currentTimeMillis())

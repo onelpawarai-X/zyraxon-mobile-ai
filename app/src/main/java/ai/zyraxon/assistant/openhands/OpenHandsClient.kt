@@ -60,9 +60,6 @@ class OpenHandsClient(
         /** How long a first turn may wait for its sandbox before giving up. */
         private const val START_TIMEOUT_MS = 180_000L
 
-        /** How many socket reconnects a single turn tolerates before it fails. */
-        private const val MAX_RECONNECTS = 8
-
         /**
          * How long a sleeping sandbox may take to wake. Measured 13–26s live.
          *
@@ -407,7 +404,6 @@ class OpenHandsClient(
         var attempt = 0
         var socket: WebSocket? = null
         var closed = AtomicBoolean(false)
-        var lastError: Exception? = null
         // Every event carries its own id, and a duplicate delivery is dropped
         // here. Without this a repeated action would run its tool twice, and a
         // repeated token would be shown twice.
@@ -425,6 +421,10 @@ class OpenHandsClient(
                 .replaceFirst("http://", "ws://") + "/sockets/events/${current.id}"
             val listener = object : WebSocketListener() {
                 override fun onOpen(ws: WebSocket, response: Response) {
+                    // A healthy socket resets the retry count, so a long session
+                    // with occasional drops never accumulates its way to a
+                    // permanent give-up.
+                    attempt = 0
                     onOpen()
                 }
 
@@ -435,7 +435,6 @@ class OpenHandsClient(
                 }
 
                 override fun onFailure(ws: WebSocket, t: Throwable, r: Response?) {
-                    lastError = Exception(t.message ?: "socket")
                     closed.set(true)
                 }
 
@@ -473,10 +472,11 @@ class OpenHandsClient(
                 if (!keepAlive()) break
                 if (closed.get()) {
                     attempt++
-                    if (attempt > MAX_RECONNECTS) {
-                        close(lastError ?: OhApiError(0, t("লাইভ সংযোগ বিচ্ছিন্ন")))
-                        break
-                    }
+                    // The retry never gives up on its own: the turn is still
+                    // running on the cloud, and ending the flow here would end the
+                    // turn on the phone while the work went on. The backoff is
+                    // simply capped, so a long outage costs one slow retry rather
+                    // than a screen that stops listening.
                     delay(backoffMs(attempt))
                     // A sleeping sandbox takes the socket host with it, so the
                     // connection is only worth retrying against a woken one.

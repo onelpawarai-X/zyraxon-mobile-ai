@@ -11,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -317,7 +318,6 @@ class OpenHandsBridge(
             var quiet = 0
             while (isActive) {
                 delay(5000)
-                if (!keepAlive()) break
                 val events = runCatching { client.recentEvents(live) }.getOrDefault(emptyList())
                 if (events.size == last) {
                     // Nothing new for a while: a live socket still sending would

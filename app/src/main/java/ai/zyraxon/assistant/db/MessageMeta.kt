@@ -7,11 +7,14 @@ import ai.zyraxon.assistant.model.ToolCallRecord
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** The tool calls and generated media of one message, stored as one JSON text column. */
+/** The tool calls, generated media and reasoning of one message, stored as one JSON text column. */
 object MessageMeta {
-    fun encode(tools: List<ToolCallRecord>, media: List<MediaItem>): String {
-        if (tools.isEmpty() && media.isEmpty()) return ""
+    fun encode(tools: List<ToolCallRecord>, media: List<MediaItem>, thinking: String = ""): String {
+        if (tools.isEmpty() && media.isEmpty() && thinking.isBlank()) return ""
         val o = JSONObject()
+        // The reasoning is kept beside the tool calls in the same JSON column:
+        // without it a restarted app showed the answer with its thinking gone.
+        if (thinking.isNotBlank()) o.put("th", thinking.take(8000))
         o.put("tools", JSONArray().also { a ->
             tools.forEach {
                 a.put(
@@ -37,6 +40,9 @@ object MessageMeta {
             )
         }
     }
+
+    /** The reasoning that produced the message, or "" when none was recorded. */
+    fun thinking(meta: String): String = parse(meta) { o -> listOf(o.safe("th")) }.firstOrNull().orEmpty()
 
     fun media(meta: String): List<MediaItem> = parse(meta) { o ->
         val a = o.optJSONArray("media") ?: return@parse emptyList()
