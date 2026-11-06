@@ -463,3 +463,17 @@ Bengali-only font renders every Latin glyph as a box, and tesseract then reports
 * `toolIcon`'s `else` branch must return a key that exists. `AppIcons.of`
   returns null for an unknown key, so the call site falls back to `build`; a
   key with no icon is a silent blank, not a compile error.
+
+## Chat links and spoken text
+
+* A link in a reply — `[label](url)` or a bare `https://…` / `www.…` — is a real
+  link: `inline()` in `ChatBlocks.kt` marks the range with `LinkAnnotation.Url`
+  plus a listener that fires `ACTION_VIEW`. That opens the phone's real browser.
+  The in-app preview browser is for the pages the agent is *building*; a link the
+  agent hands the user is not one of those, so it never goes there.
+* `SpeechTextCleaner` drops every backticked span whole rather than unwrapping it.
+  Tool names (`run_shell`), model ids (`gpt-4o`) and file names live in backticks,
+  and unwrapping them made the speaker read "run shell ok" mid-sentence. Only
+  prose is spoken.
+* It also drops bare URLs. An engine spells a link out letter by letter, so the
+  address is removed from the spoken copy and left in the on-screen text.

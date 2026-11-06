@@ -7,6 +7,14 @@ package ai.zyraxon.assistant.voice
  */
 object SpeechTextCleaner {
 
+    /**
+     * A link, wherever it appears in a sentence. The trailing punctuation is
+     * excluded so "see https://x.dev." drops the address and keeps the period.
+     */
+    private val URL = Regex(
+        "(?i)\\b(?:https?://|www\\.)[^\\s<>\"']*[^\\s<>\"'.,;:!?)\\]}]"
+    )
+
     fun clean(text: String): String {
         var out = text
         // The engine injects a status line for every tool it runs ("`type_text`
@@ -14,8 +22,16 @@ object SpeechTextCleaner {
         // It is shown, never spoken: reading tool names aloud is noise.
         out = out.replace(Regex("(?m)^[ \\t]*\\u2699\\uFE0F?.*$"), " ")
         out = out.replace(Regex("```[\\s\\S]*?```"), " ")
-        out = out.replace(Regex("`([^`]*)`"), "$1")
+        // Backticked spans are code — tool names (`open_app`, `run_shell`), file
+        // names, flags. Unwrapping them made the speaker read the tool aloud, so
+        // the whole span is dropped instead. Only prose is ever spoken.
+        out = out.replace(Regex("`[^`]*`"), " ")
         out = out.replace(Regex("!?\\[[^\\]]*\\]\\([^)]*\\)"), " ")
+        // A raw URL is not speech. The engine spells it out letter by letter
+        // ("h-t-t-p-s colon slash slash…"), which is minutes of noise in the
+        // middle of an answer, so every link is dropped before the text is
+        // spoken. The user still sees it: only this copy is cleaned.
+        out = out.replace(URL, " ")
         out = out.replace(Regex("[#*_>~|]"), "")
         out = out.replace(Regex("(?m)^[ \\t]*[-\\u2022][ \\t]+"), "")
         out = out.replace(Regex("[\\u200B-\\u200D\\uFE0F]"), "")

@@ -3,6 +3,8 @@ package ai.zyraxon.assistant.ui.shell
 import ai.zyraxon.assistant.ui.icons.AppIcon
 import ai.zyraxon.assistant.ui.icons.AppIcons
 import ai.zyraxon.assistant.ui.theme.Glass
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,7 +22,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.LinkInteractionListener
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -248,37 +253,71 @@ private fun parseBlocks(src: String): List<Block> {
  return out
 }
 
-private fun inline(text: String, color: Color, codeBg: Color): AnnotatedString = buildAnnotatedString {
- var i = 0
- val n = text.length
- while (i < n) {
- when {
- text.startsWith("**", i) -> {
- val e = text.indexOf("**", i + 2)
- if (e > 0) { withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(text.substring(i + 2, e)) }; i = e + 2 }
- else { append(text[i]); i++ }
- }
- text[i] == '`' -> {
- val e = text.indexOf('`', i + 1)
- if (e > 0) {
- withStyle(SpanStyle(fontFamily = FontFamily.Monospace, background = codeBg, color = color)) { append(" " + text.substring(i + 1, e) + " ") }
- i = e + 1
- } else { append(text[i]); i++ }
- }
- text[i] == '*' && i + 1 < n && text[i + 1] != ' ' -> {
- val e = text.indexOf('*', i + 1)
- if (e > 0) { withStyle(SpanStyle(fontStyle = FontStyle.Italic)) { append(text.substring(i + 1, e)) }; i = e + 1 }
- else { append(text[i]); i++ }
- }
- text[i] == '[' -> {
- val mid = text.indexOf("](", i)
+private val BARE_URL = Regex("(?i)\\b(?:https?://|www\\.)[^\\s<>\"']+")
+
+/** A URL starting exactly at [index], or null. Trailing sentence punctuation is dropped. */
+private fun urlAt(text: String, index: Int): Pair<String, String>? {
+    val m = BARE_URL.find(text, index) ?: return null
+    if (m.range.first != index) return null
+    var raw = m.value
+    while (raw.isNotEmpty() && raw.last() in ".,;:!?)]}") raw = raw.dropLast(1)
+    if (raw.length <= 8) return null
+    val href = if (raw.startsWith("www.", ignoreCase = true)) "https://$raw" else raw
+    return raw to href
+}
+
+/**
+ * Appends [label] and marks that range as a link to [href]. The listener is left
+ * null so Compose's own default applies: a tap goes to the platform, which opens
+ * the address in the phone's real browser.
+ */
+private fun AnnotatedString.Builder.appendLink(label: String, href: String, onOpen: (String) -> Unit) {
+    val style = SpanStyle(color = Glass.pink, fontWeight = FontWeight.SemiBold)
+    val start = length
+    withStyle(style) { append(label) }
+    val listener = object : LinkInteractionListener {
+        override fun onClick(link: LinkAnnotation) = onOpen(href)
+    }
+    addLink(LinkAnnotation.Url(href, TextLinkStyles(style), listener), start, length)
+}
+
+private fun inline(text: String, color: Color, codeBg: Color, onOpen: (String) -> Unit): AnnotatedString = buildAnnotatedString {
+    var i = 0
+    val n = text.length
+    while (i < n) {
+        when {
+            text.startsWith("**", i) -> {
+                val e = text.indexOf("**", i + 2)
+                if (e > 0) { withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(text.substring(i + 2, e)) }; i = e + 2 }
+                else { append(text[i]); i++ }
+            }
+            text[i] == '`' -> {
+                val e = text.indexOf('`', i + 1)
+                if (e > 0) {
+                    withStyle(SpanStyle(fontFamily = FontFamily.Monospace, background = codeBg, color = color)) { append(" " + text.substring(i + 1, e) + " ") }
+                    i = e + 1
+                } else { append(text[i]); i++ }
+            }
+            text[i] == '*' && i + 1 < n && text[i + 1] != ' ' -> {
+                val e = text.indexOf('*', i + 1)
+                if (e > 0) { withStyle(SpanStyle(fontStyle = FontStyle.Italic)) { append(text.substring(i + 1, e)) }; i = e + 1 }
+                else { append(text[i]); i++ }
+            }
+            text[i] == '[' -> {
+                val mid = text.indexOf("](", i)
                 val end = if (mid > 0) text.indexOf(')', mid) else -1
                 if (mid > 0 && end > 0) {
-                    withStyle(SpanStyle(color = Glass.pink, fontWeight = FontWeight.SemiBold)) { append(text.substring(i + 1, mid)) }
+                    appendLink(text.substring(i + 1, mid), text.substring(mid + 2, end), onOpen)
                     i = end + 1
                 } else { append(text[i]); i++ }
             }
-            else -> { append(text[i]); i++ }
+            else -> {
+                // A bare address the model wrote ("https://…", "www.…") is a link
+                // too, not plain text. It is left as written and made tappable.
+                val link = urlAt(text, i)
+                if (link != null) { appendLink(link.first, link.second, onOpen); i += link.first.length }
+                else { append(text[i]); i++ }
+            }
         }
     }
 }
@@ -286,25 +325,41 @@ private fun inline(text: String, color: Color, codeBg: Color): AnnotatedString =
 /** Renders model text: paragraphs, headings, lists, quotes, inline code and fenced code boxes. */
 @Composable
 fun MarkdownText(text: String, color: Color = Glass.textPrimary, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    // A tap opens the address in the phone's real browser (Chrome, or whatever
+    // the user set as default) — never in the app's own preview, which is for the
+    // pages the agent is building. NEW_TASK because the chat can be drawn from the
+    // overlay service, where there is no activity to attach the intent to.
+    val onOpen: (String) -> Unit = remember(context) {
+        { href ->
+            try {
+                context.startActivity(
+                    Intent(Intent.ACTION_VIEW, Uri.parse(href))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            } catch (_: Exception) {
+            }
+        }
+    }
     val blocks = remember(text) { parseBlocks(text) }
     val codeBg = if (Glass.isLight) Color(0x14000000) else Color(0x33FFFFFF)
     Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         for (b in blocks) when (b) {
             is Block.Code -> CodeBox(b.text, b.lang, live = b.open, maxHeight = 320)
             is Block.Heading -> Text(
-                inline(b.text, color, codeBg), color = color, fontWeight = FontWeight.Bold,
+                inline(b.text, color, codeBg, onOpen), color = color, fontWeight = FontWeight.Bold,
                 fontSize = when (b.level) { 1 -> 18.sp; 2 -> 16.sp; else -> 14.5.sp }
             )
             is Block.Bullet -> Row {
                 Text(b.marker, color = Glass.pink, fontSize = 14.sp, modifier = Modifier.width(22.dp))
-                Text(inline(b.text, color, codeBg), color = color, fontSize = 14.sp, lineHeight = 20.sp)
+                Text(inline(b.text, color, codeBg, onOpen), color = color, fontSize = 14.sp, lineHeight = 20.sp)
             }
             is Block.Quote -> Row(Modifier.height(IntrinsicSize.Min)) {
                 Box(Modifier.width(3.dp).fillMaxHeight().background(Glass.pink))
-                Text(inline(b.text, Glass.textSecondary, codeBg), color = Glass.textSecondary, fontSize = 13.5.sp,
+                Text(inline(b.text, Glass.textSecondary, codeBg, onOpen), color = Glass.textSecondary, fontSize = 13.5.sp,
                     modifier = Modifier.padding(start = 8.dp))
             }
-            is Block.Para -> Text(inline(b.text, color, codeBg), color = color, fontSize = 14.sp, lineHeight = 21.sp)
+            is Block.Para -> Text(inline(b.text, color, codeBg, onOpen), color = color, fontSize = 14.sp, lineHeight = 21.sp)
             Block.Rule -> Box(Modifier.fillMaxWidth().height(1.dp).background(Glass.borderSoft))
         }
     }
