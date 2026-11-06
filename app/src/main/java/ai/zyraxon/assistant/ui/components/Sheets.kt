@@ -58,6 +58,10 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.Save
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -574,6 +578,8 @@ fun ModelListPane(
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Glass.cyanFill)
                                 ) {
+                                    Icon(Icons.Rounded.Check, contentDescription = null, tint = Glass.textOnAccent, modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(6.dp))
                                     Text(t("যুক্ত ও নির্বাচন করুন"), color = Glass.textOnAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
@@ -870,6 +876,45 @@ fun SettingsSheet(
 
                     "perms" -> {
                         val activity = context as? ai.zyraxon.assistant.MainActivity
+                        // App lock: the phone's own credential guards the app.
+                        // The switch refuses to stay on when the phone has no PIN,
+                        // pattern or password to ask for, because Android would then
+                        // have nothing to challenge and the lock would be a curtain
+                        // that never opens.
+                        val appLock by viewModel.appLockEnabled.collectAsState()
+                        val keyguard = context.getSystemService(android.content.Context.KEYGUARD_SERVICE)
+                            as? android.app.KeyguardManager
+                        val hasCredential = keyguard?.isDeviceSecure == true
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(BloodRowBrush)
+                                .border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(t("অ্যাপ লক"), color = Glass.textPrimary, fontSize = 13.sp)
+                                Text(
+                                    if (hasCredential) t("অ্যাপে ফিরলে ফোনের পিন, প্যাটার্ন বা ফিঙ্গারপ্রিন্ট চাইবে।")
+                                    else t("ফোনে কোনো পিন, প্যাটার্ন বা পাসওয়ার্ড নেই — আগে ফোনে লক সেট করুন।"),
+                                    color = Glass.textMuted,
+                                    fontSize = 11.sp
+                                )
+                            }
+                            Switch(
+                                checked = appLock,
+                                onCheckedChange = { want ->
+                                    if (!want) viewModel.setAppLockEnabled(false)
+                                    else if (hasCredential) viewModel.setAppLockEnabled(true)
+                                    else activity?.openSpecialSetting("security")
+                                },
+                                colors = SwitchDefaults.colors(checkedThumbColor = Glass.textPrimary, checkedTrackColor = Glass.cyanFill)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
                         PermissionPanel(
                             context = context,
                             accessibilityOn = systemStatus.accessibilityConnected,
@@ -1839,6 +1884,35 @@ fun SettingsSheet(
                         ) {
                             viewModel.saveProviderKey("zyraxon_apex", editApexKey)
                         }
+                        // The same route to the key as the first-run prompt: the site
+                        // opens in one tap, and the steps say where the key lives.
+                        // Without it a returning user who lost the key has nowhere
+                        // to look inside the app.
+                        Text(
+                            t("নিচের বোতামে চাপ দিয়ে app.all-hands.dev সাইটে যান। সেখানে একাউন্ট খুলে সেটিংসের API Key / Access Token অংশ থেকে নতুন কী তৈরি করে এখানে বসান।"),
+                            color = Glass.textMuted, fontSize = 11.5.sp, lineHeight = 17.sp
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        OutlinedButton(
+                            onClick = {
+                                try {
+                                    context.startActivity(
+                                        android.content.Intent(
+                                            android.content.Intent.ACTION_VIEW,
+                                            android.net.Uri.parse("https://app.all-hands.dev")
+                                        ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    )
+                                } catch (_: Exception) {
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Glass.cyanFill)
+                        ) {
+                            Icon(Icons.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text(t("ওয়েবসাইট খুলুন — app.all-hands.dev"), fontSize = 12.sp)
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         // The ZYRAXON line is the user's own provider. Its catalogue
                         // is public, so its ten models load before any key is set.
@@ -1918,12 +1992,16 @@ fun SettingsSheet(
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(containerColor = Glass.cyanFill)
                             ) {
+                                Icon(Icons.Rounded.Save, contentDescription = null, tint = Glass.textOnAccent, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(6.dp))
                                 Text(t("টোকেন সেভ করুন"), color = Glass.textOnAccent, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
                             OutlinedButton(
                                 onClick = { viewModel.clearGithubToken(); editGithubToken = "" },
                                 modifier = Modifier.weight(1f)
                             ) {
+                                Icon(Icons.Rounded.Delete, contentDescription = null, tint = Color.Red, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(6.dp))
                                 Text(t("টোকেন মুছুন"), color = Color.Red, fontSize = 12.sp)
                             }
                         }
@@ -2078,12 +2156,16 @@ fun SettingsSheet(
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(containerColor = Glass.pinkFill)
                             ) {
+                                Icon(Icons.Rounded.Save, contentDescription = null, tint = Glass.textOnAccent, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(6.dp))
                                 Text(t("মেমরিতে সেভ করুন"), color = Glass.textOnAccent, fontSize = 11.5.sp, fontWeight = FontWeight.Bold)
                             }
                             OutlinedButton(
                                 onClick = { viewModel.clearMemories() },
                                 modifier = Modifier.weight(1f)
                             ) {
+                                Icon(Icons.Rounded.Delete, contentDescription = null, tint = Color.Red, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(6.dp))
                                 Text(t("সব মেমরি মুছুন"), color = Color.Red, fontSize = 11.5.sp)
                             }
                         }
@@ -2331,7 +2413,7 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
         UpdateState.Idle -> {
             Text(t("নতুন আপডেট আছে কি না জানতে চেক করুন।"), color = Glass.textSecondary, fontSize = 12.sp)
             Spacer(modifier = Modifier.height(12.dp))
-            UpdateButton(t("আপডেট চেক করুন"), enabled = true) {
+            UpdateButton(t("আপডেট চেক করুন"), enabled = true, icon = Icons.Rounded.Refresh) {
                 viewModel.checkForUpdates()
             }
         }
@@ -2355,13 +2437,13 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
                 Text(t("আপনি সর্বশেষ ভার্সনই ব্যবহার করছেন (v{0})।", s.installed), color = Glass.greenFill, fontSize = 12.5.sp)
             }
             Spacer(modifier = Modifier.height(12.dp))
-            UpdateButton(t("আবার চেক করুন"), enabled = true) {
+            UpdateButton(t("আবার চেক করুন"), enabled = true, icon = Icons.Rounded.Refresh) {
                 viewModel.checkForUpdates()
             }
         }
 
         is UpdateState.Available -> {
-            UpdateButton(t("ডাউনলোড ও ইনস্টল"), enabled = true) {
+            UpdateButton(t("ডাউনলোড ও ইনস্টল"), enabled = true, icon = Icons.Rounded.Download) {
                 viewModel.downloadUpdate()
             }
         }
@@ -2373,7 +2455,7 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
                 fontSize = 12.sp
             )
             Spacer(modifier = Modifier.height(12.dp))
-            UpdateButton(t("আবার চেক করুন"), enabled = true) {
+            UpdateButton(t("আবার চেক করুন"), enabled = true, icon = Icons.Rounded.Refresh) {
                 viewModel.checkForUpdates()
             }
         }
@@ -2400,7 +2482,7 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
                 fontSize = 12.5.sp
             )
             Spacer(modifier = Modifier.height(12.dp))
-            UpdateButton(t("ইনস্টল করুন"), enabled = true) {
+            UpdateButton(t("ইনস্টল করুন"), enabled = true, icon = Icons.Rounded.Download) {
                 viewModel.installUpdate()
             }
         }
@@ -2412,11 +2494,11 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
                 fontSize = 12.sp
             )
             Spacer(modifier = Modifier.height(12.dp))
-            UpdateButton(t("অনুমতি সেটিংস খুলুন"), enabled = true) {
+            UpdateButton(t("অনুমতি সেটিংস খুলুন"), enabled = true, icon = Icons.Rounded.Settings) {
                 viewModel.openInstallPermission()
             }
             Spacer(modifier = Modifier.height(8.dp))
-            UpdateButton(t("আবার ইনস্টল চেষ্টা করুন"), enabled = true) {
+            UpdateButton(t("আবার ইনস্টল চেষ্টা করুন"), enabled = true, icon = Icons.Rounded.Refresh) {
                 viewModel.installUpdate()
             }
         }
@@ -2424,7 +2506,7 @@ fun UpdatePane(viewModel: ZyraxonViewModel) {
         is UpdateState.Failed -> {
             Text(t(s.message), color = Color(0xFFFF6B6B), fontSize = 12.sp)
             Spacer(modifier = Modifier.height(12.dp))
-            UpdateButton(t("আবার চেষ্টা করুন"), enabled = true) {
+            UpdateButton(t("আবার চেষ্টা করুন"), enabled = true, icon = Icons.Rounded.Refresh) {
                 viewModel.checkForUpdates()
             }
         }
@@ -2481,11 +2563,11 @@ private fun ShizukuCard(viewModel: ZyraxonViewModel) {
 
         when (val s = state) {
             ShizukuState.Unknown -> {
-                UpdateButton(t("অবস্থা দেখুন"), enabled = true) { viewModel.refreshShizuku() }
+                UpdateButton(t("অবস্থা দেখুন"), enabled = true, icon = Icons.Rounded.Search) { viewModel.refreshShizuku() }
             }
 
             ShizukuState.NotInstalled -> {
-                UpdateButton(t("Shizuku ইনস্টল করুন"), enabled = true) {
+                UpdateButton(t("Shizuku ইনস্টল করুন"), enabled = true, icon = Icons.Rounded.Download) {
                     viewModel.installShizuku()
                 }
                 Spacer(Modifier.height(8.dp))
@@ -2511,7 +2593,7 @@ private fun ShizukuCard(viewModel: ZyraxonViewModel) {
                     )
                 }
                 Spacer(Modifier.height(8.dp))
-                UpdateButton(t("আবার দেখুন"), enabled = true) { viewModel.refreshShizuku() }
+                UpdateButton(t("আবার দেখুন"), enabled = true, icon = Icons.Rounded.Refresh) { viewModel.refreshShizuku() }
             }
 
             ShizukuState.InstalledNotRunning -> {
@@ -2521,9 +2603,9 @@ private fun ShizukuCard(viewModel: ZyraxonViewModel) {
                     fontSize = 11.5.sp
                 )
                 Spacer(Modifier.height(10.dp))
-                UpdateButton(t("Shizuku খুলুন"), enabled = true) { viewModel.openShizuku() }
+                UpdateButton(t("Shizuku খুলুন"), enabled = true, icon = Icons.Rounded.OpenInNew) { viewModel.openShizuku() }
                 Spacer(Modifier.height(8.dp))
-                UpdateButton(t("চালু করেছি — আবার দেখুন"), enabled = true) { viewModel.refreshShizuku() }
+                UpdateButton(t("চালু করেছি — আবার দেখুন"), enabled = true, icon = Icons.Rounded.Refresh) { viewModel.refreshShizuku() }
             }
 
             ShizukuState.NeedsPermission -> {
@@ -2533,9 +2615,9 @@ private fun ShizukuCard(viewModel: ZyraxonViewModel) {
                     fontSize = 11.5.sp
                 )
                 Spacer(Modifier.height(10.dp))
-                UpdateButton(t("অনুমতি দিন"), enabled = true) { viewModel.requestShizukuPermission() }
+                UpdateButton(t("অনুমতি দিন"), enabled = true, icon = Icons.Rounded.Check) { viewModel.requestShizukuPermission() }
                 Spacer(Modifier.height(8.dp))
-                UpdateButton(t("আবার দেখুন"), enabled = true) { viewModel.refreshShizuku() }
+                UpdateButton(t("আবার দেখুন"), enabled = true, icon = Icons.Rounded.Refresh) { viewModel.refreshShizuku() }
             }
 
             ShizukuState.Active -> {
@@ -2545,13 +2627,13 @@ private fun ShizukuCard(viewModel: ZyraxonViewModel) {
                     fontSize = 12.5.sp
                 )
                 Spacer(Modifier.height(8.dp))
-                UpdateButton(t("আবার দেখুন"), enabled = true) { viewModel.refreshShizuku() }
+                UpdateButton(t("আবার দেখুন"), enabled = true, icon = Icons.Rounded.Refresh) { viewModel.refreshShizuku() }
             }
 
             is ShizukuState.Failed -> {
                 Text(t(s.message), color = Color(0xFFFF6B6B), fontSize = 12.sp)
                 Spacer(Modifier.height(10.dp))
-                UpdateButton(t("আবার চেষ্টা করুন"), enabled = true) { viewModel.refreshShizuku() }
+                UpdateButton(t("আবার চেষ্টা করুন"), enabled = true, icon = Icons.Rounded.Refresh) { viewModel.refreshShizuku() }
             }
         }
 
@@ -2565,7 +2647,7 @@ private fun ShizukuCard(viewModel: ZyraxonViewModel) {
 }
 
 @Composable
-private fun UpdateButton(label: String, enabled: Boolean, onClick: () -> Unit) {
+private fun UpdateButton(label: String, enabled: Boolean, icon: ImageVector? = null, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         enabled = enabled,
@@ -2576,6 +2658,10 @@ private fun UpdateButton(label: String, enabled: Boolean, onClick: () -> Unit) {
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
+        if (icon != null) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(6.dp))
+        }
         Text(label, fontWeight = FontWeight.Bold, fontSize = 13.sp)
     }
 }
@@ -2633,6 +2719,8 @@ fun ProviderKeyRow(
                         strokeWidth = 2.dp
                     )
                 } else {
+                    AppIcon(AppIcons.save, null, size = 14.dp, tint = Glass.textOnAccent)
+                    Spacer(Modifier.width(5.dp))
                     Text(t("সেভ"), color = Glass.textOnAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
@@ -2678,6 +2766,12 @@ fun PermissionRow(
                 containerColor = if (granted) Glass.greenFill else Glass.pinkFill
             )
         ) {
+            AppIcon(
+                if (granted) AppIcons.check else AppIcons.shield,
+                null, size = 13.dp,
+                tint = if (granted) Glass.greenFill else Glass.textOnAccent
+            )
+            Spacer(Modifier.width(5.dp))
             Text(
                 if (granted) t("অনুমোদিত ") else t("অনুমতি দিন"),
                 color = if (granted) Glass.greenFill else Glass.textOnAccent,

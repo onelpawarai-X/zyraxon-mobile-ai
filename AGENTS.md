@@ -62,6 +62,29 @@ Run: `gradle :app:testDebugUnitTest` (≈326 tests) and `gradle :app:assembleDeb
 
 GitHub Actions `.github/workflows/release.yml` ("Build & Release APK") builds the signed release on a `v*` tag push (or manual dispatch) and attaches `ZYRAXON-vX.Y.Z.apk` + `.sha256`. Bump `versionCode`/`versionName` in `app/build.gradle.kts`, commit, push `main`, push the tag. The release is created with a default title/body — edit it afterwards with `gh release edit` for a proper title and notes.
 
+## UI strings and translation
+
+- UI text is the **Bengali source string as the key**. `t("...")` looks the key up in
+  `assets/i18n/<code>.json`; `bn.json` is the identity map.
+- After adding or rewording any `t("...")` literal, run `python3 tools/translate_missing.py`.
+  It unions the Kotlin literals with `tools/runtime_keys.json`, fills only the gaps, and
+  is cheap to re-run. Two passes are often needed: the endpoint returns the source text
+  under load, and a value equal to its Bengali key counts as missing, so the second run
+  repairs it.
+- **`assets/i18n/languages.json` is the language picker's own file, not a stray table.**
+  Deleting it makes `LocalizationTest` fail on "the picker lists every language". It must
+  list exactly the codes that have a table.
+- `LocalizationTest` enforces the contract: every non-`as` language must differ from the
+  Bengali source for every Bengali key. Check before pushing:
+  `python3 -c "import json,glob,re;b=re.compile('[\u0980-\u09FF]');print([f for f in glob.glob('app/src/main/assets/i18n/*.json') if (lambda d:[k for k,v in d.items() if b.search(k) and v==k])(json.load(open(f,encoding='utf-8')))])"`
+
+## Buttons carry icons
+
+Every button that has a label draws an icon beside it, through `AppIcon(AppIcons.x, …)`
+rather than raw `Icon(...)`, so an unknown key renders nothing instead of crashing.
+`AppIcons.kt` holds the registry (`val x = Icons.Rounded.X` plus a `put(x, "key", "emoji")`).
+Add the key in both places, or the emoji fallback path and the vector path disagree.
+
 ## Decisions locked by the user
 
 - Native Compose only. No WebView JS app.
@@ -428,3 +451,15 @@ Bengali-only font renders every Latin glyph as a box, and tesseract then reports
   no values by default. `app/build.gradle.kts` now sets
   `exceptionFormat = FULL`, so a failure prints what it actually saw. Do not
   remove it: without it every diagnosis is a guess.
+
+## Icon traps
+
+* A tool row's icon is an `AppIcons` **registry key**, resolved by the UI through
+  `AppIcons.of`. It used to hold an emoji, and when the emoji were stripped from
+  the UI the map was emptied along with them: every tool card then drew a blank
+  where its icon belongs, and no test caught it because an empty string is a
+  valid string. When removing a glyph, put the vector key in its place in the
+  same change.
+* `toolIcon`'s `else` branch must return a key that exists. `AppIcons.of`
+  returns null for an unknown key, so the call site falls back to `build`; a
+  key with no icon is a silent blank, not a compile error.

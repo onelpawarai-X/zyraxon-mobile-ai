@@ -14,6 +14,7 @@ import ai.zyraxon.assistant.shell.ShizukuState
 import ai.zyraxon.assistant.shell.SystemShell
 import ai.zyraxon.assistant.shell.LinuxRuntime
 import ai.zyraxon.assistant.shell.ScheduledCommandReceiver
+import ai.zyraxon.assistant.tools.PreviewBridge
 import ai.zyraxon.assistant.update.Updater
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -2052,10 +2053,12 @@ object ToolRegistry {
         if (!tunnel) {
             val served = startHttpServer(siteDir, 8791)
             if (served != null) {
-                // The finished site is OPENED, on the phone's own loopback address,
-                // instead of handing back a 192.168.x.x link nobody can use here.
+                // The finished site is OPENED in the app's own preview, on the
+                // phone's loopback address, instead of handing back a 192.168.x.x
+                // link nobody can use here — and instead of launching Chrome over
+                // the assistant.
                 val local = "http://127.0.0.1:8791/"
-                launchUrl(context, JSONObject().put("url", local))
+                showInPreview(context, local)
                 return ok(JSONObject().put("url", local).put("lan", served).put("dir", siteDir.absolutePath),
                     "সাইট খুলে দিয়েছি: $local (একই ওয়াই-ফাইয়ের অন্য ডিভাইসে: $served)। পাবলিক লিংক লাগলে publish_cloudflare ব্যবহার করো।")
             }
@@ -2095,18 +2098,33 @@ object ToolRegistry {
             proc.destroy()
         }
         if (publicUrl == null) {
-            // No public tunnel this time. The site is still real and is OPENED on
-            // the phone itself; the tool result says exactly what to try next.
+            // No public tunnel this time. The site is still real and is OPENED in
+            // the app's own preview; the tool result says exactly what to try next.
             if (served != null) {
-                launchUrl(context, JSONObject().put("url", local))
+                showInPreview(context, local)
                 return ok(JSONObject().put("url", local).put("lan", served).put("dir", siteDir.absolutePath),
                     "টানেল এবার ওঠেনি, তবে সাইট খুলে দিয়েছি: $local। এখন terminal_run/run_shell দিয়ে নিজে cloudflared চালাও বা publish_github (Pages) ব্যবহার করো।")
             }
             return err("tunnel-failed", "পাবলিক লিংক তৈরি হয়নি")
         }
-        launchUrl(context, JSONObject().put("url", publicUrl))
+        // The public link is opened in the app's own preview too. A tunnel is not
+        // ready the instant cloudflared prints its hostname — the edge still has to
+        // route it — so the preview is offered first and the external browser is
+        // kept as a fallback the user can reach from the preview's own address bar.
+        showInPreview(context, publicUrl)
         return ok(JSONObject().put("url", publicUrl).put("dir", siteDir.absolutePath),
-            "সাইটটি লাইভ: $publicUrl (ব্রাউজারে খুলে দিয়েছি)")
+            "সাইটটি লাইভ: $publicUrl (অ্যাপের প্রিভিউতে খুলে দিয়েছি)")
+    }
+
+    /**
+     * Shows a just-published site in the app's own preview instead of launching an
+     * external browser over the assistant. [PreviewBridge] is the app's real
+     * WebView, so the page the agent built stays on screen and the agent can keep
+     * inspecting it through the `preview` tool.
+     */
+    private fun showInPreview(context: Context, url: String) {
+        PreviewBridge.open(context, url)
+        PreviewBridge.offerPublishedSite(url)
     }
 
     // ---------------------------------------------------------------- channels

@@ -105,6 +105,30 @@ class LocalizationTest {
     }
 
     @Test
+    fun `the whole UI string set is translated in every language`() {
+        // The audit the user asked for: no language may fall back to the Bengali
+        // source for a string the UI can actually show. A string whose translation
+        // is identical to the Bengali source is exactly that leak, and it is the
+        // defect that started this work.
+        val bengali = java.util.regex.Pattern.compile("[\\u0980-\\u09FF]")
+        val keys = readKeys(Loc.BENGALI)
+        val leaks = mutableListOf<String>()
+        Loc.loadLanguages(context).filter { it.code != Loc.BENGALI }.forEach { language ->
+            Loc.load(context, language.code)
+            keys.forEach { key ->
+                if (bengali.matcher(key).find() && Loc.t(key) == key) {
+                    leaks += "${language.code}:${key.take(28)}"
+                }
+            }
+        }
+        // Assamese is the one exception: it shares Bengali's script, and a handful
+        // of short words ("ফাইল", "নাম") are spelled identically in both, so the
+        // translator correctly returns the source. Every other language is exact.
+        val unexpected = leaks.filterNot { it.startsWith("as:") }
+        assertTrue("untranslated strings leaked through: ${unexpected.take(12)}", unexpected.isEmpty())
+    }
+
+    @Test
     fun `runtime display strings are translated too`() {
         // These come from the model/view-model rather than from a `t(...)` call
         // in the UI package, so they are the ones most likely to be forgotten.

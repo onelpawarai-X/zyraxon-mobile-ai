@@ -394,47 +394,36 @@ fun TerminalScreen(
                                     .padding(horizontal = 9.dp, vertical = 4.dp)
                             )
                         }
-                        Text(
-                            text = "+",
-                            color = TerminalPrompt,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = TerminalFont,
+                        AppIcon(
+                            AppIcons.add, null, size = 15.dp, tint = TerminalPrompt,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
                                 .clickable { onNewSession() }
-                                .padding(horizontal = 9.dp, vertical = 1.dp)
+                                .padding(horizontal = 7.dp, vertical = 4.dp)
                         )
                     }
-                    Text(
-                        text = if (kbMode == 0) "kbd" else "kbd+",
-                        color = if (kbMode == 1) TerminalPrompt else TerminalDim,
-                        fontSize = 11.sp,
-                        fontFamily = TerminalFont,
+                    AppIcon(
+                        AppIcons.keyboard, if (kbMode == 1) "kbd+" else "kbd", size = 15.dp,
+                        tint = if (kbMode == 1) TerminalPrompt else TerminalDim,
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .clickable { kbMode = 1 - kbMode }
                             .padding(horizontal = 7.dp, vertical = 4.dp)
                     )
-                    Text(
-                        text = "fx",
-                        color = if (fx) TerminalPrompt else TerminalDim,
-                        fontSize = 11.sp,
-                        fontFamily = TerminalFont,
+                    AppIcon(
+                        AppIcons.bolt, "fx", size = 15.dp,
+                        tint = if (fx) TerminalPrompt else TerminalDim,
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .clickable { fx = !fx }
-                            .padding(horizontal = 6.dp, vertical = 4.dp)
+                            .padding(horizontal = 7.dp, vertical = 4.dp)
                     )
-                    Text(
-                        text = "clear",
-                        color = TerminalDim,
-                        fontSize = 11.sp,
-                        fontFamily = TerminalFont,
+                    AppIcon(
+                        AppIcons.delete, "clear", size = 15.dp, tint = TerminalDim,
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .clickable { onClear() }
-                            .padding(horizontal = 6.dp, vertical = 4.dp)
+                            .padding(horizontal = 7.dp, vertical = 4.dp)
                     )
                     AppIcon(
                         AppIcons.close, null, size = 16.dp, tint = TerminalError,

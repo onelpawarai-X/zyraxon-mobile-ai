@@ -494,16 +494,48 @@ class OpenHandsBridge(
      * The name of a conversation to show in the phone's own chat list, taken from
      * the cloud when one exists so a chat renamed on either side agrees.
      */
+    /**
+     * Stops the cloud turn behind a chat, leaving the conversation and its
+     * history intact.
+     *
+     * The phone's Stop button only cancels the local collection of the stream;
+     * the agent server keeps working — running commands, calling tools, spending
+     * the user's time — and the answer arrives into a chat that has moved on.
+     * This is what makes Stop actually stop: the running turn is interrupted at
+     * the server, which is the only place that can end it.
+     *
+     * Returns false when there is nothing to interrupt or the phone is offline,
+     * so the caller can tell "stopped" from "there was nothing running".
+     */
+    suspend fun interruptCloud(apiKey: String, chatId: String): Boolean {
+        val id = store.conversationFor(chatId) ?: return false
+        if (apiKey.isBlank() || !online()) return false
+        return runCatching {
+            val conv = client.getConversation(apiKey, id)
+            client.interrupt(conv)
+            true
+        }.getOrDefault(false)
+    }
+
     suspend fun remoteTitle(apiKey: String, conversationId: String): String? =
         runCatching { client.getConversation(apiKey, conversationId).title }.getOrNull()
 
-    /** A one-line, human-readable record of a phone tool the agent asked for. */
+    /**
+     * A one-line, human-readable record of a phone tool the agent asked for.
+     *
+     * It travels in the reasoning envelope, never as answer text. The line is
+     * machine bookkeeping — a tool name and a status — and as answer text the
+     * speaker read it aloud ("open_app ok — …") and the user saw it as part of
+     * the reply. Reasoning is shown on screen and never spoken, which is what
+     * this line is: something to read, not something to say.
+     */
     private fun toolNote(name: String, result: JSONObject): String {
         val ok = result.optBoolean("ok", false)
         val summary = result.safe("summary")
             .ifBlank { result.safe("error") }
             .ifBlank { result.toString() }
-        return "\n\n`$name` ${if (ok) "ok" else "failed"} \u2014 ${summary.take(200)}\n\n"
+        return ZyraxonAiEngine.REASONING_PREFIX +
+            "\n\n`$name` ${if (ok) "ok" else "failed"} \u2014 ${summary.take(200)}\n\n"
     }
 
     /**

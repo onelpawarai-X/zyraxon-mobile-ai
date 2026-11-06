@@ -106,7 +106,10 @@ def main():
                     added[text] = value
                 import time
 
-                time.sleep(0.6)
+                # A longer gap between batches: the endpoint starts answering with
+                # the source text (which reads as "untranslated") when the whole
+                # table is pushed through it back to back.
+                time.sleep(1.6)
         except Exception as error:
             failures.append("%s: %s" % (code, error))
             print("%-6s FAILED %s" % (code, error), flush=True)

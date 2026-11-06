@@ -110,7 +110,11 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         Row(modifier.clip(RoundedCornerShape(18.dp)).background(Glass.fill(0.8f)).border(1.dp, Glass.borderSoft, RoundedCornerShape(18.dp)).padding(10.dp),
             verticalAlignment = Alignment.CenterVertically) {
             Text(title.ifBlank { url.ifBlank { t("প্রিভিউ") } }, color = Glass.textPrimary, fontSize = 12.sp, maxLines = 1, modifier = Modifier.weight(1f))
-            Text(t("বড় করো"), color = Glass.pink, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { mini = false }.padding(6.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { mini = false }.padding(6.dp)) {
+                AppIcon(AppIcons.fullscreen, null, size = 14.dp, tint = Glass.pink)
+                Spacer(Modifier.width(4.dp))
+                Text(t("বড় করো"), color = Glass.pink, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            }
         }
         return
     }

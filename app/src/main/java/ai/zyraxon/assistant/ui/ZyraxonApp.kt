@@ -29,6 +29,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import ai.zyraxon.assistant.ui.icons.AppIcon
@@ -50,6 +53,16 @@ import androidx.compose.ui.unit.sp
 fun ZyraxonApp(viewModel: ZyraxonViewModel) {
     val context = LocalContext.current
     val activeTab by viewModel.activeTab.collectAsState()
+    // A site the agent just published is shown in the app's own preview. Without
+    // this the preview would only load if the user happened to be on that tab, so
+    // a freshly built page would appear to do nothing.
+    val publishedSite by ai.zyraxon.assistant.tools.PreviewBridge.publishedSite.collectAsState()
+    LaunchedEffect(publishedSite) {
+        if (publishedSite != null) {
+            viewModel.setTab(AppTab.PREVIEW)
+            ai.zyraxon.assistant.tools.PreviewBridge.takePublishedSite()
+        }
+    }
     val themeMode by viewModel.themeMode.collectAsState()
     // The theme is Compose state read by every colour in the app.
     SideEffect { Glass.mode = themeMode }
@@ -146,9 +159,9 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                             Modifier.align(Alignment.CenterEnd).padding(end = 2.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            SideBtn(if (alwaysListening) AppIcons.mic else AppIcons.micOff, "মাইক", Modifier.testTag("aura_mic")) { viewModel.toggleListening() }
-                            SideBtn(AppIcons.chat, "চ্যাট", Modifier.testTag("aura_chat")) { viewModel.setTab(AppTab.CHAT) }
-                            SideBtn(AppIcons.refresh, "রিফ্রেশ", Modifier.testTag("cloud_refresh")) { viewModel.refreshCloud() }
+                            SideBtn(if (alwaysListening) AppIcons.mic else AppIcons.micOff, t("মাইক"), Modifier.testTag("aura_mic")) { viewModel.toggleListening() }
+                            SideBtn(AppIcons.chat, t("চ্যাট"), Modifier.testTag("aura_chat")) { viewModel.setTab(AppTab.CHAT) }
+                            SideBtn(AppIcons.refresh, t("রিফ্রেশ"), Modifier.testTag("cloud_refresh")) { viewModel.refreshCloud() }
                         }
                     }
                 }
@@ -203,7 +216,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
 private fun TopBar(title: String, modeLabel: String, busy: Boolean, onMenu: () -> Unit, onSettings: () -> Unit) {
     val ctx = LocalContext.current
     Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-        RoundBtn(AppIcons.menu, "মেনু", "menu_button") { Glass.vibrate(ctx, 12); onMenu() }
+        RoundBtn(AppIcons.menu, t("মেনু"), "menu_button") { Glass.vibrate(ctx, 12); onMenu() }
         Spacer(Modifier.width(10.dp))
         Text(title, color = Glass.textPrimary, fontSize = 15.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
         Spacer(Modifier.width(8.dp))
@@ -212,7 +225,7 @@ private fun TopBar(title: String, modeLabel: String, busy: Boolean, onMenu: () -
             modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(Glass.pinkFill.copy(alpha = 0.18f)).padding(horizontal = 7.dp, vertical = 3.dp)
         )
         Spacer(Modifier.weight(1f))
-        RoundBtn(AppIcons.settings, "সেটিংস", "settings_button") { Glass.vibrate(ctx, 14); onSettings() }
+        RoundBtn(AppIcons.settings, t("সেটিংস"), "settings_button") { Glass.vibrate(ctx, 14); onSettings() }
     }
 }
 
@@ -311,18 +324,24 @@ fun UpdateBanner(
                 onClick = onDownload,
                 modifier = Modifier.testTag("update_banner_install")
             ) {
+                Icon(Icons.Rounded.Download, contentDescription = null, tint = Glass.greenFill, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(5.dp))
                 Text(t("ডাউনলোড"), color = Glass.greenFill, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
             is UpdateState.Downloaded -> TextButton(
                 onClick = onInstall,
                 modifier = Modifier.testTag("update_banner_install")
             ) {
+                Icon(Icons.Rounded.Download, contentDescription = null, tint = Glass.greenFill, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(5.dp))
                 Text(t("ইনস্টল"), color = Glass.greenFill, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
             is UpdateState.NeedsPermission -> TextButton(
                 onClick = onOpenPermission,
                 modifier = Modifier.testTag("update_banner_install")
             ) {
+                Icon(Icons.Rounded.Settings, contentDescription = null, tint = Glass.greenFill, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(5.dp))
                 Text(t("অনুমতি"), color = Glass.greenFill, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
             else -> Unit
@@ -367,7 +386,7 @@ fun McpTabContent(viewModel: ZyraxonViewModel, panelAlpha: Float, onClose: () ->
                     modifier = Modifier.weight(1f)
                 )
                 AppIcon(
-                    AppIcons.close, "বন্ধ করো", size = 16.dp, tint = Glass.textMuted,
+                    AppIcons.close, t("বন্ধ করো"), size = 16.dp, tint = Glass.textMuted,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { viewModel.clearMcpNotice() }
@@ -458,11 +477,17 @@ private fun McpTokenDialog(
         },
         confirmButton = {
             TextButton(onClick = { onConnect(token.trim()) }, enabled = token.isNotBlank()) {
+                Icon(Icons.Rounded.Check, contentDescription = null, tint = Glass.pinkFill, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(5.dp))
                 Text(t("কানেক্ট"), color = Glass.pinkFill, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(t("বাতিল"), color = Glass.textMuted) }
+            TextButton(onClick = onDismiss) {
+                Icon(Icons.Rounded.Close, contentDescription = null, tint = Glass.textMuted, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(5.dp))
+                Text(t("বাতিল"), color = Glass.textMuted)
+            }
         }
     )
 }

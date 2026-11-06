@@ -37,13 +37,13 @@ data class AvatarSpec(
 
 /** Every avatar, youngest first. Names follow the person's age. */
 val AvatarRoster: List<AvatarSpec> = listOf(
-    AvatarSpec("avatar_ruhi", "ruhi", t("রুহি"), 20, "person", true),
-    AvatarSpec("avatar_pori", "pori", t("পরী"), 22, "female", true),
-    AvatarSpec("avatar_arian", "arian", t("আরিয়ান"), 24, "person", false),
-    AvatarSpec("avatar_tisha", "tisha", t("তিশা"), 26, "person", true),
-    AvatarSpec("avatar_maya", "maya", t("মায়া"), 32, "work", true),
-    AvatarSpec("avatar_arnab", "arnab", t("অর্ণব"), 35, "work", false),
-    AvatarSpec("avatar_nazia", "nazia", t("নাজিয়া"), 42, "person", true)
+    AvatarSpec("avatar_ruhi", "ruhi", t("রুহি"), 20, "woman", true),
+    AvatarSpec("avatar_pori", "pori", t("পরী"), 22, "woman2", true),
+    AvatarSpec("avatar_arian", "arian", t("আরিয়ান"), 24, "man", false),
+    AvatarSpec("avatar_tisha", "tisha", t("তিশা"), 26, "girl", true),
+    AvatarSpec("avatar_maya", "maya", t("মায়া"), 32, "face5", true),
+    AvatarSpec("avatar_arnab", "arnab", t("অর্ণব"), 35, "man3", false),
+    AvatarSpec("avatar_nazia", "nazia", t("নাজিয়া"), 42, "face3", true)
 )
 
 fun avatarSpec(id: String): AvatarSpec? = AvatarRoster.firstOrNull { it.id == id }

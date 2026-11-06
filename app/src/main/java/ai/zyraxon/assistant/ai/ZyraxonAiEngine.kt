@@ -1,6 +1,7 @@
 package ai.zyraxon.assistant.ai
 
 import ai.zyraxon.assistant.core.safe
+import ai.zyraxon.assistant.i18n.t
 
 import ai.zyraxon.assistant.mcp.McpManager
 import ai.zyraxon.assistant.model.AiModel
@@ -524,8 +525,16 @@ class ZyraxonAiEngine(private val context: Context) {
         else -> 50
     }
 
-    private fun formatModelName(id: String): String {
-        val clean = id.replace(Regex("^opencode/"), "")
+    /**
+     * The name the user reads for a model.
+     *
+     * The owner prefix is a routing detail, not a name for the user: the cloud's
+     * catalogue answers with "openhands/<id>", and the picker shows this string,
+     * so leaving the prefix in would print the vendor behind the app's own cloud
+     * agent onto the model list and every chat bubble's model label.
+     */
+    internal fun formatModelName(id: String): String {
+        val clean = id.replace(Regex("^(opencode|openhands)/"), "")
         val words = clean.split("-", "_", "/")
             .map { w ->
                 if (w.matches(Regex("^[vV]\\d+.*"))) w.uppercase()
@@ -937,7 +946,10 @@ class ZyraxonAiEngine(private val context: Context) {
                 // Count down out loud, one second at a time, so the wait the user
                 // sees is the wait that is actually happening. A single message
                 // followed by a silent delay reads as "stuck", not as "retrying".
-                trySend("\n\nConnection problem — retry $retries/3 in ")
+                // Bangla, like the rest of the turn: an English line here was read
+                // aloud by the speaker mid-Bangla answer. The count is a `{0}`
+                // token, never a Kotlin `$`, so it can be translated.
+                trySend(t("\n\nসংযোগে সমস্যা — {0}/৩ নম্বর চেষ্টা, অপেক্ষা করছি ", retries))
                 for (s in retries downTo 1) {
                     trySend("$s… ")
                     kotlinx.coroutines.delay(500L)

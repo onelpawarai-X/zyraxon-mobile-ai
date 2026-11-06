@@ -65,7 +65,11 @@ fun Composer(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                         AppIcon(AppIcons.close, t("সরাও"), size = 10.dp, tint = Color.White, modifier = Modifier.align(Alignment.TopEnd).background(Color(0xAA000000)).clickable { vm.removeAttachedImage(i) }.padding(2.dp))
                     }
                 }
-                Text(t("সব মুছো"), color = Glass.textMuted, fontSize = 11.sp, modifier = Modifier.clickable { vm.clearAttachedImage() }.padding(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.clearAttachedImage() }.padding(6.dp)) {
+                    AppIcon(AppIcons.delete, null, size = 13.dp, tint = Glass.textMuted)
+                    Spacer(Modifier.width(4.dp))
+                    Text(t("সব মুছো"), color = Glass.textMuted, fontSize = 11.sp)
+                }
             }
         }
         if (notice.isNotBlank()) Text(notice, color = Glass.textMuted, fontSize = 11.sp, modifier = Modifier.padding(bottom = 4.dp))

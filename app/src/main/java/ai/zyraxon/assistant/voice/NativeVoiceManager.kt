@@ -600,11 +600,15 @@ class NativeVoiceManager(
             // on; the caller drops the partials that are the assistant's own voice.
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
-            // A phrase ends after a short pause, so the assistant answers promptly
-            // instead of waiting for a silence the user has already finished.
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 900L)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 900L)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 500L)
+            // How long a silence has to last before the recognizer closes the
+            // phrase. A short value ends the turn at the first breath, which is
+            // what broke a long dictation: the user paused to think mid-sentence
+            // and the recognizer submitted half of it. The window is wide enough
+            // to hold a natural pause, and the final result still arrives on its
+            // own once the user really stops.
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2_500L)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 2_500L)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 1_000L)
         }
     }
 
