@@ -477,3 +477,54 @@ Bengali-only font renders every Latin glyph as a box, and tesseract then reports
   prose is spoken.
 * It also drops bare URLs. An engine spells a link out letter by letter, so the
   address is removed from the spoken copy and left in the on-screen text.
+
+## Bangladesh funding route — researched notes (2026-11)
+
+Kept for a later application push. Two distinct doors, not one:
+
+**1. iDEA (Innovation Design and Entrepreneurship Academy) — grants, no equity.**
+ICT Division body, E-14/X ICT Tower (14th floor), Agargaon, Dhaka-1207.
+Phone 02-55007016 / 02-55007017. contact@idea.gov.bd, admin@idea.gov.bd.
+Pre-Seed Startup Grant: up to BDT 10 lakh, non-equity and non-repayable.
+Open to Bangladeshi entrepreneurs, teams, innovators or early-stage startups with
+ICT-based ideas — a registered company is *not* a stated precondition, which makes
+this the more accessible door for us. Process: online application, preliminary
+screening, pitching, final selection, agreement, disbursement — 2-3 months.
+Needs: NID/passport copy, written idea description, short video pitch, pitch deck,
+prototype if available, contact details. Video pitch at most 5 minutes, avi or mp4,
+no reading off slides; deck follows their PowerPoint template.
+Grant is spent on prototype development, product design, marketing, legal setup,
+operations and team building, with periodic progress reports and committee-set KPIs.
+Already having taken an iDEA grant makes a second one ineligible.
+Apply at apply.idea.gov.bd; SOP at apply.idea.gov.bd/SOP.pdf.
+
+**2. Startup Bangladesh Limited — equity investment, the successor to the iDEA
+investment arm.** ICT Tower (Level-14), Plot E-14/X, Agargaon, Dhaka-1207.
+Phone +880255006433. info@startupbangladesh.gov.bd; pitches to
+investment@startupbangladeshvc.gov.bd. Equity or quasi-equity in seed, early and
+growth stage companies *registered in Bangladesh*. Ticket BDT 25 lakh to BDT 5 crore
+per round, at most 49 percent stake, exit expected in 5-8 years. Sectors include
+core technology/AI/deep tech and enterprise software. Intake is continuous; no reply
+within two months means the application missed the current criteria, and a reapply is
+invited after four further months. Term-sheet negotiation runs 1-4 months.
+Documentation expected: pitch deck with financial projections, plus Trade License,
+e-TIN, VAT registration, Certificate of Incorporation, and MoA/AoA.
+
+**3. National Startup and Entrepreneur Platform (startup.ictd.gov.bd)** — ICT Division
+launchpad with four stages and a self-check for which stage fits:
+01 idea and prototyping (BDT 50,000-1 lakh grant, campus space),
+02 MVP, testing and validation (up to BDT 10 lakh, fab lab, coworking),
+03 bridging and acceleration (BDT 10-50 lakh, bridge fund, pitch training),
+04 fundraising and expansion (BDT 50 lakh-5 crore, investor introductions).
+Stage 03 and 04 preconditions name a registered limited company and consistent
+month-over-month growth.
+
+Also noted: the Bangladesh Fund of Funds, BDT 400 crore, run by Startup Bangladesh
+Limited, routes public capital through professional VC fund managers rather than
+directly into individual startups.
+
+Practical read: the iDEA grant is the realistic first step because it does not demand
+an incorporated company, and its stated evaluation criteria — innovation, scalability,
+team capability, business model, market potential, impact, feasibility — match what
+this project already demonstrates. Equity money from Startup Bangladesh can follow
+once the company is registered.
