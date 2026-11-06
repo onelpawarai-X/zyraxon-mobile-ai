@@ -84,6 +84,27 @@ class OpenHandsClient(
             .protocols(listOf(okhttp3.Protocol.HTTP_1_1))
             .retryOnConnectionFailure(true)
             .build()
+
+        /**
+         * The most events one page of the log may hold. The service refuses a
+         * larger `limit` with a 422, so every read is capped here and the rest of
+         * the window is walked with `page_id`.
+         */
+        const val EVENTS_PAGE = 100
+
+        /**
+         * How far back the "already recorded" action scan reads. A tool call that
+         * happened earlier than this is not re-run; it is only used to avoid
+         * repeating the agent's own recent steps, not to replay a whole chat.
+         */
+        private const val ACTION_LOOKBACK = 300
+
+        /**
+         * The most events one catch-up read may return. Big enough that an answer
+         * streamed while the socket was down is recovered whole, and paged past
+         * the service's own 100-event page limit.
+         */
+        private const val TAIL_PAGE = 400
     }
 
     private fun req(path: String, key: String): Request.Builder =
@@ -338,32 +359,66 @@ class OpenHandsClient(
     /**
      * The ids of every action the conversation has already recorded.
      *
-     * The cloud replays the whole event log whenever a socket attaches, so a
-     * reconnecting phone would otherwise re-run whatever the agent asked for last
-     * time — opening an app the user never mentioned again. Reading the log first
-     * gives an exact list to ignore, which is steadier than guessing from
-     * timestamps or from how far the replay has got.
+     * A reconnecting phone would otherwise re-run whatever the agent asked for
+     * last time — opening an app the user never mentioned again. Reading the log
+     * first gives an exact list to ignore, which is steadier than guessing from
+     * timestamps or from how far a replay has got.
+     *
+     * The window is paged rather than one capped page: the service refuses
+     * `limit` above [EVENTS_PAGE] with a 422, and a single page of the *oldest*
+     * events was all that came back before, so on a long conversation every
+     * recent call looked new and was run a second time on the phone.
      */
     suspend fun seenActionIds(conv: OhConversation): Set<String> = withContext(Dispatchers.IO) {
         runCatching {
-            val o = JSONObject(
-                Request.Builder().url(conv.agentBase + "/api/conversations/${conv.id}/events/search?limit=100")
-                    .header("X-Session-API-Key", conv.sessionKey).build()
-                    .let { http.newCall(it).execute().use { r -> r.body?.string() ?: "{}" } }
-            )
-            val items = o.optJSONArray("items") ?: JSONArray()
             buildSet {
-                for (i in 0 until items.length()) {
-                    val e = items.optJSONObject(i) ?: continue
+                for (e in eventsWindow(conv, limit = ACTION_LOOKBACK)) {
                     // The tool call's own id, not the event's: it is what a live
                     // ActionEvent carries, so the two can be compared.
-                    if (e.safe("kind") == "ActionEvent") {
-                        val cid = e.optJSONObject("tool_call")?.safe("id").orEmpty()
+                    if (e.str("kind") == "ActionEvent") {
+                        val cid = e.optJSONObject("tool_call")?.str("id").orEmpty()
                         if (cid.isNotBlank()) add(cid)
                     }
                 }
             }
         }.getOrDefault(emptySet())
+    }
+
+    /**
+     * The conversation's recorded events, newest first, walking every page.
+     *
+     * Two service behaviours are handled here. A page holds at most
+     * [EVENTS_PAGE] events and a larger `limit` is refused outright, so a long
+     * chat only comes back whole if its `next_page_id` is followed. And the
+     * order matters: read oldest-first, a window of N events is the *start* of
+     * the conversation, which is exactly the wrong end — the newest reply is the
+     * one that has to be seen, and on a chat longer than one page it never was.
+     */
+    private fun eventsWindow(conv: OhConversation, limit: Int): List<JSONObject> {
+        val out = ArrayList<JSONObject>(limit)
+        var page: String? = null
+        while (out.size < limit) {
+            val want = (limit - out.size).coerceIn(1, EVENTS_PAGE)
+            val url = buildString {
+                append(conv.agentBase)
+                append("/api/conversations/").append(conv.id)
+                append("/events/search?limit=").append(want)
+                append("&sort_order=TIMESTAMP_DESC")
+                if (page != null) append("&page_id=").append(page)
+            }
+            val o = JSONObject(
+                Request.Builder().url(url)
+                    .header("X-Session-API-Key", conv.sessionKey).build()
+                    .let { http.newCall(it).execute().use { r -> r.body?.string() ?: "{}" } }
+            )
+            val items = o.optJSONArray("items") ?: JSONArray()
+            if (items.length() == 0) break
+            for (i in 0 until items.length()) {
+                items.optJSONObject(i)?.let { out.add(it) }
+            }
+            page = o.optString("next_page_id").takeIf { it.isNotBlank() && it != "null" } ?: break
+        }
+        return out
     }
 
     // ---- live stream -------------------------------------------------------
@@ -494,28 +549,110 @@ class OpenHandsClient(
     // ---- helpers -----------------------------------------------------------
 
     /**
-     * The most recent events the conversation has recorded, read over REST.
+     * The most recent events the conversation has recorded, read over REST, in
+     * reading order (oldest of the window first).
      *
      * This is the safety net under the socket: a phone whose network drops the
      * WebSocket silently would otherwise show a frozen screen while the cloud
-     * kept working. The same events arrive here, so the caller can fill the gap
-     * and the turn still ends when the cloud says it did.
+     * kept working. The window is the *newest* [limit] events, paged, because a
+     * single capped page of the oldest ones is not a safety net at all — the
+     * newest reply is the thing that was missing.
      */
-    suspend fun recentEvents(conv: OhConversation, limit: Int = 30): List<OhEvent> =
+    suspend fun recentEvents(conv: OhConversation, limit: Int = 40): List<OhEvent> =
         withContext(Dispatchers.IO) {
             runCatching {
-                val o = JSONObject(
-                    Request.Builder()
-                        .url(conv.agentBase + "/api/conversations/${conv.id}/events/search?limit=$limit")
-                        .header("X-Session-API-Key", conv.sessionKey).build()
-                        .let { http.newCall(it).execute().use { r -> r.body?.string() ?: "{}" } }
-                )
-                val items = o.optJSONArray("items") ?: JSONArray()
-                (0 until items.length()).mapNotNull { i ->
-                    items.optJSONObject(i)?.let { OhEvent.parse(it.toString()) }
-                }
+                eventsWindow(conv, limit = limit.coerceIn(1, EVENTS_PAGE))
+                    .asReversed()
+                    .mapNotNull { OhEvent.parse(it.toString()) }
             }.getOrDefault(emptyList())
         }
+
+    /**
+     * One recorded event together with the timestamp it was recorded at.
+     *
+     * The timestamp is the cursor: it is what the next read asks the service for
+     * ("everything after this"), so the live REST tail can follow a conversation
+     * of any length without ever re-reading the events it has already handled.
+     */
+    data class OhRecorded(val at: String, val event: OhEvent)
+
+    /**
+     * The events recorded after [since], oldest first — a true tail of the log.
+     *
+     * This is the read a dropped socket is repaired with. Asking by cursor rather
+     * than "the newest N" is what makes it correct at every length: a fixed window
+     * silently skips everything that arrived between two reads once the
+     * conversation outgrows the window, which is precisely when a long-running
+     * answer is most likely to be missed. Pages are walked so the service's own
+     * 100-event page limit is not a ceiling on how much can be caught up.
+     */
+    suspend fun eventsSince(conv: OhConversation, since: String, limit: Int = TAIL_PAGE): List<OhRecorded> =
+        withContext(Dispatchers.IO) {
+            runCatching { readSince(conv, since, limit) }.getOrDefault(emptyList())
+        }
+
+    private fun readSince(conv: OhConversation, since: String, limit: Int): List<OhRecorded> {
+        val out = ArrayList<OhRecorded>(limit)
+        var page: String? = null
+        while (out.size < limit) {
+            val want = (limit - out.size).coerceIn(1, EVENTS_PAGE)
+            val url = buildString {
+                append(conv.agentBase)
+                append("/api/conversations/").append(conv.id)
+                append("/events/search?limit=").append(want)
+                append("&sort_order=TIMESTAMP")
+                // Inclusive on purpose. Two events can share a timestamp, and a
+                // strict `gt` would drop the second one for good — a lost token
+                // that no retry can bring back. Re-reading the cursor event costs
+                // one frame per poll and the caller's id de-duplication discards
+                // it, which is a far better trade than silently losing an answer.
+                // Encoded because an ISO timestamp carries colons, which are not
+                // legal raw in a query value.
+                if (since.isNotBlank()) {
+                    append("&timestamp__gte=")
+                    append(java.net.URLEncoder.encode(since, "UTF-8"))
+                }
+                if (page != null) append("&page_id=").append(page)
+            }
+            val o = JSONObject(
+                Request.Builder().url(url)
+                    .header("X-Session-API-Key", conv.sessionKey).build()
+                    .let { http.newCall(it).execute().use { r -> r.body?.string() ?: "{}" } }
+            )
+            val items = o.optJSONArray("items") ?: JSONArray()
+            if (items.length() == 0) break
+            for (i in 0 until items.length()) {
+                val e = items.optJSONObject(i) ?: continue
+                // A record with no timestamp is still returned so nothing is
+                // dropped; the caller's id de-duplication keeps it from being
+                // shown twice.
+                OhEvent.parse(e.toString())?.let { out.add(OhRecorded(e.str("timestamp"), it)) }
+            }
+            page = o.optString("next_page_id").takeIf { it.isNotBlank() && it != "null" } ?: break
+        }
+        return out
+    }
+
+    /**
+     * The timestamp of the newest event on record, or "" when there is none.
+     *
+     * This is the boundary a turn starts from: the socket is attached and this is
+     * read *before* the first message is sent, so everything the REST tail later
+     * sees past this point belongs to the turn that is starting. It is what makes
+     * "the agent has finished" a statement about *this* turn rather than about the
+     * one before it — a stale `finished` cannot end a turn that never ran.
+     */
+    suspend fun latestTimestamp(conv: OhConversation): String = withContext(Dispatchers.IO) {
+        runCatching {
+            val o = JSONObject(
+                Request.Builder()
+                    .url(conv.agentBase + "/api/conversations/${conv.id}/events/search?limit=1&sort_order=TIMESTAMP_DESC")
+                    .header("X-Session-API-Key", conv.sessionKey).build()
+                    .let { http.newCall(it).execute().use { r -> r.body?.string() ?: "{}" } }
+            )
+            o.optJSONArray("items")?.optJSONObject(0)?.str("timestamp").orEmpty()
+        }.getOrDefault("")
+    }
 
     /** Waits until the sandbox is RUNNING, which is when the socket will accept. */
     suspend fun awaitRunning(key: String, id: String, timeoutMs: Long = 120_000): OhConversation {

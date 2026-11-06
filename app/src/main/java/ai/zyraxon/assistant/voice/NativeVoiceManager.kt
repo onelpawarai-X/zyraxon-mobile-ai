@@ -327,6 +327,18 @@ class NativeVoiceManager(
      */
     fun isSpeakerActive(): Boolean = _isSpeaking.value || System.currentTimeMillis() < echoGuardUntilMs
 
+    /**
+     * True only during the short guard tail after the last word: the speaker has
+     * already stopped, but the recognizer may still be latching onto its decay.
+     *
+     * This is the window a person answers in — the reply has just ended — so a
+     * phrase arriving now is the user's and must be sent, not dropped as though
+     * the assistant were still talking. The window is separated from
+     * [isSpeakerActive] precisely so the caller can tell the two apart.
+     */
+    fun isEchoTail(): Boolean =
+        !_isSpeaking.value && System.currentTimeMillis() < echoGuardUntilMs
+
     private fun armEchoGuard() {
         echoGuardUntilMs = System.currentTimeMillis() + ECHO_TAIL_MS
     }

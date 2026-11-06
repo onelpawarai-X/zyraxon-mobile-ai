@@ -49,6 +49,35 @@ class SttDecisionTest {
     }
 
     @Test
+    fun `a final arriving in the echo tail is the user answering, and is sent`() {
+        // The bug: the guard tail after the last word kept the ear "busy", so a
+        // final landing in it was dropped — the reply had just ended, which is
+        // exactly when a person answers, and the mic looked deaf for a beat.
+        val action = SttDecision.decide(
+            text = "আজকের আবহাওয়া কেমন",
+            isFinal = true,
+            speakerActive = true,
+            repeatsReply = false,
+            echoTail = true
+        )
+        assertEquals("উত্তর শেষ হওয়ার পরের কথা চ্যাটে যায়নি", Action.SUBMIT, action)
+    }
+
+    @Test
+    fun `the echo tail still drops the assistant's own sentence`() {
+        // The exception is only for the *user's* words. A piece of the reply
+        // arriving in the tail is caught by the text match, not by timing.
+        val action = SttDecision.decide(
+            text = "আমি তোমাকে ভালোবাসি",
+            isFinal = true,
+            speakerActive = true,
+            repeatsReply = true,
+            echoTail = true
+        )
+        assertEquals("নিজের বাক্য শেষের ফাঁকে চ্যাটে গেছে", Action.IGNORE, action)
+    }
+
+    @Test
     fun `a short partial during speech is ignored, not treated as an interruption`() {
         val action = SttDecision.decide(
             text = "তোমার",

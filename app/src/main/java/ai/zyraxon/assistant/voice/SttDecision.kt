@@ -43,12 +43,16 @@ object SttDecision {
      * @param speakerActive true while the assistant is speaking (or its echo tail
      *   is still ringing), which is when the mic mostly hears the assistant.
      * @param repeatsReply true when [text] mostly appears in the last reply.
+     * @param echoTail true when the speaker has already stopped and only the short
+     *   guard tail after the last word is still running. This is the window right
+     *   after the assistant finishes, which is exactly when a person answers.
      */
     fun decide(
         text: String,
         isFinal: Boolean,
         speakerActive: Boolean,
-        repeatsReply: Boolean
+        repeatsReply: Boolean,
+        echoTail: Boolean = false
     ): Action {
         if (text.isBlank()) return Action.IGNORE
 
@@ -66,7 +70,13 @@ object SttDecision {
         // coming back through the mic — the user talking over it only ever
         // arrives as a partial — so it is dropped: never shown, never sent,
         // never allowed to cut the answer off.
-        if (isFinal) return Action.IGNORE
+        //
+        // The echo tail is the exception, and it is the bug this guards. Once the
+        // last word has played the speaker is silent, so a final arriving now is
+        // the user answering — and dropping it is why the mic seemed deaf for the
+        // second or two after every reply. A late-arriving piece of the
+        // assistant's own sentence is still caught above, by the text match.
+        if (isFinal) return if (echoTail) Action.SUBMIT else Action.IGNORE
 
         // A partial long enough to be a real sentence — or a stop command — is the
         // user cutting in. The assistant stops so the user can finish, and the

@@ -1147,6 +1147,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             // the very interruption that just happened would be dropped as echo.
             val sinceInterrupt = System.currentTimeMillis() - lastUserInterruptMs
             val speakerActive = voiceManager.isSpeakerActive() && sinceInterrupt > INTERRUPT_GRACE_MS
+            // The last word has played but the guard tail is still running. This
+            // is the moment a person answers — dropping a final here is what made
+            // the microphone seem deaf for a beat after every reply. Only the
+            // tail is treated this way: while the speaker is genuinely talking a
+            // final is still the assistant's own sentence coming back.
+            val echoTail = voiceManager.isEchoTail()
             // Never the strict form here. Strict echo matching flags a phrase
             // that shares even one content word with the reply, which is right
             // for the assistant's own sentence coming back but would swallow a
@@ -1154,7 +1160,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
  // কেমন?" over an answer about the weather). The assistant's own
             // sentence is dropped by the final/partial rule instead.
             val repeatsReply = looksLikeOwnSpeech(text)
-            when (SttDecision.decide(text, isFinal, speakerActive, repeatsReply)) {
+            when (SttDecision.decide(text, isFinal, speakerActive, repeatsReply, echoTail)) {
                 SttDecision.Action.IGNORE -> return@stt
                 SttDecision.Action.INTERRUPT -> {
                     // A partial only ever interrupts: it stops the assistant so

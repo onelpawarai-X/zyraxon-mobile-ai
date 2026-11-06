@@ -162,6 +162,11 @@ class OpenHandsBridge(
         // Everything the conversation already recorded, so a replayed action is
         // recognised as history and not run a second time.
         val history = client.seenActionIds(live)
+        // Where this turn begins. Read before anything is sent, so the REST tail
+        // can tell this turn's events from the previous turn's: without it a
+        // stored `finished` from the last turn would be read as *this* turn
+        // ending, and a turn that never ran would be declared over.
+        val turnStart = client.latestTimestamp(live)
         // The socket is attached first, then the message is sent. The other order
         // loses the opening of the turn: the cloud starts answering the instant a
         // message arrives, and tokens produced before anything is listening are
@@ -197,6 +202,11 @@ class OpenHandsBridge(
         // while the cloud was still working. A finish only counts once this turn
         // has actually been seen running.
         val sawRunning = java.util.concurrent.atomic.AtomicBoolean(false)
+        // The last liveness the conversation reported, as the REST tail saw it.
+        // A *quiet* log is not the same as a finished turn: the turn is only over
+        // when the last thing recorded says it is. Only the tail writes this,
+        // because only the tail knows which events belong to this turn.
+        val lastStatus = java.util.concurrent.atomic.AtomicReference("")
 
         // The turn is over — unless the user typed something while it ran. Those
         // words were queued, not dropped, and are sent here as the next turn so a
@@ -299,6 +309,11 @@ class OpenHandsBridge(
                     }
 
                     is OhEvent.Status -> {
+                        // Deliberately *not* recorded as the tail's last status:
+                        // this socket replays state on attach, and a replayed
+                        // `finished` must not be able to end a turn that never ran.
+                        // Only the tail, which reads strictly after the turn's own
+                        // start, is allowed to say the turn is over.
                         if (e.value == "running" || e.value == "working") {
                             sawRunning.set(true)
                         } else if (e.value == "finished" || e.value == "idle") {
@@ -319,46 +334,44 @@ class OpenHandsBridge(
         // Safety net under the socket. A network that drops the WebSocket without
         // a close frame leaves the screen frozen while the cloud works on, so the
         // REST event log is read on a timer and any event the socket did not
-        // deliver is replayed through the very same handling. The de-duplication
-        // by event id makes this a no-op in the normal case.
+        // deliver is replayed through the very same handling.
+        //
+        // The read is by *timestamp cursor*, not "the newest N". A fixed window is
+        // wrong in a way that only shows up when it matters: once the conversation
+        // holds more events than the window, everything produced between two reads
+        // is skipped — so a long answer would lose exactly the tokens that took
+        // longest to arrive. The cursor cannot skip anything, and it is what lets
+        // this run at any length with no ceiling.
         val fallback = launch {
-            // Tracked by the last event id, not by the list's size: the log is
-            // read with a limit, so once a conversation holds more events than
-            // that limit the size stops changing and a size comparison would call
-            // every later tick "nothing new" — the safety net would go blind
-            // exactly on the long chats that need it most.
-            var lastId = ""
+            var cursor = turnStart
             var quiet = 0
+            // The cursor is inclusive, so the very first read hands back the
+            // event the cursor *is* — the previous turn's last one. It is not
+            // this turn's and must not be replayed as though it were.
+            var skipCursorEvent = turnStart.isNotBlank()
             while (isActive) {
-                delay(5000)
-                val events = runCatching { client.recentEvents(live, limit = 100) }.getOrDefault(emptyList())
-                val newest = events.lastOrNull()
-                if (newest == null || newest.id == lastId) {
-                    // Nothing new for a while: a live socket still sending would
-                    // have moved this, so it is worth checking whether the cloud
-                    // considers the turn over.
+                delay(2000)
+                val batch = client.eventsSince(live, cursor)
+                if (batch.isEmpty()) {
+                    // Nothing new. Silence on its own does not end a turn — the
+                    // cloud can be running a long command with nothing to say — so
+                    // the turn ends here only when the last thing it *did* say was
+                    // that it had finished. That is the missed-`finished` backstop.
                     quiet++
                     if (quiet >= 4) {
-                        val finished = newest?.let {
-                            it is OhEvent.Status && (it.value == "finished" || it.value == "idle")
-                        } ?: false
-                        if (finished && !pendingTool) finishTurn()
+                        val last = lastStatus.get()
+                        if ((last == "finished" || last == "idle") && !pendingTool) finishTurn()
                         quiet = 0
                     }
                     continue
                 }
                 quiet = 0
-                // Only the events after the last one already handled are replayed.
-                // The first look starts from the beginning of the window, because
-                // the socket has already delivered everything up to now — the
-                // message is not even sent until it is attached — and the id
-                // de-duplication below turns that replay into a no-op. A window
-                // that has slid past the cursor starts at the beginning too.
-                val from = if (lastId.isBlank()) 0
-                    else events.indexOfFirst { it.id == lastId }.let { if (it >= 0) it + 1 else 0 }
-                lastId = newest.id
-                for (i in from until events.size) {
-                    val e = events[i]
+                // One-shot: only the first read can contain the cursor event.
+                val skip = skipCursorEvent
+                skipCursorEvent = false
+                for ((at, e) in batch) {
+                    if (at.isNotBlank()) cursor = at
+                    if (skip && at == turnStart) continue
                     // The socket is authoritative and already delivered these;
                     // only an event it did not is worth replaying.
                     if (e.id.isNotBlank() && !delivered.add(e.id)) continue
@@ -386,12 +399,18 @@ class OpenHandsBridge(
                         is OhEvent.Status -> {
                             if (e.value == "running" || e.value == "working") {
                                 sawRunning.set(true)
-                            } else if (e.value == "finished" || e.value == "idle") {
+                            }
+                            // The tail's own last status. It is only read from a
+                            // window that starts after this turn began, so it
+                            // cannot be the previous turn's.
+                            if (e.value.isNotBlank()) lastStatus.set(e.value)
+                            if (e.value == "finished" || e.value == "idle") {
                                 if (sawRunning.get()) {
                                     if (pendingTool) pendingTool = false else finishTurn()
                                 }
                             }
                         }
+                        is OhEvent.Failure -> close(OhApiError(0, e.detail.ifBlank { e.code }))
                         else -> Unit
                     }
                 }
