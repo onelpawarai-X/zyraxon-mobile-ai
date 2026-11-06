@@ -78,6 +78,14 @@ class ChatLinkTest {
     }
 
     @Test
+    fun aLinkInsideBoldTextIsStillALink() {
+        // The model bolds an address about as often as it writes it bare.
+        val links = linksIn("দেখো", "দেখো **https://x.dev/a** এখন")
+        assertEquals(1, links.size)
+        assertEquals("https://x.dev/a", (links[0] as LinkAnnotation.Url).url)
+    }
+
+    @Test
     fun plainTextHasNoLinks() {
         val links = linksIn("কোনো লিংক নেই এখানে", "কোনো লিংক নেই এখানে")
         assertTrue(links.isEmpty())

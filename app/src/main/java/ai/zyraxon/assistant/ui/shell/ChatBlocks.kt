@@ -288,8 +288,12 @@ private fun inline(text: String, color: Color, codeBg: Color, onOpen: (String) -
         when {
             text.startsWith("**", i) -> {
                 val e = text.indexOf("**", i + 2)
-                if (e > 0) { withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(text.substring(i + 2, e)) }; i = e + 2 }
-                else { append(text[i]); i++ }
+                if (e > 0) {
+                    // Recurse, so a link inside a bold span is still a link: the
+                    // model writes "**https://…**" as often as it writes it bare.
+                    withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(inline(text.substring(i + 2, e), color, codeBg, onOpen)) }
+                    i = e + 2
+                } else { append(text[i]); i++ }
             }
             text[i] == '`' -> {
                 val e = text.indexOf('`', i + 1)
@@ -300,8 +304,10 @@ private fun inline(text: String, color: Color, codeBg: Color, onOpen: (String) -
             }
             text[i] == '*' && i + 1 < n && text[i + 1] != ' ' -> {
                 val e = text.indexOf('*', i + 1)
-                if (e > 0) { withStyle(SpanStyle(fontStyle = FontStyle.Italic)) { append(text.substring(i + 1, e)) }; i = e + 1 }
-                else { append(text[i]); i++ }
+                if (e > 0) {
+                    withStyle(SpanStyle(fontStyle = FontStyle.Italic)) { append(inline(text.substring(i + 1, e), color, codeBg, onOpen)) }
+                    i = e + 1
+                } else { append(text[i]); i++ }
             }
             text[i] == '[' -> {
                 val mid = text.indexOf("](", i)
