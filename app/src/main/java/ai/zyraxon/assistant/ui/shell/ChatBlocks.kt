@@ -260,7 +260,7 @@ private fun urlAt(text: String, index: Int): Pair<String, String>? {
     val m = BARE_URL.find(text, index) ?: return null
     if (m.range.first != index) return null
     var raw = m.value
-    while (raw.isNotEmpty() && raw.last() in ".,;:!?)]}") raw = raw.dropLast(1)
+    while (raw.isNotEmpty() && raw.last() in ".,;:!?)]}।॥—") raw = raw.dropLast(1)
     if (raw.length <= 8) return null
     val href = if (raw.startsWith("www.", ignoreCase = true)) "https://$raw" else raw
     return raw to href

@@ -12,7 +12,7 @@ object SpeechTextCleaner {
      * excluded so "see https://x.dev." drops the address and keeps the period.
      */
     private val URL = Regex(
-        "(?i)\\b(?:https?://|www\\.)[^\\s<>\"']*[^\\s<>\"'.,;:!?)\\]}]"
+        "(?i)\\b(?:https?://|www\\.)[^\\s<>\"']*[^\\s<>\"'.,;:!?)\\]}।॥]"
     )
 
     fun clean(text: String): String {
