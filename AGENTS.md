@@ -451,3 +451,15 @@ Bengali-only font renders every Latin glyph as a box, and tesseract then reports
   no values by default. `app/build.gradle.kts` now sets
   `exceptionFormat = FULL`, so a failure prints what it actually saw. Do not
   remove it: without it every diagnosis is a guess.
+
+## Icon traps
+
+* A tool row's icon is an `AppIcons` **registry key**, resolved by the UI through
+  `AppIcons.of`. It used to hold an emoji, and when the emoji were stripped from
+  the UI the map was emptied along with them: every tool card then drew a blank
+  where its icon belongs, and no test caught it because an empty string is a
+  valid string. When removing a glyph, put the vector key in its place in the
+  same change.
+* `toolIcon`'s `else` branch must return a key that exists. `AppIcons.of`
+  returns null for an unknown key, so the call site falls back to `build`; a
+  key with no icon is a silent blank, not a compile error.
