@@ -122,12 +122,12 @@ fun CodeBox(
                 color = CodeColors.dim, fontSize = 11.sp, fontFamily = FontFamily.Monospace,
                 maxLines = 1, modifier = Modifier.weight(1f)
             )
-            if (live) Text("লিখছে… ${lines.size} লাইন", color = CodeColors.green, fontSize = 10.5.sp)
+            if (live) Text(ai.zyraxon.assistant.i18n.t("লিখছে… {0} লাইন", lines.size), color = CodeColors.green, fontSize = 10.5.sp)
             else Text(
-                "কপি", color = CodeColors.dim, fontSize = 11.sp,
+                ai.zyraxon.assistant.i18n.t("কপি"), color = CodeColors.dim, fontSize = 11.sp,
                 modifier = Modifier.clip(RoundedCornerShape(6.dp)).clickable {
                     clip.setText(AnnotatedString(code))
-                    android.widget.Toast.makeText(ctx, "কপি হয়েছে", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(ctx, ai.zyraxon.assistant.i18n.t("কপি হয়েছে"), android.widget.Toast.LENGTH_SHORT).show()
                 }.padding(horizontal = 6.dp, vertical = 2.dp)
             )
         }

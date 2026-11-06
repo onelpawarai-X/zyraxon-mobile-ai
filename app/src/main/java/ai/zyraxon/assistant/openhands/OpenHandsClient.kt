@@ -1,5 +1,6 @@
 package ai.zyraxon.assistant.openhands
 
+import ai.zyraxon.assistant.i18n.t
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
@@ -79,6 +80,10 @@ class OpenHandsClient(
             .readTimeout(0, TimeUnit.MILLISECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .pingInterval(20, TimeUnit.SECONDS)
+            // HTTP/2 streams were being reset mid-answer with PROTOCOL_ERROR; plain
+            // HTTP/1.1 does not have that failure and costs nothing noticeable here.
+            .protocols(listOf(okhttp3.Protocol.HTTP_1_1))
+            .retryOnConnectionFailure(true)
             .build()
     }
 
@@ -103,7 +108,7 @@ class OpenHandsClient(
         )
         http.newCall(b.build()).execute().use { r ->
             val text = r.body?.string().orEmpty()
-            if (r.code == 401 || r.code == 403) throw OhAuthError("কী গ্রহণ করা হয়নি (HTTP ${r.code})")
+            if (r.code == 401 || r.code == 403) throw OhAuthError(t("কী গ্রহণ করা হয়নি (HTTP {0})", r.code))
             if (!r.isSuccessful) throw OhApiError(r.code, text.take(400).ifBlank { "HTTP ${r.code}" })
             if (text.isBlank()) JSONObject()
             // A single-id lookup comes back as either {"items":[…]} or a bare […];
@@ -138,7 +143,7 @@ class OpenHandsClient(
         clientTools: JSONArray? = null,
         onProgress: (String) -> Unit = {}
     ): OhConversation {
-        onProgress("কনভার্সেশন তৈরি হচ্ছে…")
+        onProgress(t("কনভার্সেশন তৈরি হচ্ছে…"))
         var reuse = reuseSandboxId
         repeat(2) { attempt ->
             val task = OhTask.from(createTask(key, title, suffix, reuse, model, clientTools))
@@ -148,7 +153,7 @@ class OpenHandsClient(
                 if (first != null) {
                     val t = OhTask.from(first)
                     if (t.isReady) {
-                        onProgress("স্যান্ডবক্স চালু হচ্ছে…")
+                        onProgress(t("স্যান্ডবক্স চালু হচ্ছে…"))
                         return getConversation(key, t.conversationId!!)
                     }
                     if (t.isFailed) {
@@ -160,14 +165,14 @@ class OpenHandsClient(
                             reuse = null
                             break
                         }
-                        throw OhApiError(0, t.detail ?: "কনভার্সেশন তৈরি ব্যর্থ")
+                        throw OhApiError(0, t.detail ?: ai.zyraxon.assistant.i18n.t("কনভার্সেশন তৈরি ব্যর্থ"))
                     }
                     onProgress(stageLabel(t.status))
                 }
                 delay(2000)
             }
         }
-        throw OhApiError(0, "কনভার্সেশন সময়মতো তৈরি হয়নি")
+        throw OhApiError(0, t("কনভার্সেশন সময়মতো তৈরি হয়নি"))
     }
 
     private suspend fun createTask(
@@ -191,8 +196,9 @@ class OpenHandsClient(
 
     /** The live state of one conversation, including its rotating session key. */
     suspend fun getConversation(key: String, id: String): OhConversation {
+        if (id.isBlank() || id == "null") throw OhApiError(0, t("কনভার্সেশন আইডি এখনও তৈরি হয়নি"))
         val o = call(key, "GET", "/app-conversations?ids=$id")
-        val first = firstItem(o) ?: throw OhApiError(0, "কনভার্সেশন পাওয়া যায়নি")
+        val first = firstItem(o) ?: throw OhApiError(0, t("কনভার্সেশন পাওয়া যায়নি"))
         return OhConversation.from(first)
     }
 
@@ -252,10 +258,10 @@ class OpenHandsClient(
             val conv = runCatching { getConversation(key, id) }.getOrNull()
                 ?: throw e
             if (conv.sandboxId.isBlank()) throw e
-            onStage("স্যান্ডবক্স জাগানো হচ্ছে…")
+            onStage(t("স্যান্ডবক্স জাগানো হচ্ছে…"))
             resumeSandbox(key, conv.sandboxId)
             awaitRunning(key, id, WAKE_TIMEOUT_MS)
-            onStage("স্যান্ডবক্স চালু — কাজ শুরু হচ্ছে…")
+            onStage(t("স্যান্ডবক্স চালু — কাজ শুরু হচ্ছে…"))
             call(key, "POST", "/app-conversations/$id/send-message", body)
         }
     }
@@ -288,7 +294,7 @@ class OpenHandsClient(
         var conv = getConversation(key, id)
         if (conv.sandboxStatus == "RUNNING") return conv
         if (conv.sandboxId.isBlank()) return conv
-        onStage("স্যান্ডবক্স জাগানো হচ্ছে…")
+        onStage(t("স্যান্ডবক্স জাগানো হচ্ছে…"))
         resumeSandbox(key, conv.sandboxId)
         val started = System.currentTimeMillis()
         while (true) {
@@ -324,7 +330,7 @@ class OpenHandsClient(
                 .header("X-Session-API-Key", conv.sessionKey)
                 .method("POST", (body ?: JSONObject()).toString().toRequestBody("application/json".toMediaType()))
             http.newCall(b.build()).execute().use { r ->
-                if (r.code == 401 || r.code == 403) throw OhAuthError("সেশন কী আর বৈধ নয়")
+                if (r.code == 401 || r.code == 403) throw OhAuthError(t("সেশন কী আর বৈধ নয়"))
                 if (!r.isSuccessful) throw OhApiError(r.code, r.body?.string()?.take(300) ?: "HTTP ${r.code}")
             }
         }
@@ -452,7 +458,7 @@ class OpenHandsClient(
                 if (closed.get()) {
                     attempt++
                     if (attempt > MAX_RECONNECTS) {
-                        close(lastError ?: OhApiError(0, "লাইভ সংযোগ বিচ্ছিন্ন"))
+                        close(lastError ?: OhApiError(0, t("লাইভ সংযোগ বিচ্ছিন্ন")))
                         break
                     }
                     delay(backoffMs(attempt))
@@ -487,11 +493,11 @@ class OpenHandsClient(
         (500L * (1 shl (attempt - 1).coerceAtMost(4))).coerceAtMost(8000L)
 
     private fun stageLabel(status: String): String = when (status) {
-        "SETTING_UP_SKILLS" -> "সেটআপ হচ্ছে…"
-        "STARTING_CONVERSATION" -> "কনভার্সেশন চালু হচ্ছে…"
-        "WORKING" -> "কাজ শুরু হচ্ছে…"
-        "PREPARING_REPOSITORY" -> "রিপোজিটরি প্রস্তুত হচ্ছে…"
-        else -> "অপেক্ষা করা হচ্ছে…"
+        "SETTING_UP_SKILLS" -> t("সেটআপ হচ্ছে…")
+        "STARTING_CONVERSATION" -> t("কনভার্সেশন চালু হচ্ছে…")
+        "WORKING" -> t("কাজ শুরু হচ্ছে…")
+        "PREPARING_REPOSITORY" -> t("রিপোজিটরি প্রস্তুত হচ্ছে…")
+        else -> t("অপেক্ষা করা হচ্ছে…")
     }
 
     /** Both `[item]` and `{"items":[…]}` are returned by the cloud for one id. */

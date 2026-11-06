@@ -72,33 +72,33 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
     @Composable
     fun Bar() {
         Column {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            // Row 1: the address bar gets the whole width, so it never wraps.
+            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                 Ic("◀", canBack) { PreviewBridge.back(ctx) }
                 Ic("▶", canFwd) { PreviewBridge.forward(ctx) }
                 Ic(if (progress < 100) "✕" else "⟳", true) { if (progress < 100) PreviewBridge.stop() else PreviewBridge.reload(ctx) }
-                BasicTextField(
-                    field, { field = it; editing = true },
-                    Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(Glass.rowFill(0.4f)).border(1.dp, Glass.borderSoft, RoundedCornerShape(16.dp)).padding(horizontal = 12.dp, vertical = 9.dp),
-                    singleLine = true, textStyle = TextStyle(color = Glass.textPrimary, fontSize = 12.5.sp), cursorBrush = SolidColor(Glass.pink),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go, keyboardType = KeyboardType.Uri),
-                    keyboardActions = KeyboardActions(onGo = { editing = false; PreviewBridge.clearProblems(); PreviewBridge.open(ctx, field) }),
-                    decorationBox = { inner -> if (field.isEmpty()) Text(t("🔎 গুগলে খোঁজো বা URL / localhost:3000"), color = Glass.textMuted, fontSize = 12.5.sp); inner() }
-                )
-                Ic(if (full) "🗗" else "⛶", true) { full = !full }
-                Ic("➖", true) { mini = true }
+                Box(
+                    Modifier.weight(1f).height(38.dp).clip(RoundedCornerShape(19.dp)).background(Glass.rowFill(0.4f))
+                        .border(1.dp, Glass.borderSoft, RoundedCornerShape(19.dp)).padding(horizontal = 14.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    if (field.isEmpty()) Text(t("গুগলে খোঁজো বা URL লেখো"), color = Glass.textMuted, fontSize = 12.5.sp, maxLines = 1, softWrap = false, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                    BasicTextField(
+                        field, { field = it; editing = true }, Modifier.fillMaxWidth(),
+                        singleLine = true, textStyle = TextStyle(color = Glass.textPrimary, fontSize = 12.5.sp), cursorBrush = SolidColor(Glass.pink),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go, keyboardType = KeyboardType.Uri),
+                        keyboardActions = KeyboardActions(onGo = { editing = false; PreviewBridge.clearProblems(); PreviewBridge.open(ctx, field) })
+                    )
+                }
             }
             if (progress < 100) LinearProgressIndicator(progress = { progress / 100f }, modifier = Modifier.fillMaxWidth().height(2.dp), color = Glass.pink, trackColor = Color.Transparent)
-            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            // Row 2: page title on the left, tools on the right.
+            Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 3.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(title.ifBlank { t("প্রিভিউ") }, color = Glass.textMuted, fontSize = 11.sp, maxLines = 1, modifier = Modifier.weight(1f))
-                Text(
-                    if (problems.isEmpty()) t("🔧 ফিক্স") else t("🔧 ফিক্স ({0})", problems.size),
-                    color = if (problems.isEmpty()) Glass.textSecondary else Color.White, fontSize = 11.5.sp, fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clip(RoundedCornerShape(14.dp)).background(if (problems.isEmpty()) Glass.rowFill(0.4f) else Glass.red)
-                        .clickable { vm.fixPreviewProblems() }.padding(horizontal = 10.dp, vertical = 5.dp)
-                )
-                Text(t("🤖 এজেন্ট"), color = Glass.textPrimary, fontSize = 11.5.sp, fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clip(RoundedCornerShape(14.dp)).background(Glass.pinkFill.copy(alpha = 0.3f)).border(1.dp, Glass.pink, RoundedCornerShape(14.dp))
-                        .clickable { agent = !agent }.padding(horizontal = 10.dp, vertical = 5.dp))
+                Pill(if (full) "🗗" else "⛶", false) { full = !full }
+                Pill("➖", false) { mini = true }
+                Pill(if (problems.isEmpty()) t("🔧 ফিক্স") else t("🔧 ফিক্স ({0})", problems.size), problems.isNotEmpty(), Glass.red) { vm.fixPreviewProblems() }
+                Pill(t("🤖 এজেন্ট"), agent, Glass.pink) { agent = !agent }
             }
         }
     }
@@ -116,8 +116,20 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         Bar()
         Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 6.dp).clip(RoundedCornerShape(14.dp))) {
             if (!full) WebHost(Modifier.fillMaxSize())
-            if (url.isBlank() || url == "about:blank") Box(Modifier.fillMaxSize().background(Glass.screen2), contentAlignment = Alignment.Center) {
-                Text(t("এজেন্ট যা বানাবে বা তুমি যা খুলবে, এখানে দেখা যাবে\nউপরে URL বা খোঁজার শব্দ লেখো"), color = Glass.textMuted, fontSize = 13.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            if (url.isBlank() || url == "about:blank") Column(
+                Modifier.fillMaxSize().background(Glass.screen2).padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
+            ) {
+                Text("🌐", fontSize = 40.sp)
+                Text(t("এজেন্ট যা বানাবে বা তুমি যা খুলবে, এখানে দেখা যাবে"), color = Glass.textSecondary, fontSize = 13.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(top = 8.dp, bottom = 14.dp))
+                Text(t("দ্রুত খোলো"), color = Glass.textMuted, fontSize = 11.sp)
+                Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("localhost:3000", "localhost:5173", "localhost:8080").forEach { u ->
+                        Text(u, color = Glass.textPrimary, fontSize = 11.5.sp,
+                            modifier = Modifier.clip(RoundedCornerShape(14.dp)).background(Glass.rowFill(0.45f)).border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
+                                .clickable { PreviewBridge.clearProblems(); PreviewBridge.open(ctx, u) }.padding(horizontal = 11.dp, vertical = 7.dp))
+                    }
+                }
             }
             if (agent) MiniAgent(vm, Modifier.align(Alignment.BottomCenter)) { agent = false }
         }
@@ -133,6 +145,13 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+@Composable
+private fun Pill(label: String, active: Boolean, tint: Color = Glass.pink, onClick: () -> Unit) {
+    Text(label, color = if (active) Color.White else Glass.textSecondary, fontSize = 11.5.sp, fontWeight = FontWeight.Bold, maxLines = 1,
+        modifier = Modifier.clip(RoundedCornerShape(14.dp)).background(if (active) tint else Glass.rowFill(0.4f))
+            .border(1.dp, if (active) tint else Glass.borderSoft, RoundedCornerShape(14.dp)).clickable { onClick() }.padding(horizontal = 10.dp, vertical = 6.dp))
 }
 
 @Composable

@@ -40,6 +40,12 @@ def wanted_keys():
         for raw in json.load(open(RUNTIME_FILE, encoding="utf-8")):
             key, _ = T.tokenize(raw)
             keys.add(key)
+    # English is the reference table: a key present there but absent from another
+    # language is filled too, even when the current scan of the Kotlin does not
+    # produce it.
+    en_path = os.path.join(OUT_DIR, "en.json")
+    if os.path.exists(en_path):
+        keys |= set(json.load(open(en_path, encoding="utf-8")))
     return sorted(keys)
 
 
@@ -85,13 +91,17 @@ def main():
                 protected = []
                 names = []
                 for text in chunk:
-                    masked, found = T.protect(text)
+                    masked, found = T.protect(T.guard_brand(text))
                     protected.append(masked)
                     names.append(found)
                 results = T.fetch(protected, code)
                 for text, translated, found in zip(chunk, results, names):
-                    value = T.restore(translated, found).strip()
+                    value = T.restore_brand(T.restore(translated, found)).strip()
                     if not value or any(value.count(name) != 1 for name in found):
+                        value = text
+                    # The endpoint transliterates the product name, so a value that
+                    # lost it falls back to the source rather than shipping another brand.
+                    if T.BRAND.search(text) and "ZYRAXON" not in value.upper():
                         value = text
                     added[text] = value
                 import time

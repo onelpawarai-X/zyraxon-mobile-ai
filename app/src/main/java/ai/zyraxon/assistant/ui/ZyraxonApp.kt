@@ -24,6 +24,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -99,11 +100,21 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
             // The middle: the person (or aura) always fills it; a panel opens over it as glass.
             Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp)) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    ZyraxonAura(
-                        style = auraStyle, hue = auraHue, scaleFactor = auraSize, glow = auraGlow, speed = auraSpeed,
-                        isListening = isListening, isSpeaking = isSpeaking, audioLevel = audioLevel,
-                        onClick = { viewModel.toggleListening() }
-                    )
+                    // Light and dark never show the eye-style auras or blood red; the
+                    // horror look keeps whatever the user picked. Under other panels the
+                    // aura stays alive (voice and mouth keep moving) but invisible, so
+                    // the chat is a clean surface.
+                    val calm = !Glass.isHorror
+                    val shownStyle = if (calm && (auraStyle == "orb" || auraStyle == "swarm" || auraStyle == "crown" ||
+                            auraStyle !in ai.zyraxon.assistant.ui.components.AuraStyleIds)) "twin" else auraStyle
+                    val shownHue = if (calm && auraHue == 325) 255 else auraHue
+                    Box(Modifier.fillMaxSize().graphicsLayer { alpha = if (activeTab == AppTab.HOME) 1f else 0f }) {
+                        ZyraxonAura(
+                            style = shownStyle, hue = shownHue, scaleFactor = auraSize, glow = auraGlow, speed = auraSpeed,
+                            isListening = isListening, isSpeaking = isSpeaking, audioLevel = audioLevel,
+                            onClick = { if (activeTab == AppTab.HOME) viewModel.toggleListening() }
+                        )
+                    }
                     if (activeTab == AppTab.HOME) {
                         Text(
                             when {
@@ -122,15 +133,14 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                                 .background(Glass.fill(0.6f)).border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
                                 .padding(horizontal = 12.dp, vertical = 5.dp)
                         )
-                        Text(
-                            "⟳ " + t("রিফ্রেশ"),
-                            color = Glass.textPrimary, fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.align(Alignment.BottomEnd).padding(end = 6.dp, bottom = 2.dp)
-                                .clip(RoundedCornerShape(14.dp)).background(Glass.fill(0.6f))
-                                .border(1.dp, Glass.borderSoft, RoundedCornerShape(14.dp))
-                                .clickable { viewModel.refreshCloud() }
-                                .padding(horizontal = 10.dp, vertical = 5.dp).testTag("cloud_refresh")
-                        )
+                        Column(
+                            Modifier.align(Alignment.CenterEnd).padding(end = 2.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            SideBtn(if (alwaysListening) "🎙️" else "🔇", Modifier.testTag("aura_mic")) { viewModel.toggleListening() }
+                            SideBtn("💬", Modifier.testTag("aura_chat")) { viewModel.setTab(AppTab.CHAT) }
+                            SideBtn("⟳", Modifier.testTag("cloud_refresh")) { viewModel.refreshCloud() }
+                        }
                     }
                 }
                 when (activeTab) {
@@ -142,7 +152,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                         McpTabContent(viewModel, 0.3f) { viewModel.setTab(AppTab.HOME) }
                     }
                     AppTab.TERMINAL -> Box(Modifier.fillMaxSize().padding(vertical = 4.dp).clip(RoundedCornerShape(22.dp))
-                        .background(Color(0xF2070709)).border(1.dp, Glass.borderSoft, RoundedCornerShape(22.dp))) {
+                        .background(Glass.screen).border(1.dp, Glass.borderSoft, RoundedCornerShape(22.dp))) {
                         TerminalScreen(
                             sessions = terminalSessions, activeId = activeTerminalId, lines = terminalLines, cwd = terminalCwd, busy = terminalBusy,
                             onRun = { viewModel.runTerminal(it) }, onInput = { viewModel.sendTerminalInput(it) },
@@ -156,10 +166,10 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                 }
             }
 
-            if (activeTab == AppTab.HOME || activeTab == AppTab.CHAT) {
+            if (activeTab == AppTab.CHAT) {
                 Composer(viewModel, Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
             }
-            BottomNav(activeTab) { tab -> viewModel.setTab(if (tab == activeTab) AppTab.HOME else tab) }
+            BottomNav(activeTab) { tab -> viewModel.setTab(tab) }
         }
 
         // Horror only: a few cheap overlays (the heavy ones were removed for speed).
@@ -206,10 +216,20 @@ private fun RoundBtn(label: String, tag: String, onClick: () -> Unit) {
     ) { Text(label, color = Glass.textPrimary, fontSize = 16.sp) }
 }
 
-/** Exactly five buttons: Chat, Terminal, Code, Preview, MCP. */
+@Composable
+private fun SideBtn(label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Box(
+        modifier.size(46.dp).clip(RoundedCornerShape(23.dp)).background(Glass.fill(0.7f))
+            .border(1.dp, Glass.borderSoft, RoundedCornerShape(23.dp)).clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) { Text(label, color = Glass.textPrimary, fontSize = 18.sp) }
+}
+
+/** Aura view, then Chat, Terminal, Code, Preview, MCP. */
 @Composable
 private fun BottomNav(active: AppTab, onSelect: (AppTab) -> Unit) {
     val items = listOf(
+        Triple(AppTab.HOME, "🔮", t("ওরা")),
         Triple(AppTab.CHAT, "💬", t("চ্যাট")), Triple(AppTab.TERMINAL, "⌨️", t("টার্মিনাল")), Triple(AppTab.CODE, "</>", t("কোড")),
         Triple(AppTab.PREVIEW, "🌐", t("প্রিভিউ")), Triple(AppTab.MCP, "⬡", "MCP")
     )

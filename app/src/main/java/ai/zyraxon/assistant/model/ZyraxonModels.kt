@@ -95,10 +95,13 @@ enum class AppTab(val title: String) {
 }
 
 /** The three ways a chat can work; each has its own system prompt and its own tools. */
-enum class AgentMode(val title: String, val subtitle: String, val icon: String) {
+enum class AgentMode(private val titleBn: String, private val subtitleBn: String, val icon: String) {
     CHAT("চ্যাট", "শুধু কথা ও পরামর্শ", "💬"),
     BUILD("বিল্ড", "ফুল-স্ট্যাক অ্যাপ ও ওয়েবসাইট", "🛠️"),
     AGENT("এজেন্ট", "ফোন ও সিস্টেমের পূর্ণ অটোমেশন", "🤖");
+
+    val title: String get() = ai.zyraxon.assistant.i18n.t(titleBn)
+    val subtitle: String get() = ai.zyraxon.assistant.i18n.t(subtitleBn)
 
     companion object {
         fun parse(v: String?): AgentMode = entries.firstOrNull { it.name == v } ?: AGENT

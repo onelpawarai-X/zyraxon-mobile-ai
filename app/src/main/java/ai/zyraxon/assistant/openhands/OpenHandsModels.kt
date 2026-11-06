@@ -22,24 +22,33 @@ data class OhConversation(
 ) {
     companion object {
         fun from(o: JSONObject): OhConversation {
-            val url = o.optString("conversation_url", "")
+            val url = o.str("conversation_url", "")
             // The agent server base is everything before the conversation path;
             // it is a different host from the account API and must be used for
             // every live call (events, interrupt, confirmation policy).
             val base = url.substringBefore("/api/conversations/").ifBlank { url }
             return OhConversation(
-                id = o.optString("id"),
-                title = o.optString("title"),
-                sandboxId = o.optString("sandbox_id"),
-                sandboxStatus = o.optString("sandbox_status"),
-                executionStatus = o.optString("execution_status"),
+                id = o.str("id"),
+                title = o.str("title"),
+                sandboxId = o.str("sandbox_id"),
+                sandboxStatus = o.str("sandbox_status"),
+                executionStatus = o.str("execution_status"),
                 agentBase = base,
-                sessionKey = o.optString("session_api_key"),
-                llmModel = o.optString("llm_model")
+                sessionKey = o.str("session_api_key"),
+                llmModel = o.str("llm_model")
             )
         }
     }
 }
+
+/**
+ * Android's `optString` returns the four letters "null" for a JSON null. The cloud
+ * sends null for a conversation id that does not exist yet, and that string was
+ * being used as a real id: `GET /app-conversations?ids=null` -> "Invalid UUID",
+ * the chat never got bound, and every message started a brand-new conversation.
+ */
+internal fun JSONObject.str(key: String, default: String = ""): String =
+    if (!has(key) || isNull(key)) default else optString(key, default).let { if (it == "null") default else it }
 
 /** A conversation that is still being provisioned; the sandbox is not up yet. */
 data class OhTask(
@@ -54,11 +63,11 @@ data class OhTask(
 
     companion object {
         fun from(o: JSONObject): OhTask = OhTask(
-            id = o.optString("id"),
-            status = o.optString("status"),
-            detail = o.optString("detail").ifBlank { null },
-            conversationId = o.optString("app_conversation_id").ifBlank { null },
-            sandboxId = o.optString("sandbox_id").ifBlank { null }
+            id = o.str("id"),
+            status = o.str("status"),
+            detail = o.str("detail").ifBlank { null },
+            conversationId = o.str("app_conversation_id").ifBlank { null },
+            sandboxId = o.str("sandbox_id").ifBlank { null }
         )
     }
 }
@@ -99,43 +108,43 @@ sealed class OhEvent {
             } catch (_: Exception) {
                 return null
             }
-            return when (val kind = o.optString("kind")) {
+            return when (val kind = o.str("kind")) {
                 "StreamingDeltaEvent" -> Delta(
-                    text = o.optString("content"),
-                    reasoning = o.optString("reasoning_content")
+                    text = o.str("content"),
+                    reasoning = o.str("reasoning_content")
                 )
 
                 "ActionEvent" -> {
                     val call = o.optJSONObject("tool_call") ?: JSONObject()
                     Action(
-                        name = o.optString("tool_name").ifBlank { call.optString("name") },
+                        name = o.str("tool_name").ifBlank { call.str("name") },
                         args = parseArgs(call.opt("arguments")),
-                        id = call.optString("id")
+                        id = call.str("id")
                     )
                 }
 
                 "ObservationEvent" -> Observation(
-                    name = o.optString("tool_name"),
+                    name = o.str("tool_name"),
                     text = observationText(o.opt("observation"))
                 )
 
                 "MessageEvent" -> {
                     val m = o.optJSONObject("llm_message") ?: JSONObject()
                     Message(
-                        role = m.optString("role"),
+                        role = m.str("role"),
                         text = contentText(m.opt("content")),
-                        reasoning = m.optString("reasoning_content")
-                            .ifBlank { m.optString("reasoning") }
+                        reasoning = m.str("reasoning_content")
+                            .ifBlank { m.str("reasoning") }
                     )
                 }
 
                 "ConversationStateUpdateEvent" ->
-                    if (o.optString("key") == "execution_status") Status(o.optString("value"))
+                    if (o.str("key") == "execution_status") Status(o.str("value"))
                     else Other(kind, o)
 
                 "ConversationErrorEvent" -> Failure(
-                    code = o.optString("code"),
-                    detail = o.optString("detail")
+                    code = o.str("code"),
+                    detail = o.str("detail")
                 )
 
                 else -> Other(kind, o)
@@ -163,7 +172,7 @@ sealed class OhEvent {
             is JSONArray -> buildString {
                 for (i in 0 until v.length()) {
                     val part = v.optJSONObject(i) ?: continue
-                    if (part.optString("type") == "text") append(part.optString("text"))
+                    if (part.str("type") == "text") append(part.str("text"))
                 }
             }
             else -> ""
@@ -179,7 +188,7 @@ sealed class OhEvent {
             val direct = contentText(o.opt("content"))
             if (direct.isNotBlank()) return direct
             for (key in listOf("text", "output", "stdout", "error", "message", "detail")) {
-                val s = o.optString(key)
+                val s = o.str(key)
                 if (s.isNotBlank()) return s
             }
             return o.toString()

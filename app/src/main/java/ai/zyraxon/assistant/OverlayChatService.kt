@@ -532,6 +532,37 @@ class OverlayChatService : android.app.Service() {
         fun setNote(text: String) { note = text; noteUntil = SystemClock.uptimeMillis() + 1500 }
         fun stop() { running = false }
 
+        private fun drawCalm(canvas: Canvas, t: Float, cx: Float, cy: Float, r: Float) {
+            val light = ai.zyraxon.assistant.ui.theme.Glass.mode == ai.zyraxon.assistant.ui.theme.ZyThemeMode.LIGHT
+            val accent = if (light) Color.rgb(91, 61, 245) else Color.rgb(139, 123, 255)
+            val core = when {
+                !micOn && !speaking && !thinking -> Color.rgb(140, 146, 160)
+                speaking -> Color.rgb(55, 214, 197)
+                thinking -> Color.rgb(255, 176, 46)
+                else -> accent
+            }
+            val beat = 0.5f + 0.5f * sin(t * (if (hearing || speaking) 5f else 1.8f))
+            val gr = r * (0.9f + 0.12f * beat + level * 0.2f)
+            glow.shader = RadialGradient(cx, cy, gr,
+                intArrayOf(Color.argb(140, Color.red(core), Color.green(core), Color.blue(core)),
+                    Color.argb(50, Color.red(core), Color.green(core), Color.blue(core)), Color.TRANSPARENT),
+                floatArrayOf(0f, 0.6f, 1f), Shader.TileMode.CLAMP)
+            canvas.drawCircle(cx, cy, gr, glow)
+            fill.shader = RadialGradient(cx - r * 0.15f, cy - r * 0.2f, r * 0.7f,
+                intArrayOf(Color.WHITE, core), floatArrayOf(0.05f, 1f), Shader.TileMode.CLAMP)
+            canvas.drawCircle(cx, cy, r * (0.5f + 0.03f * beat), fill)
+            fill.shader = null
+            line.color = Color.argb(200, 255, 255, 255)
+            line.strokeWidth = r * 0.05f
+            canvas.drawCircle(cx, cy, r * 0.5f, line)
+            if (note != null && SystemClock.uptimeMillis() < noteUntil) {
+                fill.color = if (light) Color.BLACK else Color.WHITE
+                fill.textSize = r * 0.3f
+                fill.textAlign = Paint.Align.CENTER
+                canvas.drawText(note!!, cx, cy * 2f - 2f, fill)
+            }
+        }
+
         override fun onDraw(canvas: Canvas) {
             val now = SystemClock.uptimeMillis()
             val t = (now - start) / 1000f
@@ -540,6 +571,14 @@ class OverlayChatService : android.app.Service() {
             val cx = w / 2f
             val cy = h / 2f
             val r = min(w, h) / 2f
+
+            // Only the horror look wears the watching eye. Light and dark get a calm
+            // glowing orb in the theme's own colour, so nothing frightening shows up.
+            if (ai.zyraxon.assistant.ui.theme.Glass.mode != ai.zyraxon.assistant.ui.theme.ZyThemeMode.HORROR) {
+                drawCalm(canvas, t, cx, cy, r)
+                if (running) postInvalidateOnAnimation()
+                return
+            }
 
             // Colour follows the state: blood red when idle, white-hot while hearing,
             // amber while thinking, violet-red while speaking, grey when muted.

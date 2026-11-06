@@ -15,6 +15,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -113,7 +114,7 @@ internal fun ShareButton(text: String? = null, path: String? = null, label: Stri
     var open by remember { mutableStateOf(false) }
     Box {
         Text(
-            label, color = Glass.textMuted, fontSize = 11.5.sp,
+            label, color = Glass.textMuted, fontSize = 11.5.sp, maxLines = 1, softWrap = false,
             modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { open = true }.padding(horizontal = 7.dp, vertical = 4.dp)
         )
         DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = Glass.sheetFill(0.9f)) {
@@ -131,10 +132,10 @@ internal fun ShareButton(text: String? = null, path: String? = null, label: Stri
 @Composable
 private fun MessageActions(message: ChatMessage, onCopy: () -> Unit, onSpeak: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(t("⧉ কপি"), color = Glass.textMuted, fontSize = 11.5.sp,
+        Text(t("⧉ কপি"), color = Glass.textMuted, fontSize = 11.5.sp, maxLines = 1, softWrap = false,
             modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { onCopy() }.padding(horizontal = 7.dp, vertical = 4.dp))
         if (message.role == MessageRole.ASSISTANT) {
-            Text(t("🔊 শোনো"), color = Glass.textMuted, fontSize = 11.5.sp,
+            Text(t("🔊 শোনো"), color = Glass.textMuted, fontSize = 11.5.sp, maxLines = 1, softWrap = false,
                 modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { onSpeak() }.padding(horizontal = 7.dp, vertical = 4.dp))
         }
         ShareButton(text = message.text)
@@ -209,9 +210,11 @@ fun MessageItem(
                 // Nothing under a bubble that is still being written.
             }
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // Time line above, actions below: side by side they ran out of width and the
+        // Share label broke into one letter per line.
+        Column {
             TimeLine(message, isLastStreaming, turnStartedAt)
-            if (!message.isStreaming) MessageActions(message, onCopy, onSpeak)
+            if (!message.isStreaming) Row(Modifier.horizontalScroll(androidx.compose.foundation.rememberScrollState())) { MessageActions(message, onCopy, onSpeak) }
         }
     }
 }

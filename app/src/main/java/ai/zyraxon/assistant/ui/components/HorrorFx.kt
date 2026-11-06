@@ -50,20 +50,28 @@ import kotlin.random.Random
  * input handling, so it can sit on top of live screens without stealing touches.
  */
 
-/** The red halo used behind titles and key labels. */
-val BloodGlow = Shadow(color = Color(0xFFFF0033), offset = Offset.Zero, blurRadius = 26f)
+/** The red halo used behind titles and key labels (none outside the horror look). */
+val BloodGlow: Shadow get() =
+    if (ai.zyraxon.assistant.ui.theme.Glass.isHorror) Shadow(color = Color(0xFFFF0033), offset = Offset.Zero, blurRadius = 26f)
+    else Shadow(color = Color.Transparent, offset = Offset.Zero, blurRadius = 0f)
 
 /** A softer halo for section titles inside panels. */
-val BloodGlowSoft = Shadow(color = Color(0xFFFF0033), offset = Offset.Zero, blurRadius = 12f)
+val BloodGlowSoft: Shadow get() =
+    if (ai.zyraxon.assistant.ui.theme.Glass.isHorror) Shadow(color = Color(0xFFFF0033), offset = Offset.Zero, blurRadius = 12f)
+    else Shadow(color = Color.Transparent, offset = Offset.Zero, blurRadius = 0f)
 
-/** Card fills for the settings panes: clotted blood fading into obsidian. */
-val BloodCardBrush: Brush = Brush.verticalGradient(listOf(Color(0xE61F030A), Color(0xE60C0104)))
-val BloodRowBrush: Brush = Brush.verticalGradient(listOf(Color(0xCC34060E), Color(0xCC1A0307)))
+/** Card fills for the settings panes: clotted blood in horror, plain glass elsewhere. */
+val BloodCardBrush: Brush get() =
+    if (ai.zyraxon.assistant.ui.theme.Glass.isHorror) Brush.verticalGradient(listOf(Color(0xE61F030A), Color(0xE60C0104)))
+    else Brush.verticalGradient(listOf(ai.zyraxon.assistant.ui.theme.Glass.sheetFill(0.9f), ai.zyraxon.assistant.ui.theme.Glass.sheetFill(0.9f)))
+val BloodRowBrush: Brush get() =
+    if (ai.zyraxon.assistant.ui.theme.Glass.isHorror) Brush.verticalGradient(listOf(Color(0xCC34060E), Color(0xCC1A0307)))
+    else Brush.verticalGradient(listOf(ai.zyraxon.assistant.ui.theme.Glass.fill(0.6f), ai.zyraxon.assistant.ui.theme.Glass.fill(0.6f)))
 
-val BloodRedHot = Color(0xFFFF1E44)
-val BloodRedDeep = Color(0xFFB00020)
-val BloodRedDark = Color(0xFF5A0010)
-val BoneWhite = Color(0xFFFFE9E9)
+val BloodRedHot: Color get() = if (ai.zyraxon.assistant.ui.theme.Glass.isHorror) Color(0xFFFF1E44) else ai.zyraxon.assistant.ui.theme.Glass.pink
+val BloodRedDeep: Color get() = if (ai.zyraxon.assistant.ui.theme.Glass.isHorror) Color(0xFFB00020) else ai.zyraxon.assistant.ui.theme.Glass.pink
+val BloodRedDark: Color get() = if (ai.zyraxon.assistant.ui.theme.Glass.isHorror) Color(0xFF5A0010) else ai.zyraxon.assistant.ui.theme.Glass.borderSoft
+val BoneWhite: Color get() = if (ai.zyraxon.assistant.ui.theme.Glass.isHorror) Color(0xFFFFE9E9) else ai.zyraxon.assistant.ui.theme.Glass.textPrimary
 
 private fun bump(t: Float, centre: Float, width: Float): Float =
     max(0f, 1f - abs(t - centre) / width)
@@ -103,6 +111,7 @@ fun BloodDrips(
     count: Int = 7,
     maxLength: Dp = 56.dp
 ) {
+    if (!ai.zyraxon.assistant.ui.theme.Glass.isHorror) return
     val n = count.coerceIn(3, 9)
     val drips = remember(seed, n) {
         val r = Random(seed)
@@ -223,6 +232,7 @@ fun BloodDrips(
 /** Dark, pulsing blood-red vignette that beats like a heart. */
 @Composable
 fun HorrorVignette(modifier: Modifier = Modifier, intensity: Float = 1f) {
+    if (!ai.zyraxon.assistant.ui.theme.Glass.isHorror) return
     val beat by rememberHeartbeat()
     Canvas(modifier = modifier) {
         val c = Offset(size.width / 2f, size.height / 2f)
@@ -251,6 +261,7 @@ fun HorrorVignette(modifier: Modifier = Modifier, intensity: Float = 1f) {
 /** CRT scan-lines plus a slow red sweep, for the terminal. */
 @Composable
 fun Scanlines(modifier: Modifier = Modifier, lineAlpha: Float = 0.12f) {
+    if (!ai.zyraxon.assistant.ui.theme.Glass.isHorror) return
     val transition = rememberLiveTransition(label = "scan")
     val t by transition.animateFloat(
         initialValue = 0f,
@@ -289,6 +300,7 @@ private class Vein(val pts: List<Offset>, val w: Float)
 /** Pulsing veins crawling in from the four corners of the screen. */
 @Composable
 fun BloodVeins(modifier: Modifier = Modifier, seed: Int = 5) {
+    if (!ai.zyraxon.assistant.ui.theme.Glass.isHorror) return
     val veins = remember(seed) {
         val r = Random(seed)
         val out = mutableListOf<Vein>()
@@ -336,6 +348,7 @@ fun BloodVeins(modifier: Modifier = Modifier, seed: Int = 5) {
 /** A slowly turning blood-sigil: rings, rune ticks and a five-point star. */
 @Composable
 fun RitualCircle(modifier: Modifier = Modifier) {
+    if (!ai.zyraxon.assistant.ui.theme.Glass.isHorror) return
     val transition = rememberLiveTransition(label = "ritual")
     val rot by transition.animateFloat(
         initialValue = 0f,
@@ -381,6 +394,7 @@ fun Modifier.bloodPulseBorder(
     shape: Shape = RoundedCornerShape(14.dp),
     width: Dp = 1.dp
 ): Modifier {
+    if (!ai.zyraxon.assistant.ui.theme.Glass.isHorror) return this
     val beat by rememberHeartbeat()
     val hot = BloodRedHot.copy(alpha = 0.45f + 0.55f * beat)
     return this.border(
@@ -393,6 +407,7 @@ fun Modifier.bloodPulseBorder(
 /** A faulty-light flicker: steady, then a sudden stutter. */
 @Composable
 fun Modifier.horrorFlicker(): Modifier {
+    if (!ai.zyraxon.assistant.ui.theme.Glass.isHorror) return this
     val transition = rememberLiveTransition(label = "flicker")
     val a by transition.animateFloat(
         initialValue = 0f,
@@ -421,6 +436,7 @@ private class EyePair(val x: Float, val y: Float, val r: Float, val phase: Float
  */
 @Composable
 fun WatchingEyes(modifier: Modifier = Modifier, seed: Int = 66, pairs: Int = 3) {
+    if (!ai.zyraxon.assistant.ui.theme.Glass.isHorror) return
     val eyes = remember(seed, pairs) {
         val rnd = Random(seed)
         val spots = listOf(0.10f to 0.36f, 0.90f to 0.52f, 0.16f to 0.74f, 0.86f to 0.22f, 0.50f to 0.90f)
@@ -479,6 +495,7 @@ fun WatchingEyes(modifier: Modifier = Modifier, seed: Int = 66, pairs: Int = 3) 
 /** A rare horizontal glitch jolt, like a bad signal. */
 @Composable
 fun Modifier.glitchShake(): Modifier {
+    if (!ai.zyraxon.assistant.ui.theme.Glass.isHorror) return this
     val transition = rememberLiveTransition(label = "glitch")
     val dx by transition.animateFloat(
         initialValue = 0f,
@@ -504,6 +521,7 @@ private class Splat(val x: Float, val y: Float, val r: Float)
 /** Dried blood splatters pooled in the corners of a screen. Static, drawn once. */
 @Composable
 fun BloodSplatter(modifier: Modifier = Modifier, seed: Int = 8) {
+    if (!ai.zyraxon.assistant.ui.theme.Glass.isHorror) return
     val splats = remember(seed) {
         val rnd = Random(seed)
         val out = mutableListOf<Splat>()
@@ -538,6 +556,7 @@ fun BloodSplatter(modifier: Modifier = Modifier, seed: Int = 8) {
  */
 @Composable
 fun HorrorSheetBackdrop(modifier: Modifier = Modifier, seed: Int = 3) {
+    if (!ai.zyraxon.assistant.ui.theme.Glass.isHorror) return
     androidx.compose.foundation.layout.Box(modifier = modifier) {
         BloodVeins(Modifier.fillMaxSize(), seed = seed)
         HorrorVignette(Modifier.fillMaxSize(), intensity = 0.9f)
@@ -558,7 +577,7 @@ fun HorrorSectionTitle(text: String, modifier: Modifier = Modifier) {
     androidx.compose.foundation.layout.Column(modifier = modifier.fillMaxWidth()) {
         androidx.compose.foundation.layout.Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             androidx.compose.material3.Text(
-                text = "☠",
+                text = if (ai.zyraxon.assistant.ui.theme.Glass.isHorror) "☠" else "◆",
                 color = BloodRedHot,
                 fontSize = 15.sp,
                 style = androidx.compose.ui.text.TextStyle(shadow = BloodGlow),

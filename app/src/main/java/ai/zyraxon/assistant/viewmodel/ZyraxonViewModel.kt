@@ -409,7 +409,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     )
                 }
                 _voices.value = list
-                _voicesState.value = if (list.isEmpty()) "খালি তালিকা এসেছে" else ""
+                _voicesState.value = if (list.isEmpty()) t("খালি তালিকা এসেছে") else ""
             } catch (e: Exception) {
                 _voicesState.value = "কণ্ঠের তালিকা আনা যায়নি: ${e.message}"
             }
@@ -444,7 +444,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     fun stopSubAgent(id: String) {
         sessions[id]?.job?.cancel()
-        subUpdate(id) { it.copy(state = "stopped", lastAction = "থামানো হয়েছে") }
+        subUpdate(id) { it.copy(state = "stopped", lastAction = t("থামানো হয়েছে")) }
     }
 
     /** A file the user (or the Files list) wants opened in the Code panel's editor. */
@@ -656,18 +656,18 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val app = getApplication<Application>()
         val apk = ShizukuBundle.apkFile(app)
         if (apk == null) {
-            _shizukuState.value = ShizukuState.Failed("বান্ডেল করা Shizuku ফাইল খোলা গেল না")
+            _shizukuState.value = ShizukuState.Failed(t("বান্ডেল করা Shizuku ফাইল খোলা গেল না"))
             return
         }
         if (!updater.canInstall()) {
             updater.openInstallPermissionSettings()
-            _shizukuState.value = ShizukuState.Failed("ইনস্টল করতে আগে \"এই সোর্স থেকে ইনস্টল\" অনুমতি দিন")
+            _shizukuState.value = ShizukuState.Failed(t("ইনস্টল করতে আগে \"এই সোর্স থেকে ইনস্টল\" অনুমতি দিন"))
             return
         }
         _shizukuState.value = ShizukuState.Installing
         runCatching { updater.installPackage(apk) }.fold(
             onSuccess = { _shizukuState.value = ShizukuState.InstalledNotRunning },
-            onFailure = { _shizukuState.value = ShizukuState.Failed(it.message ?: "Shizuku ইনস্টল শুরু করা গেল না") }
+            onFailure = { _shizukuState.value = ShizukuState.Failed(it.message ?: t("Shizuku ইনস্টল শুরু করা গেল না")) }
         )
     }
 
@@ -716,7 +716,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     _updateState.value = if (silent) {
                         UpdateState.Idle
                     } else {
-                        UpdateState.Failed(error.message ?: "চেক করা গেল না")
+                        UpdateState.Failed(error.message ?: t("চেক করা গেল না"))
                     }
                 }
             )
@@ -739,7 +739,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     _updateState.value = UpdateState.Downloaded(release, apk.absolutePath)
                 },
                 onFailure = { error ->
-                    _updateState.value = UpdateState.Failed(error.message ?: "ডাউনলোড ব্যর্থ")
+                    _updateState.value = UpdateState.Failed(error.message ?: t("ডাউনলোড ব্যর্থ"))
                 }
             )
         }
@@ -781,7 +781,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val file = (state as? UpdateState.Downloaded)?.apkPath?.let { java.io.File(it) }
             ?: updater.stagedApk(release)
         if (file == null || !file.exists()) {
-            _updateState.value = UpdateState.Failed("ডাউনলোড করা ফাইল পাওয়া গেল না")
+            _updateState.value = UpdateState.Failed(t("ডাউনলোড করা ফাইল পাওয়া গেল না"))
             return
         }
         if (!updater.canInstall()) {
@@ -790,7 +790,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             return
         }
         runCatching { updater.install(file) }.onFailure { error ->
-            _updateState.value = UpdateState.Failed(error.message ?: "ইনস্টল শুরু করা গেল না")
+            _updateState.value = UpdateState.Failed(error.message ?: t("ইনস্টল শুরু করা গেল না"))
         }
     }
 
@@ -842,7 +842,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val id = UUID.randomUUID().toString()
         val item = ToolExecutionItem(
             id = id, name = name, description = describeToolCall(name, args), icon = toolIcon(name),
-            status = "চলছে…", timestamp = currentTimeString(), running = true
+            status = t("চলছে…"), timestamp = currentTimeString(), running = true
         )
         s.updateActive { list -> listOf(item) + list }
         val code = if (name == "edit_file") args.optString("content").ifBlank { args.optString("replace") } else ""
@@ -1244,7 +1244,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      */
     private fun restoreSavedModel(): AiModel {
         val id = prefs.getString("selected_model_id", null)
-        if (id.isNullOrBlank()) return AiModel("", "মডেল লোড হচ্ছে…", "", "", "", true)
+        if (id.isNullOrBlank()) return AiModel("", t("মডেল লোড হচ্ছে…"), "", "", "", true)
         val name = prefs.getString("selected_model_name", id) ?: id
         val provider = prefs.getString("selected_model_provider", "") ?: ""
         val spec = ProviderCatalog.find(provider)
@@ -1586,7 +1586,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         _providerBusy.value = _providerBusy.value + provider
         // The row must react to the tap immediately, so a placeholder is set
         // before the network call starts rather than after it returns.
-        _providerStatus.value = _providerStatus.value + (provider to "যাচাই করা হচ্ছে…")
+        _providerStatus.value = _providerStatus.value + (provider to t("যাচাই করা হচ্ছে…"))
         viewModelScope.launch {
             // The cloud agent has no catalogue to read, so it is proved a different
             // way: reading the account with the key. That is the same call every
@@ -1609,7 +1609,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         aiEngine.setApiKey(provider, key)
         val trimmed = key.trim()
         _providerBusy.value = _providerBusy.value + provider
-        _providerStatus.value = _providerStatus.value + (provider to "যাচাই করা হচ্ছে…")
+        _providerStatus.value = _providerStatus.value + (provider to t("যাচাই করা হচ্ছে…"))
         viewModelScope.launch {
             val (ok, message) = if (provider == ZYRAXON_APEX) verifyApexKey(trimmed)
                 else aiEngine.verifyProviderKey(provider)
@@ -1629,21 +1629,21 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val list = withContext(Dispatchers.IO) { openHandsClient.listConversations(key, limit = 1) }
         true to "কানেক্টেড (${list.size}টি কনভার্সেশন)"
     } catch (e: ai.zyraxon.assistant.openhands.OhAuthError) {
-        false to "কী গ্রহণ করা হয়নি"
+        false to t("কী গ্রহণ করা হয়নি")
     } catch (e: Exception) {
-        false to (e.message ?: "সংযোগ ব্যর্থ")
+        false to (e.message ?: t("সংযোগ ব্যর্থ"))
     }
 
     fun saveGithubToken(token: String) {
         aiEngine.setGithubToken(token)
         _githubToken.value = token
-        _githubStatus.value = if (token.isNotEmpty()) "টোকেন সফলভাবে সেভ হয়েছে" else "টোকেন সরানো হয়েছে"
+        _githubStatus.value = if (token.isNotEmpty()) t("টোকেন সফলভাবে সেভ হয়েছে") else t("টোকেন সরানো হয়েছে")
     }
 
     fun clearGithubToken() {
         aiEngine.setGithubToken("")
         _githubToken.value = ""
-        _githubStatus.value = "টোকেন নেই"
+        _githubStatus.value = t("টোকেন নেই")
     }
 
     fun addTask(text: String) {
@@ -1859,7 +1859,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val wsUrl = spec?.realtimeWsUrl
         if (spec == null || wsUrl == null) {
             _systemStatus.value = _systemStatus.value.copy(
-                lastError = "এই প্রোভাইডারে রিয়েলটাইম ভয়েস নেই"
+                lastError = t("এই প্রোভাইডারে রিয়েলটাইম ভয়েস নেই")
             )
             return
         }
@@ -2442,7 +2442,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 val child = session(id)
                 child.mode.value = mode
                 child.parentId = parent.id
-                subInfo.update { it + (id to SubAgentInfo(id, parent.id, title, task, model.name, "running", 0, "শুরু হচ্ছে…")) }
+                subInfo.update { it + (id to SubAgentInfo(id, parent.id, title, task, model.name, "running", 0, t("শুরু হচ্ছে…"))) }
                 val brief = "[সাব-এজেন্ট] তুমি মূল এজেন্টের সহকারী। শুধু নিচের কাজটি সম্পূর্ণ শেষ করো (ফাইল লেখো, চালাও, যাচাই করো), " +
                     "আর শেষে সংক্ষেপে বলো কী করেছ ও ফাইল/ফল কোথায়।\n\nকাজ: $task"
                 runTurn(child, brief, emptyList(), speak = false, modelOverride = model) { result ->
@@ -2461,7 +2461,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                         val pct = if (tasks.isNotEmpty()) (tasks.count { it.isCompleted } * 100 / tasks.size).coerceAtMost(95)
                             else (child.toolExecutions.value.size * 7).coerceAtMost(90)
                         val last = child.activeToolCalls.value.firstOrNull()?.description
-                            ?: child.toolExecutions.value.firstOrNull()?.description ?: "ভাবছে…"
+                            ?: child.toolExecutions.value.firstOrNull()?.description ?: t("ভাবছে…")
                         subUpdate(id) { if (it.state == "running") it.copy(percent = maxOf(it.percent, pct), lastAction = last) else it }
                     }
                 }
@@ -2529,9 +2529,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             }
             if (dataUrl.isNotBlank()) {
                 _attachedImages.value = _attachedImages.value + dataUrl
-                _imageNotice.value = "ছবি সংযুক্ত হয়েছে — এখন প্রশ্ন লিখে পাঠান"
+                _imageNotice.value = t("ছবি সংযুক্ত হয়েছে — এখন প্রশ্ন লিখে পাঠান")
             } else {
-                _imageNotice.value = "ছবিটি পড়া গেল না"
+                _imageNotice.value = t("ছবিটি পড়া গেল না")
             }
         }
     }
@@ -2580,9 +2580,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             many?.let { for (i in 0 until it.length()) it.optString(i).takeIf { s -> s.isNotBlank() }?.let { s -> shots.add(s) } }
             if (shots.isNotEmpty()) {
                 _attachedImages.value = _attachedImages.value + shots
-                _imageNotice.value = result.optString("summary").ifBlank { "মিডিয়া সংযুক্ত হয়েছে" }
+                _imageNotice.value = result.optString("summary").ifBlank { t("মিডিয়া সংযুক্ত হয়েছে") }
             } else {
-                _imageNotice.value = result.optString("summary").ifBlank { "মিডিয়া পড়া গেল না" }
+                _imageNotice.value = result.optString("summary").ifBlank { t("মিডিয়া পড়া গেল না") }
             }
         }
     }
@@ -2664,9 +2664,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             many?.let { for (i in 0 until it.length()) it.optString(i).takeIf { s -> s.isNotBlank() }?.let { s -> shots.add(s) } }
             if (shots.isNotEmpty()) {
                 _attachedImages.value = _attachedImages.value + shots
-                _imageNotice.value = result.optString("summary").ifBlank { "ছবি সংযুক্ত হয়েছে" }
+                _imageNotice.value = result.optString("summary").ifBlank { t("ছবি সংযুক্ত হয়েছে") }
             } else {
-                _imageNotice.value = result.optString("summary").ifBlank { "ছবি নেওয়া গেল না" }
+                _imageNotice.value = result.optString("summary").ifBlank { t("ছবি নেওয়া গেল না") }
             }
         }
     }
@@ -3686,19 +3686,19 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             val key = aiEngine.getApiKey(ZYRAXON_APEX)
             if (key.isBlank()) {
-                _cloudNotice.value = "আগে Apex কী বসাও"
+                _cloudNotice.value = t("আগে Apex কী বসাও")
                 cloudRefreshBusy.value = false
                 return@launch
             }
             if (!aiEngine.isOnline()) {
-                _cloudNotice.value = "ইন্টারনেট নেই — অনলাইনে এলে নিজেই ঠিক হয়ে যাবে"
+                _cloudNotice.value = t("ইন্টারনেট নেই — অনলাইনে এলে নিজেই ঠিক হয়ে যাবে")
                 cloudRefreshBusy.value = false
                 return@launch
             }
-            _cloudNotice.value = "দেখা হচ্ছে…"
+            _cloudNotice.value = t("দেখা হচ্ছে…")
             val id = openHandsStore.lastConversationId
             if (id.isNullOrBlank()) {
-                _cloudNotice.value = "ক্লাউড প্রস্তুত — নতুন চ্যাট শুরু করো"
+                _cloudNotice.value = t("ক্লাউড প্রস্তুত — নতুন চ্যাট শুরু করো")
                 cloudRefreshBusy.value = false
                 return@launch
             }
@@ -3708,8 +3708,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 }
             }.getOrNull()
             _cloudNotice.value = when {
-                conv == null -> "কনভার্সেশন পাওয়া যায়নি — পরের মেসেজে নতুনটা তৈরি হবে"
-                conv.sandboxStatus == "RUNNING" -> "ক্লাউড কানেক্টেড ✅"
+                conv == null -> t("কনভার্সেশন পাওয়া যায়নি — পরের মেসেজে নতুনটা তৈরি হবে")
+                conv.sandboxStatus == "RUNNING" -> t("ক্লাউড কানেক্টেড ✅")
                 else -> "স্যান্ডবক্স এখনো জাগছে (${conv.sandboxStatus})"
             }
             withContext(Dispatchers.IO) { runCatching { refreshModels() } }
@@ -3731,7 +3731,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         }
         if (!aiEngine.mcp.isAwaitingRedirect()) return
         aiEngine.mcp.cancelPending()
-        _mcpNotice.value = "কানেক্ট করার ফ্লো বাতিল হলো — আবার কানেক্ট চাপো"
+        _mcpNotice.value = t("কানেক্ট করার ফ্লো বাতিল হলো — আবার কানেক্ট চাপো")
     }
 
     fun addCustomMcp(url: String, name: String, token: String) {

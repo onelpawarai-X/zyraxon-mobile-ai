@@ -58,17 +58,18 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.ui.text.withStyle
+import ai.zyraxon.assistant.ui.theme.Glass
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val TerminalBg = Color(0xFF040001)
-private val TerminalChrome = Color(0xFF1C0208)
-private val TerminalEdge = Color(0xFF8A0C20)
-private val TerminalPrompt = Color(0xFFFF1E44)
-private val TerminalText = Color(0xFFF5E4E8)
-private val TerminalDim = Color(0xFF9E6572)
-private val TerminalError = Color(0xFFFF2244)
-private val TerminalCyan = Color(0xFFFF4D6D)
+private val TerminalBg: Color get() = when { Glass.isHorror -> Color(0xFF040001); Glass.isLight -> Color(0xFFF6F7FB); else -> Color(0xFF0B0D12) }
+private val TerminalChrome: Color get() = when { Glass.isHorror -> Color(0xFF1C0208); Glass.isLight -> Color(0xFFE8EAF2); else -> Color(0xFF151923) }
+private val TerminalEdge: Color get() = when { Glass.isHorror -> Color(0xFF8A0C20); Glass.isLight -> Color(0xFFC5C9D8); else -> Color(0xFF3A4156) }
+private val TerminalPrompt: Color get() = when { Glass.isHorror -> Color(0xFFFF1E44); Glass.isLight -> Color(0xFF5B3DF5); else -> Color(0xFF8B7BFF) }
+private val TerminalText: Color get() = when { Glass.isHorror -> Color(0xFFF5E4E8); Glass.isLight -> Color(0xFF14161C); else -> Color(0xFFE6E9F2) }
+private val TerminalDim: Color get() = when { Glass.isHorror -> Color(0xFF9E6572); Glass.isLight -> Color(0xFF6B7287); else -> Color(0xFF7D869D) }
+private val TerminalError: Color get() = when { Glass.isHorror -> Color(0xFFFF2244); Glass.isLight -> Color(0xFFD32F2F); else -> Color(0xFFFF5C6C) }
+private val TerminalCyan: Color get() = when { Glass.isHorror -> Color(0xFFFF4D6D); Glass.isLight -> Color(0xFF0E9F8E); else -> Color(0xFF37D6C5) }
 
 /**
  * The Terminal's typeface. A monospace face carries the code, but no monospace
