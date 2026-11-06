@@ -124,8 +124,16 @@ class OpenHandsEventsTest {
         .put("tool_call", JSONObject().put("id", callId).put("name", "open_app"))
         .toString()
 
+    /**
+     * A page body, built from real JSON objects.
+     *
+     * `JSONArray(listOfStrings)` stores each element as a *string*, so
+     * `optJSONObject(i)` returns null and every page reads back empty — which
+     * looks exactly like a client that loses events. Parsing each event into a
+     * JSONObject first is what makes the fake server honest.
+     */
     private fun page(events: List<String>, next: String? = null) = JSONObject()
-        .put("items", JSONArray(events))
+        .put("items", JSONArray(events.map { JSONObject(it) }))
         .put("next_page_id", next ?: JSONObject.NULL)
         .toString()
 
