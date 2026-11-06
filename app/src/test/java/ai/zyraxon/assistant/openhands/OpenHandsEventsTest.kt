@@ -43,11 +43,17 @@ class OpenHandsEventsTest {
     private lateinit var server: MockWebServer
     private val paths = CopyOnWriteArrayList<String>()
 
-    /** The page the service hands back first, and what it points at next. */
-    private var firstPage = """{"items":[]}"""
-    private var secondPage = """{"items":[]}"""
-    private var newestPage = """{"items":[]}"""
-    private var refuse = false
+    /**
+     * The page the service hands back first, and what it points at next.
+     *
+     * Written by the test thread and read by MockWebServer's own dispatcher
+     * thread, so these are volatile: without it the dispatcher can read the
+     * stale default and answer an empty page, which reads as a client bug.
+     */
+    @Volatile private var firstPage = """{"items":[]}"""
+    @Volatile private var secondPage = """{"items":[]}"""
+    @Volatile private var newestPage = """{"items":[]}"""
+    @Volatile private var refuse = false
 
     @Before
     fun setUp() {

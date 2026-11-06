@@ -61,7 +61,16 @@ android {
   testOptions {
     unitTests {
       isIncludeAndroidResources = true
-      all { it.systemProperty("zyraxon.wakeTimeoutMs", "3000") }
+      all {
+        it.systemProperty("zyraxon.wakeTimeoutMs", "3000")
+        // A failing assertion must say what it saw. The default SHORT format
+        // prints only "AssertionError at File.kt:line", which hides the actual
+        // values and turns every failure into a guess.
+        it.testLogging {
+          events("failed")
+          exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
+      }
     }
   }
   // Robolectric loads its native runtime into a shared temp directory. Parallel
