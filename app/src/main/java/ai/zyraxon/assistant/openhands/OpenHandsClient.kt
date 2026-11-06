@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.openhands
 
+import ai.zyraxon.assistant.core.safe
+
 import ai.zyraxon.assistant.i18n.t
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -358,8 +360,8 @@ class OpenHandsClient(
                     val e = items.optJSONObject(i) ?: continue
                     // The tool call's own id, not the event's: it is what a live
                     // ActionEvent carries, so the two can be compared.
-                    if (e.optString("kind") == "ActionEvent") {
-                        val cid = e.optJSONObject("tool_call")?.optString("id").orEmpty()
+                    if (e.safe("kind") == "ActionEvent") {
+                        val cid = e.optJSONObject("tool_call")?.safe("id").orEmpty()
                         if (cid.isNotBlank()) add(cid)
                     }
                 }

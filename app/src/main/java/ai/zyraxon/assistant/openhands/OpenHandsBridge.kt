@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.openhands
 
+import ai.zyraxon.assistant.core.safe
+
 import ai.zyraxon.assistant.ai.ZyraxonAiEngine
 import ai.zyraxon.assistant.model.AgentMode
 import kotlinx.coroutines.CompletableDeferred
@@ -452,8 +454,8 @@ class OpenHandsBridge(
     /** A one-line, human-readable record of a phone tool the agent asked for. */
     private fun toolNote(name: String, result: JSONObject): String {
         val ok = result.optBoolean("ok", false)
-        val summary = result.optString("summary")
-            .ifBlank { result.optString("error") }
+        val summary = result.safe("summary")
+            .ifBlank { result.safe("error") }
             .ifBlank { result.toString() }
         return "\n\n`$name` ${if (ok) "✓" else "✗"} ${summary.take(200)}\n\n"
     }
@@ -466,7 +468,7 @@ class OpenHandsBridge(
      */
     private fun toolResult(name: String, result: JSONObject): String {
         val ok = result.optBoolean("ok", false)
-        val summary = result.optString("summary").ifBlank { result.toString() }
+        val summary = result.safe("summary").ifBlank { result.toString() }
         val data = result.opt("data")
         return buildString {
             append("[phone tool result] ").append(name).append(" → ")
@@ -543,12 +545,12 @@ class OpenHandsBridge(
             val schemas = ai.zyraxon.assistant.ai.ToolRegistry.schemas(mode)
             for (i in 0 until schemas.length()) {
                 val fn = schemas.optJSONObject(i)?.optJSONObject("function") ?: continue
-                val name = fn.optString("name")
+                val name = fn.safe("name")
                 if (name.isBlank() || name in CLOUD_EXCLUDED) continue
                 out.put(
                     JSONObject()
                         .put("name", publishedName(name))
-                        .put("description", fn.optString("description"))
+                        .put("description", fn.safe("description"))
                         .put("parameters", fn.optJSONObject("parameters")
                             ?: JSONObject().put("type", "object"))
                 )

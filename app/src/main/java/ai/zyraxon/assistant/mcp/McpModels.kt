@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.mcp
 
+import ai.zyraxon.assistant.core.safe
+
 import org.json.JSONObject
 
 /**
@@ -152,17 +154,17 @@ object McpCatalog {
         .put("scopes", org.json.JSONArray(s.scopes))
 
     fun fromJson(o: JSONObject): McpServer = McpServer(
-        id = o.optString("id"),
-        name = o.optString("name"),
-        tagline = o.optString("tagline"),
-        emoji = o.optString("emoji", "🔌"),
-        url = o.optString("url"),
-        auth = runCatching { McpAuth.valueOf(o.optString("auth", "NONE")) }.getOrDefault(McpAuth.NONE),
-        docsUrl = o.optString("docsUrl"),
-        tokenUrl = o.optString("tokenUrl"),
-        tokenHint = o.optString("tokenHint"),
-        highlights = o.optJSONArray("highlights")?.let { a -> (0 until a.length()).map { a.optString(it) } } ?: emptyList(),
-        scopes = o.optJSONArray("scopes")?.let { a -> (0 until a.length()).map { a.optString(it) } } ?: emptyList(),
+        id = o.safe("id"),
+        name = o.safe("name"),
+        tagline = o.safe("tagline"),
+        emoji = o.safe("emoji", "🔌"),
+        url = o.safe("url"),
+        auth = runCatching { McpAuth.valueOf(o.safe("auth", "NONE")) }.getOrDefault(McpAuth.NONE),
+        docsUrl = o.safe("docsUrl"),
+        tokenUrl = o.safe("tokenUrl"),
+        tokenHint = o.safe("tokenHint"),
+        highlights = o.optJSONArray("highlights")?.let { a -> (0 until a.length()).map { a.safe(it) } } ?: emptyList(),
+        scopes = o.optJSONArray("scopes")?.let { a -> (0 until a.length()).map { a.safe(it) } } ?: emptyList(),
         custom = o.optBoolean("custom")
     )
 }

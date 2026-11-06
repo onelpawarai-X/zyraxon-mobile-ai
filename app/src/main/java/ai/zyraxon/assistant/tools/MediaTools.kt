@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.tools
 
+import ai.zyraxon.assistant.core.safe
+
 import android.content.Context
 import ai.zyraxon.assistant.ai.ToolRegistry
 import ai.zyraxon.assistant.shell.LinuxRuntime
@@ -64,13 +66,13 @@ object MediaTools {
     // ------------------------------------------------------------ pictures ---
 
     fun image(context: Context, args: JSONObject, live: ((String) -> Unit)?): JSONObject {
-        val prompt = args.optString("prompt").trim()
+        val prompt = args.safe("prompt").trim()
         if (prompt.isEmpty()) return err("prompt দরকার")
         val w = args.optInt("width", 1024).coerceIn(256, 2048)
         val h = args.optInt("height", 1024).coerceIn(256, 2048)
         val seed = if (args.has("seed")) args.optInt("seed") else (System.currentTimeMillis() % 1_000_000).toInt()
-        val model = args.optString("model", "flux").ifBlank { "flux" }
-        val file = File(mediaDir(context, "images"), safeName(args.optString("name"), "image-$seed") + ".jpg")
+        val model = args.safe("model", "flux").ifBlank { "flux" }
+        val file = File(mediaDir(context, "images"), safeName(args.safe("name"), "image-$seed") + ".jpg")
         progress(live, 8, "ছবি আঁকা হচ্ছে")
         val url = "https://image.pollinations.ai/prompt/" + URLEncoder.encode(prompt, "UTF-8").replace("+", "%20") +
             "?width=$w&height=$h&seed=$seed&model=$model&nologo=true&enhance=true"
@@ -106,7 +108,7 @@ object MediaTools {
     }
 
     private fun ttsUrl(text: String, voice: JSONObject?, defaults: JSONObject): String {
-        fun pick(k: String): String = voice?.optString(k).orEmpty().ifBlank { defaults.optString(k) }
+        fun pick(k: String): String = voice?.safe(k).orEmpty().ifBlank { defaults.safe(k) }
         val locale = RemoteTtsRequest.localeFor(pick("language").ifBlank { pick("locale") })
         val gender = RemoteTtsRequest.genderFor(pick("gender"))
         val tone = pick("tone").ifBlank { RemoteTtsRequest.toneFor(text) }
@@ -119,24 +121,24 @@ object MediaTools {
     }
 
     fun audio(context: Context, args: JSONObject, live: ((String) -> Unit)?): JSONObject {
-        if (args.optString("action") == "voices") return voices()
+        if (args.safe("action") == "voices") return voices()
         val segs = JSONArray()
         val given = args.optJSONArray("segments")
         if (given != null && given.length() > 0) for (i in 0 until given.length()) segs.put(given.getJSONObject(i))
         else {
-            val t = args.optString("text").trim()
+            val t = args.safe("text").trim()
             if (t.isEmpty()) return err("text বা segments দরকার")
             segs.put(JSONObject().put("text", t))
         }
         val out = File(mediaDir(context, "audio"),
-            safeName(args.optString("name"), "audio-${System.currentTimeMillis() / 1000}") + ".mp3")
+            safeName(args.safe("name"), "audio-${System.currentTimeMillis() / 1000}") + ".mp3")
         out.delete()
         val total = segs.length()
         try {
             out.outputStream().use { sink ->
                 for (i in 0 until total) {
                     val seg = segs.getJSONObject(i)
-                    val text = seg.optString("text").trim()
+                    val text = seg.safe("text").trim()
                     if (text.isEmpty()) continue
                     progress(live, 5 + (i * 90) / total, "কণ্ঠ ${i + 1}/$total")
                     // The endpoint speaks a bounded piece at a time; long text is cut at sentence ends.
@@ -224,8 +226,8 @@ object MediaTools {
 
     fun ffmpegTool(context: Context, args: JSONObject, live: ((String) -> Unit)?): JSONObject {
         ensureFfmpeg(context, live)?.let { return err(it) }
-        val cwd = args.optString("cwd").ifBlank { ToolRegistry.workspace(context).absolutePath }
-        val line = args.optString("args").trim()
+        val cwd = args.safe("cwd").ifBlank { ToolRegistry.workspace(context).absolutePath }
+        val line = args.safe("args").trim()
         if (line.isEmpty()) return err("args দরকার")
         progress(live, 5, "ffmpeg চলছে")
         val out = StringBuilder()
@@ -234,7 +236,7 @@ object MediaTools {
         })
         if (r == null || r.code != 0) return err("ffmpeg ব্যর্থ: " + out.toString().takeLast(1200))
         progress(live, 100, "ffmpeg শেষ")
-        val outPath = args.optString("output").trim()
+        val outPath = args.safe("output").trim()
         val media = JSONArray()
         if (outPath.isNotEmpty()) {
             val f = if (File(outPath).isAbsolute) File(outPath) else File(cwd, outPath)
@@ -254,7 +256,7 @@ object MediaTools {
         val w = (args.optInt("width", 1280) / 2) * 2
         val h = (args.optInt("height", 720) / 2) * 2
         val fps = args.optInt("fps", 25).coerceIn(10, 60)
-        val name = safeName(args.optString("name").ifBlank { args.optString("title") }, "video-${System.currentTimeMillis() / 1000}")
+        val name = safeName(args.safe("name").ifBlank { args.safe("title") }, "video-${System.currentTimeMillis() / 1000}")
         val work = File(ToolRegistry.workspace(context), "media/video-work/$name").apply { deleteRecursively(); mkdirs() }
         val outFile = File(mediaDir(context, "video"), "$name.mp4")
         val n = scenes.length()
@@ -267,38 +269,38 @@ object MediaTools {
             val base = 5 + (i * 75) / n
             val next = 5 + ((i + 1) * 75) / n
             progress(live, base, "দৃশ্য ${i + 1}/$n")
-            val type = sc.optString("type", "image").lowercase()
+            val type = sc.safe("type", "image").lowercase()
             var dur = sc.optDouble("duration", 4.0).coerceIn(0.5, 600.0)
             val clip = File(work, "clip$i.mp4")
 
             // Narration first, because it can set the scene's length.
             var narr: File? = null
-            val narrText = sc.optString("narration").trim()
+            val narrText = sc.safe("narration").trim()
             if (narrText.isNotEmpty()) {
                 val res = audio(context, JSONObject().put("text", narrText).put("name", "$name-n$i")
-                    .put("language", voiceDefaults.optString("language")).put("gender", voiceDefaults.optString("gender"))
-                    .put("age", voiceDefaults.optString("age")).put("tone", voiceDefaults.optString("tone"))
+                    .put("language", voiceDefaults.safe("language")).put("gender", voiceDefaults.safe("gender"))
+                    .put("age", voiceDefaults.safe("age")).put("tone", voiceDefaults.safe("tone"))
                     .apply { sc.optJSONObject("voice")?.let { put("segments", JSONArray().put(JSONObject().put("text", narrText).put("voice", it))) } }, null)
                 if (res.optBoolean("ok")) {
-                    narr = File(res.optString("path"))
+                    narr = File(res.safe("path"))
                     val d = probeDuration(context, narr.absolutePath)
                     if (d > dur) dur = d + 0.3
                 }
             }
             totalDur += dur
 
-            var src = sc.optString("source").trim()
+            var src = sc.safe("source").trim()
             // An image source that is not a file or link is a prompt: draw it.
             if (type == "image" && src.isNotEmpty() && !src.startsWith("/") && !src.startsWith("http")) {
                 val gen = image(context, JSONObject().put("prompt", src).put("width", w).put("height", h).put("name", "$name-s$i"), null)
-                if (gen.optBoolean("ok")) src = gen.optString("path")
+                if (gen.optBoolean("ok")) src = gen.safe("path")
             }
             if (src.startsWith("http")) {
                 val ext = src.substringAfterLast('.', "bin").substringBefore('?').take(4)
                 val f = File(work, "src$i.$ext")
                 try { if (download(src, f)) src = f.absolutePath } catch (_: Exception) {}
             }
-            val text = sc.optString("text").ifBlank { sc.optString("caption") }
+            val text = sc.safe("text").ifBlank { sc.safe("caption") }
             val draw = if (text.isNotBlank()) {
                 val tf = File(work, "t$i.txt").apply { writeText(text) }
                 ",drawtext=textfile=${tf.absolutePath}:fontcolor=white:fontsize=${h / 16}:box=1:boxcolor=black@0.55:boxborderw=18:x=(w-text_w)/2:y=h-text_h-${h / 10}"
@@ -311,7 +313,7 @@ object MediaTools {
                 type == "video" && src.isNotEmpty() ->
                     "-i ${q(src)} $audioIn -t $dur -vf \"$scale$draw\" -map 0:v:0 -map ${if (narr != null) "1:a:0" else "0:a:0?"} -c:v libx264 -preset veryfast -crf 23 -c:a aac -ar 44100 -ac 2 ${q(clip.absolutePath)}"
                 else -> {
-                    val color = sc.optString("color", "0x101018").ifBlank { "0x101018" }
+                    val color = sc.safe("color", "0x101018").ifBlank { "0x101018" }
                     "-f lavfi -i color=c=$color:s=${w}x$h:r=$fps:d=$dur $audioIn -t $dur -vf \"format=yuv420p$draw\" -shortest -c:v libx264 -preset veryfast -crf 23 -c:a aac -ar 44100 -ac 2 ${q(clip.absolutePath)}"
                 }
             }
@@ -327,7 +329,7 @@ object MediaTools {
         if (!okj) return err("জোড়া লাগানো যায়নি: $jlog")
 
         var finalSrc = joined
-        val music = args.optString("music").trim()
+        val music = args.safe("music").trim()
         if (music.isNotEmpty()) {
             progress(live, 91, "মিউজিক মেশানো হচ্ছে")
             var m = music
@@ -346,7 +348,7 @@ object MediaTools {
         progress(live, 100, "ভিডিও তৈরি")
         val mins = (totalDur / 60.0)
         return ok("ভিডিও তৈরি: ${outFile.name} (${"%.1f".format(mins)} মিনিট)",
-            JSONArray().put(item("video", outFile, args.optString("title").ifBlank { outFile.nameWithoutExtension }, "video/mp4")),
+            JSONArray().put(item("video", outFile, args.safe("title").ifBlank { outFile.nameWithoutExtension }, "video/mp4")),
             JSONObject().put("path", outFile.absolutePath).put("duration_sec", totalDur))
     }
 

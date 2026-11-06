@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.db
 
+import ai.zyraxon.assistant.core.safe
+
 import ai.zyraxon.assistant.model.MediaItem
 import ai.zyraxon.assistant.model.ToolCallRecord
 import org.json.JSONArray
@@ -30,8 +32,8 @@ object MessageMeta {
         (0 until a.length()).map {
             val j = a.getJSONObject(it)
             ToolCallRecord(
-                name = j.optString("n"), detail = j.optString("d"), icon = j.optString("i", "🛠️"), summary = j.optString("s"),
-                status = j.optString("st", "ok"), output = j.optString("o"), ms = j.optLong("ms")
+                name = j.safe("n"), detail = j.safe("d"), icon = j.safe("i", "🛠️"), summary = j.safe("s"),
+                status = j.safe("st", "ok"), output = j.safe("o"), ms = j.optLong("ms")
             )
         }
     }
@@ -40,7 +42,7 @@ object MessageMeta {
         val a = o.optJSONArray("media") ?: return@parse emptyList()
         (0 until a.length()).map {
             val j = a.getJSONObject(it)
-            MediaItem(kind = j.optString("k", "file"), path = j.optString("p"), title = j.optString("t"))
+            MediaItem(kind = j.safe("k", "file"), path = j.safe("p"), title = j.safe("t"))
         }
     }
 

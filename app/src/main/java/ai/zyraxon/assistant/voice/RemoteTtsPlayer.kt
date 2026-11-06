@@ -50,7 +50,10 @@ class RemoteTtsPlayer(
         .writeTimeout(0, TimeUnit.MILLISECONDS)
         .build()
 
-    private val queue = ArrayDeque<Piece>()
+    // A concurrent deque, not ArrayDeque: the pump runs on the voice scope while
+    // the answer's tokens arrive on the ViewModel's, so a plain deque could be
+    // mutated from two threads at once — a corruption that shows up as a hang.
+    private val queue = java.util.concurrent.ConcurrentLinkedDeque<Piece>()
     private var player: MediaPlayer? = null
     private var pumpJob: Job? = null
 
@@ -59,9 +62,18 @@ class RemoteTtsPlayer(
      * current one ends. Without this the voice waited ~0.4 s between sentences —
      * the round trip to fetch the next piece's first byte — and that gap is what
      * made a streamed answer feel stitched rather than spoken.
+     *
+     * Several pieces are kept in flight, not one: the endpoint needs about a
+     * second before its first byte, and an answer that arrives as a run of short
+     * clauses would otherwise outpace a single-ahead prefetch and fall silent
+     * between every clause — heard as "one word, a long wait, another word".
      */
     private val downloadScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val prefetched = ConcurrentHashMap<String, File>()
+    private val inFlight = ConcurrentHashMap.newKeySet<String>()
+
+    /** How many not-yet-playing pieces may be downloaded at once. */
+    private val prefetchDepth = 4
 
     /**
      * Cleared the first time a prefetch fails, so a network or endpoint that
@@ -129,7 +141,7 @@ class RemoteTtsPlayer(
             val tone = RemoteTtsRequest.toneFor(chunk)
             queue.add(Piece(chunk, RemoteTtsRequest.buildUrl(chunk, bcp47, g, tone)))
         }
-        if (!running) startPump()
+        if (!running) startPump() else prefetchNext(generation)
     }
 
     private fun startPump() {
@@ -140,7 +152,7 @@ class RemoteTtsPlayer(
         pumpJob = scope.launch {
             val mine = generation
             while (running && mine == generation) {
-                val piece = queue.removeFirstOrNull() ?: break
+                val piece = queue.pollFirst() ?: break
                 // The piece after this one is fetched while this one is playing,
                 // so the voice runs from sentence to sentence without a gap.
                 prefetchNext(mine)
@@ -169,20 +181,27 @@ class RemoteTtsPlayer(
     }
 
     /**
-     * Starts downloading the next piece in the background. Deliberately not
-     * awaited: the point is to overlap it with the piece that is playing.
+     * Keeps several upcoming pieces downloading in the background. Deliberately
+     * not awaited: the point is to overlap them with the piece that is playing,
+     * so the next sentence is already a local file by the time it is needed.
      */
     private fun prefetchNext(mine: Int) {
         if (!prefetchEnabled) return
-        val next = queue.firstOrNull() ?: return
-        if (prefetched.containsKey(next.url)) return
-        downloadScope.launch {
-            if (mine != generation) return@launch
-            val file = download(next.url)
-            if (file != null && mine == generation) {
-                prefetched[next.url] = file
-            } else if (file == null) {
-                prefetchEnabled = false
+        var depth = 0
+        for (next in queue) {
+            if (depth >= prefetchDepth) break
+            if (prefetched.containsKey(next.url) || next.url in inFlight) continue
+            depth++
+            inFlight.add(next.url)
+            downloadScope.launch {
+                if (mine != generation) { inFlight.remove(next.url); return@launch }
+                val file = download(next.url)
+                inFlight.remove(next.url)
+                if (file != null && mine == generation) {
+                    prefetched[next.url] = file
+                } else if (file == null) {
+                    prefetchEnabled = false
+                }
             }
         }
     }

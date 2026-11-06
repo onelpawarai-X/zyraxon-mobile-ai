@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.mcp
 
+import ai.zyraxon.assistant.core.safe
+
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -197,7 +199,7 @@ class McpClient(
                 .put("name", "zyraxon-android")
                 .put("version", clientVersion)))
 
-        result.optString("protocolVersion").takeIf { it.isNotBlank() }?.let { negotiatedProtocol = it }
+        result.safe("protocolVersion").takeIf { it.isNotBlank() }?.let { negotiatedProtocol = it }
         serverCapabilities = result.optJSONObject("capabilities") ?: JSONObject()
         serverInfo = result.optJSONObject("serverInfo") ?: JSONObject()
         Log.i(TAG, "$endpoint: session up (protocol $negotiatedProtocol)")
@@ -250,7 +252,7 @@ class McpClient(
 
     /** A server→client message is a request when it carries an id, else a notification. */
     private fun handleServerMessage(message: JSONObject) {
-        val method = message.optString("method")
+        val method = message.safe("method")
         if (method.isBlank()) return
         val params = message.optJSONObject("params") ?: JSONObject()
 
@@ -371,7 +373,7 @@ class McpClient(
             val result = call(method, params)
             val arr = result.optJSONArray(key) ?: JSONArray()
             for (i in 0 until arr.length()) arr.optJSONObject(i)?.let { all.add(it) }
-            cursor = result.optString("nextCursor").takeIf { it.isNotBlank() }
+            cursor = result.safe("nextCursor").takeIf { it.isNotBlank() }
             page++
         } while (cursor != null && page < 20)
         return all
@@ -399,7 +401,7 @@ class McpClient(
         val raw = post(body.toString(), expectResponse = true)
         val obj = raw ?: throw McpError("$method: সার্ভার খালি উত্তর দিয়েছে")
         obj.optJSONObject("error")?.let {
-            throw McpError(it.optString("message", "MCP ত্রুটি ${it.optInt("code")}"))
+            throw McpError(it.safe("message", "MCP ত্রুটি ${it.optInt("code")}"))
         }
         return obj.optJSONObject("result") ?: JSONObject()
     }

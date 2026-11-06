@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.ai
 
+import ai.zyraxon.assistant.core.safe
+
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -95,14 +97,14 @@ class OpenAiSse(private val client: OkHttpClient) {
         // text}` entries and only sometimes mirrors it into `reasoning`, so the
         // array is read too — without it OpenRouter thinking models showed no
         // thinking at all while still burning reasoning tokens.
-        val reason = delta.optString("reasoning_content").ifBlank { delta.optString("reasoning") }
-            .ifBlank { delta.optString("thinking") }
+        val reason = delta.safe("reasoning_content").ifBlank { delta.safe("reasoning") }
+            .ifBlank { delta.safe("thinking") }
             .ifBlank { reasoningDetailsText(delta.optJSONArray("reasoning_details")) }
         if (reason.isNotEmpty()) {
             turn.appendReasoning(reason)
             onReasoning(reason)
         }
-        val text = delta.optString("content", "")
+        val text = delta.safe("content", "")
         if (text.isNotEmpty()) {
             turn.appendText(text)
             onText(text)
@@ -137,9 +139,9 @@ class OpenAiSse(private val client: OkHttpClient) {
         val sb = StringBuilder()
         for (i in 0 until details.length()) {
             val item = details.optJSONObject(i) ?: continue
-            val type = item.optString("type")
+            val type = item.safe("type")
             if (type.isNotEmpty() && !type.contains("text")) continue
-            val text = item.optString("text")
+            val text = item.safe("text")
             if (text.isNotEmpty()) sb.append(text)
         }
         return sb.toString()
@@ -151,11 +153,11 @@ class OpenAiSse(private val client: OkHttpClient) {
         try {
             val json = JSONObject(raw)
             json.optJSONObject("error")?.let { e ->
-                e.optString("message").takeIf { it.isNotBlank() }?.let { return it }
-                e.optString("type").takeIf { it.isNotBlank() }?.let { return it }
+                e.safe("message").takeIf { it.isNotBlank() }?.let { return it }
+                e.safe("type").takeIf { it.isNotBlank() }?.let { return it }
             }
-            json.optString("message").takeIf { it.isNotBlank() }?.let { return it }
-            json.optJSONObject("zyraxon_gate")?.optString("message")?.takeIf { it.isNotBlank() }?.let { return it }
+            json.safe("message").takeIf { it.isNotBlank() }?.let { return it }
+            json.optJSONObject("zyraxon_gate")?.safe("message")?.takeIf { it.isNotBlank() }?.let { return it }
         } catch (_: Exception) {}
         return raw.take(400).takeIf { it.isNotBlank() }
     }

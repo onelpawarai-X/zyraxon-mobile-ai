@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.tools
 
+import ai.zyraxon.assistant.core.safe
+
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
@@ -143,7 +145,7 @@ object PreviewBridge {
         return withTimeoutOrNull(10_000) { d.await() } ?: "timeout"
     }
 
-    private fun decodeJs(s: String): String = try { JSONObject("{\"v\":$s}").optString("v", s) } catch (_: Exception) { s }
+    private fun decodeJs(s: String): String = try { JSONObject("{\"v\":$s}").safe("v", s) } catch (_: Exception) { s }
 
     /** A JPEG of what the browser shows right now, as a data URL, scaled to a sane size. */
     fun screenshot(context: Context, maxSide: Int = 1100): String? = onMain {
@@ -171,13 +173,13 @@ object PreviewBridge {
         fun ok(s: String, data: Any? = null) = JSONObject().put("ok", true).put("summary", s).apply { if (data != null) put("data", data) }
         fun bad(s: String) = JSONObject().put("ok", false).put("error", s).put("summary", s)
         fun settle(ms: Long = 700) = Thread.sleep(ms)
-        return when (val action = args.optString("action").lowercase()) {
+        return when (val action = args.safe("action").lowercase()) {
             "open" -> {
-                val u = args.optString("url").ifBlank { return bad("url দরকার") }
+                val u = args.safe("url").ifBlank { return bad("url দরকার") }
                 clearProblems(); open(context, u)
                 waitLoaded(); ok("খোলা হয়েছে: ${url.value}", JSONObject().put("url", url.value).put("title", title.value))
             }
-            "search" -> { clearProblems(); open(context, args.optString("query").ifBlank { return bad("query দরকার") }); waitLoaded(); ok("সার্চ: ${url.value}") }
+            "search" -> { clearProblems(); open(context, args.safe("query").ifBlank { return bad("query দরকার") }); waitLoaded(); ok("সার্চ: ${url.value}") }
             "reload" -> { reload(context); waitLoaded(); ok("রিলোড হয়েছে") }
             "back" -> { back(context); waitLoaded(); ok("পেছনে: ${url.value}") }
             "forward" -> { forward(context); waitLoaded(); ok("সামনে: ${url.value}") }
@@ -191,7 +193,7 @@ object PreviewBridge {
                     .let { ok("স্ক্রল: ${decodeJs(it)}") }
             }
             "click" -> {
-                val sel = args.optString("selector"); val text = args.optString("text")
+                val sel = args.safe("selector"); val text = args.safe("text")
                 val js = when {
                     sel.isNotBlank() -> "(function(){var e=document.querySelector(${JSONObject.quote(sel)});if(!e)return 'NOT_FOUND';e.scrollIntoView({block:'center'});e.click();return 'OK'})()"
                     text.isNotBlank() -> "(function(){var t=${JSONObject.quote(text)}.toLowerCase();var all=document.querySelectorAll('a,button,input,[role=button],[onclick],label,li,span,div');for(var i=0;i<all.length;i++){var e=all[i];var s=((e.innerText||e.value||'')+'').trim().toLowerCase();if(s&&s.indexOf(t)>=0&&e.children.length<4){e.scrollIntoView({block:'center'});e.click();return 'OK'}}return 'NOT_FOUND'})()"
@@ -202,12 +204,12 @@ object PreviewBridge {
                 if (r == "OK") ok("ক্লিক হয়েছে") else bad("ক্লিক করার উপাদান পাওয়া যায়নি")
             }
             "type" -> {
-                val sel = args.optString("selector").ifBlank { "input,textarea" }
-                val js = "(function(){var e=document.querySelector(${JSONObject.quote(sel)});if(!e)return 'NOT_FOUND';e.focus();e.value=${JSONObject.quote(args.optString("text"))};e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));return 'OK'})()"
+                val sel = args.safe("selector").ifBlank { "input,textarea" }
+                val js = "(function(){var e=document.querySelector(${JSONObject.quote(sel)});if(!e)return 'NOT_FOUND';e.focus();e.value=${JSONObject.quote(args.safe("text"))};e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));return 'OK'})()"
                 if (decodeJs(eval(context, js)) == "OK") ok("লেখা হয়েছে") else bad("ইনপুট পাওয়া যায়নি")
             }
             "read" -> ok("পেজের লেখা", decodeJs(eval(context, "(document.body?document.body.innerText:'').slice(0,12000)")))
-            "eval" -> ok("eval", decodeJs(eval(context, args.optString("script").ifBlank { return bad("script দরকার") })).take(8000))
+            "eval" -> ok("eval", decodeJs(eval(context, args.safe("script").ifBlank { return bad("script দরকার") })).take(8000))
             "console" -> ok("কনসোল", consoleText().ifBlank { "কোনো লগ নেই" })
             "problems" -> {
                 val txt = problems.value.joinToString("\n") { "[${it.kind}] ${it.text}" }

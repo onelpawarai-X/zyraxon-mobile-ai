@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.update
 
+import ai.zyraxon.assistant.core.safe
+
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -303,18 +305,18 @@ class Updater(private val context: Context) {
          */
         fun parseLatest(json: String): UpdateRelease? {
             val root = runCatching { JSONObject(json) }.getOrNull() ?: return null
-            val tag = root.optString("tag_name").takeIf { it.isNotBlank() } ?: return null
+            val tag = root.safe("tag_name").takeIf { it.isNotBlank() } ?: return null
             val version = Version.parse(tag) ?: return null
 
             val assetsJson = root.optJSONArray("assets")
             var apk: ReleaseAsset? = null
             for (i in 0 until (assetsJson?.length() ?: 0)) {
                 val a = assetsJson?.optJSONObject(i) ?: continue
-                val name = a.optString("name")
+                val name = a.safe("name")
                 if (!name.endsWith(".apk", ignoreCase = true)) continue
                 apk = ReleaseAsset(
                     name = name,
-                    url = a.optString("browser_download_url"),
+                    url = a.safe("browser_download_url"),
                     size = a.optLong("size")
                 )
                 break
@@ -322,7 +324,7 @@ class Updater(private val context: Context) {
             return UpdateRelease(
                 tag = tag,
                 version = version,
-                notes = root.optString("body"),
+                notes = root.safe("body"),
                 apk = apk
             )
         }

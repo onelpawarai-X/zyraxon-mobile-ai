@@ -873,7 +873,7 @@ fun ZyraxonAura(
             modifier = modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(top = 30.dp, bottom = 34.dp)
+                .padding(top = 30.dp, bottom = 30.dp)
                 .graphicsLayer { scaleX = sz.coerceAtMost(1.15f); scaleY = sz.coerceAtMost(1.15f) }
         )
         return

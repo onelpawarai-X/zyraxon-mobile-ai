@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.mcp
 
+import ai.zyraxon.assistant.core.safe
+
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
@@ -140,10 +142,10 @@ class McpManager(
             "notifications/prompts/list_changed" -> refreshPrompts(serverId)
             // The contents behind a subscribed uri changed; re-read so the next
             // agent turn sees fresh text rather than the copy read earlier.
-            "notifications/resources/updated" -> refreshOneResource(serverId, params.optString("uri"))
-            "notifications/message" -> Log.i(TAG, "$serverId: log ${params.optString("level")} ${params.optString("data")}")
-            "notifications/progress" -> Log.i(TAG, "$serverId: progress ${params.optString("progressToken")}")
-            "notifications/cancelled" -> Log.i(TAG, "$serverId: cancelled ${params.optString("requestId")}")
+            "notifications/resources/updated" -> refreshOneResource(serverId, params.safe("uri"))
+            "notifications/message" -> Log.i(TAG, "$serverId: log ${params.safe("level")} ${params.safe("data")}")
+            "notifications/progress" -> Log.i(TAG, "$serverId: progress ${params.safe("progressToken")}")
+            "notifications/cancelled" -> Log.i(TAG, "$serverId: cancelled ${params.safe("requestId")}")
             else -> Log.i(TAG, "$serverId: notification $method")
         }
     }
@@ -240,7 +242,7 @@ class McpManager(
                 // subscription is worth something instead of silently updating a
                 // cache nothing reads.
                 resourceUpdates.add(
-                    "[MCP] ${conn.server.name} — $uri বদলেছে:\n${shaped.optString("output").take(4000)}"
+                    "[MCP] ${conn.server.name} — $uri বদলেছে:\n${shaped.safe("output").take(4000)}"
                 )
                 Log.i(TAG, "$serverId: resource updated — $uri")
             } catch (e: Exception) {
@@ -660,33 +662,33 @@ class McpManager(
 
         for (i in 0 until content.length()) {
             val part = content.optJSONObject(i) ?: continue
-            when (part.optString("type")) {
-                "text" -> text.append(part.optString("text")).append("\n")
+            when (part.safe("type")) {
+                "text" -> text.append(part.safe("text")).append("\n")
                 "image" -> {
-                    val data = part.optString("data")
-                    val mime = part.optString("mimeType", "image/png")
+                    val data = part.safe("data")
+                    val mime = part.safe("mimeType", "image/png")
                     if (data.isNotBlank() && imageDataUrl == null) {
                         imageDataUrl = "data:$mime;base64,$data"
                     }
                 }
                 "audio" -> {
-                    val data = part.optString("data")
+                    val data = part.safe("data")
                     if (data.isNotBlank()) {
-                        text.append("[অডিও: ").append(part.optString("mimeType", "audio")).append("]")
+                        text.append("[অডিও: ").append(part.safe("mimeType", "audio")).append("]")
                             .append("\n")
                     }
                 }
                 // Embedded resource: a server can answer a tool with a document.
                 "resource" -> {
                     val res = part.optJSONObject("resource") ?: continue
-                    res.optString("text").takeIf { it.isNotBlank() }?.let { text.append(it).append("\n") }
-                    res.optString("blob").takeIf { it.isNotBlank() }?.let {
-                        text.append("[ব্লব: ").append(res.optString("mimeType", "binary"))
+                    res.safe("text").takeIf { it.isNotBlank() }?.let { text.append(it).append("\n") }
+                    res.safe("blob").takeIf { it.isNotBlank() }?.let {
+                        text.append("[ব্লব: ").append(res.safe("mimeType", "binary"))
                             .append(", ").append(it.length).append(" অক্ষর]\n")
                     }
                 }
                 "resource_link" -> {
-                    text.append("[রিসোর্স: ").append(part.optString("uri")).append("]\n")
+                    text.append("[রিসোর্স: ").append(part.safe("uri")).append("]\n")
                 }
             }
         }
@@ -709,9 +711,9 @@ class McpManager(
 
         for (i in 0 until contents.length()) {
             val c = contents.optJSONObject(i) ?: continue
-            c.optString("text").takeIf { it.isNotBlank() }?.let { text.append(it).append("\n") }
-            val blob = c.optString("blob")
-            val mime = c.optString("mimeType", "application/octet-stream")
+            c.safe("text").takeIf { it.isNotBlank() }?.let { text.append(it).append("\n") }
+            val blob = c.safe("blob")
+            val mime = c.safe("mimeType", "application/octet-stream")
             if (blob.isNotBlank()) {
                 if (mime.startsWith("image/") && imageDataUrl == null) {
                     imageDataUrl = "data:$mime;base64,$blob"
@@ -735,18 +737,18 @@ class McpManager(
         val text = StringBuilder()
         for (i in 0 until messages.length()) {
             val m = messages.optJSONObject(i) ?: continue
-            val role = m.optString("role", "user")
+            val role = m.safe("role", "user")
             val content = m.opt("content")
             val body = when (content) {
-                is JSONObject -> content.optString("text")
+                is JSONObject -> content.safe("text")
                 is JSONArray -> (0 until content.length())
-                    .mapNotNull { content.optJSONObject(it)?.optString("text")?.takeIf { t -> t.isNotBlank() } }
+                    .mapNotNull { content.optJSONObject(it)?.safe("text")?.takeIf { t -> t.isNotBlank() } }
                     .joinToString("\n")
                 else -> content?.toString().orEmpty()
             }
             if (body.isNotBlank()) text.append("[").append(role).append("] ").append(body).append("\n\n")
         }
-        val description = raw.optString("description")
+        val description = raw.safe("description")
         val body = text.toString().trim().ifBlank { description.ifBlank { "খালি প্রম্পট" } }
         return JSONObject()
             .put("ok", true)
@@ -813,12 +815,12 @@ class McpManager(
 
     private fun parseTools(serverId: String, server: McpServer, defs: List<JSONObject>): List<McpTool> =
         defs.mapNotNull { def ->
-            val name = def.optString("name").takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val name = def.safe("name").takeIf { it.isNotBlank() } ?: return@mapNotNull null
             McpTool(
                 serverId = serverId,
                 serverName = server.name,
                 name = name,
-                description = def.optString("description", def.optString("title")),
+                description = def.safe("description", def.safe("title")),
                 inputSchema = def.optJSONObject("inputSchema") ?: JSONObject()
                     .put("type", "object").put("properties", JSONObject())
             )
@@ -833,10 +835,10 @@ class McpManager(
             McpResource(
                 serverId = serverId,
                 serverName = server.name,
-                uri = r.optString("uri"),
-                name = r.optString("name", r.optString("uri")),
-                description = r.optString("description"),
-                mimeType = r.optString("mimeType")
+                uri = r.safe("uri"),
+                name = r.safe("name", r.safe("uri")),
+                description = r.safe("description"),
+                mimeType = r.safe("mimeType")
             )
         }
         // Templates are surfaced too: the model can fill in the placeholders.
@@ -844,10 +846,10 @@ class McpManager(
             McpResource(
                 serverId = serverId,
                 serverName = server.name,
-                uri = t.optString("uriTemplate"),
-                name = t.optString("name", t.optString("uriTemplate")),
-                description = t.optString("description"),
-                mimeType = t.optString("mimeType"),
+                uri = t.safe("uriTemplate"),
+                name = t.safe("name", t.safe("uriTemplate")),
+                description = t.safe("description"),
+                mimeType = t.safe("mimeType"),
                 template = true
             )
         }
@@ -856,17 +858,17 @@ class McpManager(
 
     private fun parsePrompts(serverId: String, server: McpServer, defs: List<JSONObject>): List<McpPrompt> =
         defs.mapNotNull { def ->
-            val name = def.optString("name").takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val name = def.safe("name").takeIf { it.isNotBlank() } ?: return@mapNotNull null
             val argsArr = def.optJSONArray("arguments") ?: JSONArray()
             val args = (0 until argsArr.length()).mapNotNull { i ->
                 val a = argsArr.optJSONObject(i) ?: return@mapNotNull null
                 McpPromptArg(
-                    name = a.optString("name"),
-                    description = a.optString("description"),
+                    name = a.safe("name"),
+                    description = a.safe("description"),
                     required = a.optBoolean("required")
                 )
             }
-            McpPrompt(serverId, server.name, name, def.optString("description"), args)
+            McpPrompt(serverId, server.name, name, def.safe("description"), args)
         }
 
     // ---- persistence -------------------------------------------------------
@@ -888,7 +890,7 @@ class McpManager(
         return ordered.distinct().mapNotNull { id ->
             val server = byId[id] ?: return@mapNotNull null
             val state = states.optJSONObject(id)
-            val status = state?.optString("status")
+            val status = state?.safe("status")
                 ?.let { runCatching { McpStatus.valueOf(it) }.getOrNull() }
                 ?: McpStatus.DISCONNECTED
             // A token that was never persisted cannot still be connected.
@@ -903,7 +905,7 @@ class McpManager(
                 tools = parseCachedTools(id, toolCache.optJSONArray(id), server),
                 resources = parseCachedResources(id, resourceCache.optJSONArray(id), server),
                 prompts = parseCachedPrompts(id, promptCache.optJSONArray(id), server),
-                error = state?.optString("error").orEmpty(),
+                error = state?.safe("error").orEmpty(),
                 account = prefs.getString(accountKey(id), "").orEmpty()
             )
         }
@@ -916,8 +918,8 @@ class McpManager(
             McpTool(
                 serverId = serverId,
                 serverName = server.name,
-                name = o.optString("name"),
-                description = o.optString("description"),
+                name = o.safe("name"),
+                description = o.safe("description"),
                 inputSchema = o.optJSONObject("inputSchema") ?: JSONObject()
             )
         }
@@ -930,10 +932,10 @@ class McpManager(
             McpResource(
                 serverId = serverId,
                 serverName = server.name,
-                uri = o.optString("uri"),
-                name = o.optString("name"),
-                description = o.optString("description"),
-                mimeType = o.optString("mimeType"),
+                uri = o.safe("uri"),
+                name = o.safe("name"),
+                description = o.safe("description"),
+                mimeType = o.safe("mimeType"),
                 template = o.optBoolean("template")
             )
         }
@@ -947,11 +949,11 @@ class McpManager(
             McpPrompt(
                 serverId = serverId,
                 serverName = server.name,
-                name = o.optString("name"),
-                description = o.optString("description"),
+                name = o.safe("name"),
+                description = o.safe("description"),
                 arguments = (0 until argsArr.length()).mapNotNull { j ->
                     val a = argsArr.optJSONObject(j) ?: return@mapNotNull null
-                    McpPromptArg(a.optString("name"), a.optString("description"), a.optBoolean("required"))
+                    McpPromptArg(a.safe("name"), a.safe("description"), a.optBoolean("required"))
                 }
             )
         }

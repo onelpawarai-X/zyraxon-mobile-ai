@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.mcp
 
+import ai.zyraxon.assistant.core.safe
+
 import android.util.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -105,7 +107,7 @@ object McpOAuth {
         for (candidate in prmCandidates) {
             val prm = getJson(candidate) ?: continue
             prm.optJSONArray("authorization_servers")
-                ?.optString(0)?.takeIf { it.isNotBlank() }?.let { authServer = it }
+                ?.safe(0)?.takeIf { it.isNotBlank() }?.let { authServer = it }
             break
         }
 
@@ -117,15 +119,15 @@ object McpOAuth {
         }
         for (candidate in asCandidates) {
             val md = getJson(candidate) ?: continue
-            val authz = md.optString("authorization_endpoint")
-            val token = md.optString("token_endpoint")
+            val authz = md.safe("authorization_endpoint")
+            val token = md.safe("token_endpoint")
             if (authz.isBlank() || token.isBlank()) continue
             val scopes = md.optJSONArray("scopes_supported")
-                ?.let { a -> (0 until a.length()).map { a.optString(it) } } ?: emptyList()
+                ?.let { a -> (0 until a.length()).map { a.safe(it) } } ?: emptyList()
             return@withContext OAuthEndpoints(
                 authorizationEndpoint = authz,
                 tokenEndpoint = token,
-                registrationEndpoint = md.optString("registration_endpoint"),
+                registrationEndpoint = md.safe("registration_endpoint"),
                 scopesSupported = scopes
             )
         }
@@ -164,9 +166,9 @@ object McpOAuth {
                 throw McpError("ক্লায়েন্ট রেজিস্ট্রেশন ব্যর্থ (HTTP ${response.code}): ${text.take(200)}")
             }
             val obj = runCatching { JSONObject(text) }.getOrElse { throw McpError("রেজিস্ট্রেশন উত্তর পড়া যায়নি") }
-            val id = obj.optString("client_id")
+            val id = obj.safe("client_id")
             if (id.isBlank()) throw McpError("client_id পাওয়া যায়নি")
-            OAuthClient(id, obj.optString("client_secret").takeIf { it.isNotBlank() })
+            OAuthClient(id, obj.safe("client_secret").takeIf { it.isNotBlank() })
         }
     }
 
@@ -242,14 +244,14 @@ object McpOAuth {
                 throw McpError("টোকেন বিনিময় ব্যর্থ (HTTP ${response.code}): ${text.take(200)}")
             }
             val obj = runCatching { JSONObject(text) }.getOrElse { throw McpError("টোকেন উত্তর পড়া যায়নি") }
-            val access = obj.optString("access_token")
+            val access = obj.safe("access_token")
             if (access.isBlank()) {
-                throw McpError(obj.optString("error_description", "access_token পাওয়া যায়নি"))
+                throw McpError(obj.safe("error_description", "access_token পাওয়া যায়নি"))
             }
             val expiresIn = obj.optLong("expires_in", 3600L)
             OAuthTokens(
                 accessToken = access,
-                refreshToken = obj.optString("refresh_token"),
+                refreshToken = obj.safe("refresh_token"),
                 // A minute of slack, so a token does not expire mid-call.
                 expiresAtMillis = System.currentTimeMillis() + (expiresIn - 60L).coerceAtLeast(30L) * 1000L
             )

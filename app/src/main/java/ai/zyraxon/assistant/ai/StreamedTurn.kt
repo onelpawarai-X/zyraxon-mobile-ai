@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.ai
 
+import ai.zyraxon.assistant.core.safe
+
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -25,7 +27,7 @@ class StreamedTurn {
 
     /** The tool name of call [index], once it has arrived. */
     fun nameOf(index: Int): String =
-        toolCalls.optJSONObject(index)?.optJSONObject("function")?.optString("name").orEmpty()
+        toolCalls.optJSONObject(index)?.optJSONObject("function")?.safe("name").orEmpty()
 
     /** Writes the buffered arguments into the tool-call objects. Call once the stream ends. */
     fun finalizeArgs() {
@@ -48,8 +50,8 @@ class StreamedTurn {
             val index = d.optInt("index", i)
             while (toolCalls.length() <= index) toolCalls.put(JSONObject())
             val slot = toolCalls.getJSONObject(index)
-            d.optString("id").takeIf { it.isNotBlank() }?.let { slot.put("id", it) }
-            slot.optString("type").takeIf { it.isNotBlank() }?.let { slot.put("type", it) }
+            d.safe("id").takeIf { it.isNotBlank() }?.let { slot.put("id", it) }
+            slot.safe("type").takeIf { it.isNotBlank() }?.let { slot.put("type", it) }
                 ?: slot.put("type", "function")
             // Gemini 3.x stamps a thought_signature on every function-call part
             // and rejects the next turn with HTTP 400 INVALID_ARGUMENT
@@ -59,10 +61,10 @@ class StreamedTurn {
             d.optJSONObject("extra_content")?.let { slot.put("extra_content", it) }
             val fn = d.optJSONObject("function") ?: continue
             val slotFn = slot.optJSONObject("function") ?: JSONObject().also { slot.put("function", it) }
-            fn.optString("name").takeIf { it.isNotBlank() }?.let { slotFn.put("name", it) }
-            val argDelta = fn.optString("arguments")
+            fn.safe("name").takeIf { it.isNotBlank() }?.let { slotFn.put("name", it) }
+            val argDelta = fn.safe("arguments")
             if (argDelta.isNotEmpty()) {
-                argBuf.getOrPut(index) { StringBuilder(slotFn.optString("arguments", "")) }.append(argDelta)
+                argBuf.getOrPut(index) { StringBuilder(slotFn.safe("arguments", "")) }.append(argDelta)
             }
         }
     }

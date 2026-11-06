@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.openhands
 
+import ai.zyraxon.assistant.core.safe
+
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -47,8 +49,7 @@ data class OhConversation(
  * being used as a real id: `GET /app-conversations?ids=null` -> "Invalid UUID",
  * the chat never got bound, and every message started a brand-new conversation.
  */
-internal fun JSONObject.str(key: String, default: String = ""): String =
-    if (!has(key) || isNull(key)) default else optString(key, default).let { if (it == "null") default else it }
+internal fun JSONObject.str(key: String, default: String = ""): String = safe(key, default)
 
 /** A conversation that is still being provisioned; the sandbox is not up yet. */
 data class OhTask(

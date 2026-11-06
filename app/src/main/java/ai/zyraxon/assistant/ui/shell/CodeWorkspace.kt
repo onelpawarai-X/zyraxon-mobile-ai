@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.ui.shell
 
+import ai.zyraxon.assistant.core.safe
+
 import ai.zyraxon.assistant.i18n.t
 import ai.zyraxon.assistant.ai.ToolRegistry
 import ai.zyraxon.assistant.tools.GitTools
@@ -97,7 +99,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         busy = true
         scope.launch {
             val r = withContext(Dispatchers.IO) { GitTools.run(ctx, args) { l -> log += l } }
-            log += (if (r.optBoolean("ok")) "✓ " else "✗ ") + r.optString("summary") + "\n" + (r.opt("data")?.toString().orEmpty().take(3000)) + "\n"
+            log += (if (r.optBoolean("ok")) "✓ " else "✗ ") + r.safe("summary") + "\n" + (r.opt("data")?.toString().orEmpty().take(3000)) + "\n"
             busy = false; tick++
         }
     }
@@ -105,7 +107,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         busy = true
         scope.launch {
             val r = withContext(Dispatchers.IO) { ToolRegistry.execute(ctx, name, args) }
-            log += (if (r.optBoolean("ok")) "✓ " else "✗ ") + r.optString("summary") + "\n" + (r.opt("data")?.toString().orEmpty().take(3000)) + "\n"
+            log += (if (r.optBoolean("ok")) "✓ " else "✗ ") + r.safe("summary") + "\n" + (r.opt("data")?.toString().orEmpty().take(3000)) + "\n"
             busy = false
         }
     }

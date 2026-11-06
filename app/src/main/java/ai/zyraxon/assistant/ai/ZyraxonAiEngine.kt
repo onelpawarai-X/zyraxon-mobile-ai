@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.ai
 
+import ai.zyraxon.assistant.core.safe
+
 import ai.zyraxon.assistant.mcp.McpManager
 import ai.zyraxon.assistant.model.AiModel
 import ai.zyraxon.assistant.model.AgentMode
@@ -67,17 +69,17 @@ class ZyraxonAiEngine(private val context: Context) {
         val model = samplingModelProvider?.invoke() ?: throw IllegalStateException("কোনো মডেল নির্বাচিত নয়")
         val incoming = params.optJSONArray("messages") ?: JSONArray()
         val messages = JSONArray()
-        params.optString("systemPrompt").takeIf { it.isNotBlank() }?.let {
+        params.safe("systemPrompt").takeIf { it.isNotBlank() }?.let {
             messages.put(JSONObject().put("role", "system").put("content", it))
         }
         for (i in 0 until incoming.length()) {
             val m = incoming.optJSONObject(i) ?: continue
-            val role = m.optString("role", "user")
+            val role = m.safe("role", "user")
             val content = m.opt("content")
             val text = when (content) {
-                is JSONObject -> content.optString("text")
+                is JSONObject -> content.safe("text")
                 is JSONArray -> (0 until content.length())
-                    .mapNotNull { content.optJSONObject(it)?.optString("text")?.takeIf { t -> t.isNotBlank() } }
+                    .mapNotNull { content.optJSONObject(it)?.safe("text")?.takeIf { t -> t.isNotBlank() } }
                     .joinToString("\n")
                 else -> content?.toString().orEmpty()
             }
@@ -1009,11 +1011,11 @@ class ZyraxonAiEngine(private val context: Context) {
             val parsed = (0 until result.toolCalls.length()).mapNotNull { i ->
                 val call = result.toolCalls.getJSONObject(i)
                 val fn = call.optJSONObject("function") ?: return@mapNotNull null
-                val name = fn.optString("name")
+                val name = fn.safe("name")
                 if (name.isBlank()) return@mapNotNull null
-                val rawArgs = fn.optString("arguments", "{}")
+                val rawArgs = fn.safe("arguments", "{}")
                 val args = try { JSONObject(rawArgs) } catch (_: Exception) { JSONObject() }
-                Triple(call.optString("id", "call_$round$i"), name, args)
+                Triple(call.safe("id", "call_$round$i"), name, args)
             }
 
             // Cleared here, before this round's calls run, so the flag read by the
@@ -1066,7 +1068,7 @@ class ZyraxonAiEngine(private val context: Context) {
                 // The chat shows a live row for this call while it runs and its
                 // result when it ends, so nothing is echoed into the answer text —
                 // a "⚙️ tool → …" line here would only be noise beside it.
-                actionLog.add("$name → ${outcome.optString("summary").take(200).ifBlank { "সম্পন্ন" }}" +
+                actionLog.add("$name → ${outcome.safe("summary").take(200).ifBlank { "সম্পন্ন" }}" +
                     (if (outcome.optBoolean("ok", true)) "" else " [ব্যর্থ]"))
                 if (actionLog.size > 25) actionLog.removeAt(0)
 
@@ -1095,10 +1097,10 @@ class ZyraxonAiEngine(private val context: Context) {
                 // the very next round can look at it instead of waiting for the
                 // user to speak again.
                 val shots = mutableListOf<String>()
-                outcome.optString("image_data_url").takeIf { it.isNotBlank() }?.let { shots.add(it) }
+                outcome.safe("image_data_url").takeIf { it.isNotBlank() }?.let { shots.add(it) }
                 outcome.optJSONArray("image_data_urls")?.let { arr ->
                     for (k in 0 until arr.length()) {
-                        arr.optString(k).takeIf { it.isNotBlank() && it !in shots }?.let { shots.add(it) }
+                        arr.safe(k).takeIf { it.isNotBlank() && it !in shots }?.let { shots.add(it) }
                     }
                 }
                 if (shots.isNotEmpty()) {
@@ -1259,8 +1261,8 @@ class ZyraxonAiEngine(private val context: Context) {
             Verdict(
                 done = o.optBoolean("done", false),
                 blocked = o.optBoolean("blocked_on_user", false),
-                reason = o.optString("reason"),
-                next = o.optString("next_step")
+                reason = o.safe("reason"),
+                next = o.safe("next_step")
             )
         } catch (_: Exception) {
             null
@@ -1297,7 +1299,7 @@ class ZyraxonAiEngine(private val context: Context) {
             if (content is JSONArray) {
                 var hasImage = false
                 for (k in 0 until content.length()) {
-                    if (content.optJSONObject(k)?.optString("type") == "image_url") { hasImage = true; break }
+                    if (content.optJSONObject(k)?.safe("type") == "image_url") { hasImage = true; break }
                 }
                 if (!hasImage) continue
                 imageMessagesSeen++
@@ -1305,10 +1307,10 @@ class ZyraxonAiEngine(private val context: Context) {
                 val text = StringBuilder()
                 for (k in 0 until content.length()) {
                     val part = content.optJSONObject(k) ?: continue
-                    if (part.optString("type") == "text") text.append(part.optString("text")).append('\n')
+                    if (part.safe("type") == "text") text.append(part.safe("text")).append('\n')
                 }
                 m.put("content", text.toString().trim() + "\n[পুরনো স্ক্রিনশট সরানো হয়েছে]")
-            } else if (m.optString("role") == "tool" && i < messages.length() - keepRecent) {
+            } else if (m.safe("role") == "tool" && i < messages.length() - keepRecent) {
                 val s = content as? String ?: continue
                 if (s.length > maxToolChars) {
                     m.put("content", s.take(maxToolChars) + "\n…[পুরনো আউটপুট ছোট করা হয়েছে]")
@@ -1579,7 +1581,7 @@ class ZyraxonAiEngine(private val context: Context) {
             if (choices.length() == 0) return null
             val msg = choices.getJSONObject(0).optJSONObject("message") ?: return null
             ModelResult(
-                text = msg.optString("content", ""),
+                text = msg.safe("content", ""),
                 toolCalls = msg.optJSONArray("tool_calls") ?: JSONArray()
             )
         } catch (_: Exception) {

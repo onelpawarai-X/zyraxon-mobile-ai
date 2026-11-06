@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.viewmodel
 
+import ai.zyraxon.assistant.core.safe
+
 import ai.zyraxon.assistant.DeviceBridge
 import ai.zyraxon.assistant.ai.ToolRegistry
 import ai.zyraxon.assistant.ai.PartialJson
@@ -393,19 +395,19 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 val arr: org.json.JSONArray = when (tokener) {
                     is org.json.JSONArray -> tokener
                     is JSONObject -> tokener.optJSONArray("voices") ?: tokener.optJSONArray("data") ?: tokener.optJSONArray("items")
-                        ?: org.json.JSONArray().also { out -> tokener.keys().forEach { k -> tokener.optJSONObject(k)?.let { o -> out.put(o.put("id", o.optString("id", k))) } } }
+                        ?: org.json.JSONArray().also { out -> tokener.keys().forEach { k -> tokener.optJSONObject(k)?.let { o -> out.put(o.put("id", o.safe("id", k))) } } }
                     else -> org.json.JSONArray()
                 }
                 val list = (0 until arr.length()).mapNotNull { i ->
                     val o = arr.optJSONObject(i) ?: return@mapNotNull null
-                    val id = o.optString("id").ifBlank { o.optString("voice") }.ifBlank { o.optString("shortName") }.ifBlank { o.optString("name") }
+                    val id = o.safe("id").ifBlank { o.safe("voice") }.ifBlank { o.safe("shortName") }.ifBlank { o.safe("name") }
                     if (id.isBlank()) return@mapNotNull null
-                    val loc = o.optString("locale").ifBlank { o.optString("language") }.ifBlank { o.optString("lang") }.ifBlank { o.optString("Locale") }
+                    val loc = o.safe("locale").ifBlank { o.safe("language") }.ifBlank { o.safe("lang") }.ifBlank { o.safe("Locale") }
                     VoiceInfo(
-                        id = id, name = o.optString("name").ifBlank { o.optString("displayName") }.ifBlank { id },
-                        gender = o.optString("gender").ifBlank { o.optString("Gender") }.lowercase(),
-                        age = o.optString("age").ifBlank { o.optString("ageGroup") }.lowercase(),
-                        locale = loc, label = o.optString("label").ifBlank { o.optString("description") }
+                        id = id, name = o.safe("name").ifBlank { o.safe("displayName") }.ifBlank { id },
+                        gender = o.safe("gender").ifBlank { o.safe("Gender") }.lowercase(),
+                        age = o.safe("age").ifBlank { o.safe("ageGroup") }.lowercase(),
+                        locale = loc, label = o.safe("label").ifBlank { o.safe("description") }
                     )
                 }
                 _voices.value = list
@@ -822,7 +824,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     private fun detailOf(name: String, args: JSONObject): String {
         for (k in listOf("command", "path", "url", "query", "prompt", "action", "name", "title", "text")) {
-            val v = args.optString(k).trim()
+            val v = args.safe(k).trim()
             if (v.isNotBlank()) return v.take(600)
         }
         return ""
@@ -845,12 +847,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             status = t("চলছে…"), timestamp = currentTimeString(), running = true
         )
         s.updateActive { list -> listOf(item) + list }
-        val code = if (name == "edit_file") args.optString("content").ifBlank { args.optString("replace") } else ""
+        val code = if (name == "edit_file") args.safe("content").ifBlank { args.safe("replace") } else ""
         val rec = ToolCallRecord(
             id = id, name = name, detail = detailOf(name, args), icon = toolIcon(name),
             summary = item.description, status = "running", output = code
         )
-        if (name == "edit_file") s.liveCode.value = LiveCode(args.optString("path"), code, true)
+        if (name == "edit_file") s.liveCode.value = LiveCode(args.safe("path"), code, true)
         s.messages.update { list ->
             list.map { m -> if (m.id == s.currentMsgId) m.copy(toolCalls = m.toolCalls + rec) else m }
         }
@@ -900,7 +902,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         result.optJSONArray("media")?.let { arr ->
             for (i in 0 until arr.length()) {
                 val j = arr.optJSONObject(i) ?: continue
-                media.add(MediaItem(j.optString("kind", "file"), j.optString("path"), j.optString("title")))
+                media.add(MediaItem(j.safe("kind", "file"), j.safe("path"), j.safe("title")))
             }
         }
         s.messages.update { list ->
@@ -910,7 +912,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     toolCalls = m.toolCalls.map {
                         if (it.id != id) it else it.copy(
                             status = if (ok) "ok" else "error",
-                            summary = result.optString("summary").ifBlank { it.summary },
+                            summary = result.safe("summary").ifBlank { it.summary },
                             output = if (it.name == "edit_file") it.output else finalOut.ifBlank { it.output },
                             ms = ms
                         )
@@ -925,7 +927,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     if (it.id != id) it else it.copy(
                         percent = if (ok) 100 else it.percent, done = true,
                         path = media.firstOrNull()?.path.orEmpty(),
-                        error = if (ok) "" else result.optString("summary")
+                        error = if (ok) "" else result.safe("summary")
                     )
                 }
             }
@@ -945,7 +947,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private fun describeToolCall(name: String, args: JSONObject): String {
         val keys = listOf("command", "path", "url", "query", "text", "name", "title", "action", "prompt", "package", "app")
         for (k in keys) {
-            val v = args.optString(k).trim()
+            val v = args.safe(k).trim()
             if (v.isNotBlank()) return "$k: ${v.take(120)}"
         }
         return name
@@ -2176,8 +2178,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                                         val fn = t.toOpenAiSchema().optJSONObject("function")
                                             ?: continue
                                         put(JSONObject()
-                                            .put("name", fn.optString("name"))
-                                            .put("description", fn.optString("description"))
+                                            .put("name", fn.safe("name"))
+                                            .put("description", fn.safe("description"))
                                             .put("parameters", fn.optJSONObject("parameters")
                                                 ?: JSONObject().put("type", "object")))
                                     }
@@ -2388,15 +2390,18 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             lang.startsWith("hi") -> "Hindi"
             else -> null
         }
-        append("Reply in the language the user writes in — Bangla, English or any other. ")
-        append("Do not switch language on your own and do not mix scripts: if the user ")
-        append("writes Bangla, every sentence you say is Bangla. Never translate or ")
-        append("replace the user's own words, file names or commands — quote them as ")
-        append("they are. ")
+        append("Language is decided by the setting below, not guessed. ")
         if (langName != null) {
-            append("This user's interface and voice are set to $langName, so when the ")
-            append("language is not clear from their message, answer in $langName. ")
+            append("Your language is $langName. Answer in $langName — every sentence, ")
+            append("even for a one-word message, a command, a file name or a code reply. ")
+            append("Only if the user clearly writes a different language in their message ")
+            append("do you answer in that language instead. ")
+        } else {
+            append("Answer in the language the user writes in. ")
         }
+        append("Never switch language on your own and never mix scripts: if the answer ")
+        append("is Bangla, it is Bangla throughout. Never translate or replace the ")
+        append("user's own words, file names or commands — quote them as they are. ")
         append("\n\n")
         append(
             when (mode) {
@@ -2426,14 +2431,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         fun ok(m: String, data: Any? = null) = JSONObject().put("ok", true).put("summary", m).apply { if (data != null) put("data", data) }
         fun json(i: SubAgentInfo) = JSONObject().put("id", i.id).put("title", i.title).put("model", i.model)
             .put("state", i.state).put("percent", i.percent).put("last_action", i.lastAction)
-        return when (args.optString("action").lowercase()) {
+        return when (args.safe("action").lowercase()) {
             "spawn" -> {
                 if (parent.parentId.isNotBlank()) return bad("সাব-এজেন্ট আরেকটা সাব-এজেন্ট চালাতে পারে না")
-                val task = args.optString("task").trim()
+                val task = args.safe("task").trim()
                 if (task.isEmpty()) return bad("task দরকার")
-                val title = args.optString("title").ifBlank { task.lineSequence().first().take(32) }
-                val mode = args.optString("mode").uppercase().let { if (it in setOf("CHAT", "BUILD", "AGENT")) AgentMode.valueOf(it) else AgentMode.BUILD }
-                val wanted = args.optString("model").trim()
+                val title = args.safe("title").ifBlank { task.lineSequence().first().take(32) }
+                val mode = args.safe("mode").uppercase().let { if (it in setOf("CHAT", "BUILD", "AGENT")) AgentMode.valueOf(it) else AgentMode.BUILD }
+                val wanted = args.safe("model").trim()
                 val model = if (wanted.isBlank()) _selectedModel.value
                     else _availableModels.value.firstOrNull { it.id == wanted || it.name == wanted }
                         ?: _selectedModel.value.copy(id = wanted, name = wanted)
@@ -2468,26 +2473,26 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 ok("সাব-এজেন্ট চালু: $id (${model.name}, ${mode.title})", JSONObject().put("id", id))
             }
             "list" -> ok("সাব-এজেন্ট", org.json.JSONArray(subInfo.value.values.filter { it.parentId == parent.id }.map { json(it) }))
-            "status" -> subInfo.value[args.optString("id")]?.let { ok("${it.title}: ${it.state} ${it.percent}%", json(it)) } ?: bad("এই id নেই")
-            "result" -> subInfo.value[args.optString("id")]?.let {
+            "status" -> subInfo.value[args.safe("id")]?.let { ok("${it.title}: ${it.state} ${it.percent}%", json(it)) } ?: bad("এই id নেই")
+            "result" -> subInfo.value[args.safe("id")]?.let {
                 if (it.state == "running") ok("এখনো চলছে (${it.percent}%): ${it.lastAction}", json(it))
                 else ok("ফল", it.result)
             } ?: bad("এই id নেই")
             "message" -> {
-                val child = sessions[args.optString("id")] ?: return bad("এই id নেই")
-                val text = args.optString("text")
+                val child = sessions[args.safe("id")] ?: return bad("এই id নেই")
+                val text = args.safe("text")
                 if (child.isGenerating.value) child.pendingInjections.add(text)
                 else runTurn(child, text, emptyList(), speak = false)
                 ok("নির্দেশ পাঠানো হয়েছে")
             }
             "stop" -> {
-                val id = args.optString("id")
+                val id = args.safe("id")
                 sessions[id]?.job?.cancel()
                 subUpdate(id) { it.copy(state = "stopped", lastAction = "থামানো হয়েছে") }
                 ok("থামানো হয়েছে")
             }
             "wait" -> {
-                val id = args.optString("id")
+                val id = args.safe("id")
                 val until = System.currentTimeMillis() + args.optInt("seconds", 30).coerceIn(1, 120) * 1000L
                 while (System.currentTimeMillis() < until && subInfo.value[id]?.state == "running") kotlinx.coroutines.delay(500)
                 subInfo.value[id]?.let { ok("${it.title}: ${it.state} ${it.percent}%", json(it)) } ?: bad("এই id নেই")
@@ -2573,16 +2578,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     JSONObject().put("ok", false).put("summary", e.message ?: "ফাইল পড়া গেল না")
                 }
             }
-            val single = result.optString("image_data_url")
+            val single = result.safe("image_data_url")
             val many = result.optJSONArray("image_data_urls")
             val shots = mutableListOf<String>()
             if (single.isNotBlank()) shots.add(single)
-            many?.let { for (i in 0 until it.length()) it.optString(i).takeIf { s -> s.isNotBlank() }?.let { s -> shots.add(s) } }
+            many?.let { for (i in 0 until it.length()) it.safe(i).takeIf { s -> s.isNotBlank() }?.let { s -> shots.add(s) } }
             if (shots.isNotEmpty()) {
                 _attachedImages.value = _attachedImages.value + shots
-                _imageNotice.value = result.optString("summary").ifBlank { t("মিডিয়া সংযুক্ত হয়েছে") }
+                _imageNotice.value = result.safe("summary").ifBlank { t("মিডিয়া সংযুক্ত হয়েছে") }
             } else {
-                _imageNotice.value = result.optString("summary").ifBlank { t("মিডিয়া পড়া গেল না") }
+                _imageNotice.value = result.safe("summary").ifBlank { t("মিডিয়া পড়া গেল না") }
             }
         }
     }
@@ -2657,16 +2662,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 runCatching { ToolRegistry.execute(getApplication(), tool, args) }
                     .getOrElse { JSONObject().put("ok", false).put("summary", "ছবি নেওয়া গেল না") }
             }
-            val dataUrl = result.optString("image_data_url")
+            val dataUrl = result.safe("image_data_url")
             val many = result.optJSONArray("image_data_urls")
             val shots = mutableListOf<String>()
             if (dataUrl.isNotBlank()) shots.add(dataUrl)
-            many?.let { for (i in 0 until it.length()) it.optString(i).takeIf { s -> s.isNotBlank() }?.let { s -> shots.add(s) } }
+            many?.let { for (i in 0 until it.length()) it.safe(i).takeIf { s -> s.isNotBlank() }?.let { s -> shots.add(s) } }
             if (shots.isNotEmpty()) {
                 _attachedImages.value = _attachedImages.value + shots
-                _imageNotice.value = result.optString("summary").ifBlank { t("ছবি সংযুক্ত হয়েছে") }
+                _imageNotice.value = result.safe("summary").ifBlank { t("ছবি সংযুক্ত হয়েছে") }
             } else {
-                _imageNotice.value = result.optString("summary").ifBlank { t("ছবি নেওয়া গেল না") }
+                _imageNotice.value = result.safe("summary").ifBlank { t("ছবি নেওয়া গেল না") }
             }
         }
     }
@@ -2760,7 +2765,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             "mcp_ping" -> return runMcpPing(args)
             "mcp_log_level" -> return runMcpLogLevel(args)
             "mcp_disconnect" -> {
-                val id = args.optString("server")
+                val id = args.safe("server")
                 aiEngine.mcp.disconnect(id)
                 return JSONObject().put("ok", true).put("summary", "$id কানেক্ট করা বন্ধ করা হলো")
             }
@@ -2774,9 +2779,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     for (i in 0 until todos.length()) {
                         val t = todos.optJSONObject(i) ?: continue
                         list.add(TaskItem(
-                            id = t.optString("id", "t${i + 1}"),
-                            text = t.optString("title"),
-                            isCompleted = t.optString("status") == "done"
+                            id = t.safe("id", "t${i + 1}"),
+                            text = t.safe("title"),
+                            isCompleted = t.safe("status") == "done"
                         ))
                     }
                     s.tasks.value = list
@@ -2785,15 +2790,15 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 return JSONObject().put("ok", true).put("summary", "টুডু বোর্ড হালনাগাদ হয়েছে")
             }
             "code_box" -> {
-                val action = args.optString("action", "open")
+                val action = args.safe("action", "open")
                 _codeBoxOpen.value = action == "open" || action == "restore"
-                args.optString("title").takeIf { it.isNotBlank() }?.let { _codeBoxTitle.value = it }
-                args.optString("code").takeIf { it.isNotBlank() }?.let { _codeBoxText.value = it }
+                args.safe("title").takeIf { it.isNotBlank() }?.let { _codeBoxTitle.value = it }
+                args.safe("code").takeIf { it.isNotBlank() }?.let { _codeBoxText.value = it }
                 return JSONObject().put("ok", true).put("summary", "কোড প্যানেল: $action")
             }
             "files_panel" -> {
                 _activeTab.value = AppTab.TOOLS
-                _filesPanelOpen.value = args.optString("action", "open") != "close"
+                _filesPanelOpen.value = args.safe("action", "open") != "close"
                 return JSONObject().put("ok", true).put("summary", "ফাইল প্যানেল খোলা হয়েছে")
             }
             "terminal_open" -> {
@@ -2804,14 +2809,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             "preview" -> return PreviewBridge.tool(getApplication(), args)
             "sub_agent" -> return runSubAgent(args, s)
             "memory_delete" -> {
-                val key = args.optString("key").trim()
+                val key = args.safe("key").trim()
                 if (key.isBlank()) return JSONObject().put("ok", false).put("summary", "key দরকার")
                 repository.deleteMemory(key)
                 return JSONObject().put("ok", true).put("summary", "ভুলে যাওয়া হলো — $key")
             }
             "memory_write" -> {
-                val key = args.optString("key").trim()
-                val value = args.optString("value").trim()
+                val key = args.safe("key").trim()
+                val value = args.safe("value").trim()
                 if (key.isBlank() || value.isBlank()) {
                     return JSONObject().put("ok", false).put("summary", "মনে রাখতে key আর value দুটোই দরকার")
                 }
@@ -2820,7 +2825,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     .put("summary", "মনে রাখা হলো — $key: $value")
             }
             "memory_read" -> {
-                val query = args.optString("query").trim()
+                val query = args.safe("query").trim()
                 val durable = repository.getMemoriesPromptContext()
                 val recalled = if (query.isNotBlank()) {
                     repository.recallRelevant(query, limit = 12)
@@ -2838,7 +2843,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     .put("data", body.ifBlank { "এখনো কিছু মনে রাখা হয়নি" })
             }
             "floating_bubble" -> {
-                val want = args.optString("action", "on") != "off"
+                val want = args.safe("action", "on") != "off"
                 val ctx = getApplication<Application>()
                 val overlayAllowed = android.os.Build.VERSION.SDK_INT < 23 ||
                     android.provider.Settings.canDrawOverlays(ctx)
@@ -2870,7 +2875,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private fun recordToolExecution(s: ChatSession, name: String, result: JSONObject, output: String = "") {
         val item = ToolExecutionItem(
             name = name,
-            description = result.optString("summary"),
+            description = result.safe("summary"),
             icon = if (result.optBoolean("ok")) "✅" else "⚠️",
             status = if (result.optBoolean("ok")) "সম্পন্ন" else "ব্যর্থ",
             timestamp = currentTimeString(),
@@ -2883,7 +2888,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // When a tool returns a picture, keep it so the next model turn can look
         // at it. Without this the camera and media tools would capture an image
         // that the model never actually receives.
-        result.optString("image_data_url").takeIf { it.isNotBlank() }?.let {
+        result.safe("image_data_url").takeIf { it.isNotBlank() }?.let {
             _screenFrameDataUrl.value = it
         }
     }
@@ -2894,14 +2899,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * on its own, and the model sees the new tools on its next turn.
      */
     private suspend fun runMcpConnect(args: JSONObject): JSONObject {
-        val requested = args.optString("server").trim().lowercase()
+        val requested = args.safe("server").trim().lowercase()
         val server = when (requested) {
             "custom" -> {
-                val url = args.optString("url").trim()
+                val url = args.safe("url").trim()
                 if (url.isBlank()) {
                     return JSONObject().put("ok", false).put("summary", "custom সার্ভারের url দরকার")
                 }
-                aiEngine.mcp.addCustomServer(url, args.optString("name"), args.optString("token"))
+                aiEngine.mcp.addCustomServer(url, args.safe("name"), args.safe("token"))
             }
             else -> McpCatalog.find(requested)
                 ?: return JSONObject().put("ok", false)
@@ -2919,7 +2924,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     .put("pending_auth", true)
             }
         } else {
-            val token = args.optString("token").takeIf { it.isNotBlank() }
+            val token = args.safe("token").takeIf { it.isNotBlank() }
             if (server.auth == McpAuth.TOKEN && token == null) {
                 return JSONObject().put("ok", false)
                     .put("summary", "${server.name} এর জন্য access token দরকার — ব্যবহারকারীর কাছ থেকে নাও")
@@ -2990,7 +2995,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     /** Lists resources and templates, optionally for one server. */
     private fun runMcpResources(args: JSONObject): JSONObject {
-        val only = args.optString("server").trim().lowercase()
+        val only = args.safe("server").trim().lowercase()
         val items = aiEngine.mcp.allResources().filter { only.isBlank() || it.serverId == only }
         val arr = org.json.JSONArray()
         for (r in items) {
@@ -3010,7 +3015,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private suspend fun runMcpReadResource(args: JSONObject): JSONObject {
-        val uri = resolveQualifiedUri(args.optString("uri").trim())
+        val uri = resolveQualifiedUri(args.safe("uri").trim())
             ?: return JSONObject().put("ok", false).put("summary", "uri দরকার")
         val result = aiEngine.mcp.readResource(uri)
         return result
@@ -3018,7 +3023,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     /** Lists prompt templates and the arguments each one takes. */
     private fun runMcpPrompts(args: JSONObject): JSONObject {
-        val only = args.optString("server").trim().lowercase()
+        val only = args.safe("server").trim().lowercase()
         val items = aiEngine.mcp.allPrompts().filter { only.isBlank() || it.serverId == only }
         val arr = org.json.JSONArray()
         for (p in items) {
@@ -3036,7 +3041,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private suspend fun runMcpPrompt(args: JSONObject): JSONObject {
-        var name = args.optString("name").trim()
+        var name = args.safe("name").trim()
         if (name.isBlank()) return JSONObject().put("ok", false).put("summary", "name দরকার")
         if (!name.contains("__")) {
             val owner = aiEngine.mcp.allPrompts().firstOrNull { it.name == name }
@@ -3048,9 +3053,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     /** Subscribe/unsubscribe a resource, resolving a bare uri to its server. */
     private suspend fun runMcpSubscribe(args: JSONObject): JSONObject {
-        val resolved = resolveQualifiedUri(args.optString("uri").trim())
+        val resolved = resolveQualifiedUri(args.safe("uri").trim())
             ?: return JSONObject().put("ok", false).put("summary", "uri দরকার")
-        val subscribe = args.optString("action", "subscribe") != "unsubscribe"
+        val subscribe = args.safe("action", "subscribe") != "unsubscribe"
         val separator = resolved.indexOf("__")
         val serverId = resolved.substring(0, separator)
         val uri = resolved.substring(separator + 2)
@@ -3063,33 +3068,33 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private suspend fun runMcpComplete(args: JSONObject): JSONObject {
-        val server = args.optString("server").trim().lowercase()
-        val argument = args.optString("argument").trim()
+        val server = args.safe("server").trim().lowercase()
+        val argument = args.safe("argument").trim()
         if (server.isBlank() || argument.isBlank()) {
             return JSONObject().put("ok", false).put("summary", "server আর argument দরকার")
         }
-        val kind = if (args.optString("kind").equals("resource", ignoreCase = true)) "ref/resource" else "ref/prompt"
-        val ref = args.optString("ref").trim().ifBlank {
+        val kind = if (args.safe("kind").equals("resource", ignoreCase = true)) "ref/resource" else "ref/prompt"
+        val ref = args.safe("ref").trim().ifBlank {
             // With no explicit ref, offer the first prompt or resource that has this
             // argument, so the model does not have to look the name up first.
             if (kind == "ref/resource") aiEngine.mcp.allResources().firstOrNull()?.uri.orEmpty()
             else aiEngine.mcp.allPrompts().firstOrNull { p -> p.arguments.any { it.name == argument } }?.name.orEmpty()
         }
         if (ref.isBlank()) return JSONObject().put("ok", false).put("summary", "কোনো ref পাওয়া যায়নি")
-        val result = aiEngine.mcp.complete(server, kind, ref, argument, args.optString("value"))
+        val result = aiEngine.mcp.complete(server, kind, ref, argument, args.safe("value"))
         return result
     }
 
     private suspend fun runMcpPing(args: JSONObject): JSONObject {
-        val server = args.optString("server").trim().lowercase()
+        val server = args.safe("server").trim().lowercase()
         if (server.isBlank()) return JSONObject().put("ok", false).put("summary", "server দরকার")
         val result = aiEngine.mcp.ping(server)
         return result
     }
 
     private suspend fun runMcpLogLevel(args: JSONObject): JSONObject {
-        val server = args.optString("server").trim().lowercase()
-        val level = args.optString("level").trim().lowercase()
+        val server = args.safe("server").trim().lowercase()
+        val level = args.safe("level").trim().lowercase()
         if (server.isBlank() || level.isBlank()) {
             return JSONObject().put("ok", false).put("summary", "server আর level দরকার")
         }
@@ -3431,7 +3436,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * Same shell, same cwd, same scrollback as the user's own typing.
      */
     private suspend fun runInTerminalShell(args: JSONObject, live: ((String) -> Unit)? = null): JSONObject {
-        val line = args.optString("command").trim()
+        val line = args.safe("command").trim()
         if (line.isEmpty()) return JSONObject().put("ok", false).put("summary", "খালি কমান্ড")
         // No deadline unless the caller asked for one, matching the user's own
         // typing: a long command in the watched terminal runs to completion.
@@ -3439,7 +3444,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // The caller may name the shell: "linux" drives ZYRAXON's own Unix system,
         // "android" the phone's own shell. Without a name, the session already on
         // screen is used, which is what a user watching the terminal expects.
-        val requested = args.optString("shell").trim().lowercase()
+        val requested = args.safe("shell").trim().lowercase()
         if (requested == "linux" || requested == "android") {
             val want = if (requested == "linux") TerminalShell.LINUX else TerminalShell.ANDROID
             val existing = _terminalSessions.value.firstOrNull { it.shell == want }

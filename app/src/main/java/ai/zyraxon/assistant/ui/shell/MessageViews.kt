@@ -228,13 +228,22 @@ private fun TypingDots() {
 
 @Composable
 private fun ThinkingBlock(text: String, live: Boolean) {
+    // Expanded while it is being written and, once the answer is done, collapsed
+    // to a readable preview rather than vanishing: the reasoning the user watched
+    // arrive must still be there to read afterwards, which is what tapping it
+    // opens in full.
     var open by remember { mutableStateOf(false) }
     Column(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(Glass.rowFill(0.25f))
             .clickable { open = !open }.padding(horizontal = 10.dp, vertical = 6.dp).animateContentSize()
     ) {
         Text(if (live) t("💭 ভাবছে…") else if (open) t("💭 ভাবনা ▾") else t("💭 ভাবনা ▸"), color = Glass.textMuted, fontSize = 11.5.sp)
-        if (open || live) Text(text.takeLast(if (open) 4000 else 280), color = Glass.textMuted, fontSize = 11.5.sp, lineHeight = 16.sp)
+        val shown = when {
+            open -> text.takeLast(4000)
+            live -> text.takeLast(280)
+            else -> text.takeLast(160)
+        }
+        if (shown.isNotBlank()) Text(shown, color = Glass.textMuted, fontSize = 11.5.sp, lineHeight = 16.sp)
     }
 }
 

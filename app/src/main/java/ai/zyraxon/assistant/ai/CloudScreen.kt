@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.ai
 
+import ai.zyraxon.assistant.core.safe
+
 import org.json.JSONArray
 
 /**
@@ -57,7 +59,7 @@ object CloudScreen {
             for (i in 0 until arr.length()) {
                 if (bodyCount >= maxLines) { truncated = true; break }
                 val o = arr.optJSONObject(i) ?: continue
-                val text = o.optString("text").trim()
+                val text = o.safe("text").trim()
                 if (text.isEmpty()) continue
                 // The same label repeats all over a list (a row of "Songs", a
                 // column of "Follow"); one entry per distinct label keeps the

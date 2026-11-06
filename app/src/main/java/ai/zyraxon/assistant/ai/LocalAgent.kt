@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.ai
 
+import ai.zyraxon.assistant.core.safe
+
 import org.json.JSONObject
 
 /**
@@ -62,7 +64,7 @@ object LocalAgent {
         val raw = text.substring(bodyStart, end).trim()
         return try {
             val json = JSONObject(raw)
-            val name = json.optString("name")
+            val name = json.safe("name")
             if (name.isBlank() || TOOLS.none { it.first == name }) return null
             name to (json.optJSONObject("arguments") ?: JSONObject())
         } catch (_: Exception) {

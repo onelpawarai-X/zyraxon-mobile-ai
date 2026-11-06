@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.voice
 
+import ai.zyraxon.assistant.core.safe
+
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
@@ -299,9 +301,9 @@ class LiveVoiceSession(
 
         val serverContent = json.optJSONObject("serverContent") ?: return
 
-        serverContent.optJSONObject("inputTranscription")?.optString("text")?.takeIf { it.isNotBlank() }
+        serverContent.optJSONObject("inputTranscription")?.safe("text")?.takeIf { it.isNotBlank() }
             ?.let { onUserTranscript?.invoke(it) }
-        serverContent.optJSONObject("outputTranscription")?.optString("text")?.takeIf { it.isNotBlank() }
+        serverContent.optJSONObject("outputTranscription")?.safe("text")?.takeIf { it.isNotBlank() }
             ?.let { onModelTranscript?.invoke(it) }
 
         if (serverContent.optBoolean("interrupted")) {
@@ -314,7 +316,7 @@ class LiveVoiceSession(
             val parts = turn.optJSONArray("parts") ?: JSONArray()
             for (i in 0 until parts.length()) {
                 val inline = parts.optJSONObject(i)?.optJSONObject("inlineData") ?: continue
-                val data = inline.optString("data")
+                val data = inline.safe("data")
                 if (data.isNotBlank()) playPcm(Base64.decode(data, Base64.DEFAULT))
             }
             onState?.invoke(State.SPEAKING)
@@ -328,30 +330,30 @@ class LiveVoiceSession(
      * — so both are read rather than guessing which the provider speaks.
      */
     private fun handleOpenAi(json: JSONObject) {
-        when (json.optString("type")) {
+        when (json.safe("type")) {
             "session.updated", "session.created" -> {
                 ready.set(true)
                 onState?.invoke(State.LISTENING)
             }
             "input_audio_buffer.speech_started" -> onState?.invoke(State.LISTENING)
             "conversation.item.input_audio_transcription.completed" ->
-                json.optString("transcript").takeIf { it.isNotBlank() }
+                json.safe("transcript").takeIf { it.isNotBlank() }
                     ?.let { onUserTranscript?.invoke(it) }
             "response.audio.delta", "response.output_audio.delta" -> {
-                val delta = json.optString("delta")
+                val delta = json.safe("delta")
                 if (delta.isNotBlank()) {
                     playPcm(Base64.decode(delta, Base64.DEFAULT))
                     onState?.invoke(State.SPEAKING)
                 }
             }
             "response.audio_transcript.delta", "response.output_audio_transcript.delta" ->
-                json.optString("delta").takeIf { it.isNotBlank() }
+                json.safe("delta").takeIf { it.isNotBlank() }
                     ?.let { onModelTranscript?.invoke(it) }
             "response.audio_transcript.done", "response.output_audio_transcript.done",
             "response.audio.done", "response.output_audio.done", "response.done" ->
                 onState?.invoke(State.LISTENING)
             "error" -> {
-                val message = json.optJSONObject("error")?.optString("message").orEmpty()
+                val message = json.optJSONObject("error")?.safe("message").orEmpty()
                 if (message.isNotBlank()) onError?.invoke(message)
             }
         }

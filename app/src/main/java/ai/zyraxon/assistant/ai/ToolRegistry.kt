@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.ai
 
+import ai.zyraxon.assistant.core.safe
+
 import ai.zyraxon.assistant.DeviceBridge
 import ai.zyraxon.assistant.MainActivity
 import ai.zyraxon.assistant.ai.OnDeviceModel
@@ -553,15 +555,15 @@ object ToolRegistry {
             "read_screen" -> readScreen()
             "screen_shot" -> screenShot()
             "tap" -> ok(DeviceBridge.tap(args.optDouble("x", 0.0).toFloat(), args.optDouble("y", 0.0).toFloat()), "ট্যাপ")
-            "tap_text" -> ok(DeviceBridge.tapText(args.optString("text")), "টেক্সটে ট্যাপ")
+            "tap_text" -> ok(DeviceBridge.tapText(args.safe("text")), "টেক্সটে ট্যাপ")
             "swipe" -> ok(DeviceBridge.swipe(
                 args.optDouble("x1", 0.0).toFloat(), args.optDouble("y1", 0.0).toFloat(),
                 args.optDouble("x2", 0.0).toFloat(), args.optDouble("y2", 0.0).toFloat()), "সোয়াইপ")
-            "type_text" -> ok(DeviceBridge.typeText(args.optString("text")), "টাইপ")
-            "press_key" -> ok(DeviceBridge.pressKey(args.optString("key")), "কী চাপা হয়েছে")
-            "notify" -> { DeviceBridge.notify(context, args.optString("title", "ZYRAXON"), args.optString("body")); ok("notified", "নোটিফিকেশন পাঠানো হয়েছে") }
+            "type_text" -> ok(DeviceBridge.typeText(args.safe("text")), "টাইপ")
+            "press_key" -> ok(DeviceBridge.pressKey(args.safe("key")), "কী চাপা হয়েছে")
+            "notify" -> { DeviceBridge.notify(context, args.safe("title", "ZYRAXON"), args.safe("body")); ok("notified", "নোটিফিকেশন পাঠানো হয়েছে") }
             "clipboard_read" -> ok(clipboard(context).primaryClip?.getItemAt(0)?.coerceToText(context)?.toString() ?: "", "ক্লিপবোর্ড")
-            "clipboard_write" -> { clipboard(context).setPrimaryClip(ClipData.newPlainText("zyraxon", args.optString("text"))); ok("copied", "ক্লিপবোর্ডে লেখা হয়েছে") }
+            "clipboard_write" -> { clipboard(context).setPrimaryClip(ClipData.newPlainText("zyraxon", args.safe("text"))); ok("copied", "ক্লিপবোর্ডে লেখা হয়েছে") }
             "share" -> share(context, args)
             "read_sms" -> readSms(context, args)
             "look_camera" -> lookCamera(context, args)
@@ -596,8 +598,8 @@ object ToolRegistry {
             "call_answer" -> ok(DeviceBridge.answerCall(context), "কল রিসিভ")
             "call_hangup" -> ok(DeviceBridge.hangUpCall(context), "কল কেটে দেওয়া")
             "call_dial" -> callDial(context, args)
-            "request_permission" -> requestPermission(context, args.optString("name"))
-            "open_settings" -> openSettings(context, args.optString("page"))
+            "request_permission" -> requestPermission(context, args.safe("name"))
+            "open_settings" -> openSettings(context, args.safe("page"))
             "voice_change" -> changeVoice(context, args)
             "channel_post" -> channelPost(context, args)
             "serve_local" -> serveLocal(context, args)
@@ -627,9 +629,9 @@ object ToolRegistry {
         if (!granted) {
             return err("no-permission", "SMS পড়ার অনুমতি নেই — open_settings(apps) খুলে অ্যাপ পারমিশন থেকে SMS নিজে চালু করো, তারপর আবার চেষ্টা করো")
         }
-        val want = args.optString("contains").lowercase()
+        val want = args.safe("contains").lowercase()
         val max = args.optInt("count", 5).coerceIn(1, 50)
-        val box = when (args.optString("box", "inbox").lowercase()) {
+        val box = when (args.safe("box", "inbox").lowercase()) {
             "sent" -> "content://sms/sent"
             "all" -> "content://sms"
             else -> "content://sms/inbox"
@@ -670,7 +672,7 @@ object ToolRegistry {
                 Thread.sleep(1500)
                 out = readOnce()
             }
-            val newestCode = (0 until out.length()).firstNotNullOfOrNull { out.getJSONObject(it).optString("code").takeIf { s -> s.isNotBlank() } }
+            val newestCode = (0 until out.length()).firstNotNullOfOrNull { out.getJSONObject(it).safe("code").takeIf { s -> s.isNotBlank() } }
             val result = JSONObject().put("messages", out)
             if (newestCode != null) result.put("newest_code", newestCode)
             ok(result, "${out.length()}টি SMS পাওয়া গেছে" + (newestCode?.let { " — সর্বশেষ কোড: $it" } ?: ""))
@@ -683,8 +685,8 @@ object ToolRegistry {
         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
     private fun openApp(context: Context, args: JSONObject): JSONObject {
-        val target = args.optString("package").ifBlank { args.optString("name") }
-            .ifBlank { args.optString("app") }
+        val target = args.safe("package").ifBlank { args.safe("name") }
+            .ifBlank { args.safe("app") }
         if (target.isBlank()) {
             return err("no-target", "কোন অ্যাপ খুলব বলোনি — অ্যাপের নাম বা প্যাকেজ দাও")
         }
@@ -710,8 +712,8 @@ object ToolRegistry {
      * প্লে করো" and expects the music, not a question.
      */
     private fun youtubePlay(context: Context, args: JSONObject): JSONObject {
-        val query = args.optString("query").ifBlank { args.optString("text") }
-            .ifBlank { args.optString("name") }
+        val query = args.safe("query").ifBlank { args.safe("text") }
+            .ifBlank { args.safe("name") }
         if (query.isBlank()) return err("no-query", "কী প্লে করব বলোনি")
         val encoded = java.net.URLEncoder.encode(query, "UTF-8")
         val url = "https://www.youtube.com/results?search_query=$encoded"
@@ -803,12 +805,12 @@ object ToolRegistry {
     }
 
     private fun callDial(context: Context, args: JSONObject): JSONObject {
-        val number = args.optString("number").trim()
+        val number = args.safe("number").trim()
         if (number.isNotBlank()) {
             return if (DeviceBridge.dial(context, number)) ok(number, "কল করা হচ্ছে: $number")
             else err("dial-failed", "কল করা যায়নি: $number")
         }
-        val name = args.optString("name").ifBlank { args.optString("contact") }.trim()
+        val name = args.safe("name").ifBlank { args.safe("contact") }.trim()
         if (name.isBlank()) return err("no-target", "কাকে কল করব বলোনি")
         // A spoken name is looked up in the contact book, so "মা-কে কল করো" places
         // a real call instead of the assistant announcing a call it never made.
@@ -821,7 +823,7 @@ object ToolRegistry {
     }
 
     private fun launchUrl(context: Context, args: JSONObject): JSONObject {
-        var url = args.optString("url")
+        var url = args.safe("url")
         if (url.isBlank()) return err("no-url", "কোন লিংক খুলব বলোনি")
         // A path to a local file: serve its folder and open it over loopback, so
         // "write the page, then show it" is one step and no LAN address is shown.
@@ -849,7 +851,7 @@ object ToolRegistry {
     }
 
     private fun verifyUrl(args: JSONObject): JSONObject {
-        val url = args.optString("url")
+        val url = args.safe("url")
         return try {
             val c = (URL(url).openConnection() as HttpURLConnection).apply {
                 requestMethod = "HEAD"
@@ -866,13 +868,13 @@ object ToolRegistry {
     }
 
     private fun share(context: Context, args: JSONObject): JSONObject {
-        val text = listOf(args.optString("text"), args.optString("url")).filter { it.isNotBlank() }.joinToString(" ")
+        val text = listOf(args.safe("text"), args.safe("url")).filter { it.isNotBlank() }.joinToString(" ")
         if (text.isBlank()) return err("empty", "শেয়ার করার কিছু দাওনি")
         val send = Intent(Intent.ACTION_SEND).setType("text/plain")
             .putExtra(Intent.EXTRA_TEXT, text)
-            .putExtra(Intent.EXTRA_TITLE, args.optString("title"))
+            .putExtra(Intent.EXTRA_TITLE, args.safe("title"))
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(Intent.createChooser(send, args.optString("title", "শেয়ার")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        context.startActivity(Intent.createChooser(send, args.safe("title", "শেয়ার")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         return ok("shared", "শেয়ার শিট খোলা হয়েছে")
     }
 
@@ -941,7 +943,7 @@ object ToolRegistry {
     }
 
     private suspend fun lookCamera(context: Context, args: JSONObject): JSONObject {
-        val facing = args.optString("facing", "back")
+        val facing = args.safe("facing", "back")
         return try {
             val bitmap = CameraCapture.capture(context, facing)
                 ?: return err("camera-empty", "ক্যামেরা থেকে কোনো ছবি আসেনি")
@@ -967,8 +969,8 @@ object ToolRegistry {
      * single still.
      */
     private fun readMedia(context: Context, args: JSONObject): JSONObject {
-        val url = args.optString("url").trim()
-        val path = args.optString("path").trim()
+        val url = args.safe("url").trim()
+        val path = args.safe("path").trim()
         if (url.isBlank() && path.isBlank()) {
             return err("no-source", "কোন ফাইল বা লিংক দেবে বলোনি")
         }
@@ -976,7 +978,7 @@ object ToolRegistry {
         val file: File
         var downloaded = false
         if (url.isNotBlank()) {
-            file = downloadToCache(context, url, args.optString("kind", "auto"))
+            file = downloadToCache(context, url, args.safe("kind", "auto"))
                 ?: return err("download-failed", "লিংক থেকে ফাইল নামানো গেল না: $url")
             downloaded = true
         } else {
@@ -984,7 +986,7 @@ object ToolRegistry {
             if (!file.exists()) return err("not-found", "ফাইল নেই: ${file.absolutePath}")
         }
 
-        val kind = args.optString("kind", "auto").let {
+        val kind = args.safe("kind", "auto").let {
             if (it != "auto") it else kindOf(file)
         }
         val maxSide = args.optInt("max_side", 1024).coerceIn(256, 2048)
@@ -1112,7 +1114,7 @@ object ToolRegistry {
     }
 
     private fun readUrl(args: JSONObject): JSONObject {
-        val url = args.optString("url")
+        val url = args.safe("url")
         return try {
             val (code, body) = fetch(url, args.optInt("max_chars", 20000))
             if (code !in 200..299) return err("http-$code", "পেজটি HTTP $code দিচ্ছে: $url")
@@ -1128,7 +1130,7 @@ object ToolRegistry {
     }
 
     private fun webSearch(args: JSONObject): JSONObject {
-        val q = args.optString("query")
+        val q = args.safe("query")
         val out = JSONArray()
         try {
             val (_, body) = fetch("https://html.duckduckgo.com/html/?q=" + Uri.encode(q))
@@ -1147,9 +1149,9 @@ object ToolRegistry {
                 for (i in 0 until minOf(arr.length(), 6)) {
                     val o = arr.getJSONObject(i)
                     out.put(JSONObject()
-                        .put("title", o.optString("title"))
-                        .put("url", "https://en.wikipedia.org/wiki/" + Uri.encode(o.optString("title")))
-                        .put("snippet", o.optString("snippet").replace(Regex("<[^>]+>"), "")))
+                        .put("title", o.safe("title"))
+                        .put("url", "https://en.wikipedia.org/wiki/" + Uri.encode(o.safe("title")))
+                        .put("snippet", o.safe("snippet").replace(Regex("<[^>]+>"), "")))
                 }
             } catch (_: Exception) {}
         }
@@ -1158,10 +1160,10 @@ object ToolRegistry {
     }
 
     private fun httpRequest(args: JSONObject): JSONObject {
-        val url = args.optString("url")
-        val method = args.optString("method", "GET").uppercase()
+        val url = args.safe("url")
+        val method = args.safe("method", "GET").uppercase()
         return try {
-            val body = args.optString("body")
+            val body = args.safe("body")
             val sendBody = body.isNotBlank() && method != "GET" && method != "HEAD"
             val c = (URL(url).openConnection() as HttpURLConnection).apply {
                 requestMethod = method
@@ -1169,7 +1171,7 @@ object ToolRegistry {
                 doOutput = sendBody
                 setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14)")
                 val h = args.optJSONObject("headers")
-                if (h != null) for (k in h.keys()) setRequestProperty(k, h.optString(k))
+                if (h != null) for (k in h.keys()) setRequestProperty(k, h.safe(k))
             }
             if (sendBody) c.outputStream.use { it.write(body.toByteArray()) }
             val code = c.responseCode
@@ -1183,8 +1185,8 @@ object ToolRegistry {
     }
 
     private fun downloadFile(context: Context, args: JSONObject): JSONObject {
-        val url = args.optString("url")
-        val dest = resolve(context, args.optString("path").ifBlank { "downloads/" + url.substringAfterLast('/').take(80) })
+        val url = args.safe("url")
+        val dest = resolve(context, args.safe("path").ifBlank { "downloads/" + url.substringAfterLast('/').take(80) })
         return try {
             dest.parentFile?.mkdirs()
             val c = (URL(url).openConnection() as HttpURLConnection).apply {
@@ -1200,11 +1202,11 @@ object ToolRegistry {
     }
 
     private fun writeFile(context: Context, args: JSONObject): JSONObject {
-        val f = resolve(context, args.optString("path"))
-        val content = args.optString("content")
+        val f = resolve(context, args.safe("path"))
+        val content = args.safe("content")
         try {
             f.parentFile?.mkdirs()
-            if (args.optString("mode", "overwrite") == "append") f.appendText(content)
+            if (args.safe("mode", "overwrite") == "append") f.appendText(content)
             else f.writeText(content)
             return ok(JSONObject().put("path", f.absolutePath).put("bytes", f.length()), "${f.name} লেখা হয়েছে (${f.length()} বাইট)")
         } catch (_: Exception) {
@@ -1214,7 +1216,7 @@ object ToolRegistry {
             // workspace instead, so the site still gets built and the model keeps
             // going. This is the second level the system prompt alone could not
             // provide: the tool itself refuses to fail.
-            val safeName = (args.optString("path").substringAfterLast('/').substringAfterLast('\\')
+            val safeName = (args.safe("path").substringAfterLast('/').substringAfterLast('\\')
                 .replace(Regex("[^A-Za-z0-9._-]"), "-").ifBlank { "file.txt" })
             val fallback = File(workspace(context), safeName)
             return try {
@@ -1226,7 +1228,7 @@ object ToolRegistry {
                     "${fallback.name} লেখা হয়েছে (বিকল্প পাথে)"
                 )
             } catch (e: Exception) {
-                err((e.message ?: e.toString()), "ফাইল লেখা যায়নি: ${args.optString("path")}")
+                err((e.message ?: e.toString()), "ফাইল লেখা যায়নি: ${args.safe("path")}")
             }
         }
     }
@@ -1235,18 +1237,18 @@ object ToolRegistry {
         // `content` means write (create, overwrite or append); `find` means patch.
         if (args.has("content") && !args.has("find")) {
             return writeFile(context, JSONObject()
-                .put("path", args.optString("path")).put("content", args.optString("content"))
+                .put("path", args.safe("path")).put("content", args.safe("content"))
                 .put("mode", if (args.optBoolean("append")) "append" else "overwrite"))
         }
         if (!args.has("find")) return err("bad-args", "edit_file-এ `content` (লেখা) বা `find`+`replace` (বদল) দিতে হবে")
-        val f = resolve(context, args.optString("path"))
+        val f = resolve(context, args.safe("path"))
         if (!f.exists()) return err("not-found", "ফাইলটি নেই: ${f.name}")
         return try {
             val text = f.readText()
-            val find = args.optString("find")
+            val find = args.safe("find")
             if (!text.contains(find)) return err("not-found-in-file", "\"$find\" ফাইলে পাওয়া যায়নি")
-            val out = if (args.optBoolean("all")) text.replace(find, args.optString("replace"))
-            else text.replaceFirst(find, args.optString("replace"))
+            val out = if (args.optBoolean("all")) text.replace(find, args.safe("replace"))
+            else text.replaceFirst(find, args.safe("replace"))
             f.writeText(out)
             ok(JSONObject().put("path", f.absolutePath), "${f.name} সম্পাদনা করা হয়েছে")
         } catch (e: Exception) {
@@ -1255,7 +1257,7 @@ object ToolRegistry {
     }
 
     private fun readFile(context: Context, args: JSONObject): JSONObject {
-        val f = resolve(context, args.optString("path"))
+        val f = resolve(context, args.safe("path"))
         if (!f.exists()) return err("not-found", "ফাইলটি নেই: ${f.name}")
         if (f.isDirectory) return listDir(context, args)
         return try {
@@ -1273,7 +1275,7 @@ object ToolRegistry {
     }
 
     private fun listDir(context: Context, args: JSONObject): JSONObject {
-        val d = resolve(context, args.optString("path"))
+        val d = resolve(context, args.safe("path"))
         if (!d.exists()) return err("not-found", "ফোল্ডারটি নেই: ${d.name}")
         val arr = JSONArray()
         d.listFiles()?.sortedBy { it.name }?.forEach {
@@ -1283,8 +1285,8 @@ object ToolRegistry {
     }
 
     private fun findFiles(context: Context, args: JSONObject): JSONObject {
-        val root = resolve(context, args.optString("path"))
-        val pattern = args.optString("pattern", "*").substringAfterLast('/')
+        val root = resolve(context, args.safe("path"))
+        val pattern = args.safe("pattern", "*").substringAfterLast('/')
         val regex = Regex("^" + Regex.escape(pattern).replace("\\*", ".*").replace("\\?", ".") + "$")
         val out = JSONArray()
         root.walkTopDown().take(4000).forEach {
@@ -1294,8 +1296,8 @@ object ToolRegistry {
     }
 
     private fun grepFiles(context: Context, args: JSONObject): JSONObject {
-        val root = resolve(context, args.optString("path"))
-        val query = args.optString("query")
+        val root = resolve(context, args.safe("path"))
+        val query = args.safe("query")
         val caseSensitive = args.optBoolean("case_sensitive")
         val matcher: (String) -> Boolean = if (args.optBoolean("regex")) {
             val re = try { Regex(query, if (caseSensitive) emptySet() else setOf(RegexOption.IGNORE_CASE)) } catch (_: Exception) { null }
@@ -1318,15 +1320,15 @@ object ToolRegistry {
     }
 
     private fun deleteFile(context: Context, args: JSONObject): JSONObject {
-        val f = resolve(context, args.optString("path"))
+        val f = resolve(context, args.safe("path"))
         if (!f.exists()) return err("not-found", "ফাইলটি নেই: ${f.name}")
         val okDel = if (f.isDirectory) f.deleteRecursively() else f.delete()
         return if (okDel) ok(f.absolutePath, "${f.name} মোছে ফেলা হয়েছে") else err("failed", "${f.name} মোছা যায়নি")
     }
 
     private fun runShell(context: Context, args: JSONObject, live: ((String) -> Unit)? = null): JSONObject {
-        val cmd = args.optString("command")
-        val cwd = resolve(context, args.optString("cwd").ifBlank { null })
+        val cmd = args.safe("command")
+        val cwd = resolve(context, args.safe("cwd").ifBlank { null })
         // No default deadline: a command runs until it decides it is finished, the
         // way a real shell behaves. `apt install`, `git clone` and a long build all
         // run to completion instead of being cut off. Pass `timeout_ms` only when
@@ -1377,9 +1379,9 @@ object ToolRegistry {
      * one with the notification's button or `action:"stop"`.
      */
     private fun backgroundCommand(context: Context, args: JSONObject): JSONObject {
-        return when (args.optString("action", "status").trim().lowercase()) {
+        return when (args.safe("action", "status").trim().lowercase()) {
             "start" -> {
-                val command = args.optString("command").trim()
+                val command = args.safe("command").trim()
                 if (command.isEmpty()) return err("bad-args", "Provide a command")
                 BackgroundCommandService.start(context, command)
                 ok(
@@ -1456,9 +1458,9 @@ object ToolRegistry {
     private suspend fun waitTool(context: Context, args: JSONObject, live: ((String) -> Unit)?): JSONObject {
         val started = System.currentTimeMillis()
         val seconds = args.optDouble("seconds", 0.0)
-        val until = args.optString("until").trim().lowercase()
-        val command = args.optString("command").trim()
-        val contains = args.optString("contains")
+        val until = args.safe("until").trim().lowercase()
+        val command = args.safe("command").trim()
+        val contains = args.safe("contains")
         val everyMs = args.optLong("every_ms", 1000L).coerceAtLeast(1L)
 
         val polls = until.isNotEmpty() && command.isNotEmpty()
@@ -1503,11 +1505,11 @@ object ToolRegistry {
      * `run_shell` still works, so nothing breaks for someone who never enables it.
      */
     private fun systemShell(context: Context, args: JSONObject, live: ((String) -> Unit)? = null): JSONObject {
-        val command = args.optString("command").trim()
+        val command = args.safe("command").trim()
         if (command.isEmpty()) return err("bad-args", "Provide a command")
         // Same rule as the other shells: no deadline unless the caller sets one.
         val timeout = args.optLong("timeout_ms", 0)
-        val requested = args.optString("level", "auto").trim().lowercase()
+        val requested = args.safe("level", "auto").trim().lowercase()
         if (!SystemShell.available()) {
             val hint = if (SystemShell.needsPermission()) {
                 "Shizuku is running but ZYRAXON has not been granted access. Open Settings -> System access and tap Allow."
@@ -1560,7 +1562,7 @@ object ToolRegistry {
      * the user: confirming the install, and tapping Allow in Shizuku's own dialog.
      */
     private fun setupShizuku(context: Context, args: JSONObject): JSONObject {
-        val action = args.optString("action", "status").trim().lowercase()
+        val action = args.safe("action", "status").trim().lowercase()
 
         fun report(state: ShizukuState): JSONObject {
             val name = when (state) {
@@ -1640,7 +1642,7 @@ object ToolRegistry {
      * busybox. Everything comes from the APK, so it works with no network.
      */
     private suspend fun linuxRun(context: Context, args: JSONObject, live: ((String) -> Unit)? = null): JSONObject {
-        val action = args.optString("action", "status").trim().lowercase()
+        val action = args.safe("action", "status").trim().lowercase()
         return when (action) {
             "install" -> {
                 val log = StringBuilder()
@@ -1656,7 +1658,7 @@ object ToolRegistry {
             }
 
             "run" -> {
-                val command = args.optString("command").trim()
+                val command = args.safe("command").trim()
                 if (command.isEmpty()) return err("bad-args", "Provide a command")
                 // The system ships in the APK and is unpacked on first launch. If a
                 // command arrives before that finishes, set it up now instead of
@@ -1724,19 +1726,19 @@ object ToolRegistry {
         if (token.isEmpty()) {
             return err("no-github-token", "GitHub টোকেন নেই — সেটিংসে টোকেন দিন, তারপর আবার বলো")
         }
-        val repoArg = args.optString("repo").trim()
+        val repoArg = args.safe("repo").trim()
         if (repoArg.isEmpty()) return err("no-repo", "রিপোজিটরির নাম বলোনি")
         val repo = repoArg.removePrefix("https://github.com/").removeSuffix(".git").trim('/')
 
         val files = linkedMapOf<String, String>()
-        if (args.optString("html").isNotBlank()) files["index.html"] = args.optString("html")
+        if (args.safe("html").isNotBlank()) files["index.html"] = args.safe("html")
         args.optJSONObject("files")?.let { obj ->
-            for (key in obj.keys()) files[key.trimStart('/')] = obj.optString(key)
+            for (key in obj.keys()) files[key.trimStart('/')] = obj.safe(key)
         }
         if (files.isEmpty()) return err("no-files", "প্রকাশ করার জন্য কোনো ফাইল দাওনি")
 
         val who = githubRequest(token, "GET", "https://api.github.com/user", null)
-        val login = who?.optString("login").orEmpty()
+        val login = who?.safe("login").orEmpty()
         if (login.isEmpty()) return err("bad-token", "GitHub টোকেন কাজ করছে না")
 
         val full = if (repo.contains("/")) repo else "$login/$repo"
@@ -1744,12 +1746,12 @@ object ToolRegistry {
         if (exists == null || exists.has("message")) {
             val body = JSONObject()
                 .put("name", full.substringAfter("/"))
-                .put("description", args.optString("description", "ZYRAXON দিয়ে প্রকাশিত"))
+                .put("description", args.safe("description", "ZYRAXON দিয়ে প্রকাশিত"))
                 .put("private", args.optBoolean("private", false))
                 .put("auto_init", true)
             val created = githubRequest(token, "POST", "https://api.github.com/user/repos", body)
             if (created == null || created.has("message")) {
-                return err("repo-create-failed", created?.optString("message") ?: "রিপো তৈরি হয়নি")
+                return err("repo-create-failed", created?.safe("message") ?: "রিপো তৈরি হয়নি")
             }
         }
 
@@ -1762,7 +1764,7 @@ object ToolRegistry {
                 .put("message", "ZYRAXON: $path")
                 .put("content", android.util.Base64.encodeToString(
                     content.toByteArray(Charsets.UTF_8), android.util.Base64.NO_WRAP))
-            if (existing != null && existing.has("sha")) body.put("sha", existing.optString("sha"))
+            if (existing != null && existing.has("sha")) body.put("sha", existing.safe("sha"))
             val res = githubRequest(token, "PUT", url, body)
             if (res != null && !res.has("message")) pushed++ else failed.add(path)
         }
@@ -1796,7 +1798,7 @@ object ToolRegistry {
             if (code in 200..299) {
                 if (text.isBlank()) JSONObject() else try { JSONObject(text) } catch (_: Exception) { JSONObject() }
             } else {
-                JSONObject().put("message", try { JSONObject(text).optString("message", "HTTP $code") } catch (_: Exception) { "HTTP $code" })
+                JSONObject().put("message", try { JSONObject(text).safe("message", "HTTP $code") } catch (_: Exception) { "HTTP $code" })
             }
         } catch (e: Exception) {
             JSONObject().put("message", e.message ?: "network-error")
@@ -1813,7 +1815,7 @@ object ToolRegistry {
      */
     private suspend fun buildApp(context: Context, args: JSONObject, live: ((String) -> Unit)?): JSONObject {
         val root = workspace(context)
-        val variant = args.optString("variant", "debug").trim().lowercase()
+        val variant = args.safe("variant", "debug").trim().lowercase()
         val release = variant == "release"
         val gradle = if (release) "assembleRelease" else "assembleDebug"
         val out = StringBuilder()
@@ -1862,9 +1864,9 @@ object ToolRegistry {
      * assistant with the result when it ends.
      */
     private fun scheduleCommand(context: Context, args: JSONObject): JSONObject {
-        val command = args.optString("command").trim()
+        val command = args.safe("command").trim()
         if (command.isEmpty()) return err("bad-args", "কোন কমান্ড চালাবে বলোনি")
-        val action = args.optString("action", "schedule").trim().lowercase()
+        val action = args.safe("action", "schedule").trim().lowercase()
         return when (action) {
             "cancel" -> {
                 ScheduledCommandReceiver.cancel(context, command)
@@ -1903,34 +1905,34 @@ object ToolRegistry {
         if (token.isEmpty()) {
             return err("no-github-token", "GitHub টোকেন নেই — সেটিংসে টোকেন দিন, তারপর আবার বলো")
         }
-        val repoArg = args.optString("repo").trim()
+        val repoArg = args.safe("repo").trim()
         if (repoArg.isEmpty()) return err("no-repo", "রিপোজিটরির নাম বলোনি")
         val repo = repoArg.removePrefix("https://github.com/").removeSuffix(".git").trim('/')
         val base = "https://api.github.com/repos/$repo/actions"
-        val action = args.optString("action", "list").trim().lowercase()
+        val action = args.safe("action", "list").trim().lowercase()
 
         return when (action) {
             "list" -> {
                 val res = githubRequest(token, "GET", "$base/workflows", null)
                     ?: return err("network-error", "GitHub-এ পৌঁছানো গেল না")
-                if (res.has("message")) return err("github-error", res.optString("message"))
+                if (res.has("message")) return err("github-error", res.safe("message"))
                 val arr = res.optJSONArray("workflows") ?: JSONArray()
                 val out = JSONArray()
                 for (i in 0 until arr.length()) {
                     val w = arr.getJSONObject(i)
                     out.put(JSONObject()
                         .put("id", w.optLong("id"))
-                        .put("name", w.optString("name"))
-                        .put("path", w.optString("path"))
-                        .put("state", w.optString("state")))
+                        .put("name", w.safe("name"))
+                        .put("path", w.safe("path"))
+                        .put("state", w.safe("state")))
                 }
                 ok(JSONObject().put("workflows", out), "${out.length()}টি workflow পাওয়া গেছে")
             }
 
             "dispatch" -> {
-                val workflow = args.optString("workflow").trim()
+                val workflow = args.safe("workflow").trim()
                 if (workflow.isEmpty()) return err("bad-args", "কোন workflow চালাবে বলোনি (file name বা id)")
-                val ref = args.optString("ref").trim().ifEmpty { "main" }
+                val ref = args.safe("ref").trim().ifEmpty { "main" }
                 val body = JSONObject().put("ref", ref)
                 args.optJSONObject("inputs")?.let { body.put("inputs", it) }
                 val res = githubRequest(
@@ -1938,7 +1940,7 @@ object ToolRegistry {
                     "$base/workflows/${Uri.encode(workflow)}/dispatches",
                     body
                 )
-                if (res != null && res.has("message")) return err("dispatch-failed", res.optString("message"))
+                if (res != null && res.has("message")) return err("dispatch-failed", res.safe("message"))
                 ok(
                     JSONObject().put("workflow", workflow).put("ref", ref).put("dispatched", true),
                     "CI চালু হলো: $workflow @ $ref — `runs` বা `status` দিয়ে দেখো"
@@ -1946,53 +1948,53 @@ object ToolRegistry {
             }
 
             "runs" -> {
-                val wf = args.optString("workflow").trim()
+                val wf = args.safe("workflow").trim()
                 val url = if (wf.isEmpty()) "$base/runs?per_page=10"
                 else "$base/workflows/${Uri.encode(wf)}/runs?per_page=10"
                 val res = githubRequest(token, "GET", url, null)
                     ?: return err("network-error", "GitHub-এ পৌঁছানো গেল না")
-                if (res.has("message")) return err("github-error", res.optString("message"))
+                if (res.has("message")) return err("github-error", res.safe("message"))
                 val arr = res.optJSONArray("workflow_runs") ?: JSONArray()
                 val out = JSONArray()
                 for (i in 0 until arr.length()) {
                     val r = arr.getJSONObject(i)
                     out.put(JSONObject()
                         .put("id", r.optLong("id"))
-                        .put("name", r.optString("name"))
-                        .put("branch", r.optString("head_branch"))
-                        .put("event", r.optString("event"))
-                        .put("status", r.optString("status"))
-                        .put("conclusion", r.optString("conclusion"))
-                        .put("url", r.optString("html_url")))
+                        .put("name", r.safe("name"))
+                        .put("branch", r.safe("head_branch"))
+                        .put("event", r.safe("event"))
+                        .put("status", r.safe("status"))
+                        .put("conclusion", r.safe("conclusion"))
+                        .put("url", r.safe("html_url")))
                 }
                 ok(JSONObject().put("runs", out), "${out.length()}টি সাম্প্রতিক রান")
             }
 
             "status" -> {
-                val id = args.optString("run_id").trim()
+                val id = args.safe("run_id").trim()
                 if (id.isEmpty()) return err("bad-args", "run_id দাও")
                 val r = githubRequest(token, "GET", "$base/runs/$id", null)
                     ?: return err("network-error", "GitHub-এ পৌঁছানো গেল না")
-                if (r.has("message")) return err("github-error", r.optString("message"))
-                val status = r.optString("status")
-                val conclusion = r.optString("conclusion")
+                if (r.has("message")) return err("github-error", r.safe("message"))
+                val status = r.safe("status")
+                val conclusion = r.safe("conclusion")
                 ok(
                     JSONObject()
                         .put("id", r.optLong("id"))
                         .put("status", status)
                         .put("conclusion", conclusion)
-                        .put("branch", r.optString("head_branch"))
-                        .put("url", r.optString("html_url")),
+                        .put("branch", r.safe("head_branch"))
+                        .put("url", r.safe("html_url")),
                     "রান $id: $status${if (conclusion.isNotEmpty()) " / $conclusion" else ""}"
                 )
             }
 
             "logs" -> {
-                val id = args.optString("run_id").trim()
+                val id = args.safe("run_id").trim()
                 if (id.isEmpty()) return err("bad-args", "run_id দাও")
                 val jobs = githubRequest(token, "GET", "$base/runs/$id/jobs", null)
                 if (jobs == null || jobs.has("message")) {
-                    return err("github-error", jobs?.optString("message") ?: "চাকরির তালিকা পাওয়া গেল না")
+                    return err("github-error", jobs?.safe("message") ?: "চাকরির তালিকা পাওয়া গেল না")
                 }
                 val arr = jobs.optJSONArray("jobs") ?: JSONArray()
                 val out = JSONArray()
@@ -2003,14 +2005,14 @@ object ToolRegistry {
                     for (s in 0 until steps.length()) {
                         val st = steps.getJSONObject(s)
                         stepList.put(JSONObject()
-                            .put("name", st.optString("name"))
-                            .put("status", st.optString("status"))
-                            .put("conclusion", st.optString("conclusion")))
+                            .put("name", st.safe("name"))
+                            .put("status", st.safe("status"))
+                            .put("conclusion", st.safe("conclusion")))
                     }
                     out.put(JSONObject()
-                        .put("name", j.optString("name"))
-                        .put("status", j.optString("status"))
-                        .put("conclusion", j.optString("conclusion"))
+                        .put("name", j.safe("name"))
+                        .put("status", j.safe("status"))
+                        .put("conclusion", j.safe("conclusion"))
                         .put("steps", stepList))
                 }
                 ok(JSONObject().put("jobs", out), "${out.length()}টি চাকরি — প্রতিটার ধাপ ও ফল")
@@ -2021,16 +2023,16 @@ object ToolRegistry {
     }
 
     private suspend fun publish(context: Context, args: JSONObject, tunnel: Boolean): JSONObject {
-        val name = args.optString("name", "site").replace(Regex("[^A-Za-z0-9._-]"), "-")
+        val name = args.safe("name", "site").replace(Regex("[^A-Za-z0-9._-]"), "-")
         val files = args.optJSONObject("files")
         val siteDir = File(workspace(context), "sites/$name").apply { mkdirs() }
-        if (args.optString("html").isNotBlank()) File(siteDir, "index.html").writeText(args.optString("html"))
+        if (args.safe("html").isNotBlank()) File(siteDir, "index.html").writeText(args.safe("html"))
         if (files != null) {
             for (key in files.keys()) {
                 val rel = key.trimStart('/')
                 val target = File(siteDir, rel)
                 target.parentFile?.mkdirs()
-                target.writeText(files.optString(key))
+                target.writeText(files.safe(key))
             }
         }
         // A model that said "make a website" and then passed no HTML used to be
@@ -2135,12 +2137,12 @@ object ToolRegistry {
      * caller is told, never told it worked.
      */
     private fun channelPost(context: Context, args: JSONObject): JSONObject {
-        val channel = args.optString("channel").lowercase().trim()
+        val channel = args.safe("channel").lowercase().trim()
         if (channel.isBlank()) return err("no-channel", "কোন চ্যানেলে দিতে হবে বলোনি")
-        val body = listOf(args.optString("text"), args.optString("url"))
+        val body = listOf(args.safe("text"), args.safe("url"))
             .filter { it.isNotBlank() }.joinToString("\n")
-        val to = args.optString("to").trim()
-        val imageUri = args.optString("image_path").takeIf { it.isNotBlank() }?.let { path ->
+        val to = args.safe("to").trim()
+        val imageUri = args.safe("image_path").takeIf { it.isNotBlank() }?.let { path ->
             val f = File(path)
             if (!f.exists()) null else try {
                 FileProvider.getUriForFile(context, context.packageName + ".fileprovider", f)
@@ -2155,7 +2157,7 @@ object ToolRegistry {
             }
             channel.contains("mail") || channel.contains("gmail") -> Intent(Intent.ACTION_SENDTO).apply {
                 data = Uri.parse("mailto:" + to)
-                putExtra(Intent.EXTRA_SUBJECT, args.optString("subject", "ZYRAXON"))
+                putExtra(Intent.EXTRA_SUBJECT, args.safe("subject", "ZYRAXON"))
                 putExtra(Intent.EXTRA_TEXT, body)
             }
             else -> {
@@ -2275,14 +2277,14 @@ object ToolRegistry {
     }
 
     private fun serveLocal(context: Context, args: JSONObject): JSONObject {
-        val name = args.optString("name", "site").replace(Regex("[^A-Za-z0-9._-]"), "-")
+        val name = args.safe("name", "site").replace(Regex("[^A-Za-z0-9._-]"), "-")
         val siteDir = File(workspace(context), "sites/$name").apply { mkdirs() }
-        if (args.optString("html").isNotBlank()) File(siteDir, "index.html").writeText(args.optString("html"))
+        if (args.safe("html").isNotBlank()) File(siteDir, "index.html").writeText(args.safe("html"))
         args.optJSONObject("files")?.let { files ->
             for (key in files.keys()) {
                 val target = File(siteDir, key.trimStart('/'))
                 target.parentFile?.mkdirs()
-                target.writeText(files.optString(key))
+                target.writeText(files.safe(key))
             }
         }
         if (siteDir.listFiles().isNullOrEmpty()) return err("no-files", "সার্ভ করার জন্য কোনো ফাইল দাওনি")
@@ -2343,7 +2345,7 @@ object ToolRegistry {
      * the call is routed there; the result reports what the voice actually is now.
      */
     private fun changeVoice(context: Context, args: JSONObject): JSONObject {
-        val gender = args.optString("gender", "").lowercase()
+        val gender = args.safe("gender", "").lowercase()
         if (gender != "female" && gender != "male") {
             return err("bad-gender", "gender হবে female অথবা male")
         }
@@ -2366,7 +2368,7 @@ object ToolRegistry {
      * Android forbids: a phone with a secure lock cannot be opened by any app.
      */
     private fun deviceLock(context: Context, args: JSONObject): JSONObject =
-        when (args.optString("action").lowercase()) {
+        when (args.safe("action").lowercase()) {
             "lock" -> {
                 if (DeviceLocker.lockNow(context)) {
                     ok("locked", "স্ক্রিন লক করা হয়েছে")
@@ -2425,7 +2427,7 @@ object ToolRegistry {
     private fun liveVoice(args: JSONObject): JSONObject {
         val activity = MainActivity.instance
             ?: return err("no-activity", "লাইভ ভয়েস চালু করা যায়নি")
-        return when (args.optString("action").lowercase()) {
+        return when (args.safe("action").lowercase()) {
             "on" -> {
                 if (activity.enableLiveVoice()) {
                     ok("on", "রিয়েলটাইম মডেলে সরে গিয়ে লাইভ ভয়েস চালু করা হয়েছে")
@@ -2451,7 +2453,7 @@ object ToolRegistry {
      */
     private suspend fun onDeviceModel(context: Context, args: JSONObject): JSONObject {
         val engine = OnDeviceModel.get(context)
-        return when (args.optString("action").lowercase()) {
+        return when (args.safe("action").lowercase()) {
             "list" -> {
                 val installed = engine.installedModels()
                 ok(
@@ -2471,7 +2473,7 @@ object ToolRegistry {
                 )
             }
             "load" -> {
-                val name = args.optString("file")
+                val name = args.safe("file")
                 val file = engine.installedModels().firstOrNull { it.name == name }
                     ?: engine.installedModels().firstOrNull()
                     ?: return err("no-model", "আগে একটি মডেল ডাউনলোড করতে হবে")
@@ -2483,7 +2485,7 @@ object ToolRegistry {
                 ok("unloaded", "অন-ডিভাইস মডেল আনলোড হয়েছে")
             }
             "generate" -> {
-                val prompt = args.optString("prompt")
+                val prompt = args.safe("prompt")
                 if (prompt.isBlank()) return err("no-prompt", "prompt দরকার")
                 if (!engine.isReady()) return err("not-loaded", "আগে একটি মডেল লোড করতে হবে")
                 val text = StringBuilder()
@@ -2492,9 +2494,9 @@ object ToolRegistry {
             }
             "download" -> {
                 val info = OnDeviceModel.SUGGESTED.firstOrNull {
-                    it.fileName == args.optString("file") || it.name == args.optString("file")
+                    it.fileName == args.safe("file") || it.name == args.safe("file")
                 } ?: OnDeviceModel.SUGGESTED.first()
-                val token = args.optString("token")
+                val token = args.safe("token")
                 if (info.requiresToken && token.isBlank()) {
                     return err(
                         "needs-token",
@@ -2506,7 +2508,7 @@ object ToolRegistry {
                 else err("download-failed", "ডাউনলোড ব্যর্থ — টোকেন বা ইন্টারনেট দেখুন")
             }
             "import" -> {
-                val path = args.optString("file")
+                val path = args.safe("file")
                 val source = File(path)
                 if (!source.isFile) return err("no-file", "ফাইল পাওয়া যায়নি: $path")
                 val target = File(engine.modelsDir(), source.name)

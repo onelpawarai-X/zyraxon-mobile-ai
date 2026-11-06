@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.ai
 
+import ai.zyraxon.assistant.core.safe
+
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -335,8 +337,8 @@ object ProviderCatalog {
         for (i in 0 until array.length()) {
             val item = array.optJSONObject(i) ?: continue
             // Google's native list puts the id in `name` as "models/gemini-2.0-flash".
-            val raw = item.optString("id").ifBlank {
-                item.optString("name").removePrefix("models/")
+            val raw = item.safe("id").ifBlank {
+                item.safe("name").removePrefix("models/")
             }.trim()
             if (raw.isBlank()) continue
             // Google returns embedding, image, video and speech-only models too;
@@ -388,10 +390,10 @@ object ProviderCatalog {
         try {
             val json = JSONObject(body)
             json.optJSONObject("error")?.let { e ->
-                e.optString("message").takeIf { it.isNotBlank() }?.let { return it }
+                e.safe("message").takeIf { it.isNotBlank() }?.let { return it }
             }
-            json.optString("message").takeIf { it.isNotBlank() }?.let { return it }
-            json.optJSONArray("error")?.optJSONObject(0)?.optString("message")
+            json.safe("message").takeIf { it.isNotBlank() }?.let { return it }
+            json.optJSONArray("error")?.optJSONObject(0)?.safe("message")
                 ?.takeIf { it.isNotBlank() }?.let { return it }
             return fallback
         } catch (_: Exception) {

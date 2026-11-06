@@ -1,5 +1,7 @@
 package ai.zyraxon.assistant.tools
 
+import ai.zyraxon.assistant.core.safe
+
 import android.content.Context
 import ai.zyraxon.assistant.ai.ToolRegistry
 import okhttp3.MediaType.Companion.toMediaType
@@ -73,7 +75,7 @@ object GitTools {
     } catch (_: Exception) { null }
 
     fun run(context: Context, args: JSONObject, live: ((String) -> Unit)? = null): JSONObject {
-        val action = args.optString("action").lowercase()
+        val action = args.safe("action").lowercase()
         val monitor = object : ProgressMonitor {
             override fun start(totalTasks: Int) {}
             override fun beginTask(title: String, totalWork: Int) { live?.invoke("$title\n") }
@@ -95,25 +97,25 @@ object GitTools {
                     ok("${repos.size}টি রিপো পাওয়া গেছে", arr)
                 }
                 "clone" -> {
-                    val url = args.optString("url").trim()
+                    val url = args.safe("url").trim()
                     if (url.isEmpty()) return err("url দরকার")
-                    val name = args.optString("dir").ifBlank { url.trimEnd('/').substringAfterLast('/').removeSuffix(".git") }
+                    val name = args.safe("dir").ifBlank { url.trimEnd('/').substringAfterLast('/').removeSuffix(".git") }
                     val target = if (File(name).isAbsolute) File(name) else File(projectsRoot(context), name)
                     if (target.exists() && target.list()?.isNotEmpty() == true) return err("${target.name} আগেই আছে ও খালি নয়")
                     val c = Git.cloneRepository().setURI(url).setDirectory(target).setProgressMonitor(monitor)
-                    args.optString("branch").takeIf { it.isNotBlank() }?.let { c.setBranch(it) }
+                    args.safe("branch").takeIf { it.isNotBlank() }?.let { c.setBranch(it) }
                     creds(context)?.let { c.setCredentialsProvider(it) }
                     c.call().close()
                     remember(context, target)
                     ok("ক্লোন হয়েছে: ${target.absolutePath}", JSONObject().put("dir", target.absolutePath))
                 }
                 "init" -> {
-                    val d = resolveDir(context, args.optString("dir")).apply { mkdirs() }
+                    val d = resolveDir(context, args.safe("dir")).apply { mkdirs() }
                     Git.init().setDirectory(d).call().close(); remember(context, d)
                     ok("git init: ${d.absolutePath}")
                 }
                 else -> {
-                    val d = resolveDir(context, args.optString("dir"))
+                    val d = resolveDir(context, args.safe("dir"))
                     if (!File(d, ".git").exists()) return err("${d.name} একটা git রিপো নয় — আগে clone বা init করো")
                     remember(context, d)
                     Git.open(d).use { g -> inRepo(context, g, d, action, args, monitor) }
@@ -140,7 +142,7 @@ object GitTools {
                 ok("স্ট্যাটাস", text)
             }
             "add" -> {
-                val files = args.optString("files").trim()
+                val files = args.safe("files").trim()
                 if (files.isEmpty() || files == "." || files == "all") {
                     g.add().addFilepattern(".").call()
                     g.add().setUpdate(true).addFilepattern(".").call()
@@ -148,7 +150,7 @@ object GitTools {
                 ok("add সম্পন্ন")
             }
             "commit" -> {
-                val msg = args.optString("message").ifBlank { "update" }
+                val msg = args.safe("message").ifBlank { "update" }
                 g.add().addFilepattern(".").call()
                 g.add().setUpdate(true).addFilepattern(".").call()
                 val c = g.commit().setMessage(msg).setAuthor("ZYRAXON", "zyraxon@users.noreply.github.com")
@@ -156,9 +158,9 @@ object GitTools {
                 ok("কমিট ${c.name.take(7)}: $msg", c.name)
             }
             "push" -> {
-                val remote = args.optString("remote").ifBlank { "origin" }
+                val remote = args.safe("remote").ifBlank { "origin" }
                 val cmd = g.push().setRemote(remote).setProgressMonitor(monitor)
-                val branch = args.optString("branch").ifBlank { g.repository.branch }
+                val branch = args.safe("branch").ifBlank { g.repository.branch }
                 cmd.add("refs/heads/$branch:refs/heads/$branch")
                 creds(context)?.let { cmd.setCredentialsProvider(it) }
                     ?: return err("GitHub টোকেন নেই — কোড প্যানেল/সেটিংসে টোকেন দাও")
@@ -174,13 +176,13 @@ object GitTools {
                 if (r.isSuccessful) ok("pull সম্পন্ন", r.toString()) else err("pull ব্যর্থ: $r")
             }
             "branch" -> {
-                val name = args.optString("name").ifBlank { args.optString("branch") }
+                val name = args.safe("name").ifBlank { args.safe("branch") }
                 if (name.isBlank()) {
                     ok("ব্রাঞ্চ", g.branchList().call().joinToString("\n") { (if (it.name == "refs/heads/" + g.repository.branch) "* " else "  ") + it.name.removePrefix("refs/heads/") })
                 } else { g.checkout().setCreateBranch(true).setName(name).call(); ok("নতুন ব্রাঞ্চ: $name") }
             }
             "checkout" -> {
-                val name = args.optString("branch").ifBlank { args.optString("name") }
+                val name = args.safe("branch").ifBlank { args.safe("name") }
                 if (name.isBlank()) err("branch দরকার") else { g.checkout().setName(name).call(); ok("checkout: $name") }
             }
             "log" -> {
@@ -195,7 +197,7 @@ object GitTools {
                 ok(if (t.isBlank()) "কোনো পরিবর্তন নেই" else "diff", t.take(40000))
             }
             "remote" -> {
-                val url = args.optString("url").trim()
+                val url = args.safe("url").trim()
                 if (url.isEmpty()) err("url দরকার") else {
                     val c = g.repository.config; c.setString("remote", "origin", "url", url); c.save(); ok("origin = $url")
                 }
@@ -218,28 +220,28 @@ object GitTools {
 
     fun pr(context: Context, args: JSONObject): JSONObject {
         if (token(context).isBlank()) return err("GitHub টোকেন নেই — কোড প্যানেল/সেটিংসে টোকেন দাও")
-        val repo = args.optString("repo").trim().removePrefix("https://github.com/").removeSuffix(".git").trim('/')
-            .ifBlank { resolveDir(context, args.optString("dir")).let { originRepo(it) } ?: "" }
+        val repo = args.safe("repo").trim().removePrefix("https://github.com/").removeSuffix(".git").trim('/')
+            .ifBlank { resolveDir(context, args.safe("dir")).let { originRepo(it) } ?: "" }
         if (repo.isBlank()) return err("repo (owner/name) দরকার")
         val base = "https://api.github.com/repos/$repo"
         return try {
-            when (args.optString("action").lowercase()) {
+            when (args.safe("action").lowercase()) {
                 "create" -> {
-                    val dir = resolveDir(context, args.optString("dir"))
-                    val head = args.optString("head").ifBlank { try { Git.open(dir).use { it.repository.branch } } catch (_: Exception) { "" } }
-                    val body = JSONObject().put("title", args.optString("title").ifBlank { "Update from ZYRAXON" })
-                        .put("head", head).put("base", args.optString("base").ifBlank { "main" })
-                        .put("body", args.optString("body"))
+                    val dir = resolveDir(context, args.safe("dir"))
+                    val head = args.safe("head").ifBlank { try { Git.open(dir).use { it.repository.branch } } catch (_: Exception) { "" } }
+                    val body = JSONObject().put("title", args.safe("title").ifBlank { "Update from ZYRAXON" })
+                        .put("head", head).put("base", args.safe("base").ifBlank { "main" })
+                        .put("body", args.safe("body"))
                     val (c, t) = api(context, "POST", "$base/pulls", body)
                     val j = JSONObject(t.ifBlank { "{}" })
-                    if (c in 200..299) ok("PR #${j.optInt("number")} তৈরি: ${j.optString("html_url")}", j.optString("html_url"))
-                    else err("PR তৈরি হয়নি ($c): " + (j.optString("message") + " " + j.optJSONArray("errors")?.toString().orEmpty()).trim())
+                    if (c in 200..299) ok("PR #${j.optInt("number")} তৈরি: ${j.safe("html_url")}", j.safe("html_url"))
+                    else err("PR তৈরি হয়নি ($c): " + (j.safe("message") + " " + j.optJSONArray("errors")?.toString().orEmpty()).trim())
                 }
                 "list" -> {
                     val (c, t) = api(context, "GET", "$base/pulls?state=open&per_page=30")
                     if (c !in 200..299) return err("PR তালিকা ($c)")
                     val arr = JSONArray(t); val rows = StringBuilder()
-                    for (i in 0 until arr.length()) arr.getJSONObject(i).let { rows.append("#${it.optInt("number")} ${it.optString("title")} [${it.optJSONObject("head")?.optString("ref")}]\n") }
+                    for (i in 0 until arr.length()) arr.getJSONObject(i).let { rows.append("#${it.optInt("number")} ${it.safe("title")} [${it.optJSONObject("head")?.safe("ref")}]\n") }
                     ok("${arr.length()}টি খোলা PR", rows.toString().ifBlank { "কোনো খোলা PR নেই" })
                 }
                 "get" -> {
@@ -248,13 +250,13 @@ object GitTools {
                 }
                 "merge" -> {
                     val (c, t) = api(context, "PUT", "$base/pulls/${args.optInt("number")}/merge",
-                        JSONObject().put("merge_method", args.optString("method").ifBlank { "squash" }))
+                        JSONObject().put("merge_method", args.safe("method").ifBlank { "squash" }))
                     val j = JSONObject(t.ifBlank { "{}" })
                     if (c in 200..299 && j.optBoolean("merged", true)) ok("PR #${args.optInt("number")} মার্জ হয়েছে")
-                    else err("মার্জ হয়নি ($c): ${j.optString("message")}")
+                    else err("মার্জ হয়নি ($c): ${j.safe("message")}")
                 }
                 "comment" -> {
-                    val (c, _) = api(context, "POST", "$base/issues/${args.optInt("number")}/comments", JSONObject().put("body", args.optString("body")))
+                    val (c, _) = api(context, "POST", "$base/issues/${args.optInt("number")}/comments", JSONObject().put("body", args.safe("body")))
                     if (c in 200..299) ok("মন্তব্য যোগ হয়েছে") else err("মন্তব্য যায়নি ($c)")
                 }
                 "close" -> {
