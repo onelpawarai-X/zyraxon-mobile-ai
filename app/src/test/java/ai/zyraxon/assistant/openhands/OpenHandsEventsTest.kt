@@ -17,7 +17,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
 /**
@@ -29,10 +28,11 @@ import java.util.concurrent.TimeUnit
  * are pinned here, because every way they can be wrong is invisible until it
  * matters — on a long conversation, mid-answer, on a real phone.
  *
- * Two service behaviours are modelled exactly, because both were got wrong:
+ * The fake server answers from the query itself, the way the real one does, so
+ * a wrong read gets a wrong page rather than a lucky one:
  *  - a page holds at most 100 events, and the *oldest* are returned unless a
- *    sort order is asked for, so a "newest N" read of a long log is really the
- *    start of it;
+ *    sort order is asked for — so a "newest N" read of a long log is really the
+ *    start of it, which is the bug this pins;
  *  - a page ends with a `next_page_id`, and only following it reaches the
  *    newest events.
  */
@@ -42,20 +42,36 @@ class OpenHandsEventsTest {
 
     private lateinit var server: MockWebServer
     private val paths = CopyOnWriteArrayList<String>()
-    private val queue = LinkedBlockingQueue<MockResponse>()
+
+    /** The page the service hands back first, and what it points at next. */
+    private var firstPage = """{"items":[]}"""
+    private var secondPage = """{"items":[]}"""
+    private var newestPage = """{"items":[]}"""
+    private var refuse = false
 
     @Before
     fun setUp() {
         server = MockWebServer()
         paths.clear()
-        queue.clear()
-        // Every request is recorded as it arrives, so the assertions can read the
-        // query the client actually built — which is the whole point of these
-        // tests. Answers come from the queue the test filled.
+        firstPage = """{"items":[]}"""
+        secondPage = """{"items":[]}"""
+        newestPage = """{"items":[]}"""
+        refuse = false
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
-                paths.add(request.path ?: "")
-                return queue.poll() ?: MockResponse().setBody("""{"items":[]}""")
+                val path = request.path ?: ""
+                paths.add(path)
+                if (refuse) {
+                    return MockResponse().setResponseCode(422).setBody("""{"detail":"limit too large"}""")
+                }
+                val body = when {
+                    // Every page after the first is asked for by its cursor.
+                    path.contains("page_id=") -> secondPage
+                    // A newest-first read: the turn's own start, and the action scan.
+                    path.contains("sort_order=TIMESTAMP_DESC") -> newestPage
+                    else -> firstPage
+                }
+                return MockResponse().setBody(body)
             }
         }
         server.start()
@@ -107,11 +123,9 @@ class OpenHandsEventsTest {
         .put("next_page_id", next ?: JSONObject.NULL)
         .toString()
 
-    private fun answer(body: String) = queue.add(MockResponse().setBody(body))
-
     @Test
     fun `the tail asks for the events after its cursor, oldest first`() = runBlocking {
-        answer(page(listOf(event("e3", "2026-01-01T00:00:03"))))
+        firstPage = page(listOf(event("e3", "2026-01-01T00:00:03", "hello")))
 
         val batch = client().eventsSince(conv(), since = "2026-01-01T00:00:00")
 
@@ -119,23 +133,21 @@ class OpenHandsEventsTest {
         assertTrue("the cursor must be sent: $path", path.contains("timestamp__gte=2026-01-01T00%3A00%3A00"))
         assertTrue("the read must be oldest-first: $path", path.contains("sort_order=TIMESTAMP"))
         assertTrue("the read must not ask for more than one page: $path", path.contains("limit=100"))
-        assertEquals(1, batch.size)
+        assertEquals("one event was recorded, so one must come back: $batch", 1, batch.size)
         assertEquals("e3", batch.first().event.id)
         assertEquals("2026-01-01T00:00:03", batch.first().at)
     }
 
     @Test
     fun `a read longer than one page is walked, not truncated`() = runBlocking {
-        // 150 events. The first page is full and the service hands back a cursor;
-        // stopping there would lose the newest 50, which are the ones that matter.
-        val first = (1..100).map { event("e$it", "2026-01-01T00:00:%02d".format(it % 60)) }
-        val second = (101..150).map { event("e$it", "2026-01-01T00:01:%02d".format(it % 60)) }
-        answer(page(first, next = "cursor-1"))
-        answer(page(second))
+        // The first page is full and the service hands back a cursor; stopping
+        // there would lose the newest events, which are the ones that matter.
+        firstPage = page((1..100).map { event("e$it", "2026-01-01T00:00:00") }, next = "cursor-1")
+        secondPage = page((101..150).map { event("e$it", "2026-01-01T00:01:00") })
 
         val batch = client().eventsSince(conv(), since = "2026-01-01T00:00:00")
 
-        assertEquals("both pages must be read", 150, batch.size)
+        assertEquals("both pages must be read: $paths", 150, batch.size)
         assertTrue(
             "the second page must be asked for by cursor: $paths",
             paths.any { it.contains("page_id=cursor-1") }
@@ -151,19 +163,19 @@ class OpenHandsEventsTest {
         // order — so on a long chat it got the *oldest* page and saw none of the
         // recent tool calls. Every one of them then looked new, and was run again
         // on the phone: an app opening that the user never asked for.
-        val old = (1..100).map { action("a$it", "2026-01-01T00:00:00", "call-old-$it") }
-        answer(page(old, next = "cursor-1"))
-        answer(page(listOf(action("ev-new", "2026-01-01T00:02:00", "call-recent"))))
+        // The scan reads newest-first, so its first page is the newestPage slot.
+        newestPage = page((1..100).map { action("a$it", "2026-01-01T00:00:00", "call-old-$it") }, next = "cursor-1")
+        secondPage = page(listOf(action("ev-new", "2026-01-01T00:02:00", "call-recent")))
 
         val seen = client().seenActionIds(conv())
 
         assertTrue("the newest page must be reached: $paths", paths.any { it.contains("page_id=cursor-1") })
-        assertTrue("the recent call must be recognised as already done", "call-recent" in seen)
+        assertTrue("the recent call must be recognised as already done: $seen", "call-recent" in seen)
     }
 
     @Test
     fun `the turn start is the newest recorded event`() = runBlocking {
-        answer(page(listOf(event("e9", "2026-01-01T09:00:00"))))
+        newestPage = page(listOf(event("e9", "2026-01-01T09:00:00")))
 
         val at = client().latestTimestamp(conv())
 
@@ -175,16 +187,14 @@ class OpenHandsEventsTest {
 
     @Test
     fun `an empty log is a blank cursor, not a failure`() = runBlocking {
-        answer(page(emptyList()))
+        newestPage = page(emptyList())
 
         assertEquals("", client().latestTimestamp(conv()))
     }
 
     @Test
     fun `a refused read degrades to nothing rather than breaking the turn`() = runBlocking {
-        // The service refuses a limit above 100 with a 422. A read that fails must
-        // leave the turn running, not throw into it.
-        queue.add(MockResponse().setResponseCode(422).setBody("""{"detail":"limit too large"}"""))
+        refuse = true
 
         assertEquals(0, client().eventsSince(conv(), since = "2026-01-01T00:00:00").size)
     }
@@ -193,11 +203,11 @@ class OpenHandsEventsTest {
     fun `the cursor rides on every page of the walk`() = runBlocking {
         // It must not be dropped on page two, or that page would come back as the
         // whole conversation from its beginning and the tail would re-read the lot.
-        answer(page((1..100).map { event("e$it", "2026-01-01T00:00:00") }, next = "cursor-1"))
-        answer(page(emptyList()))
+        firstPage = page((1..100).map { event("e$it", "2026-01-01T00:00:00") }, next = "cursor-1")
+        secondPage = page(emptyList())
 
         client().eventsSince(conv(), since = "2026-01-01T00:00:00")
 
-        assertTrue("every page must carry the cursor: $paths", paths.all { it.contains("timestamp__gte=") })
+        assertTrue("every page must carry the cursor: $paths", paths.size >= 2 && paths.all { it.contains("timestamp__gte=") })
     }
 }
