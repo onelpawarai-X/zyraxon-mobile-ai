@@ -540,11 +540,17 @@ private fun AddCustomServerDialog(
                 onClick = { if (url.isNotBlank()) onAdd(url.trim(), name.trim(), token.trim()) },
                 enabled = url.isNotBlank()
             ) {
+                AppIcon(AppIcons.add, null, size = 15.dp, tint = Glass.pinkFill)
+                Spacer(Modifier.width(5.dp))
                 Text(t("যোগ করো"), color = Glass.pinkFill, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(t("বাতিল"), color = Glass.textMuted) }
+            TextButton(onClick = onDismiss) {
+                AppIcon(AppIcons.close, null, size = 15.dp, tint = Glass.textMuted)
+                Spacer(Modifier.width(5.dp))
+                Text(t("বাতিল"), color = Glass.textMuted)
+            }
         }
     )
 }

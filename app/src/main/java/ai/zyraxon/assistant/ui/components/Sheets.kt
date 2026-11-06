@@ -2719,6 +2719,8 @@ fun ProviderKeyRow(
                         strokeWidth = 2.dp
                     )
                 } else {
+                    AppIcon(AppIcons.save, null, size = 14.dp, tint = Glass.textOnAccent)
+                    Spacer(Modifier.width(5.dp))
                     Text(t("সেভ"), color = Glass.textOnAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
@@ -2764,6 +2766,12 @@ fun PermissionRow(
                 containerColor = if (granted) Glass.greenFill else Glass.pinkFill
             )
         ) {
+            AppIcon(
+                if (granted) AppIcons.check else AppIcons.shield,
+                null, size = 13.dp,
+                tint = if (granted) Glass.greenFill else Glass.textOnAccent
+            )
+            Spacer(Modifier.width(5.dp))
             Text(
                 if (granted) t("অনুমোদিত ") else t("অনুমতি দিন"),
                 color = if (granted) Glass.greenFill else Glass.textOnAccent,

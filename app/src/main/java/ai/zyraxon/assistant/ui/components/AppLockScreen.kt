@@ -159,6 +159,8 @@ fun AppLockScreen(vm: ZyraxonViewModel) {
             // lock was removed from being sealed out of their own app.
             if (!hasCredential) {
                 TextButton(onClick = { vm.setAppLockEnabled(false) }) {
+                    AppIcon(AppIcons.power, null, size = 15.dp, tint = Glass.textMuted)
+                    Spacer(Modifier.width(5.dp))
                     Text(t("অ্যাপ লক বন্ধ করুন"), color = Glass.textMuted, fontSize = 12.5.sp)
                 }
             }

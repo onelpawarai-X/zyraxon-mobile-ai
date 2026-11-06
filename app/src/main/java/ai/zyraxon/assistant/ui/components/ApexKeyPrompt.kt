@@ -1,6 +1,8 @@
 package ai.zyraxon.assistant.ui.components
 
 import ai.zyraxon.assistant.i18n.t
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -135,6 +137,8 @@ fun ApexKeyPrompt(vm: ZyraxonViewModel, onDone: () -> Unit) {
                 colors = ButtonDefaults.buttonColors(containerColor = Glass.rowFill(0.6f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
+                AppIcon(AppIcons.link, null, size = 16.dp, tint = Glass.textPrimary)
+                Spacer(Modifier.width(7.dp))
                 Text(
                     t("ওয়েবসাইট খুলুন — app.all-hands.dev"),
                     color = Glass.textPrimary, fontSize = 13.sp
@@ -184,21 +188,32 @@ fun ApexKeyPrompt(vm: ZyraxonViewModel, onDone: () -> Unit) {
                 colors = ButtonDefaults.buttonColors(containerColor = Glass.pinkFill),
                 modifier = Modifier.fillMaxWidth()
             ) {
+                if (busy) AppIcon(AppIcons.sync, null, size = 17.dp, tint = Glass.textPrimary)
+                else AppIcon(AppIcons.bolt, null, size = 17.dp, tint = Glass.textPrimary)
+                Spacer(Modifier.width(7.dp))
                 Text(
                     if (busy) t("যাচাই করা হচ্ছে…") else t("কানেক্ট করুন"),
                     color = Glass.textPrimary, fontSize = 14.sp
                 )
             }
-            Text(
-                if (reveal) t("কী লুকাও") else t("কী দেখাও"),
-                color = Glass.textMuted, fontSize = 11.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 2.dp)
+            Row(
+                Modifier.fillMaxWidth().padding(top = 2.dp)
                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
                         reveal = !reveal
-                    }
-            )
+                    },
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AppIcon(
+                    if (reveal) AppIcons.visibilityOff else AppIcons.visibility,
+                    null, size = 14.dp, tint = Glass.textMuted
+                )
+                Spacer(Modifier.width(5.dp))
+                Text(
+                    if (reveal) t("কী লুকাও") else t("কী দেখাও"),
+                    color = Glass.textMuted, fontSize = 11.sp
+                )
+            }
         }
     }
 }
