@@ -528,3 +528,43 @@ an incorporated company, and its stated evaluation criteria — innovation, scal
 team capability, business model, market potential, impact, feasibility — match what
 this project already demonstrates. Equity money from Startup Bangladesh can follow
 once the company is registered.
+
+## Team and preparation plan — before the iDEA application
+
+The founder's plan: finish exams, enter college, build a five-person team there,
+then apply to iDEA together. Recorded here so the groundwork starts now rather
+than on application day.
+
+**Five roles, chosen so no two overlap.** iDEA scores team capability as one of
+seven criteria; five friends who each "know tech" reads weak, five who each own a
+different piece reads strong.
+
+1. Tech lead — Android/Compose, the bridge, the tool system. Can read the code and
+   repair it when it breaks.
+2. Backend and infrastructure — server side, API keys, MCP servers, model
+   orchestration, cost control.
+3. Product and design — the agent's experience, the voice, the languages. The
+   multilingual reach is a differentiator that lives here.
+4. Growth and content — distribution, demos, social. The presenting skill is
+   separate from the building skill, and the pitch needs both.
+5. Business, finance and legal — company registration, grant paperwork, financial
+   projections, pitch deck.
+
+**What to accumulate before turning 18.** The strongest evidence for a grant is not
+a polished demo but real usage: real installs, real sessions, real things the agent
+did. Screen recordings of the agent genuinely working are worth more than a scripted
+video, and iDEA's video-pitch rule ("do not read from the slides") fits real footage
+naturally. The pitch deck can be pre-filled now because iDEA publishes the exact
+template: Introduction/Company, Problem & Solution, Market Size, Competitive
+Advantage, What is your need, Technology Strategy, Business Strategy, Financial
+Strategy, Management Team.
+
+**Why the timing lines up.** NID is issued at 18 and iDEA asks for an NID or
+passport copy. Below 18 an agreement is void, so forming the team now and signing
+later is the correct order, not a delay. A Bangladeshi private limited company needs
+at least two shareholders and two directors, which a five-person team satisfies from
+the start.
+
+**One page to write on day one.** Who does what, and how much each person owns. It
+costs nothing and it is the single thing whose absence breaks young teams from the
+inside.
