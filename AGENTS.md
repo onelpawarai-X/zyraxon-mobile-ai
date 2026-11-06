@@ -382,6 +382,33 @@ grep -rn 't(".*\$' app/src/main/java --include=*.kt
 
 Every hit must become `t("… {0} …", var)`.
 
+## Reading a screenshot
+
+`tools/read_screenshot.py` OCRs an image in English and Bengali and prints what
+it found. Use it whenever a screenshot is the evidence — a crash dialog, a
+settings screen, a chat transcript — instead of guessing from the description.
+
+```bash
+python3 tools/read_screenshot.py shot.png              # whole page + bands
+python3 tools/read_screenshot.py shot.png --crop 40 300 1040 430
+```
+
+It needs `tesseract-ocr` with the `eng` and `ben` language packs and Pillow.
+
+Two things it does that a plain `tesseract shot.png stdout` does not:
+
+* It upscales first. Tesseract wants ~30 px of glyph height; a 1080 px phone
+  screenshot carries 12-14 px UI text, so native-size OCR drops exactly the
+  small labels that matter.
+* It reads the page in overlapping horizontal bands as well as whole. On a chat
+  screen the text sits on coloured bubbles whose local contrast is far below the
+  page's, so a whole-page pass (psm 3) segments the layout and skips a bubble
+  entirely. The band pass (psm 6, per-band autocontrast) recovers those lines.
+
+Beware of one trap when *making* a test image: drawing English text with a
+Bengali-only font renders every Latin glyph as a box, and tesseract then reports
+`HOU QUOUUU YO UO YOUU` — which looks like an OCR failure and is not one.
+
 ## Testing traps
 
 * `JSONArray(listOf("""{"id":"e1"}"""))` stores each element as a **string**,
