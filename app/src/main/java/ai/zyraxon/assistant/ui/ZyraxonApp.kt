@@ -63,6 +63,13 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
             ai.zyraxon.assistant.tools.PreviewBridge.takePublishedSite()
         }
     }
+    // The chat list's scroll state lives here, above the tab switch, so leaving
+    // the Chat tab and coming back does not rebuild it from the top. Held per
+    // conversation so each chat keeps its own place.
+    val chatScrolls = remember { mutableMapOf<String, androidx.compose.foundation.lazy.LazyListState>() }
+    val activeChatId by viewModel.activeConversationId.collectAsState()
+    val chatListState = chatScrolls.getOrPut(activeChatId) { androidx.compose.foundation.lazy.LazyListState() }
+
     val themeMode by viewModel.themeMode.collectAsState()
     // The theme is Compose state read by every colour in the app.
     SideEffect { Glass.mode = themeMode }
@@ -166,7 +173,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                     }
                 }
                 when (activeTab) {
-                    AppTab.CHAT -> ChatPanel(viewModel, Modifier.fillMaxSize().padding(vertical = 4.dp))
+                    AppTab.CHAT -> ChatPanel(viewModel, chatListState, Modifier.fillMaxSize().padding(vertical = 4.dp))
                     AppTab.CODE -> CodeWorkspace(viewModel, Modifier.fillMaxSize().padding(vertical = 4.dp))
                     AppTab.PREVIEW -> PreviewPanel(viewModel, Modifier.fillMaxSize().padding(vertical = 4.dp))
                     AppTab.MCP -> Box(Modifier.fillMaxSize().padding(vertical = 4.dp).clip(RoundedCornerShape(22.dp))

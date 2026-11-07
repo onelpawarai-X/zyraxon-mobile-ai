@@ -13,6 +13,7 @@ import ai.zyraxon.assistant.model.MediaItem
 import ai.zyraxon.assistant.model.MediaJob
 import ai.zyraxon.assistant.model.SubAgentInfo
 import ai.zyraxon.assistant.model.ToolCallRecord
+import ai.zyraxon.assistant.model.TurnEvent
 import ai.zyraxon.assistant.tools.GitTools
 import ai.zyraxon.assistant.tools.PreviewBridge
 import kotlinx.coroutines.NonCancellable
@@ -902,8 +903,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             summary = item.description, status = "running", output = code
         )
         if (name == "edit_file") s.liveCode.value = LiveCode(args.safe("path"), code, true)
+        s.addEvent(TurnEvent("tool", toolId = id))
         s.messages.update { list ->
-            list.map { m -> if (m.id == s.currentMsgId) m.copy(toolCalls = m.toolCalls + rec) else m }
+            list.map { m -> if (m.id == s.currentMsgId) m.copy(toolCalls = m.toolCalls + rec, events = s.eventsSnapshot()) else m }
         }
         MEDIA_TOOLS[name]?.let { kind ->
             s.updateJobs { it + MediaJob(id, s.id, kind, item.description, 0) }
@@ -2216,6 +2218,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // queue as an injection, not start a competing turn.
         c.isGenerating.value = true
         c.currentMsgId = assistantMsgId
+        c.clearEvents()
         c.turnStartedAt = startedAt
         busyIds.update { it + c.id }
         if (mode == AgentMode.AGENT) acquireFrameTicker()
@@ -2337,16 +2340,32 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 }
                 turnFlow.collect { chunk ->
                     if (chunk.startsWith(ZyraxonAiEngine.REASONING_PREFIX)) {
-                        thinkingBuf.append(chunk.removePrefix(ZyraxonAiEngine.REASONING_PREFIX))
+                        val piece = chunk.removePrefix(ZyraxonAiEngine.REASONING_PREFIX)
+                        thinkingBuf.append(piece)
+                        c.addEvent(TurnEvent("thinking", piece))
                         val nowR = System.currentTimeMillis()
                         if (nowR - lastUiUpdate >= UI_UPDATE_MS) {
                             lastUiUpdate = nowR
                             val th = thinkingBuf.toString()
-                            c.messages.update { l -> l.map { m -> if (m.id == assistantMsgId) m.copy(thinking = th, isStreaming = true) else m } }
+                            c.messages.update { l -> l.map { m -> if (m.id == assistantMsgId) m.copy(thinking = th, isStreaming = true, events = c.eventsSnapshot()) else m } }
+                        }
+                        return@collect
+                    }
+                    if (chunk.startsWith(ZyraxonAiEngine.STATUS_PREFIX)) {
+                        // A status line — "no internet, using the offline model",
+                        // "retrying 2/3", "switched provider". It is part of the
+                        // visible transcript, so the user can see what is happening,
+                        // but it is never spoken and never counts as the answer.
+                        c.addEvent(TurnEvent("status", chunk.removePrefix(ZyraxonAiEngine.STATUS_PREFIX)))
+                        val nowS = System.currentTimeMillis()
+                        if (nowS - lastUiUpdate >= UI_UPDATE_MS) {
+                            lastUiUpdate = nowS
+                            c.messages.update { l -> l.map { m -> if (m.id == assistantMsgId) m.copy(isStreaming = true, events = c.eventsSnapshot()) else m } }
                         }
                         return@collect
                     }
                     fullReply += chunk
+                    c.addEvent(TurnEvent("text", chunk))
                     // Repainted a few times a second, not per token: rebuilding the
                     // list for every token made a long answer quadratic.
                     val now = System.currentTimeMillis()
@@ -2354,7 +2373,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                         lastUiUpdate = now
                         val txt = fullReply
                         val th = thinkingBuf.toString()
-                        c.messages.update { l -> l.map { m -> if (m.id == assistantMsgId) m.copy(text = txt, thinking = th, isStreaming = true) else m } }
+                        c.messages.update { l -> l.map { m -> if (m.id == assistantMsgId) m.copy(text = txt, thinking = th, isStreaming = true, events = c.eventsSnapshot()) else m } }
                     }
                     if (speakingReply) {
                         spokenBuffer.append(chunk)
@@ -2392,7 +2411,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     text = fullReply, isStreaming = false, thinking = thinkingBuf.toString(),
                     timestamp = currentTimeString(), createdAt = System.currentTimeMillis(),
                     durationMs = System.currentTimeMillis() - startedAt, modelName = model.name,
-                    toolCalls = cur.toolCalls.map { if (it.status == "running") it.copy(status = "error") else it }
+                    toolCalls = cur.toolCalls.map { if (it.status == "running") it.copy(status = "error") else it },
+                    events = c.eventsSnapshot()
                 )
                 c.messages.update { l -> if (l.any { it.id == assistantMsgId }) l.map { if (it.id == assistantMsgId) finalMsg else it } else l + finalMsg }
                 repository.saveMessage(finalMsg, c.id)

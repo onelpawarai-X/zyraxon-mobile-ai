@@ -4,8 +4,6 @@ import ai.zyraxon.assistant.ui.icons.AppIcon
 import ai.zyraxon.assistant.ui.icons.AppIcons
 import androidx.compose.ui.graphics.vector.ImageVector
 import ai.zyraxon.assistant.i18n.t
-import ai.zyraxon.assistant.ui.components.AvatarRoster
-import ai.zyraxon.assistant.ui.components.AvatarView
 import ai.zyraxon.assistant.ui.theme.Glass
 import ai.zyraxon.assistant.ui.theme.ZyThemeMode
 import ai.zyraxon.assistant.viewmodel.ZyraxonViewModel
@@ -67,22 +65,13 @@ fun VoiceLab(vm: ZyraxonViewModel) {
             (lang.isBlank() || it.locale.lowercase().startsWith(lang)) && (ageF.isBlank() || it.age == ageF)
     }.take(120)
     val current = voices.firstOrNull { it.id == picked }
-    // The face that matches the voice: nearest age and same gender among the seven people.
-    val wantAge = when ((current?.age ?: age).ifBlank { "adult" }) { "child", "kid" -> 10; "teen" -> 17; "senior", "old", "elder" -> 62; else -> 28 }
-    val female = (current?.gender ?: "female").startsWith("f")
-    val face = AvatarRoster.filter { it.female == female }.minByOrNull { kotlin.math.abs(it.age - wantAge) } ?: AvatarRoster.first()
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(t("ভয়েস চেঞ্জার"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
         Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Glass.rowFill(0.3f)).border(1.dp, Glass.pink.copy(alpha = 0.5f), RoundedCornerShape(18.dp)).padding(10.dp),
             verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(110.dp).clip(RoundedCornerShape(14.dp)).background(Color.Black)) {
-                AvatarView(style = face.id, onClick = { vm.speak(t("হ্যালো")) }, modifier = Modifier.fillMaxSize())
-            }
-            Spacer(Modifier.width(12.dp))
-            Column {
-                Text(face.name + " · " + face.age + t(" বছর"), color = Glass.textPrimary, fontWeight = FontWeight.Bold)
-                Text(current?.name ?: t("ডিফল্ট কণ্ঠ"), color = Glass.textSecondary, fontSize = 12.sp)
+            Column(Modifier.weight(1f)) {
+                Text(current?.name ?: t("ডিফল্ট কণ্ঠ"), color = Glass.textPrimary, fontWeight = FontWeight.Bold)
                 Text(listOfNotNull(current?.gender?.takeIf { it.isNotBlank() }, current?.age?.takeIf { it.isNotBlank() }, current?.locale?.takeIf { it.isNotBlank() }).joinToString(" · "),
                     color = Glass.textMuted, fontSize = 11.sp)
                 if (picked.isNotBlank()) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { vm.clearVoicePick() }.padding(top = 4.dp)) {

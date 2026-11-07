@@ -192,11 +192,130 @@ object LinuxRuntime {
         home(context).mkdirs()
 
         try { File(root, DONE).writeText(System.currentTimeMillis().toString()) } catch (_: Exception) {}
+        // The guest is a Termux bootstrap, so its own welcome text and prompt name
+        // Termux. Overwriting those files is the only thing that makes the system
+        // ZYRAXON's; the binaries are untouched and keep working exactly as before.
+        applyBranding(context, root, log)
         val ready = isInstalled(context)
         log(if (ready) "ZYRAXON Linux is ready. Run a command with: linux <command>"
             else "Install did not finish; open the Terminal again to retry.")
         return ready
     }
+
+    /** True once [applyBranding] has run for the installed guest. */
+    private const val BRANDED = ".zyraxon-branded"
+
+    /**
+     * Applies the branding to a guest that was installed by an older build, whose
+     * files still carry the Termux text. Called before a command runs; the marker
+     * makes it a single `isFile` check once it has been done. Never throws: a
+     * read-only or full filesystem must not stop a command from running.
+     */
+    fun ensureBranding(context: Context) {
+        val root = root(context)
+        if (!isInstalled(context)) return
+        if (File(root, BRANDED).isFile) return
+        runCatching {
+            applyBranding(context, root) { }
+            File(root, BRANDED).writeText(System.currentTimeMillis().toString())
+        }
+    }
+
+    /**
+     * Writes ZYRAXON's own welcome text and prompt into the guest, replacing the
+     * Termux ones. The bootstrap's binaries carry Termux paths in their RUNPATH,
+     * but nothing the user reads has to say Termux, and this is where that is
+     * fixed. Every file written here is cosmetic: removing them would only bring
+     * the Termux text back, never break a command.
+     */
+    private fun applyBranding(context: Context, root: File, log: (String) -> Unit) {
+        val etc = File(root, "etc").apply { mkdirs() }
+        val profileD = File(etc, "profile.d").apply { mkdirs() }
+
+        // The banner, shown by a login shell (`bash -l`) and by `login`.
+        writeExecutable(File(etc, "zyraxon-motd.sh"), ZYRAXON_MOTD)
+
+        // Sourced by /etc/profile (through profile.d below) for every login shell
+        // the runtime starts. It sets the prompt; a command the assistant runs is
+        // not interactive, so the banner stays out of its output.
+        writeExecutable(File(etc, "zyraxon-brand.sh"), ZYRAXON_BRAND_SH)
+
+        // The static motd `login` falls back to, the dynamic one it prefers, and
+        // the Play Store variant — all three named Termux before this.
+        File(etc, "motd").writeText(ZYRAXON_MOTD_TEXT)
+        File(etc, "motd-playstore").writeText(ZYRAXON_MOTD_TEXT)
+        writeExecutable(File(etc, "motd.sh"), ZYRAXON_MOTD)
+
+        // A login shell sources /etc/profile, which sources this directory, so the
+        // brand is applied there too rather than only in the runtime's own call.
+        File(profileD, "00-zyraxon-brand.sh")
+            .writeText("[ -r $GUEST_PREFIX/etc/zyraxon-brand.sh ] && . $GUEST_PREFIX/etc/zyraxon-brand.sh\n")
+
+        // Two Termux-only helpers. The first runs Termux's second stage, which the
+        // installer has already done, and the second writes a `~/.termux` config
+        // directory nothing here reads. Both are emptied so no Termux text or
+        // directory reaches the user; neither is needed for a command to run.
+        for (name in listOf(
+            "01-termux-bootstrap-second-stage-fallback.sh",
+            "init-termux-properties.sh"
+        )) {
+            val f = File(profileD, name)
+            if (f.isFile) f.writeText("# Handled by the ZYRAXON installer.\n")
+        }
+
+        log(" ZYRAXON branding")
+    }
+
+    private fun writeExecutable(file: File, text: String) {
+        file.writeText(text)
+        file.setExecutable(true, false)
+    }
+
+    private val ZYRAXON_MOTD_TEXT = """
+Welcome to ZYRAXON.
+
+Docs:      https://zyraxon.dev
+Community: https://zyraxon.dev/community
+
+Working with packages:
+
+ - Search:  pkg search <query>
+ - Install: pkg install <package>
+ - Upgrade: pkg upgrade
+""".trimIndent()
+
+    private val ZYRAXON_MOTD = """
+#!/usr/bin/env sh
+# ZYRAXON's welcome banner. Printed by an interactive shell only, so a command
+# run by the assistant or by the app stays free of it.
+width="$(stty size 2>/dev/null | cut -d' ' -f2)"
+if [ -n "${'$'}width" ] && [ "${'$'}width" -gt 60 ] 2>/dev/null; then
+    printf '\n  \033[1mZYRAXON\033[0m  \033[0;37ma real Unix system on this phone\033[0m\n\n'
+    printf '  \033[1mDocs:\033[0m      \033[4mhttps://zyraxon.dev\033[0m\n'
+    printf '  \033[1mCommunity:\033[0m \033[4mhttps://zyraxon.dev/community\033[0m\n\n'
+else
+    printf '\n\033[1mWelcome to ZYRAXON.\033[0m\n\n'
+    printf '\033[1mDocs:\033[0m      \033[4mhttps://zyraxon.dev\033[0m\n'
+    printf '\033[1mCommunity:\033[0m \033[4mhttps://zyraxon.dev/community\033[0m\n\n'
+fi
+printf '\033[1mWorking with packages:\033[0m\n\n'
+printf ' - Search:  pkg search <query>\n'
+printf ' - Install: pkg install <package>\n'
+printf ' - Upgrade: pkg upgrade\n\n'
+""".trimIndent()
+
+    private val ZYRAXON_BRAND_SH = """
+# ZYRAXON brand for the guest shell. Sourced before every command, and by
+# /etc/profile for a login shell. Cosmetic only.
+export ZYRAXON=1
+export PREFIX="$GUEST_PREFIX"
+PS1='\[\e[1;35m\]zyraxon\[\e[0m\]:\[\e[0;36m\]\w\[\e[0m\]\$ '
+# The banner belongs to a shell a person is looking at. The app runs a command
+# with `bash -lc`, which is not interactive, so it stays quiet.
+case "$-" in
+    *i*) [ -r "$GUEST_PREFIX/etc/zyraxon-motd.sh" ] && "$GUEST_PREFIX/etc/zyraxon-motd.sh" ;;
+esac
+""".trimIndent()
 
     /**
      * Unpacks every bundled `.deb` into [dest]. The debs are listed in the APK
@@ -422,6 +541,9 @@ object LinuxRuntime {
         timeoutMs: Long = 0
     ): ShellRuntime.Result? {
         if (!isInstalled(context)) return null
+        // A guest installed by an earlier build still shows Termux's own text;
+        // this is a no-op after the first call.
+        ensureBranding(context)
         val native = nativeLib(context).absolutePath
         val real = root(context).absolutePath
         val realHome = home(context).absolutePath

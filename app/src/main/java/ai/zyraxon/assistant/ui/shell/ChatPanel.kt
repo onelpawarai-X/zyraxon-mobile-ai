@@ -17,7 +17,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.sp
 
 /** The glass chat box in the middle: Chat, Todo, Tool calls and Files, as four sections. */
 @Composable
-fun ChatPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
+fun ChatPanel(vm: ZyraxonViewModel, listState: LazyListState, modifier: Modifier = Modifier) {
     val section by vm.chatSection.collectAsState()
     val tasks by vm.tasks.collectAsState()
     val execs by vm.toolExecutions.collectAsState()
@@ -59,7 +59,7 @@ fun ChatPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                 "todo" -> TodoSection(vm)
                 "tools" -> ToolsSection(vm)
                 "files" -> FilesSection(vm)
-                else -> MessageList(vm)
+                else -> MessageList(vm, listState)
             }
         }
     }
@@ -82,7 +82,7 @@ private fun SectionTab(icon: ImageVector?, label: String, selected: Boolean, mod
 }
 
 @Composable
-private fun MessageList(vm: ZyraxonViewModel) {
+private fun MessageList(vm: ZyraxonViewModel, state: LazyListState) {
     val messages by vm.messages.collectAsState()
     val liveCode by vm.liveCode.collectAsState()
     val jobs by vm.mediaJobs.collectAsState()
@@ -90,10 +90,34 @@ private fun MessageList(vm: ZyraxonViewModel) {
     val generating by vm.isGenerating.collectAsState()
     val clip = LocalClipboardManager.current
     val ctx = LocalContext.current
-    val state = rememberLazyListState()
     val last = messages.lastOrNull()
-    LaunchedEffect(messages.size, last?.text?.length, last?.toolCalls?.size, liveCode?.text?.length) {
-        if (messages.isNotEmpty()) state.scrollToItem(messages.size - 1 + if (subs.isNotEmpty()) 1 else 0, Int.MAX_VALUE / 4)
+
+    // Follow the answer while it is written, but never fight the user: the moment
+    // they scroll up the automatic pull stops, so they can read back while the
+    // reply is still streaming. It resumes when they come back to the bottom or
+    // when a new turn starts.
+    val atBottom by remember {
+        derivedStateOf {
+            val info = state.layoutInfo
+            val lastVisible = info.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val total = info.totalItemsCount
+            total == 0 || lastVisible >= total - 1
+        }
+    }
+    val lastId = last?.id
+    LaunchedEffect(lastId) {
+        // A new turn is a fresh reason to follow, even if the user had scrolled up.
+        if (lastId != null && messages.isNotEmpty()) {
+            state.scrollToItem(messages.size - 1 + if (subs.isNotEmpty()) 1 else 0, Int.MAX_VALUE / 4)
+        }
+    }
+    LaunchedEffect(messages.size, last?.text?.length, last?.toolCalls?.size, liveCode?.text?.length, atBottom) {
+        // Only the growth of an already-followed turn moves the view; a user who
+        // has scrolled up is left exactly where they are, whether or not the
+        // assistant is still writing.
+        if (messages.isNotEmpty() && atBottom) {
+            state.scrollToItem(messages.size - 1 + if (subs.isNotEmpty()) 1 else 0, Int.MAX_VALUE / 4)
+        }
     }
     LazyColumn(
         state = state, modifier = Modifier.fillMaxSize(),

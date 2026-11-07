@@ -141,6 +141,15 @@ class ZyraxonAiEngine(private val context: Context) {
          */
         const val REASONING_PREFIX = "\u0001zyraxon-reasoning\u0001"
 
+        /**
+         * Status lines — "switching provider", "retrying, 2/3", "no internet, using
+         * the offline model" — travel in this envelope. They are shown in the
+         * transcript but never spoken: a voice reading a retry counter or a
+         * provider name over the answer is noise, and the model's own prose is the
+         * only thing the user wants to hear.
+         */
+        const val STATUS_PREFIX = "\u0001zyraxon-status\u0001"
+
         /** The id of the phone's cloud agent model, always first in the picker. */
         const val APEX_MODEL_ID = "zyraxon/apex"
 
@@ -780,7 +789,7 @@ class ZyraxonAiEngine(private val context: Context) {
             if (pick != null) withContext(Dispatchers.IO) { local.load(pick.absolutePath) }
         }
         if (offline && local.isReady() && !_onDeviceDisabled && prompt.isNotBlank()) {
-            trySend("ইন্টারনেট নেই — ফোনের অফলাইন মডেলে চলছে।\n\n")
+            trySend(STATUS_PREFIX + "ইন্টারনেট নেই — ফোনের অফলাইন মডেলে চলছে।\n\n")
             val sys = LocalAgent.systemPrompt(persona.systemPrompt, memoriesContext, offline = true)
             val convo = StringBuilder()
             for (m in history.takeLast(6)) {
@@ -929,7 +938,7 @@ class ZyraxonAiEngine(private val context: Context) {
                 }, onToolArgs = onToolArgs, onSwitch = { switched ->
                     // Say the switch out loud: answering from a different model than
                     // the one on screen would otherwise be invisible.
-                    trySend("\n\n`$switched` — আগের প্রোভাইডার সীমায় পৌঁছেছে, তাই এখান থেকে চালিয়ে যাচ্ছি।\n\n")
+                    trySend(STATUS_PREFIX + "\n\n`$switched` — আগের প্রোভাইডার সীমায় পৌঁছেছে, তাই এখান থেকে চালিয়ে যাচ্ছি।\n\n")
                 }, onReasoning = { reason ->
                     // Reasoning is shown on screen and never spoken, so it travels
                     // in its own envelope the UI can tell apart from the answer.
@@ -949,12 +958,12 @@ class ZyraxonAiEngine(private val context: Context) {
                 // Bangla, like the rest of the turn: an English line here was read
                 // aloud by the speaker mid-Bangla answer. The count is a `{0}`
                 // token, never a Kotlin `$`, so it can be translated.
-                trySend(t("\n\nসংযোগে সমস্যা — {0}/৩ নম্বর চেষ্টা, অপেক্ষা করছি ", retries))
+                trySend(STATUS_PREFIX + t("\n\nসংযোগে সমস্যা — {0}/৩ নম্বর চেষ্টা, অপেক্ষা করছি ", retries))
                 for (s in retries downTo 1) {
-                    trySend("$s… ")
+                    trySend(STATUS_PREFIX + "$s… ")
                     kotlinx.coroutines.delay(500L)
                 }
-                trySend("\n\n")
+                trySend(STATUS_PREFIX + "\n\n")
                 attempt = callOnce()
             }
             val result = attempt

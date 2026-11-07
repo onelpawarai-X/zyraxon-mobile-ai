@@ -5,6 +5,7 @@ import ai.zyraxon.assistant.model.ChatMessage
 import ai.zyraxon.assistant.model.MediaJob
 import ai.zyraxon.assistant.model.TaskItem
 import ai.zyraxon.assistant.model.ToolExecutionItem
+import ai.zyraxon.assistant.model.TurnEvent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -39,6 +40,31 @@ class ChatSession(val id: String) {
     /** The assistant bubble of the turn that is running, so tool cards land in it. */
     @Volatile var currentMsgId: String = ""
     @Volatile var turnStartedAt: Long = 0L
+
+    /**
+     * The running turn's steps, in the order they happened. Kept beside the
+     * message rather than inside it because a tool call and a text chunk are
+     * appended from different threads while the turn streams; the message is
+     * rebuilt from this list on every repaint.
+     */
+    val turnEvents = mutableListOf<TurnEvent>()
+
+    /** Appends [event] to the turn, merging a repeat of the same kind into one run. */
+    fun addEvent(event: TurnEvent) {
+        synchronized(lock) {
+            val last = turnEvents.lastOrNull()
+            if (last != null && event.kind != "tool" && last.kind == event.kind) {
+                turnEvents[turnEvents.size - 1] = last.copy(text = last.text + event.text)
+            } else {
+                turnEvents.add(event)
+            }
+        }
+    }
+
+    fun eventsSnapshot(): List<TurnEvent> = synchronized(lock) { turnEvents.toList() }
+
+    fun clearEvents() = synchronized(lock) { turnEvents.clear() }
+
     /** Set for a helper chat started by `sub_agent`. */
     @Volatile var parentId: String = ""
 

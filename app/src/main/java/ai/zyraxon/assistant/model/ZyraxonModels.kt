@@ -22,8 +22,24 @@ data class ChatMessage(
     val durationMs: Long = 0,
     /** The tool calls this turn made, kept so the chat shows them after the fact. */
     val toolCalls: List<ToolCallRecord> = emptyList(),
+    /**
+     * Everything the turn did, in the exact order it happened: reasoning, spoken
+     * text, tool calls, more text. The chat used to draw all the prose first and
+     * all the tool cards after it, which showed a different story from the one
+     * that actually ran. This is that story.
+     */
+    val events: List<TurnEvent> = emptyList(),
     /** Pictures, audio and videos the assistant produced in this turn. */
     val media: List<MediaItem> = emptyList()
+)
+
+/** One step of an assistant turn. */
+data class TurnEvent(
+    /** "thinking", "text" or "tool". */
+    val kind: String,
+    val text: String = "",
+    /** For a "tool" event: the id of the matching entry in [ChatMessage.toolCalls]. */
+    val toolId: String = ""
 )
 
 /** One tool call as it appears under an assistant message. */

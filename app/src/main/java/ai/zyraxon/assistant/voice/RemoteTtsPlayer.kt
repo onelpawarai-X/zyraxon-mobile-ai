@@ -115,6 +115,9 @@ class RemoteTtsPlayer(
     /** Called as playback starts and stops, so the mic gate can follow the voice. */
     var onSpeakingChanged: ((Boolean) -> Unit)? = null
 
+    /** Real loudness of the voice, 0..1, so the aura can pulse with the audio. */
+    var onAudioLevel: ((Float) -> Unit)? = null
+
     private data class Piece(val text: String, val url: String, val attempts: Int = 0)
 
     /**
@@ -178,7 +181,6 @@ class RemoteTtsPlayer(
             if (mine == generation) {
                 isSpeaking = false
                 onSpeakingChanged?.invoke(false)
-                AvatarBridge.end()
             }
         }
     }
@@ -336,9 +338,9 @@ class RemoteTtsPlayer(
                     }
                 } catch (_: Exception) {}
                 try { it.setVolume(1f, 1f) } catch (_: Exception) {}
-                // The 3D avatar speaks this exact text for exactly this long, and
-                // follows the loudness of the real audio so pauses close the mouth.
-                try { AvatarBridge.speak(text, it.duration.toLong()) } catch (_: Exception) {}
+                // The real loudness of the audio is what drives the on-screen
+                // aura's pulse, so the animation follows the voice instead of a
+                // guess. Nothing here is allowed to fail the playback.
                 try {
                     viz = Visualizer(it.audioSessionId).apply {
                         captureSize = Visualizer.getCaptureSizeRange()[0]
@@ -352,7 +354,7 @@ class RemoteTtsPlayer(
                                 var sum = 0.0
                                 for (b in buf) { val x = (b.toInt() and 0xFF) - 128; sum += x * x }
                                 val rms = Math.sqrt(sum / buf.size) / 128.0
-                                AvatarBridge.level((rms * 3.4).toFloat())
+                                onAudioLevel?.invoke(rms.toFloat())
                             }
                             delay(50L)
                         }
@@ -449,7 +451,6 @@ class RemoteTtsPlayer(
 
     /** Cuts the voice off and drops everything waiting. */
     fun stop() {
-        AvatarBridge.end()
         generation++
         queue.clear()
         running = false

@@ -212,13 +212,35 @@ fun MessageItem(
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (message.thinking.isNotBlank()) ThinkingBlock(message.thinking, message.isStreaming && message.text.isBlank())
-            if (message.text.isNotBlank()) {
-                MarkdownText(message.text)
-            } else if (message.isStreaming && message.toolCalls.isEmpty() && liveCode == null && message.thinking.isBlank()) {
-                TypingDots()
+            val byId = message.toolCalls.associateBy { it.id }
+            if (message.events.isNotEmpty()) {
+                // The turn is drawn in the order it actually ran: reasoning, then
+                // what was said, then the calls it made, then what it said next.
+                // Old behaviour hoisted every line of prose above every tool card.
+                // Every reasoning run gets its own block: a turn that thinks, acts,
+                // then thinks again shows both, and only the newest one is "live".
+                val lastThinking = message.events.indexOfLast { it.kind == "thinking" }
+                message.events.forEachIndexed { index, ev ->
+                    when (ev.kind) {
+                        "thinking" -> ThinkingBlock(ev.text, message.isStreaming && index == lastThinking)
+                        "tool" -> byId[ev.toolId]?.let { ToolCard(it) }
+                        // A status line the engine produced — retry, provider switch,
+                        // offline fallback. Shown quietly; it is not the answer.
+                        "status" -> if (ev.text.isNotBlank()) {
+                            Text(ev.text.trim(), color = Glass.textMuted, fontSize = 11.5.sp, lineHeight = 16.sp)
+                        }
+                        else -> if (ev.text.isNotBlank()) MarkdownText(ev.text)
+                    }
+                }
+            } else {
+                if (message.thinking.isNotBlank()) ThinkingBlock(message.thinking, message.isStreaming && message.text.isBlank())
+                if (message.text.isNotBlank()) {
+                    MarkdownText(message.text)
+                } else if (message.isStreaming && message.toolCalls.isEmpty() && liveCode == null && message.thinking.isBlank()) {
+                    TypingDots()
+                }
+                message.toolCalls.forEach { ToolCard(it) }
             }
-            message.toolCalls.forEach { ToolCard(it) }
             if (isLastStreaming && liveCode != null && !liveCode.done) {
                 CodeBox(liveCode.text, langOf(liveCode.path), liveCode.path.ifBlank { t("নতুন ফাইল") }, live = true)
             }

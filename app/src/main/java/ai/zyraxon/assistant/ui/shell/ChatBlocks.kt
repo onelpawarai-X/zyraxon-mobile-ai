@@ -205,10 +205,41 @@ fun TerminalBox(command: String, output: String, running: Boolean, ok: Boolean =
 private sealed class Block {
  data class Code(val lang: String, val text: String, val open: Boolean) : Block()
  data class Heading(val level: Int, val text: String) : Block()
- data class Bullet(val text: String, val marker: String) : Block()
+ data class Bullet(val text: String, val marker: String, val depth: Int, val checked: Boolean?) : Block()
  data class Quote(val text: String) : Block()
  data class Para(val text: String) : Block()
+ /** A pipe table: the header cells and every body row, already split. */
+ data class Table(val header: List<String>, val rows: List<List<String>>) : Block()
  object Rule : Block()
+}
+
+/** Splits one `| a | b |` line into its cells, dropping the outer pipes. */
+private fun tableCells(line: String): List<String> {
+    var s = line.trim()
+    if (s.startsWith("|")) s = s.substring(1)
+    if (s.endsWith("|")) s = s.dropLast(1)
+    return s.split('|').map { it.trim() }
+}
+
+/**
+ * The `|---|:--:|` line under a table header. A line of dashes and colons is a
+ * separator; anything else means the pipe line above it was ordinary text.
+ */
+private fun isTableSeparator(line: String): Boolean {
+    val cells = tableCells(line)
+    if (cells.isEmpty()) return false
+    return cells.all { c -> c.isNotEmpty() && c.all { it == '-' || it == ':' } }
+}
+
+/** A leading run of `- `, `* `, `+ ` or `1. `, with the indent depth it sat at. */
+private fun bulletAt(line: String): Triple<String, Int, String>? {
+    val indent = line.takeWhile { it == ' ' || it == '\t' }.let { it.count { c -> c == ' ' } + it.count { c -> c == '\t' } * 4 }
+    val t = line.trimStart()
+    for (p in listOf("- ", "* ", "+ ")) {
+        if (t.startsWith(p)) return Triple(t.drop(p.length), indent / 2, "•")
+    }
+    val m = Regex("^(\\d+)[.)] +(.*)").find(t) ?: return null
+    return Triple(m.groupValues[2], indent / 2, m.groupValues[1] + ".")
 }
 
 private fun parseBlocks(src: String): List<Block> {
@@ -234,16 +265,33 @@ private fun parseBlocks(src: String): List<Block> {
  i++
  continue
  }
+ // A pipe table: a header row, a separator row, then body rows. Models emit
+ // these constantly for comparisons, and without this the pipes and dashes
+ // were rendered as literal text — the broken "box" the user reported.
+ if (t.contains('|') && i + 1 < lines.size && isTableSeparator(lines[i + 1])) {
+ flush()
+ val header = tableCells(t)
+ val rows = mutableListOf<List<String>>()
+ i += 2
+ while (i < lines.size && lines[i].contains('|') && lines[i].isNotBlank()) {
+ rows.add(tableCells(lines[i])); i++
+ }
+ out.add(Block.Table(header, rows))
+ continue
+ }
  when {
  t.startsWith("### ") -> { flush(); out.add(Block.Heading(3, t.removePrefix("### "))) }
  t.startsWith("## ") -> { flush(); out.add(Block.Heading(2, t.removePrefix("## "))) }
  t.startsWith("# ") -> { flush(); out.add(Block.Heading(1, t.removePrefix("# "))) }
- t.startsWith("- ") || t.startsWith("* ") -> { flush(); out.add(Block.Bullet(t.drop(2), "•")) }
- Regex("^\\d+[.)] .*").matches(t) -> {
- flush(); val m = t.substringBefore(' '); out.add(Block.Bullet(t.substringAfter(' '), m))
+ bulletAt(line) != null -> {
+ flush()
+ val (body, depth, marker) = bulletAt(line)!!
+ val box = Regex("^\\[( |x|X)\\] +(.*)").find(body)
+ if (box != null) out.add(Block.Bullet(box.groupValues[2], "☑", depth, box.groupValues[1].lowercase() == "x"))
+ else out.add(Block.Bullet(body, marker, depth, null))
  }
  t.startsWith("> ") -> { flush(); out.add(Block.Quote(t.removePrefix("> "))) }
- t == "---" || t == "***" -> { flush(); out.add(Block.Rule) }
+ t == "---" || t == "***" || t == "___" -> { flush(); out.add(Block.Rule) }
  t.isBlank() -> flush()
  else -> { if (para.isNotEmpty()) para.append('\n'); para.append(line) }
  }
@@ -251,6 +299,52 @@ private fun parseBlocks(src: String): List<Block> {
  }
  flush()
  return out
+}
+
+@Composable
+private fun TableRow(cells: List<String>, columns: Int, header: Boolean, color: Color, codeBg: Color, onOpen: (String) -> Unit) {
+    val cellBg = if (Glass.isLight) Color(0x0D000000) else Color(0x1AFFFFFF)
+    val headBg = if (Glass.isLight) Color(0x1A000000) else Color(0x33FFFFFF)
+    Row(Modifier.background(if (header) headBg else Color.Transparent)) {
+        for (c in 0 until columns) {
+            val cell = cells.getOrNull(c).orEmpty()
+            Box(
+                Modifier
+                    .width(150.dp)
+                    .border(0.5.dp, Glass.borderSoft)
+                    .background(if (header) headBg else cellBg)
+                    .padding(horizontal = 8.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    inline(cell, color, codeBg, onOpen), color = color,
+                    fontSize = 12.5.sp, lineHeight = 17.sp,
+                    fontWeight = if (header) FontWeight.Bold else FontWeight.Normal
+                )
+            }
+        }
+    }
+}
+
+/**
+ * A pipe table drawn as a real table. Cells wrap instead of clipping, the header
+ * is tinted, and the whole thing scrolls sideways when it is wider than the chat
+ * — a table that runs off the screen is the same as no table at all.
+ */
+@Composable
+private fun TableBlock(block: Block.Table, color: Color, codeBg: Color, onOpen: (String) -> Unit) {
+    val columns = maxOf(block.header.size, block.rows.maxOfOrNull { it.size } ?: 0)
+    if (columns == 0) return
+    val hScroll = rememberScrollState()
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .border(1.dp, Glass.borderSoft, RoundedCornerShape(10.dp))
+            .horizontalScroll(hScroll)
+    ) {
+        TableRow(block.header, columns, true, color, codeBg, onOpen)
+        block.rows.forEach { TableRow(it, columns, false, color, codeBg, onOpen) }
+    }
 }
 
 private val BARE_URL = Regex("(?i)\\b(?:https?://|www\\.)[^\\s<>\"']+")
@@ -356,7 +450,7 @@ fun MarkdownText(text: String, color: Color = Glass.textPrimary, modifier: Modif
                 inline(b.text, color, codeBg, onOpen), color = color, fontWeight = FontWeight.Bold,
                 fontSize = when (b.level) { 1 -> 18.sp; 2 -> 16.sp; else -> 14.5.sp }
             )
-            is Block.Bullet -> Row {
+            is Block.Bullet -> Row(Modifier.padding(start = (b.depth.coerceAtMost(4) * 14).dp)) {
                 Text(b.marker, color = Glass.pink, fontSize = 14.sp, modifier = Modifier.width(22.dp))
                 Text(inline(b.text, color, codeBg, onOpen), color = color, fontSize = 14.sp, lineHeight = 20.sp)
             }
@@ -365,6 +459,7 @@ fun MarkdownText(text: String, color: Color = Glass.textPrimary, modifier: Modif
                 Text(inline(b.text, Glass.textSecondary, codeBg, onOpen), color = Glass.textSecondary, fontSize = 13.5.sp,
                     modifier = Modifier.padding(start = 8.dp))
             }
+            is Block.Table -> TableBlock(b, color, codeBg, onOpen)
             is Block.Para -> Text(inline(b.text, color, codeBg, onOpen), color = color, fontSize = 14.sp, lineHeight = 21.sp)
             Block.Rule -> Box(Modifier.fillMaxWidth().height(1.dp).background(Glass.borderSoft))
         }

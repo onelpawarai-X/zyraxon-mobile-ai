@@ -49,6 +49,17 @@
     <!-- Android 11+ hides other apps unless they are declared. These are the
          channels ZYRAXON posts to and the browser it opens. -->
     <queries>
+        <!-- The speech engine and the recognizer are services in another app.
+             Without these two the platform hides them: TextToSpeech cannot bind
+             an engine (so nothing is ever spoken) and
+             SpeechRecognizer.isRecognitionAvailable() returns false (so the
+             microphone never opens). This is why voice was dead on Android 11+. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.SEND" />
             <data android:mimeType="*/*" />

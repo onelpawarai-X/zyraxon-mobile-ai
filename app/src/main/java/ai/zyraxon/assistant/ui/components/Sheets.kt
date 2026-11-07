@@ -1646,18 +1646,12 @@ fun SettingsSheet(
                                             .padding(vertical = 8.dp),
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        if (isAvatarStyle(styleId)) {
-                                            Box(modifier = Modifier.size(84.dp), contentAlignment = Alignment.Center) {
-                                                AppIcon(AppIcons.of(avatarSpec(styleId)?.icon ?: "person"), null, size = 44.dp, tint = Glass.textPrimary)
-                                            }
-                                        } else {
-                                            AuraPreview(
-                                                style = styleId,
-                                                hue = auraHue,
-                                                clock = galleryClock,
-                                                modifier = Modifier.size(84.dp)
-                                            )
-                                        }
+                                        AuraPreview(
+                                            style = styleId,
+                                            hue = auraHue,
+                                            clock = galleryClock,
+                                            modifier = Modifier.size(84.dp)
+                                        )
                                         Text(
                                             text = t(auraStyleLabel(styleId)),
                                             color = if (picked) BoneWhite else Glass.textSecondary,

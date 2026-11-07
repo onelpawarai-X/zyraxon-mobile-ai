@@ -65,7 +65,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
     var openPath by remember { mutableStateOf<String?>(null) }
     var text by remember { mutableStateOf(TextFieldValue("")) }
     var saved by remember { mutableStateOf("") }
-    var treeOpen by remember { mutableStateOf(true) }
+    var treeOpen by remember { mutableStateOf(false) }
     var log by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var dialog by remember { mutableStateOf<String?>(null) }
@@ -121,7 +121,7 @@ fun CodeWorkspace(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(t("কোড"), color = Glass.textPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
             Text(root.name, color = Glass.textMuted, fontSize = 11.sp, maxLines = 1, modifier = Modifier.weight(1f))
-            Btn(if (treeOpen) t("লুকাও") else t("গাছ"), if (treeOpen) AppIcons.visibilityOff else AppIcons.folderOpen) { treeOpen = !treeOpen }
+            Btn(if (treeOpen) t("লুকাও") else t("ফাইল"), if (treeOpen) AppIcons.visibilityOff else AppIcons.folderOpen) { treeOpen = !treeOpen }
             Btn(t("নতুন ফাইল"), AppIcons.add) { dialog = "newfile" }
             Btn(t("সেভ"), AppIcons.save, enabled = openPath != null && text.text != saved) { save() }
             Box {
