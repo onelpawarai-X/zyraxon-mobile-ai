@@ -184,7 +184,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
                         .background(Glass.screen).border(1.dp, Glass.borderSoft, RoundedCornerShape(22.dp))) {
                         TerminalScreen(
                             sessions = terminalSessions, activeId = activeTerminalId, lines = terminalLines, cwd = terminalCwd, busy = terminalBusy,
-                            onRun = { viewModel.runTerminal(it) }, onInput = { viewModel.sendTerminalInput(it) },
+                            onRun = { viewModel.runTerminal(it) },
                             onInterrupt = { viewModel.interruptTerminal() }, onClear = { viewModel.clearTerminal() },
                             onNewSession = { viewModel.newTerminalSession() }, onSelectSession = { viewModel.selectTerminalSession(it) },
                             onCloseSession = { viewModel.closeTerminalSession(it) }, onClose = { viewModel.setTab(AppTab.HOME) },

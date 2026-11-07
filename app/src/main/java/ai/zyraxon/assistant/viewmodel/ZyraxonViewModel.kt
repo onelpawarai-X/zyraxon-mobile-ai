@@ -1089,6 +1089,23 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      */
     private val terminalProcesses = java.util.concurrent.ConcurrentHashMap<String, ShellRuntime.LiveProcess>()
 
+    /**
+     * The sessions a command is already starting in.
+     *
+     * [terminalProcesses] is filled when the process exists, which is a moment
+     * after the coroutine is launched. Without this second marker a line typed in
+     * that gap looked like the first line of a fresh command and started a
+     * *second* one on top of the first. It is a set of ids rather than the busy
+     * flag because the flag is also what the screen paints from, and the two must
+     * be able to disagree for a frame without losing a line.
+     */
+    private val terminalInFlight = java.util.Collections.newSetFromMap(
+        java.util.concurrent.ConcurrentHashMap<String, Boolean>()
+    )
+
+    /** The scrollback entry the running command is writing into, per session. */
+    private val terminalLiveLine = java.util.concurrent.ConcurrentHashMap<String, String>()
+
     /** Marks a session busy, or not, and re-publishes the derived flows. */
     private fun setSessionBusy(id: String, value: Boolean) {
         _terminalSessions.update { list -> list.map { if (it.id == id) it.copy(busy = value) else it } }
@@ -3260,25 +3277,37 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun runTerminal(command: String) {
         val line = command.trim()
         if (line.isEmpty()) return
-        // While a command is running, a line of input belongs to that command, not
-        // to the shell. This is what makes a prompt answerable: `apt install` asks
-        // "Do you want to continue? [Y/n]", and the "y" the user types goes to the
-        // program that asked, instead of being rejected as a new command.
-        // Busy is read from the *active* session. With one shared flag a command
-        // running in another tab made this tab look busy, so the line was written
-        // into that other command's input and never ran.
+        // While a command is really running, a line of input belongs to that
+        // command, not to the shell. This is what makes a prompt answerable:
+        // `apt install` asks "Do you want to continue? [Y/n]", and the "y" the
+        // user types goes to the program that asked, instead of being rejected as
+        // a new command.
+        //
+        // The check is against the live process and the in-flight set together,
+        // never the `busy` flag. The flag is raised before the coroutine runs, so
+        // routing on it sent the line into a pipe that did not exist yet, where it
+        // was dropped: the prompt came back with no output at all. Busy is read
+        // for the *active* session only; a command in another tab must not swallow
+        // this one.
         val sessionId = _activeTerminalId.value
-        if (terminalProcesses.containsKey(sessionId)) {
+        if ((terminalProcesses.containsKey(sessionId) || sessionId in terminalInFlight) &&
             sendTerminalInput(line)
+        ) {
             return
         }
-        // Marked busy before the coroutine starts, so a second Enter pressed in
-        // the same frame is treated as input rather than as a new command.
+        // Marked before the coroutine starts, so a second Enter in the same frame
+        // is treated as input to this command rather than as a new one.
         setSessionBusy(sessionId, true)
+        terminalInFlight.add(sessionId)
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                runTerminalLine(line)
+                // The session is passed in, not re-read: the user may switch tabs
+                // while the command runs, and the output must stay filed under the
+                // shell that started it.
+                runTerminalLine(line, sessionId = sessionId)
             } finally {
+                terminalInFlight.remove(sessionId)
+                terminalLiveLine.remove(sessionId)
                 setSessionBusy(sessionId, false)
             }
         }
@@ -3287,22 +3316,35 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     /**
      * Writes a line to the standard input of the command that is currently running.
      *
-     * Nothing happens if no command is running, so this can never leak text into a
-     * later command. The newline is appended because a prompt waits for a whole
-     * line, and the user pressing Enter is what this represents.
+     * Returns false when there is no command to answer, so the caller can run the
+     * line as a command of its own instead. A line is never dropped in silence:
+     * the process can exit between the caller's check and this write, and that
+     * race used to lose whatever the user had typed.
+     *
+     * Only the active session's command can be answered: a line typed here belongs
+     * to the shell on screen, never to one running in another tab.
      */
-    fun sendTerminalInput(text: String) {
-        // Only the active session's command can be answered: a line typed here
-        // belongs to the shell on screen, never to one running in another tab.
-        val sink = terminalProcesses[_activeTerminalId.value]?.input ?: return
-        try {
+    fun sendTerminalInput(text: String): Boolean {
+        val sid = _activeTerminalId.value
+        val sink = terminalProcesses[sid]?.input ?: return false
+        return try {
             synchronized(sink) {
                 sink.write((text + "\n").toByteArray())
                 sink.flush()
             }
+            // The line is echoed into the running command's scrollback entry, the
+            // way a real terminal shows what you typed while a program waits for
+            // input. Without this the answer vanished from the screen the moment
+            // it was sent, which read as "my command did nothing".
+            terminalLiveLine[sid]?.let { id ->
+                updateTerminalLineIn(sid, id) { line ->
+                    line.copy(output = (line.output + "\n" + text).trimStart('\n'))
+                }
+            }
+            true
         } catch (e: Exception) {
-            // The command may have just finished and closed its input. Losing the
-            // race is not an error worth showing, and the output already says so.
+            // The command may have just finished and closed its input.
+            false
         }
     }
 
@@ -3366,6 +3408,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // while the command runs instead of after it exits.
         val lineId = UUID.randomUUID().toString()
         appendTerminalIn(sid, TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
+        terminalLiveLine[sid] = lineId
         val streamed = StringBuilder()
         val r = ShellRuntime.runStreaming(
             app, line,
@@ -3446,6 +3489,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val sid = sessionId.ifBlank { _activeTerminalId.value }
         val lineId = UUID.randomUUID().toString()
         appendTerminalIn(sid, TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
+        terminalLiveLine[sid] = lineId
         val streamed = StringBuilder()
         val push: (String, String) -> Unit = { _, text ->
             synchronized(streamed) { streamed.append(text).append('\n') }

@@ -117,7 +117,6 @@ fun TerminalScreen(
     cwd: String,
     busy: Boolean,
     onRun: (String) -> Unit,
-    onInput: (String) -> Unit,
     onInterrupt: () -> Unit,
     onClear: () -> Unit,
     onNewSession: () -> Unit,
@@ -178,9 +177,15 @@ fun TerminalScreen(
         setText("")
         ctrl = false
         alt = false
-        // While a command runs, the line is an answer to its prompt, not a new
-        // command. That is what lets `apt install` receive the "y" it is waiting for.
-        if (busy) onInput(line) else onRun(line)
+        // Always routed as a command. The view model checks whether a process is
+        // really alive and, if one is, writes this line to its standard input
+        // instead of starting a second command — that is what lets `apt install`
+        // receive the "y" it is waiting for. Routing on the `busy` flag instead
+        // lost the line whenever the flag was set but no process existed yet (the
+        // flag is raised before the coroutine starts), so the first command after
+        // a restart, or any command typed while a previous one was tearing down,
+        // was written to a dead pipe and vanished with no output at all.
+        onRun(line)
     }
 
     fun recall(step: Int) {
