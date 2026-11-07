@@ -2271,6 +2271,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             var fullReply = ""
             val thinkingBuf = StringBuilder()
             val spokenBuffer = StringBuilder()
+            // True until the reply's opening piece has been handed to the voice.
+            // The first piece is released after a couple of words so speech starts
+            // at once; every later one waits for a full clause, which keeps the
+            // endpoint's requests ahead of the player instead of level with it.
+            var spokenFirst = false
             var lastUiUpdate = 0L
             val speakingReply = speak && shouldUsePhoneTts()
             if (speakingReply) voiceManager.beginReply()
@@ -2416,8 +2421,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     }
                     if (speakingReply) {
                         spokenBuffer.append(chunk)
-                        val ready = SpeechChunker.take(spokenBuffer)
-                        if (ready.isNotBlank()) voiceManager.speakQueued(ready)
+                        val ready = SpeechChunker.take(spokenBuffer, first = !spokenFirst)
+                        if (ready.isNotBlank()) {
+                            spokenFirst = true
+                            voiceManager.speakQueued(ready)
+                        }
                     }
                 }
             } catch (e: Exception) {
