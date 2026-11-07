@@ -59,6 +59,21 @@ class SpeechQueueTest {
     }
 
     @Test
+    fun `an interrupted piece goes back to the front and is spoken again`() {
+        // The user talked over the reply. The piece that was playing must not be
+        // skipped: it returns to the front so the answer carries on from that word.
+        val queue = SpeechQueue()
+        queue.enqueue(listOf(utterance("a"), utterance("b")))
+        val playing = queue.takeNext()!!
+        queue.markSpoken(playing)
+        val held = queue.active
+        queue.onFinished(playing.id)
+        assertEquals("a", held?.id)
+        queue.requeueFront(held!!)
+        assertEquals("a", queue.takeNext()?.id)
+    }
+
+    @Test
     fun `a stale finish callback does not free the queue early`() {
         val queue = SpeechQueue()
         queue.enqueue(listOf(utterance("a"), utterance("b")))

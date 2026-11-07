@@ -109,6 +109,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     /** When the user last cut the assistant off by talking over it. */
     private var lastUserInterruptMs = 0L
 
+    /**
+     * True while a spoken reply is paused because the user is talking over it.
+     * When their phrase is submitted the reply is resumed from the interrupted
+     * word, so a user who talks over the assistant is not answered by silence.
+     */
+    private var pausedByUser = false
+
     // SQLite Local Room Database & Repository
     val database = ZyraxonDatabase.getDatabase(application)
     val repository = ZyraxonRepository(database.dao())
@@ -1282,6 +1289,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     if (_autoSend.value) {
                         onUserStartedSpeaking()
                         sendMessage(text)
+                    } else if (pausedByUser) {
+                        // The user finished talking and their words are only in
+                        // the box, so the reply that was paused picks up from the
+                        // word they interrupted. With auto-send on this branch is
+                        // not reached: their words become the new turn and its own
+                        // answer replaces the paused one.
+                        pausedByUser = false
+                        voiceManager.resumeSpeaking()
                     }
                 }
             }
@@ -1905,7 +1920,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
 
     /** True when the user's own voice should cut the assistant off mid-sentence. */
     fun onUserStartedSpeaking() {
-        if (isSpeaking.value) voiceManager.stopSpeaking()
+        // The voice pauses where it stands rather than being discarded, so the
+        // reply can be picked back up from this word once the user is done. Only
+        // an active spoken reply is worth pausing; a silent one has nothing to
+        // resume and pausing would leave the queue stuck.
+        if (isSpeaking.value) {
+            pausedByUser = true
+            voiceManager.pauseSpeaking()
+        }
     }
 
     /**
@@ -2278,7 +2300,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             var spokenFirst = false
             var lastUiUpdate = 0L
             val speakingReply = speak && shouldUsePhoneTts()
-            if (speakingReply) voiceManager.beginReply()
+            if (speakingReply) {
+                // A new reply has nothing to resume, so any pause left over from a
+                // previous interruption is cleared here rather than carried in.
+                pausedByUser = false
+                voiceManager.beginReply()
+            }
             try {
                 // Everything the turn needs is read at the same time, off the main
                 // thread: the three reads used to run one after another before the

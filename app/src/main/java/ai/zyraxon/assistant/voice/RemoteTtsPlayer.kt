@@ -467,6 +467,38 @@ class RemoteTtsPlayer(
         clearPrefetched()
     }
 
+    /**
+     * Silences the voice where it stands, keeping the piece that is playing and
+     * everything still queued. [resume] picks the same sentence back up, so a user
+     * who talks over the assistant is answered by the voice stopping, and the
+     * reply carrying on from that word once they are quiet again.
+     */
+    fun pause() {
+        val mp = player
+        try { mp?.pause() } catch (_: Exception) {}
+        isSpeaking = false
+        onSpeakingChanged?.invoke(false)
+    }
+
+    /** Continues a paused voice, or does nothing when it is not paused. */
+    fun resume() {
+        val mp = player
+        try {
+            if (mp != null && !mp.isPlaying) {
+                mp.start()
+                isSpeaking = true
+                onSpeakingChanged?.invoke(true)
+            }
+        } catch (_: Exception) {}
+    }
+
+    /** True while audio is paused mid-piece, so a resume is meaningful. */
+    fun isPaused(): Boolean = try {
+        player?.let { !it.isPlaying && running } ?: false
+    } catch (_: Exception) {
+        false
+    }
+
     /** Releases the player and the queue for good. */
     fun shutdown() {
         stop()

@@ -22,7 +22,16 @@ class SpeechQueue {
 
     /** The piece the engine is speaking right now, or null when it is idle. */
     private var _activeId: String? = null
+    private var _active: SpeechUtterance? = null
     val activeId: String? get() = synchronized(lock) { _activeId }
+
+    /**
+     * The piece being spoken, kept so it can be spoken again. When the user talks
+     * over the assistant the engine is stopped mid-piece; this is the text that
+     * goes back to the front of the queue so the reply resumes from the word the
+     * user interrupted instead of skipping it.
+     */
+    val active: SpeechUtterance? get() = synchronized(lock) { _active }
 
     val size: Int get() = synchronized(lock) { pending.size }
 
@@ -30,6 +39,11 @@ class SpeechQueue {
 
     /** Appends [utterances] to the back of the queue, preserving their order. */
     fun enqueue(utterances: List<SpeechUtterance>) = synchronized(lock) { pending.addAll(utterances) }
+
+    /** Puts [utterance] back at the front, for a resume after an interruption. */
+    fun requeueFront(utterance: SpeechUtterance) = synchronized(lock) {
+        pending.addFirst(utterance)
+    }
 
     /**
      * The next piece to speak, or null when there is nothing to do or a piece is
@@ -40,7 +54,13 @@ class SpeechQueue {
         pending.removeFirstOrNull()
     }
 
-    /** Records that [id] is now being spoken, so no second piece starts. */
+    /** Records that [utterance] is now being spoken, so no second piece starts. */
+    fun markSpoken(utterance: SpeechUtterance) = synchronized(lock) {
+        _activeId = utterance.id
+        _active = utterance
+    }
+
+    /** Records that the piece with [id] is now being spoken. */
     fun markSpoken(id: String) = synchronized(lock) { _activeId = id }
 
     /**
@@ -55,12 +75,16 @@ class SpeechQueue {
      * queue early and let two voices overlap.
      */
     fun onFinished(id: String?) = synchronized(lock) {
-        if (id != null && id == _activeId) _activeId = null
+        if (id != null && id == _activeId) {
+            _activeId = null
+            _active = null
+        }
     }
 
     /** Drops everything, for when the user starts a new reply or cuts speech off. */
     fun clear() = synchronized(lock) {
         pending.clear()
         _activeId = null
+        _active = null
     }
 }

@@ -164,6 +164,9 @@ class NativeVoiceManager(
     /** Decides the single close/open pair around a streamed reply. */
     private val micGate = MicGate()
 
+    /** The piece the user talked over, held so the reply can resume from it. */
+    private var interruptedUtterance: SpeechUtterance? = null
+
     /**
      * Speech waiting to be spoken, drained one piece at a time. A piece is only
      * handed to the engine when the previous one has finished, because switching
@@ -837,7 +840,7 @@ class NativeVoiceManager(
             TextToSpeech.ERROR
         }
         if (res == TextToSpeech.SUCCESS) {
-            speechQueue.markSpoken(utterance.id)
+            speechQueue.markSpoken(utterance)
             _isSpeaking.value = true
             armSpeechWatchdog(utterance)
         } else {
@@ -911,6 +914,45 @@ class NativeVoiceManager(
         micGate.reset()
         _isSpeaking.value = false
         resumeAfterSpeech()
+    }
+
+    /**
+     * The user started talking over the assistant. The voice is silenced where it
+     * stands — the piece being spoken is remembered, not thrown away — so it can
+     * carry on from that same word once the user has finished. [resumeSpeaking]
+     * does that; [stopSpeaking] is for when the reply itself should be abandoned.
+     */
+    fun pauseSpeaking() {
+        val current = speechQueue.active
+        interruptedUtterance = current
+        // The active slot must be released, or the resumed piece would never be
+        // handed back to the engine: takeNext refuses to hand anything out while a
+        // piece is marked active. The text itself is kept above, so nothing is lost.
+        if (current != null) speechQueue.onFinished(current.id)
+        try { textToSpeech?.stop() } catch (_: Exception) {}
+        cancelSpeechWatchdog()
+        remoteVoice.pause()
+        // The mic gate is deliberately left alone: this reply is paused, not over,
+        // so the ear keeps the single close/open pair it opened for this reply and
+        // still reopens when the last word finally plays.
+        _isSpeaking.value = false
+    }
+
+    /**
+     * The user has stopped talking, so the assistant picks the reply back up. The
+     * piece the user interrupted goes back to the front of the queue, so nothing
+     * is skipped and the answer continues instead of starting over.
+     */
+    fun resumeSpeaking() {
+        interruptedUtterance?.let { interrupted ->
+            speechQueue.requeueFront(interrupted)
+            interruptedUtterance = null
+        }
+        if (remoteVoice.isPaused()) {
+            remoteVoice.resume()
+            _isSpeaking.value = true
+        }
+        if (speechQueue.activeId == null && !speechQueue.isEmpty()) pumpNext()
     }
 
     companion object {
