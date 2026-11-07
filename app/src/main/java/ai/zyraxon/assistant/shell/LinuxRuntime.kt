@@ -202,6 +202,25 @@ object LinuxRuntime {
         return ready
     }
 
+    /**
+     * Runs one command in the guest and returns what it printed, so `linux-status`
+     * can show a real probe rather than only a claim. A failure comes back as text,
+     * never as an exception: the point is to make the reason visible on the phone.
+     */
+    fun probe(context: Context): String {
+        if (!isInstalled(context)) return "not installed"
+        val result = runCatching {
+            runStreaming(context, "echo zyraxon-probe-ok; id -u; uname -m") { _, _ -> }
+        }.getOrNull()
+        if (result == null) return "the guest could not be started"
+        val text = (result.stdout + result.stderr).trim()
+        return if (text.isEmpty()) {
+            "the guest started but printed nothing (exit ${result.code})"
+        } else {
+            "exit ${result.code} · ${text.replace('\n', ' ')}"
+        }
+    }
+
     /** True once [applyBranding] has run for the installed guest. */
     private const val BRANDED = ".zyraxon-branded"
 
@@ -250,18 +269,6 @@ object LinuxRuntime {
         // brand is applied there too rather than only in the runtime's own call.
         File(profileD, "00-zyraxon-brand.sh")
             .writeText("[ -r $GUEST_PREFIX/etc/zyraxon-brand.sh ] && . $GUEST_PREFIX/etc/zyraxon-brand.sh\n")
-
-        // Two Termux-only helpers. The first runs Termux's second stage, which the
-        // installer has already done, and the second writes a `~/.termux` config
-        // directory nothing here reads. Both are emptied so no Termux text or
-        // directory reaches the user; neither is needed for a command to run.
-        for (name in listOf(
-            "01-termux-bootstrap-second-stage-fallback.sh",
-            "init-termux-properties.sh"
-        )) {
-            val f = File(profileD, name)
-            if (f.isFile) f.writeText("# Handled by the ZYRAXON installer.\n")
-        }
 
         log(" ZYRAXON branding")
     }

@@ -3500,6 +3500,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val status = buildString {
             append("Linux: ").append(if (LinuxRuntime.isInstalled(app)) "ready" else "setting up…")
             if (!LinuxRuntime.isSupported(app)) append(" · unsupported on this device")
+            append("\n")
+            append("Guest probe: ").append(LinuxRuntime.probe(app))
             append("\n\n")
             append("The system is already installed — nothing to set up. Type any Linux command.\n\n")
             append("Examples:\n")
