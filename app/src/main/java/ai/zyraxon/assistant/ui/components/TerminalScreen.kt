@@ -783,11 +783,11 @@ private fun TerminalSidebar(
 /**
  * One command and what it printed: the prompt line, then the output directly
  * under it with no card, no gap and no label — the way a real terminal's
- * scrollback reads. A command that printed nothing shows nothing.
+ * scrollback reads. A finished command always reports how it ended, so a command
+ * that printed nothing can never be mistaken for one that never ran.
  */
 @Composable
 private fun TerminalEntry(line: TerminalLine) {
-    val quiet = line.output.isEmpty() || line.output == "(no output)"
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = buildAnnotatedString {
@@ -798,7 +798,7 @@ private fun TerminalEntry(line: TerminalLine) {
             fontFamily = TerminalFont,
             lineHeight = 17.sp
         )
-        if (!quiet) {
+        if (line.output.isNotEmpty()) {
             // The output is parsed for the colour codes a real tool prints, so
             // `ls --color` and `git status` look the way they do in any terminal
             // instead of showing raw escape bytes.
@@ -829,14 +829,27 @@ private fun TerminalEntry(line: TerminalLine) {
                 lineHeight = 17.sp,
                 modifier = Modifier.horrorFlicker()
             )
-        }
-        if (!line.running && line.timedOut) {
-            Text(
-                text = "[timed out]",
-                color = TerminalError,
-                fontSize = 11.sp,
-                fontFamily = TerminalFont
-            )
+        } else {
+            // A finished command always says how it ended. A command that printed
+            // nothing used to leave the screen unchanged, which is indistinguishable
+            // from a command that never ran — the single most confusing thing the
+            // Terminal could do. The exit status is printed here the way a shell's
+            // `$?` reports it, so silence is never ambiguous.
+            val note = when {
+                line.timedOut -> "exit ${line.exitCode} · timed out"
+                line.output.isEmpty() -> if (line.isError) "exit ${line.exitCode} · no output" else "exit 0 · no output"
+                line.exitCode != 0 -> "exit ${line.exitCode}"
+                else -> ""
+            }
+            if (note.isNotEmpty()) {
+                Text(
+                    text = note,
+                    color = if (line.isError) TerminalError else TerminalDim,
+                    fontSize = 11.sp,
+                    fontFamily = TerminalFont,
+                    lineHeight = 14.sp
+                )
+            }
         }
     }
 }
