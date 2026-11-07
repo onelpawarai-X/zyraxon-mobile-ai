@@ -176,8 +176,24 @@ class Updater(private val context: Context) {
                             copied += read
                             if (total > 0) onProgress((copied.toFloat() / total).coerceIn(0f, 1f))
                         }
+                        output.flush()
                     }
                 }
+            }
+            // A download that stopped early leaves a file that *looks* like an APK
+            // and is not one. Handing it to Android's installer is exactly what
+            // produces "app not installed as package appears to be invalid": the
+            // bytes are half a zip. The declared size is checked before the file is
+            // accepted, so a truncated transfer is retried instead of installed.
+            val declared = asset.size
+            if (declared > 0 && partial.length() != declared) {
+                val got = partial.length()
+                partial.delete()
+                error("ডাউনলোড অসম্পূর্ণ (${got / (1024 * 1024)} MB / ${declared / (1024 * 1024)} MB) — আবার চেষ্টা করুন")
+            }
+            if (!isZipApk(partial)) {
+                partial.delete()
+                error("ডাউনলোড করা ফাইলটি বৈধ APK নয় — আবার চেষ্টা করুন")
             }
             if (target.exists()) target.delete()
             if (!partial.renameTo(target)) {
@@ -187,6 +203,23 @@ class Updater(private val context: Context) {
             onProgress(1f)
             target
         }
+    }
+
+    /**
+     * True when [file] really starts with a zip archive. Every APK is a zip, so a
+     * file whose first two bytes are not `PK` cannot be one — a captive-portal
+     * HTML page saved under an `.apk` name, or a transfer that died before the
+     * first block. Checked before the installer ever sees the file.
+     */
+    internal fun isZipApk(file: File): Boolean = try {
+        if (file.length() < 4) false
+        else file.inputStream().use { input ->
+            val head = ByteArray(4)
+            if (input.read(head) != 4) false
+            else head[0] == 'P'.code.toByte() && head[1] == 'K'.code.toByte()
+        }
+    } catch (_: Exception) {
+        false
     }
 
     /**
@@ -205,7 +238,8 @@ class Updater(private val context: Context) {
 
     /** The APK staged for [version], or null when none is on disk. */
     fun stagedApk(version: Version): File? =
-        File(stagedDir(), "ZYRAXON-$version.apk").takeIf { it.exists() && it.length() > 0 }
+        File(stagedDir(), "ZYRAXON-$version.apk")
+            .takeIf { it.exists() && it.length() > 0 && isZipApk(it) }
 
     private fun stagedDir(): File = File(context.filesDir, "updates").apply { mkdirs() }
 
@@ -285,6 +319,17 @@ class Updater(private val context: Context) {
     companion object {
         const val REPO = "onelpawarai-X/zyraxon-mobile-ai"
         const val ACTION_INSTALL_STATUS = "ai.zyraxon.assistant.INSTALL_STATUS"
+
+        /**
+         * The reason Android's installer gave for refusing an update, or null.
+         *
+         * The install runs in the system's package service, so its answer arrives
+         * as a broadcast long after [install] has returned. The receiver publishes
+         * it here and the UI reads it, so "app not installed as package appears to
+         * be invalid" is shown to the user instead of being written to logcat
+         * where nobody will see it.
+         */
+        val installFailure = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
 
         /**
          * The version name Android has for the installed package. Reading it here

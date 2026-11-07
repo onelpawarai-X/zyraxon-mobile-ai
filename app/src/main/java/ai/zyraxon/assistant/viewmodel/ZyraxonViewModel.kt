@@ -667,6 +667,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     /** The release being offered, kept so Download and Install can use it. */
     private var pendingRelease: UpdateRelease? = null
 
+    /** Watches the installer's own verdict while an update install is in flight. */
+    private var installWatcher: kotlinx.coroutines.Job? = null
+
     /** True once a check has answered, so the banner never flashes on every start. */
     private val _updateChecked = MutableStateFlow(false)
     val updateChecked: StateFlow<Boolean> = _updateChecked.asStateFlow()
@@ -834,6 +837,25 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             updater.openInstallPermissionSettings()
             _updateState.value = UpdateState.NeedsPermission(release)
             return
+        }
+        // A staged file from an older, interrupted download can be a fragment.
+        // Installing it is what produces "package appears to be invalid", so it is
+        // thrown away and fetched again rather than handed to Android.
+        if (!updater.isZipApk(file)) {
+            file.delete()
+            downloadUpdate()
+            return
+        }
+        // The installer answers by broadcast, minutes after this returns. Watching
+        // that channel is the only way its refusal reaches the user.
+        installWatcher?.cancel()
+        installWatcher = viewModelScope.launch {
+            Updater.installFailure.collect { reason ->
+                if (reason != null) {
+                    _updateState.value = UpdateState.Failed(reason)
+                    Updater.installFailure.value = null
+                }
+            }
         }
         runCatching { updater.install(file) }.onFailure { error ->
             _updateState.value = UpdateState.Failed(error.message ?: t("ইনস্টল শুরু করা গেল না"))

@@ -29,6 +29,12 @@ class UpdateInstallReceiver : BroadcastReceiver() {
         if (status != PackageInstaller.STATUS_SUCCESS) {
             val message = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
             Log.w("ZYRAXON", "install failed: $status $message")
+            // The install happens in the system's package service, so this
+            // broadcast is the only place its refusal is ever stated. Publishing it
+            // is what turns a silent no-op into a message the user can act on.
+            Updater.installFailure.value = message ?: "ইনস্টল করা গেল না (কোড $status)"
+        } else {
+            Updater.installFailure.value = null
         }
     }
 }

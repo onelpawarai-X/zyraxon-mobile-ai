@@ -147,6 +147,11 @@ class RemoteTtsPlayer(
             val tone = RemoteTtsRequest.toneFor(chunk)
             queue.add(Piece(chunk, RemoteTtsRequest.buildUrl(chunk, bcp47, g, tone)))
         }
+        // Text can arrive after the pump has already drained the queue and stopped
+        // — the reply's last sentence does exactly that, because it is enqueued
+        // after streaming ends. A live pump picks the new piece up on its own loop;
+        // a stopped one must be restarted, or that sentence is never spoken, which
+        // is heard as the voice stopping mid-answer.
         if (!running) startPump() else prefetchNext(generation)
     }
 
@@ -316,6 +321,12 @@ class RemoteTtsPlayer(
         val mp = MediaPlayer()
         var levelJob: Job? = null
         var viz: Visualizer? = null
+        // A stream that never declares its length can leave `prepareAsync` without
+        // ever calling back, and there is no deadline on the file path — so the
+        // pump would wait forever and the reply would fall silent after its first
+        // word. A fallback clock releases that wait; the normal path still finishes
+        // on the engine's own callback, which arrives far sooner.
+        val stallMs = if (timeoutMs > 0L) timeoutMs else STREAM_STALL_MS
         try {
             mp.setAudioAttributes(
                 AudioAttributes.Builder()
@@ -372,23 +383,26 @@ class RemoteTtsPlayer(
             player = mp
             mp.prepareAsync()
             val started = when {
-                timeoutMs > 0L -> withTimeoutOrNull(timeoutMs) { prepared.await() } ?: false
                 dropStream != null -> {
                     // Whichever speaks first wins: the player, or the download
-                    // that already made this attempt unnecessary.
+                    // that already made this attempt unnecessary. The clock is the
+                    // last resort, so a stream that never answers cannot hold the
+                    // whole reply hostage.
                     val released = CompletableDeferred<Boolean>()
                     val watcher = launch {
                         dropStream.await()
                         if (!prepared.isCompleted) released.complete(false)
                     }
-                    val ok = select<Boolean> {
-                        prepared.onAwait { it }
-                        released.onAwait { it }
-                    }
+                    val ok = withTimeoutOrNull(stallMs) {
+                        select<Boolean> {
+                            prepared.onAwait { it }
+                            released.onAwait { it }
+                        }
+                    } ?: false
                     watcher.cancel()
                     ok
                 }
-                else -> prepared.await()
+                else -> withTimeoutOrNull(stallMs) { prepared.await() } ?: false
             }
             if (!started) {
                 release(mp)
@@ -496,5 +510,13 @@ class RemoteTtsPlayer(
          * being cut off mid-sentence.
          */
         const val PREPARE_TIMEOUT_MS = 0L
+
+        /**
+         * The backstop for a source that never reports back at all. A chunked
+         * stream with no declared length can leave `prepareAsync` silent forever,
+         * which is heard as the voice stopping after a word or two. Far longer
+         * than a healthy prepare, so it never cuts a slow-but-working one short.
+         */
+        const val STREAM_STALL_MS = 12_000L
     }
 }
