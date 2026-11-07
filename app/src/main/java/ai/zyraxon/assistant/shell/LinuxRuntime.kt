@@ -210,7 +210,7 @@ object LinuxRuntime {
     fun probe(context: Context): String {
         if (!isInstalled(context)) return "not installed"
         val result = runCatching {
-            runStreaming(context, "echo zyraxon-probe-ok; id -u; uname -m") { _, _ -> }
+            runStreaming(context, "echo zyraxon-probe-ok; id -u; uname -m", onChunk = { _, _ -> })
         }.getOrNull()
         if (result == null) return "the guest could not be started"
         val text = (result.stdout + result.stderr).trim()
