@@ -86,6 +86,18 @@ Linux, which is why the build file carries a comment saying so.
 
 ---
 
+## License
+
+ZYRAXON is source-available under the **ZYRAXON Sovereign License, X Edition
+(ZSL-X)** — see [LICENSE](LICENSE). Read it, run it, change it, build with it:
+free use is never restricted. Selling it, rebranding it, or stripping out its
+licensing systems is not allowed.
+
+Third-party components stay under their own licenses — see [NOTICE](NOTICE).
+Security issues: see [SECURITY.md](SECURITY.md).
+
+---
+
 ## Built by
 
 **ZYRAXON LAB** — this agent was built by our own team, from start to finish.

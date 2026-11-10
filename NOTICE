@@ -1,0 +1,35 @@
+# NOTICE
+
+ZYRAXON AI — the Android app — is distributed under the ZYRAXON Sovereign
+License, X Edition (ZSL-X). See [LICENSE](LICENSE).
+
+Copyright (c) 2026 onelpawarai. All rights reserved.
+Trademark: ZYRAXON, MEKRA, MYRA — registered marks of onelpawarai.
+
+## Third-party components
+
+ZYRAXON is built on the work of others. Each component below stays under its
+own license, and that license governs that component. Nothing in the ZSL-X
+changes, replaces, or restricts those terms.
+
+| Component | License |
+| --- | --- |
+| AndroidX (Core, Activity, Fragment, Lifecycle, Room, WebKit) | Apache-2.0 |
+| Jetpack Compose (UI, Material 3, Material Icons) | Apache-2.0 |
+| Kotlin and kotlinx.coroutines | Apache-2.0 |
+| OkHttp, Retrofit, Moshi, logging-interceptor | Apache-2.0 |
+| Coil | Apache-2.0 |
+| JGit | EDL-1.0 and BSD-3-Clause |
+| SLF4J (nop binding) | MIT |
+| Shizuku API and provider | Apache-2.0 |
+| ML Kit text recognition (Latin, Devanagari) | Google APIs Terms of Service |
+| MediaPipe Tasks GenAI | Apache-2.0 |
+| LiteRT-LM | Apache-2.0 |
+| Termux-derived userland packages bundled for the Linux path | per-package licenses |
+
+The Linux environment the app can run ships third-party binaries. Their
+licenses travel with them, inside the app bundle, unchanged.
+
+## Reporting a security issue
+
+See [SECURITY.md](SECURITY.md).
