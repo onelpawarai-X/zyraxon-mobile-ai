@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ZYRAXON Aura</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/*
+ * Everything the user can tune lives here. AuraWebView rewrites these four
+ * values from the saved settings; nothing else in the file needs to change.
+ */
+:root {
+    --aura-hue: 325;
+    --aura-size: 1;
+    --aura-glow: 1;
+    --aura-speed: 1;
+
+    --pink: hsl(var(--aura-hue) 100% 62%);
+    --light-pink: hsl(var(--aura-hue) 100% 81%);
+    --hot-pink: hsl(var(--aura-hue) 100% 52%);
+    --white-pink: hsl(var(--aura-hue) 100% 97%);
+}
+
+/*
+ * The stage is pinned to the middle of the WebView with absolute positioning
+ * rather than flex + 100vh. Android's WebView mis-measures 100vh whenever the
+ * system bars change, which is what pushed the aura off-centre and up under the
+ * toolbar.
+ */
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+    font-family: Arial, sans-serif;
+    /* Prevent any glow from leaking past the WebView edge */
+    clip-path: inset(0);
+}
+
+.aura-stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 320px;
+    height: 320px;
+    transform: translate(-50%, -50%) scale(var(--aura-size));
+    transform-origin: center center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    isolation: isolate;
+}
+
+/*
+ * The soft glow used to bleed past the WebView's edge and get sliced off by the
+ * hard boundary, which looked broken. It is now clipped to a circle that fades
+ * out well before the edge, so the light dies naturally instead of being cut.
+ */
+.atmosphere {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: var(--hot-pink);
+    filter: blur(42px);
+    opacity: calc(0.3 * var(--aura-glow));
+    -webkit-mask-image: radial-gradient(circle, #000 20%, rgba(0, 0, 0, 0.4) 50%, transparent 75%);
+    mask-image: radial-gradient(circle, #000 20%, rgba(0, 0, 0, 0.4) 50%, transparent 75%);
+    animation: atmosphere calc(5s / var(--aura-speed)) ease-in-out infinite alternate;
+}
+
+@keyframes atmosphere {
+    from {
+        transform: scale(0.86);
+        opacity: calc(0.22 * var(--aura-glow));
+    }
+    to {
+        transform: scale(1.1);
+        opacity: calc(0.4 * var(--aura-glow));
+    }
+}
+
+.ring {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.ring-one {
+    width: 258px;
+    height: 258px;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        transparent 35deg,
+        hsl(var(--aura-hue) 100% 66% / 0.12) 65deg,
+        hsl(var(--aura-hue) 100% 78%) 100deg,
+        #ffffff 112deg,
+        hsl(var(--aura-hue) 100% 58%) 126deg,
+        hsl(var(--aura-hue) 100% 58% / 0.08) 155deg,
+        transparent 200deg,
+        transparent 270deg,
+        var(--pink) 310deg,
+        transparent 345deg
+    );
+    -webkit-mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - 1.2px),
+        #000 calc(100% - 0.6px)
+    );
+    mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - 1.2px),
+        #000 calc(100% - 0.6px)
+    );
+    filter: drop-shadow(0 0 4px var(--pink));
+    animation: spin calc(12s / var(--aura-speed)) linear infinite;
+}
+
+.ring-two {
+    width: 288px;
+    height: 288px;
+    background: conic-gradient(
+        from 130deg,
+        transparent 0deg,
+        hsl(var(--aura-hue) 100% 74% / 0.12) 45deg,
+        hsl(var(--aura-hue) 100% 69%) 75deg,
+        var(--white-pink) 82deg,
+        var(--pink) 90deg,
+        transparent 120deg,
+        transparent 205deg,
+        var(--light-pink) 245deg,
+        hsl(var(--aura-hue) 100% 62% / 0.12) 270deg,
+        transparent 320deg
+    );
+    -webkit-mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - 1.1px),
+        #000 calc(100% - 0.55px)
+    );
+    mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - 1.1px),
+        #000 calc(100% - 0.55px)
+    );
+    filter: drop-shadow(0 0 3px var(--light-pink));
+    animation: spin-reverse calc(18s / var(--aura-speed)) linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+.orb {
+    position: relative;
+    width: 172px;
+    height: 172px;
+    border-radius: 50%;
+    overflow: hidden;
+    isolation: isolate;
+    background: radial-gradient(
+        circle at 35% 27%,
+        hsl(var(--aura-hue) 100% 97%) 0%,
+        hsl(var(--aura-hue) 100% 86%) 8%,
+        hsl(var(--aura-hue) 100% 70%) 23%,
+        hsl(var(--aura-hue) 100% 58%) 42%,
+        hsl(var(--aura-hue) 100% 35%) 68%,
+        hsl(var(--aura-hue) 100% 13%) 100%
+    );
+    box-shadow:
+        0 0 calc(15px * var(--aura-glow)) hsl(var(--aura-hue) 100% 62% / 0.95),
+        0 0 calc(38px * var(--aura-glow)) hsl(var(--aura-hue) 100% 52% / 0.7),
+        0 0 calc(72px * var(--aura-glow)) hsl(var(--aura-hue) 100% 52% / 0.3),
+        inset 0 0 18px hsl(var(--aura-hue) 100% 97% / 0.6),
+        inset -12px -15px 35px hsl(var(--aura-hue) 100% 11% / 0.65);
+    animation: orb-float calc(5s / var(--aura-speed)) ease-in-out infinite;
+}
+
+.orb::before {
+    content: "";
+    position: absolute;
+    inset: -45%;
+    border-radius: 42%;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        hsl(var(--aura-hue) 100% 97% / 0.95) 45deg,
+        hsl(var(--aura-hue) 100% 71% / 0.85) 85deg,
+        transparent 125deg,
+        hsl(var(--aura-hue) 100% 86% / 0.9) 180deg,
+        hsl(var(--aura-hue) 100% 56% / 0.7) 230deg,
+        transparent 280deg,
+        hsl(var(--aura-hue) 100% 97% / 0.8) 330deg,
+        transparent 360deg
+    );
+    filter: blur(13px);
+    mix-blend-mode: screen;
+    animation: inner-swirl calc(7s / var(--aura-speed)) linear infinite;
+}
+
+.orb::after {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background:
+        radial-gradient(
+            ellipse at 30% 30%,
+            hsl(var(--aura-hue) 100% 100% / 0.88) 0%,
+            hsl(var(--aura-hue) 100% 91% / 0.42) 9%,
+            transparent 29%
+        ),
+        conic-gradient(
+            from 180deg at 55% 50%,
+            transparent 0deg,
+            hsl(var(--aura-hue) 100% 78% / 0.2) 55deg,
+            hsl(var(--aura-hue) 100% 58% / 0.82) 105deg,
+            hsl(var(--aura-hue) 100% 92% / 0.85) 145deg,
+            hsl(var(--aura-hue) 100% 52% / 0.35) 205deg,
+            transparent 270deg,
+            hsl(var(--aura-hue) 100% 66% / 0.75) 320deg,
+            transparent 360deg
+        );
+    filter: blur(9px);
+    mix-blend-mode: screen;
+    animation: inner-swirl-reverse calc(9s / var(--aura-speed)) linear infinite;
+}
+
+@keyframes inner-swirl {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.12); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes inner-swirl-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+@keyframes orb-float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-3px) scale(1.025); }
+}
+
+/*
+ * Styles. `data-aura` on <html> picks one; the default ("orb") is the original
+ * design, untouched. Every style keeps an `.orb` element because the live
+ * listening/speaking pulse is applied to it.
+ */
+html[data-aura="twin"] .ring-one { width: 300px; height: 300px; }
+html[data-aura="twin"] .ring-two { width: 232px; height: 232px; }
+html[data-aura="twin"] .orb { width: 128px; height: 128px; }
+
+html[data-aura="core"] .ring,
+html[data-aura="core"] .atmosphere { display: none; }
+html[data-aura="core"] .orb { width: 150px; height: 150px; }
+
+.vortex,
+.bloom,
+.helix,
+.shock {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    display: none;
+}
+
+/* Vortex: a spiral of light pulled into the core. */
+html[data-aura="vortex"] .ring,
+html[data-aura="vortex"] .atmosphere { display: none; }
+html[data-aura="vortex"] .vortex {
+    display: block;
+    width: 290px;
+    height: 290px;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        hsl(var(--aura-hue) 100% 70% / 0.15) 40deg,
+        var(--pink) 90deg,
+        transparent 150deg,
+        transparent 200deg,
+        hsl(var(--aura-hue) 100% 85% / 0.9) 260deg,
+        transparent 330deg
+    );
+    -webkit-mask: radial-gradient(farthest-side, transparent 22%, #000 55%, transparent 92%);
+    mask: radial-gradient(farthest-side, transparent 22%, #000 55%, transparent 92%);
+    filter: blur(3px) drop-shadow(0 0 8px var(--pink));
+    animation: spin calc(4.5s / var(--aura-speed)) linear infinite;
+}
+html[data-aura="vortex"] .orb { width: 116px; height: 116px; }
+
+/* Bloom: petals of light opening and closing. */
+html[data-aura="bloom"] .ring { display: none; }
+html[data-aura="bloom"] .bloom {
+    display: block;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(
+        circle,
+        hsl(var(--aura-hue) 100% 88% / 0.55) 0%,
+        hsl(var(--aura-hue) 100% 62% / 0.28) 30%,
+        transparent 62%
+    );
+    filter: blur(10px);
+    animation: bloom-pulse calc(6s / var(--aura-speed)) ease-in-out infinite;
+}
+@keyframes bloom-pulse {
+    0%, 100% { transform: scale(0.82) rotate(0deg); opacity: 0.7; }
+    50% { transform: scale(1.14) rotate(24deg); opacity: 1; }
+}
+html[data-aura="bloom"] .orb { width: 132px; height: 132px; }
+
+/* Helix: two counter-rotating light bands. */
+html[data-aura="helix"] .atmosphere { display: none; }
+html[data-aura="helix"] .helix {
+    display: block;
+    width: 268px;
+    height: 268px;
+    background: conic-gradient(
+        from 45deg,
+        transparent 0deg,
+        hsl(var(--aura-hue) 100% 78% / 0.85) 30deg,
+        transparent 70deg,
+        transparent 180deg,
+        hsl(var(--aura-hue) 100% 66% / 0.85) 210deg,
+        transparent 250deg
+    );
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 4px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 8px), #000 calc(100% - 4px));
+    filter: drop-shadow(0 0 6px var(--pink));
+    animation: spin calc(3.2s / var(--aura-speed)) linear infinite;
+}
+html[data-aura="helix"] .ring-one { animation-duration: calc(7s / var(--aura-speed)); }
+html[data-aura="helix"] .orb { width: 140px; height: 140px; }
+
+/* Core: one bright heart with shockwaves leaving it. */
+html[data-aura="core"] .shock {
+    display: block;
+    width: 172px;
+    height: 172px;
+    border: 2px solid hsl(var(--aura-hue) 100% 74% / 0.75);
+    animation: shock-out calc(3.4s / var(--aura-speed)) ease-out infinite;
+}
+html[data-aura="core"] .shock2 { animation-delay: calc(1.7s / var(--aura-speed)); }
+@keyframes shock-out {
+    0% { transform: scale(0.55); opacity: 0.9; }
+    100% { transform: scale(2.1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ring,
+    .orb,
+    .orb::before,
+    .orb::after,
+    .atmosphere {
+        animation-duration: 30s;
+    }
+}
+
+/*
+ * Shader modes. A WebGL canvas draws the aura instead of the CSS shapes above,
+ * so the two never run at once. `data-shader` is written at runtime only — the
+ * default (no attribute) keeps the original CSS aura, untouched.
+ *
+ * If the canvas ever fails to get a context, or the context is lost, the script
+ * removes the attribute and the CSS aura below is showing again. That is what
+ * stops the aura from vanishing: there is always something drawn.
+ */
+#shader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 320px;
+    height: 320px;
+    transform: translate(-50%, -50%) scale(var(--aura-size));
+    transform-origin: center center;
+    display: none;
+    pointer-events: none;
+}
+
+html[data-shader]:not([data-shader="none"]) #shader {
+    display: block;
+}
+
+/* The CSS shapes step aside only while a shader is really drawing. */
+html[data-shader]:not([data-shader="none"]) .aura-stage {
+    display: none;
+}
+
+/* Shown for a moment if a shader mode cannot start, then fades out. */
+#shader-note {
+    position: absolute;
+    left: 50%;
+    bottom: 6px;
+    transform: translateX(-50%);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: hsl(var(--aura-hue) 100% 82% / 0.85);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+}
+
+#shader-note.show {
+    opacity: 1;
+}
+</style>
+</head>
+<body>
+    <canvas id="shader" width="640" height="640" aria-hidden="true"></canvas>
+    <div id="shader-note"></div>
+    <main class="aura-stage" aria-label="Animated AI aura">
+        <div class="atmosphere"></div>
+        <div class="bloom"></div>
+        <div class="vortex"></div>
+        <div class="helix"></div>
+        <div class="shock"></div>
+        <div class="shock shock2"></div>
+        <div class="ring ring-two"></div>
+        <div class="ring ring-one"></div>
+        <div class="orb"></div>
+    </main>
+
+    <script>
+    /*
+     * Four real WebGL fragment shaders. Each one is a distinct scene, not a
+     * recolour: cosmic is drifting starfields over a nebular bloom, portal is a
+     * tunnel of concentric light, cyber grid is a perspective wireframe racing
+     * toward the viewer, nebula is layered fractal noise in the aura's hue.
+     *
+     * All four are driven by the same four values the settings pane writes
+     * (`--aura-hue`, `--aura-glow`, `--aura-speed`) plus the live microphone
+     * level, so the shader reacts to the voice exactly like the CSS aura does.
+     */
+    window.ZyraxonShaders = (function () {
+      var VERT = [
+        'attribute vec2 p;',
+        'void main(){ gl_Position = vec4(p, 0.0, 1.0); }'
+      ].join('\n');
+
+      // Shared header: uniforms + the hash/noise helpers every scene uses.
+      var HEAD = [
+        'precision highp float;',
+        'uniform vec2 u_res;',
+        'uniform float u_time;',
+        'uniform float u_hue;',
+        'uniform float u_glow;',
+        'uniform float u_level;',
+        'uniform float u_state;',   // 0 idle, 1 listening, 2 speaking
+        'float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+        'float noise(vec2 p){',
+        '  vec2 i = floor(p), f = fract(p);',
+        '  vec2 u = f * f * (3.0 - 2.0 * f);',
+        '  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),',
+        '             mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);',
+        '}',
+        'float fbm(vec2 p){',
+        '  float v = 0.0, a = 0.5;',
+        '  for (int i = 0; i < 6; i++) { v += a * noise(p); p *= 2.02; a *= 0.5; }',
+        '  return v;',
+        '}',
+        'vec3 hsv2rgb(vec3 c){',
+        '  vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);',
+        '  return c.z * mix(vec3(1.0), rgb, c.y);',
+        '}'
+      ].join('\n');
+
+      // Everything is drawn inside a circle so the aura keeps its round shape
+      // against the video behind it.
+      var TAIL = [
+        'void main(){',
+        '  vec2 uv = (gl_FragCoord.xy - 0.5 * u_res) / min(u_res.x, u_res.y);',
+        '  float r = length(uv);',
+        '  vec3 col = scene(uv, r);',
+        '  float disc = smoothstep(0.5, 0.44, r);',
+        '  float alpha = clamp(length(col) * 1.35, 0.0, 1.0) * disc;',
+        '  gl_FragColor = vec4(col * disc, alpha);',
+        '}'
+      ].join('\n');
+
+      var BODIES = {
+        // Cosmic: a slow starfield wheeling around a bright nebular core.
+        cosmic: [
+          'vec3 scene(vec2 uv, float r){',
+          '  float t = u_time;',
+          '  vec2 q = uv * (1.0 + 0.25 * u_level);',
+          '  float ang = atan(q.y, q.x);',
+          '  vec2 w = vec2(ang * 1.6 + t * 0.05, r * 3.2 - t * 0.28);',
+          '  float neb = fbm(w * 1.7 + fbm(w * 2.3 + t * 0.08));',
+          '  float core = exp(-r * r * 7.0) * (0.85 + 0.5 * u_level);',
+          '  float stars = 0.0;',
+          '  for (int i = 0; i < 3; i++) {',
+          '    float fi = float(i);',
+          '    vec2 g = q * (6.0 + fi * 5.0) + vec2(t * (0.04 + fi * 0.03), -t * 0.02);',
+          '    vec2 c = floor(g);',
+          '    float s = hash(c + fi * 37.0);',
+          '    if (s > 0.93) {',
+          '      vec2 o = fract(g) - 0.5;',
+          '      stars += (1.0 - smoothstep(0.0, 0.09, length(o))) * (s - 0.93) * 8.0;',
+          '    }',
+          '  }',
+          '  vec3 h = hsv2rgb(vec3(u_hue / 360.0, 0.62, 1.0));',
+          '  vec3 tint = hsv2rgb(vec3(fract(u_hue / 360.0 + 0.08), 0.45, 1.0));',
+          '  vec3 col = mix(tint, h, neb) * neb * (0.55 + 0.45 * u_glow);',
+          '  col += h * core * (0.9 + 0.8 * u_glow);',
+          '  col += vec3(1.0) * stars * (0.5 + 0.5 * u_glow);',
+          '  return col;',
+          '}'
+        ].join('\n'),
+
+        // Portal: a tunnel of rings rushing out of the centre.
+        portal: [
+          'vec3 scene(vec2 uv, float r){',
+          '  float t = u_time;',
+          '  float ang = atan(uv.y, uv.x);',
+          '  float depth = 1.0 / max(r, 0.035);',
+          '  float rings = sin(depth * 2.6 - t * 2.4 + sin(ang * 5.0) * 0.35);',
+          '  rings = pow(clamp(rings * 0.5 + 0.5, 0.0, 1.0), 3.0);',
+          '  float swirl = sin(ang * 6.0 + depth * 0.6 + t * 1.1) * 0.5 + 0.5;',
+          '  float lip = smoothstep(0.30, 0.48, r) * (1.0 - smoothstep(0.48, 0.5, r));',
+          '  float mouth = exp(-r * r * 5.5) * (0.8 + 0.9 * u_level);',
+          '  vec3 h = hsv2rgb(vec3(u_hue / 360.0, 0.75, 1.0));',
+          '  vec3 b = hsv2rgb(vec3(fract(u_hue / 360.0 + 0.5), 0.55, 1.0));',
+          '  vec3 col = mix(b, h, rings) * (rings * (0.9 + 0.6 * u_glow) + swirl * 0.25 * rings);',
+          '  col += h * mouth * (1.1 + 0.7 * u_glow);',
+          '  col += h * lip * (0.5 + 0.5 * u_glow);',
+          '  return col;',
+          '}'
+        ].join('\n'),
+
+        // Cyber grid: a perspective wireframe floor/ceiling racing past.
+        cyber: [
+          'vec3 scene(vec2 uv, float r){',
+          '  float t = u_time;',
+          '  float z = 1.0 / max(abs(uv.y) + 0.09, 0.05);',
+          '  float x = uv.x * z;',
+          '  vec2 g = vec2(x * 1.1, z - t * 2.6);',
+          '  vec2 cell = abs(fract(g) - 0.5);',
+          '  float line = 1.0 - smoothstep(0.0, 0.055, min(cell.x, cell.y));',
+          '  float fade = exp(-abs(uv.y) * 3.4) * exp(-r * 1.1);',
+          '  float pulse = 0.55 + 0.45 * sin(z * 1.3 - t * 2.2 + u_hue * 0.02);',
+          '  float core = exp(-r * r * 8.0) * (0.8 + 0.9 * u_level);',
+          '  vec3 h = hsv2rgb(vec3(u_hue / 360.0, 0.85, 1.0));',
+          '  vec3 c2 = hsv2rgb(vec3(fract(u_hue / 360.0 + 0.42), 0.8, 1.0));',
+          '  vec3 col = mix(c2, h, line) * line * fade * pulse * (1.0 + 0.5 * u_glow);',
+          '  col += h * core * (1.0 + 0.8 * u_glow);',
+          '  col += h * fade * 0.10 * (0.6 + 0.4 * u_glow);',
+          '  return col;',
+          '}'
+        ].join('\n'),
+
+        // Nebula: layered fractal clouds in the aura's own colour.
+        nebula: [
+          'vec3 scene(vec2 uv, float r){',
+          '  float t = u_time;',
+          '  vec2 p = uv * 2.3;',
+          '  float n1 = fbm(p + vec2(t * 0.05, -t * 0.04));',
+          '  float n2 = fbm(p * 1.9 + n1 * 1.6 + vec2(-t * 0.03, t * 0.05));',
+          '  float n3 = fbm(p * 3.4 - n2 * 1.2 + t * 0.02);',
+          '  float cloud = clamp(n1 * 0.5 + n2 * 0.35 + n3 * 0.25, 0.0, 1.0);',
+          '  cloud *= smoothstep(0.55, 0.12, r);',
+          '  float hot = pow(clamp(n2, 0.0, 1.0), 3.0);',
+          '  float core = exp(-r * r * 6.0) * (0.7 + 0.9 * u_level);',
+          '  vec3 h = hsv2rgb(vec3(u_hue / 360.0, 0.55, 1.0));',
+          '  vec3 b = hsv2rgb(vec3(fract(u_hue / 360.0 + 0.12), 0.85, 1.0));',
+          '  vec3 col = mix(b, h, cloud) * cloud * (0.85 + 0.5 * u_glow);',
+          '  col += vec3(1.0) * hot * 0.35 * u_glow;',
+          '  col += h * core * (0.95 + 0.75 * u_glow);',
+          '  return col;',
+          '}'
+        ].join('\n')
+      };
+
+      var NAMES = ['cosmic', 'portal', 'cyber', 'nebula'];
+
+      function compile(gl, type, src) {
+        var s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          gl.deleteShader(s);
+          return null;
+        }
+        return s;
+      }
+
+      function build(gl, body) {
+        var vs = compile(gl, gl.VERTEX_SHADER, VERT);
+        var fs = compile(gl, gl.FRAGMENT_SHADER, HEAD + '\n' + body + '\n' + TAIL);
+        if (!vs || !fs) return null;
+        var prog = gl.createProgram();
+        gl.attachShader(prog, vs);
+        gl.attachShader(prog, fs);
+        // Must be bound before linking, otherwise the single buffer set up once
+        // at context creation is not the attribute the program reads.
+        gl.bindAttribLocation(prog, 0, 'p');
+        gl.linkProgram(prog);
+        gl.deleteShader(vs);
+        gl.deleteShader(fs);
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
+        return prog;
+      }
+
+      var canvas = null, gl = null, prog = null, current = null, raf = 0;
+      var u = {};
+      var started = 0;
+      var look = { hue: 325, glow: 1, speed: 1 };
+      var state = { listening: false, speaking: false, level: 0 };
+      var failed = false;
+
+      function note(msg) {
+        var el = document.getElementById('shader-note');
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add('show');
+        setTimeout(function () { el.classList.remove('show'); }, 2600);
+      }
+
+      function stopLoop() {
+        if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      }
+
+      function frame() {
+        raf = requestAnimationFrame(frame);
+        if (!gl || !prog) return;
+        var t = (performance.now() - started) / 1000 * look.speed;
+        gl.useProgram(prog);
+        gl.uniform2f(u.res, canvas.width, canvas.height);
+        gl.uniform1f(u.time, t);
+        gl.uniform1f(u.hue, look.hue);
+        gl.uniform1f(u.glow, look.glow);
+        gl.uniform1f(u.level, state.level);
+        gl.uniform1f(u.state, state.listening ? 1.0 : (state.speaking ? 2.0 : 0.0));
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+      }
+
+      function fail(why) {
+        failed = true;
+        stopLoop();
+        document.documentElement.removeAttribute('data-shader');
+        note(why);
+      }
+
+      function pick(name) {
+        if (!canvas) {
+          canvas = document.getElementById('shader');
+          if (!canvas) return false;
+          var opts = { alpha: true, antialias: true, premultipliedAlpha: true, depth: false, stencil: false };
+          gl = canvas.getContext('webgl', opts) || canvas.getContext('experimental-webgl', opts);
+          if (!gl) { failed = true; note('WebGL নেই — সিএসএস ওরা চলছে'); return false; }
+          // A lost context must never leave a blank screen: fall straight back.
+          canvas.addEventListener('webglcontextlost', function (e) {
+            e.preventDefault();
+            fail('গ্রাফিক্স রিসেট — সিএসএস ওরা ফিরে এসেছে');
+          }, false);
+          canvas.addEventListener('webglcontextrestored', function () {
+            failed = false;
+            if (current) start(current);
+          }, false);
+          // A full-screen triangle: one draw call, no buffers to leak.
+          var buf = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+          gl.enableVertexAttribArray(0);
+          gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+        }
+        if (failed) return false;
+        var body = BODIES[name];
+        if (!body) return false;
+        var p = build(gl, body);
+        if (!p) { note('শেডার তৈরি হলো না — সিএসএস ওরা চলছে'); return false; }
+        if (prog) gl.deleteProgram(prog);
+        prog = p;
+        gl.useProgram(prog);
+        u.res = gl.getUniformLocation(prog, 'u_res');
+        u.time = gl.getUniformLocation(prog, 'u_time');
+        u.hue = gl.getUniformLocation(prog, 'u_hue');
+        u.glow = gl.getUniformLocation(prog, 'u_glow');
+        u.level = gl.getUniformLocation(prog, 'u_level');
+        u.state = gl.getUniformLocation(prog, 'u_state');
+        return true;
+      }
+
+      function start(name) {
+        current = name;
+        if (!pick(name)) { document.documentElement.removeAttribute('data-shader'); return; }
+        document.documentElement.setAttribute('data-shader', name);
+        if (!started) started = performance.now();
+        stopLoop();
+        frame();
+      }
+
+      function stop() {
+        stopLoop();
+        document.documentElement.removeAttribute('data-shader');
+      }
+
+      function resize() {
+        if (!canvas) return;
+        var box = canvas.getBoundingClientRect();
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var w = Math.max(64, Math.round((box.width || 320) * dpr));
+        var h = Math.max(64, Math.round((box.height || 320) * dpr));
+        if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+      }
+
+      return {
+        names: NAMES,
+        /** null or "none" restores the CSS aura. */
+        set: function (name) {
+          if (!name || name === 'none') { stop(); current = null; return; }
+          if (NAMEok(name)) start(name);
+        },
+        look: function (hue, glow, speed) {
+          if (hue !== undefined && hue !== null) look.hue = hue;
+          if (glow) look.glow = glow;
+          if (speed) look.speed = speed;
+        },
+        state: function (listening, speaking, level) {
+          state.listening = !!listening;
+          state.speaking = !!speaking;
+          state.level = level || 0;
+        },
+        resize: resize,
+        current: function () { return current; }
+      };
+
+      function NAMEok(n) { for (var i = 0; i < NAMES.length; i++) if (NAMES[i] === n) return true; return false; }
+    })();
+    </script>
+</body>
+</html>

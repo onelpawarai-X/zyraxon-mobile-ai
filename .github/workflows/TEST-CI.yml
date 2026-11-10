@@ -1,0 +1,105 @@
+name: TEST-CI
+
+# A test build for checking a change on a real phone. It never publishes a
+# release: this workflow has no tag trigger and read-only token permissions, so
+# it cannot touch releases even if it tried. The APK it produces is signed with
+# the debug key and uploaded as a run artifact, which is exactly what is wanted
+# for installing by hand and testing.
+#
+# Run it from Actions -> CI (test build) -> Run workflow.
+
+on:
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "What to test in this build"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        run: |
+          SDK="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          SDKMANAGER="$(ls -d "$SDK"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | sort -V | tail -1)"
+          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36.1" "build-tools;36.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.3.1"
+
+      - name: Unit tests
+        run: gradle :app:testDebugUnitTest --stacktrace
+
+      - name: Read version from build.gradle.kts
+        id: ver
+        run: |
+          VERSION=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts | head -1)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Testing ZYRAXON v$VERSION"
+
+      - name: Build debug APK
+        run: |
+          base64 -d debug.keystore.base64 > debug.keystore
+          gradle :app:assembleDebug \
+            -x lintVitalRelease -x lintVitalAnalyzeRelease \
+            --stacktrace
+
+      - name: Collect the test APK
+        id: apk
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          NAME="ZYRAXON-v${VERSION}-test.apk"
+          cp "$APK" "$RUNNER_TEMP/$NAME"
+          (cd "$RUNNER_TEMP" && sha256sum "$NAME" > "$NAME.sha256")
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          ls -la "$RUNNER_TEMP/$NAME"
+
+      - name: Upload the test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZYRAXON-test-apk
+          path: |
+            ${{ runner.temp }}/${{ steps.apk.outputs.name }}
+            ${{ runner.temp }}/${{ steps.apk.outputs.name }}.sha256
+          retention-days: 30
+
+      - name: Job summary
+        run: |
+          {
+            echo "### ZYRAXON v${{ steps.ver.outputs.version }} — test build"
+            echo ""
+            echo "This is a **debug** APK for testing. It is not a release."
+            echo ""
+            echo "- Artifact: \`ZYRAXON-test-apk\` (\`${{ steps.apk.outputs.name }}\`)"
+            echo "- sha256: \`$(cut -d' ' -f1 "$RUNNER_TEMP/${{ steps.apk.outputs.name }}.sha256")\`"
+            echo "- Note: ${{ inputs.note }}"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,182 @@
+plugins {
+  alias(libs.plugins.android.application)
+  alias(libs.plugins.kotlin.compose)
+  alias(libs.plugins.google.devtools.ksp)
+}
+
+android {
+  namespace = "com.zyraxon.assistant"
+  compileSdk { version = release(36) { minorApiLevel = 1 } }
+
+  defaultConfig {
+    applicationId = "com.zyraxon.assistant"
+    minSdk = 21
+    // 28 on purpose, not an oversight: Android 10+ blocks execve of files in the
+    // app's data dir, and the bundled Linux runs its binaries from there. Raising
+    // this to 29+ silently breaks the whole Linux path. See AGENTS.md.
+    targetSdk = 28
+    versionCode = 53
+    versionName = "6.24.3"
+
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+  }
+
+  // Signing material comes from the environment so no key is ever committed.
+  signingConfigs {
+    create("release") {
+      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
+      storeFile = file(keystorePath)
+      storePassword = System.getenv("STORE_PASSWORD")
+      keyAlias = "upload"
+      keyPassword = System.getenv("KEY_PASSWORD")
+    }
+    create("debugConfig") {
+      storeFile = file("${rootDir}/debug.keystore")
+      storePassword = "android"
+      keyAlias = "androiddebugkey"
+      keyPassword = "android"
+    }
+  }
+
+  buildTypes {
+    release {
+      isCrunchPngs = false
+      isMinifyEnabled = false
+      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      signingConfig = signingConfigs.getByName("release")
+    }
+    debug {
+      signingConfig = signingConfigs.getByName("debugConfig")
+    }
+  }
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    // JGit is built on `java.nio.file`, which is API 26+. The app supports API
+    // 24, so those classes are desugared rather than left to crash on older
+    // phones the moment `git clone` is typed.
+    isCoreLibraryDesugaringEnabled = true
+  }
+  buildFeatures {
+    compose = true
+    buildConfig = true
+  }
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
+      all {
+        it.systemProperty("zyraxon.wakeTimeoutMs", "3000")
+        // A failing assertion must say what it saw. The default SHORT format
+        // prints only "AssertionError at File.kt:line", which hides the actual
+        // values and turns every failure into a guess.
+        it.testLogging {
+          events("failed")
+          exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
+      }
+    }
+  }
+  // Robolectric loads its native runtime into a shared temp directory. Parallel
+  // forks race on it (`FileSystemAlreadyExistsException`), so the suite runs in
+  // one fork. Correctness over speed: 188 tests still finish in under a minute.
+  tasks.withType<Test>().configureEach { maxParallelForks = 1 }
+  dependenciesInfo {
+    includeInApk = false
+    includeInBundle = true
+  }
+
+  // The terminal ships a static busybox per ABI under jniLibs. Android only lets
+  // an app execute a binary that lives in the native library directory, so these
+  // must be extracted to disk rather than mapped straight from the APK, and they
+  // must not be stripped or AGP would rewrite the ELF header busybox needs.
+  packaging {
+    jniLibs {
+      useLegacyPackaging = true
+      keepDebugSymbols += "**/libbusybox.so"
+    }
+  }
+
+  // The Linux payload under assets/linux/ is already compressed (zip and xz), so
+  // storing it as-is skips a pointless second pass at build time and lets it be
+  // streamed out of the APK without inflating the whole member into memory.
+  androidResources {
+    noCompress += listOf("zip", "deb", "xz", "gz", "Packages", "glb")
+  }
+}
+
+// Some unused dependencies are commented out below instead of being removed.
+// This makes it easy to add them back in the future if needed.
+dependencies {
+  implementation(platform(libs.androidx.compose.bom))
+  // implementation(libs.accompanist.permissions)
+  implementation(libs.androidx.activity.compose)
+  // implementation(libs.androidx.camera.camera2)
+  // implementation(libs.androidx.camera.core)
+  // implementation(libs.androidx.camera.lifecycle)
+  // implementation(libs.androidx.camera.view)
+  implementation(libs.androidx.compose.material.icons.core)
+  implementation(libs.androidx.compose.material.icons.extended)
+  implementation(libs.androidx.compose.material3)
+  implementation(libs.androidx.compose.ui)
+  implementation(libs.androidx.compose.ui.graphics)
+  implementation(libs.androidx.compose.ui.tooling.preview)
+  implementation(libs.androidx.core.ktx)
+  // registerForActivityResult needs a Fragment version that reports its result
+  // correctly; without it lint fails the release build.
+  implementation(libs.androidx.fragment.ktx)
+  // implementation(libs.androidx.datastore.preferences)
+  implementation(libs.androidx.lifecycle.runtime.compose)
+  implementation(libs.androidx.lifecycle.runtime.ktx)
+  implementation(libs.androidx.lifecycle.viewmodel.compose)
+  // implementation(libs.androidx.navigation.compose)
+  implementation(libs.androidx.room.ktx)
+  implementation(libs.androidx.room.runtime)
+  implementation(libs.coil.compose)
+  implementation(libs.converter.moshi)
+  implementation(libs.kotlinx.coroutines.android)
+  implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.logging.interceptor)
+  implementation(libs.moshi.kotlin)
+  // On-device inference: runs a downloaded model (.task / Gemma) on the phone
+  // itself, with no network at all. Optional at runtime — the app works without it.
+  implementation(libs.mediapipe.tasks.genai)
+  // LiteRT-LM: the runtime that Gemma 4 and Qwen3 (.litertlm) need. MediaPipe above
+  // is in maintenance mode and stays only for older .task bundles.
+  implementation(libs.litertlm.android)
+  implementation(libs.okhttp)
+  // Serves the 3D avatar page and models from assets to a WebView over a safe https origin.
+  implementation(libs.androidx.webkit)
+  // Real `git clone` in the terminal. busybox has no git, so the terminal would
+  // otherwise be the one shell that cannot clone a repository.
+  implementation(libs.jgit)
+  implementation(libs.slf4j.nop)
+  // System-level access the user opts into. Shizuku lets ZYRAXON run commands as
+  // the `shell` user (uid 2000) or as root (uid 0) on a rooted phone, without
+  // the app itself holding any privileged permission. It is the same mechanism
+  // a system shell on Android uses.
+  implementation(libs.shizuku.api)
+  implementation(libs.shizuku.provider)
+  coreLibraryDesugaring(libs.desugar.jdk.libs.nio)
+  // implementation(libs.play.services.location)
+  implementation(libs.retrofit)
+  // On-device OCR for words drawn inside pictures, where the accessibility tree
+  // has no element to read. Runs offline; nothing leaves the phone for it.
+  implementation(libs.mlkit.text.recognition)
+  implementation(libs.mlkit.text.recognition.devanagari)
+  testImplementation(libs.androidx.compose.ui.test.junit4)
+  testImplementation(libs.androidx.core)
+  testImplementation(libs.androidx.junit)
+  testImplementation(libs.junit)
+  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.robolectric)
+  testImplementation(libs.okhttp.mockwebserver)
+  androidTestImplementation(platform(libs.androidx.compose.bom))
+  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+  androidTestImplementation(libs.androidx.espresso.core)
+  androidTestImplementation(libs.androidx.junit)
+  androidTestImplementation(libs.androidx.runner)
+  debugImplementation(libs.androidx.compose.ui.test.manifest)
+  debugImplementation(libs.androidx.compose.ui.tooling)
+  "ksp"(libs.androidx.room.compiler)
+  "ksp"(libs.moshi.kotlin.codegen)
+}

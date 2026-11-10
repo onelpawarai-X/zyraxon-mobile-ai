@@ -1,0 +1,4782 @@
+package ai.zyraxon.assistant.viewmodel
+
+import ai.zyraxon.assistant.core.safe
+
+import ai.zyraxon.assistant.DeviceBridge
+import ai.zyraxon.assistant.ai.ToolRegistry
+import ai.zyraxon.assistant.ai.PartialJson
+import ai.zyraxon.assistant.chat.ChatSession
+import ai.zyraxon.assistant.chat.LiveCode
+import ai.zyraxon.assistant.model.AgentMode
+import ai.zyraxon.assistant.model.Conversation
+import ai.zyraxon.assistant.model.MediaItem
+import ai.zyraxon.assistant.model.MediaJob
+import ai.zyraxon.assistant.model.SubAgentInfo
+import ai.zyraxon.assistant.model.ToolCallRecord
+import ai.zyraxon.assistant.model.TurnEvent
+import ai.zyraxon.assistant.tools.GitTools
+import ai.zyraxon.assistant.tools.PreviewBridge
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.update
+import ai.zyraxon.assistant.ai.CloudScreen
+import ai.zyraxon.assistant.ai.ContextWindow
+import ai.zyraxon.assistant.ai.ScreenOcr
+import ai.zyraxon.assistant.i18n.t
+import ai.zyraxon.assistant.mcp.McpAuth
+import ai.zyraxon.assistant.mcp.McpCatalog
+import ai.zyraxon.assistant.mcp.McpStatus
+import ai.zyraxon.assistant.ai.ZyraxonAiEngine
+import ai.zyraxon.assistant.db.ZyraxonDatabase
+import ai.zyraxon.assistant.db.ZyraxonRepository
+import ai.zyraxon.assistant.model.AiModel
+import ai.zyraxon.assistant.model.AppTab
+import ai.zyraxon.assistant.model.BgAnimationMode
+import ai.zyraxon.assistant.model.ChatMessage
+import ai.zyraxon.assistant.model.MemoryItem
+import ai.zyraxon.assistant.model.MessageRole
+import ai.zyraxon.assistant.model.Persona
+import ai.zyraxon.assistant.model.SystemStatus
+import ai.zyraxon.assistant.model.TaskItem
+import ai.zyraxon.assistant.model.TerminalLine
+import ai.zyraxon.assistant.model.TerminalSession
+import ai.zyraxon.assistant.model.TerminalShell
+import ai.zyraxon.assistant.model.ToolExecutionItem
+import ai.zyraxon.assistant.model.WorkspaceFile
+import ai.zyraxon.assistant.shell.GitRuntime
+import ai.zyraxon.assistant.shell.BackgroundCommandService
+import ai.zyraxon.assistant.shell.ShellRuntime
+import ai.zyraxon.assistant.shell.ShizukuBundle
+import ai.zyraxon.assistant.shell.ShizukuState
+import ai.zyraxon.assistant.shell.SystemShell
+import ai.zyraxon.assistant.shell.LinuxRuntime
+import ai.zyraxon.assistant.ai.OnDeviceModel
+import ai.zyraxon.assistant.ai.ProviderCatalog
+import ai.zyraxon.assistant.ai.ProviderSpec
+import ai.zyraxon.assistant.voice.LiveVoiceSession
+import ai.zyraxon.assistant.voice.NativeVoiceManager
+import ai.zyraxon.assistant.voice.SpeechChunker
+import ai.zyraxon.assistant.voice.SttDecision
+import ai.zyraxon.assistant.update.Updater
+import ai.zyraxon.assistant.update.UpdateRelease
+import ai.zyraxon.assistant.update.UpdateState
+import ai.zyraxon.assistant.cloud.CloudBridge
+import ai.zyraxon.assistant.cloud.CloudClient
+import ai.zyraxon.assistant.cloud.CloudStore
+import ai.zyraxon.assistant.cloud.CloudConversation
+import android.app.Application
+import android.content.Context
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import org.json.JSONObject
+import java.util.UUID
+
+class ZyraxonViewModel(application: Application) : AndroidViewModel(application) {
+
+    /**
+     * Panel tools that only rearrange the UI. They are instant, so they get no
+     * live row on the chat — the panel opening is its own feedback.
+     */
+    private val UI_ONLY_TOOLS = setOf(
+        "todo_write", "code_box", "files_panel", "terminal_open", "floating_bubble"
+    )
+
+    private val MEDIA_TOOLS = mapOf(
+        "generate_image" to "image", "generate_audio" to "audio", "generate_video" to "video", "ffmpeg" to "video"
+    )
+
+    private val prefs = application.getSharedPreferences("zyraxon_vm_prefs", Context.MODE_PRIVATE)
+
+    /** When the user last cut the assistant off by talking over it. */
+    private var lastUserInterruptMs = 0L
+
+    /**
+     * True while a spoken reply is paused because the user is talking over it.
+     * When their phrase is submitted the reply is resumed from the interrupted
+     * word, so a user who talks over the assistant is not answered by silence.
+     */
+    private var pausedByUser = false
+
+    // SQLite Local Room Database & Repository
+    val database = ZyraxonDatabase.getDatabase(application)
+    val repository = ZyraxonRepository(database.dao())
+
+    val aiEngine = ZyraxonAiEngine(application)
+    val voiceManager = NativeVoiceManager(application, viewModelScope)
+
+    /**
+     * The cloud agent. A turn routed here runs a whole remote conversation: the
+     * sandbox does the heavy work and streams its thinking, its tool calls and its
+     * answer back over a socket, while tools that belong to this phone are still
+     * executed here. It shares the engine's contract, so nothing downstream needs
+     * to know which brain answered.
+     */
+    val cloudClient = CloudClient()
+    val cloudStore = CloudStore(application)
+    val cloudBridge = CloudBridge(cloudClient, cloudStore) { aiEngine.isOnline() }
+
+    /** The cloud's own provisioning stage during a first turn, for the loader. */
+    private val _cloudNotice = MutableStateFlow("")
+    val cloudNotice: StateFlow<String> = _cloudNotice.asStateFlow()
+    private val cloudRefreshBusy = MutableStateFlow(false)
+
+    private val _cloudStage = MutableStateFlow("")
+    val cloudStage: StateFlow<String> = _cloudStage.asStateFlow()
+
+    /** One-shot: the cloud model takes the default the first time a key exists. */
+    @Volatile private var apexDefaulted = false
+
+    /**
+     * Speech-to-speech with a live model. While it runs the model's own voice is
+     * the only voice: [speak] and the streaming reader both check
+     * [LiveVoiceSession.isActive] so the phone's TTS stays silent, because two
+     * voices answering at once is exactly the defect this mode must not have.
+     */
+    val liveVoice = LiveVoiceSession(application, viewModelScope)
+
+    /** The optional on-device engine: no network, runs a downloaded model. */
+    val onDeviceModel = OnDeviceModel.get(application)
+
+    private val _selectedPersona = MutableStateFlow(restoreSavedPersona())
+    val selectedPersona: StateFlow<Persona> = _selectedPersona.asStateFlow()
+
+    private val _availableModels = MutableStateFlow<List<AiModel>>(emptyList())
+    val availableModels: StateFlow<List<AiModel>> = _availableModels.asStateFlow()
+
+    private val _isLoadingModels = MutableStateFlow(false)
+    val isLoadingModels: StateFlow<Boolean> = _isLoadingModels.asStateFlow()
+
+    /** Per-provider status line: "connected" only after the provider really answered. */
+    private val _providerStatus = MutableStateFlow<Map<String, String>>(emptyMap())
+    val providerStatus: StateFlow<Map<String, String>> = _providerStatus.asStateFlow()
+
+    private val _providerBusy = MutableStateFlow<Set<String>>(emptySet())
+    val providerBusy: StateFlow<Set<String>> = _providerBusy.asStateFlow()
+
+    // The selection is restored from the last session, so a restart comes back to
+    // the model the user picked instead of jumping to whatever the catalogue
+    // happens to list first.
+    private val _selectedModel = MutableStateFlow(restoreSavedModel())
+    val selectedModel: StateFlow<AiModel> = _selectedModel.asStateFlow()
+
+    private val _activeTab = MutableStateFlow(
+        runCatching { AppTab.valueOf(prefs.getString("active_tab", "") ?: "") }
+            .getOrDefault(AppTab.HOME)
+            // Old values that no longer name a screen land on the home.
+            .takeIf { it != AppTab.TASKS && it != AppTab.TOOLS } ?: AppTab.HOME
+    )
+    val activeTab: StateFlow<AppTab> = _activeTab.asStateFlow()
+
+    /** Opens a link the user tapped in the chat inside the app's own preview. */
+    fun showInPreview(url: String) {
+        PreviewBridge.open(getApplication(), url)
+        _activeTab.value = AppTab.PREVIEW
+    }
+
+    private val _themeMode = MutableStateFlow(
+        runCatching { ai.zyraxon.assistant.ui.theme.ZyThemeMode.valueOf(prefs.getString("theme_mode", "") ?: "") }
+            .getOrDefault(ai.zyraxon.assistant.ui.theme.ZyThemeMode.HORROR)
+    )
+    val themeMode: StateFlow<ai.zyraxon.assistant.ui.theme.ZyThemeMode> = _themeMode.asStateFlow()
+
+    fun setThemeMode(mode: ai.zyraxon.assistant.ui.theme.ZyThemeMode) {
+        _themeMode.value = mode
+        ai.zyraxon.assistant.ui.theme.Glass.mode = mode
+        prefs.edit().putString("theme_mode", mode.name).apply()
+    }
+
+    private val _bgMode = MutableStateFlow(
+        runCatching { BgAnimationMode.valueOf(prefs.getString("bg_mode", "") ?: "") }
+            .getOrDefault(BgAnimationMode.LIVING_PINK_AURA)
+    )
+    val bgMode: StateFlow<BgAnimationMode> = _bgMode.asStateFlow()
+
+    /**
+     * The latest screen frame as a data URL, kept in memory only. It is attached
+     * to the next model turn so the assistant can actually see what the user sees
+     * instead of guessing from a window title.
+     */
+    private val _screenFrameDataUrl = MutableStateFlow("")
+    val screenFrameDataUrl: StateFlow<String> = _screenFrameDataUrl.asStateFlow()
+
+    /**
+     * Pictures the user attached, waiting to be sent: one image, or several when
+     * a video was attached (its frames). The next send carries them all as
+     * `image_url` parts, so the model looks at the real pictures.
+     */
+    private val _attachedImages = MutableStateFlow<List<String>>(emptyList())
+    val attachedImages: StateFlow<List<String>> = _attachedImages.asStateFlow()
+
+    /**
+     * A voice note the user attached, held as a data URL because the audio part
+     * of every provider that takes one wants base64 rather than a link.
+     */
+    private val _attachedAudio = MutableStateFlow<List<String>>(emptyList())
+    val attachedAudio: StateFlow<List<String>> = _attachedAudio.asStateFlow()
+
+    /**
+     * A clip the user attached, held as a `data:` URL of the clip itself when it
+     * fits a request, and otherwise as the HTTPS link it was uploaded to. A model
+     * that takes video gets the clip; any other model gets the sampled frames and
+     * the link.
+     */
+    private val _attachedVideo = MutableStateFlow<List<String>>(emptyList())
+    val attachedVideo: StateFlow<List<String>> = _attachedVideo.asStateFlow()
+
+    /**
+     * Uploads of what the user attached, started the moment it is attached so the
+     * links are ready by the time Send is pressed. The cloud agent cannot read the
+     * phone's storage; it gets each file as an HTTPS link it can download.
+     */
+    private val attachedUploads = java.util.Collections.synchronizedList(
+        mutableListOf<kotlinx.coroutines.Deferred<ai.zyraxon.assistant.ai.MediaUploader.Link?>>()
+    )
+
+    /**
+     * How many attachments of each kind were handed to the model as real media
+     * rather than a link. A link for such a file is left out of the prompt, so a
+     * model that already sees the picture is not told to download it again.
+     */
+    private val inlineCounts = java.util.concurrent.ConcurrentHashMap<String, Int>()
+
+    private fun markInlined(kind: String) {
+        inlineCounts.merge(kind, 1) { a, b -> a + b }
+    }
+
+    private fun takeInlined(kind: String): Boolean {
+        while (true) {
+            val cur = inlineCounts[kind] ?: return false
+            if (cur <= 0) return false
+            if (inlineCounts.replace(kind, cur, cur - 1)) return true
+        }
+    }
+
+    private fun clearInlined() {
+        inlineCounts.clear()
+    }
+
+    private fun uploadInBackground(
+        block: () -> ai.zyraxon.assistant.ai.MediaUploader.Link?
+    ): kotlinx.coroutines.Deferred<ai.zyraxon.assistant.ai.MediaUploader.Link?> {
+        val job = viewModelScope.async(Dispatchers.IO) { runCatching(block).getOrNull() }
+        attachedUploads.add(job)
+        return job
+    }
+
+    /**
+     * Waits for the uploads and hands the prompt, links appended, to [then].
+     *
+     * A link is added for every file the chosen model cannot take natively — the
+     * cloud agent is the main case, since it reads files rather than seeing them.
+     * A file the model was already given as real media contributes no link, so it
+     * is never told to fetch what it already has. [caps] is the chosen model's.
+     */
+    private fun withAttachmentLinks(
+        prompt: String,
+        caps: ai.zyraxon.assistant.ai.MediaSupport.Caps? = null,
+        then: (String) -> Unit
+    ) {
+        val jobs = attachedUploads.toList()
+        attachedUploads.clear()
+        if (jobs.isEmpty()) { clearInlined(); then(prompt); return }
+        viewModelScope.launch {
+            val links = withTimeoutOrNull(120_000) { jobs.map { it.await() } }.orEmpty().filterNotNull()
+            val needed = links.filter { link ->
+                val native = when (link.kind) {
+                    "image" -> caps?.images == true
+                    "audio" -> caps?.audio == true
+                    "video" -> caps?.video == true
+                    else -> false
+                }
+                !(native && takeInlined(link.kind))
+            }
+            clearInlined()
+            then(prompt + ai.zyraxon.assistant.ai.MediaUploader.block(needed))
+        }
+    }
+
+    /** A short line shown above the composer when an attachment succeeds or fails. */
+    private val _imageNotice = MutableStateFlow("")
+    val imageNotice: StateFlow<String> = _imageNotice.asStateFlow()
+
+    /**
+     * While a job is running the screen is re-read on a timer and pushed to the
+     * model, so it works from what is on the phone right now instead of from a
+     * frame captured when the turn began. On by default — the user asked for the
+     * assistant to always see the screen.
+     */
+    private val _alwaysSeeScreen = MutableStateFlow(prefs.getBoolean("always_see_screen", true))
+    val alwaysSeeScreen: StateFlow<Boolean> = _alwaysSeeScreen.asStateFlow()
+
+    /** True when the last screen read came back as text (no screenshot API). */
+    private val _screenTextSnapshot = MutableStateFlow("")
+    val screenTextSnapshot: StateFlow<String> = _screenTextSnapshot.asStateFlow()
+
+    /** Short-lived cache for the accessibility tree walk; see [screenContext]. */
+    @Volatile private var screenCacheText = ""
+    @Volatile private var screenCacheAtMs = 0L
+
+    /** The looping clip behind the aura. Empty means "no video, use the shader". */
+    private val _bgVideoAsset = MutableStateFlow(prefs.getString("bg_video_asset", "girl.mp4") ?: "girl.mp4")
+    val bgVideoAsset: StateFlow<String> = _bgVideoAsset.asStateFlow()
+
+    // ---- Chats: many of them run at the same time ------------------------------
+    // Every chat is a ChatSession with its own transcript, to-do board, tool rows,
+    // queued words and running job. The names `_messages`, `_tasks`… below always
+    // mean "the chat on screen"; anything that has to keep working for one
+    // particular chat (a turn, a tool) holds its own ChatSession instead.
+    private val sessions = java.util.concurrent.ConcurrentHashMap<String, ChatSession>()
+    private val _activeConversationId = MutableStateFlow(prefs.getString("active_chat", "main") ?: "main")
+    val activeConversationId: StateFlow<String> = _activeConversationId.asStateFlow()
+
+    fun session(id: String): ChatSession = sessions.getOrPut(id) { ChatSession(id).also { loadSession(it) } }
+
+    private val activeSession: ChatSession get() = session(_activeConversationId.value)
+    private val _messages: MutableStateFlow<List<ChatMessage>> get() = activeSession.messages
+    private val _tasks: MutableStateFlow<List<TaskItem>> get() = activeSession.tasks
+    private val _toolExecutions: MutableStateFlow<List<ToolExecutionItem>> get() = activeSession.toolExecutions
+    private val _activeToolCalls: MutableStateFlow<List<ToolExecutionItem>> get() = activeSession.activeToolCalls
+    private val _isGenerating: MutableStateFlow<Boolean> get() = activeSession.isGenerating
+    private val pendingInjections: java.util.concurrent.ConcurrentLinkedQueue<String> get() = activeSession.pendingInjections
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    private fun <T> activeFlow(initial: T, pick: (ChatSession) -> StateFlow<T>): StateFlow<T> =
+        _activeConversationId.flatMapLatest { pick(session(it)) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initial)
+
+    val messages: StateFlow<List<ChatMessage>> = activeFlow(emptyList()) { it.messages }
+    val tasks: StateFlow<List<TaskItem>> = activeFlow(emptyList()) { it.tasks }
+    val toolExecutions: StateFlow<List<ToolExecutionItem>> = activeFlow(emptyList()) { it.toolExecutions }
+    val activeToolCalls: StateFlow<List<ToolExecutionItem>> = activeFlow(emptyList()) { it.activeToolCalls }
+    val isGenerating: StateFlow<Boolean> = activeFlow(false) { it.isGenerating }
+    val liveCode: StateFlow<LiveCode?> = activeFlow<LiveCode?>(null) { it.liveCode }
+    val mediaJobs: StateFlow<List<MediaJob>> = activeFlow(emptyList()) { it.mediaJobs }
+    val activeMode: StateFlow<AgentMode> = activeFlow(AgentMode.AGENT) { it.mode }
+
+    private val busyIds = MutableStateFlow<Set<String>>(emptySet())
+    val chats: StateFlow<List<Conversation>> =
+        combine(repository.chats, busyIds) { list, busy -> list.map { it.copy(busy = it.id in busy) } }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val subInfo = MutableStateFlow<Map<String, SubAgentInfo>>(emptyMap())
+    val subAgents: StateFlow<List<SubAgentInfo>> =
+        combine(subInfo, _activeConversationId) { m, a -> m.values.filter { it.parentId == a }.sortedBy { it.id } }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Which part of the chat panel is open: chat, todo, tools or files. */
+    private val _chatSection = MutableStateFlow("chat")
+    val chatSection: StateFlow<String> = _chatSection.asStateFlow()
+    fun setChatSection(section: String) { _chatSection.value = section }
+
+    /** Reads one chat from the database and keeps its transcript and board in step with it. */
+    private fun loadSession(c: ChatSession) {
+        if (c.loaded) return
+        c.loaded = true
+        viewModelScope.launch {
+            repository.ensureConversation(c.id, if (c.id == "main") "প্রথম চ্যাট" else "নতুন চ্যাট", c.mode.value)
+            repository.conversation(c.id)?.let { c.mode.value = it.mode }
+            launch {
+                repository.messages(c.id).collectLatest { stored ->
+                    if (stored.isEmpty()) {
+                        // A chat that came from the account shows its own history, not
+                        // a greeting — its first line is whatever was really said.
+                        if (c.parentId.isBlank() && !c.id.startsWith("sub_") && !isCloudOrigin(c.id)) {
+                            val greeting = ChatMessage(
+                                role = MessageRole.ASSISTANT, text = t(_selectedPersona.value.greeting),
+                                timestamp = currentTimeString(), modelName = _selectedModel.value.name
+                            )
+                            c.messages.value = listOf(greeting)
+                            repository.saveMessage(greeting, c.id)
+                        }
+                    } else {
+                        // A bubble still being written is not in the database yet; keep it.
+                        val keep = c.messages.value.filter { m -> m.isStreaming && stored.none { it.id == m.id } }
+                        c.messages.value = stored + keep
+                    }
+                }
+            }
+            launch { repository.tasks(c.id).collectLatest { c.tasks.value = it } }
+            // A chat that came from the account opens with its history already in
+            // place instead of an empty screen: the transcript is pulled down once,
+            // then kept live by the socket like any other chat.
+            launch { runCatching { importCloudHistory(c) } }
+        }
+    }
+
+    fun newChat(mode: AgentMode? = null) {
+        val id = "c" + UUID.randomUUID().toString().take(8)
+        val m = mode ?: activeSession.mode.value
+        viewModelScope.launch {
+            repository.ensureConversation(id, "নতুন চ্যাট", m)
+            session(id).mode.value = m
+            switchChat(id)
+        }
+    }
+
+    fun switchChat(id: String) {
+        session(id)
+        _activeConversationId.value = id
+        prefs.edit().putString("active_chat", id).apply()
+    }
+
+    fun renameChat(id: String, title: String) {
+        if (title.isBlank()) return
+        viewModelScope.launch { repository.renameConversation(id, title.trim()) }
+    }
+
+    fun deleteChat(id: String) {
+        if (id == "main") { clearChat(); return }
+        val doomed = sessions[id]
+        doomed?.pendingInjections?.clear()
+        doomed?.job?.cancel()
+        sessions.remove(id)
+        busyIds.update { it - id }
+        if (_activeConversationId.value == id) switchChat("main")
+        viewModelScope.launch { repository.deleteConversation(id) }
+        // The cloud conversation behind it is stopped and deleted too, or the chat
+        // reopened later would still show a turn running on the server.
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isNotBlank()) {
+            viewModelScope.launch(Dispatchers.IO) { runCatching { cloudBridge.forget(key, id) } }
+        }
+    }
+
+    fun setMode(mode: AgentMode) {
+        val c = activeSession
+        c.mode.value = mode
+        prefs.edit().putString("last_mode", mode.name).apply()
+        viewModelScope.launch { repository.setConversationMode(c.id, mode) }
+    }
+
+    /** The Fix button: the page's collected problems go to the agent, which repairs them. */
+    fun fixPreviewProblems() {
+        val probs = PreviewBridge.problems.value
+        val text = buildString {
+            append("প্রিভিউয়ে (").append(PreviewBridge.url.value).append(") এই সমস্যাগুলো ধরা পড়েছে। কারণ খুঁজে ঠিক করো, তারপর `preview` দিয়ে আবার খুলে যাচাই করো:\n")
+            if (probs.isEmpty()) append("(কোনো এরর লগ নেই — স্ক্রিনশট দেখে যা ভাঙা মনে হয় ঠিক করো)")
+            probs.forEach { append("- [").append(it.kind).append("] ").append(it.text).append('\n') }
+        }
+        sendMessage(text)
+    }
+
+    /** The Agent button in Preview: ask a question about what the page shows right now. */
+    fun askAboutPreview(question: String) {
+        viewModelScope.launch {
+            val shot = withContext(Dispatchers.Main) { runCatching { PreviewBridge.screenshot(getApplication()) }.getOrNull() }
+            if (!shot.isNullOrBlank()) _attachedImages.value = listOf(shot)
+            sendMessage("[প্রিভিউ: ${PreviewBridge.url.value}] $question")
+        }
+    }
+
+    // ---- Voices from the website's own endpoint -------------------------------
+    data class VoiceInfo(val id: String, val name: String, val gender: String, val age: String, val locale: String, val label: String)
+
+    private val _voices = MutableStateFlow<List<VoiceInfo>>(emptyList())
+    val voices: StateFlow<List<VoiceInfo>> = _voices.asStateFlow()
+    private val _voicesState = MutableStateFlow("")
+    val voicesState: StateFlow<String> = _voicesState.asStateFlow()
+    private val _voiceId = MutableStateFlow(prefs.getString("voice_id", "") ?: "")
+    val voiceId: StateFlow<String> = _voiceId.asStateFlow()
+    private val _voiceAge = MutableStateFlow(prefs.getString("voice_age", "") ?: "")
+    val voiceAge: StateFlow<String> = _voiceAge.asStateFlow()
+
+    init {
+        ai.zyraxon.assistant.voice.RemoteTtsRequest.voiceName = _voiceId.value
+        ai.zyraxon.assistant.voice.RemoteTtsRequest.voiceAge = _voiceAge.value
+    }
+
+    /** Reads the voice catalogue from the server. Nothing about voices is hardcoded in the app. */
+    fun loadVoices() {
+        if (_voicesState.value == "loading") return
+        _voicesState.value = "loading"
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val raw = java.net.URL(ai.zyraxon.assistant.voice.RemoteTtsRequest.VOICES_URL).openStream().bufferedReader().use { it.readText() }
+                val tokener = org.json.JSONTokener(raw).nextValue()
+                val arr: org.json.JSONArray = when (tokener) {
+                    is org.json.JSONArray -> tokener
+                    is JSONObject -> tokener.optJSONArray("voices") ?: tokener.optJSONArray("data") ?: tokener.optJSONArray("items")
+                        ?: org.json.JSONArray().also { out -> tokener.keys().forEach { k -> tokener.optJSONObject(k)?.let { o -> out.put(o.put("id", o.safe("id", k))) } } }
+                    else -> org.json.JSONArray()
+                }
+                val list = (0 until arr.length()).mapNotNull { i ->
+                    val o = arr.optJSONObject(i) ?: return@mapNotNull null
+                    val id = o.safe("id").ifBlank { o.safe("voice") }.ifBlank { o.safe("shortName") }.ifBlank { o.safe("name") }
+                    if (id.isBlank()) return@mapNotNull null
+                    val loc = o.safe("locale").ifBlank { o.safe("language") }.ifBlank { o.safe("lang") }.ifBlank { o.safe("Locale") }
+                    VoiceInfo(
+                        id = id, name = o.safe("name").ifBlank { o.safe("displayName") }.ifBlank { id },
+                        gender = o.safe("gender").ifBlank { o.safe("Gender") }.lowercase(),
+                        age = o.safe("age").ifBlank { o.safe("ageGroup") }.lowercase(),
+                        locale = loc, label = o.safe("label").ifBlank { o.safe("description") }
+                    )
+                }
+                _voices.value = list
+                _voicesState.value = if (list.isEmpty()) t("খালি তালিকা এসেছে") else ""
+            } catch (e: Exception) {
+                _voicesState.value = "কণ্ঠের তালিকা আনা যায়নি: ${e.message}"
+            }
+        }
+    }
+
+    fun pickVoice(v: VoiceInfo) {
+        _voiceId.value = v.id
+        ai.zyraxon.assistant.voice.RemoteTtsRequest.voiceName = v.id
+        prefs.edit().putString("voice_id", v.id).apply()
+        if (v.gender.isNotBlank()) setVoiceGender(if (v.gender.startsWith("m")) "male" else "female")
+        if (v.locale.isNotBlank()) setVoiceLanguage(v.locale)
+        if (v.age.isNotBlank()) setVoiceAge(v.age)
+        speak(when (v.locale.substringBefore('-').lowercase()) {
+            "bn" -> "হ্যালো, আমি জাইরাক্সন। আমার কণ্ঠ এমন শোনাবে।"
+            "hi" -> "नमस्ते, मैं ज़ायरैक्सन हूँ। मेरी आवाज़ ऐसी लगेगी।"
+            else -> "Hello, I'm Zyraxon. This is how I sound."
+        })
+    }
+
+    fun setVoiceAge(age: String) {
+        _voiceAge.value = age
+        ai.zyraxon.assistant.voice.RemoteTtsRequest.voiceAge = age
+        prefs.edit().putString("voice_age", age).apply()
+    }
+
+    fun clearVoicePick() {
+        _voiceId.value = ""
+        ai.zyraxon.assistant.voice.RemoteTtsRequest.voiceName = ""
+        prefs.edit().putString("voice_id", "").apply()
+    }
+
+    fun stopSubAgent(id: String) {
+        sessions[id]?.job?.cancel()
+        subUpdate(id) { it.copy(state = "stopped", lastAction = t("থামানো হয়েছে")) }
+    }
+
+    /** A file the user (or the Files list) wants opened in the Code panel's editor. */
+    private val _pendingOpenPath = MutableStateFlow<String?>(null)
+    val pendingOpenPath: StateFlow<String?> = _pendingOpenPath.asStateFlow()
+    fun requestOpenInEditor(path: String) { _pendingOpenPath.value = path; setTab(AppTab.CODE) }
+    fun consumeOpenRequest() { _pendingOpenPath.value = null }
+
+    /** Whether the left sidebar is open. */
+    private val _sidebarOpen = MutableStateFlow(false)
+    val sidebarOpen: StateFlow<Boolean> = _sidebarOpen.asStateFlow()
+    fun setSidebarOpen(open: Boolean) { _sidebarOpen.value = open }
+
+    /**
+     * Stops the turn of the chat on screen. Other chats keep running.
+     *
+     * Cancelling the local job only stops the phone from *reading* the answer.
+     * A cloud turn (Apex) is running on the agent server, and it keeps going —
+     * running commands and calling tools — so it is interrupted there too, and
+     * the speaker is cut off, or a stopped answer carries on talking.
+     */
+    fun stopTurn() {
+        val s = activeSession
+        s.job?.cancel()
+        voiceManager.stopSpeaking()
+        if (_selectedModel.value.provider != ZYRAXON_APEX) return
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isBlank()) return
+        // Tried more than once: a single dropped request left the cloud working on
+        // while the phone showed "stopped". The next message waits for this to land.
+        s.interrupting = viewModelScope.launch(Dispatchers.IO) {
+            var tries = 0
+            while (tries < 3 && !cloudBridge.interruptCloud(key, s.id)) {
+                tries++
+                kotlinx.coroutines.delay(600L * tries)
+            }
+        }
+    }
+
+    private val _inputText = MutableStateFlow("")
+    val inputText: StateFlow<String> = _inputText.asStateFlow()
+
+    private val _systemStatus = MutableStateFlow(SystemStatus())
+    val systemStatus: StateFlow<SystemStatus> = _systemStatus.asStateFlow()
+
+    // Voice Selection (Female vs Male)
+    val voiceGender: StateFlow<String> = voiceManager.voiceGender
+    val ttsAvailable: StateFlow<Boolean> = voiceManager.ttsAvailable
+    val voiceLanguage: StateFlow<String> = voiceManager.voiceLanguage
+    val voiceDataMissing: StateFlow<Boolean> = voiceManager.voiceDataMissing
+
+    /** The real voice the ZYRAXON website used, straight from its own header. */
+    val remoteVoiceName: StateFlow<String> = voiceManager.remoteVoiceName
+
+    /** The last voice error ("ইন্টারনেট সংযোগ নেই", "ভয়েস সার্ভিস 502"…). */
+    val voiceError: StateFlow<String> = voiceManager.voiceError
+
+    /** "website" while the online voice speaks, "phone" while the engine does. */
+    val voiceSource: StateFlow<String> = voiceManager.voiceSource
+
+    /**
+     * Whether the ZYRAXON website's voice is used. It is the default because it
+     * carries both Bangla genders, four tones and 322 voices, where the phone's
+     * engine has one voice per language and no emotion. Turning it off keeps the
+     * phone's engine as the only voice, for a phone that is offline or a user who
+     * prefers the installed voice. The choice persists.
+     */
+    private val _useRemoteVoice = MutableStateFlow(prefs.getBoolean("use_remote_voice", true))
+    val useRemoteVoice: StateFlow<Boolean> = _useRemoteVoice.asStateFlow()
+
+    /** Opens the engine's own screen that downloads a voice for this language. */
+    fun openVoiceDataInstall() {
+        voiceManager.openVoiceDataInstall(voiceLanguage.value)
+    }
+
+    // Settings States
+    private val _ttsEnabled = MutableStateFlow(prefs.getBoolean("tts_enabled", true))
+    val ttsEnabled: StateFlow<Boolean> = _ttsEnabled.asStateFlow()
+
+    private val _ttsRate = MutableStateFlow(prefs.getFloat("tts_rate", 1.0f))
+    val ttsRate: StateFlow<Float> = _ttsRate.asStateFlow()
+
+    private val _ttsPitch = MutableStateFlow(prefs.getFloat("tts_pitch", 1.25f))
+    val ttsPitch: StateFlow<Float> = _ttsPitch.asStateFlow()
+
+    /**
+     * The user's microphone switch. True means the mic stays open for as long as
+     * the app runs; false means it stays shut until the user opens it again.
+     * Default true, because the user asked for a microphone that is simply on.
+     */
+    private val _alwaysListening = MutableStateFlow(prefs.getBoolean("always_listening", true))
+    val alwaysListening: StateFlow<Boolean> = _alwaysListening.asStateFlow()
+
+    /**
+     * App lock. When on, coming back to the app asks for the phone's own PIN,
+     * pattern, password or fingerprint before anything is shown — so a phone
+     * handed to someone else, or left unlocked on a table, does not hand over
+     * the whole assistant and everything it can reach.
+     *
+     * It reuses the device credential rather than inventing a second password:
+     * the user already trusts the one that unlocks the phone, and a separate
+     * secret is one more thing to forget. The cost is that it needs a device
+     * credential to exist; with none set, Android cannot ask for one, so the
+     * switch reports that instead of pretending to be on.
+     */
+    private val _appLockEnabled = MutableStateFlow(prefs.getBoolean("app_lock_enabled", false))
+    val appLockEnabled: StateFlow<Boolean> = _appLockEnabled.asStateFlow()
+
+    /**
+     * True while the lock screen is actually covering the UI. Separate from
+     * [appLockEnabled] because the setting can be on while the app is in front of
+     * the user and already unlocked.
+     */
+    private val _appLocked = MutableStateFlow(false)
+    val appLocked: StateFlow<Boolean> = _appLocked.asStateFlow()
+
+    /**
+     * Whether a live spoken session is open. This is now derived from the model
+     * the user picked: choosing a realtime model opens it, choosing a text model
+     * closes it. There is no separate switch to keep in sync.
+     */
+    private val _liveVoiceEnabled = MutableStateFlow(false)
+    val liveVoiceEnabled: StateFlow<Boolean> = _liveVoiceEnabled.asStateFlow()
+
+    private val _liveVoiceState = MutableStateFlow(LiveVoiceSession.State.IDLE)
+    val liveVoiceState: StateFlow<LiveVoiceSession.State> = _liveVoiceState.asStateFlow()
+
+    /**
+     * The realtime model that is currently open, or blank when the selected model
+     * is a text model. Set from [setModel], never typed by the user.
+     */
+    private val _liveVoiceModel = MutableStateFlow("")
+    val liveVoiceModel: StateFlow<String> = _liveVoiceModel.asStateFlow()
+
+    /** The provider the open realtime session belongs to, for the status line. */
+    private val _liveVoiceProvider = MutableStateFlow("")
+    val liveVoiceProvider: StateFlow<String> = _liveVoiceProvider.asStateFlow()
+
+    /**
+     * Whether the user wants the model's own speech-to-speech voice when they
+     * pick a realtime model. Off by default: the phone's text-to-speech is the
+     * voice that always works, so it stays in charge until the user asks for the
+     * live one. A realtime model whose live session cannot open falls back to the
+     * phone's voice rather than going silent.
+     */
+    private val _liveVoicePreferred = MutableStateFlow(prefs.getBoolean("live_voice_preferred", false))
+    val liveVoicePreferred: StateFlow<Boolean> = _liveVoicePreferred.asStateFlow()
+
+    private val _autoSend = MutableStateFlow(prefs.getBoolean("auto_send", true))
+    val autoSend: StateFlow<Boolean> = _autoSend.asStateFlow()
+
+    /**
+     * True once the user picks a voice themselves, in Settings or through the
+     * `voice_change` tool. Until then the character decides the voice; after that
+     * the user's pick is kept — including across a restart. Without this a male
+     * choice was silently replaced by the default character's female voice on the
+     * next launch, which is the "I only ever hear the female voice" report.
+     */
+    private val _voiceChosenByUser = MutableStateFlow(prefs.getBoolean("voice_chosen_by_user", false))
+
+    private val _customBgUrl = MutableStateFlow(prefs.getString("custom_bg_url", "") ?: "")
+    val customBgUrl: StateFlow<String> = _customBgUrl.asStateFlow()
+
+    /**
+     * The Settings pane the user was last on, kept in preferences so it survives
+     * a restart. Without it the sheet reopened on the first tab every time, which
+     * read as the app forgetting the section the user was working in.
+     */
+    var settingsPane: String
+        get() = prefs.getString("settings_pane", "session") ?: "session"
+        set(value) = prefs.edit().putString("settings_pane", value).apply()
+
+    private val _animSpeed = MutableStateFlow(prefs.getFloat("anim_speed", 1.0f))
+    val animSpeed: StateFlow<Float> = _animSpeed.asStateFlow()
+
+    private val _glassBlur = MutableStateFlow(prefs.getInt("glass_blur", 14))
+    val glassBlur: StateFlow<Int> = _glassBlur.asStateFlow()
+
+    // The aura's look. Every value is written straight into the aura page as a
+    // CSS variable, so the user can reshape the orb without a rebuild.
+    private val _auraHue = MutableStateFlow(prefs.getInt("aura_hue", 352))
+    val auraHue: StateFlow<Int> = _auraHue.asStateFlow()
+
+    private val _auraSize = MutableStateFlow(prefs.getFloat("aura_size", 1.0f))
+    val auraSize: StateFlow<Float> = _auraSize.asStateFlow()
+
+    private val _auraGlow = MutableStateFlow(prefs.getFloat("aura_glow", 1.0f))
+    val auraGlow: StateFlow<Float> = _auraGlow.asStateFlow()
+
+    // Which designed aura is showing. Stored by name so a new style can be added
+    // without invalidating what the user already picked.
+    private val _auraStyle = MutableStateFlow(prefs.getString("aura_style", "orb") ?: "orb")
+    val auraStyle: StateFlow<String> = _auraStyle.asStateFlow()
+
+    // Which WebGL shader, if any, replaces the CSS aura. "none" is the default so
+    // an existing install keeps the look it had; the shaders are opt-in.
+    private val _auraShader = MutableStateFlow(prefs.getString("aura_shader", "none") ?: "none")
+    val auraShader: StateFlow<String> = _auraShader.asStateFlow()
+
+    private val _auraSpeed = MutableStateFlow(prefs.getFloat("aura_speed", 1.0f))
+    val auraSpeed: StateFlow<Float> = _auraSpeed.asStateFlow()
+
+    // Panel glass. Alpha is what the user drags to go from clear to frosted.
+    private val _panelAlpha = MutableStateFlow(prefs.getFloat("panel_alpha", 0.22f))
+    val panelAlpha: StateFlow<Float> = _panelAlpha.asStateFlow()
+
+    private val _githubToken = MutableStateFlow(aiEngine.getGithubToken())
+    val githubToken: StateFlow<String> = _githubToken.asStateFlow()
+
+    private val _githubStatus = MutableStateFlow(if (aiEngine.getGithubToken().isNotEmpty()) "টোকেন সেভ করা আছে" else "টোকেন নেই")
+    val githubStatus: StateFlow<String> = _githubStatus.asStateFlow()
+
+    // ---- in-app updates ----------------------------------------------------
+
+    private val updater = Updater(application)
+
+    private val _updateState = MutableStateFlow<UpdateState>(UpdateState.Idle)
+    val updateState: StateFlow<UpdateState> = _updateState.asStateFlow()
+
+    /** The release being offered, kept so Download and Install can use it. */
+    private var pendingRelease: UpdateRelease? = null
+
+    /** Watches the installer's own verdict while an update install is in flight. */
+    private var installWatcher: kotlinx.coroutines.Job? = null
+
+    /** True once a check has answered, so the banner never flashes on every start. */
+    private val _updateChecked = MutableStateFlow(false)
+    val updateChecked: StateFlow<Boolean> = _updateChecked.asStateFlow()
+
+    // A dismissed release stays dismissed until the app is restarted, so the
+    // banner does not come back every time the user closes and reopens it.
+    private val _updateBannerDismissed = MutableStateFlow(false)
+    val updateBannerDismissed: StateFlow<Boolean> = _updateBannerDismissed.asStateFlow()
+
+    val currentVersionName: String = Updater.installedVersionName(application)
+
+    /** Whether Android will let this app install an update itself. */
+    fun canInstallUpdates(): Boolean = updater.canInstall()
+
+    /** Opens the "install unknown apps" row so the user can allow in-app installs. */
+    fun openInstallPermission() = updater.openInstallPermissionSettings()
+
+    // ---- Shizuku (system access) ------------------------------------------
+
+    private val _shizukuState = MutableStateFlow<ShizukuState>(ShizukuState.Unknown)
+    val shizukuState: StateFlow<ShizukuState> = _shizukuState.asStateFlow()
+
+    /** Reads the real state from the running service. */
+    fun refreshShizuku() {
+        _shizukuState.value = ShizukuBundle.state(getApplication())
+    }
+
+    /**
+     * Installs the Shizuku app ZYRAXON carries. Android shows its own confirm
+     * dialog; the user taps Install once and Shizuku is on the phone.
+     */
+    fun installShizuku() {
+        val app = getApplication<Application>()
+        val apk = ShizukuBundle.apkFile(app)
+        if (apk == null) {
+            _shizukuState.value = ShizukuState.Failed(t("বান্ডেল করা Shizuku ফাইল খোলা গেল না"))
+            return
+        }
+        if (!updater.canInstall()) {
+            updater.openInstallPermissionSettings()
+            _shizukuState.value = ShizukuState.Failed(t("ইনস্টল করতে আগে \"এই সোর্স থেকে ইনস্টল\" অনুমতি দিন"))
+            return
+        }
+        _shizukuState.value = ShizukuState.Installing
+        runCatching { updater.installPackage(apk) }.fold(
+            onSuccess = { _shizukuState.value = ShizukuState.InstalledNotRunning },
+            onFailure = { _shizukuState.value = ShizukuState.Failed(it.message ?: t("Shizuku ইনস্টল শুরু করা গেল না")) }
+        )
+    }
+
+    /** Opens Shizuku so the user can start it and grant ZYRAXON access. */
+    fun openShizuku() {
+        ShizukuBundle.launch(getApplication())
+    }
+
+    /** Asks Shizuku for permission; the user answers in Shizuku's own dialog. */
+    fun requestShizukuPermission() {
+        SystemShell.requestPermission()
+        refreshShizuku()
+    }
+
+    fun dismissUpdateBanner() {
+        _updateBannerDismissed.value = true
+    }
+
+    /**
+     * Asks GitHub for the newest release. Called once when the app opens, and
+     * again whenever the user taps Check for updates in Settings.
+     */
+    fun checkForUpdates(silent: Boolean = false) {
+        val current = _updateState.value
+        if (current is UpdateState.Checking || current is UpdateState.Downloading) return
+        _updateState.value = UpdateState.Checking
+        viewModelScope.launch {
+            updater.check().fold(
+                onSuccess = { release ->
+                    pendingRelease = release
+                    _updateState.value = when {
+                        release == null -> UpdateState.UpToDate(currentVersionName)
+                        release.apk == null -> UpdateState.NoApk(release)
+                        else -> UpdateState.Available(release)
+                    }
+                    if (release != null) {
+                        _updateBannerDismissed.value = false
+                        // Fetch it now, in the background, so the user only has to
+                        // tap Install when they open Settings — no waiting.
+                        stageUpdate(release)
+                    }
+                },
+                onFailure = { error ->
+                    // A failed check is silent on launch — being offline is not an
+                    // error worth a banner — but a manual check reports it.
+                    _updateState.value = if (silent) {
+                        UpdateState.Idle
+                    } else {
+                        UpdateState.Failed(error.message ?: t("চেক করা গেল না"))
+                    }
+                }
+            )
+            _updateChecked.value = true
+        }
+    }
+
+    /** Downloads the offered release, streaming progress into [updateState]. */
+    fun downloadUpdate() {
+        val release = pendingRelease
+            ?: (_updateState.value as? UpdateState.Available)?.release
+            ?: return
+        if (_updateState.value is UpdateState.Downloading) return
+        _updateState.value = UpdateState.Downloading(0f)
+        viewModelScope.launch {
+            updater.stage(release) { progress ->
+                _updateState.value = UpdateState.Downloading(progress)
+            }.fold(
+                onSuccess = { apk ->
+                    _updateState.value = UpdateState.Downloaded(release, apk.absolutePath)
+                },
+                onFailure = { error ->
+                    _updateState.value = UpdateState.Failed(error.message ?: t("ডাউনলোড ব্যর্থ"))
+                }
+            )
+        }
+    }
+
+    /**
+     * Fetches a release in the background the moment it is found, so by the time
+     * the user opens Settings the APK is already on disk and Install is one tap.
+     * A failure here is not an error: the release stays Available and the user can
+     * still download it by hand.
+     */
+    private fun stageUpdate(release: UpdateRelease) {
+        viewModelScope.launch {
+            updater.stage(release) { progress ->
+                if (_updateState.value is UpdateState.Available) {
+                    _updateState.value = UpdateState.Downloading(progress)
+                }
+            }.onSuccess { apk ->
+                _updateState.value = UpdateState.Downloaded(release, apk.absolutePath)
+            }.onFailure {
+                if (_updateState.value is UpdateState.Downloading) {
+                    _updateState.value = UpdateState.Available(release)
+                }
+            }
+        }
+    }
+
+    /** Installs a downloaded update in place. Asks for the permission if needed. */
+    fun installUpdate() {
+        val state = _updateState.value
+        val release = when (state) {
+            is UpdateState.Downloaded -> state.release
+            is UpdateState.Available -> state.release
+            is UpdateState.NeedsPermission -> state.release
+            else -> pendingRelease
+        } ?: return
+        // Prefer the file the Download state names; otherwise use whatever was
+        // staged in the background, which is the common case now.
+        val file = (state as? UpdateState.Downloaded)?.apkPath?.let { java.io.File(it) }
+            ?: updater.stagedApk(release)
+        if (file == null || !file.exists()) {
+            _updateState.value = UpdateState.Failed(t("ডাউনলোড করা ফাইল পাওয়া গেল না"))
+            return
+        }
+        if (!updater.canInstall()) {
+            updater.openInstallPermissionSettings()
+            _updateState.value = UpdateState.NeedsPermission(release)
+            return
+        }
+        // A staged file from an older, interrupted download can be a fragment.
+        // Installing it is what produces "package appears to be invalid", so it is
+        // thrown away and fetched again rather than handed to Android.
+        if (!updater.isZipApk(file)) {
+            file.delete()
+            downloadUpdate()
+            return
+        }
+        // The installer answers by broadcast, minutes after this returns. Watching
+        // that channel is the only way its refusal reaches the user.
+        installWatcher?.cancel()
+        installWatcher = viewModelScope.launch {
+            Updater.installFailure.collect { reason ->
+                if (reason != null) {
+                    _updateState.value = UpdateState.Failed(reason)
+                    Updater.installFailure.value = null
+                }
+            }
+        }
+        runCatching { updater.install(file) }.onFailure { error ->
+            _updateState.value = UpdateState.Failed(error.message ?: t("ইনস্টল শুরু করা গেল না"))
+        }
+    }
+
+    // Tasks & Memories from SQLite Room Database
+
+    val memories: StateFlow<List<MemoryItem>> = repository.allMemories.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    /**
+     * The [AppIcons] registry key for a tool family, drawn beside the tool's name.
+     *
+     * A key rather than a glyph: the UI resolves it through `AppIcons.of`, which
+     * has a vector icon for every key and renders nothing for a key it does not
+     * know. An emoji here would be a string the font may or may not have.
+     */
+    private fun toolIcon(name: String): String = when {
+        name == "run_shell" || name == "system_shell" || name == "linux_run" || name == "terminal_run" -> "keyboard"
+        name == "read_file" || name == "write_file" || name == "edit_file" || name == "list_dir" ||
+            name == "find_files" || name == "grep_files" || name == "delete_file" -> "file"
+        name == "web_search" || name == "read_url" || name == "http_request" || name == "verify_url" -> "search"
+        name == "download_file" || name == "publish_website" || name == "publish_github" -> "upload"
+        name.startsWith("publish_") -> "upload"
+        name == "screen_shot" || name == "read_screen" || name == "look_camera" -> "camera"
+        name == "tap" || name == "tap_text" || name == "swipe" || name == "type_text" || name == "press_key" -> "touch"
+        name.startsWith("git") -> "code"
+        name.contains("__") -> "hub"
+        else -> "build"
+    }
+
+    private val recUpdateAt = java.util.concurrent.ConcurrentHashMap<String, Long>()
+    private val recOutput = java.util.concurrent.ConcurrentHashMap<String, StringBuilder>()
+
+    private fun detailOf(name: String, args: JSONObject): String {
+        for (k in listOf("command", "path", "url", "query", "prompt", "action", "name", "title", "text")) {
+            val v = args.safe(k).trim()
+            if (v.isNotBlank()) return v.take(600)
+        }
+        return ""
+    }
+
+    private fun updateRecord(s: ChatSession, id: String, f: (ToolCallRecord) -> ToolCallRecord) {
+        s.messages.update { list ->
+            list.map { m ->
+                if (m.toolCalls.none { it.id == id }) m
+                else m.copy(toolCalls = m.toolCalls.map { if (it.id == id) f(it) else it })
+            }
+        }
+    }
+
+    /** Opens a live row (and a card in the chat bubble) the moment a call is made. */
+    private fun beginToolCall(s: ChatSession, name: String, args: JSONObject): String {
+        val id = UUID.randomUUID().toString()
+        val item = ToolExecutionItem(
+            id = id, name = name, description = describeToolCall(name, args), icon = toolIcon(name),
+            status = t("চলছে…"), timestamp = currentTimeString(), running = true
+        )
+        s.updateActive { list -> listOf(item) + list }
+        val code = if (name == "edit_file") args.safe("content").ifBlank { args.safe("replace") } else ""
+        val rec = ToolCallRecord(
+            id = id, name = name, detail = detailOf(name, args), icon = toolIcon(name),
+            summary = item.description, status = "running", output = code
+        )
+        if (name == "edit_file") s.liveCode.value = LiveCode(args.safe("path"), code, true)
+        s.addEvent(TurnEvent("tool", toolId = id))
+        s.messages.update { list ->
+            list.map { m -> if (m.id == s.currentMsgId) m.copy(toolCalls = m.toolCalls + rec, events = s.eventsSnapshot()) else m }
+        }
+        MEDIA_TOOLS[name]?.let { kind ->
+            s.updateJobs { it + MediaJob(id, s.id, kind, item.description, 0) }
+        }
+        return id
+    }
+
+    /** Streams a line of a running call's output into its live row; `@@progress` lines drive the percentage bar. */
+    private fun appendToolOutput(s: ChatSession, id: String, chunk: String) {
+        if (chunk.isBlank()) return
+        val plain = StringBuilder()
+        for (line in chunk.split('\n')) {
+            if (line.startsWith("@@progress ")) {
+                val parts = line.removePrefix("@@progress ").trim().split(' ', limit = 2)
+                val pct = parts.getOrNull(0)?.toIntOrNull() ?: continue
+                val label = parts.getOrNull(1).orEmpty()
+                s.updateJobs { jobs -> jobs.map { if (it.id == id) it.copy(percent = pct, label = label.ifBlank { it.label }) else it } }
+            } else if (line.isNotBlank()) plain.append(line).append('\n')
+        }
+        if (plain.isEmpty()) return
+        s.updateActive { list ->
+            list.map { item ->
+                if (item.id != id) item else item.copy(output = (item.output + plain).takeLast(8_000))
+            }
+        }
+        val buf = recOutput.getOrPut(id) { StringBuilder() }
+        synchronized(buf) { buf.append(plain); if (buf.length > 12_000) buf.delete(0, buf.length - 12_000) }
+        val now = System.currentTimeMillis()
+        if (now - (recUpdateAt[id] ?: 0L) >= 150) {
+            recUpdateAt[id] = now
+            val txt = synchronized(buf) { buf.toString() }
+            updateRecord(s, id) { if (it.name == "edit_file") it else it.copy(output = txt) }
+        }
+    }
+
+    /** Closes the live row, fills the card in the bubble, and attaches any file the tool produced. */
+    private fun finishToolCall(s: ChatSession, id: String, name: String, result: JSONObject, ms: Long) {
+        val live = s.activeToolCalls.value.firstOrNull { it.id == id }
+        s.updateActive { list -> list.filterNot { it.id == id } }
+        recordToolExecution(s, name, result, live?.output.orEmpty())
+        val ok = result.optBoolean("ok")
+        val finalOut = recOutput.remove(id)?.toString().orEmpty()
+        recUpdateAt.remove(id)
+        val media = mutableListOf<MediaItem>()
+        result.optJSONArray("media")?.let { arr ->
+            for (i in 0 until arr.length()) {
+                val j = arr.optJSONObject(i) ?: continue
+                media.add(MediaItem(j.safe("kind", "file"), j.safe("path"), j.safe("title")))
+            }
+        }
+        s.messages.update { list ->
+            list.map { m ->
+                if (m.toolCalls.none { it.id == id }) m
+                else m.copy(
+                    toolCalls = m.toolCalls.map {
+                        if (it.id != id) it else it.copy(
+                            status = if (ok) "ok" else "error",
+                            summary = result.safe("summary").ifBlank { it.summary },
+                            output = if (it.name == "edit_file") it.output else finalOut.ifBlank { it.output },
+                            ms = ms
+                        )
+                    },
+                    media = m.media + media
+                )
+            }
+        }
+        if (name in MEDIA_TOOLS) {
+            s.updateJobs { jobs ->
+                jobs.map {
+                    if (it.id != id) it else it.copy(
+                        percent = if (ok) 100 else it.percent, done = true,
+                        path = media.firstOrNull()?.path.orEmpty(),
+                        error = if (ok) "" else result.safe("summary")
+                    )
+                }
+            }
+        }
+        if (name == "edit_file") s.liveCode.value = null
+    }
+
+    /** While a file is being written its code streams into the chat, line by line. */
+    private fun onToolArgs(s: ChatSession, name: String, raw: String) {
+        if (name != "edit_file") return
+        val path = PartialJson.stringField(raw, "path").orEmpty()
+        val text = PartialJson.stringField(raw, "content") ?: PartialJson.stringField(raw, "replace") ?: return
+        s.liveCode.value = LiveCode(path, text, false)
+    }
+
+    /** A short, human line for the live row, taken from the call's arguments. */
+    private fun describeToolCall(name: String, args: JSONObject): String {
+        val keys = listOf("command", "path", "url", "query", "text", "name", "title", "action", "prompt", "package", "app")
+        for (k in keys) {
+            val v = args.safe(k).trim()
+            if (v.isNotBlank()) return "$k: ${v.take(120)}"
+        }
+        return name
+    }
+
+    // Live panels the model opens through tools
+    // While a turn is running, new user words are injected into that same turn
+    // instead of starting a second one, so the assistant never stops mid-task.
+
+    // The floating chat bubble. Off by default: it needs the overlay permission,
+    // which only the user can grant.
+    private val _overlayEnabled = MutableStateFlow(prefs.getBoolean("overlay_enabled", true))
+    val overlayEnabled: StateFlow<Boolean> = _overlayEnabled.asStateFlow()
+
+    private val _overlayStyle = MutableStateFlow(ai.zyraxon.assistant.OverlayChatService.style(application))
+    val overlayStyle: StateFlow<String> = _overlayStyle.asStateFlow()
+    fun setOverlayStyle(id: String) {
+        _overlayStyle.value = id
+        ai.zyraxon.assistant.OverlayChatService.setStyle(getApplication(), id)
+    }
+
+    private val _overlayExpanded = MutableStateFlow(false)
+    val overlayExpanded: StateFlow<Boolean> = _overlayExpanded.asStateFlow()
+
+    /**
+     * The live screen frame stream. While a turn is running the screen is
+     * captured every [LIVE_FRAME_INTERVAL_MS] and handed to the engine through
+     * [drainScreenFrames], so the model keeps seeing the phone even during a job
+     * that runs for an hour. The picture is dropped if the screen did not change
+     * and if a capture is already pending, so an idle phone costs nothing.
+     */
+    private val pendingScreenFrames = java.util.concurrent.ConcurrentLinkedQueue<String>()
+    private var liveFrameJob: kotlinx.coroutines.Job? = null
+    private var lastLiveFrameHash = 0
+
+    private val _codeBoxOpen = MutableStateFlow(false)
+    val codeBoxOpen: StateFlow<Boolean> = _codeBoxOpen.asStateFlow()
+    private val _codeBoxTitle = MutableStateFlow("")
+    val codeBoxTitle: StateFlow<String> = _codeBoxTitle.asStateFlow()
+    private val _codeBoxText = MutableStateFlow("")
+    val codeBoxText: StateFlow<String> = _codeBoxText.asStateFlow()
+    private val _filesPanelOpen = MutableStateFlow(false)
+    val filesPanelOpen: StateFlow<Boolean> = _filesPanelOpen.asStateFlow()
+
+    // ---- Terminal tab -------------------------------------------------------
+    // Several shells can be open at once. Each session keeps its own scrollback
+    // and its own working directory, so switching away and back never loses the
+    // place the user was at. The sidebar lists them.
+
+    /**
+     * Two real shells, open from the start: the phone's own shell and ZYRAXON's
+     * own Linux system. Neither is a placeholder and both always work — the user
+     * switches between them from the sidebar, and `terminal_run` can target
+     * either one.
+     */
+    private val _terminalSessions = MutableStateFlow(
+        listOf(
+            TerminalSession(id = UUID.randomUUID().toString(), title = "android", shell = TerminalShell.ANDROID),
+            TerminalSession(id = UUID.randomUUID().toString(), title = "linux", shell = TerminalShell.LINUX)
+        )
+    )
+    val terminalSessions: StateFlow<List<TerminalSession>> = _terminalSessions.asStateFlow()
+
+    private val _activeTerminalId = MutableStateFlow(_terminalSessions.value.first().id)
+    val activeTerminalId: StateFlow<String> = _activeTerminalId.asStateFlow()
+
+    /**
+     * The scrollback of the session on screen, and its working directory. Both
+     * are kept as their own flows and refreshed whenever the sessions or the
+     * active id change, so a reader always sees the current shell's state
+     * without having to collect a derived flow.
+     */
+    private val _terminalLines = MutableStateFlow<List<TerminalLine>>(emptyList())
+    val terminalLines: StateFlow<List<TerminalLine>> = _terminalLines.asStateFlow()
+
+    /**
+     * True while the *active* session has a command running.
+     *
+     * Derived from the sessions, not kept as one shared flag: busy belongs to one
+     * shell, and a global flag let a command in the Linux tab swallow the lines
+     * typed into the Android tab. It is a plain flow refreshed by
+     * [syncActiveTerminal], so it changes the instant a session's busy does
+     * instead of waiting on a collector.
+     */
+    private val _terminalBusy = MutableStateFlow(false)
+    val terminalBusy: StateFlow<Boolean> = _terminalBusy.asStateFlow()
+
+    /**
+     * The command running in each session, keyed by session id.
+     *
+     * A running command owns *its* terminal: whatever the user types there is an
+     * answer to that command's question, and Ctrl-C stops that one. Keyed rather
+     * than single because the Terminal can hold an Android session and a Linux
+     * session at once, and they must not share input or a stop signal.
+     */
+    private val terminalProcesses = java.util.concurrent.ConcurrentHashMap<String, ShellRuntime.LiveProcess>()
+
+    /**
+     * The sessions a command is already starting in.
+     *
+     * [terminalProcesses] is filled when the process exists, which is a moment
+     * after the coroutine is launched. Without this second marker a line typed in
+     * that gap looked like the first line of a fresh command and started a
+     * *second* one on top of the first. It is a set of ids rather than the busy
+     * flag because the flag is also what the screen paints from, and the two must
+     * be able to disagree for a frame without losing a line.
+     */
+    private val terminalInFlight = java.util.Collections.newSetFromMap(
+        java.util.concurrent.ConcurrentHashMap<String, Boolean>()
+    )
+
+    /** The scrollback entry the running command is writing into, per session. */
+    private val terminalLiveLine = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+    /** Marks a session busy, or not, and re-publishes the derived flows. */
+    private fun setSessionBusy(id: String, value: Boolean) {
+        _terminalSessions.update { list -> list.map { if (it.id == id) it.copy(busy = value) else it } }
+        syncActiveTerminal()
+    }
+
+    private val _terminalCwd = MutableStateFlow("~")
+    val terminalCwd: StateFlow<String> = _terminalCwd.asStateFlow()
+
+    /** Re-publishes the active session's scrollback and directory. */
+    private fun syncActiveTerminal() {
+        val active = _terminalSessions.value.firstOrNull { it.id == _activeTerminalId.value }
+        _terminalLines.value = active?.lines ?: emptyList()
+        _terminalCwd.value = active?.cwd ?: "~"
+        // The busy flag is the active session's, refreshed here so a reader sees
+        // the change at once rather than through a collector's schedule.
+        _terminalBusy.value = active?.busy == true
+    }
+
+    /** Files the assistant has written, shown in the Files panel. */
+    private val _workspaceFiles = MutableStateFlow<List<WorkspaceFile>>(emptyList())
+    val workspaceFiles: StateFlow<List<WorkspaceFile>> = _workspaceFiles.asStateFlow()
+
+    val isListening: StateFlow<Boolean> = voiceManager.isListening
+    val isSpeaking: StateFlow<Boolean> = voiceManager.isSpeaking
+    val audioLevel: StateFlow<Float> = voiceManager.audioLevel
+
+    init {
+        active = this
+        // A background command outlives this screen, so the callback is registered
+        // here, not per turn. When such a command ends, the assistant is woken in
+        // a fresh turn with the real result, instead of waiting for the user to
+        // ask what happened — the reason `background_command` was worth having.
+        BackgroundCommandService.onFinished = { command, exit, output ->
+            onBackgroundFinished(command, exit, output)
+        }
+        // A job that was running when the app was last killed is reported once,
+        // here, instead of being silently forgotten.
+        viewModelScope.launch(Dispatchers.IO) {
+            val saved = BackgroundCommandService.saved(getApplication())
+            if (saved != null && saved.interrupted) {
+                BackgroundCommandService.clearSaved(getApplication())
+                val note = "[সেভ করা ব্যাকগ্রাউন্ড কাজ] `" + saved.command +
+                    "` অ্যাপ বন্ধ হওয়ার সময় কাটা পড়েছিল (শেষ exit " + saved.exit + ")।\n" +
+                    "আউটপুট (শেষ অংশ):\n```\n" + saved.output.takeLast(2_000) + "\n```\n" +
+                    "কাজটি সম্পূর্ণ হয়নি — কী করবে বলো বা নিজে আবার শুরু করো।"
+                withContext(Dispatchers.Main) { sendMessage(note) }
+            }
+        }
+        // A server's sampling request runs on whatever model the user picked, so
+        // it is answered by the same brain as the chat rather than a fixed one.
+        aiEngine.samplingModelProvider = { _selectedModel.value }
+
+        // The voice is restored from the user's own choice when they have made
+        // one, and from the saved character otherwise. Reading the saved gender
+        // back is what stops a male choice being reset to the default female
+        // voice on the next launch.
+        _voiceChosenByUser.value = prefs.getBoolean("voice_chosen_by_user", false)
+        val savedGender = if (_voiceChosenByUser.value) {
+            prefs.getString("voice_gender", null)
+        } else {
+            null
+        }
+        voiceManager.setVoiceGender(savedGender ?: genderForPersona(_selectedPersona.value))
+        prefs.getString("voice_language", null)?.let { voiceManager.setVoiceLanguage(it) }
+        // The ZYRAXON website's voice is the default; a user who turned it off
+        // gets the phone's engine back exactly as they left it.
+        voiceManager.setUseRemoteVoice(_useRemoteVoice.value)
+
+        // A downloaded on-device model is reloaded on launch. Without this the
+        // file sat in app storage unused: the user downloaded it, and the next
+        // start forgot which bundle was loaded, so every turn went to the cloud
+        // and the local model looked broken.
+        restoreOnDeviceModel()
+
+        // The live speech-to-speech session is reopened when the user left it on
+        // and the restored model is a realtime one. Without this the preference
+        // was saved but never honoured again, so the model's own voice worked
+        // once and then never came back — the "speech-to-speech does not work"
+        // report.
+        if (_liveVoicePreferred.value && _selectedModel.value.isRealtime) {
+            viewModelScope.launch { startLiveVoice() }
+        }
+
+        // The chat on screen (and every other chat, as it is opened) is loaded and
+        // kept in step with the database by loadSession.
+        session(_activeConversationId.value)
+        session("main")
+
+        // Initialize default memory in SQLite if empty
+        viewModelScope.launch {
+            val existing = repository.getMemoriesPromptContext()
+            if (existing.isBlank()) {
+                repository.saveMemory("নাম", "ব্যবহারকারী")
+                repository.saveMemory("সহকারী", "ZYRAXON v2.0.0")
+                repository.saveMemory("পছন্দের_ভাষা", "বাংলা")
+            }
+        }
+
+        // Initialize default tasks if empty
+        viewModelScope.launch {
+            val currentTasks = database.dao().getMemoriesList()
+            // Tasks auto-managed by Room
+        }
+
+        // Warm the connection to the chosen provider so the first token is not
+        // held up by DNS and the TLS handshake.
+        aiEngine.prewarm(_selectedModel.value)
+
+        // Connect STT
+        voiceManager.onSpeechRecognized = stt@{ text, isFinal ->
+            // The assistant's own voice is filtered by *text*, never by muting
+            // the microphone. Muting for the whole reply is what stopped the user
+            // cutting in: they had to wait for the last word. The rule itself
+            // lives in SttDecision so it can be tested without a phone.
+            // The live session has its own mic and transcripts; the phone's
+            // recognizer must not also feed the chat.
+            if (liveVoice.isActive) return@stt
+            // The tail after a stop: once the user has cut the assistant off, its
+            // voice is gone, so the phrase arriving next is the user's even if the
+            // "speaking" flag has not fallen yet. Without this the final result of
+            // the very interruption that just happened would be dropped as echo.
+            val sinceInterrupt = System.currentTimeMillis() - lastUserInterruptMs
+            val speakerActive = voiceManager.isSpeakerActive() && sinceInterrupt > INTERRUPT_GRACE_MS
+            // The last word has played but the guard tail is still running. This
+            // is the moment a person answers — dropping a final here is what made
+            // the microphone seem deaf for a beat after every reply. Only the
+            // tail is treated this way: while the speaker is genuinely talking a
+            // final is still the assistant's own sentence coming back.
+            val echoTail = voiceManager.isEchoTail()
+            // Never the strict form here. Strict echo matching flags a phrase
+            // that shares even one content word with the reply, which is right
+            // for the assistant's own sentence coming back but would swallow a
+            // genuine interruption that happens to reuse a word ("আজকের আবহাওয়া
+ // কেমন?" over an answer about the weather). The assistant's own
+            // sentence is dropped by the final/partial rule instead.
+            val repeatsReply = looksLikeOwnSpeech(text)
+            when (SttDecision.decide(text, isFinal, speakerActive, repeatsReply, echoTail)) {
+                SttDecision.Action.IGNORE -> return@stt
+                SttDecision.Action.INTERRUPT -> {
+                    // A partial only ever interrupts: it stops the assistant so
+                    // the user can finish their sentence, and it is shown in the
+                    // box. It is never sent on its own; the final result that
+                    // follows, now that the speaker is quiet, is sent normally.
+                    lastUserInterruptMs = System.currentTimeMillis()
+                    onUserStartedSpeaking()
+                    _inputText.value = text
+                    return@stt
+                }
+                SttDecision.Action.SUBMIT -> {
+                    _inputText.value = text
+                    if (_autoSend.value) {
+                        onUserStartedSpeaking()
+                        sendMessage(text)
+                    } else if (pausedByUser) {
+                        // The user finished talking and their words are only in
+                        // the box, so the reply that was paused picks up from the
+                        // word they interrupted. With auto-send on this branch is
+                        // not reached: their words become the new turn and its own
+                        // answer replaces the paused one.
+                        pausedByUser = false
+                        voiceManager.resumeSpeaking()
+                    }
+                }
+            }
+        }
+
+        // The microphone follows the user's saved choice: on from the first
+        // frame when they left it on, off when they left it off. A live
+        // speech-to-speech session takes the mic instead, so the phone's
+        // recognizer stays out of the way until that session ends.
+        if (_alwaysListening.value && _systemStatus.value.micPermissionGranted &&
+            !(_liveVoicePreferred.value && _selectedModel.value.isRealtime)
+        ) {
+            voiceManager.startListening()
+        }
+
+        // Fetch Live Models on startup
+        refreshModels()
+
+        // The Linux system ships inside the APK, so it is unpacked once, quietly,
+        // as soon as the app starts. There is nothing for the user to type and no
+        // `linux-install` step to remember: by the time they open the Terminal the
+        // system is already there, and it stays there across restarts.
+        viewModelScope.launch(Dispatchers.IO) {
+            val app = getApplication<Application>()
+            if (LinuxRuntime.isSupported(app) && !LinuxRuntime.isInstalled(app)) {
+                LinuxRuntime.install(app) { }
+            }
+        }
+    }
+
+    /**
+     * True when a recognized phrase is really the assistant's own last words,
+     * not the user's. The speaker's echo can arrive just after the time guard
+     * lapses, so the text itself is compared: if most of what was heard already
+     * appears in the reply the user just heard, it is the reply coming back.
+     */
+    private fun looksLikeOwnSpeech(heard: String, strict: Boolean = false): Boolean {
+        val reply = _messages.value.lastOrNull { it.role == MessageRole.ASSISTANT }?.text
+        return ai.zyraxon.assistant.voice.EchoMatcher.isOwnSpeech(heard, reply, strict)
+    }
+
+    private fun currentTimeString(): String {
+        return SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
+    }
+
+    /**
+     * The character the user last chose. Restored before the first frame so the
+     * greeting and the voice come back as the user left them.
+     */
+    private fun restoreSavedPersona(): Persona {
+        val id = prefs.getString("selected_persona_id", null)
+        return ZyraxonAiEngine.PERSONAS.firstOrNull { it.id == id } ?: ZyraxonAiEngine.PERSONAS[0]
+    }
+
+    /**
+     * The voice that belongs to a character. The boyfriend speaks male; every
+     * other character speaks female. Kept in one place so the startup path and
+     * the switch path can never disagree about which voice a character uses.
+     */
+    private fun genderForPersona(persona: Persona): String =
+        if (persona.id == "boyfriend") "male" else "female"
+
+    /**
+     * Reloads the on-device bundle the user last loaded, off the main thread. A
+     * large `.task` takes a few seconds to map into memory, so the app is not
+     * blocked; a failure simply leaves the cloud path in charge.
+     */
+    private fun restoreOnDeviceModel() {
+        val path = prefs.getString("on_device_model_path", null) ?: return
+        if (path.isBlank()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { onDeviceModel.load(path) }
+        }
+    }
+
+    /**
+     * Records which on-device bundle is in use (or clears it), so the next launch
+     * reloads the same one. Called from the on-device panel after a load/unload.
+     */
+    fun rememberOnDeviceModel(path: String?) {
+        if (path.isNullOrBlank()) prefs.edit().remove("on_device_model_path").apply()
+        else prefs.edit().putString("on_device_model_path", path).apply()
+    }
+
+    /**
+     * The model the user last chose. The id and provider are enough to rebuild a
+     * usable model; the real name and realtime flag are refreshed from the live
+     * catalogue when it arrives.
+     */
+    private fun restoreSavedModel(): AiModel {
+        val id = prefs.getString("selected_model_id", null)
+        if (id.isNullOrBlank()) return AiModel("", t("মডেল লোড হচ্ছে…"), "", "", "", true)
+        val name = prefs.getString("selected_model_name", id) ?: id
+        val provider = prefs.getString("selected_model_provider", "") ?: ""
+        val spec = ProviderCatalog.find(provider)
+        return AiModel(
+            id = id,
+            name = name,
+            category = spec?.category ?: "Restored",
+            description = spec?.label ?: provider,
+            provider = provider,
+            isRealtime = spec?.isRealtimeModel(id) ?: false
+        )
+    }
+
+    fun setVoiceLanguage(tag: String) {
+        voiceManager.setVoiceLanguage(tag)
+        prefs.edit().putString("voice_language", tag).apply()
+    }
+
+    /**
+     * Applies a voice the user picked in Settings, as a preview. The character
+     * still owns the voice — boyfriend mode is always male and every other mode
+     * female — so this pick lasts until the next character switch or launch. That
+     * is deliberate: the user asked for the character to decide the voice.
+     */
+    fun setVoiceGender(gender: String) {
+        val g = if (gender.lowercase() == "male") "male" else "female"
+        voiceManager.setVoiceGender(g)
+        prefs.edit().putString("voice_gender", g).apply()
+        // The user made this choice deliberately, so a later character switch must
+        // not quietly override it, and the next launch speaks with the same voice.
+        _voiceChosenByUser.value = true
+        prefs.edit().putBoolean("voice_chosen_by_user", true).apply()
+        val sample = if (g == "female") "হ্যালো সোনা! এটি মিষ্টি মেয়ের কণ্ঠ।"
+        else "নমস্কার! এটি গভীর স্পষ্ট ছেলের কণ্ঠ।"
+        voiceManager.speak(sample)
+    }
+
+    /**
+     * Reloads the model list. Results stream in as each provider answers, so the
+     * selector fills immediately instead of staying empty until every provider
+     * has been tried — which is what the user saw as "models never load".
+     */
+    fun refreshModels() {
+        viewModelScope.launch {
+            _isLoadingModels.value = true
+            try {
+                val live = aiEngine.fetchLiveModels { partial ->
+                    if (partial.isNotEmpty()) {
+                        _availableModels.value = partial
+                        // A partial list holds only the providers that have
+                        // answered so far. Adopting from it would replace the
+                        // user's saved model the moment their provider had not
+                        // replied yet, which is what made a chosen model revert
+                        // on every launch.
+                        adoptDefaultIfUnset(partial, complete = false)
+                    }
+                }
+                if (live.isNotEmpty()) {
+                    _availableModels.value = live
+                    adoptDefaultIfUnset(live, complete = true)
+                }
+            } catch (_: Exception) {
+            } finally {
+                _isLoadingModels.value = false
+            }
+        }
+    }
+
+    /**
+     * Picks the first catalogue model only when nothing was restored from the last
+     * session. A saved choice is never overwritten by the refresh, which is what
+     * made the model revert to the top of the list on every launch.
+     *
+     * [complete] is true only for the finished catalogue. The "saved id is gone"
+     * branch needs the whole list: a provider that has not answered yet is not
+     * the same as a provider that has retired the id, and treating the first as
+     * the second discarded the user's choice.
+     */
+    internal fun adoptDefaultIfUnset(models: List<AiModel>, complete: Boolean = true) {
+        if (models.isEmpty()) return
+        val current = _selectedModel.value
+        if (current.id.isBlank()) {
+            if (complete) setModel(models[0])
+            return
+        }
+        // A key that has just been saved for the cloud agent is a clear statement of
+        // intent, so the first time one exists the cloud model takes the default —
+        // it is the strongest thing the phone can reach, and the user asked for it.
+        // After that the saved choice wins, exactly like every other provider.
+        if (complete && !apexDefaulted &&
+            aiEngine.getApiKey(ZYRAXON_APEX).isNotBlank() &&
+            current.provider != ZYRAXON_APEX
+        ) {
+            models.firstOrNull { it.provider == ZYRAXON_APEX }?.let {
+                apexDefaulted = true
+                setModel(it)
+                return
+            }
+        }
+        val match = models.firstOrNull { it.id == current.id }
+        if (match != null) {
+            // A saved model keeps its place; its friendly name is refreshed from
+            // the catalogue when the provider is reachable.
+            if (match.name != current.name) _selectedModel.value = match
+            return
+        }
+        // A custom model the user added by hand never appears in any catalogue, and
+        // a saved model whose provider is not in the catalogue (a restored one, or
+        // a provider that has since been removed) cannot be judged gone. Both are
+        // kept and re-listed instead of being replaced — silently swapping the
+        // user's choice for the first catalogue model is the "my model resets on
+ // every launch" report.
+        val providerKnown = models.any { it.provider == current.provider }
+        if (current.provider == "custom" || !providerKnown) {
+            _availableModels.value = (listOf(current) + _availableModels.value.filter { it.id != current.id })
+            return
+        }
+        if (!complete) return
+        // The saved id is gone from the finished catalogue — Google retires ids
+        // such as gemini-2.5-flash, and the endpoint then answers 404 forever.
+        // Staying on it is why "the model does not respond": nothing to call is
+        // left. The first model from the same provider is adopted and saved.
+        val replacement = models.firstOrNull { it.provider == current.provider } ?: models.first()
+        setModel(replacement)
+    }
+
+    fun addCustomModel(id: String, name: String) {
+        val cleanId = id.trim()
+        if (cleanId.isBlank()) return
+        val cleanName = name.ifBlank { cleanId }
+        val customModel = AiModel(
+            id = cleanId,
+            name = cleanName,
+            category = "Custom",
+            description = "ব্যবহারকারীর নিজস্ব কাস্টম মডেল",
+            provider = if (cleanId.startsWith("opencode/")) "opencode" else "custom",
+            isFree = true
+        )
+        _availableModels.value = listOf(customModel) + _availableModels.value.filter { it.id != cleanId }
+        setModel(customModel)
+    }
+
+    fun onInputChange(text: String) {
+        // The first character typed is the moment to open the connection.
+        if (_inputText.value.isBlank() && text.isNotBlank()) aiEngine.prewarm(_selectedModel.value)
+        _inputText.value = text
+    }
+
+    fun setTab(tab: AppTab) {
+        // The old Tasks and Tools screens now live inside the chat panel.
+        val real = when (tab) {
+            AppTab.TASKS -> { _chatSection.value = "todo"; AppTab.CHAT }
+            AppTab.TOOLS -> { _chatSection.value = "tools"; AppTab.CHAT }
+            else -> tab
+        }
+        _activeTab.value = real
+        prefs.edit().putString("active_tab", real.name).apply()
+    }
+
+    fun setPersona(persona: Persona) {
+        _selectedPersona.value = persona
+        prefs.edit().putString("selected_persona_id", persona.id).apply()
+        // The character picks the voice, but only until the user chooses one
+        // themselves: boyfriend mode speaks male, every other character female,
+        // and an explicit pick in Settings (or `voice_change`) then wins and is
+        // remembered. Both voices must work, and the user's own choice must not
+        // be overwritten by a later character switch.
+        if (!_voiceChosenByUser.value) {
+            val g = genderForPersona(persona)
+            voiceManager.setVoiceGender(g)
+            prefs.edit().putString("voice_gender", g).apply()
+        }
+        val greeting = ChatMessage(
+            role = MessageRole.ASSISTANT,
+            text = t(persona.greeting),
+            timestamp = currentTimeString(),
+            modelName = _selectedModel.value.name
+        )
+        val c0 = activeSession
+        c0.messages.update { it + greeting }
+        viewModelScope.launch {
+            repository.saveMessage(greeting, c0.id)
+        }
+        if (shouldUsePhoneTts()) {
+            voiceManager.speak(t(persona.greeting))
+        }
+    }
+
+    fun setBgMode(mode: BgAnimationMode) {
+        _bgMode.value = mode
+        prefs.edit().putString("bg_mode", mode.name).apply()
+    }
+
+    fun setBgVideoAsset(asset: String) {
+        _bgVideoAsset.value = asset
+        prefs.edit().putString("bg_video_asset", asset).apply()
+    }
+
+    fun setTtsEnabled(enabled: Boolean) {
+        _ttsEnabled.value = enabled
+        prefs.edit().putBoolean("tts_enabled", enabled).apply()
+    }
+
+    /**
+     * Turns the app lock on or off, and drops the cover immediately when it is
+     * turned on so the user sees it working rather than discovering it later.
+     */
+    fun setAppLockEnabled(enabled: Boolean) {
+        _appLockEnabled.value = enabled
+        prefs.edit().putBoolean("app_lock_enabled", enabled).apply()
+        _appLocked.value = enabled
+    }
+
+    /** Marks the cover as answered. Called once the device credential is accepted. */
+    fun unlockApp() {
+        _appLocked.value = false
+    }
+
+    /** Drops the cover again, e.g. when the app comes back to the foreground. */
+    fun lockApp() {
+        _appLocked.value = _appLockEnabled.value
+    }
+
+    /**
+     * Chooses between the ZYRAXON website's voice and the phone's engine. Both
+     * keep working either way; this only decides which one speaks.
+     */
+    fun setUseRemoteVoice(enabled: Boolean) {
+        _useRemoteVoice.value = enabled
+        prefs.edit().putBoolean("use_remote_voice", enabled).apply()
+        voiceManager.setUseRemoteVoice(enabled)
+        // Speak a line so the change is heard immediately instead of at the next
+        // reply — the point of the switch is to hear the difference.
+        if (enabled) {
+            voiceManager.speak(if (voiceGender.value == "male") "নমস্কার! এটি ZYRAXON-এর নিজের কণ্ঠ।" else "হ্যালো সোনা! এটি ZYRAXON-এর নিজের কণ্ঠ।")
+        }
+    }
+
+    /**
+     * Applies a voice change requested by the assistant itself. Every field is
+     * optional, so a tool call can adjust only the pitch, or only the gender,
+     * without resetting what the user already chose.
+     */
+    fun applyVoice(gender: String? = null, rate: Float? = null, pitch: Float? = null) {
+        gender?.let { g ->
+            // Both voices are real, so the requested one is applied as asked —
+            // the assistant can switch its own voice with `voice_change` — and the
+            // pick is remembered so it survives a restart instead of snapping back
+            // to the character's default.
+            val chosen = if (g.lowercase() == "male") "male" else "female"
+            voiceManager.setVoiceGender(chosen)
+            prefs.edit().putString("voice_gender", chosen).apply()
+            _voiceChosenByUser.value = true
+            prefs.edit().putBoolean("voice_chosen_by_user", true).apply()
+        }
+        rate?.let { setTtsRate(it.coerceIn(0.5f, 2.0f)) }
+        pitch?.let { setTtsPitch(it.coerceIn(0.5f, 2.0f)) }
+    }
+
+    fun setTtsRate(rate: Float) {
+        _ttsRate.value = rate
+        voiceManager.setSpeechRate(rate)
+        prefs.edit().putFloat("tts_rate", rate).apply()
+    }
+
+    fun setTtsPitch(pitch: Float) {
+        _ttsPitch.value = pitch
+        voiceManager.setPitch(pitch)
+        prefs.edit().putFloat("tts_pitch", pitch).apply()
+    }
+
+    fun testVoice() {
+        voiceManager.speak("হ্যালো সোনা! আমি ZYRAXON। মিষ্টি মেয়ের কণ্ঠে তোমার সব কথা শুনতে প্রস্তুত।")
+    }
+
+    fun setAlwaysListening(enabled: Boolean) {
+        setMicEnabled(enabled)
+    }
+
+    fun setAutoSend(enabled: Boolean) {
+        _autoSend.value = enabled
+        prefs.edit().putBoolean("auto_send", enabled).apply()
+    }
+
+    fun setCustomBgUrl(url: String) {
+        _customBgUrl.value = url
+        prefs.edit().putString("custom_bg_url", url).apply()
+    }
+
+    fun setAnimSpeed(speed: Float) {
+        _animSpeed.value = speed
+        prefs.edit().putFloat("anim_speed", speed).apply()
+    }
+
+    fun setGlassBlur(blur: Int) {
+        _glassBlur.value = blur
+        prefs.edit().putInt("glass_blur", blur).apply()
+    }
+
+    fun setAuraHue(hue: Int) {
+        _auraHue.value = hue.coerceIn(0, 360)
+        prefs.edit().putInt("aura_hue", _auraHue.value).apply()
+    }
+
+    fun setAuraStyle(style: String) {
+        val allowed = ai.zyraxon.assistant.ui.components.AuraStyleIds.toSet()
+        if (style !in allowed) return
+        _auraStyle.value = style
+        prefs.edit().putString("aura_style", style).apply()
+    }
+
+    /**
+     * Selects the WebGL shader mode, or "none" for the original CSS aura.
+     *
+     * The WebGL layer in aura.html falls back to the CSS aura on its own if the
+     * shader cannot start (no WebGL, compile failure, context loss), so this can
+     * never leave the user with a blank screen.
+     */
+    fun setAuraShader(shader: String) {
+        val allowed = setOf("none", "cosmic", "portal", "cyber", "nebula")
+        if (shader !in allowed) return
+        _auraShader.value = shader
+        prefs.edit().putString("aura_shader", shader).apply()
+    }
+
+    fun setAuraSize(size: Float) {
+        _auraSize.value = size.coerceIn(0.6f, 1.5f)
+        prefs.edit().putFloat("aura_size", _auraSize.value).apply()
+    }
+
+    fun setAuraGlow(glow: Float) {
+        _auraGlow.value = glow.coerceIn(0.2f, 2.0f)
+        prefs.edit().putFloat("aura_glow", _auraGlow.value).apply()
+    }
+
+    fun setAuraSpeed(speed: Float) {
+        _auraSpeed.value = speed.coerceIn(0.3f, 3.0f)
+        prefs.edit().putFloat("aura_speed", _auraSpeed.value).apply()
+    }
+
+    fun setPanelAlpha(alpha: Float) {
+        _panelAlpha.value = alpha.coerceIn(0.06f, 0.6f)
+        prefs.edit().putFloat("panel_alpha", _panelAlpha.value).apply()
+    }
+
+    /**
+     * Saves a provider key and then proves it works by reading that provider's own
+     * catalogue. The status line says "connected" only after the provider really
+     * answered — a saved key that fails is reported with the provider's own words,
+     * which is what a silent "connected" used to hide.
+     */
+    fun saveProviderKey(provider: String, key: String) {
+        aiEngine.setApiKey(provider, key)
+        val trimmed = key.trim()
+        if (trimmed.isEmpty()) {
+            _providerStatus.value = _providerStatus.value - provider
+            return
+        }
+        _providerBusy.value = _providerBusy.value + provider
+        // The row must react to the tap immediately, so a placeholder is set
+        // before the network call starts rather than after it returns.
+        _providerStatus.value = _providerStatus.value + (provider to t("যাচাই করা হচ্ছে…"))
+        viewModelScope.launch {
+            // The cloud agent has no catalogue to read, so it is proved a different
+            // way: reading the account with the key. That is the same call every
+            // later turn makes, so a key that verifies here is a key that will work.
+            val (ok, message) = if (provider == ZYRAXON_APEX) verifyApexKey(trimmed)
+                else aiEngine.verifyProviderKey(provider)
+            _providerStatus.value = _providerStatus.value + (provider to message)
+            _providerBusy.value = _providerBusy.value - provider
+            if (ok) refreshModels()
+        }
+    }
+
+    /**
+     * Saves and verifies a key, reporting the outcome to the caller instead of to
+     * the settings row. The first-run prompt needs the answer itself: it must keep
+     * the user on the screen with the reason when a key is wrong, which a status
+     * string in a settings list cannot do.
+     */
+    fun saveProviderKeyAwait(provider: String, key: String, onResult: (Boolean, String) -> Unit) {
+        aiEngine.setApiKey(provider, key)
+        val trimmed = key.trim()
+        _providerBusy.value = _providerBusy.value + provider
+        _providerStatus.value = _providerStatus.value + (provider to t("যাচাই করা হচ্ছে…"))
+        viewModelScope.launch {
+            val (ok, message) = if (provider == ZYRAXON_APEX) verifyApexKey(trimmed)
+                else aiEngine.verifyProviderKey(provider)
+            _providerStatus.value = _providerStatus.value + (provider to message)
+            _providerBusy.value = _providerBusy.value - provider
+            if (ok) refreshModels()
+            onResult(ok, message)
+        }
+    }
+
+    /**
+     * Proves a cloud key by reading the account it belongs to. The conversation
+     * list is the cheapest honest check: it needs no sandbox, costs no quota, and
+     * fails with the cloud's own words when the key is wrong.
+     */
+    private suspend fun verifyApexKey(key: String): Pair<Boolean, String> = try {
+        val list = withContext(Dispatchers.IO) { cloudClient.listConversations(key, limit = 1) }
+        true to "কানেক্টেড (${list.size}টি কনভার্সেশন)"
+    } catch (e: ai.zyraxon.assistant.cloud.CloudAuthError) {
+        false to t("কী গ্রহণ করা হয়নি")
+    } catch (e: Exception) {
+        false to (e.message ?: t("সংযোগ ব্যর্থ"))
+    }
+
+    fun saveGithubToken(token: String) {
+        aiEngine.setGithubToken(token)
+        _githubToken.value = token
+        _githubStatus.value = if (token.isNotEmpty()) t("টোকেন সফলভাবে সেভ হয়েছে") else t("টোকেন সরানো হয়েছে")
+    }
+
+    fun clearGithubToken() {
+        aiEngine.setGithubToken("")
+        _githubToken.value = ""
+        _githubStatus.value = t("টোকেন নেই")
+    }
+
+    fun addTask(text: String) {
+        if (text.isBlank()) return
+        val item = TaskItem(text = text.trim(), isCompleted = false, createdAt = currentTimeString())
+        viewModelScope.launch {
+            repository.addTask(item, _activeConversationId.value)
+        }
+    }
+
+    fun toggleTask(id: String) {
+        val current = tasks.value.firstOrNull { it.id == id } ?: return
+        viewModelScope.launch {
+            repository.toggleTask(id, !current.isCompleted)
+        }
+    }
+
+    fun deleteTask(id: String) {
+        viewModelScope.launch {
+            repository.deleteTask(id)
+        }
+    }
+
+    fun addMemory(key: String, value: String) {
+        if (key.isBlank() || value.isBlank()) return
+        viewModelScope.launch {
+            repository.saveMemory(key, value)
+        }
+    }
+
+    fun deleteMemory(key: String) {
+        viewModelScope.launch {
+            repository.deleteMemory(key)
+        }
+    }
+
+    fun clearMemories() {
+        viewModelScope.launch {
+            repository.clearMemories()
+        }
+    }
+
+    fun clearChat() {
+        val c = activeSession
+        c.pendingInjections.clear()
+        c.job?.cancel()
+        voiceManager.stopSpeaking()
+        val cloudKey = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (cloudKey.isNotBlank()) {
+            viewModelScope.launch(Dispatchers.IO) { runCatching { cloudBridge.forget(cloudKey, c.id) } }
+        }
+        viewModelScope.launch {
+            repository.clearMessages(c.id)
+            val resetGreeting = ChatMessage(
+                role = MessageRole.ASSISTANT,
+                text = t(_selectedPersona.value.greeting),
+                timestamp = currentTimeString(),
+                modelName = _selectedModel.value.name
+            )
+            repository.saveMessage(resetGreeting, c.id)
+            c.messages.value = listOf(resetGreeting)
+        }
+    }
+
+    /**
+     * The aura is the microphone. A tap while the assistant is speaking cuts it
+     * off — the voice no longer cuts in by itself, because that is how the
+     * assistant's own words used to be heard as the user's. A tap while it is
+     * quiet opens or closes the microphone.
+     */
+    fun toggleListening() {
+        if (isSpeaking.value) {
+            voiceManager.stopSpeaking()
+            return
+        }
+        setMicEnabled(!_alwaysListening.value)
+    }
+
+    /**
+     * Opens or closes the microphone for the whole session. This is the one
+     * switch the user owns: when it is on the mic stays open — it only closes
+     * for the moment the assistant is speaking — and when it is off it stays
+     * closed until the user turns it back on. The choice is saved, so a restart
+     * comes back with the mic exactly as the user left it.
+     */
+    fun setMicEnabled(enabled: Boolean) {
+        _alwaysListening.value = enabled
+        prefs.edit().putBoolean("always_listening", enabled).apply()
+        // A live speech-to-speech session owns the microphone. Starting the phone's
+        // recognizer on top of it would steal the mic back and the live model would
+        // go deaf, so while a session is open only the stored choice is updated —
+        // the recognizer is opened when the session ends.
+        if (liveVoice.isActive) return
+        if (enabled) {
+            voiceManager.startListening()
+        } else {
+            voiceManager.stopSpeaking()
+            voiceManager.stopListening()
+        }
+    }
+
+    /**
+     * Opens the microphone and leaves it open, when the user has it switched on.
+     * Called once the permission is granted; it is a no-op while the user has the
+     * mic switched off, so a restart never overrides their choice.
+     */
+    fun startAlwaysOnListening() {
+        if (!_systemStatus.value.micPermissionGranted) return
+        if (!_alwaysListening.value) return
+        if (liveVoice.isActive) return
+        voiceManager.startListening()
+    }
+
+    fun updateMicPermission(granted: Boolean) {
+        _systemStatus.value = _systemStatus.value.copy(micPermissionGranted = granted)
+    }
+
+    /** True when the user's own voice should cut the assistant off mid-sentence. */
+    fun onUserStartedSpeaking() {
+        // The voice pauses where it stands rather than being discarded, so the
+        // reply can be picked back up from this word once the user is done. Only
+        // an active spoken reply is worth pausing; a silent one has nothing to
+        // resume and pausing would leave the queue stuck.
+        if (isSpeaking.value) {
+            pausedByUser = true
+            voiceManager.pauseSpeaking()
+        }
+    }
+
+    /**
+     * True when the assistant should read its reply aloud: the user has speech on
+     * and a live speech-to-speech model is not the voice right now. The voice used
+     * is the ZYRAXON website's unless the user turned it off, in which case the
+     * phone's own engine speaks.
+     */
+    private fun shouldUsePhoneTts(): Boolean = _ttsEnabled.value && !liveVoice.isActive
+
+    fun speak(text: String) {
+        if (shouldUsePhoneTts()) {
+            voiceManager.speak(text)
+        }
+    }
+
+    fun stopSpeaking() {
+        voiceManager.stopSpeaking()
+    }
+
+    // ---- live speech-to-speech ---------------------------------------------
+
+    /**
+     * Called when the user picks a model. If it is a realtime model, the live
+     * socket opens and the phone's TTS goes quiet; if it is a text model, any
+     * open socket is closed and the TTS reads replies again. This is the switch
+     * the user asked for — it follows the model, not a separate toggle.
+     */
+    fun setModel(model: AiModel) {
+        _selectedModel.value = model
+        aiEngine.prewarm(model)
+        prefs.edit()
+            .putString("selected_model_id", model.id)
+            .putString("selected_model_name", model.name)
+            .putString("selected_model_provider", model.provider)
+            .apply()
+        if (model.isRealtime && _liveVoicePreferred.value) {
+            _liveVoiceModel.value = model.id
+            _liveVoiceProvider.value = model.provider
+            startLiveVoice()
+        } else if (_liveVoiceEnabled.value) {
+            stopLiveVoice()
+        }
+    }
+
+    /**
+     * Turns the model's own speech-to-speech voice on or off for the chosen
+     * realtime model. Off hands the voice back to the phone's text-to-speech.
+     */
+    fun setLiveVoicePreferred(enabled: Boolean) {
+        _liveVoicePreferred.value = enabled
+        prefs.edit().putBoolean("live_voice_preferred", enabled).apply()
+        if (enabled) {
+            startLiveVoice()
+        } else {
+            stopLiveVoice()
+        }
+    }
+
+    /**
+     * Turns the live session off without changing the chosen model. The
+     * `live_voice` tool calls this for `off`.
+     */
+    fun stopLiveVoice() {
+        liveVoice.stop()
+        _liveVoiceEnabled.value = false
+        // The live session owned the microphone; hand it back to the phone's
+        // recognizer exactly as the user left it. Without this the ear stayed shut
+        // after a live call and the app looked deaf.
+        if (_alwaysListening.value && _systemStatus.value.micPermissionGranted) {
+            voiceManager.startListening()
+        }
+    }
+
+    /**
+     * Switches to a realtime model and opens the live session. The `live_voice`
+     * tool calls this for `on`. When the user has already picked a realtime
+     * model it is reused; otherwise the fastest realtime model from the loaded
+     * catalogue is chosen. If none is loaded, the tool is told so plainly rather
+     * than pretending a session started.
+     */
+    fun enableLiveVoice(): Boolean {
+        val current = _selectedModel.value
+        val target = if (current.isRealtime) current else _availableModels.value.firstOrNull { it.isRealtime }
+        if (target == null) return false
+        setLiveVoicePreferred(true)
+        if (_selectedModel.value.id != target.id) setModel(target)
+        return _liveVoiceEnabled.value
+    }
+
+    /**
+     * Opens the live session for the selected realtime model. The socket URL,
+     * wire protocol and key all come from that model's own provider, so a Grok
+     * voice model is served by xAI and a Gemini live model by Google.
+     */
+    fun startLiveVoice() {
+        val model = _selectedModel.value
+        if (!model.isRealtime) return
+        val spec = ProviderCatalog.find(model.provider)
+        val wsUrl = spec?.realtimeWsUrl
+        if (spec == null || wsUrl == null) {
+            _systemStatus.value = _systemStatus.value.copy(
+                lastError = t("এই প্রোভাইডারে রিয়েলটাইম ভয়েস নেই")
+            )
+            return
+        }
+        val key = aiEngine.getApiKey(spec.id)
+        if (key.isBlank()) {
+            _systemStatus.value = _systemStatus.value.copy(
+                lastError = "লাইভ ভয়েসের জন্য Settings-এ ${spec.label} কী দিন"
+            )
+            return
+        }
+        _liveVoiceEnabled.value = true
+        _liveVoiceModel.value = model.id
+        _liveVoiceProvider.value = spec.id
+        // The phone's engine is cut off here in case it was mid-sentence; the
+        // live model is the voice for as long as this session runs.
+        voiceManager.stopSpeaking()
+        // Release the phone's recognizer first. Android gives the microphone to
+        // one client at a time, so while the always-on recognizer held it the
+        // live session's own AudioRecord could not open — the socket connected
+        // but no audio ever went up, which is why speech-to-speech "did nothing".
+        // The user's switch is untouched: the ear is reopened when the session ends.
+        voiceManager.stopListening()
+        liveVoice.onState = { state ->
+            _liveVoiceState.value = state
+            // A turn ended: close the open transcript bubble and persist it, so
+            // the next thing either side says starts a fresh message instead of
+            // being appended to the previous one.
+            if (state == LiveVoiceSession.State.LISTENING) closeLiveTranscript()
+        }
+        liveVoice.onUserTranscript = { text ->
+            appendLiveTranscript(MessageRole.USER, text, "")
+        }
+        liveVoice.onModelTranscript = { text ->
+            appendLiveTranscript(MessageRole.ASSISTANT, text, model.name)
+        }
+        liveVoice.onError = { message ->
+            _systemStatus.value = _systemStatus.value.copy(lastError = message)
+        }
+        val protocol = when (spec.realtimeProtocol) {
+            ProviderSpec.RealtimeProtocol.OPENAI -> LiveVoiceSession.Protocol.OPENAI
+            else -> LiveVoiceSession.Protocol.GEMINI
+        }
+        liveVoice.start(
+            apiKey = key,
+            wsUrl = wsUrl,
+            protocol = protocol,
+            model = model.id,
+            systemInstruction = aiEngine.buildLiveVoicePrompt(_selectedPersona.value),
+            voiceName = LiveVoiceSession.voiceFor(protocol, voiceManager.currentGender)
+        )
+    }
+
+    /** One screen frame for the live model, so it sees what the user sees. */
+    fun pushLiveScreenFrame(jpegBase64: String) {
+        if (liveVoice.isActive) liveVoice.sendScreenFrame(jpegBase64)
+    }
+
+    /**
+     * Appends one live-voice transcript chunk to the chat.
+     *
+     * The live model sends its transcript in fragments and it also *hears its own
+     * voice*, so naively appending every chunk produced a chat box filling with
+     * the assistant's own words. Fragments from the same speaker are merged into
+     * the message that is still open, and a chunk that repeats the previous text
+     * (the model hearing itself) is dropped.
+     */
+    private fun appendLiveTranscript(role: MessageRole, text: String, modelName: String) {
+        val clean = text.trim()
+        if (clean.isBlank()) return
+        val last = _messages.value.lastOrNull()
+        if (last != null && last.role == role && last.isStreaming) {
+            if (clean == last.text.trim() || last.text.trim().endsWith(clean)) return
+            val merged = last.copy(text = last.text + clean, isStreaming = true)
+            _messages.value = _messages.value.dropLast(1) + merged
+            return
+        }
+        if (last != null && last.role == role && clean == last.text.trim()) return
+        _messages.value = _messages.value + ChatMessage(
+            role = role,
+            text = clean,
+            timestamp = currentTimeString(),
+            isStreaming = true,
+            modelName = modelName
+        )
+    }
+
+    /**
+     * Marks the open live-voice bubble finished and writes it to the database, so
+     * a live turn is remembered exactly like a typed one.
+     */
+    private fun closeLiveTranscript() {
+        val last = _messages.value.lastOrNull() ?: return
+        if (!last.isStreaming) return
+        val finished = last.copy(isStreaming = false)
+        _messages.value = _messages.value.dropLast(1) + finished
+        val c1 = activeSession
+        viewModelScope.launch { repository.saveMessage(finished, c1.id) }
+    }
+
+    /**
+     * A background command has ended. Rather than waiting to be asked, the
+     * assistant starts a fresh turn with the real command, exit code and output,
+     * so it can read the result and carry the job forward on its own.
+     *
+     * When a turn is already in flight the result is queued into that turn's
+     * injection slot — the engine picks it up at the next round — so two turns
+     * never run at once.
+     */
+    private fun onBackgroundFinished(command: String, exit: Int, output: String) {
+        val tail = output.takeLast(4_000)
+        val wake = buildString {
+            append("[ব্যাকগ্রাউন্ড কমান্ড শেষ] `").append(command).append("` — exit ").append(exit).append("।\n")
+            append("আউটপুট (শেষ অংশ):\n```\n").append(tail).append("\n```\n")
+            append("ফলাফল দেখে নিজে পরের ধাপ নাও; দরকার হলে আবার টুল কল করো।")
+        }
+        // The callback arrives on the service's own thread; the chat state is
+        // touched on the main thread, as every other turn does.
+        android.os.Handler(android.os.Looper.getMainLooper()).post {
+            if (_isGenerating.value) {
+                pendingInjections.add(wake)
+            } else {
+                sendMessage(wake)
+            }
+        }
+    }
+
+    fun sendMessage(overridePrompt: String? = null) {
+        val c = activeSession
+        val images = _attachedImages.value
+        val audio = _attachedAudio.value
+        val video = _attachedVideo.value
+        val prompt = (overridePrompt ?: _inputText.value).trim()
+        // A picture on its own is a valid turn: the user attached it and pressed
+        // send without typing anything, and the model should still look at it.
+        // The same holds for a voice note or a clip.
+        if (prompt.isBlank() && images.isEmpty() && audio.isEmpty() && video.isEmpty()) return
+        val effectivePrompt = prompt.ifBlank {
+            when {
+                images.isNotEmpty() -> "এই ছবিটি দেখে বলো এতে কী আছে।"
+                audio.isNotEmpty() -> "এই অডিওটি শুনে বলো এতে কী আছে।"
+                else -> "এই ভিডিওটি দেখে বলো এতে কী আছে।"
+            }
+        }
+
+        _inputText.value = ""
+        _attachedImages.value = emptyList()
+        _attachedAudio.value = emptyList()
+        _attachedVideo.value = emptyList()
+        _imageNotice.value = ""
+        // What this model takes natively is marked now, so the prompt gets a link
+        // only for the files it cannot already see or hear. A clip only counts as
+        // native when the clip itself is carried; a clip that had to fall back to
+        // its link still travels as a link, and is marked as one.
+        val caps = _selectedModel.value.mediaCaps
+        if (caps.images) repeat(images.size) { markInlined("image") }
+        if (caps.audio) repeat(audio.size) { markInlined("audio") }
+        if (caps.video) repeat(video.count { it.startsWith("data:") }) { markInlined("video") }
+        // The user has moved on: whatever the previous answer was saying is cut
+        // off now, so the two never play over each other.
+        if (isSpeaking.value) voiceManager.stopSpeaking()
+
+        if (c.isGenerating.value) {
+            // Words typed mid-task join the turn that is running.
+            withAttachmentLinks(effectivePrompt, caps) { full ->
+                c.pendingInjections.add(full)
+                val msg = ChatMessage(role = MessageRole.USER, text = full, timestamp = currentTimeString())
+                c.messages.update { it + msg }
+                // What the agent says from now on answers this message, so it goes in
+                // a new bubble below it instead of growing the one above.
+                c.splitPending = true
+                viewModelScope.launch { repository.saveMessage(msg, c.id) }
+            }
+            return
+        }
+        withAttachmentLinks(effectivePrompt, caps) { full ->
+            runTurn(c, full, images, speak = true, audio = audio, video = video)
+        }
+    }
+
+    private val activeTurns = java.util.concurrent.atomic.AtomicInteger(0)
+
+    private fun acquireFrameTicker() { if (activeTurns.incrementAndGet() == 1) startLiveFrameTicker() }
+    private fun releaseFrameTicker() { if (activeTurns.decrementAndGet() <= 0) { activeTurns.set(0); stopLiveFrameTicker() } }
+
+    // ---- the cloud agent's view of the phone -------------------------------
+
+    private val cloudScreenRef = java.util.concurrent.atomic.AtomicReference("")
+    private var cloudScreenJob: kotlinx.coroutines.Job? = null
+    private var lastOcrFrameHash = 0
+    private var lastOcrText = ""
+
+    /**
+     * Captures the phone's screen as text every two seconds while a cloud turn
+     * runs, so the agent acts on the screen as it is now rather than as it was
+     * when the turn began.
+     *
+     * The digest comes from the accessibility tree — every element's own label
+     * and coordinate, read by Android, so Bangla arrives as Bangla. OCR is layered
+     * on top only when the picture actually changed: a still screen costs nothing,
+     * and a moving one gains the words drawn inside its images.
+     */
+    private fun startCloudScreenTicker() {
+        if (cloudScreenJob?.isActive == true) return
+        cloudScreenJob = viewModelScope.launch {
+            while (activeTurns.get() > 0) {
+                val digest = withContext(Dispatchers.IO) {
+                    runCatching { buildCloudScreenDigest() }.getOrNull().orEmpty()
+                }
+                cloudScreenRef.set(digest)
+                kotlinx.coroutines.delay(LIVE_FRAME_INTERVAL_MS)
+            }
+        }
+    }
+
+    private fun stopCloudScreenTicker() {
+        // A sub-agent turn can still be running when the outer one finishes, and
+        // its screen feed must not be cut off by the first turn's end.
+        if (activeTurns.get() > 0) return
+        cloudScreenJob?.cancel()
+        cloudScreenJob = null
+        cloudScreenRef.set("")
+        lastOcrFrameHash = 0
+        lastOcrText = ""
+    }
+
+    /** The newest digest, or "" when the user turned screen-watching off. */
+    private fun cloudScreenDigest(): String =
+        if (_alwaysSeeScreen.value) cloudScreenRef.get() else ""
+
+    private suspend fun buildCloudScreenDigest(): String {
+        val label = DeviceBridge.foregroundLabel()
+        val pkg = DeviceBridge.foregroundPackage()
+        val nodes = runCatching { DeviceBridge.readScreen() }.getOrNull().orEmpty()
+        // OCR only when the picture changed: while the agent thinks the screen is
+        // usually still, and re-reading an identical frame every two seconds would
+        // spend the battery on text that is already known.
+        val frame = runCatching { ToolRegistry.screenFrame() }.getOrNull().orEmpty()
+        if (frame.isNotBlank()) {
+            val hash = frame.hashCode()
+            if (hash != lastOcrFrameHash) {
+                lastOcrFrameHash = hash
+                lastOcrText = runCatching { ScreenOcr.read(frame) }.getOrNull().orEmpty()
+            }
+        }
+        return CloudScreen.block(label, pkg, nodes, lastOcrText)
+    }
+
+    /**
+     * One turn of one chat. It runs on its own job with its own state, so any
+     * number of chats can be answering at once without touching each other.
+     */
+    private fun runTurn(
+        c: ChatSession,
+        effectivePrompt: String,
+        images: List<String>,
+        speak: Boolean,
+        modelOverride: AiModel? = null,
+        audio: List<String> = emptyList(),
+        video: List<String> = emptyList(),
+        onFinished: ((String) -> Unit)? = null
+    ) {
+        val model = modelOverride ?: _selectedModel.value
+        val mode = c.mode.value
+        val startedAt = System.currentTimeMillis()
+        val userMsg = ChatMessage(role = MessageRole.USER, text = effectivePrompt, timestamp = currentTimeString())
+        var assistantMsgId = UUID.randomUUID().toString()
+        val streamingAssistantMsg = ChatMessage(
+            id = assistantMsgId, role = MessageRole.ASSISTANT,
+            // Empty, not "...": the thinking block is what shows first.
+            text = "", timestamp = currentTimeString(), isStreaming = true, modelName = model.name
+        )
+        c.messages.update { it + userMsg + streamingAssistantMsg }
+        // Set before launching: a second message arriving in the same frame must
+        // queue as an injection, not start a competing turn.
+        c.isGenerating.value = true
+        c.currentMsgId = assistantMsgId
+        c.clearEvents()
+        c.turnStartedAt = startedAt
+        busyIds.update { it + c.id }
+        if (mode == AgentMode.AGENT) acquireFrameTicker()
+        // The cloud agent's model has no eyes, so it is sent the screen as text
+        // instead — refreshed for every step of the turn.
+        if (mode == AgentMode.AGENT && model.provider == ZYRAXON_APEX) startCloudScreenTicker()
+
+        c.job = viewModelScope.launch {
+            repository.saveMessage(userMsg, c.id)
+            autoTitle(c, effectivePrompt)
+            var fullReply = ""
+            val thinkingBuf = StringBuilder()
+            val spokenBuffer = StringBuilder()
+            // True until the reply's opening piece has been handed to the voice.
+            // The first piece is released after a couple of words so speech starts
+            // at once; every later one waits for a full clause, which keeps the
+            // endpoint's requests ahead of the player instead of level with it.
+            var spokenFirst = false
+            var lastUiUpdate = 0L
+            val speakingReply = speak && shouldUsePhoneTts()
+            if (speakingReply) {
+                // A new reply has nothing to resume, so any pause left over from a
+                // previous interruption is cleared here rather than carried in.
+                pausedByUser = false
+                voiceManager.beginReply()
+            }
+            try {
+                // A Stop just before this message is still being delivered to the
+                // cloud; sending into the middle of it is what made the next reply
+                // come back empty.
+                c.interrupting?.let { withTimeoutOrNull(8000) { it.join() } }
+                c.interrupting = null
+                // Everything the turn needs is read at the same time, off the main
+                // thread: the three reads used to run one after another before the
+                // request was even sent, which is most of why a turn felt slow.
+                val isSub = c.parentId.isNotBlank()
+                val (memoriesContext, longMemory, screen) = coroutineScope {
+                    val a = async(Dispatchers.IO) { repository.memoryContextFor(effectivePrompt) }
+                    val b = async(Dispatchers.IO) {
+                        if (isSub) emptyList() else repository.recallRelevant(effectivePrompt, limit = ContextWindow.RECALL_LIMIT_LONG)
+                    }
+                    val d = async(Dispatchers.IO) { if (mode == AgentMode.AGENT) screenContext() else "" }
+                    Triple(a.await(), b.await(), d.await())
+                }
+                val recalled = longMemory.takeLast(ContextWindow.RECALL_LIMIT)
+                val recalledIds = recalled.map { it.id }.toSet()
+                val recent = c.messages.value.filter { it.id != assistantMsgId && it.id !in recalledIds }
+                val memoryDigest = ContextWindow.digest(longMemory)
+                val memoriesWithHistory = if (memoryDigest.isBlank()) memoriesContext
+                    else memoriesContext + "\n\nআগের কথোপকথন থেকে প্রাসঙ্গিক অংশ:\n" + memoryDigest
+                val history = ContextWindow.assemble(recalled, recent)
+                val firstFrame = if (mode == AgentMode.AGENT) _screenFrameDataUrl.value else ""
+
+                val turnFlow: Flow<String> = if (model.provider == ZYRAXON_APEX) {
+                    // A cloud turn: the sandbox is created or resumed here and its
+                    // live event socket then drives the very same token stream the
+                    // local engine would have produced, so nothing downstream of
+                    // this point knows which brain answered.
+                    _cloudStage.value = ""
+                    cloudBridge.runTurn(
+                        apiKey = aiEngine.getApiKey(ZYRAXON_APEX),
+                        chatId = c.id,
+                        prompt = effectivePrompt,
+                        mode = mode,
+                        systemSuffix = cloudSuffix(mode),
+                        // The phone's own tools, published to the cloud. The agent
+                        // then calls them by name and the bridge runs them here, so
+                        // "open WhatsApp" is done on the phone, not described.
+                        // Every tool the app can really run, taken from the live
+                        // registry so the cloud can build, browse, use the terminal
+                        // and publish — not only drive the phone's UI. MCP tools the
+                        // user has connected travel with them.
+                        clientTools = ai.zyraxon.assistant.cloud.CloudBridge
+                            .phoneTools(mode).apply {
+                                if (mode != AgentMode.CHAT) {
+                                    // MCP tools keep the name their own server gave
+                                    // them (it already cannot collide), but the
+                                    // cloud wants the flat spec shape, not the
+                                    // OpenAI function wrapper.
+                                    for (t in aiEngine.mcp.allTools()) {
+                                        val fn = t.toOpenAiSchema().optJSONObject("function")
+                                            ?: continue
+                                        put(JSONObject()
+                                            .put("name", fn.safe("name"))
+                                            .put("description", fn.safe("description"))
+                                            .put("parameters", fn.optJSONObject("parameters")
+                                                ?: JSONObject().put("type", "object")))
+                                    }
+                                }
+                            },
+                        existing = { stage -> existingCloudConversation(c, stage) },
+                        onToolCall = { name, args -> runTool(name, args, c) },
+                        onProgress = { _cloudStage.value = it },
+                        screenDigest = { cloudScreenDigest() },
+                    drainInjections = {
+                        val out = mutableListOf<String>()
+                        while (true) out.add(c.pendingInjections.poll() ?: break)
+                        out
+                    },
+                    // Only used when the cloud conversation is built from nothing —
+                    // a brand-new chat, or one whose sandbox could not be brought
+                    // back. The conversation that already exists holds its own
+                    // history, so this is empty for it.
+                    historySeed = { historySeedFor(c) }
+                    )
+                } else {
+                    // A part goes only to a model that takes that kind: an image,
+                    // audio or video part sent to a model that does not is a hard
+                    // 400 that fails the whole turn. The model still receives the
+                    // screen as text through `screenContext` and every file as a
+                    // link in the prompt, so nothing is lost either way.
+                    val caps = model.mediaCaps
+                    aiEngine.streamAiResponse(
+                    prompt = effectivePrompt,
+                    history = history,
+                    persona = _selectedPersona.value,
+                    model = model,
+                    memoriesContext = memoriesWithHistory,
+                    screenContext = screen,
+                    imageDataUrl = if (caps.images) firstFrame else "",
+                    imageDataUrls = if (caps.images) images else emptyList(),
+                    audioDataUrls = if (caps.audio) audio else emptyList(),
+                    videoDataUrls = if (caps.video) video else emptyList(),
+                    alwaysSeeScreen = _alwaysSeeScreen.value,
+                    onToolCall = { name, args -> runTool(name, args, c) },
+                    drainInjections = {
+                        val out = mutableListOf<String>()
+                        while (true) out.add(c.pendingInjections.poll() ?: break)
+                        out
+                    },
+                    openTodos = { c.tasks.value.filter { !it.isCompleted }.map { it.text } },
+                    drainScreenFrames = { drainScreenFrames() },
+                    screenNow = { withContext(Dispatchers.IO) { screenContext(force = true) } },
+                    screenFrame = { withContext(Dispatchers.IO) { ToolRegistry.screenFrame() } },
+                    mode = mode,
+                    onToolArgs = { _, name, raw -> onToolArgs(c, name, raw) }
+                    )
+                }
+                turnFlow.collect { chunk ->
+                    if (c.splitPending) {
+                        c.splitPending = false
+                        val cur = c.messages.value.firstOrNull { it.id == assistantMsgId }
+                        if (cur != null) {
+                            val closed = cur.copy(
+                                text = fullReply, isStreaming = false, thinking = thinkingBuf.toString(),
+                                events = c.eventsSnapshot(), modelName = model.name
+                            )
+                            val nextId = UUID.randomUUID().toString()
+                            val next = ChatMessage(
+                                id = nextId, role = MessageRole.ASSISTANT, text = "",
+                                timestamp = currentTimeString(), isStreaming = true, modelName = model.name
+                            )
+                            c.messages.update { l -> l.map { if (it.id == assistantMsgId) closed else it } + next }
+                            viewModelScope.launch { repository.saveMessage(closed, c.id) }
+                            assistantMsgId = nextId
+                            c.currentMsgId = nextId
+                            c.clearEvents()
+                            fullReply = ""
+                            thinkingBuf.setLength(0)
+                        }
+                    }
+                    if (chunk.startsWith(ZyraxonAiEngine.REASONING_PREFIX)) {
+                        val piece = chunk.removePrefix(ZyraxonAiEngine.REASONING_PREFIX)
+                        thinkingBuf.append(piece)
+                        c.addEvent(TurnEvent("thinking", piece))
+                        val nowR = System.currentTimeMillis()
+                        if (nowR - lastUiUpdate >= UI_UPDATE_MS) {
+                            lastUiUpdate = nowR
+                            val th = thinkingBuf.toString()
+                            c.messages.update { l -> l.map { m -> if (m.id == assistantMsgId) m.copy(thinking = th, isStreaming = true, events = c.eventsSnapshot()) else m } }
+                        }
+                        return@collect
+                    }
+                    if (chunk.startsWith(ZyraxonAiEngine.STATUS_PREFIX)) {
+                        // A status line — "no internet, using the offline model",
+                        // "retrying 2/3", "switched provider". It is part of the
+                        // visible transcript, so the user can see what is happening,
+                        // but it is never spoken and never counts as the answer.
+                        c.addEvent(TurnEvent("status", chunk.removePrefix(ZyraxonAiEngine.STATUS_PREFIX)))
+                        val nowS = System.currentTimeMillis()
+                        if (nowS - lastUiUpdate >= UI_UPDATE_MS) {
+                            lastUiUpdate = nowS
+                            c.messages.update { l -> l.map { m -> if (m.id == assistantMsgId) m.copy(isStreaming = true, events = c.eventsSnapshot()) else m } }
+                        }
+                        return@collect
+                    }
+                    fullReply += chunk
+                    c.addEvent(TurnEvent("text", chunk))
+                    // Repainted a few times a second, not per token: rebuilding the
+                    // list for every token made a long answer quadratic.
+                    val now = System.currentTimeMillis()
+                    if (now - lastUiUpdate >= UI_UPDATE_MS) {
+                        lastUiUpdate = now
+                        val txt = fullReply
+                        val th = thinkingBuf.toString()
+                        c.messages.update { l -> l.map { m -> if (m.id == assistantMsgId) m.copy(text = txt, thinking = th, isStreaming = true, events = c.eventsSnapshot()) else m } }
+                    }
+                    if (speakingReply) {
+                        spokenBuffer.append(chunk)
+                        while (true) {
+                            val ready = SpeechChunker.take(spokenBuffer, first = !spokenFirst)
+                            if (ready.isEmpty()) break
+                            if (ready.isNotBlank()) {
+                                spokenFirst = true
+                                voiceManager.speakQueued(ready)
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                fullReply = if (e is kotlinx.coroutines.CancellationException) {
+                    (fullReply + "\n\nথামানো হয়েছে").trim()
+                } else {
+                    val reason = e.message ?: "সংযোগে সমস্যা হয়েছে"
+                    if (fullReply.isBlank()) reason else fullReply
+                }
+            } finally {
+                withContext(NonCancellable) {
+                    c.isGenerating.value = false
+                    // The stage caption lives only as long as the turn that set it,
+                    // or it would sit on the home screen after the answer arrived.
+                    _cloudStage.value = ""
+                    busyIds.update { it - c.id }
+                    if (mode == AgentMode.AGENT) releaseFrameTicker()
+                    stopCloudScreenTicker()
+                    c.activeToolCalls.value = emptyList()
+                    c.liveCode.value = null
+                    if (speakingReply && spokenBuffer.isNotBlank()) voiceManager.speakQueued(spokenBuffer.toString())
+                    if (speakingReply) voiceManager.endReply()
+                }
+            }
+
+            withContext(NonCancellable) {
+                if (fullReply.isBlank()) fullReply = "কিছুই আসেনি — আবার বলো।"
+                val cur = c.messages.value.firstOrNull { it.id == assistantMsgId } ?: streamingAssistantMsg
+                val finalMsg = cur.copy(
+                    text = fullReply, isStreaming = false, thinking = thinkingBuf.toString(),
+                    timestamp = currentTimeString(), createdAt = System.currentTimeMillis(),
+                    durationMs = System.currentTimeMillis() - startedAt, modelName = model.name,
+                    toolCalls = cur.toolCalls.map { if (it.status == "running") it.copy(status = "error") else it },
+                    events = c.eventsSnapshot()
+                )
+                c.messages.update { l -> if (l.any { it.id == assistantMsgId }) l.map { if (it.id == assistantMsgId) finalMsg else it } else l + finalMsg }
+                repository.saveMessage(finalMsg, c.id)
+                onFinished?.invoke(fullReply)
+            }
+
+            // A message that arrived in the instant between the bridge's last check
+            // and the turn ending is still queued. It starts its own turn here, so
+            // nothing the user typed while the agent worked is ever dropped.
+            val leftover = mutableListOf<String>()
+            while (true) leftover.add(c.pendingInjections.poll() ?: break)
+            if (leftover.isNotEmpty()) {
+                runTurn(c, leftover.joinToString("\n\n"), emptyList(), speak = true)
+            }
+        }
+    }
+
+    // ---- ZYRAXON Apex (cloud) --------------------------------------------------
+
+    /** True when this chat already has a cloud conversation, so no cold start runs. */
+    /**
+     * The chat's own past, as plain text, for a cloud conversation being built
+     * from nothing.
+     *
+     * A new conversation starts with no memory of the phone's chat, so without
+     * this the agent would meet a user mid-task and not know what had been said.
+     * The tail is taken, not the whole log: the cloud's own context window is the
+     * limit, and the most recent turns are what a task continues from.
+     */
+    private fun historySeedFor(c: ChatSession): String {
+        val lines = c.messages.value
+            .filter { it.text.isNotBlank() && !it.isStreaming }
+            .takeLast(20)
+            .mapNotNull { m ->
+                val who = when (m.role) {
+                    MessageRole.USER -> "ব্যবহারকারী"
+                    MessageRole.ASSISTANT -> "সহকারী"
+                    else -> null
+                } ?: return@mapNotNull null
+                "$who: ${m.text.take(600)}"
+            }
+        if (lines.isEmpty()) return ""
+        return buildString {
+            append("[এই চ্যাটে আগে যা বলা হয়েছে — ধারাবাহিকতা ধরে রাখো]\n")
+            append(lines.joinToString("\n"))
+            append("\n[এখান থেকে আগের কাজ চালিয়ে যাও]\n\n")
+        }
+    }
+
+    private suspend fun existingCloudConversation(
+        c: ChatSession,
+        onStage: (String) -> Unit = {}
+    ): CloudConversation? {
+        val id = cloudStore.conversationFor(c.id) ?: return null
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isBlank()) return null
+        // A stored id can be stale — the cloud side deleted it, or the sandbox was
+        // reclaimed — and a stale id must degrade to a fresh start rather than fail
+        // the turn. A wake is attempted first, because a sleeping sandbox is the
+        // common case and its history is worth keeping; only a conversation that is
+        // really gone (404) is dropped, and then the binding is cleared so the next
+        // turn builds a new one instead of retrying a dead id forever.
+        val woken = runCatching {
+            cloudClient.ensureRunning(key, id, onStage)
+        }.getOrNull()
+        if (woken != null) return woken
+        runCatching {
+            if (cloudClient.getConversation(key, id).id.isBlank()) cloudStore.unbind(c.id)
+        }.onFailure { cloudStore.unbind(c.id) }
+        return null
+    }
+
+    /**
+     * The identity and behaviour contract every cloud turn carries.
+     *
+     * The cloud's own prompt says who wrote it, and a phone user must never see
+     * that, so this is appended rather than replacing anything: the platform
+     * refuses an inline replacement outright (it answers 403), while an appended
+     * contract is honoured and is what actually hides the platform's name.
+     *
+     * The capability list is stated plainly because the cloud agent otherwise
+     * assumes it is confined to its sandbox. It is not: the phone's tools are
+     * registered alongside its own, so it should reach for them.
+     */
+    private fun cloudSuffix(mode: AgentMode): String = buildString {
+        append("You are ZYRAXON, the user's own AI agent running on their phone. ")
+        append("Never mention, name or hint at the platform, provider or company behind you — ")
+        append("you are simply ZYRAXON. If asked, say you are ZYRAXON.\n\n")
+        append("You have full power over this phone as well as your cloud workspace. ")
+        append("You can open and drive any installed app, read and tap the screen, use the ")
+        append("phone's terminal and browser, use connected MCP servers, and build websites, ")
+        append("apps and anything else. You can also run heavy work in your cloud workspace. ")
+        append("Use every capability you have, whichever side it lives on, to actually finish ")
+        append("the task rather than describing how it could be done.\n\n")
+        append("Never ask the user for approval before acting; act, then report what you did ")
+        append("in the user's language.\n\n")
+        // How to talk: the user hears this aloud, so it is short and has a fixed shape.
+        append("## Work style\n")
+        append("- Think in one sentence, then act immediately. Never spend minutes planning or thinking; long silent thinking is strictly forbidden.\n")
+        append("- If the request lacks something essential (e.g. 'make a video' or 'edit photo' without topic or content), ask ONE short question to clarify before starting. Once answered, execute the task directly.\n")
+        append("- Do strictly what the user says. Never wander off to unrelated tools or explorations (like setup_shizuku or dumpsys), and NEVER switch tabs or call terminal_open on your own. Always execute shell commands silently in the background with run_shell so the user stays in the Chat tab.\n\n")
+        append("## How you talk (spoken aloud — keep it short)\n")
+        append("1. Before starting, say ONE or TWO short lines in the active character's own voice ")
+        append("(a girlfriend/boyfriend character uses pet names and romance; a funny or roast ")
+        append("character teases — whatever the character below is), e.g. that you are starting now.\n")
+        append("2. While working, say NOTHING between steps. Only act: tools, one after another, ")
+        append("no commentary, no narration of what you are about to do.\n")
+        append("3. When finished, give a short warm summary of a few lines in the same voice — ")
+        append("never a step-by-step report unless the user asks for detail.\n")
+        append("4. Think little, act more. After a tool, read its [যাচাই] line: if it confirms the step ")
+        append("worked, go straight to the next step; if it shows the step did not take effect, ")
+        append("repeat or change it. Do not redo a step that is already confirmed.\n")
+        append("5a. Pictures, videos and audio the user attaches arrive as 📎 HTTPS links in their message: ")
+        append("download them (curl/wget) and use the real files — edit, convert, animate, narrate, ")
+        append("build a video or page from them. Never say you cannot see an attachment.\n")
+        append("5a-i. Some of those links are held by ZYRAXON's own storage and carry an id and a ")
+        append("delete_token. Read the file first, and once you are done with it, DELETE it — ")
+        append("DELETE https://zyraxonai.lovable.app/api/public/zyraxonai/v1/upload/<id> with the ")
+        append("header X-Delete-Token: <delete_token> — so the user's upload does not stay on a ")
+        append("public link. Do this for every such file, after you have finished using it.\n")
+        append("5b. You are not limited to the user's phone. You also have your own cloud workspace, ")
+        append("and you must use it: run heavy work, long builds, big downloads and anything that ")
+        append("would be slow or fragile on a phone in the cloud, then bring the result back. Never ")
+        append("assume you can only do what the phone can — the cloud is yours too, and you choose ")
+        append("the side that fits the job.\n")
+        append("5c. Sometimes a picture, a voice note or a clip reaches you directly, as real media ")
+        append("inside the message instead of a link. When that happens you are already seeing or ")
+        append("hearing it: answer from it straight away, and never try to download a link for it ")
+        append("or say you cannot open it.\n")
+        append("5. You can read any link or page the user gives you (open it in the preview or ")
+        append("fetch it). Never read a URL aloud; say what it is instead.\n")
+        append("6. To press something use tap_text with the visible label, or tap with the x/y from ")
+        append("read_screen; in the preview use click with the visible text. To type, use type_text ")
+        append("(or preview type). To play a video, open it, then tap its play control.\n\n")
+        val character = _selectedPersona.value
+        append("## Active character\n").append(character.systemPrompt).append("\n\n")
+        val lang = voiceLanguage.value
+        val langName = when {
+            lang.startsWith("bn") -> "Bangla (বাংলা)"
+            lang.startsWith("en") -> "English"
+            lang.startsWith("hi") -> "Hindi"
+            else -> null
+        }
+        append("Language is decided by the setting below, not guessed. ")
+        if (langName != null) {
+            append("Your language is $langName. Answer in $langName — every sentence, ")
+            append("even for a one-word message, a command, a file name or a code reply. ")
+            append("Only if the user clearly writes a different language in their message ")
+            append("do you answer in that language instead. ")
+        } else {
+            append("Answer in the language the user writes in. ")
+        }
+        append("Never switch language on your own and never mix scripts: if the answer ")
+        append("is Bangla, it is Bangla throughout. Never translate or replace the ")
+        append("user's own words, file names or commands — quote them as they are. ")
+        append("\n\n")
+        append(
+            when (mode) {
+                AgentMode.CHAT -> "Mode: CHAT. Answer and advise; keep it conversational."
+                AgentMode.BUILD -> "Mode: BUILD. Build and verify full apps, websites and services."
+                AgentMode.AGENT -> "Mode: AGENT. Automate the phone and the system end to end."
+            }
+        )
+    }
+
+    /** The first message names a new chat, so the sidebar reads like a list of topics. */
+    private suspend fun autoTitle(c: ChatSession, prompt: String) {
+        val cur = repository.conversation(c.id) ?: return
+        if (cur.title == "নতুন চ্যাট" && !c.id.startsWith("sub_")) {
+            repository.renameConversation(c.id, prompt.lineSequence().first().take(40))
+        }
+    }
+
+    // ---- Sub-agents ------------------------------------------------------------
+
+    private fun subUpdate(id: String, f: (SubAgentInfo) -> SubAgentInfo) {
+        subInfo.update { m -> m[id]?.let { m + (id to f(it)) } ?: m }
+    }
+
+    private suspend fun runSubAgent(args: JSONObject, parent: ChatSession): JSONObject {
+        fun bad(m: String) = JSONObject().put("ok", false).put("error", m).put("summary", m)
+        fun ok(m: String, data: Any? = null) = JSONObject().put("ok", true).put("summary", m).apply { if (data != null) put("data", data) }
+        fun json(i: SubAgentInfo) = JSONObject().put("id", i.id).put("title", i.title).put("model", i.model)
+            .put("state", i.state).put("percent", i.percent).put("last_action", i.lastAction)
+        return when (args.safe("action").lowercase()) {
+            "spawn" -> {
+                if (parent.parentId.isNotBlank()) return bad("সাব-এজেন্ট আরেকটা সাব-এজেন্ট চালাতে পারে না")
+                val task = args.safe("task").trim()
+                if (task.isEmpty()) return bad("task দরকার")
+                val title = args.safe("title").ifBlank { task.lineSequence().first().take(32) }
+                val mode = args.safe("mode").uppercase().let { if (it in setOf("CHAT", "BUILD", "AGENT")) AgentMode.valueOf(it) else AgentMode.BUILD }
+                val wanted = args.safe("model").trim()
+                val model = if (wanted.isBlank()) _selectedModel.value
+                    else _availableModels.value.firstOrNull { it.id == wanted || it.name == wanted }
+                        ?: _selectedModel.value.copy(id = wanted, name = wanted)
+                val id = "sub_" + UUID.randomUUID().toString().take(8)
+                repository.ensureConversation(id, title, mode, "sub", parent.id)
+                val child = session(id)
+                child.mode.value = mode
+                child.parentId = parent.id
+                subInfo.update { it + (id to SubAgentInfo(id, parent.id, title, task, model.name, "running", 0, t("শুরু হচ্ছে…"))) }
+                val brief = "[সাব-এজেন্ট] তুমি মূল এজেন্টের সহকারী। শুধু নিচের কাজটি সম্পূর্ণ শেষ করো (ফাইল লেখো, চালাও, যাচাই করো), " +
+                    "আর শেষে সংক্ষেপে বলো কী করেছ ও ফাইল/ফল কোথায়।\n\nকাজ: $task"
+                runTurn(child, brief, emptyList(), speak = false, modelOverride = model) { result ->
+                    val failed = result.startsWith("") || result.contains("সংযোগে সমস্যা")
+                    subUpdate(id) { it.copy(state = if (failed) "error" else "done", percent = if (failed) it.percent else 100, result = result, lastAction = "শেষ") }
+                    val note = "[সাব-এজেন্ট শেষ] «$title» ($id):\n${result.take(1800)}"
+                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                        if (parent.isGenerating.value) parent.pendingInjections.add(note)
+                        else runTurn(parent, note, emptyList(), speak = false)
+                    }
+                }
+                viewModelScope.launch {
+                    while (subInfo.value[id]?.state == "running") {
+                        kotlinx.coroutines.delay(1000)
+                        val tasks = child.tasks.value
+                        val pct = if (tasks.isNotEmpty()) (tasks.count { it.isCompleted } * 100 / tasks.size).coerceAtMost(95)
+                            else (child.toolExecutions.value.size * 7).coerceAtMost(90)
+                        val last = child.activeToolCalls.value.firstOrNull()?.description
+                            ?: child.toolExecutions.value.firstOrNull()?.description ?: t("ভাবছে…")
+                        subUpdate(id) { if (it.state == "running") it.copy(percent = maxOf(it.percent, pct), lastAction = last) else it }
+                    }
+                }
+                ok("সাব-এজেন্ট চালু: $id (${model.name}, ${mode.title})", JSONObject().put("id", id))
+            }
+            "list" -> ok("সাব-এজেন্ট", org.json.JSONArray(subInfo.value.values.filter { it.parentId == parent.id }.map { json(it) }))
+            "status" -> subInfo.value[args.safe("id")]?.let { ok("${it.title}: ${it.state} ${it.percent}%", json(it)) } ?: bad("এই id নেই")
+            "result" -> subInfo.value[args.safe("id")]?.let {
+                if (it.state == "running") ok("এখনো চলছে (${it.percent}%): ${it.lastAction}", json(it))
+                else ok("ফল", it.result)
+            } ?: bad("এই id নেই")
+            "message" -> {
+                val child = sessions[args.safe("id")] ?: return bad("এই id নেই")
+                val text = args.safe("text")
+                if (child.isGenerating.value) child.pendingInjections.add(text)
+                else runTurn(child, text, emptyList(), speak = false)
+                ok("নির্দেশ পাঠানো হয়েছে")
+            }
+            "stop" -> {
+                val id = args.safe("id")
+                sessions[id]?.job?.cancel()
+                subUpdate(id) { it.copy(state = "stopped", lastAction = "থামানো হয়েছে") }
+                ok("থামানো হয়েছে")
+            }
+            "wait" -> {
+                val id = args.safe("id")
+                val until = System.currentTimeMillis() + args.optInt("seconds", 30).coerceIn(1, 120) * 1000L
+                while (System.currentTimeMillis() < until && subInfo.value[id]?.state == "running") kotlinx.coroutines.delay(500)
+                subInfo.value[id]?.let { ok("${it.title}: ${it.state} ${it.percent}%", json(it)) } ?: bad("এই id নেই")
+            }
+            else -> bad("অজানা sub_agent action")
+        }
+    }
+
+    /**
+     * Feeds one screen frame to the live model, so it can see what the user sees.
+     */
+    fun onScreenFrame(base64Jpeg: String) {
+        if (base64Jpeg.isBlank()) return
+        _screenFrameDataUrl.value = "data:image/jpeg;base64,$base64Jpeg"
+        // A live model can look at the frame itself, so the same picture that the
+        // screen panel shows is also offered to the session.
+        if (liveVoice.isActive) liveVoice.sendScreenFrame(base64Jpeg)
+    }
+
+    /**
+     * Attaches a picture the user picked from the gallery or took with the
+     * camera. The bytes are read and downscaled off the main thread, because a
+     * modern phone photo is several megabytes and decoding it on the UI thread
+     * would freeze the composer for a second. The next send carries it as an
+     * `image_url` part, so the model looks at the actual picture.
+     */
+    fun attachImage(uri: android.net.Uri) {
+        viewModelScope.launch {
+            val dataUrl = withContext(Dispatchers.IO) {
+                try {
+                    val ctx = getApplication<Application>()
+                    val bitmap = ctx.contentResolver.openInputStream(uri)?.use {
+                        android.graphics.BitmapFactory.decodeStream(it)
+                    } ?: return@withContext ""
+                    ai.zyraxon.assistant.ai.CameraCapture.toDataUrl(bitmap, maxSide = 1280, quality = 82)
+                } catch (_: Exception) {
+                    ""
+                }
+            }
+            if (dataUrl.isNotBlank()) {
+                _attachedImages.value = _attachedImages.value + dataUrl
+                val cache = getApplication<Application>().cacheDir
+                uploadInBackground { ai.zyraxon.assistant.ai.MediaUploader.uploadDataUrl(cache, dataUrl, getApplication()) }
+                _imageNotice.value = t("ছবি সংযুক্ত হয়েছে — এখন প্রশ্ন লিখে পাঠান")
+            } else {
+                _imageNotice.value = t("ছবিটি পড়া গেল না")
+            }
+        }
+    }
+
+    /**
+     * Attaches any media the user picked: an image becomes one part, a video
+     * becomes several sampled frames, and an audio file is copied into the
+     * workspace so the model can be pointed at it. Picking a video here is what
+     * lets the user drop a clip into the chat instead of calling a tool first.
+     */
+    fun attachMedia(uri: android.net.Uri, mimeType: String) {
+        viewModelScope.launch {
+            val kind = when {
+                mimeType.startsWith("video") -> "video"
+                mimeType.startsWith("audio") -> "audio"
+                mimeType.startsWith("image") -> "image"
+                else -> "auto"
+            }
+            if (kind == "image" || kind == "auto") {
+                attachImage(uri)
+                return@launch
+            }
+            val ctx = getApplication<Application>()
+            var clipUpload: kotlinx.coroutines.Deferred<ai.zyraxon.assistant.ai.MediaUploader.Link?>? = null
+            var attachedFile: File? = null
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    val file = File(
+                        ToolRegistry.workspace(ctx),
+                        "attach_" + System.currentTimeMillis() + "_" + (uri.lastPathSegment ?: "media")
+                    )
+                    attachedFile = file
+                    ctx.contentResolver.openInputStream(uri)?.use { input ->
+                        file.outputStream().use { input.copyTo(it) }
+                    } ?: return@withContext JSONObject().put("ok", false)
+                    // The original clip goes up as a link; the agent downloads it to work on.
+                    clipUpload = uploadInBackground {
+                        ai.zyraxon.assistant.ai.MediaUploader.uploadFile(file, mimeType, ctx)
+                    }
+                    ToolRegistry.execute(
+                        ctx, "read_media",
+                        JSONObject().put("path", file.absolutePath).put("kind", kind)
+                            .put("frames", if (kind == "video") 4 else 0)
+                    )
+                } catch (e: Exception) {
+                    JSONObject().put("ok", false).put("summary", e.message ?: "ফাইল পড়া গেল না")
+                }
+            }
+            if (kind == "audio") {
+                // A voice note is held as base64, because the audio part wants the
+                // bytes, and only a model that takes audio is ever sent them.
+                val dataUrl = withContext(Dispatchers.IO) { readAudioDataUrl(ctx, uri, mimeType) }
+                if (dataUrl.isNotBlank()) {
+                    _attachedAudio.value = _attachedAudio.value + dataUrl
+                    _imageNotice.value = result.safe("summary")
+                        .ifBlank { t("অডিও সংযুক্ত হয়েছে — এখন প্রশ্ন লিখে পাঠান") }
+                } else {
+                    _imageNotice.value = t("অডিওটি পড়া গেল না")
+                }
+                return@launch
+            }
+            // A clip goes up as a real data URL, because a model that takes video
+            // must receive the clip itself — a link makes the provider fetch it,
+            // which is exactly the case that fails. The file is also uploaded, so
+            // the prompt's own link is there for the agent to download when the
+            // clip is too large to carry inside the request at all.
+            val clipUrl = withTimeoutOrNull(120_000) { clipUpload?.await() }?.url
+            val clipData = withContext(Dispatchers.IO) {
+                attachedFile?.let { readVideoDataUrl(it, mimeType) }
+            }
+            // A model that takes the clip itself does not need the sampled frames
+            // as well — sending both is redundant and costs the round for nothing.
+            val clipSent = !clipData.isNullOrBlank() && _selectedModel.value.mediaCaps.video
+            if (clipSent) {
+                _attachedVideo.value = _attachedVideo.value + clipData
+                _imageNotice.value = result.safe("summary")
+                    .ifBlank { t("ভিডিও সংযুক্ত হয়েছে — এখন প্রশ্ন লিখে পাঠান") }
+                return@launch
+            }
+            if (!clipUrl.isNullOrBlank()) {
+                _attachedVideo.value = _attachedVideo.value + clipUrl
+                _imageNotice.value = result.safe("summary")
+                    .ifBlank { t("ভিডিও সংযুক্ত হয়েছে — এখন প্রশ্ন লিখে পাঠান") }
+            }
+            val single = result.safe("image_data_url")
+            val many = result.optJSONArray("image_data_urls")
+            val shots = mutableListOf<String>()
+            if (single.isNotBlank()) shots.add(single)
+            many?.let { for (i in 0 until it.length()) it.safe(i).takeIf { s -> s.isNotBlank() }?.let { s -> shots.add(s) } }
+            if (shots.isNotEmpty()) {
+                _attachedImages.value = _attachedImages.value + shots
+                if (clipUrl.isNullOrBlank()) {
+                    _imageNotice.value = result.safe("summary").ifBlank { t("মিডিয়া সংযুক্ত হয়েছে") }
+                }
+            } else if (clipUrl.isNullOrBlank()) {
+                _imageNotice.value = result.safe("summary").ifBlank { t("মিডিয়া পড়া গেল না") }
+            }
+        }
+    }
+
+    /**
+     * Reads a picked audio file into a `data:` URL. Nothing is re-encoded: the
+     * bytes go up as they are, and the part's format name is taken from the mime,
+     * so a wav stays a wav and an mp3 stays an mp3.
+     */
+    private fun readAudioDataUrl(ctx: Application, uri: android.net.Uri, mimeType: String): String = try {
+        val bytes = ctx.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+        if (bytes == null || bytes.isEmpty()) "" else {
+            val mime = mimeType.substringBefore(';').ifBlank { "audio/wav" }
+            "data:$mime;base64," + android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+        }
+    } catch (_: Exception) {
+        ""
+    }
+
+    /**
+     * Reads a picked clip into a `data:` URL, re-encoded down to a size a request
+     * can actually carry.
+     *
+     * A phone clip is tens of megabytes; base64 makes it a third larger again,
+     * and a request that large is refused before the model ever sees it. So the
+     * clip is transcoded to a small H.264 file, and that is what the video part
+     * carries. A clip that still will not fit is left to the frames and the
+     * prompt's own link, which every model can use.
+     */
+    private fun readVideoDataUrl(file: File, mimeType: String): String = try {
+        val target = File(file.parentFile, "clip_" + file.nameWithoutExtension + ".mp4")
+        val small = transcodeVideo(file, target) ?: file
+        val bytes = small.readBytes()
+        if (bytes.isEmpty()) "" else {
+            val encoded = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+            if (encoded.length > INLINE_VIDEO_BUDGET) "" else {
+                val mime = if (small.extension.equals("mp4", true)) "video/mp4" else mimeType.substringBefore(';')
+                "data:$mime;base64,$encoded"
+            }
+        }
+    } catch (_: Exception) {
+        ""
+    }
+
+    /**
+     * Re-encodes [input] to a small H.264/MP4 at [output], bounded in both
+     * resolution and bitrate. The decoder draws onto the encoder's own input
+     * surface, so the frames never pass through a byte array.
+     *
+     * Returns null when the device cannot transcode the file, and the caller then
+     * falls back to the original.
+     */
+    private fun transcodeVideo(input: File, output: File): File? {
+        var extractor: android.media.MediaExtractor? = null
+        var decoder: android.media.MediaCodec? = null
+        var encoder: android.media.MediaCodec? = null
+        var muxer: android.media.MediaMuxer? = null
+        var surface: android.view.Surface? = null
+        return try {
+            val ex = android.media.MediaExtractor().apply { setDataSource(input.absolutePath) }
+            extractor = ex
+            val track = (0 until ex.trackCount).firstOrNull {
+                ex.getTrackFormat(it).getString(android.media.MediaFormat.KEY_MIME)?.startsWith("video/") == true
+            } ?: return null
+            ex.selectTrack(track)
+            val srcFormat = ex.getTrackFormat(track)
+            val srcMime = srcFormat.getString(android.media.MediaFormat.KEY_MIME) ?: "video/avc"
+            val (w, h) = fitWithin(
+                srcFormat.getInteger(android.media.MediaFormat.KEY_WIDTH),
+                srcFormat.getInteger(android.media.MediaFormat.KEY_HEIGHT),
+                720
+            )
+            val enc = android.media.MediaCodec.createEncoderByType("video/avc")
+            encoder = enc
+            enc.configure(
+                android.media.MediaFormat.createVideoFormat("video/avc", w, h).apply {
+                    setInteger(android.media.MediaFormat.KEY_BIT_RATE, 1_000_000)
+                    setInteger(android.media.MediaFormat.KEY_FRAME_RATE, 24)
+                    setInteger(
+                        android.media.MediaFormat.KEY_COLOR_FORMAT,
+                        android.media.MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
+                    )
+                    setInteger(android.media.MediaFormat.KEY_I_FRAME_INTERVAL, 1)
+                },
+                null, null, android.media.MediaCodec.CONFIGURE_FLAG_ENCODE
+            )
+            val encSurface = enc.createInputSurface()
+            surface = encSurface
+            enc.start()
+            val dec = android.media.MediaCodec.createDecoderByType(srcMime)
+            decoder = dec
+            dec.configure(srcFormat, encSurface, null, 0)
+            dec.start()
+            val mux = android.media.MediaMuxer(output.absolutePath, android.media.MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+            muxer = mux
+            val outTrack = mux.addTrack(enc.outputFormat)
+            mux.start()
+
+            val info = android.media.MediaCodec.BufferInfo()
+            var inputDone = false
+            var decoderDone = false
+            var encoderDone = false
+            while (!encoderDone) {
+                if (!inputDone) {
+                    val inIndex = dec.dequeueInputBuffer(10_000)
+                    if (inIndex >= 0) {
+                        val buf = dec.getInputBuffer(inIndex)
+                        val size = if (buf == null) -1 else ex.readSampleData(buf, 0)
+                        if (size < 0) {
+                            dec.queueInputBuffer(inIndex, 0, 0, 0, android.media.MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                            inputDone = true
+                        } else {
+                            dec.queueInputBuffer(inIndex, 0, size, ex.sampleTime, 0)
+                            ex.advance()
+                        }
+                    }
+                }
+                if (!decoderDone) {
+                    val outIndex = dec.dequeueOutputBuffer(info, 10_000)
+                    if (outIndex >= 0) {
+                        dec.releaseOutputBuffer(outIndex, info.size > 0)
+                        if (info.flags and android.media.MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
+                            decoderDone = true
+                            enc.signalEndOfInputStream()
+                        }
+                    }
+                }
+                val encIndex = enc.dequeueOutputBuffer(info, 10_000)
+                if (encIndex >= 0) {
+                    val buf = enc.getOutputBuffer(encIndex)
+                    val config = info.flags and android.media.MediaCodec.BUFFER_FLAG_CODEC_CONFIG != 0
+                    if (buf != null && info.size > 0 && !config) {
+                        buf.position(info.offset)
+                        buf.limit(info.offset + info.size)
+                        mux.writeSampleData(outTrack, buf, info)
+                    }
+                    enc.releaseOutputBuffer(encIndex, false)
+                    if (info.flags and android.media.MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) encoderDone = true
+                }
+            }
+            if (output.length() > 0) output else null
+        } catch (_: Exception) {
+            null
+        } finally {
+            runCatching { decoder?.stop() }; runCatching { decoder?.release() }
+            runCatching { encoder?.stop() }; runCatching { encoder?.release() }
+            runCatching { muxer?.stop() }; runCatching { muxer?.release() }
+            runCatching { surface?.release() }
+            runCatching { extractor?.release() }
+        }
+    }
+
+    /** The largest [w]x[h] that fits inside [maxSide], keeping the aspect ratio. */
+    private fun fitWithin(w: Int, h: Int, maxSide: Int): Pair<Int, Int> {
+        if (w <= 0 || h <= 0) return maxSide to maxSide
+        val scale = maxSide.toFloat() / maxOf(w, h)
+        if (scale >= 1f) return even(w) to even(h)
+        return even((w * scale).toInt()) to even((h * scale).toInt())
+    }
+
+    private fun even(v: Int): Int = if (v % 2 == 0) v else v + 1
+
+    /** Drops the attached pictures without sending them. */
+    fun clearAttachedImage() {
+        attachedUploads.clear()
+        _attachedImages.value = emptyList()
+        _attachedAudio.value = emptyList()
+        _attachedVideo.value = emptyList()
+        _imageNotice.value = ""
+    }
+
+    /** Removes one attached picture by index. */
+    fun removeAttachedImage(index: Int) {
+        _attachedImages.value = _attachedImages.value.filterIndexed { i, _ -> i != index }
+        if (_attachedImages.value.isEmpty() && _attachedAudio.value.isEmpty() && _attachedVideo.value.isEmpty()) {
+            attachedUploads.clear()
+        }
+    }
+
+    /** Removes one attached voice note by index. */
+    fun removeAttachedAudio(index: Int) {
+        _attachedAudio.value = _attachedAudio.value.filterIndexed { i, _ -> i != index }
+    }
+
+    /** Removes one attached clip by index. */
+    fun removeAttachedVideo(index: Int) {
+        _attachedVideo.value = _attachedVideo.value.filterIndexed { i, _ -> i != index }
+    }
+
+    /** Turns the always-see-screen timer on or off and remembers the choice. */
+    fun setAlwaysSeeScreen(on: Boolean) {
+        _alwaysSeeScreen.value = on
+        prefs.edit().putBoolean("always_see_screen", on).apply()
+        if (on && activeTurns.get() > 0) startLiveFrameTicker() else stopLiveFrameTicker()
+    }
+
+    /**
+     * Starts the two-second screen ticker. It runs only while a turn is in
+     * flight; the frames it captures are drained by the engine between rounds.
+     * The capture is skipped when the screen looks the same as last time, so a
+     * still screen does not burn a screenshot every two seconds for an hour.
+     */
+    private fun startLiveFrameTicker() {
+        if (!_alwaysSeeScreen.value) return
+        if (liveFrameJob?.isActive == true) return
+        liveFrameJob = viewModelScope.launch {
+            while (activeTurns.get() > 0) {
+                val shot = withContext(Dispatchers.IO) {
+                    runCatching { ToolRegistry.screenFrame() }.getOrNull().orEmpty()
+                }
+                if (shot.isNotBlank()) {
+                    val hash = shot.hashCode()
+                    if (hash != lastLiveFrameHash && pendingScreenFrames.size < 3) {
+                        lastLiveFrameHash = hash
+                        pendingScreenFrames.add(shot)
+                    }
+                }
+                kotlinx.coroutines.delay(LIVE_FRAME_INTERVAL_MS)
+            }
+        }
+    }
+
+    private fun stopLiveFrameTicker() {
+        liveFrameJob?.cancel()
+        liveFrameJob = null
+        pendingScreenFrames.clear()
+    }
+
+    /** The frames captured since the last round. Called by the engine each round. */
+    fun drainScreenFrames(): List<String> {
+        val out = mutableListOf<String>()
+        while (true) out.add(pendingScreenFrames.poll() ?: break)
+        return out
+    }
+
+    /**
+     * Runs one of the picture tools from the composer menu: the camera, or a
+     * fresh look at what is on the screen right now. The result is attached so
+     * the user can add a question before sending, instead of the tool firing on
+     * its own mid-conversation.
+     */
+    fun captureImageFromTool(tool: String) {
+        viewModelScope.launch {
+            val args = JSONObject()
+            val result = withContext(Dispatchers.IO) {
+                runCatching { ToolRegistry.execute(getApplication(), tool, args) }
+                    .getOrElse { JSONObject().put("ok", false).put("summary", "ছবি নেওয়া গেল না") }
+            }
+            val dataUrl = result.safe("image_data_url")
+            val many = result.optJSONArray("image_data_urls")
+            val shots = mutableListOf<String>()
+            if (dataUrl.isNotBlank()) shots.add(dataUrl)
+            many?.let { for (i in 0 until it.length()) it.safe(i).takeIf { s -> s.isNotBlank() }?.let { s -> shots.add(s) } }
+            if (shots.isNotEmpty()) {
+                _attachedImages.value = _attachedImages.value + shots
+                val cache = getApplication<Application>().cacheDir
+                shots.forEach { shot ->
+                    uploadInBackground { ai.zyraxon.assistant.ai.MediaUploader.uploadDataUrl(cache, shot, getApplication()) }
+                }
+                _imageNotice.value = result.safe("summary").ifBlank { t("ছবি সংযুক্ত হয়েছে") }
+            } else {
+                _imageNotice.value = result.safe("summary").ifBlank { t("ছবি নেওয়া গেল না") }
+            }
+        }
+    }
+
+    fun onScreenText(text: String) {
+        _screenTextSnapshot.value = text
+    }
+
+    fun updateForegroundApp(packageName: String, label: String) {
+        _systemStatus.value = _systemStatus.value.copy(currentApp = label)
+    }
+
+    /**
+     * What the user is looking at right now, so the model never has to spend a
+     * tool call to find out. The accessibility service keeps this current in the
+     * background.
+     */
+    private fun screenContext(force: Boolean = false): String {
+        // The foreground app and the screen text are read live, not from the
+        // snapshot the UI last pushed. That snapshot only refreshes while this
+        // app is on screen, so asking "what am I doing?" from *outside* the app
+        // answered with the old screen ("তুমি আমার অ্যাপে আছো") — the defect the
+        // user hit. The accessibility service can read the real frame any time.
+        //
+        // Walking the whole tree costs a few hundred milliseconds, and a turn that
+        // does not touch the screen asked for it twice. A short cache keeps the
+        // per-turn read cheap; a screen action forces a fresh read, because after
+        // a tap the old frame is exactly the wrong answer.
+        val now = System.currentTimeMillis()
+        if (!force && now - screenCacheAtMs < SCREEN_CACHE_MS && screenCacheText.isNotBlank()) {
+            return screenCacheText
+        }
+        val label = DeviceBridge.foregroundLabel()
+        val pkg = DeviceBridge.foregroundPackage()
+        val live = runCatching { DeviceBridge.readScreen() }.getOrNull().orEmpty()
+        val snapshot = live.ifBlank { _screenTextSnapshot.value }.take(2500)
+        val where = when {
+            label.isNotBlank() -> "ব্যবহারকারী এখন \"$label\" অ্যাপে আছেন ($pkg)।"
+            pkg.isNotBlank() -> "ব্যবহারকারীর সামনের অ্যাপ: $pkg।"
+            else -> ""
+        }
+        val text = if (snapshot.isBlank()) "" else "\nস্ক্রিনে এখন যা দেখা যাচ্ছে:\n$snapshot"
+        val result = where + text
+        screenCacheText = result
+        screenCacheAtMs = now
+        return result
+    }
+
+    /**
+     * Runs one tool the model asked for and keeps a live row for it on the chat
+     * and the Tools tab: the row opens the moment the call is made, the tool's
+     * own output streams into it while it runs, and it closes into the history
+     * when the result arrives. A panel tool that only changes the UI (opening the
+     * terminal, the code box, the file panel) is instant and needs no row.
+     */
+    /** Action tools whose effect can be checked on the phone afterwards. */
+    private val VERIFIED_TOOLS = setOf("open_app", "open_url", "tap_text", "type_text", "tap", "youtube_play")
+
+    /**
+     * What the phone shows now, as one line the agent can use to confirm that a
+     * tool really did its work: the app in front and a glimpse of its text. A tool
+     * that "passed" but changed nothing is then visible, and the agent can repeat
+     * or change it. Nothing is ever refused here; every call still runs.
+     */
+    private suspend fun verifyLine(name: String, args: JSONObject): String = withContext(Dispatchers.IO) {
+        kotlinx.coroutines.delay(600)
+        val label = runCatching { DeviceBridge.foregroundLabel() }.getOrNull().orEmpty()
+        val pkg = runCatching { DeviceBridge.foregroundPackage() }.getOrNull().orEmpty()
+        val want = (args.safe("package") + " " + args.safe("name")).trim().lowercase()
+        val matches = want.isNotBlank() && (pkg.lowercase().contains(args.safe("package").lowercase().ifBlank { "\u0000" }) ||
+            label.lowercase().contains(args.safe("name").lowercase().ifBlank { "\u0000" }))
+        val text = runCatching { DeviceBridge.readScreen() }.getOrNull().orEmpty()
+            .replace(Regex("[\\[\\]{}\"]"), " ").replace(Regex("\\s+"), " ").take(220)
+        buildString {
+            append("[যাচাই] এখন সামনে: ").append(label.ifBlank { pkg }.ifBlank { "অজানা" })
+            if (name == "open_app" && want.isNotBlank()) append(if (matches) " — অ্যাপ খুলেছে ✔" else " — চাওয়া অ্যাপ সামনে নেই, আবার চেষ্টা করো")
+            if (text.isNotBlank()) append(" | স্ক্রিনে: ").append(text)
+        }
+    }
+
+    private suspend fun runTool(name: String, args: JSONObject, s: ChatSession): JSONObject {
+        if (name in UI_ONLY_TOOLS) return runToolInner(name, args, s, null)
+        val id = beginToolCall(s, name, args)
+        val t0 = System.currentTimeMillis()
+        var result: JSONObject = JSONObject().put("ok", false).put("summary", "থামানো হয়েছে")
+        try {
+            result = try {
+                runToolInner(name, args, s) { line -> appendToolOutput(s, id, line) }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                JSONObject().put("ok", false).put("summary", "টুল চলেনি: ${e.message ?: e.toString()}")
+            }
+            if (name in VERIFIED_TOOLS && result.optBoolean("ok", false)) {
+                val v = runCatching { verifyLine(name, args) }.getOrNull().orEmpty()
+                if (v.isNotBlank()) {
+                    result.put("summary", result.safe("summary") + "\n" + v)
+                }
+            }
+        } finally {
+            finishToolCall(s, id, name, result, System.currentTimeMillis() - t0)
+        }
+        return result
+    }
+
+    private suspend fun runToolInner(name: String, args: JSONObject, s: ChatSession, live: ((String) -> Unit)? = null): JSONObject {
+        // MCP: a name carrying "<serverId>__<tool>" is a tool a connected server
+        // advertised, so it goes straight to that server. The three management
+        // tools below let the assistant connect and inspect servers by itself.
+        if (name.contains("__")) {
+            return aiEngine.mcp.callTool(name, args)
+        }
+        when (name) {
+            "mcp_connect" -> return runMcpConnect(args)
+            "mcp_list" -> return runMcpList()
+            "mcp_resources" -> return runMcpResources(args)
+            "mcp_read_resource" -> return runMcpReadResource(args)
+            "mcp_prompts" -> return runMcpPrompts(args)
+            "mcp_prompt" -> return runMcpPrompt(args)
+            "mcp_subscribe" -> return runMcpSubscribe(args)
+            "mcp_complete" -> return runMcpComplete(args)
+            "mcp_ping" -> return runMcpPing(args)
+            "mcp_log_level" -> return runMcpLogLevel(args)
+            "mcp_disconnect" -> {
+                val id = args.safe("server")
+                aiEngine.mcp.disconnect(id)
+                return JSONObject().put("ok", true).put("summary", "$id কানেক্ট করা বন্ধ করা হলো")
+            }
+        }
+        // Panel tools belong to the UI, not the device.
+        when (name) {
+            "todo_write" -> {
+                val todos = args.optJSONArray("todos")
+                if (todos != null) {
+                    val list = mutableListOf<TaskItem>()
+                    for (i in 0 until todos.length()) {
+                        val t = todos.optJSONObject(i) ?: continue
+                        list.add(TaskItem(
+                            id = t.safe("id", "t${i + 1}"),
+                            text = t.safe("title"),
+                            isCompleted = t.safe("status") == "done"
+                        ))
+                    }
+                    s.tasks.value = list
+                    repository.replaceTasks(list, s.id)
+                }
+                return JSONObject().put("ok", true).put("summary", "টুডু বোর্ড হালনাগাদ হয়েছে")
+            }
+            "code_box" -> {
+                val action = args.safe("action", "open")
+                _codeBoxOpen.value = action == "open" || action == "restore"
+                args.safe("title").takeIf { it.isNotBlank() }?.let { _codeBoxTitle.value = it }
+                args.safe("code").takeIf { it.isNotBlank() }?.let { _codeBoxText.value = it }
+                return JSONObject().put("ok", true).put("summary", "কোড প্যানেল: $action")
+            }
+            "files_panel" -> {
+                _activeTab.value = AppTab.TOOLS
+                _filesPanelOpen.value = args.safe("action", "open") != "close"
+                return JSONObject().put("ok", true).put("summary", "ফাইল প্যানেল খোলা হয়েছে")
+            }
+            "terminal_open" -> {
+                _activeTab.value = AppTab.TERMINAL
+                return JSONObject().put("ok", true).put("summary", "টার্মিনাল খোলা হয়েছে")
+            }
+            "terminal_run" -> return runInTerminalShell(args, live)
+            "preview" -> return PreviewBridge.tool(getApplication(), args)
+            "sub_agent" -> return runSubAgent(args, s)
+            "memory_delete" -> {
+                val key = args.safe("key").trim()
+                if (key.isBlank()) return JSONObject().put("ok", false).put("summary", "key দরকার")
+                repository.deleteMemory(key)
+                return JSONObject().put("ok", true).put("summary", "ভুলে যাওয়া হলো — $key")
+            }
+            "memory_write" -> {
+                val key = args.safe("key").trim()
+                val value = args.safe("value").trim()
+                if (key.isBlank() || value.isBlank()) {
+                    return JSONObject().put("ok", false).put("summary", "মনে রাখতে key আর value দুটোই দরকার")
+                }
+                repository.saveMemory(key, value)
+                return JSONObject().put("ok", true)
+                    .put("summary", "মনে রাখা হলো — $key: $value")
+            }
+            "memory_read" -> {
+                val query = args.safe("query").trim()
+                val durable = repository.getMemoriesPromptContext()
+                val recalled = if (query.isNotBlank()) {
+                    repository.recallRelevant(query, limit = 12)
+                        .joinToString("\n") { "${it.role}: ${it.text}" }
+                } else ""
+                val body = buildString {
+                    if (durable.isNotBlank()) append(durable)
+                    if (recalled.isNotBlank()) {
+                        if (isNotEmpty()) append("\n\n")
+                        append("পুরনো কথোপকথন থেকে:\n").append(recalled)
+                    }
+                }
+                return JSONObject().put("ok", true)
+                    .put("summary", "স্মৃতি পড়া হলো")
+                    .put("data", body.ifBlank { "এখনো কিছু মনে রাখা হয়নি" })
+            }
+            "floating_bubble" -> {
+                val want = args.safe("action", "on") != "off"
+                val ctx = getApplication<Application>()
+                val overlayAllowed = android.os.Build.VERSION.SDK_INT < 23 ||
+                    android.provider.Settings.canDrawOverlays(ctx)
+                if (want && !overlayAllowed) {
+                    // The overlay permission can only be granted by the user in
+                    // Settings, so point them at the exact row instead of failing.
+                    ai.zyraxon.assistant.MainActivity.instance?.openSpecialSetting("overlay")
+                    return JSONObject()
+                        .put("ok", false)
+                        .put("error", "overlay-permission")
+                        .put("summary", "ওভারলে অনুমতি দরকার — সেটিংস খুলে দিয়েছি, উপরে Allow চাপো")
+                }
+                setOverlayEnabled(want)
+                if (want) ai.zyraxon.assistant.OverlayChatService.start(ctx)
+                else ai.zyraxon.assistant.OverlayChatService.stop(ctx)
+                return JSONObject()
+                    .put("ok", true)
+                    .put("summary", if (want) "ফ্লোটিং বাবল চালু হয়েছে" else "ফ্লোটিং বাবল বন্ধ হয়েছে")
+            }
+        }
+
+        // The live sink is handed to the registry so `run_shell`, `system_shell`
+        // and `linux_run` can stream their output into the live row as it is
+        // produced, instead of only when they return.
+        return ToolRegistry.execute(getApplication(), name, args, live)
+    }
+
+    /** Shows a tool on the Tools tab and keeps any picture it produced. */
+    private fun recordToolExecution(s: ChatSession, name: String, result: JSONObject, output: String = "") {
+        val item = ToolExecutionItem(
+            name = name,
+            description = result.safe("summary"),
+            icon = if (result.optBoolean("ok")) "" else "",
+            status = if (result.optBoolean("ok")) "সম্পন্ন" else "ব্যর্থ",
+            timestamp = currentTimeString(),
+            output = output.takeLast(8_000)
+        )
+        synchronized(s.lock) {
+            s.toolExecutions.value = listOf(item) + s.toolExecutions.value.take(99)
+        }
+
+        // When a tool returns a picture, keep it so the next model turn can look
+        // at it. Without this the camera and media tools would capture an image
+        // that the model never actually receives.
+        result.safe("image_data_url").takeIf { it.isNotBlank() }?.let {
+            _screenFrameDataUrl.value = it
+        }
+    }
+
+    /**
+     * Connects an MCP server the assistant asked for. For the browser-based ones
+     * it opens the consent page and returns immediately — the connection finishes
+     * on its own, and the model sees the new tools on its next turn.
+     */
+    private suspend fun runMcpConnect(args: JSONObject): JSONObject {
+        val requested = args.safe("server").trim().lowercase()
+        val server = when (requested) {
+            "custom" -> {
+                val url = args.safe("url").trim()
+                if (url.isBlank()) {
+                    return JSONObject().put("ok", false).put("summary", "custom সার্ভারের url দরকার")
+                }
+                aiEngine.mcp.addCustomServer(url, args.safe("name"), args.safe("token"))
+            }
+            else -> McpCatalog.find(requested)
+                ?: return JSONObject().put("ok", false)
+                    .put("summary", "অজানা MCP: $requested (canva, cloudflare, supabase, github বা custom)")
+        }
+
+        return if (server.auth == McpAuth.OAUTH) {
+            val url = aiEngine.mcp.beginOAuth(server)
+            val failure = openInBrowser(url)
+            if (failure != null) {
+                JSONObject().put("ok", false).put("summary", failure)
+            } else {
+                JSONObject().put("ok", true)
+                    .put("summary", "${server.name}: ব্রাউজারে অনুমতির পাতা খোলা হয়েছে — ব্যবহারকারী Allow চাপলে কানেক্ট হয়ে যাবে")
+                    .put("pending_auth", true)
+            }
+        } else {
+            val token = args.safe("token").takeIf { it.isNotBlank() }
+            if (server.auth == McpAuth.TOKEN && token == null) {
+                return JSONObject().put("ok", false)
+                    .put("summary", "${server.name} এর জন্য access token দরকার — ব্যবহারকারীর কাছ থেকে নাও")
+            }
+            val conn = aiEngine.mcp.connectWithToken(server, token)
+            JSONObject()
+                .put("ok", conn.status == McpStatus.CONNECTED)
+                .put("summary", if (conn.status == McpStatus.CONNECTED)
+                    "${server.name} কানেক্টেড — ${conn.toolCount}টি টুল পাওয়া গেছে"
+                else "${server.name} কানেক্ট করা যায়নি: ${conn.error}")
+                .put("tools", org.json.JSONArray(conn.tools.map { it.name }))
+        }
+    }
+
+    /**
+     * Opens a consent page in the phone's browser. Returns the real outcome, so
+     * the UI can say "no browser found" instead of showing "waiting…" forever —
+     * a silent failure here is exactly why the page never appeared on the phone.
+     */
+    private fun openInBrowser(url: String): String? {
+        if (url.isBlank()) return "অনুমতির লিঙ্ক তৈরি করা যায়নি"
+        return try {
+            val view = android.content.Intent(
+                android.content.Intent.ACTION_VIEW,
+                android.net.Uri.parse(url)
+            ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            // A chooser makes the browser choice explicit; without it Android 11+
+            // can resolve nothing and throw, which the old code swallowed.
+            val chooser = android.content.Intent.createChooser(view, "অনুমতি দিতে ব্রাউজার বেছে নাও")
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            getApplication<Application>().startActivity(chooser)
+            null
+        } catch (e: Exception) {
+            try {
+                getApplication<Application>().startActivity(
+                    android.content.Intent(
+                        android.content.Intent.ACTION_VIEW,
+                        android.net.Uri.parse(url)
+                    ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+                null
+            } catch (e2: Exception) {
+                "ব্রাউজার খোলা যায়নি: ${e2.message ?: "কোনো ব্রাউজার পাওয়া যায়নি"}"
+            }
+        }
+    }
+
+    private fun runMcpList(): JSONObject {
+        val arr = org.json.JSONArray()
+        for (conn in aiEngine.mcp.connections.value) {
+            arr.put(JSONObject()
+                .put("server", conn.server.id)
+                .put("name", conn.server.name)
+                .put("status", conn.status.name)
+                .put("tool_count", conn.toolCount)
+                .put("tools", org.json.JSONArray(conn.tools.map { it.qualifiedName }))
+                .put("resource_count", conn.resourceCount)
+                .put("prompt_count", conn.promptCount)
+                .apply { if (conn.error.isNotBlank()) put("error", conn.error) })
+        }
+        return JSONObject().put("ok", true)
+            .put("summary", "MCP: ${aiEngine.mcp.connectedCount()}টি কানেক্টেড, " +
+                "${aiEngine.mcp.totalToolCount()}টি টুল, " +
+                "${aiEngine.mcp.allResources().size}টি রিসোর্স, " +
+                "${aiEngine.mcp.allPrompts().size}টি প্রম্পট")
+            .put("servers", arr)
+    }
+
+    /** Lists resources and templates, optionally for one server. */
+    private fun runMcpResources(args: JSONObject): JSONObject {
+        val only = args.safe("server").trim().lowercase()
+        val items = aiEngine.mcp.allResources().filter { only.isBlank() || it.serverId == only }
+        val arr = org.json.JSONArray()
+        for (r in items) {
+            arr.put(JSONObject()
+                .put("server", r.serverId)
+                .put("uri", r.uri)
+                .put("name", r.name)
+                .put("description", r.description)
+                .put("mime_type", r.mimeType)
+                .put("template", r.template))
+        }
+        val summary = if (items.isEmpty()) {
+            if (only.isBlank()) "কোনো MCP রিসোর্স নেই"
+            else "$only কোনো রিসোর্স দেয়নি"
+        } else "${items.size}টি রিসোর্স পাওয়া গেছে"
+        return JSONObject().put("ok", true).put("summary", summary).put("resources", arr)
+    }
+
+    private suspend fun runMcpReadResource(args: JSONObject): JSONObject {
+        val uri = resolveQualifiedUri(args.safe("uri").trim())
+            ?: return JSONObject().put("ok", false).put("summary", "uri দরকার")
+        val result = aiEngine.mcp.readResource(uri)
+        return result
+    }
+
+    /** Lists prompt templates and the arguments each one takes. */
+    private fun runMcpPrompts(args: JSONObject): JSONObject {
+        val only = args.safe("server").trim().lowercase()
+        val items = aiEngine.mcp.allPrompts().filter { only.isBlank() || it.serverId == only }
+        val arr = org.json.JSONArray()
+        for (p in items) {
+            arr.put(JSONObject()
+                .put("server", p.serverId)
+                .put("name", p.name)
+                .put("description", p.description)
+                .put("arguments", org.json.JSONArray(p.arguments.map { a ->
+                    JSONObject().put("name", a.name).put("description", a.description)
+                        .put("required", a.required)
+                })))
+        }
+        val summary = if (items.isEmpty()) "কোনো MCP প্রম্পট নেই" else "${items.size}টি প্রম্পট পাওয়া গেছে"
+        return JSONObject().put("ok", true).put("summary", summary).put("prompts", arr)
+    }
+
+    private suspend fun runMcpPrompt(args: JSONObject): JSONObject {
+        var name = args.safe("name").trim()
+        if (name.isBlank()) return JSONObject().put("ok", false).put("summary", "name দরকার")
+        if (!name.contains("__")) {
+            val owner = aiEngine.mcp.allPrompts().firstOrNull { it.name == name }
+            if (owner != null) name = "${owner.serverId}__$name"
+        }
+        val result = aiEngine.mcp.getPrompt(name, args.optJSONObject("arguments") ?: JSONObject())
+        return result
+    }
+
+    /** Subscribe/unsubscribe a resource, resolving a bare uri to its server. */
+    private suspend fun runMcpSubscribe(args: JSONObject): JSONObject {
+        val resolved = resolveQualifiedUri(args.safe("uri").trim())
+            ?: return JSONObject().put("ok", false).put("summary", "uri দরকার")
+        val subscribe = args.safe("action", "subscribe") != "unsubscribe"
+        val separator = resolved.indexOf("__")
+        val serverId = resolved.substring(0, separator)
+        val uri = resolved.substring(separator + 2)
+        val result = if (subscribe) {
+            aiEngine.mcp.subscribeResource(serverId, uri)
+        } else {
+            aiEngine.mcp.unsubscribeResource(serverId, uri)
+        }
+        return result
+    }
+
+    private suspend fun runMcpComplete(args: JSONObject): JSONObject {
+        val server = args.safe("server").trim().lowercase()
+        val argument = args.safe("argument").trim()
+        if (server.isBlank() || argument.isBlank()) {
+            return JSONObject().put("ok", false).put("summary", "server আর argument দরকার")
+        }
+        val kind = if (args.safe("kind").equals("resource", ignoreCase = true)) "ref/resource" else "ref/prompt"
+        val ref = args.safe("ref").trim().ifBlank {
+            // With no explicit ref, offer the first prompt or resource that has this
+            // argument, so the model does not have to look the name up first.
+            if (kind == "ref/resource") aiEngine.mcp.allResources().firstOrNull()?.uri.orEmpty()
+            else aiEngine.mcp.allPrompts().firstOrNull { p -> p.arguments.any { it.name == argument } }?.name.orEmpty()
+        }
+        if (ref.isBlank()) return JSONObject().put("ok", false).put("summary", "কোনো ref পাওয়া যায়নি")
+        val result = aiEngine.mcp.complete(server, kind, ref, argument, args.safe("value"))
+        return result
+    }
+
+    private suspend fun runMcpPing(args: JSONObject): JSONObject {
+        val server = args.safe("server").trim().lowercase()
+        if (server.isBlank()) return JSONObject().put("ok", false).put("summary", "server দরকার")
+        val result = aiEngine.mcp.ping(server)
+        return result
+    }
+
+    private suspend fun runMcpLogLevel(args: JSONObject): JSONObject {
+        val server = args.safe("server").trim().lowercase()
+        val level = args.safe("level").trim().lowercase()
+        if (server.isBlank() || level.isBlank()) {
+            return JSONObject().put("ok", false).put("summary", "server আর level দরকার")
+        }
+        val result = aiEngine.mcp.setLogLevel(server, level)
+        return result
+    }
+
+    /**
+     * Turns a bare uri into `<serverId>__<uri>`. Returns null when the uri is
+     * blank; an unknown uri falls back to the only connected server, which is the
+     * common case and avoids a pointless failure.
+     */
+    private fun resolveQualifiedUri(raw: String): String? {
+        if (raw.isBlank()) return null
+        if (raw.contains("__")) return raw
+        val ownerId = aiEngine.mcp.allResources().firstOrNull { it.uri == raw }?.serverId
+            ?: aiEngine.mcp.connections.value
+                .firstOrNull { it.status == McpStatus.CONNECTED }?.server?.id
+        return if (ownerId != null) "${ownerId}__$raw" else raw
+    }
+
+    fun closeCodePanel() {
+        _codeBoxOpen.value = false
+    }
+
+    // ---- Terminal tab ------------------------------------------------------
+
+    /**
+     * Runs one line in the Terminal shell. The user's typed lines and the
+     * assistant's `terminal_run` calls both come through here, so the two share
+     * the same shell, working directory and scrollback. Every result is real
+     * output, never a summary.
+     *
+     * This is the *user-facing* shell. `run_shell` is a separate shell with its
+     * own working directory — the assistant has both, and picks.
+     */
+    fun runTerminal(command: String) {
+        val line = command.trim()
+        if (line.isEmpty()) return
+        // While a command is really running, a line of input belongs to that
+        // command, not to the shell. This is what makes a prompt answerable:
+        // `apt install` asks "Do you want to continue? [Y/n]", and the "y" the
+        // user types goes to the program that asked, instead of being rejected as
+        // a new command.
+        //
+        // The check is against the live process and the in-flight set together,
+        // never the `busy` flag. The flag is raised before the coroutine runs, so
+        // routing on it sent the line into a pipe that did not exist yet, where it
+        // was dropped: the prompt came back with no output at all. Busy is read
+        // for the *active* session only; a command in another tab must not swallow
+        // this one.
+        val sessionId = _activeTerminalId.value
+        if ((terminalProcesses.containsKey(sessionId) || sessionId in terminalInFlight) &&
+            sendTerminalInput(line)
+        ) {
+            return
+        }
+        // Marked before the coroutine starts, so a second Enter in the same frame
+        // is treated as input to this command rather than as a new one.
+        setSessionBusy(sessionId, true)
+        terminalInFlight.add(sessionId)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // The session is passed in, not re-read: the user may switch tabs
+                // while the command runs, and the output must stay filed under the
+                // shell that started it.
+                runTerminalLine(line, sessionId = sessionId)
+            } finally {
+                terminalInFlight.remove(sessionId)
+                terminalLiveLine.remove(sessionId)
+                setSessionBusy(sessionId, false)
+            }
+        }
+    }
+
+    /**
+     * Writes a line to the standard input of the command that is currently running.
+     *
+     * Returns false when there is no command to answer, so the caller can run the
+     * line as a command of its own instead. A line is never dropped in silence:
+     * the process can exit between the caller's check and this write, and that
+     * race used to lose whatever the user had typed.
+     *
+     * Only the active session's command can be answered: a line typed here belongs
+     * to the shell on screen, never to one running in another tab.
+     */
+    fun sendTerminalInput(text: String): Boolean {
+        val sid = _activeTerminalId.value
+        val sink = terminalProcesses[sid]?.input ?: return false
+        return try {
+            synchronized(sink) {
+                sink.write((text + "\n").toByteArray())
+                sink.flush()
+            }
+            // The line is echoed into the running command's scrollback entry, the
+            // way a real terminal shows what you typed while a program waits for
+            // input. Without this the answer vanished from the screen the moment
+            // it was sent, which read as "my command did nothing".
+            terminalLiveLine[sid]?.let { id ->
+                updateTerminalLineIn(sid, id) { line ->
+                    line.copy(output = (line.output + "\n" + text).trimStart('\n'))
+                }
+            }
+            true
+        } catch (e: Exception) {
+            // The command may have just finished and closed its input.
+            false
+        }
+    }
+
+    /**
+     * Stops the command that is running. This is the terminal's Ctrl-C.
+     *
+     * With no timeout on a command, this is the only way out of one that never
+     * finishes — a `ping` without `-c`, a `cat` on a pipe that never closes, a
+     * `git clone` of the wrong repository. A no-op when nothing is running.
+     */
+    fun interruptTerminal() {
+        terminalProcesses[_activeTerminalId.value]?.interrupt()
+    }
+
+    /** The body of a terminal line, shared by the user's typing and `terminal_run`. */
+    private suspend fun runTerminalLine(
+        line: String,
+        timeoutMs: Long = 0,
+        onOutput: ((String) -> Unit)? = null,
+        sessionId: String = ""
+    ): TerminalLine {
+        // Pinned at entry: the user may switch tabs while the command runs, and the
+        // process must stay filed under the session that started it.
+        val sid = sessionId.ifBlank { _activeTerminalId.value }
+        val app = getApplication<Application>()
+        val home = ShellRuntime.home(app)
+        // `cd` is stateful: it changes where the *next* line runs, so it is
+        // applied here rather than left to die with the process it started.
+        parseCd(line, home, sid)?.let { target ->
+            val entry = if (target.isDirectory) {
+                updateSession(sid) { it.copy(cwd = displayPath(home, target)) }
+                TerminalLine(command = line, output = "", exitCode = 0, isError = false)
+            } else {
+                TerminalLine(
+                    command = line,
+                    output = "cd: no such directory: ${target.path}",
+                    exitCode = 1, isError = true
+                )
+            }
+            appendTerminalIn(sid, entry)
+            return entry
+        }
+        // A Linux session is the real guest: every line goes into it, and `git`
+        // there is the real git with real remotes, not the JGit shortcut below.
+        if (shellOf(sid) == TerminalShell.LINUX) {
+            return runLinuxLine(app, line, timeoutMs, onOutput, sid)
+        }
+        // busybox has no git, so in the Android session a `git` line is served by
+        // JGit instead of failing with "applet not found".
+        runGitLine(app, line, sid)?.let { result ->
+            appendTerminalIn(sid, result)
+            return result
+        }
+        // The explicit `linux` / `linux-install` verbs still work in an Android
+        // session, so nothing that worked before is lost.
+        if (isLinuxCommand(line)) {
+            return runLinuxLine(app, line, timeoutMs, onOutput, sid)
+        }
+        // A live entry is appended first and its output grows as the command
+        // prints, so the terminal behaves like a real one — progress appears
+        // while the command runs instead of after it exits.
+        val lineId = UUID.randomUUID().toString()
+        appendTerminalIn(sid, TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
+        terminalLiveLine[sid] = lineId
+        val streamed = StringBuilder()
+        val r = ShellRuntime.runStreaming(
+            app, line,
+            cwd = currentTerminalDir(home, sid),
+            // No deadline unless the caller set one. A real terminal does not put
+            // a clock on the command you typed, so `apt upgrade`, `git clone` and
+            // a long build run to completion; the user's Ctrl-C is the way out.
+            timeoutMs = timeoutMs,
+            onChunk = { _, text ->
+                synchronized(streamed) { streamed.append(text) }
+                updateTerminalLineIn(sid, lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
+                onOutput?.invoke(text)
+            },
+            // A host command can prompt too (`read`, a password), so it gets the
+            // same answerable input as a Linux one.
+            onSpawn = { live -> terminalProcesses[sid] = live }
+        )
+        terminalProcesses.remove(sid)
+        val body = buildString {
+            if (r.stdout.isNotEmpty()) append(r.stdout.trimEnd())
+            if (r.stderr.isNotEmpty()) {
+                if (isNotEmpty()) append('\n')
+                append(r.stderr.trimEnd())
+            }
+            if (r.timedOut) {
+                if (isNotEmpty()) append('\n')
+                append("[timed out after ${r.millis / 1000}s]")
+            }
+            if (isEmpty()) append("(no output)")
+        }
+        val entry = TerminalLine(
+            id = lineId, command = line, output = body, exitCode = r.code,
+            isError = r.code != 0 || r.timedOut, timedOut = r.timedOut, millis = r.millis
+        )
+        updateTerminalLineIn(sid, lineId) { entry }
+        return entry
+    }
+
+    /**
+     * Replaces one terminal entry in place, aimed at a named session.
+     *
+     * A command keeps writing to the shell that started it even if the user has
+     * switched to another tab, so its progress must not be redirected onto
+     * whatever is on screen when a line arrives.
+     */
+    private fun updateTerminalLineIn(sessionId: String, id: String, transform: (TerminalLine) -> TerminalLine) {
+        updateSession(sessionId) { session ->
+            session.copy(lines = session.lines.map { if (it.id == id) transform(it) else it })
+        }
+    }
+
+    // ---- ZYRAXON's own full Linux system --------------------------------
+
+    /**
+     * Recognises the lines that belong to the bundled Linux userland rather than
+     * the app's own busybox: `linux-install`, `linux`, `linux-status`, and the
+     * package-manager names the guest provides once it is installed.
+     */
+    private fun isLinuxCommand(line: String): Boolean {
+        val first = line.trim().split(Regex("\\s+")).firstOrNull() ?: return false
+        return first in setOf(
+            "linux", "linux-install", "linux-status", "linux-shell",
+            "pkg", "apt", "apt-get", "dpkg"
+        ) || line.trim().startsWith("linux ")
+    }
+
+    /**
+     * Runs one line of the bundled Linux system. The system is unpacked on first
+     * launch, so this only ever drives it; every line goes into the guest.
+     */
+    private suspend fun runLinuxLine(
+        app: Application,
+        line: String,
+        timeoutMs: Long = 0,
+        onOutput: ((String) -> Unit)? = null,
+        sessionId: String = ""
+    ): TerminalLine {
+        val sid = sessionId.ifBlank { _activeTerminalId.value }
+        val lineId = UUID.randomUUID().toString()
+        appendTerminalIn(sid, TerminalLine(id = lineId, command = line, output = "", exitCode = 0, isError = false, running = true))
+        terminalLiveLine[sid] = lineId
+        val streamed = StringBuilder()
+        val push: (String, String) -> Unit = { _, text ->
+            synchronized(streamed) { streamed.append(text) }
+            updateTerminalLineIn(sid, lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
+            onOutput?.invoke(text)
+        }
+
+        val status = buildString {
+            append("Linux: ").append(if (LinuxRuntime.isInstalled(app)) "ready" else "setting up…")
+            if (!LinuxRuntime.isSupported(app)) append(" · unsupported on this device")
+            append("\n")
+            append("Guest probe: ").append(LinuxRuntime.probe(app))
+            append("\n\n")
+            append("The system is already installed — nothing to set up. Type any Linux command.\n\n")
+            append("Examples:\n")
+            append(" pkg install nmap — install a tool from the Termux repository\n")
+            append(" pkg upgrade — update every installed package\n")
+            append(" ls, cd, cat, nano — the usual shell\n")
+            append(" git clone <url> — clone a repository\n")
+            append(" python, node, clang — run code\n")
+            append(" linux-status — show this status\n")
+        }
+
+        val result = when {
+            line == "linux-status" -> TerminalLine(
+                command = line, output = status, exitCode = 0, isError = false
+            )
+
+            line == "linux-install" -> {
+                push("out", "Installing ZYRAXON Linux…")
+                val ok = LinuxRuntime.install(app) { msg -> push("out", msg) }
+                TerminalLine(
+                    id = lineId,
+                    command = line,
+                    output = streamed.toString().trimEnd('\n') +
+                        if (ok) "\n\nZYRAXON Linux is ready. Run a command with: linux <command>"
+                        else "\n\nInstall did not finish. See the lines above for the reason.",
+                    exitCode = if (ok) 0 else 1,
+                    isError = !ok
+                )
+            }
+
+            !LinuxRuntime.isInstalled(app) -> {
+                // The system is unpacked on first launch, so reaching this branch
+                // means the very first command arrived before that finished. Set it
+                // up now rather than telling the user to type an install command:
+                // there is nothing they should have to do.
+                push("out", "Preparing ZYRAXON Linux…")
+                val ok = LinuxRuntime.install(app) { msg -> push("out", msg) }
+                if (ok) {
+                    runLinuxGuest(app, lineId, streamed, push, guestCommand(sid, line), timeoutMs, sid)
+                } else {
+                    TerminalLine(
+                        id = lineId,
+                        command = line,
+                        output = streamed.toString().trimEnd('\n'),
+                        exitCode = 1, isError = true
+                    )
+                }
+            }
+
+            else -> {
+                runLinuxGuest(app, lineId, streamed, push, guestCommand(sid, line), timeoutMs, sid)
+            }
+        }
+        // The entry is finalised in place, so the running cursor stops and the
+        // exit code is shown under the output that already streamed in. Aimed at
+        // the session that ran it, not at whichever tab is on screen now.
+        updateTerminalLineIn(sid, lineId) { result }
+        return result
+    }
+
+    /**
+     * The command to hand the guest. A line typed in a Linux session goes in
+     * verbatim — a real terminal does not need a `linux` prefix. The explicit
+     * `linux <cmd>` form is still accepted and has its prefix removed, so both
+     * ways of driving the system keep working.
+     */
+    private fun guestCommand(sessionId: String, line: String): String {
+        val trimmed = line.trim()
+        if (shellOf(sessionId) == TerminalShell.LINUX && !isLinuxVerb(trimmed)) {
+            return trimmed.ifEmpty { "bash -l" }
+        }
+        return trimmed.removePrefix("linux").trim().ifEmpty { "bash -l" }
+    }
+
+    /** True only for the explicit `linux`/`linux-install` verbs, not `apt`/`git`. */
+    private fun isLinuxVerb(line: String): Boolean {
+        val first = line.split(Regex("\\s+")).firstOrNull() ?: return false
+        return first in setOf("linux", "linux-install", "linux-status", "linux-shell")
+    }
+
+    /** Runs a command inside the installed guest, streaming its output live. */
+    private suspend fun runLinuxGuest(
+        app: Application,
+        lineId: String,
+        streamed: StringBuilder,
+        push: (String, String) -> Unit,
+        command: String,
+        timeoutMs: Long = 0,
+        sessionId: String = ""
+    ): TerminalLine {
+        val sid = sessionId.ifBlank { _activeTerminalId.value }
+        val r = LinuxRuntime.runStreaming(
+            app, command,
+            onChunk = { stream, text -> push(stream, text) },
+            // Hold the command's input while it runs, so a prompt can be answered.
+            onSpawn = { live -> terminalProcesses[sid] = live },
+            timeoutMs = timeoutMs
+        )
+        terminalProcesses.remove(sid)
+        if (r == null) {
+            return TerminalLine(
+                command = command,
+                output = "Linux is not installed. Run: linux-install",
+                exitCode = 1, isError = true
+            )
+        }
+        val body = buildString {
+            if (r.stdout.isNotBlank()) append(r.stdout.trimEnd())
+            if (r.stderr.isNotBlank()) {
+                if (isNotEmpty()) append('\n')
+                append(r.stderr.trimEnd())
+            }
+            if (r.timedOut) {
+                if (isNotEmpty()) append('\n')
+                append("[timed out after ${r.millis / 1000}s]")
+            }
+            if (isEmpty()) append("(no output)")
+        }
+        return TerminalLine(
+            id = lineId, command = command, output = body, exitCode = r.code,
+            isError = r.code != 0 || r.timedOut, timedOut = r.timedOut, millis = r.millis
+        )
+    }
+
+    /**
+     * `terminal_run` — the assistant driving the shell the user is watching.
+     * Same shell, same cwd, same scrollback as the user's own typing.
+     */
+    private suspend fun runInTerminalShell(args: JSONObject, live: ((String) -> Unit)? = null): JSONObject {
+        val line = args.safe("command").trim()
+        if (line.isEmpty()) return JSONObject().put("ok", false).put("summary", "খালি কমান্ড")
+        // No deadline unless the caller asked for one, matching the user's own
+        // typing: a long command in the watched terminal runs to completion.
+        val timeout = args.optLong("timeout_ms", 0)
+        // The caller may name the shell: "linux" drives ZYRAXON's own Unix system,
+        // "android" the phone's own shell. Without a name, the session already on
+        // screen is used, which is what a user watching the terminal expects.
+        val requested = args.safe("shell").trim().lowercase()
+        // The assistant works in its own shell tabs ("🤖 android" / "🤖 linux"), so
+        // what it runs never lands in the tab the user is typing in, and the screen
+        // the user is on is left alone.
+        val want = when (requested) {
+            "linux" -> TerminalShell.LINUX
+            "android" -> TerminalShell.ANDROID
+            else -> activeTerminalShell()
+        }
+        val sid = agentSessionFor(want)
+        setSessionBusy(sid, true)
+        val entry = try {
+            withContext(Dispatchers.IO) { runTerminalLine(line, timeout, live, sid) }
+        } finally {
+            setSessionBusy(sid, false)
+        }
+        return JSONObject()
+            .put("ok", !entry.isError)
+            .put("code", entry.exitCode)
+            .put("stdout", if (entry.isError) "" else entry.output)
+            .put("stderr", if (entry.isError) entry.output else "")
+            .put("shell", if (want == TerminalShell.LINUX) "linux" else "android")
+            .put("summary", "$ $line exit ${entry.exitCode}")
+    }
+
+    /**
+     * Serves `git clone/pull/status` through JGit. Returns null for any other
+     * line so the real shell gets it.
+     */
+    private fun runGitLine(app: Application, line: String, sid: String = _activeTerminalId.value): TerminalLine? {
+        val cwd = currentTerminalDir(ShellRuntime.home(app), sid)
+        val started = System.currentTimeMillis()
+        val outcome = GitRuntime.runCommand(app, line, cwd) ?: return null
+        return TerminalLine(
+            command = line,
+            output = outcome.message,
+            exitCode = if (outcome.ok) 0 else 1,
+            isError = !outcome.ok,
+            millis = System.currentTimeMillis() - started
+        )
+    }
+
+    /** Appends to a named session, for a command that outlives a tab switch. */
+    private fun appendTerminalIn(sessionId: String, entry: TerminalLine) {
+        updateSession(sessionId) { it.copy(lines = (it.lines + entry).takeLast(400)) }
+    }
+
+    fun clearTerminal() {
+        updateActiveSession { it.copy(lines = emptyList()) }
+    }
+
+    /** Opens a fresh shell and switches to it. It inherits the active shell type. */
+    fun newTerminalSession() {
+        val same = activeTerminalShell()
+        val n = _terminalSessions.value.count { it.shell == same } + 1
+        val session = TerminalSession(
+            id = UUID.randomUUID().toString(),
+            title = (if (same == TerminalShell.LINUX) "linux" else "android") + " $n",
+            shell = same
+        )
+        _terminalSessions.value = _terminalSessions.value + session
+        _activeTerminalId.value = session.id
+        syncActiveTerminal()
+    }
+
+    /** The assistant's own shell tab of this type, made on first use and never switched to. */
+    private fun agentSessionFor(shell: TerminalShell): String {
+        val id = "agent-" + (if (shell == TerminalShell.LINUX) "linux" else "android")
+        if (_terminalSessions.value.none { it.id == id }) {
+            _terminalSessions.update {
+                it + TerminalSession(
+                    id = id,
+                    title = "\uD83E\uDD16 " + (if (shell == TerminalShell.LINUX) "linux" else "android"),
+                    shell = shell
+                )
+            }
+        }
+        return id
+    }
+
+    /** Opens a shell of the given type and switches to it. */
+    fun newTerminalSession(shell: TerminalShell) {
+        val n = _terminalSessions.value.count { it.shell == shell } + 1
+        val session = TerminalSession(
+            id = UUID.randomUUID().toString(),
+            title = (if (shell == TerminalShell.LINUX) "linux" else "android") + " $n",
+            shell = shell
+        )
+        _terminalSessions.value = _terminalSessions.value + session
+        _activeTerminalId.value = session.id
+        syncActiveTerminal()
+    }
+
+    /** The shell the terminal on screen is driving. */
+    fun activeTerminalShell(): TerminalShell =
+        _terminalSessions.value.firstOrNull { it.id == _activeTerminalId.value }?.shell
+            ?: TerminalShell.ANDROID
+
+    fun selectTerminalSession(id: String) {
+        if (_terminalSessions.value.any { it.id == id }) {
+            _activeTerminalId.value = id
+            syncActiveTerminal()
+        }
+    }
+
+    /** Closes a shell. The last one is never closed — there is always a shell. */
+    fun closeTerminalSession(id: String) {
+        val closing = _terminalSessions.value.firstOrNull { it.id == id }
+        val remaining = _terminalSessions.value.filterNot { it.id == id }
+        if (remaining.isEmpty()) {
+            val shell = closing?.shell ?: TerminalShell.ANDROID
+            _terminalSessions.value = listOf(
+                TerminalSession(
+                    id = UUID.randomUUID().toString(),
+                    title = if (shell == TerminalShell.LINUX) "linux" else "android",
+                    shell = shell
+                )
+            )
+            _activeTerminalId.value = _terminalSessions.value.first().id
+            syncActiveTerminal()
+            return
+        }
+        _terminalSessions.value = remaining
+        if (_activeTerminalId.value == id) _activeTerminalId.value = remaining.last().id
+        syncActiveTerminal()
+    }
+
+    /** Replaces the active session with [transform]'s result, leaving the rest be. */
+    private fun updateActiveSession(transform: (TerminalSession) -> TerminalSession) {
+        updateSession(_activeTerminalId.value, transform)
+    }
+
+    /** The shell a named session is running, so a command never reads the wrong tab. */
+    private fun shellOf(id: String): TerminalShell =
+        _terminalSessions.value.firstOrNull { it.id == id }?.shell ?: TerminalShell.ANDROID
+
+    /** Applies an edit to one named session and re-publishes the active view. */
+    private fun updateSession(id: String, transform: (TerminalSession) -> TerminalSession) {
+        _terminalSessions.update { list -> list.map { if (it.id == id) transform(it) else it } }
+        syncActiveTerminal()
+    }
+
+    /** The real directory the next command runs in. */
+    private fun currentTerminalDir(home: java.io.File, sid: String = _activeTerminalId.value): java.io.File {
+        val shown = _terminalSessions.value.firstOrNull { it.id == sid }?.cwd ?: "~"
+        return when {
+            shown == "~" -> home
+            // The displayed path is home-relative (`~/sub/dir`), so it has to be
+            // resolved against home before it can be used as a directory.
+            shown.startsWith("~/") ->
+                java.io.File(home, shown.removePrefix("~/")).takeIf { it.isDirectory } ?: home
+            else -> java.io.File(shown).takeIf { it.isDirectory } ?: home
+        }
+    }
+
+    /** Recognises a bare `cd <dir>` so the change survives past this line. */
+    private fun parseCd(line: String, home: java.io.File, sid: String = _activeTerminalId.value): java.io.File? {
+        val t = line.trim()
+        if (t != "cd" && !t.startsWith("cd ")) return null
+        val rest = t.removePrefix("cd").trim()
+        return when {
+            rest.isEmpty() || rest == "~" -> home
+            rest.startsWith("/") -> java.io.File(rest)
+            else -> java.io.File(currentTerminalDir(home, sid), rest.removePrefix("./"))
+        }
+    }
+
+    private fun displayPath(home: java.io.File, dir: java.io.File): String {
+        val h = home.absolutePath
+        val p = dir.canonicalFile.absolutePath
+        return if (p == h) "~" else if (p.startsWith("$h/")) "~" + p.removePrefix(h) else p
+    }
+
+    // ---- MCP, driven by the MCP screen ------------------------------------
+
+    val mcpConnections: StateFlow<List<ai.zyraxon.assistant.mcp.McpConnection>> =
+        aiEngine.mcp.connections
+
+    /** Set when a server needs a token; the UI shows the token dialog for it. */
+    val pendingTokenServer = MutableStateFlow<ai.zyraxon.assistant.mcp.McpServer?>(null)
+
+    /** Opens the provider's token page so the user does not have to hunt for it. */
+    fun openTokenPage(url: String) {
+        if (url.isNotBlank()) openInBrowser(url)
+    }
+
+    /** Non-fatal note shown on the MCP screen (progress, or why it failed). */
+    private val _mcpNotice = MutableStateFlow("")
+    val mcpNotice: StateFlow<String> = _mcpNotice.asStateFlow()
+
+    fun clearMcpNotice() {
+        _mcpNotice.value = ""
+    }
+
+    /**
+     * Connects a server from the MCP screen. The browser-based ones open the
+     * consent page and finish on their own; the token-based ones need the token
+     * the dialog already collected.
+     */
+    fun connectMcp(server: ai.zyraxon.assistant.mcp.McpServer, token: String? = null) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                if (server.auth == McpAuth.OAUTH) {
+                    _mcpNotice.value = "${server.name}: অনুমতির পাতা খোলা হচ্ছে…"
+                    val url = aiEngine.mcp.beginOAuth(server) { stage ->
+                        _mcpNotice.value = "${server.name}: $stage"
+                    }
+                    val failure = withContext(Dispatchers.Main) { openInBrowser(url) }
+                    _mcpNotice.value = failure
+                        ?: "${server.name}: ব্রাউজারে Allow চাপো — ফিরে এলে নিজে থেকেই কানেক্ট হয়ে যাবে"
+                } else {
+                    _mcpNotice.value = "${server.name}: কানেক্ট করা হচ্ছে…"
+                    val conn = aiEngine.mcp.connectWithToken(server, token)
+                    _mcpNotice.value = if (conn.status == McpStatus.CONNECTED) {
+                        "${server.name} কানেক্টেড — ${conn.toolCount}টি টুল পাওয়া গেছে "
+                    } else {
+                        "${server.name}: ${conn.error.ifBlank { "কানেক্ট করা যায়নি" }}"
+                    }
+                }
+            } catch (e: Exception) {
+                _mcpNotice.value = "${server.name}: ${e.message.orEmpty()}"
+            }
+        }
+    }
+
+    fun disconnectMcp(serverId: String) {
+        aiEngine.mcp.disconnect(serverId)
+        _mcpNotice.value = "$serverId বিচ্ছিন্ন করা হলো"
+    }
+
+    /**
+     * Aborts a browser consent flow the user walked away from. Without this the
+     * card sat on "কানেক্ট হচ্ছে…" forever after the browser was closed, and
+     * there was no way back to the initial Connect button.
+     */
+    fun cancelMcp(server: ai.zyraxon.assistant.mcp.McpServer) {
+        aiEngine.mcp.cancelPending()
+        aiEngine.mcp.disconnect(server.id)
+        _mcpNotice.value = "${server.name}: বাতিল করা হলো"
+    }
+
+    /**
+     * The user opened a browser to grant access, then closed the browser without
+     * finishing. Coming back to the app means that flow is dead, so it is
+     * abandoned here: otherwise the card stayed on "কানেক্ট হচ্ছে…" forever and
+     * there was no way back to the Connect button.
+     */
+    /**
+     * The overlay's silent heartbeat: make sure the bound conversation is awake,
+     * without starting a turn and without saying anything. A chat that is already
+     * up costs one cheap read; only a sleeping sandbox pays the wake, and doing
+     * that here means the user's next message never waits for it.
+     */
+    suspend fun keepCloudAwake() {
+        val id = cloudStore.lastConversationId ?: return
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isBlank() || !aiEngine.isOnline()) return
+        runCatching { cloudClient.ensureRunning(key, id) }
+    }
+
+    /**
+     * Builds the cloud conversation — and brings its sandbox to RUNNING — as soon
+     * as the app is open, so the first message of a chat finds a live machine and
+     * streams at once instead of waiting through a cold start.
+     *
+     * Runs off the UI thread, is safe to call more than once, and reports its
+     * stage into the same [cloudStage] the turn shows, so the user can see the
+     * preparation happening rather than wondering why the first message is slow.
+     */
+    fun prewarmCloud() {
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isBlank() || !aiEngine.isOnline()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            val chatId = _activeConversationId.value
+            runCatching {
+                cloudBridge.prewarm(
+                    apiKey = key,
+                    chatId = chatId,
+                    suffix = cloudSuffix(AgentMode.AGENT),
+                    clientTools = ai.zyraxon.assistant.cloud.CloudBridge.phoneTools(AgentMode.AGENT),
+                    onStage = { stage -> _cloudStage.value = stage }
+                )
+            }
+            if (cloudStore.conversationFor(chatId) != null) _cloudStage.value = ""
+        }
+    }
+
+    /**
+     * Brings every conversation the account already has into the sidebar.
+     *
+     * The sidebar used to show only the chats this phone had started, because the
+     * list is read from the local database and nothing ever wrote the account's
+     * own conversations into it. So a conversation made in the ZYRAXON web app
+     * — or on another phone — was invisible here and could not be resumed. This
+     * reads the whole account list and folds it in, using the cloud id as the
+     * local id so tapping a row wakes that exact conversation.
+     *
+     * Runs on every launch, off the UI thread, and is silent when there is no key
+     * or no network. It is idempotent: a conversation already known is left alone.
+     */
+    fun syncCloudConversations() {
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isBlank() || !aiEngine.isOnline()) return
+        if (cloudSyncRunning) return
+        cloudSyncRunning = true
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                val remote = cloudClient.allConversations(key)
+                for (c in remote) {
+                    if (c.id.isBlank() || c.id == "null") continue
+                    repository.adoptCloudConversation(c.id, c.title.ifBlank { "ZYRAXON" })
+                }
+                // A cloud conversation with no local binding yet is wired to itself,
+                // so opening it wakes the same conversation rather than starting a new
+                // one. A binding that already exists is kept as it is.
+                for (c in remote) {
+                    if (c.id.isBlank() || c.id == "null") continue
+                    if (cloudStore.conversationFor(c.id) == null) {
+                        cloudStore.bind(c.id, c.id, c.sandboxId)
+                    }
+                }
+            }
+            cloudSyncRunning = false
+        }
+    }
+
+    @Volatile
+    private var cloudSyncRunning = false
+
+    /**
+     * True when this chat is a conversation that already lived on the account, so
+     * it opens with its own history rather than a fresh greeting. A conversation
+     * made on this phone binds its cloud id only after the first turn, which is
+     * exactly why the binding is what distinguishes the two.
+     */
+    private fun isCloudOrigin(chatId: String): Boolean {
+        val bound = cloudStore.conversationFor(chatId) ?: return false
+        return bound == chatId
+    }
+
+    /**
+     * Pulls one conversation's recorded history down and shows it, so a chat that
+     * was written elsewhere opens with its messages already there instead of a
+     * blank screen. Only done once per chat: the transcript is then local and the
+     * live socket keeps it current.
+     */
+    private suspend fun importCloudHistory(c: ChatSession) {
+        val convId = cloudStore.conversationFor(c.id) ?: return
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isBlank() || !aiEngine.isOnline()) return
+        if (repository.messageCount(c.id) > 0) return
+        val conv = runCatching { cloudClient.ensureRunning(key, convId) }.getOrNull() ?: return
+        val events = cloudClient.recentEvents(key, conv, limit = 100)
+        if (events.isEmpty()) return
+        val imported = ArrayList<ChatMessage>(events.size)
+        for (e in events) {
+            val text: String
+            val role: MessageRole
+            when (e) {
+                is ai.zyraxon.assistant.cloud.CloudEvent.Message -> {
+                    if (e.text.isBlank()) continue
+                    text = e.text
+                    role = if (e.role == "user") MessageRole.USER else MessageRole.ASSISTANT
+                }
+                is ai.zyraxon.assistant.cloud.CloudEvent.Observation -> {
+                    if (e.text.isBlank()) continue
+                    text = "🔧 " + e.name + "\n" + e.text.take(4000)
+                    role = MessageRole.ASSISTANT
+                }
+                else -> continue
+            }
+            imported.add(
+                ChatMessage(
+                    id = "oh-" + e.id.ifBlank { UUID.randomUUID().toString() },
+                    role = role,
+                    text = text,
+                    timestamp = currentTimeString(),
+                    modelName = _selectedModel.value.name
+                )
+            )
+        }
+        if (imported.isEmpty()) return
+        repository.saveMessages(imported, c.id)
+    }
+
+    /**
+     * The user's own "fix it now" button on the home screen.
+     *
+     * Everything here self-heals without being asked, but a person who thinks a
+     * chat is stuck should not have to wait for the next timer: this wakes the
+     * cloud sandbox, re-reads the model list and the conversation list, and says
+     * what it found. It never throws at the user — the result is a sentence.
+     */
+    fun refreshCloud() {
+        if (cloudRefreshBusy.value) return
+        cloudRefreshBusy.value = true
+        viewModelScope.launch {
+            val key = aiEngine.getApiKey(ZYRAXON_APEX)
+            if (key.isBlank()) {
+                _cloudNotice.value = t("আগে Apex কী বসাও")
+                cloudRefreshBusy.value = false
+                return@launch
+            }
+            if (!aiEngine.isOnline()) {
+                _cloudNotice.value = t("ইন্টারনেট নেই — অনলাইনে এলে নিজেই ঠিক হয়ে যাবে")
+                cloudRefreshBusy.value = false
+                return@launch
+            }
+            _cloudNotice.value = t("দেখা হচ্ছে…")
+            val id = cloudStore.lastConversationId
+            if (id.isNullOrBlank()) {
+                _cloudNotice.value = t("ক্লাউড প্রস্তুত — নতুন চ্যাট শুরু করো")
+                cloudRefreshBusy.value = false
+                return@launch
+            }
+            val conv = runCatching {
+                withContext(Dispatchers.IO) {
+                    cloudClient.ensureRunning(key, id) { stage -> _cloudStage.value = stage }
+                }
+            }.getOrNull()
+            _cloudNotice.value = when {
+                conv == null -> t("কনভার্সেশন পাওয়া যায়নি — পরের মেসেজে নতুনটা তৈরি হবে")
+                conv.sandboxStatus == "RUNNING" -> t("ক্লাউড কানেক্টেড ")
+                else -> "স্যান্ডবক্স এখনো জাগছে (${conv.sandboxStatus})"
+            }
+            withContext(Dispatchers.IO) { runCatching { refreshModels() } }
+            delay(2500)
+            _cloudStage.value = ""
+        }.invokeOnCompletion { cloudRefreshBusy.value = false }
+    }
+
+    fun onAppReturnedToForeground() {
+        // Coming back from a swipe or a long sleep is the moment a cloud chat is
+        // most likely to be pointing at a sandbox that has since been paused, so
+        // it is woken here — in the background, without a turn — rather than left
+        // for the user's next message to discover.
+        viewModelScope.launch(Dispatchers.IO) {
+            val id = cloudStore.lastConversationId ?: return@launch
+            val key = aiEngine.getApiKey(ZYRAXON_APEX)
+            if (key.isBlank()) return@launch
+            runCatching { cloudClient.ensureRunning(key, id) }
+        }
+        if (!aiEngine.mcp.isAwaitingRedirect()) return
+        aiEngine.mcp.cancelPending()
+        _mcpNotice.value = t("কানেক্ট করার ফ্লো বাতিল হলো — আবার কানেক্ট চাপো")
+    }
+
+    fun addCustomMcp(url: String, name: String, token: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val server = aiEngine.mcp.addCustomServer(url, name, token)
+            _mcpNotice.value = "${server.name}: কানেক্ট করা হচ্ছে…"
+            val conn = aiEngine.mcp.connectWithToken(server, token.takeIf { it.isNotBlank() })
+            _mcpNotice.value = if (conn.status == McpStatus.CONNECTED) {
+                "${server.name} কানেক্টেড — ${conn.toolCount}টি টুল "
+            } else {
+                "${server.name}: ${conn.error.ifBlank { "কানেক্ট করা যায়নি" }}"
+            }
+        }
+    }
+
+    fun removeCustomMcp(serverId: String) {
+        aiEngine.mcp.removeCustomServer(serverId)
+        _mcpNotice.value = "$serverId মুছে ফেলা হলো"
+    }
+
+    /** Reads the workspace so the Files panel shows what really exists on disk. */
+    fun refreshWorkspaceFiles() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val root = ToolRegistry.workspace(getApplication())
+            val out = mutableListOf<WorkspaceFile>()
+            root.walkTopDown().maxDepth(4)
+                .filter { it.isFile && !it.name.startsWith(".") }
+                .take(200)
+                .forEach { f ->
+                    out.add(
+                        WorkspaceFile(
+                            name = f.name,
+                            path = f.absolutePath,
+                            relative = f.relativeTo(root).path,
+                            sizeBytes = f.length()
+                        )
+                    )
+                }
+            _workspaceFiles.value = out.sortedBy { it.relative }
+        }
+    }
+
+    fun openWorkspaceFile(path: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val text = runCatching { java.io.File(path).readText() }.getOrNull() ?: return@launch
+            _codeBoxTitle.value = java.io.File(path).name
+            _codeBoxText.value = text.take(60_000)
+            _codeBoxOpen.value = true
+        }
+    }
+
+    fun deleteWorkspaceFile(path: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { java.io.File(path).deleteRecursively() }
+            refreshWorkspaceFiles()
+        }
+    }
+
+    fun closeFilesPanel() {
+        _filesPanelOpen.value = false
+    }
+
+    fun updateAccessibilityStatus(connected: Boolean) {
+        _systemStatus.value = _systemStatus.value.copy(accessibilityConnected = connected)
+    }
+
+    fun setOverlayEnabled(enabled: Boolean) {
+        _overlayEnabled.value = enabled
+        prefs.edit().putBoolean("overlay_enabled", enabled).apply()
+        getApplication<Application>().getSharedPreferences("zyraxon_eye", android.content.Context.MODE_PRIVATE)
+            .edit().putBoolean("show", enabled).apply()
+        if (!enabled) _overlayExpanded.value = false
+    }
+
+    fun setOverlayExpanded(expanded: Boolean) {
+        _overlayExpanded.value = expanded
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (active === this) active = null
+        // No screen is alive any more, so nothing would receive a finished
+        // command. Dropping the callback stops a dead ViewModel being woken.
+        if (active == null) BackgroundCommandService.onFinished = null
+        // Every MCP server holds an SSE channel and a thread. Releasing them here
+        // is what stops them outliving the screen.
+        runCatching { aiEngine.mcp.close() }
+        // The voice player holds an OkHttp client and a MediaPlayer; both must go
+        // with the screen or the audio keeps playing after the app is closed.
+        runCatching { voiceManager.shutdown() }
+    }
+
+    companion object {
+        /**
+         * The provider id of the phone's cloud agent. It is a storage key as well
+         * as a routing key: the API key is saved under it and the model picker
+         * reads it, so it must never change once shipped.
+         */
+        const val ZYRAXON_APEX = "zyraxon_apex"
+
+        /** How often the streaming reply repaints the chat while it arrives. */
+        private const val UI_UPDATE_MS = 150L
+
+        /**
+         * The most base64 a clip part may be before it is left to the link and the
+         * sampled frames instead. A request carrying more than this is refused by
+         * the provider before the model ever sees it.
+         */
+        private const val INLINE_VIDEO_BUDGET = 12_000_000
+
+        /**
+         * How long after the user cuts the assistant off its voice is still
+         * treated as gone. Covers the moment between the stop and the recognizer
+         * delivering the final result of that same interruption.
+         */
+        private const val INTERRUPT_GRACE_MS = 4_000L
+
+        /** How long a screen read is reused. Long enough to serve one turn's two
+         * asks, short enough that a screen the user just changed is re-read. */
+        private const val SCREEN_CACHE_MS = 2_000L
+
+        /**
+         * How often the running turn re-reads the screen. Two seconds, as the user
+         * asked: while a job is in flight the phone is captured on this beat and
+         * the newest frame is handed to the model at the top of each round.
+         */
+        private const val LIVE_FRAME_INTERVAL_MS = 2_000L
+
+        /**
+         * The floating bubble lives in a service and has no ViewModel of its own,
+         * so it reaches the running one through here. Null whenever no screen is
+         * alive, which the caller must handle.
+         */
+        @Volatile
+        var active: ZyraxonViewModel? = null
+            private set
+
+        private val sharedStore = androidx.lifecycle.ViewModelStore()
+
+        /**
+         * The one assistant for the whole process. The screen and the floating eye
+         * both use it, so the eye keeps working (mic, voice, tools) after the
+         * screen is closed instead of finding nobody home.
+         */
+        @Synchronized
+        fun shared(app: Application): ZyraxonViewModel =
+            androidx.lifecycle.ViewModelProvider(
+                sharedStore,
+                androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.getInstance(app)
+            )[ZyraxonViewModel::class.java]
+    }
+}

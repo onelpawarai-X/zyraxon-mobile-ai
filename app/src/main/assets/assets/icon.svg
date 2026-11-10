@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2b1055"/>
+      <stop offset=".5" stop-color="#12082b"/>
+      <stop offset="1" stop-color="#05030f"/>
+    </linearGradient>
+    <radialGradient id="aura" cx="42%" cy="34%" r="72%">
+      <stop offset="0" stop-color="#ffe6fb"/>
+      <stop offset=".28" stop-color="#ff5cae"/>
+      <stop offset=".62" stop-color="#8b5cff"/>
+      <stop offset="1" stop-color="#241058"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38e8ff"/>
+      <stop offset=".5" stop-color="#ff5cae"/>
+      <stop offset="1" stop-color="#8b5cff"/>
+    </linearGradient>
+    <linearGradient id="zmark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e6d8ff"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="116" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="168" fill="url(#aura)" opacity=".95" filter="url(#glow)"/>
+  <circle cx="256" cy="256" r="196" fill="none" stroke="url(#ring)" stroke-width="13" opacity=".92"/>
+  <circle cx="256" cy="256" r="222" fill="none" stroke="#ffffff" stroke-width="2.5" opacity=".28"/>
+
+  <path d="M170 178h172l-116 156h118"
+        fill="none" stroke="url(#zmark)" stroke-width="40"
+        stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+  <circle cx="344" cy="180" r="17" fill="#38e8ff" filter="url(#glow)"/>
+</svg>
