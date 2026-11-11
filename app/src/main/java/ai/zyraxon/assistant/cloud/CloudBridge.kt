@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.json.JSONArray
@@ -126,32 +128,47 @@ class CloudBridge(
 
         if (conv == null) {
             coldStart = true
-            // Prefer a sandbox the account says is up right now; fall back to the
-            // one this chat used before only if the list could not be read.
-            val warm = withContext(Dispatchers.IO) {
-                client.findWarmSandbox(apiKey) ?: store.takeWarmSandbox()
-            }
-            val started = withContext(Dispatchers.IO) {
-                client.startConversation(
-                    key = apiKey,
-                    title = prompt.take(60).replace('\n', ' ').trim().ifBlank { "নতুন চ্যাট" },
-                    suffix = systemSuffix,
-                    reuseSandboxId = warm,
-                    clientTools = clientTools,
-                    // The cold start is shown where thinking will appear, because
-                    // that is exactly what it is: the turn working before it can
-                    // answer. A user who sees the real stage knows the wait is work,
-                    // not a hang - and it is the same block that then fills with the
-                    // agent's own reasoning.
-                    onProgress = { stage ->
-                        onProgress(stage)
-                        trySend(ZyraxonAiEngine.REASONING_PREFIX + "$stage")
+            // Held across "no binding yet, so start one" for the same reason as in
+            // [prewarm]: the prewarm that runs when a chat opens, the send that
+            // follows it, and the account resync can all reach this branch before
+            // any of them has written a binding, and each would otherwise start its
+            // own conversation. The first through the lock starts one; the rest find
+            // that binding and adopt it.
+            conv = chatStartLock(chatId).withLock {
+                val bound = store.conversationFor(chatId)
+                if (bound != null) {
+                    withContext(Dispatchers.IO) {
+                        runCatching { client.ensureRunning(apiKey, bound) }.getOrNull()
                     }
-                )
-            }
-            conv = started
-            store.bind(chatId, started.id, started.sandboxId)
-            store.lastConversationId = started.id
+                } else {
+                    // Prefer a sandbox the account says is up right now; fall back to
+                    // the one this chat used before only if the list could not be read.
+                    val warm = withContext(Dispatchers.IO) {
+                        client.findWarmSandbox(apiKey) ?: store.takeWarmSandbox()
+                    }
+                    val started = withContext(Dispatchers.IO) {
+                        client.startConversation(
+                            key = apiKey,
+                            title = prompt.take(60).replace('\n', ' ').trim().ifBlank { "নতুন চ্যাট" },
+                            suffix = systemSuffix,
+                            reuseSandboxId = warm,
+                            clientTools = clientTools,
+                            // The cold start is shown where thinking will appear, because
+                            // that is exactly what it is: the turn working before it can
+                            // answer. A user who sees the real stage knows the wait is work,
+                            // not a hang - and it is the same block that then fills with the
+                            // agent's own reasoning.
+                            onProgress = { stage ->
+                                onProgress(stage)
+                                trySend(ZyraxonAiEngine.REASONING_PREFIX + "$stage")
+                            }
+                        )
+                    }
+                    store.bind(chatId, started.id, started.sandboxId)
+                    store.lastConversationId = started.id
+                    started
+                }
+            } ?: throw CloudApiError(0, "কনভার্সেশন তৈরি করা যায়নি")
         } else {
             // Remembered here too, not only on a cold start: the heartbeat and the
             // refresh button both need to know which conversation to keep awake.
@@ -496,27 +513,49 @@ class CloudBridge(
         onStage: (String) -> Unit = {}
     ): CloudConversation? = withContext(Dispatchers.IO) {
         if (apiKey.isBlank() || !online()) return@withContext null
-        val bound = store.conversationFor(chatId)
-        if (bound != null) {
-            return@withContext runCatching {
-                client.ensureRunning(apiKey, bound, onStage)
+        // A chat may be prewarmed, sent into and resynced all within a second of
+        // opening, and each of those paths used to start its own conversation
+        // when it found no binding yet — three sandboxes and three conversations
+        // for one message. The lock makes the first one win and the rest wait for
+        // its binding rather than race it.
+        chatStartLock(chatId).withLock {
+            val bound = store.conversationFor(chatId)
+            if (bound != null) {
+                return@withLock runCatching {
+                    client.ensureRunning(apiKey, bound, onStage)
+                }.getOrNull()
+            }
+            runCatching {
+                val warm = client.findWarmSandbox(apiKey) ?: store.takeWarmSandbox()
+                val started = client.startConversation(
+                    key = apiKey,
+                    title = "ZYRAXON",
+                    suffix = suffix,
+                    reuseSandboxId = warm,
+                    clientTools = clientTools,
+                    onProgress = onStage
+                )
+                store.bind(chatId, started.id, started.sandboxId)
+                store.lastConversationId = started.id
+                started
             }.getOrNull()
         }
-        runCatching {
-            val warm = client.findWarmSandbox(apiKey) ?: store.takeWarmSandbox()
-            val started = client.startConversation(
-                key = apiKey,
-                title = "ZYRAXON",
-                suffix = suffix,
-                reuseSandboxId = warm,
-                clientTools = clientTools,
-                onProgress = onStage
-            )
-            store.bind(chatId, started.id, started.sandboxId)
-            store.lastConversationId = started.id
-            started
-        }.getOrNull()
     }
+
+    /**
+     * One lock per chat, held across "look for a binding, and start one if there
+     * is none". Every path that can create a conversation takes it, so a chat can
+     * only ever have one start in flight: the others see the binding the winner
+     * wrote and wake that conversation instead of building a second.
+     *
+     * Keyed by chat id and never removed, which is deliberate — the map holds one
+     * small object per chat the user has opened, and dropping a lock while a start
+     * is still in flight would let the next caller slip past it.
+     */
+    private val chatStartLocks = java.util.concurrent.ConcurrentHashMap<String, Mutex>()
+
+    private fun chatStartLock(chatId: String): Mutex =
+        chatStartLocks.computeIfAbsent(chatId) { Mutex() }
 
     /**
      * Wakes the conversation behind a chat, for callers outside a turn (the app

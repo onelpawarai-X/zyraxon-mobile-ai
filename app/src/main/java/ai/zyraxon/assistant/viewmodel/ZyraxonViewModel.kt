@@ -4077,6 +4077,18 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             }
 
             !LinuxRuntime.isInstalled(app) -> {
+                // This device cannot run the guest at all — its architecture has no
+                // bundled payload. Rather than failing every line with `exit 1`, the
+                // command is run in the phone's own busybox shell, which needs no
+                // payload and is what the Android session already uses. The terminal
+                // therefore works on every phone, and says which shell it used.
+                if (!LinuxRuntime.isSupported(app)) {
+                    push("out", "The bundled Linux system does not run on this phone " +
+                        "(${android.os.Build.SUPPORTED_ABIS.joinToString()}); using the phone's own shell instead.\n\n")
+                    val fallback = runAndroidShellLine(app, line, timeoutMs, onOutput, sid, lineId, streamed, push)
+                    updateTerminalLineIn(sid, lineId) { fallback }
+                    return fallback
+                }
                 // The system is unpacked on first launch, so reaching this branch
                 // means the very first command arrived before that finished. Set it
                 // up now rather than telling the user to type an install command:
@@ -4086,12 +4098,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 if (ok) {
                     runLinuxGuest(app, lineId, streamed, push, guestCommand(sid, line), timeoutMs, sid)
                 } else {
-                    TerminalLine(
-                        id = lineId,
-                        command = line,
-                        output = streamed.toString().trimEnd('\n'),
-                        exitCode = 1, isError = true
-                    )
+                    // The install was refused for a reason the user can act on (no
+                    // storage, missing proot). Fall back to the phone's own shell so
+                    // the command they typed still runs, and keep the reason above.
+                    val fallback = runAndroidShellLine(app, line, timeoutMs, onOutput, sid, lineId, streamed, push)
+                    updateTerminalLineIn(sid, lineId) { fallback }
+                    return fallback
                 }
             }
 
@@ -4126,7 +4138,56 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         return first in setOf("linux", "linux-install", "linux-status", "linux-shell")
     }
 
-    /** Runs a command inside the installed guest, streaming its output live. */
+    /**
+     * Runs one line in the phone's own busybox shell, streaming output live.
+     *
+     * This is the path for a device whose architecture has no bundled Linux
+     * payload: the guest cannot run there at all, but the phone's own shell can,
+     * so the Terminal keeps working instead of answering every command with
+     * `exit 1`.
+     */
+    private suspend fun runAndroidShellLine(
+        app: Application,
+        line: String,
+        timeoutMs: Long,
+        onOutput: ((String) -> Unit)?,
+        sid: String,
+        lineId: String,
+        streamed: StringBuilder,
+        push: (String, String) -> Unit
+    ): TerminalLine {
+        val home = ShellRuntime.home(app)
+        val r = ShellRuntime.runStreaming(
+            app, line,
+            cwd = currentTerminalDir(home, sid),
+            timeoutMs = timeoutMs,
+            onChunk = { _, text ->
+                synchronized(streamed) { streamed.append(text) }
+                updateTerminalLineIn(sid, lineId) { it.copy(output = streamed.toString().trimEnd('\n')) }
+                onOutput?.invoke(text)
+            },
+            onSpawn = { live -> terminalProcesses[sid] = live }
+        )
+        terminalProcesses.remove(sid)
+        val body = buildString {
+            if (r.stdout.isNotBlank()) append(r.stdout.trimEnd())
+            if (r.stderr.isNotBlank()) {
+                if (isNotEmpty()) append('\n')
+                append(r.stderr.trimEnd())
+            }
+            if (r.timedOut) {
+                if (isNotEmpty()) append('\n')
+                append("[timed out after ${r.millis / 1000}s]")
+            }
+            if (isEmpty()) append("(no output)")
+        }
+        push("out", "")
+        return TerminalLine(
+            id = lineId, command = line, output = body, exitCode = r.code,
+            isError = r.code != 0 || r.timedOut, timedOut = r.timedOut, millis = r.millis
+        )
+    }
+
     private suspend fun runLinuxGuest(
         app: Application,
         lineId: String,
@@ -4491,8 +4552,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
                 val remote = cloudClient.allConversations(key)
+                // A conversation this phone already started is bound to its own local
+                // chat, and that chat is already a row in the sidebar. Adopting it
+                // again would show the same conversation twice — once as the chat the
+                // user typed in, once as a copy under its cloud id. So every cloud id
+                // that already has a binding is skipped, and only genuinely foreign
+                // conversations — written in the web app or on another phone — are
+                // folded in.
+                val alreadyBound = cloudStore.bindings().values.toSet()
                 for (c in remote) {
                     if (c.id.isBlank() || c.id == "null") continue
+                    if (c.id in alreadyBound) continue
                     repository.adoptCloudConversation(c.id, c.title.ifBlank { "ZYRAXON" })
                 }
                 // A cloud conversation with no local binding yet is wired to itself,
@@ -4535,17 +4605,51 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         if (key.isBlank() || !aiEngine.isOnline()) return
         if (repository.messageCount(c.id) > 0) return
         val conv = runCatching { cloudClient.ensureRunning(key, convId) }.getOrNull() ?: return
-        val events = cloudClient.recentEvents(key, conv, limit = 100)
+        // A long conversation records hundreds of events, and the window used to be
+        // a hundred — enough for a short chat, but on a real one it stopped before
+        // reaching any finished message, so the transcript came down empty. The
+        // window is taken from the tail of the log, which is where the messages are.
+        val events = cloudClient.recentEvents(key, conv, limit = 600)
         if (events.isEmpty()) return
         val imported = ArrayList<ChatMessage>(events.size)
+        // Finished messages are the transcript; a delta is one token of an answer
+        // that a later finished message already carries whole. Importing both would
+        // show every reply twice, so deltas are only fallen back on when this
+        // conversation recorded no finished messages at all — an interrupted turn
+        // still being written, which would otherwise open as an empty screen.
+        val hasFinished = events.any { it is ai.zyraxon.assistant.cloud.CloudEvent.Message && it.text.isNotBlank() }
+        val streamed = StringBuilder()
+        val streamedRole = MessageRole.ASSISTANT
+        fun flushStreamed() {
+            val text = streamed.toString().trim()
+            streamed.setLength(0)
+            if (text.isBlank()) return
+            imported.add(
+                ChatMessage(
+                    id = "oh-delta-" + imported.size + "-" + c.id,
+                    role = streamedRole,
+                    text = text,
+                    timestamp = currentTimeString(),
+                    modelName = _selectedModel.value.name
+                )
+            )
+        }
         for (e in events) {
             val text: String
             val role: MessageRole
             when (e) {
                 is ai.zyraxon.assistant.cloud.CloudEvent.Message -> {
                     if (e.text.isBlank()) continue
+                    if (!hasFinished) continue
                     text = e.text
                     role = if (e.role == "user") MessageRole.USER else MessageRole.ASSISTANT
+                }
+                is ai.zyraxon.assistant.cloud.CloudEvent.Delta -> {
+                    if (hasFinished) continue
+                    if (e.reasoning.isNotBlank() && e.text.isBlank()) continue
+                    if (e.text.isBlank()) continue
+                    streamed.append(e.text)
+                    continue
                 }
                 is ai.zyraxon.assistant.cloud.CloudEvent.Observation -> {
                     if (e.text.isBlank()) continue
@@ -4564,6 +4668,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 )
             )
         }
+        flushStreamed()
         if (imported.isEmpty()) return
         repository.saveMessages(imported, c.id)
     }

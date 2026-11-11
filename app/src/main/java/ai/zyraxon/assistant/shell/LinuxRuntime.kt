@@ -153,7 +153,15 @@ object LinuxRuntime {
         }
         val assets = assetDir(context)
         if (assets == null) {
-            log("This device's architecture (${android.os.Build.SUPPORTED_ABIS.joinToString()}) has no Linux payload in the APK.")
+            // The payload ships for arm64 and x86_64 only, so a 32-bit device has
+            // nothing to unpack. Said plainly, with the way forward in the same
+            // breath: the Android session is a real busybox shell and needs none of
+            // this, so the user is never left at a bare `exit 1` with no next step.
+            log("This phone is ${android.os.Build.SUPPORTED_ABIS.joinToString()}.")
+            log("The bundled Linux system is built for arm64 and x86_64 only, so there is nothing to install on this device.")
+            log("")
+            log("The Android session still works — switch to the 'android' tab and type commands there.")
+            log("It runs the phone's own busybox shell: ls, cat, grep, sed, awk, tar, curl, python and more.")
             return false
         }
         if (!proot(context).canExecute() || !loader(context).canExecute()) {
