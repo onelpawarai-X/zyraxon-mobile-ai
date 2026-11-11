@@ -8,6 +8,16 @@ android {
   namespace = "com.zyraxon.assistant"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
+  // Which CPU family this APK is for, chosen at build time with
+  // `-PzyraxonAbi=arm64` or `-PzyraxonAbi=arm32`. Empty means a universal build
+  // that carries both, which is what a local `assembleDebug` gets.
+  //
+  // Two things follow from it: only that family's native libraries are packed,
+  // and only that family's Linux payload is packed. The payload is 165-183 MB
+  // per architecture, so a universal APK made every phone carry a whole second
+  // operating system it could never start.
+  val zyraxonAbi = (findProperty("zyraxonAbi") as String?)?.trim()?.lowercase().orEmpty()
+
   defaultConfig {
     applicationId = "com.zyraxon.assistant"
     minSdk = 21
@@ -19,6 +29,16 @@ android {
     versionName = "6.24.3"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+    ndk {
+      when (zyraxonAbi) {
+        "arm64" -> abiFilters += listOf("arm64-v8a")
+        "arm32" -> abiFilters += listOf("armeabi-v7a")
+        // A universal build leaves the filters alone, so it packs every native
+        // library the project has — exactly what it did before this split.
+        else -> {}
+      }
+    }
   }
 
   // Signing material comes from the environment so no key is ever committed.
@@ -101,6 +121,29 @@ android {
   // streamed out of the APK without inflating the whole member into memory.
   androidResources {
     noCompress += listOf("zip", "deb", "xz", "gz", "Packages", "glb")
+  }
+
+  // Each CPU family's Linux payload lives in its own source set, and only the
+  // one this APK is for is added as an asset directory. The payload is a whole
+  // operating system — 165-183 MB per architecture — so a universal APK made
+  // every phone carry two systems it could never start. A build with no
+  // `zyraxonAbi` adds all of them, which keeps a plain `assembleDebug` and the
+  // unit tests working exactly as before.
+  sourceSets {
+    getByName("main") {
+      when (zyraxonAbi) {
+        "arm64" -> assets.directories.add("src/payload64/assets")
+        "arm32" -> assets.directories.add("src/payload32/assets")
+        else -> {
+          // A universal build — a local `assembleDebug`, the unit tests, or a
+          // release built without the flag — carries every payload, exactly as
+          // it did before this split existed.
+          assets.directories.add("src/payload64/assets")
+          assets.directories.add("src/payload32/assets")
+          assets.directories.add("src/payloadx64/assets")
+        }
+      }
+    }
   }
 }
 

@@ -71,32 +71,49 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Building ZYRAXON v$VERSION"
 
-      - name: Build signed release APK
+      - name: Build signed release APKs (arm64 + arm32)
         env:
           KEYSTORE_PATH: ${{ runner.temp }}/release.jks
           STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          # One APK per CPU family. Each carries only its own Linux system, so a
+          # phone downloads what it can actually run instead of two systems it
+          # never starts — the payload is 165-183 MB per architecture.
           gradle :app:assembleRelease \
+            -PzyraxonAbi=arm64 \
             -Djava.awt.headless=true \
             -x lintVitalRelease -x lintVitalAnalyzeRelease \
             --stacktrace
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/app-release-arm64.apk"
+
+          gradle :app:assembleRelease \
+            -PzyraxonAbi=arm32 \
+            -Djava.awt.headless=true \
+            -x lintVitalRelease -x lintVitalAnalyzeRelease \
+            --stacktrace
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/app-release-arm32.apk"
+
+          ls -la "$RUNNER_TEMP"/app-release-*.apk
 
       - name: Collect artifacts
         id: apk
         run: |
           VERSION="${{ steps.ver.outputs.version }}"
-          APK="app/build/outputs/apk/release/app-release.apk"
-          NAME="ZYRAXON-v${VERSION}.apk"
-          cp "$APK" "$RUNNER_TEMP/$NAME"
-          (cd "$RUNNER_TEMP" && sha256sum "$NAME" > "$NAME.sha256")
-          echo "name=$NAME" >> "$GITHUB_OUTPUT"
-          ls -la "$RUNNER_TEMP/$NAME"
+          A64="ZYRAXON-v${VERSION}-arm64.apk"
+          A32="ZYRAXON-v${VERSION}-arm32.apk"
+          cp "$RUNNER_TEMP/app-release-arm64.apk" "$RUNNER_TEMP/$A64"
+          cp "$RUNNER_TEMP/app-release-arm32.apk" "$RUNNER_TEMP/$A32"
+          (cd "$RUNNER_TEMP" && sha256sum "$A64" "$A32" > "SHA256SUMS")
+          echo "a64=$A64" >> "$GITHUB_OUTPUT"
+          echo "a32=$A32" >> "$GITHUB_OUTPUT"
+          ls -la "$RUNNER_TEMP/$A64" "$RUNNER_TEMP/$A32"
 
-      - name: Verify the signature
+      - name: Verify the signatures
         run: |
           BUILD_TOOLS=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
-          "$BUILD_TOOLS/apksigner" verify --print-certs "$RUNNER_TEMP/${{ steps.apk.outputs.name }}"
+          "$BUILD_TOOLS/apksigner" verify --print-certs "$RUNNER_TEMP/${{ steps.apk.outputs.a64 }}"
+          "$BUILD_TOOLS/apksigner" verify --print-certs "$RUNNER_TEMP/${{ steps.apk.outputs.a32 }}"
 
       - name: Resolve the release tag
         id: tag
@@ -113,14 +130,16 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "Uploading to release: $TAG"
 
-      - name: Publish the APK to the release
+      - name: Publish the APKs to the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.tag.outputs.tag }}
-          APK_NAME: ${{ steps.apk.outputs.name }}
+          A64: ${{ steps.apk.outputs.a64 }}
+          A32: ${{ steps.apk.outputs.a32 }}
         run: |
+          ASSETS=("$RUNNER_TEMP/$A64" "$RUNNER_TEMP/$A32" "$RUNNER_TEMP/SHA256SUMS")
           if gh release view "$TAG" --repo "${{ github.repository }}" > /dev/null 2>&1; then
-            gh release upload "$TAG" "$RUNNER_TEMP/$APK_NAME" "$RUNNER_TEMP/$APK_NAME.sha256" \
+            gh release upload "$TAG" "${ASSETS[@]}" \
               --repo "${{ github.repository }}" --clobber
           else
             # `--notes-from-tag` cannot be combined with `--repo`, so the tag's
@@ -134,7 +153,7 @@ jobs:
             if [ ! -s "$RUNNER_TEMP/notes.md" ]; then
               echo "ZYRAXON $TAG" > "$RUNNER_TEMP/notes.md"
             fi
-            gh release create "$TAG" "$RUNNER_TEMP/$APK_NAME" "$RUNNER_TEMP/$APK_NAME.sha256" \
+            gh release create "$TAG" "${ASSETS[@]}" \
               --repo "${{ github.repository }}" \
               --title "ZYRAXON $TAG" \
               --notes-file "$RUNNER_TEMP/notes.md"
@@ -146,6 +165,15 @@ jobs:
             echo "### ZYRAXON v${{ steps.ver.outputs.version }} released"
             echo ""
             echo "- Tag: \`${{ steps.tag.outputs.tag }}\`"
-            echo "- Asset: \`${{ steps.apk.outputs.name }}\`"
-            echo "- sha256: \`$(cut -d' ' -f1 "$RUNNER_TEMP/${{ steps.apk.outputs.name }}.sha256")\`"
+            echo ""
+            echo "Two APKs, one per CPU family. The phone installs the one that matches it."
+            echo ""
+            echo "| APK | For |"
+            echo "| --- | --- |"
+            echo "| \`${{ steps.apk.outputs.a64 }}\` | 64-bit phones (arm64-v8a) — most phones from 2017 on |"
+            echo "| \`${{ steps.apk.outputs.a32 }}\` | 32-bit phones (armeabi-v7a) — older and low-end phones |"
+            echo ""
+            echo "Not sure which? Install the arm64 one first; if the phone refuses it, install arm32."
+            echo ""
+            echo "sha256 checksums are in the \`SHA256SUMS\` asset."
           } >> "$GITHUB_STEP_SUMMARY"

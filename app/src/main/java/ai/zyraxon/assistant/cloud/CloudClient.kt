@@ -64,17 +64,24 @@ class CloudClient(
         /** Methods OkHttp requires a body on, even when there is nothing to say. */
         private val BODIED_METHODS = setOf("POST", "PUT", "PATCH")
 
-        /** How long a first turn may wait for its sandbox before giving up. */
+        /** How long a first turn may wait for its sandbox before giving up.
+         *
+         *  Three minutes. A cold start measures ~28s, but the service is shared
+         *  and a busy moment can stretch it well past that, so the wait is set
+         *  generously rather than at the common case: a start that is still
+         *  working is not an error, and cutting it off early would throw away a
+         *  sandbox that was about to come up. */
         private const val START_TIMEOUT_MS = 180_000L
 
         /**
-         * How long a sleeping sandbox may take to wake. Measured 13–26s live.
+         * How long a sleeping sandbox may take to wake. Measured 13–26s live, with
+         * the same generous ceiling as a cold start for the same reason.
          *
          * A system property overrides it so a unit test can watch the retry loop
          * without spending the real interval waiting.
          */
         private val WAKE_TIMEOUT_MS: Long =
-            System.getProperty("zyraxon.wakeTimeoutMs")?.toLongOrNull() ?: 90_000L
+            System.getProperty("zyraxon.wakeTimeoutMs")?.toLongOrNull() ?: 180_000L
 
         /**
          * No read timeout: a turn can think for minutes without a byte arriving,
@@ -157,9 +164,9 @@ class CloudClient(
      * and sending afterwards means the whole turn is seen from its first token.
      *
      * [reuseSandboxId] is the other half: the account rations new sandboxes per
-     * day, but a warm one is free and comes up in seconds. A remembered sandbox
-     * can still be reclaimed, so a start that fails because of it is retried once
-     * without it rather than failing the chat.
+     * day, but a warm one is free and comes up in seconds. Only a sandbox the
+     * account reports as live is ever passed here — see [findWarmSandbox] — because
+     * a reclaimed one fails the start, and the start is deliberately not retried.
      */
     suspend fun startConversation(
         key: String,
@@ -170,34 +177,32 @@ class CloudClient(
         clientTools: JSONArray? = null,
         onProgress: (String) -> Unit = {}
     ): CloudConversation {
-        onProgress(t("কনভার্সেশন তৈরি হচ্ছে…"))
-        var reuse = reuseSandboxId
-        repeat(2) { attempt ->
-            val task = CloudTask.from(createTask(key, title, suffix, reuse, model, clientTools))
-            val started = System.currentTimeMillis()
-            while (System.currentTimeMillis() - started < START_TIMEOUT_MS) {
-                val first = firstItem(call(key, "GET", "/app-conversations/start-tasks?ids=${task.id}"))
-                if (first != null) {
-                    val t = CloudTask.from(first)
-                    if (t.isReady) {
-                        onProgress(t("স্যান্ডবক্স চালু হচ্ছে…"))
-                        return getConversation(key, t.conversationId!!)
-                    }
-                    if (t.isFailed) {
-                        // A reclaimed sandbox is the one failure worth retrying, and
-                        // only when one was reused in the first place.
-                        if (reuse != null && attempt == 0 &&
-                            t.detail?.contains("Sandbox not found", ignoreCase = true) == true
-                        ) {
-                            reuse = null
-                            break
-                        }
-                        throw CloudApiError(0, t.detail ?: ai.zyraxon.assistant.i18n.t("কনভার্সেশন তৈরি ব্যর্থ"))
-                    }
-                    onProgress(stageLabel(t.status))
+        // The first thing the user sees, and it is deliberately the same wording
+        // the service itself uses, so the stages read as one continuous start
+        // rather than as unrelated messages.
+        onProgress("Creating the conversation…")
+        // Started once, and never restarted. The retry that used to live here was
+        // the reason one message could leave two conversations behind: a reused
+        // sandbox that had since been reclaimed answered "Sandbox not found", the
+        // retry started a second task, and the account ended up with two sandboxes
+        // for one message. A start that fails now fails once, with the reason, and
+        // the caller decides — instead of silently spending a second sandbox.
+        val task = CloudTask.from(createTask(key, title, suffix, reuseSandboxId, model, clientTools))
+        val started = System.currentTimeMillis()
+        while (System.currentTimeMillis() - started < START_TIMEOUT_MS) {
+            val first = firstItem(call(key, "GET", "/app-conversations/start-tasks?ids=${task.id}"))
+            if (first != null) {
+                val t = CloudTask.from(first)
+                if (t.isReady) {
+                    onProgress(t("স্যান্ডবক্স চালু হচ্ছে…"))
+                    return getConversation(key, t.conversationId!!)
                 }
-                delay(2000)
+                if (t.isFailed) {
+                    throw CloudApiError(0, t.detail ?: t("কনভার্সেশন তৈরি ব্যর্থ"))
+                }
+                onProgress(stageLabel(t.status))
             }
+            delay(2000)
         }
         throw CloudApiError(0, t("কনভার্সেশন সময়মতো তৈরি হয়নি"))
     }
@@ -707,7 +712,7 @@ class CloudClient(
     }
 
     /** Waits until the sandbox is RUNNING, which is when the socket will accept. */
-    suspend fun awaitRunning(key: String, id: String, timeoutMs: Long = 120_000): CloudConversation {
+    suspend fun awaitRunning(key: String, id: String, timeoutMs: Long = 180_000): CloudConversation {
         val started = System.currentTimeMillis()
         var conv = getConversation(key, id)
         while (conv.sandboxStatus != "RUNNING") {
@@ -722,11 +727,13 @@ class CloudClient(
         (500L * (1 shl (attempt - 1).coerceAtMost(4))).coerceAtMost(8000L)
 
     private fun stageLabel(status: String): String = when (status) {
-        "SETTING_UP_SKILLS" -> t("সেটআপ হচ্ছে…")
-        "STARTING_CONVERSATION" -> t("কনভার্সেশন চালু হচ্ছে…")
-        "WORKING" -> t("কাজ শুরু হচ্ছে…")
-        "PREPARING_REPOSITORY" -> t("রিপোজিটরি প্রস্তুত হচ্ছে…")
-        else -> t("অপেক্ষা করা হচ্ছে…")
+        "SETTING_UP_SKILLS" -> "Setting up skills…"
+        "STARTING_CONVERSATION" -> "Starting the conversation…"
+        "WORKING" -> "Ready"
+        "PREPARING_REPOSITORY" -> "Preparing the repository…"
+        "SETTING_UP" -> "Setting up…"
+        "PENDING" -> "Creating the conversation…"
+        else -> "Waiting…"
     }
 
     /** Both `[item]` and `{"items":[…]}` are returned by the cloud for one id. */

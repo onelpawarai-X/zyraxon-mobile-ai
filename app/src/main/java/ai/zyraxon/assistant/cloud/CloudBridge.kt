@@ -120,7 +120,7 @@ class CloudBridge(
             if (revived != null && revived.sandboxStatus == "RUNNING") {
                 conv = revived
             } else {
-                store.unbind(chatId, keepWarm = false)
+                store.unbind(chatId)
                 trySend(ZyraxonAiEngine.REASONING_PREFIX +
                     "আগের স্যান্ডবক্স আর নেই — নতুন মেশিনে কথোপকথন আবার গড়া হচ্ছে…")
             }
@@ -141,10 +141,14 @@ class CloudBridge(
                         runCatching { client.ensureRunning(apiKey, bound) }.getOrNull()
                     }
                 } else {
-                    // Prefer a sandbox the account says is up right now; fall back to
-                    // the one this chat used before only if the list could not be read.
+                    // A sandbox that is up right now is reused, which is what makes
+                    // the second chat of a day instant. Only a live one is offered:
+                    // an id remembered from an earlier chat may since have been
+                    // reclaimed, and handing a dead one over spends a whole failed
+                    // start. A cold start is ~28s and always succeeds; a bad reuse is
+                    // slower than that and can leave a stray sandbox behind.
                     val warm = withContext(Dispatchers.IO) {
-                        client.findWarmSandbox(apiKey) ?: store.takeWarmSandbox()
+                        client.findWarmSandbox(apiKey)
                     }
                     val started = withContext(Dispatchers.IO) {
                         client.startConversation(
@@ -526,7 +530,9 @@ class CloudBridge(
                 }.getOrNull()
             }
             runCatching {
-                val warm = client.findWarmSandbox(apiKey) ?: store.takeWarmSandbox()
+                // Only a sandbox the account reports as up is reused; a remembered
+                // id is not offered, because a reclaimed one costs a failed start.
+                val warm = client.findWarmSandbox(apiKey)
                 val started = client.startConversation(
                     key = apiKey,
                     title = "ZYRAXON",
@@ -611,7 +617,7 @@ class CloudBridge(
                 if (deleteRemote) client.deleteConversation(apiKey, id)
             }
         }
-        store.unbind(chatId, keepWarm = deleteRemote)
+        store.unbind(chatId)
     }
 
     suspend fun remoteTitle(apiKey: String, conversationId: String): String? =

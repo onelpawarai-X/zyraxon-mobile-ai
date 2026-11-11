@@ -117,17 +117,21 @@ class CloudContinuityTest {
     }
 
     @Test
-    fun `a dead sandbox is forgotten, a live one stays available for reuse`() {
+    fun `an unbound chat leaves no sandbox for another chat to inherit`() {
         store.bind("chat-1", "conv-old", "sb-old")
-        // An ordinary detach keeps the machine usable by a later chat.
-        store.unbind("chat-1")
-        assertEquals("sb-old", store.takeWarmSandbox())
+        assertEquals("conv-old", store.conversationFor("chat-1"))
 
-        store.bind("chat-2", "conv-old", "sb-old")
-        // A sandbox known to be gone must never be offered again: reusing it costs a
-        // whole failed start before the cloud falls back.
-        store.unbind("chat-2", keepWarm = false)
-        assertNull(store.takeWarmSandbox())
+        store.unbind("chat-1")
+
+        // Nothing survives the unbind: no binding, and — the part that used to be a
+        // pool — no sandbox id anywhere for a later chat to pick up. A remembered
+        // id may have been reclaimed, and handing it over is what made a start fail.
+        assertNull(store.conversationFor("chat-1"))
+        assertTrue("no binding may survive: ${store.bindings()}", store.bindings().isEmpty())
+
+        // A later chat therefore starts clean rather than inheriting sb-old.
+        store.bind("chat-2", "conv-new", "sb-new")
+        assertEquals("conv-new", store.conversationFor("chat-2"))
     }
 
     @Test

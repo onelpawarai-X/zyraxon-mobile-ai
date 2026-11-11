@@ -56,11 +56,50 @@ sudo -E /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "p
 sudo chown -R "$USER" /opt/android-sdk
 ```
 
-Run: `gradle :app:testDebugUnitTest` (≈326 tests) and `gradle :app:assembleDebug`.
+Run: `gradle :app:testDebugUnitTest` (412 tests) and `gradle :app:assembleDebug`.
 
 ## Release
 
-GitHub Actions `.github/workflows/release.yml` ("Build & Release APK") builds the signed release on a `v*` tag push (or manual dispatch) and attaches `ZYRAXON-vX.Y.Z.apk` + `.sha256`. Bump `versionCode`/`versionName` in `app/build.gradle.kts`, commit, push `main`, push the tag. The release is created with a default title/body — edit it afterwards with `gh release edit` for a proper title and notes.
+GitHub Actions `.github/workflows/release.yml` ("Build & Release APK") builds the
+signed release on a `v*` tag push (or manual dispatch) and attaches **two** APKs:
+
+| Asset | For |
+| --- | --- |
+| `ZYRAXON-vX.Y.Z-arm64.apk` | 64-bit phones (`arm64-v8a`), ~229 MB |
+| `ZYRAXON-vX.Y.Z-arm32.apk` | 32-bit phones (`armeabi-v7a`), ~210 MB |
+
+Plus a `SHA256SUMS` asset covering both. Bump `versionCode`/`versionName` in
+`app/build.gradle.kts`, commit, push `main`, push the tag. The release is created
+with a default title/body — edit it afterwards with `gh release edit` for a
+proper title and notes.
+
+### Two APKs, one per CPU family
+
+The Linux payload is a whole operating system: **165–183 MB per architecture**.
+A single universal APK therefore made every phone carry two systems it could
+never start, which is why the release ships one APK per family.
+
+The choice is made at build time with `-PzyraxonAbi=arm64` or
+`-PzyraxonAbi=arm32`. It drives two things, and they must stay in step:
+
+1. `ndk { abiFilters }` — which native libraries are packed.
+2. The `sourceSets` block — which payload folder is added as an asset directory.
+
+Each payload lives in its own source set, and only the matching one is added:
+
+```
+app/src/payload64/assets/linux/aarch64   <- -PzyraxonAbi=arm64
+app/src/payload32/assets/linux/arm       <- -PzyraxonAbi=arm32
+app/src/payloadx64/assets/linux/x86_64   <- universal builds only
+```
+
+With no `-PzyraxonAbi`, every payload is added and the build is universal
+(~599 MB) — that is what a plain `assembleDebug` and the unit tests get, so
+nothing about local development changed. The paths are relative to the `:app`
+module, so the source sets must sit under `app/src/`, not at the repo root.
+
+A third payload for `i686` is **not** vendored, so a 32-bit x86 device finds no
+payload and the terminal reports that rather than failing obscurely.
 
 ## UI strings and translation
 
@@ -110,8 +149,9 @@ gradle :app:testDebugUnitTest :app:assembleDebug -x lintVitalRelease -x lintVita
 Run long builds with `nohup ... &` and poll the log: a foreground command is
 capped below the 1200 s idle-cleanup window.
 
-The debug APK is ~480 MB because every ABI's 30 MB Linux payload is bundled.
-That is why the release workflow needs `timeout-minutes: 90`.
+The debug APK is ~480 MB because every ABI's Linux payload is bundled. Build a
+per-ABI APK with `-PzyraxonAbi=arm64` or `-PzyraxonAbi=arm32` to get the size a
+real phone downloads. That is why the release workflow needs `timeout-minutes: 90`.
 
 ## Linux / proot (why it works on targetSdk 28)
 
@@ -230,9 +270,8 @@ tag. Every release carries the plain `vX.Y.Z` form, and its notes are written in
 English. A test build is produced by `TEST-CI.yml`, which publishes no release at
 all — the release workflow is the only thing that tags.
 
-The release APK is ~445 MB and the debug APK ~480 MB, because each ABI carries
-its own ~30 MB Linux payload. Any step that builds an APK needs a generous
-timeout.
+The release APKs are ~229 MB (arm64) and ~210 MB (arm32), because each carries
+its own Linux payload. Any step that builds an APK needs a generous timeout.
 
 Do not put a token in the git remote URL. Pass it per command:
 `git -c credential.helper= push https://x-access-token:$GH_TOKEN@github.com/...`
@@ -313,6 +352,65 @@ Two traps that were live bugs in this app:
 The recovery lives in `CloudClient.sendMessage` (a 409 is woken through and
 the message is resent) and `ensureRunning` (wake, then wait for RUNNING). The
 overlay's 90s heartbeat and `refreshCloud()` keep a bound conversation warm.
+
+## One message starts exactly one conversation — measured live
+
+A message once left **three** conversations on the account. Two separate causes,
+both now removed, and both worth not reintroducing:
+
+1. **`startConversation` retried inside itself.** A `repeat(2)` loop restarted the
+   whole start when the first attempt failed. The failure it was written for was a
+   *reused* sandbox that had since been reclaimed (`"Sandbox not found"`), so the
+   retry started a **second** task — a second conversation, a second sandbox — for
+   one message. The loop is gone. A start that fails now fails once, with the
+   reason, and the caller decides.
+
+2. **A remembered sandbox id was offered for reuse.** `store.takeWarmSandbox()`
+   handed over an id from an earlier chat, which may have been reclaimed in the
+   meantime. That is precisely the failure above. Only a sandbox the account
+   reports as live right now (`findWarmSandbox`) is reused; a cold start always
+   works, so a bad reuse is strictly worse than not reusing at all.
+
+Three paths can each start a conversation — `prewarm`, `runTurn`, and the
+launch-time sync — so a per-chat lock guards the start, and the first to get
+there wins.
+
+**Measured, so the timeouts are chosen rather than guessed.** One start, from
+`POST /app-conversations` to a real `app_conversation_id`:
+
+| Stage | Time |
+| --- | --- |
+| `POST /app-conversations` returns a task id | 0.2 s |
+| `WORKING` | 0.3 s |
+| `SETTING_UP_SKILLS` (sandbox id assigned ~3 s in) | 3–27 s |
+| `READY` with a conversation id | **25–40 s**, varying run to run |
+
+`START_TIMEOUT_MS` and `WAKE_TIMEOUT_MS` are both **180 s**: the common case is
+under 30 s, but the service is shared and a busy moment stretches it, so the wait
+is set well above the common case rather than at it. A start still working is not
+an error.
+
+Verified against the live API: one start → **one** new conversation, twice.
+
+## A cloud chat must show its messages
+
+The history import used to run once, immediately on session load, and that is the
+one moment it could not work: the chat is bound to its cloud conversation in a
+separate coroutine, so `conversationFor(id)` was still empty, the import returned
+at once, and the session was marked loaded. The chat then stayed **empty forever**,
+however many times it was opened.
+
+Three things fix it and all three are needed:
+- the import is re-tried on every `switchChat`, so the attempt that lands after
+  the binding exists is the one that works;
+- it is skipped only once it has actually imported something, not merely because
+  the row count is above zero — a chat showing a greeting has a row too;
+- it is idempotent (`saveMessages` writes with `REPLACE`), so re-running is free.
+
+The sidebar was duplicating for a related reason: the launch-time sync adopted
+**every** cloud conversation, including the ones this phone had just started, so
+one chat appeared twice. Only conversations with no binding are adopted, and the
+binding is written **before** the adoption check so the two never race.
 
 ## Phone tools must be published to the cloud with a prefix
 

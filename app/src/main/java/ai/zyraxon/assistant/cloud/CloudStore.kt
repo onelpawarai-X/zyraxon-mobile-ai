@@ -11,10 +11,11 @@ import org.json.JSONObject
  * cleared together. Signing in with a different account and finding stale ids
  * would point every chat at someone else's sandbox.
  *
- * A warm sandbox id is also remembered, because creating a sandbox is rationed
- * per day while reusing one is free. It is kept as a pool: any chat that opens
- * while a warm sandbox is free takes it, which is what keeps the second, third
- * and fourth chat of a day instant.
+ * A sandbox id is remembered only as the one this chat used, never as a pool to
+ * hand to another chat. That distinction is the whole reason this class no longer
+ * offers a "warm" sandbox: a remembered id may have been reclaimed since, and
+ * reusing a dead one fails the start. Whether a sandbox is really up is asked of
+ * the account, live, by `CloudClient.findWarmSandbox`.
  */
 class CloudStore(context: Context) {
 
@@ -32,36 +33,14 @@ class CloudStore(context: Context) {
     }
 
     /**
-     * @param keepWarm whether this sandbox may host a future conversation. True
-     *   for an ordinary detach, where the machine is still usable. False when the
-     *   sandbox is known to be gone: offering a dead id as the reuse candidate
-     *   costs a whole failed start attempt before the cloud falls back.
-     */
-    fun unbind(chatId: String, keepWarm: Boolean = true) {
-        val sandbox = prefs.getString("sandbox_$chatId", null)
-        prefs.edit().remove("conv_$chatId").remove("sandbox_$chatId").apply()
-        if (sandbox.isNullOrBlank()) return
-        // A sandbox known to be gone must leave the pool as well as the binding, or
-        // the next chat takes it out of the pool and pays a failed start for it.
-        warmSandboxes.remove(sandbox)
-        if (keepWarm && sandbox !in allSandboxes()) warmSandboxes.add(sandbox)
-    }
-
-    /**
-     * A sandbox that is already up and can host a new conversation.
+     * Drops the binding for a chat.
      *
-     * The cloud reports a sandbox per conversation, so every chat that has ever
-     * started leaves one behind. The most recent is the likeliest to still be
-     * warm, so it is offered first.
+     * The sandbox id goes with it. It used to be pushed into a pool for other
+     * chats to reuse, which is how a chat could inherit a machine that had since
+     * been reclaimed and spend a whole failed start on it.
      */
-    fun takeWarmSandbox(): String? {
-        val fromChats = allSandboxes().toMutableList()
-        fromChats.addAll(warmSandboxes)
-        return fromChats.lastOrNull { it.isNotBlank() }
-    }
-
-    fun rememberWarmSandbox(sandboxId: String?) {
-        if (!sandboxId.isNullOrBlank()) warmSandboxes.add(sandboxId)
+    fun unbind(chatId: String) {
+        prefs.edit().remove("conv_$chatId").remove("sandbox_$chatId").apply()
     }
 
     /** The last conversation the user had open, so a relaunch lands where they left. */
@@ -75,12 +54,6 @@ class CloudStore(context: Context) {
         .associate { it.key.removePrefix("conv_") to it.value as String }
 
     fun clear() = prefs.edit().clear().apply()
-
-    private fun allSandboxes(): List<String> = prefs.all.entries
-        .filter { it.key.startsWith("sandbox_") && it.value is String }
-        .mapNotNull { it.value as? String }
-
-    private val warmSandboxes = mutableListOf<String>()
 
     /** Kept for a future migration; the mapping is otherwise plain key/value. */
     fun snapshot(): JSONObject = JSONObject().apply {

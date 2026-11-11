@@ -433,9 +433,15 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun switchChat(id: String) {
-        session(id)
+        val c = session(id)
         _activeConversationId.value = id
         prefs.edit().putString("active_chat", id).apply()
+        // Opening a cloud chat tries its transcript again. The first attempt is
+        // made while the chat is still being bound, so it usually has nothing to
+        // read yet — without this second try the chat stayed empty until the
+        // next message, which is exactly what made an existing conversation look
+        // like it had no messages at all.
+        viewModelScope.launch(Dispatchers.IO) { runCatching { importCloudHistory(c) } }
     }
 
     fun renameChat(id: String, title: String) {
@@ -4552,6 +4558,19 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
                 val remote = cloudClient.allConversations(key)
+                // Bind first, adopt second. A chat is recognised as one that came
+                // from the account by its binding, and that check is what keeps the
+                // phone's own greeting out of an imported conversation. Binding
+                // after adopting left a window where the row was already in the
+                // sidebar but the binding was not, so opening it in that window put
+                // a greeting on top of a real transcript.
+                val alreadyBound = cloudStore.bindings().values.toSet()
+                for (c in remote) {
+                    if (c.id.isBlank() || c.id == "null") continue
+                    if (cloudStore.conversationFor(c.id) == null) {
+                        cloudStore.bind(c.id, c.id, c.sandboxId)
+                    }
+                }
                 // A conversation this phone already started is bound to its own local
                 // chat, and that chat is already a row in the sidebar. Adopting it
                 // again would show the same conversation twice — once as the chat the
@@ -4559,20 +4578,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 // that already has a binding is skipped, and only genuinely foreign
                 // conversations — written in the web app or on another phone — are
                 // folded in.
-                val alreadyBound = cloudStore.bindings().values.toSet()
                 for (c in remote) {
                     if (c.id.isBlank() || c.id == "null") continue
                     if (c.id in alreadyBound) continue
                     repository.adoptCloudConversation(c.id, c.title.ifBlank { "ZYRAXON" })
-                }
-                // A cloud conversation with no local binding yet is wired to itself,
-                // so opening it wakes the same conversation rather than starting a new
-                // one. A binding that already exists is kept as it is.
-                for (c in remote) {
-                    if (c.id.isBlank() || c.id == "null") continue
-                    if (cloudStore.conversationFor(c.id) == null) {
-                        cloudStore.bind(c.id, c.id, c.sandboxId)
-                    }
                 }
             }
             cloudSyncRunning = false
@@ -4603,7 +4612,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         val convId = cloudStore.conversationFor(c.id) ?: return
         val key = aiEngine.getApiKey(ZYRAXON_APEX)
         if (key.isBlank() || !aiEngine.isOnline()) return
-        if (repository.messageCount(c.id) > 0) return
+        // The transcript is only left alone when it already holds real content.
+        // It used to be skipped whenever the row count was above zero, but a chat
+        // that shows a greeting has a row too, so a cloud chat whose history had
+        // not arrived yet was skipped for good and opened empty forever. An import
+        // is idempotent — every row is written with REPLACE — so re-running it is
+        // free of duplicates.
+        if (cloudHistoryImported.contains(c.id)) return
         val conv = runCatching { cloudClient.ensureRunning(key, convId) }.getOrNull() ?: return
         // A long conversation records hundreds of events, and the window used to be
         // a hundred — enough for a short chat, but on a real one it stopped before
@@ -4671,7 +4686,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         flushStreamed()
         if (imported.isEmpty()) return
         repository.saveMessages(imported, c.id)
+        cloudHistoryImported.add(c.id)
     }
+
+    /** Chats whose cloud transcript has already been folded in, so it is not
+     *  pulled again on every open. Held in memory: a relaunch re-reads once,
+     *  which is harmless because every row is written with REPLACE. */
+    private val cloudHistoryImported = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
     /**
      * The user's own "fix it now" button on the home screen.
