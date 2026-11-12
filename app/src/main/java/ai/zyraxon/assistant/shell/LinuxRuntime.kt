@@ -289,6 +289,19 @@ object LinuxRuntime {
         File(profileD, "00-zyraxon-brand.sh")
             .writeText("[ -r $GUEST_PREFIX/etc/zyraxon-brand.sh ] && . $GUEST_PREFIX/etc/zyraxon-brand.sh\n")
 
+        File(etc, "issue").writeText("ZYRAXON Linux \\n \\l\n\n")
+        File(etc, "hostname").writeText("zyraxon\n")
+        File(etc, "os-release").writeText(
+            """
+            NAME="ZYRAXON"
+            ID=zyraxon
+            PRETTY_NAME="ZYRAXON Mobile Linux"
+            VERSION="6.24.5"
+            HOME_URL="https://zyraxon.dev"
+            SUPPORT_URL="https://zyraxon.dev/community"
+            """.trimIndent() + "\n"
+        )
+
         log(" ZYRAXON branding")
     }
 
@@ -392,9 +405,20 @@ Acquire::Languages "none";
                             val head = ByteArray(64)
                             val read = file.inputStream().use { it.read(head) }
                             if (read >= 2 && head[0] == '#'.code.toByte() && head[1] == '!'.code.toByte()) {
-                                val text = file.readText()
+                                var text = file.readText()
+                                var changed = false
                                 if (text.contains(compat)) {
-                                    file.writeText(text.replace(compat, real))
+                                    text = text.replace(compat, real)
+                                    changed = true
+                                }
+                                if (file.name == "pkg" && text.contains("Termux-PKG")) {
+                                    text = text.replace("Termux-PKG", "ZYRAXON-PKG")
+                                        .replace("termux-tools", "zyraxon-tools")
+                                        .replace("Termux (com.termux", "ZYRAXON (com.zyraxon.assistant")
+                                    changed = true
+                                }
+                                if (changed) {
+                                    file.writeText(text)
                                 }
                             }
                         } catch (_: Exception) {}
