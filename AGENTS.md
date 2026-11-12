@@ -11,7 +11,15 @@ The APK is a **native Jetpack Compose** app. The runtime path is:
 - `ai/OpenAiSse.kt` — SSE streaming; parses `delta.content` **and** reasoning deltas (`reasoning_content` / `reasoning` / `thinking`) into `StreamedTurn.reasoning`.
 - `ai/ProviderCatalog.kt` — provider endpoints. `zyraxon` = built-in proprietary endpoint (`zyraxonai.lovable.app`) — **keep it, do not delete**; it will be enabled later. `speedRank` orders providers fastest-first (Groq 1, Gemini 2, …).
 - `update/Updater.kt` — in-app update (GitHub releases → PackageInstaller). `installPackage(apk, appPackageName)` installs **any** APK; the name is passed only for a self-update.
+- `viewer/DocViewer.kt` + `viewer/PdfPages.kt` — render Word, Excel, PowerPoint, PDF, pictures, Markdown, CSV and code as a page the Preview's WebView can draw. `tools/PreviewBridge.kt` holds `openFile()`, which turns a file into that page and brings the Preview tab forward.
+- The agent's `open_file` tool hands a file to the phone's own viewer through a `FileProvider` link (`in="app"`, the default) or shows it in the Preview (`in="preview"`). `ToolRegistry.resolve()` returns the path the agent asked for — an absolute path outside the workspace is **not** rewritten; the phone's own permissions decide and a refusal is reported as it is.
 - `shell/SystemShell.kt` — Shizuku system shell (uid 2000 / root). `shell/ShizukuBundle.kt` — installs the bundled Shizuku app.
+
+**Links must point somewhere real.** The project's site is `https://zyraxonai.lovable.app`
+and support is the issue tracker at `https://github.com/onelpawarai-X/zyraxon-mobile-ai/issues`.
+A release once shipped `https://zyraxon.dev` in the Linux banner and `os-release`, and that
+domain does not resolve — everyone who followed it reached nothing. Before writing a URL into
+a string, a prompt or an asset, check that it resolves; do not invent a domain that reads well.
 
 **The old `app/src/main/assets/js|css/*` web/PWA layer was deleted** (dead weight for the APK). Only `aura/aura.html` is loaded in a WebView. Do not recreate the JS layer; port anything needed to Kotlin.
 
@@ -39,6 +47,19 @@ Runtime prompts live in `app/src/main/assets/knowledge/`: `prompt-chat.txt`, `pr
 ## In-app update behaviour
 
 `checkForUpdates()` **stages** the APK in the background the moment a newer release is found (`Updater.stage`, stored under `filesDir/updates/`, not cache). The user only taps Install. `file_paths.xml` exposes `files-path updates/` for the installer.
+
+**The updater picks the APK by the phone's own CPU list.** `Updater.pickApk(assets, abis)`
+matches `-arm64.apk` against `arm64-v8a` and `-arm32.apk` against `armeabi-v7a`/`armeabi`,
+falls back to `-universal.apk` for a family the release does not carry, and only then to the
+first APK, so a single-APK release still updates.
+
+This is not a nicety. GitHub returns release assets in **name order**, so `-arm32` arrives
+before `-arm64`; taking the first APK — which the code did until 6.24.6 — handed a 64-bit
+phone the 32-bit build, which installs and then runs as the wrong architecture. Do not
+"simplify" this back to `assets.first { it.name.endsWith(".apk") }`.
+
+`check()` passes `Build.SUPPORTED_ABIS`; `parseLatest(json)` with no `abis` keeps the
+first-APK behaviour, which is what the unit tests and a single-APK release want.
 
 ## Build
 
@@ -113,6 +134,13 @@ match the variant it claims. Both `release.yml` and `TEST-CI.yml` run it on ever
 variant they build, so a wrong `abiFilters` case or a wrong payload source set
 fails the build instead of the phone. `TEST-CI.yml` builds and checks all three
 variants as debug APKs, so a release mistake is caught before a tag is pushed.
+
+**The `-arm64` / `-arm32` / `-universal` suffix is a contract, not a label.** The
+updater reads it to choose the file for a phone (see *In-app update behaviour*),
+so renaming a variant, or publishing one without its family in the name, silently
+sends phones the wrong build. `release.yml` writes the names, `verify-apk-abi.sh`
+checks what each one carries, and `Updater.pickApk` matches on them — change one
+and you must change all three.
 
 ## UI strings and translation
 
