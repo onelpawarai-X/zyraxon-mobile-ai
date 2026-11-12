@@ -200,7 +200,7 @@ real phone downloads. That is why the release workflow needs `timeout-minutes: 9
 `targetSdk` is deliberately **28**. This is not an oversight and must not be
 raised casually: Android 10+ blocks `execve` of files in the app's data dir, and
 the guest Linux executes binaries from there. `targetSdk 28` keeps the legacy
-behaviour that permits it, which is the same level Termux uses. Raising
+behaviour that permits it. Raising
 `targetSdk` to 29+ would break `execve` inside app storage and take the whole
 Linux path down with it. If the target ever has to move, the payload has to move
 to `jniLibs` (as proot already does) or be reworked first.
@@ -210,7 +210,7 @@ loader therefore ship as `jniLibs` (`libproot.so`, `libproot-loader.so`), which
 Android does allow executing. proot never execs the guest anyway: it `mmap`s the
 binary and branches to its entry point (`src/loader/loader.c`), so the block
 never applies. The whole system runs as the app's own uid, inside and out: no
-`-0`, no `--change-id`, exactly like a `termux`-type container in proot-distro.
+`-0`, no `--change-id`, exactly like a container in proot-distro.
 That is also what lets the guest's `pkg`/`apt` run at all, since they refuse
 uid 0.
 
@@ -225,7 +225,7 @@ The proot argv follows proot-distro's defaults, which are the reference for
 - `--sysvipc` is proot-distro's non-minimal default.
 
 Commands run with **no timeout** (`timeoutMs = 0` in `ShellRuntime.awaitProcess`
-means "wait forever"). Termux's interactive session has none either; a bound cut
+means "wait forever"). An interactive session has none either; a bound cut
 `apt upgrade` off mid-transaction. Because there is no timeout, Ctrl-C must
 work: while a command runs it stops it, otherwise it clears the line. The live
 process handle (`ShellRuntime.LiveProcess`) carries both the input pipe and the
@@ -235,7 +235,7 @@ stop, so a prompt can be answered by typing into the running command.
   lives there and a guest binary that loads it dies immediately. proot finds its
   own libs through its `$ORIGIN` runpath.
 - The guest prefix shown to the user is `/usr`; the payload's real build path
-  (`/data/data/com.termux/files/usr`) is bound too, because the binaries embed it.
+  (`/data/data/ai.zyraxon/files/usr`) is bound too, because the binaries embed it.
 - Symlinks are created with bundled busybox, not `java.nio.file.Files` (API 26+;
   minSdk is 21). Absolute targets on the build path are rewritten to `/usr`.
 - The system is unpacked in the background on first launch; there is no install

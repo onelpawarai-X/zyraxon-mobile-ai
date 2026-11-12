@@ -8,13 +8,13 @@ import java.util.concurrent.TimeUnit
 /**
  * The real command line behind the Terminal tab and `run_shell`.
  *
- * Termux-style execution environment powered by a static busybox binary per ABI under `jniLibs`.
+ * Unix execution environment powered by a static busybox binary per ABI under `jniLibs`.
  * This gives the app roughly 400 real Unix commands — `sh`, `awk`, `sed`, `grep`,
  * `tar`, `wget`, `find`, `xargs`, `sort`, `xxd`, `diff`, `ls`, `cat`, etc.
  *
  * On install/startup, `libbusybox.so` is linked/copied into `toolbox/bin/busybox`, made executable,
  * and `busybox --install -s` installs the full applet farm.
- * With `targetSdk = 28` (same as Termux), Android allows executing binaries and symlinks
+ * With `targetSdk = 28`, Android allows executing binaries and symlinks
  * inside the app's private files directory.
  */
 object ShellRuntime {
@@ -270,7 +270,7 @@ object ShellRuntime {
         val extra = mutableMapOf<String, String>()
         if (usr.isDirectory) {
             extra["PREFIX"] = usr.absolutePath
-            extra["TERMUX_PREFIX"] = usr.absolutePath
+            extra["ZYRXON_PREFIX"] = usr.absolutePath
             val aptConf = File(usr, "etc/apt/apt.conf")
             if (aptConf.isFile) extra["APT_CONFIG"] = aptConf.absolutePath
             val dpkgDir = File(usr, "var/lib/dpkg")

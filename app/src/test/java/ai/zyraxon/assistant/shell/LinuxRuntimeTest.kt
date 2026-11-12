@@ -63,12 +63,12 @@ class LinuxRuntimeTest {
     @Test
     fun `the guest prefix is clean and never mentions the upstream build path`() {
         // The user sees $PREFIX, $HOME and pwd. Those must be ordinary Unix paths,
-        // never the payload's upstream Termux path, which is an implementation
-        // detail and would leak a third-party name into our Terminal.
+        // never the payload's own build path, which is an implementation detail
+        // and would leak it into our Terminal.
         assertEquals("/usr", LinuxRuntime.GUEST_PREFIX)
         assertEquals("/home", LinuxRuntime.GUEST_HOME)
-        assertTrue(!LinuxRuntime.GUEST_PREFIX.contains("termux"))
-        assertTrue(!LinuxRuntime.GUEST_HOME.contains("termux"))
+        assertTrue(!LinuxRuntime.GUEST_PREFIX.contains("zyraxon"))
+        assertTrue(!LinuxRuntime.GUEST_HOME.contains("zyraxon"))
     }
 
     @Test
@@ -78,7 +78,7 @@ class LinuxRuntimeTest {
         // upstream name into anything that prints a link target.
         assertEquals(
             "/usr/share/keys/a.gpg",
-            LinuxRuntime.guestTarget("/data/data/com.termux/files/usr/share/keys/a.gpg")
+            LinuxRuntime.guestTarget("/data/data/ai.zyraxon/files/usr/share/keys/a.gpg")
         )
     }
 

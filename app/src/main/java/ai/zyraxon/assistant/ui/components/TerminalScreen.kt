@@ -588,7 +588,7 @@ fun TerminalScreen(
                     }
                 }
 
-                // The terminal's own keyboard, like Termux's extra keys: two rows
+                // The terminal's own keyboard: two rows
                 // of the keys a phone keyboard hides — ESC, TAB, CTRL, ALT, the
                 // arrows, HOME/END, PGUP/PGDN — and, when ⌨ is on, a full
                 // QWERTY below them so the system keyboard is never needed.

@@ -25,10 +25,11 @@ changes, replaces, or restricts those terms.
 | ML Kit text recognition (Latin, Devanagari) | Google APIs Terms of Service |
 | MediaPipe Tasks GenAI | Apache-2.0 |
 | LiteRT-LM | Apache-2.0 |
-| Termux-derived userland packages bundled for the Linux path | per-package licenses |
+| Bundled userland packages for the Linux path | per-package licenses |
 
 The Linux environment the app can run ships third-party binaries. Their
-licenses travel with them, inside the app bundle, unchanged.
+licenses travel with them, inside the app bundle, unchanged — every copyright
+and license file the packages ship is kept exactly as its authors wrote it.
 
 ## Reporting a security issue
 

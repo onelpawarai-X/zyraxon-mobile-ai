@@ -18,7 +18,7 @@ ZYRAXON is not just a chat app — it is a complete agent in your pocket. It tal
 ZYRAXON does not just answer — it **does the work**. It reads the intent behind what you said, decides which tool is needed, runs it, looks at the result, and finishes the job. Writing files, running code, fetching from the web, looking at your screen — all of it automatically.
 
 ### 2. A full Linux inside
-A complete Linux environment is bundled inside the app — `apt`, `dpkg`, `git`, `python`, `node`, all of it. It runs **without Shizuku and without root**. Install anything, run anything, just like Termux — but with no separate app, right inside ZYRAXON.
+A complete Linux environment is bundled inside the app — `apt`, `dpkg`, `git`, `python`, `node`, all of it. It runs **without Shizuku and without root**. Install anything, run anything — with no separate app to install, it is all right inside ZYRAXON.
 
 ### 3. Real "thinking", shown
 The moment work starts, ZYRAXON shows that it is **thinking**. Click the thinking to read its actual reasoning step by step — nothing hidden, see for yourself how it decides. Then, while it works, the **working** state is live.
@@ -76,10 +76,9 @@ on purpose.
 Android 10 and later refuse `execve` for a file inside an app's own data
 directory. The bundled Linux runs its binaries from exactly there, so targeting
 29 or higher would switch that refusal on and take the whole Linux path down.
-API 28 keeps the older behaviour that permits it, and it is the same level Termux
-targets for the same reason. The alternative — moving every guest binary into
-`jniLibs`, where execution is still allowed — is how proot itself already ships,
-but it is not how a full guest filesystem works.
+API 28 keeps the older behaviour that permits it. The alternative — moving every
+guest binary into `jniLibs`, where execution is still allowed — is how proot
+itself already ships, but it is not how a full guest filesystem works.
 
 So the target stays at 28 until that path is reworked. Raising it silently breaks
 Linux, which is why the build file carries a comment saying so.

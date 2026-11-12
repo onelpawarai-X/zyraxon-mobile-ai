@@ -6,7 +6,7 @@ import java.io.File
 /**
  * ZYRAXON's own Linux userland, installed from the payload bundled inside the APK.
  *
- * This is a full Termux-style Unix system — `bash`, `apt`, `dpkg`, `git`, `python`,
+ * This is a full Unix system — `bash`, `apt`, `dpkg`, `git`, `python`,
  * `node`, `clang` — running on the phone with no network access at all. The
  * bootstrap archive and every package it needs ship in the APK's assets
  * (`assets/linux/<arch>/`), so the first launch installs a working system and
@@ -27,18 +27,18 @@ import java.io.File
  *    never reached.
  *
  * So the whole system runs as the app's own user, with no Shizuku and no root,
- * and so does everything inside the guest: the guest sees the same non-root uid
- * that Termux itself runs as. Shizuku, when present, only adds the ability to
- * touch real system directories; it is never required for the Terminal to work.
+ * and so does everything inside the guest: the guest sees the same non-root uid.
+ * Shizuku, when present, only adds the ability to touch real system directories;
+ * it is never required for the Terminal to work.
  *
- * ## Why the guest prefix is not `/data/data/com.termux/...`
+ * ## Why the guest prefix is not the app's real data path
  *
- * The payload is a Termux bootstrap, so its binaries carry a hard-coded RUNPATH
- * and its symlinks point at `/data/data/com.termux/files/usr`. That path is an
- * upstream detail and is never shown to the user. The tree is bound at a clean
- * prefix (`/usr`) that `$PREFIX`, `$HOME` and `pwd` report, and *also* at the
- * canonical Termux path, purely so the binaries can still find their own
- * libraries. Nothing the user sees mentions Termux.
+ * The payload's binaries were built against one fixed prefix, so its RUNPATH and
+ * its symlinks all point at that same absolute path. That path is an internal
+ * detail and is never shown to the user. The tree is bound at a clean prefix
+ * (`/usr`) that `$PREFIX`, `$HOME` and `pwd` report, and *also* at the path the
+ * binaries were built against, purely so they can still find their own libraries.
+ * Nothing the user sees mentions anything else.
  */
 object LinuxRuntime {
 
@@ -47,10 +47,19 @@ object LinuxRuntime {
     const val GUEST_HOME = "/home"
 
     /**
-     * The path the payload's own binaries were built against. Kept only so the
-     * dynamic linker can resolve their RUNPATH; never shown to the user.
+     * The path the payload's own binaries were built against, which now carries
+     * the app's package name. It equals the guest's `/usr` on disk, so it is bound
+     * only for completeness; nothing resolves against the old name.
      */
-    private const val COMPAT_PREFIX = "/data/data/com.termux/files/usr"
+    private const val COMPAT_PREFIX = "/data/data/ai.zyraxon/files/usr"
+
+    /**
+     * The prefix the package archive is built around. A `.deb` fetched from the
+     * package repository unpacks its files under this path, and the binaries in
+     * it carry this path in their RUNPATH. Binding the guest there too is what
+     * lets those packages run without touching their contents.
+     */
+    private const val ARCHIVE_PREFIX = "/data/data/com.termux/files/usr"
 
     private const val MARKER = "SYMLINKS.txt"
 
@@ -185,7 +194,7 @@ object LinuxRuntime {
         log("Payload: $assets (bundled in the APK)")
 
         // The bootstrap archive *is* the prefix: its top level is `bin/`, `lib/`,
-        // `SYMLINKS.txt`. A deb wraps its payload under an absolute Termux path
+        // `SYMLINKS.txt`. A deb wraps its payload under its own absolute path
         // that is stripped, so both land directly under the prefix.
         log("Unpacking the bundled system…")
         if (!unzipAsset(context, "$assets/bootstrap.zip", root, log)) return false
@@ -200,8 +209,8 @@ object LinuxRuntime {
         home(context).mkdirs()
 
         try { File(root, DONE).writeText(System.currentTimeMillis().toString()) } catch (_: Exception) {}
-        // The guest is a Termux bootstrap, so its own welcome text and prompt name
-        // Termux. Overwriting those files is the only thing that makes the system
+        // The guest ships its own welcome text and prompt, which name the upstream
+        // project. Overwriting those files is what makes the system read as
         // ZYRAXON's; the binaries are untouched and keep working exactly as before.
         applyBranding(context, root, log)
         ensureSystemDirectories(root)
@@ -240,7 +249,7 @@ object LinuxRuntime {
 
     /**
      * Applies the branding to a guest that was installed by an older build, whose
-     * files still carry the Termux text. Called before a command runs; the marker
+     * files still carry the upstream text. Called before a command runs; the marker
      * makes it a single `isFile` check once it has been done. Never throws: a
      * read-only or full filesystem must not stop a command from running.
      */
@@ -261,10 +270,10 @@ object LinuxRuntime {
 
     /**
      * Writes ZYRAXON's own welcome text and prompt into the guest, replacing the
-     * Termux ones. The bootstrap's binaries carry Termux paths in their RUNPATH,
-     * but nothing the user reads has to say Termux, and this is where that is
-     * fixed. Every file written here is cosmetic: removing them would only bring
-     * the Termux text back, never break a command.
+     * upstream ones. The binaries carry their build path in their RUNPATH, but
+     * nothing the user reads has to name another project, and this is where that
+     * is fixed. Every file written here is cosmetic: removing them would only
+     * bring the upstream text back, never break a command.
      */
     private fun applyBranding(context: Context, root: File, log: (String) -> Unit) {
         val etc = File(root, "etc").apply { mkdirs() }
@@ -279,7 +288,7 @@ object LinuxRuntime {
         writeExecutable(File(etc, "zyraxon-brand.sh"), ZYRAXON_BRAND_SH)
 
         // The static motd `login` falls back to, the dynamic one it prefers, and
-        // the Play Store variant — all three named Termux before this.
+        // the Play Store variant — all three named the upstream project before this.
         File(etc, "motd").writeText(ZYRAXON_MOTD_TEXT)
         File(etc, "motd-playstore").writeText(ZYRAXON_MOTD_TEXT)
         writeExecutable(File(etc, "motd.sh"), ZYRAXON_MOTD)
@@ -296,7 +305,7 @@ object LinuxRuntime {
             NAME="ZYRAXON"
             ID=zyraxon
             PRETTY_NAME="ZYRAXON Mobile Linux"
-            VERSION="6.24.6"
+            VERSION="6.24.7"
             HOME_URL="https://zyraxonai.lovable.app"
             SUPPORT_URL="https://github.com/onelpawarai-X/zyraxon-mobile-ai/issues"
             """.trimIndent() + "\n"
@@ -360,7 +369,7 @@ object LinuxRuntime {
 
     /**
      * Generates apt.conf and dpkg.cfg directing package tools to our app's storage,
-     * fully resolving Termux hardcoded paths (Exit 100 DirectoryExists error).
+     * fully resolving the payload's hardcoded paths (Exit 100 DirectoryExists error).
      */
     fun writeAptAndDpkgConfig(root: File) {
         val realPath = root.absolutePath
@@ -392,7 +401,7 @@ Acquire::Languages "none";
     }
 
     /**
-     * Patches hardcoded Termux shebangs and prefixes in bundled shell scripts (like pkg).
+     * Patches the payload's hardcoded shebangs and prefixes in bundled shell scripts (like pkg).
      */
     fun fixScriptShebangs(root: File) {
         val real = root.absolutePath
@@ -411,10 +420,10 @@ Acquire::Languages "none";
                                     text = text.replace(compat, real)
                                     changed = true
                                 }
-                                if (file.name == "pkg" && text.contains("Termux-PKG")) {
-                                    text = text.replace("Termux-PKG", "ZYRAXON-PKG")
-                                        .replace("termux-tools", "zyraxon-tools")
-                                        .replace("Termux (com.termux", "ZYRAXON (com.zyraxon.assistant")
+                                if (file.name == "pkg" && text.contains("Zyrxon-PKG")) {
+                                    text = text.replace("Zyrxon-PKG", "ZYRAXON-PKG")
+                                        .replace("zyrxon-tools", "zyraxon-tools")
+                                        .replace("Zyrxon (ai.zyraxon", "ZYRAXON (com.zyraxon.assistant")
                                     changed = true
                                 }
                                 if (changed) {
@@ -489,7 +498,7 @@ printf ' - Upgrade: pkg upgrade\n\n'
 # /etc/profile for a login shell.
 export ZYRAXON=1
 [ -z "${'$'}PREFIX" ] && export PREFIX="$GUEST_PREFIX"
-export TERMUX_PREFIX="${'$'}PREFIX"
+export ZYRXON_PREFIX="${'$'}PREFIX"
 [ -f "${'$'}PREFIX/etc/apt/apt.conf" ] && export APT_CONFIG="${'$'}PREFIX/etc/apt/apt.conf"
 [ -d "${'$'}PREFIX/var/lib/dpkg" ] && export DPKG_ADMINDIR="${'$'}PREFIX/var/lib/dpkg"
 [ -d "${'$'}PREFIX/share/dpkg" ] && export DPKG_DATADIR="${'$'}PREFIX/share/dpkg"
@@ -572,7 +581,7 @@ esac
             }
             val extract = File(work, "x").apply { mkdirs() }
             if (!run(context, work, "tar", "xf", tar.absolutePath, "-C", extract.absolutePath)) return false
-            // The payload stores files under an absolute Termux data path. That is
+            // The payload stores files under its own absolute data path. That is
             // an upstream detail, so the `files` directory is located, not guessed.
             val payloadRoot = findPayloadRoot(extract)
             if (payloadRoot != null) payloadRoot.copyRecursively(dest, overwrite = true)
@@ -711,9 +720,8 @@ esac
      * libraries.
      *
      * The identity is left alone — no `-0`, no `--change-id`. The guest runs as
-     * the app's own uid, which is the only uid Android gives it, and that is
-     * exactly what Termux does: a `termux`-type container in proot-distro is
-     * never given a fake root. This is also what lets the guest's `pkg` and `apt`
+     * the app's own uid, which is the only uid Android gives it, and no fake root
+     * is ever handed to it. This is also what lets the guest's `pkg` and `apt`
      * work at all, since they refuse to run when `id -u` is 0 and treat that as a
      * mistake rather than a privilege.
      */
@@ -804,7 +812,7 @@ esac
         val execCmd = if (java.io.File(linker).exists()) "$linker $bashPath" else bashPath
         return "cd $home && " +
             "export PREFIX=$real && " +
-            "export TERMUX_PREFIX=$real && " +
+            "export ZYRAXON_PREFIX=$real && " +
             "export HOME=$home && " +
             "export TMPDIR=$real/tmp && " +
             "export APT_CONFIG=$real/etc/apt/apt.conf && " +
@@ -860,6 +868,7 @@ esac
             else append("-b /dev -b /proc ")
             append("-b $real:$GUEST_PREFIX ")
             append("-b $real:$COMPAT_PREFIX ")
+            append("-b $real:$ARCHIVE_PREFIX ")
             append("-b $realHome:$GUEST_HOME ")
             append("-b $real/tmp:/tmp ")
             append("-w $GUEST_HOME ")
