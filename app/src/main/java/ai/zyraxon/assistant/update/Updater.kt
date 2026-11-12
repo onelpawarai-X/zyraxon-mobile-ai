@@ -131,7 +131,10 @@ class Updater(private val context: Context) {
                 if (!response.isSuccessful) {
                     error("GitHub replied ${response.code}")
                 }
-                val release = parseLatest(response.body?.string().orEmpty()) ?: return@use null
+                val release = parseLatest(
+                    response.body?.string().orEmpty(),
+                    Build.SUPPORTED_ABIS.toList()
+                ) ?: return@use null
                 if (release.version > currentVersion) release else null
             }
         }
@@ -347,31 +350,68 @@ class Updater(private val context: Context) {
          * can also carry notes, a checksum and a source zip without confusing the
          * updater. The version comes from the tag, which is what the release is
          * named after.
+         *
+         * The release carries one APK per CPU family plus a universal one, so
+         * [abis] decides which of them this phone should install. Pass the
+         * phone's `Build.SUPPORTED_ABIS`; an empty list keeps the old
+         * first-APK behaviour, which is what the tests and a single-APK release
+         * want.
          */
-        fun parseLatest(json: String): UpdateRelease? {
+        fun parseLatest(json: String, abis: List<String> = emptyList()): UpdateRelease? {
             val root = runCatching { JSONObject(json) }.getOrNull() ?: return null
             val tag = root.safe("tag_name").takeIf { it.isNotBlank() } ?: return null
             val version = Version.parse(tag) ?: return null
 
             val assetsJson = root.optJSONArray("assets")
-            var apk: ReleaseAsset? = null
-            for (i in 0 until (assetsJson?.length() ?: 0)) {
-                val a = assetsJson?.optJSONObject(i) ?: continue
-                val name = a.safe("name")
-                if (!name.endsWith(".apk", ignoreCase = true)) continue
-                apk = ReleaseAsset(
-                    name = name,
-                    url = a.safe("browser_download_url"),
-                    size = a.optLong("size")
-                )
-                break
+            val assets = buildList {
+                for (i in 0 until (assetsJson?.length() ?: 0)) {
+                    val a = assetsJson?.optJSONObject(i) ?: continue
+                    val name = a.safe("name")
+                    if (!name.endsWith(".apk", ignoreCase = true)) continue
+                    add(
+                        ReleaseAsset(
+                            name = name,
+                            url = a.safe("browser_download_url"),
+                            size = a.optLong("size")
+                        )
+                    )
+                }
             }
             return UpdateRelease(
                 tag = tag,
                 version = version,
                 notes = root.safe("body"),
-                apk = apk
+                apk = pickApk(assets, abis)
             )
+        }
+
+        /**
+         * The APK this phone should install.
+         *
+         * GitHub returns assets in name order, so `-arm32` comes before `-arm64`
+         * and taking the first APK would hand a 64-bit phone the 32-bit build —
+         * which installs and then runs as the wrong architecture. Match the
+         * phone's own ABI list instead. When neither family matches, fall back to
+         * the universal build, which carries both, and only then to the first
+         * APK, which keeps a single-APK release working.
+         */
+        fun pickApk(assets: List<ReleaseAsset>, abis: List<String>): ReleaseAsset? {
+            if (assets.isEmpty()) return null
+            val family = when {
+                abis.any { it.equals("arm64-v8a", ignoreCase = true) } -> "arm64"
+                abis.any {
+                    it.equals("armeabi-v7a", ignoreCase = true) ||
+                        it.equals("armeabi", ignoreCase = true)
+                } -> "arm32"
+                else -> null
+            }
+            if (family != null) {
+                assets.firstOrNull { it.name.contains("-$family.apk", ignoreCase = true) }
+                    ?.let { return it }
+            }
+            assets.firstOrNull { it.name.contains("-universal.apk", ignoreCase = true) }
+                ?.let { return it }
+            return assets.first()
         }
 
         /** True when [remote] is a newer build than the one installed. */

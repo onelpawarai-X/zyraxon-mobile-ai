@@ -296,7 +296,7 @@ object LinuxRuntime {
             NAME="ZYRAXON"
             ID=zyraxon
             PRETTY_NAME="ZYRAXON Mobile Linux"
-            VERSION="6.24.7"
+            VERSION="6.24.5"
             HOME_URL="https://zyraxonai.lovable.app"
             SUPPORT_URL="https://github.com/onelpawarai-X/zyraxon-mobile-ai/issues"
             """.trimIndent() + "\n"

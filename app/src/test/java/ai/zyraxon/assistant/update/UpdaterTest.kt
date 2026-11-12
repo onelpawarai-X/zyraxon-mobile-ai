@@ -109,4 +109,55 @@ class UpdaterTest {
         // And 6.24.2 must be offered it.
         assertTrue(Updater.isNewer(release.version, Version(6, 24, 2)))
     }
+
+    /**
+     * The release carries one APK per CPU family plus a universal one, and GitHub
+     * returns them in name order — so `-arm32` arrives before `-arm64`. Taking
+     * the first APK handed a 64-bit phone the 32-bit build. The phone's own ABI
+     * list must decide.
+     */
+    @Test
+    fun `a 64-bit phone gets the arm64 apk, not the arm32 one GitHub lists first`() {
+        val json = """
+            {
+              "tag_name": "v6.24.7",
+              "assets": [
+                {"name": "SHA256SUMS", "browser_download_url": "https://x/sums", "size": 280},
+                {"name": "ZYRAXON-v6.24.7-arm32.apk", "browser_download_url": "https://x/arm32.apk", "size": 220125890},
+                {"name": "ZYRAXON-v6.24.7-arm64.apk", "browser_download_url": "https://x/arm64.apk", "size": 240496713},
+                {"name": "ZYRAXON-v6.24.7-universal.apk", "browser_download_url": "https://x/universal.apk", "size": 425846394}
+              ]
+            }
+        """.trimIndent()
+
+        val on64 = Updater.parseLatest(json, listOf("arm64-v8a", "armeabi-v7a", "armeabi"))!!
+        assertEquals("ZYRAXON-v6.24.7-arm64.apk", on64.apk?.name)
+
+        val on32 = Updater.parseLatest(json, listOf("armeabi-v7a", "armeabi"))!!
+        assertEquals("ZYRAXON-v6.24.7-arm32.apk", on32.apk?.name)
+
+        // An ABI the release has no family for still installs: the universal file
+        // carries both.
+        val onUnknown = Updater.parseLatest(json, listOf("riscv64"))!!
+        assertEquals("ZYRAXON-v6.24.7-universal.apk", onUnknown.apk?.name)
+    }
+
+    /**
+     * A release that predates the split carries a single APK and no family in its
+     * name. It must still be offered, or nobody on an old build can update.
+     */
+    @Test
+    fun `a single-apk release is still offered`() {
+        val json = """
+            {
+              "tag_name": "v6.24.3",
+              "assets": [
+                {"name": "ZYRAXON-v6.24.3.apk", "browser_download_url": "https://x/app.apk", "size": 488162744}
+              ]
+            }
+        """.trimIndent()
+
+        val release = Updater.parseLatest(json, listOf("arm64-v8a"))!!
+        assertEquals("ZYRAXON-v6.24.3.apk", release.apk?.name)
+    }
 }
