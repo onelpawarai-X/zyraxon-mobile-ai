@@ -296,9 +296,9 @@ object LinuxRuntime {
             NAME="ZYRAXON"
             ID=zyraxon
             PRETTY_NAME="ZYRAXON Mobile Linux"
-            VERSION="6.24.6"
-            HOME_URL="https://zyraxon.dev"
-            SUPPORT_URL="https://zyraxon.dev/community"
+            VERSION="6.24.7"
+            HOME_URL="https://zyraxonai.lovable.app"
+            SUPPORT_URL="https://github.com/onelpawarai-X/zyraxon-mobile-ai/issues"
             """.trimIndent() + "\n"
         )
 
@@ -454,8 +454,8 @@ Acquire::Languages "none";
     private val ZYRAXON_MOTD_TEXT = """
 Welcome to ZYRAXON.
 
-Docs:      https://zyraxon.dev
-Community: https://zyraxon.dev/community
+Docs:      https://zyraxonai.lovable.app
+Community: https://github.com/onelpawarai-X/zyraxon-mobile-ai/issues
 
 Working with packages:
 
@@ -471,12 +471,12 @@ Working with packages:
 width="$(stty size 2>/dev/null | cut -d' ' -f2)"
 if [ -n "${'$'}width" ] && [ "${'$'}width" -gt 60 ] 2>/dev/null; then
     printf '\n  \033[1mZYRAXON\033[0m  \033[0;37ma real Unix system on this phone\033[0m\n\n'
-    printf '  \033[1mDocs:\033[0m      \033[4mhttps://zyraxon.dev\033[0m\n'
-    printf '  \033[1mCommunity:\033[0m \033[4mhttps://zyraxon.dev/community\033[0m\n\n'
+    printf '  \033[1mDocs:\033[0m      \033[4mhttps://zyraxonai.lovable.app\033[0m\n'
+    printf '  \033[1mCommunity:\033[0m \033[4mhttps://github.com/onelpawarai-X/zyraxon-mobile-ai/issues\033[0m\n\n'
 else
     printf '\n\033[1mWelcome to ZYRAXON.\033[0m\n\n'
-    printf '\033[1mDocs:\033[0m      \033[4mhttps://zyraxon.dev\033[0m\n'
-    printf '\033[1mCommunity:\033[0m \033[4mhttps://zyraxon.dev/community\033[0m\n\n'
+    printf '\033[1mDocs:\033[0m      \033[4mhttps://zyraxonai.lovable.app\033[0m\n'
+    printf '\033[1mCommunity:\033[0m \033[4mhttps://github.com/onelpawarai-X/zyraxon-mobile-ai/issues\033[0m\n\n'
 fi
 printf '\033[1mWorking with packages:\033[0m\n\n'
 printf ' - Search:  pkg search <query>\n'
