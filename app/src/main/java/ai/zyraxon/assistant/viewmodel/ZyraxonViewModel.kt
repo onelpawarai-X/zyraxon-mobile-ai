@@ -444,9 +444,49 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch(Dispatchers.IO) { runCatching { importCloudHistory(c) } }
     }
 
+    /** A name the user chose is never replaced by a generated or cloud title. */
     fun renameChat(id: String, title: String) {
         if (title.isBlank()) return
-        viewModelScope.launch { repository.renameConversation(id, title.trim()) }
+        val clean = title.trim().take(60)
+        prefs.edit().putStringSet("renamed_chats", (prefs.getStringSet("renamed_chats", emptySet()).orEmpty() + id).toSet()).apply()
+        viewModelScope.launch {
+            repository.renameConversation(id, clean)
+            // The same name goes to the cloud conversation, so both sides agree.
+            val key = aiEngine.getApiKey(ZYRAXON_APEX)
+            val convId = cloudStore.conversationFor(id)
+            if (key.isNotBlank() && convId != null) withContext(Dispatchers.IO) {
+                runCatching { cloudClient.renameConversation(key, convId, clean) }
+            }
+        }
+    }
+
+    private fun userRenamed(id: String) = prefs.getStringSet("renamed_chats", emptySet()).orEmpty().contains(id)
+
+    private fun isDefaultTitle(t: String) = t.isBlank() || t == "ZYRAXON" || t == "নতুন চ্যাট" || t == "প্রথম চ্যাট" ||
+        t == "New chat" || t == "First chat" || t == t("নতুন চ্যাট")
+
+    /** A short title from the chosen model, in the language the user wrote in. */
+    private suspend fun aiTitle(prompt: String, model: AiModel): String? = withTimeoutOrNull(25_000) {
+        val sb = StringBuilder()
+        aiEngine.streamAiResponse(
+            prompt = "Write a short chat title (2 to 6 words) for the request below, in the same language as the request. " +
+                "Reply with ONLY the title — no quotes, no full stop.\n\nRequest: " + prompt.take(400),
+            history = emptyList(), persona = _selectedPersona.value, model = model,
+            alwaysSeeScreen = false, mode = AgentMode.CHAT
+        ).collect { ch -> if (!ch.startsWith("\u0001")) sb.append(ch) }
+        sb.toString().lineSequence().firstOrNull { it.isNotBlank() }?.trim()
+            ?.trim('"', '«', '»', '*', '#', ' ', '.')?.take(48)?.takeIf { it.length >= 2 }
+    }
+
+    /** Pulls the title OpenHands gave the cloud conversation, unless the user named it. */
+    private suspend fun syncCloudTitle(chatId: String) {
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        val convId = cloudStore.conversationFor(chatId) ?: return
+        if (key.isBlank() || userRenamed(chatId)) return
+        val remote = withContext(Dispatchers.IO) { cloudBridge.remoteTitle(key, convId) }?.trim().orEmpty()
+        if (remote.isBlank() || remote == "ZYRAXON") return
+        val cur = repository.conversation(chatId) ?: return
+        if (cur.title != remote) repository.renameConversation(chatId, remote)
     }
 
     fun deleteChat(id: String) {
@@ -489,7 +529,19 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             val shot = withContext(Dispatchers.Main) { runCatching { PreviewBridge.screenshot(getApplication()) }.getOrNull() }
             if (!shot.isNullOrBlank()) _attachedImages.value = listOf(shot)
-            sendMessage("[প্রিভিউ: ${PreviewBridge.url.value}] $question")
+            val p = PreviewBridge.picked.value
+            if (p == null) {
+                sendMessage("[প্রিভিউ: ${PreviewBridge.url.value}] $question")
+            } else {
+                PreviewBridge.clearPicked()
+                sendMessage(
+                    "[প্রিভিউ: ${p.url}]\n[ব্যবহারকারী পেজের এই অংশটা বেছেছে]\n" +
+                        "সিলেক্টর: ${p.selector}\nট্যাগ: ${p.tag}\nলেখা: ${p.text}\nস্টাইল: ${p.styles}\nHTML: ${p.html}\n\n" +
+                        "অনুরোধ: $question\n\n" +
+                        "শুধু এই অংশটুকুই বদলাও। প্রজেক্টের ফাইলে এই এলিমেন্টের কোড (সিলেক্টর, লেখা বা ক্লাস ধরে grep করে) খুঁজে সেখানেই এডিট করো, " +
+                        "অন্য কিছু ছুঁয়ো না, তারপর প্রিভিউ রিলোড করে ফলাফল দেখে নাও।"
+                )
+            }
         }
     }
 
@@ -506,6 +558,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     val voiceAge: StateFlow<String> = _voiceAge.asStateFlow()
 
     init {
+        // A saved brand kit recolours the app again on every launch.
+        runCatching {
+            val bp = getApplication<Application>().getSharedPreferences("zyraxon_brand", android.content.Context.MODE_PRIVATE)
+            if (bp.getBoolean("apply", false)) ai.zyraxon.assistant.ai.ToolRegistry.applyBrandToApp(bp.getString("primary", null), bp.getString("secondary", null))
+        }
         ai.zyraxon.assistant.voice.RemoteTtsRequest.voiceName = _voiceId.value
         ai.zyraxon.assistant.voice.RemoteTtsRequest.voiceAge = _voiceAge.value
     }
@@ -1007,7 +1064,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      */
     private fun toolIcon(name: String): String = when {
         name == "run_shell" || name == "system_shell" || name == "linux_run" || name == "terminal_run" -> "keyboard"
-        name == "read_file" || name == "write_file" || name == "edit_file" || name == "list_dir" ||
+        name == "present_slides" || name == "make_design" || name == "make_document" || name == "office_template" || name == "read_file" || name == "write_file" || name == "edit_file" || name == "list_dir" ||
             name == "find_files" || name == "grep_files" || name == "delete_file" -> "file"
         name == "web_search" || name == "read_url" || name == "http_request" || name == "verify_url" -> "search"
         name == "download_file" || name == "publish_website" || name == "publish_github" -> "upload"
@@ -2852,8 +2909,22 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     /** The first message names a new chat, so the sidebar reads like a list of topics. */
     private suspend fun autoTitle(c: ChatSession, prompt: String) {
         val cur = repository.conversation(c.id) ?: return
-        if (cur.title == "নতুন চ্যাট" && !c.id.startsWith("sub_")) {
-            repository.renameConversation(c.id, prompt.lineSequence().first().take(40))
+        if (c.id.startsWith("sub_") || userRenamed(c.id)) return
+        val model = _selectedModel.value
+        if (model.provider == ZYRAXON_APEX) {
+            // OpenHands names its own conversations: show its title as soon as it exists.
+            if (isDefaultTitle(cur.title)) repository.renameConversation(c.id, prompt.lineSequence().first().take(40))
+            viewModelScope.launch { repeat(8) { delay(7_000); runCatching { syncCloudTitle(c.id) } } }
+            return
+        }
+        if (!isDefaultTitle(cur.title)) return
+        // Instant placeholder, then the model's own title replaces it.
+        val fallback = prompt.lineSequence().first().take(40)
+        repository.renameConversation(c.id, fallback)
+        viewModelScope.launch {
+            val ai = runCatching { aiTitle(prompt, model) }.getOrNull() ?: return@launch
+            val now = repository.conversation(c.id)?.title
+            if (!userRenamed(c.id) && (now == fallback || isDefaultTitle(now.orEmpty()))) repository.renameConversation(c.id, ai)
         }
     }
 

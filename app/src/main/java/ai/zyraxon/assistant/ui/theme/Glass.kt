@@ -55,6 +55,10 @@ private val LightPal = Pal(
  * that has already been drawn — no screen has to be told.
  */
 object Glass {
+    /** The user's brand colours, when a brand kit is applied; they replace the accents of every look. */
+    var brandPrimary: Color? by mutableStateOf(null)
+    var brandSecondary: Color? by mutableStateOf(null)
+
     /** Which of the three looks is on. */
     var mode: ZyThemeMode by mutableStateOf(ZyThemeMode.HORROR)
 
@@ -99,16 +103,16 @@ object Glass {
     val textOnAccent: Color = Color(0xFFFFFFFF)
 
     // Accents
-    val pink: Color get() = p.accent
-    val cyan: Color get() = p.accent2
+    val pink: Color get() = brandPrimary ?: p.accent
+    val cyan: Color get() = brandSecondary ?: p.accent2
     val violet: Color get() = p.accent3
     val green: Color get() = Color(0xFF10B981)
     val red: Color get() = if (mode == ZyThemeMode.HORROR) Color(0xFFFF1744) else Color(0xFFEF4444)
     val amber: Color get() = Color(0xFFFF9F1C)
 
     /** Filled accents, for primary buttons and active pills. */
-    val pinkFill: Color get() = p.accentFill
-    val cyanFill: Color get() = if (mode == ZyThemeMode.HORROR) Color(0xFFD62828) else p.accent2
+    val pinkFill: Color get() = brandPrimary ?: p.accentFill
+    val cyanFill: Color get() = brandSecondary ?: if (mode == ZyThemeMode.HORROR) Color(0xFFD62828) else p.accent2
     val violetFill: Color get() = Color(0xFFC026D3)
     val greenFill: Color get() = Color(0xFF059669)
 

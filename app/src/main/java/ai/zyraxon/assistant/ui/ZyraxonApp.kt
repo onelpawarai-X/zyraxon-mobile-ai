@@ -208,6 +208,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
             HorrorVignette(Modifier.fillMaxSize(), intensity = 1.0f)
         }
 
+        ai.zyraxon.assistant.present.PresentationOverlay(viewModel)
         if (sidebarOpen) Sidebar(viewModel)
 
         if (showSettingsSheet) {

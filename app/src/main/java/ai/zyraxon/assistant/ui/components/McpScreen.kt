@@ -283,7 +283,7 @@ private fun McpServerCard(
                     }
                 }
                 Text(
-                    connection.error.ifBlank { server.tagline },
+                    connection.error.ifBlank { t(server.tagline) },
                     color = if (connection.error.isNotBlank() && !isConnected) Glass.red else Glass.textMuted,
                     fontSize = 11.5.sp,
                     maxLines = 2
@@ -337,7 +337,7 @@ private fun McpServerCard(
                         ) {
                             AppIcon(AppIcons.check, null, size = 13.dp, tint = Glass.cyanFill)
                             Spacer(modifier = Modifier.width(7.dp))
-                            Text(line, color = Glass.textSecondary, fontSize = 11.5.sp)
+                            Text(t(line), color = Glass.textSecondary, fontSize = 11.5.sp)
                         }
                     }
                     if (isConnected && connection.tools.isNotEmpty()) {

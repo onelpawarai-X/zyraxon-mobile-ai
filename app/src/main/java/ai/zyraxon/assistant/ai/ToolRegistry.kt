@@ -224,6 +224,30 @@ object ToolRegistry {
         "download_file" to JSONObject()
             .put("description", "Download a URL to a file on this phone.")
             .put("parameters", S(JSONObject().put("url", str()).put("path", str()), listOf("url"))),
+        "brand_kit" to JSONObject()
+            .put("description", "A brand kit: colours taken from the user's logo (`image` = a file path) or given as `colors` (hex list, first = main). It is saved, and from then on every document, slide deck and design you make uses the main colour automatically — use the returned palette (and `css`) for websites and designs too. `apply_to_app` true (default) also recolours ZYRAXON itself. Use action `get` to read the saved kit, `reset` to remove it.")
+            .put("parameters", S(JSONObject().put("action", str().put("enum", JSONArray(listOf("set", "get", "reset"))))
+                .put("image", str()).put("colors", JSONObject().put("type", "array").put("items", str()))
+                .put("name", str()).put("apply_to_app", bool()), emptyList())),
+        "make_design" to JSONObject()
+            .put("description", "Design a poster, banner, logo, social post/card, story or cover and export it as PNG and PDF (shown in the chat with Share). Write the design as `html` (one self-contained page; inline CSS; use font-family 'Noto Sans Bengali' for Bengali; no scripts needed) or as `svg`. `kind` sets the default pixel size: poster 1080x1528, banner 1500x500, logo 1024x1024, card 1080x1080, story 1080x1920, cover 1640x924 — or pass `width`/`height`. The page is exactly that many CSS pixels, so lay it out to fill 100% width and height. `transparent` true gives a PNG with no background (logos). `format` is png, pdf or both (default both). Look at the picture afterwards and fix anything off.")
+            .put("parameters", S(JSONObject().put("kind", str()).put("html", str()).put("svg", str())
+                .put("width", num()).put("height", num()).put("filename", str()).put("transparent", bool())
+                .put("format", str().put("enum", JSONArray(listOf("png", "pdf", "both")))), emptyList())),
+        "present_slides" to JSONObject()
+            .put("description", "Present slides out loud: the 3D character on the home screen speaks while slide cards show underneath, and the next slide opens by itself when the voice finishes. Pass `slides` = [{title, bullets:[…], speech}] where `speech` is exactly what to say for that slide, in the user's language, 2 to 4 natural sentences. Use it when the user asks you to present, explain with slides, or teach a topic aloud. Do not read the slides back in your reply.")
+            .put("parameters", S(JSONObject().put("slides", JSONObject().put("type", "array").put("items", JSONObject().put("type", "object")))
+                .put("auto", bool()), listOf("slides"))),
+        "office_template" to JSONObject()
+            .put("description", "Ready Bengali office papers with [blanks]: ছুটির দরখাস্ত, চাকরির আবেদন, চালান/ইনভয়েস, সিভি, ব্যবসার প্রস্তাব, কোটেশন, নোটিশ, মিটিং কার্যবিবরণী, চুক্তিপত্র, মাসিক হিসাব (শিট), পিচ স্লাইড. Call with no `id` to list them; with an `id` to get the Markdown. Fill every [blank] from what the user said (ask for what is missing), then pass it to make_document.")
+            .put("parameters", S(JSONObject().put("id", str()), emptyList())),
+        "make_document" to JSONObject()
+            .put("description", "Make a real Word (.docx), Excel (.xlsx) or PowerPoint (.pptx) file on this phone — no install needed, Bengali works. `type` is docx, xlsx or pptx. docx: pass `markdown` (# ## ### headings, paragraphs, - bullets, 1. numbered, | tables |, --- page break). xlsx: pass `csv` (or `markdown` table, or `sheets` = [{name, rows:[[cell,…],…]}]); a cell starting with = is a formula; the first row is the header. pptx: pass `markdown` where each `# Title` starts a slide followed by - bullets (or `slides` = [{title, bullets:[…]}]). The file appears in the chat with Open and Share buttons. Use it whenever the user asks for a document, sheet, slides, application letter, invoice, résumé or proposal.")
+            .put("parameters", S(JSONObject().put("type", str().put("enum", JSONArray(listOf("docx", "xlsx", "pptx"))))
+                .put("filename", str()).put("title", str()).put("markdown", str()).put("csv", str()).put("color", str())
+                .put("sheets", JSONObject().put("type", "array").put("items", JSONObject().put("type", "object")))
+                .put("slides", JSONObject().put("type", "array").put("items", JSONObject().put("type", "object"))),
+                listOf("type"))),
         "write_file" to JSONObject()
             .put("description", "Create a file or replace it whole. Missing folders are created. Use this to write code — never paste code into the chat.")
             .put("parameters", S(JSONObject().put("path", str()).put("content", str())
@@ -451,7 +475,10 @@ object ToolRegistry {
 
     private val MEMORY_TOOLS = setOf("memory_write", "memory_read", "memory_delete")
 
-    private val BUILD_TOOLS = MEMORY_TOOLS + setOf(
+    /** Office files and designs work in every mode: asking for a letter or a poster should never need Agent mode. */
+    private val OFFICE_TOOLS = setOf("make_document", "office_template", "make_design", "brand_kit", "present_slides")
+
+    private val BUILD_TOOLS = MEMORY_TOOLS + OFFICE_TOOLS + setOf(
         "edit_file", "read_file", "list_dir", "find_files", "grep_files", "delete_file", "download_file",
         "run_shell", "terminal_run", "terminal_open", "linux_run", "background_command", "wait",
         "serve_local", "publish_website", "publish_cloudflare", "publish_github", "github_actions", "build_app",
@@ -469,7 +496,7 @@ object ToolRegistry {
     private val SUB_AGENT_TOOLS = setOf("sub_agent")
 
     fun toolNamesFor(mode: ai.zyraxon.assistant.model.AgentMode): Set<String> = when (mode) {
-        ai.zyraxon.assistant.model.AgentMode.CHAT -> MEMORY_TOOLS
+        ai.zyraxon.assistant.model.AgentMode.CHAT -> MEMORY_TOOLS + OFFICE_TOOLS
         ai.zyraxon.assistant.model.AgentMode.BUILD -> BUILD_TOOLS
         ai.zyraxon.assistant.model.AgentMode.AGENT -> names().toSet() - AGENT_EXCLUDED
     }
@@ -601,6 +628,18 @@ object ToolRegistry {
             "web_search" -> webSearch(args)
             "http_request" -> httpRequest(args)
             "download_file" -> downloadFile(context, args)
+            "make_document" -> makeDocument(context, args)
+            "office_template" -> officeTemplate(args)
+            "make_design" -> makeDesign(context, args)
+            "present_slides" -> {
+                val list = ai.zyraxon.assistant.present.Presentation.parse(args.optJSONArray("slides"))
+                if (list.isEmpty()) err("no-slides", "স্লাইড দেওয়া হয়নি")
+                else {
+                    ai.zyraxon.assistant.present.Presentation.start(list, args.optBoolean("auto", true))
+                    ok(JSONObject().put("slides", list.size), "${list.size}টি স্লাইডের প্রেজেন্টেশন শুরু হয়েছে")
+                }
+            }
+            "brand_kit" -> brandKit(context, args)
             "write_file" -> writeFile(context, args)
             "edit_file" -> editFile(context, args)
             "read_file" -> readFile(context, args)
@@ -1228,6 +1267,214 @@ object ToolRegistry {
         } catch (e: Exception) {
             err((e.message ?: e.toString()), "ডাউনলোড ব্যর্থ: $url")
         }
+    }
+
+    private fun brandFile(context: Context) = File(File(workspace(context), "brand").apply { mkdirs() }, "brand.json")
+
+    /** The saved brand's main colour (#RRGGBB), or null when no kit is set. */
+    fun brandPrimary(context: Context): String? = runCatching {
+        JSONObject(brandFile(context).readText()).optString("primary").ifBlank { null }
+    }.getOrNull()
+
+    /** Recolours the app's own accents from a saved kit; null clears it. */
+    fun applyBrandToApp(primary: String?, secondary: String?) {
+        fun c(h: String?) = h?.let { ai.zyraxon.assistant.brand.BrandPalette.parse(it) }
+            ?.let { androidx.compose.ui.graphics.Color(0xFF000000.toInt() or (it[0] shl 16) or (it[1] shl 8) or it[2]) }
+        ai.zyraxon.assistant.ui.theme.Glass.brandPrimary = c(primary)
+        ai.zyraxon.assistant.ui.theme.Glass.brandSecondary = c(secondary)
+    }
+
+    private fun brandJson(name: String, p: ai.zyraxon.assistant.brand.BrandPalette.Palette) = JSONObject()
+        .put("name", name).put("primary", p.primary).put("secondary", p.secondary).put("accent", p.accent)
+        .put("background", p.background).put("text", p.text).put("on_primary", p.onPrimary).put("css", p.css())
+
+    private fun brandKit(context: Context, args: JSONObject): JSONObject {
+        val prefs = context.getSharedPreferences("zyraxon_brand", Context.MODE_PRIVATE)
+        when (args.safe("action", "set").lowercase()) {
+            "get" -> {
+                val f = brandFile(context)
+                if (!f.exists()) return ok(JSONObject().put("set", false), "ব্র্যান্ড কিট এখনো নেই")
+                return ok(JSONObject(f.readText()), "ব্র্যান্ড কিট পাওয়া গেছে")
+            }
+            "reset" -> {
+                brandFile(context).delete()
+                prefs.edit().clear().apply()
+                applyBrandToApp(null, null)
+                return ok(JSONObject().put("set", false), "ব্র্যান্ড কিট মুছে ফেলা হয়েছে")
+            }
+        }
+        val palette = run {
+            val arr = args.optJSONArray("colors")
+            val given = if (arr == null) emptyList() else (0 until arr.length()).map { arr.optString(it) }
+            if (given.isNotEmpty()) return@run ai.zyraxon.assistant.brand.BrandPalette.fromColors(given)
+            val path = args.safe("image")
+            if (path.isBlank()) return@run null
+            val file = resolve(context, path)
+            val opts = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            android.graphics.BitmapFactory.decodeFile(file.absolutePath, opts)
+            if (opts.outWidth <= 0) return@run null
+            var sample = 1
+            while (opts.outWidth / sample > 400 || opts.outHeight / sample > 400) sample *= 2
+            val bmp = android.graphics.BitmapFactory.decodeFile(
+                file.absolutePath, android.graphics.BitmapFactory.Options().apply { inSampleSize = sample }
+            ) ?: return@run null
+            val px = IntArray(bmp.width * bmp.height)
+            bmp.getPixels(px, 0, bmp.width, 0, 0, bmp.width, bmp.height)
+            bmp.recycle()
+            ai.zyraxon.assistant.brand.BrandPalette.fromPixels(px)
+        } ?: return err("no-colors", "`image` (লোগোর ফাইল) বা `colors` (hex তালিকা) দাও")
+        val json = brandJson(args.safe("name", "brand"), palette)
+        brandFile(context).writeText(json.toString(2))
+        val toApp = args.optBoolean("apply_to_app", true)
+        prefs.edit().putString("primary", palette.primary).putString("secondary", palette.secondary)
+            .putBoolean("apply", toApp).apply()
+        if (toApp) applyBrandToApp(palette.primary, palette.secondary)
+        return ok(
+            json.put("applied_to_app", toApp)
+                .put("next", "এখন থেকে make_document, make_design-এ এই রং নিজে থেকে বসবে; ওয়েবসাইট/ডিজাইনের CSS-এ json.css ব্যবহার করো।"),
+            "ব্র্যান্ড কিট তৈরি: ${palette.primary} · ${palette.secondary} · ${palette.accent}"
+        )
+    }
+
+    private fun makeDesign(context: Context, args: JSONObject): JSONObject {
+        val markup = args.safe("html").ifBlank { args.safe("svg") }
+        if (markup.isBlank()) return err("empty", "html বা svg দাও")
+        val kind = args.safe("kind", "poster")
+        val def = ai.zyraxon.assistant.design.DesignHtml.defaultSize(kind)
+        val w = args.optInt("width", def.w).coerceIn(200, 4000)
+        val h = args.optInt("height", def.h).coerceIn(200, 4000)
+        val transparent = args.optBoolean("transparent", kind.equals("logo", true))
+        val format = args.safe("format", "both").lowercase()
+        val dir = File(workspace(context), "designs").apply { mkdirs() }
+        val base = args.safe("filename").substringAfterLast('/').substringBeforeLast('.')
+            .replace(Regex("[^A-Za-z0-9._-]"), "-").trim('-').ifBlank { kind.replace(Regex("[^A-Za-z0-9]"), "") + "-" + System.currentTimeMillis() / 1000 }
+        val page = ai.zyraxon.assistant.design.DesignHtml.wrap(markup, w, h, transparent)
+        val bmp = ai.zyraxon.assistant.design.DesignRender.bitmap(context, page, w, h, transparent)
+            ?: return err("render-failed", "ডিজাইন আঁকা যায়নি — html সহজ করে আবার চেষ্টা করো")
+        val media = JSONArray()
+        val files = JSONArray()
+        try {
+            if (format != "pdf") {
+                val png = File(dir, "$base.png")
+                ai.zyraxon.assistant.design.DesignRender.savePng(bmp, png)
+                media.put(JSONObject().put("kind", "image").put("path", png.absolutePath).put("title", png.name))
+                files.put(png.absolutePath)
+            }
+            if (format != "png") {
+                val pdf = File(dir, "$base.pdf")
+                ai.zyraxon.assistant.design.DesignRender.savePdf(bmp, pdf)
+                media.put(JSONObject().put("kind", "file").put("path", pdf.absolutePath).put("title", pdf.name))
+                files.put(pdf.absolutePath)
+            }
+            File(dir, "$base.html").writeText(page)
+        } catch (e: Exception) {
+            return err(e.message ?: e.toString(), "ডিজাইন সেভ করা যায়নি")
+        } finally {
+            bmp.recycle()
+        }
+        return ok(
+            JSONObject().put("files", files).put("size", "${w}x$h").put("source", File(dir, "$base.html").absolutePath),
+            "ডিজাইন তৈরি হয়েছে (${w}×$h)"
+        ).put("media", media)
+    }
+
+    /** The colour for a document: the `color` the agent passed, else the saved brand's main colour, else the default blue. */
+    private fun accentFor(context: Context, args: JSONObject): String {
+        val given = ai.zyraxon.assistant.brand.BrandPalette.parse(args.safe("color"))
+        val hex = if (given != null) "#%02X%02X%02X".format(given[0], given[1], given[2]) else brandPrimary(context)
+        return (hex ?: "#2F5496").removePrefix("#")
+    }
+
+    private fun officeTemplate(args: JSONObject): JSONObject {
+        val id = args.safe("id")
+        if (id.isBlank()) {
+            val arr = JSONArray()
+            ai.zyraxon.assistant.office.OfficeTemplates.all.forEach {
+                arr.put(JSONObject().put("id", it.id).put("title", it.title).put("type", it.type))
+            }
+            return ok(JSONObject().put("templates", arr), "${arr.length()}টি টেমপ্লেট আছে")
+        }
+        val t = ai.zyraxon.assistant.office.OfficeTemplates.find(id)
+            ?: return err("not-found", "এই টেমপ্লেট নেই: $id — id ছাড়া ডাকলে তালিকা পাবে")
+        return ok(
+            JSONObject().put("id", t.id).put("title", t.title).put("type", t.type).put("markdown", t.markdown.trim())
+                .put("next", "প্রতিটি [ফাঁকা] ব্যবহারকারীর তথ্য দিয়ে ভরো (না জানলে জিজ্ঞেস করো), তারপর make_document(type=${t.type}, markdown/csv=…) ডাকো।"),
+            t.title
+        )
+    }
+
+    private fun makeDocument(context: Context, args: JSONObject): JSONObject {
+        val type = args.safe("type").lowercase().removePrefix(".")
+        if (type !in listOf("docx", "xlsx", "pptx")) return err("bad-type", "type হবে docx, xlsx বা pptx")
+        val md = args.safe("markdown")
+        val title = args.safe("title")
+        val dir = File(workspace(context), "documents").apply { mkdirs() }
+        val base = args.safe("filename").substringAfterLast('/').substringBeforeLast('.')
+            .replace(Regex("[\\\\/:*?\"<>|]"), "-").trim().ifBlank {
+                title.replace(Regex("[\\\\/:*?\"<>|\\s]+"), "-").trim('-').ifBlank { "document-" + System.currentTimeMillis() }
+            }
+        val file = File(dir, "$base.$type")
+        try {
+            val buffer = java.io.ByteArrayOutputStream()
+            buffer.let { out ->
+                when (type) {
+                    "docx" -> {
+                        val blocks = ai.zyraxon.assistant.office.OfficeText.docFromMarkdown(md.ifBlank { args.safe("content") })
+                        if (blocks.isEmpty()) return err("empty", "markdown-এ লেখা দাও")
+                        ai.zyraxon.assistant.office.OfficeFiles.docx(title, blocks, out, accentFor(context, args))
+                    }
+                    "xlsx" -> {
+                        val sheets = mutableListOf<ai.zyraxon.assistant.office.OfficeFiles.Sheet>()
+                        val arr = args.optJSONArray("sheets")
+                        if (arr != null) for (i in 0 until arr.length()) {
+                            val o = arr.optJSONObject(i) ?: continue
+                            val rowsJson = o.optJSONArray("rows") ?: continue
+                            val rows = (0 until rowsJson.length()).map { r ->
+                                val row = rowsJson.optJSONArray(r)
+                                if (row == null) listOf(rowsJson.opt(r)?.toString().orEmpty())
+                                else (0 until row.length()).map { c -> if (row.isNull(c)) "" else row.get(c).toString() }
+                            }
+                            sheets.add(ai.zyraxon.assistant.office.OfficeFiles.Sheet(o.safe("name", "Sheet" + (i + 1)), rows))
+                        }
+                        if (sheets.isEmpty()) {
+                            val rows = when {
+                                args.safe("csv").isNotBlank() -> ai.zyraxon.assistant.office.OfficeText.rowsFromCsv(args.safe("csv"))
+                                md.isNotBlank() -> ai.zyraxon.assistant.office.OfficeText.rowsFromMarkdownTable(md)
+                                else -> emptyList()
+                            }
+                            if (rows.isEmpty()) return err("empty", "csv, markdown টেবিল বা sheets দাও")
+                            sheets.add(ai.zyraxon.assistant.office.OfficeFiles.Sheet(title.ifBlank { "Sheet1" }, rows))
+                        }
+                        ai.zyraxon.assistant.office.OfficeFiles.xlsx(sheets, out, accentFor(context, args))
+                    }
+                    else -> {
+                        val slides = mutableListOf<ai.zyraxon.assistant.office.OfficeFiles.Slide>()
+                        val arr = args.optJSONArray("slides")
+                        if (arr != null) for (i in 0 until arr.length()) {
+                            val o = arr.optJSONObject(i) ?: continue
+                            val b = o.optJSONArray("bullets")
+                            slides.add(ai.zyraxon.assistant.office.OfficeFiles.Slide(
+                                o.safe("title"),
+                                if (b == null) emptyList() else (0 until b.length()).map { b.get(it).toString() },
+                                o.safe("notes")
+                            ))
+                        }
+                        if (slides.isEmpty()) slides.addAll(ai.zyraxon.assistant.office.OfficeText.slidesFromMarkdown(md))
+                        if (slides.isEmpty()) return err("empty", "markdown-এ `# শিরোনাম` দিয়ে স্লাইড লেখো, বা slides দাও")
+                        ai.zyraxon.assistant.office.OfficeFiles.pptx(slides, out, accentFor(context, args))
+                    }
+                }
+            }
+            file.writeBytes(buffer.toByteArray())
+        } catch (e: Exception) {
+            runCatching { file.delete() }
+            return err(e.message ?: e.toString(), "ফাইল বানানো যায়নি: ${file.name}")
+        }
+        val label = when (type) { "docx" -> "ডকুমেন্ট"; "xlsx" -> "শিট"; else -> "স্লাইড" }
+        return ok(
+            JSONObject().put("path", file.absolutePath).put("bytes", file.length()),
+            "$label তৈরি হয়েছে: ${file.name}"
+        ).put("media", JSONArray().put(JSONObject().put("kind", "file").put("path", file.absolutePath).put("title", file.name)))
     }
 
     private fun writeFile(context: Context, args: JSONObject): JSONObject {

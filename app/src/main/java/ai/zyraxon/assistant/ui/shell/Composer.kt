@@ -11,6 +11,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -140,7 +142,15 @@ fun Composer(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                 ) { AppIcon(AppIcons.send, t("পাঠাও"), size = 19.dp, tint = Color.White) }
             }
         }
-        if (attach) Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        if (attach) Row(
+            Modifier.padding(top = 8.dp).horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            IconPill(AppIcons.description, t("ডক স্ক্যান"), onClick = {
+                attach = false
+                vm.captureImageFromTool("look_camera")
+                vm.onInputChange(t("এই ছবির লেখাগুলো যেমন আছে তেমন তুলে একটা এডিটযোগ্য ডকুমেন্ট (.docx) বানাও। টেবিল থাকলে শিট (.xlsx) বানাও।"))
+            })
             IconPill(AppIcons.image, t("গ্যালারি"), onClick = { attach = false; picker.launch("*/*") })
             IconPill(AppIcons.volumeUp, t("অডিও"), onClick = { attach = false; audioPicker.launch("audio/*") })
             IconPill(AppIcons.play, t("ভিডিও"), onClick = { attach = false; videoPicker.launch("video/*") })

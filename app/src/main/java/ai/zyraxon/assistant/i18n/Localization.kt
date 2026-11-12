@@ -72,6 +72,9 @@ object Loc {
         if (bengali.isEmpty()) bengali = read(context, BENGALI)
         current = code
         loadTools(context, code)
+        // English is the second stop, so a string a language has not been given yet
+        // reads in English rather than Bengali.
+        if (english.isEmpty()) english = read(context, "en")
         table = if (code == BENGALI) bengali else read(context, code)
     }
 
@@ -83,6 +86,9 @@ object Loc {
             root.keys().forEach { key -> put(key, root.getString(key)) }
         }
     }.getOrDefault(emptyMap())
+
+    @Volatile
+    private var english: Map<String, String> = emptyMap()
 
     @Volatile
     private var toolTable: List<Pair<String, String>> = emptyList()
@@ -137,7 +143,7 @@ object Loc {
     }
 
     /** The translation of [key], or [key] itself when the table has no entry. */
-    fun t(key: String): String = table[key] ?: bengali[key] ?: key
+    fun t(key: String): String = table[key] ?: english[key] ?: bengali[key] ?: key
 
     /**
      * The translation of [key] with `{0}`, `{1}` … replaced by [args].

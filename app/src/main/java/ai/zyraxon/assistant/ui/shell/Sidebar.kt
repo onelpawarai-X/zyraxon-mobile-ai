@@ -33,6 +33,7 @@ fun Sidebar(vm: ZyraxonViewModel) {
     val active by vm.activeConversationId.collectAsState()
     val theme by vm.themeMode.collectAsState()
     var confirmDelete by remember { mutableStateOf<String?>(null) }
+    var renaming by remember { mutableStateOf<Pair<String, String>?>(null) }
     Box(Modifier.fillMaxSize()) {
         Box(Modifier.fillMaxSize().background(Color(0x66000000)).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { vm.setSidebarOpen(false) })
         Column(
@@ -62,6 +63,7 @@ fun Sidebar(vm: ZyraxonViewModel) {
                         Spacer(Modifier.width(8.dp))
                         Text(c.title, color = Glass.textPrimary, fontSize = 12.5.sp, maxLines = 1, modifier = Modifier.weight(1f))
                         if (c.busy) AppIcon(AppIcons.sync, t("চলছে"), size = 13.dp, tint = Glass.green)
+                        AppIcon(AppIcons.edit, t("নাম বদলাও"), size = 14.dp, tint = Glass.textMuted, modifier = Modifier.clickable { renaming = c.id to c.title }.padding(start = 8.dp))
                         AppIcon(AppIcons.close, t("মুছো"), size = 14.dp, tint = Glass.textMuted, modifier = Modifier.clickable { confirmDelete = c.id }.padding(start = 8.dp))
                     }
                 }
@@ -80,6 +82,23 @@ fun Sidebar(vm: ZyraxonViewModel) {
                 }
             }
         }
+    }
+    renaming?.let { (rid, current) ->
+        var text by remember(rid) { mutableStateOf(current) }
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { renaming = null }, containerColor = Glass.sheetFill(0.9f),
+            title = { Text(t("চ্যাটের নাম"), color = Glass.textPrimary) },
+            text = {
+                androidx.compose.foundation.text.BasicTextField(
+                    value = text, onValueChange = { text = it }, singleLine = true,
+                    textStyle = androidx.compose.ui.text.TextStyle(color = Glass.textPrimary, fontSize = 15.sp),
+                    cursorBrush = androidx.compose.ui.graphics.SolidColor(Glass.pink),
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Glass.rowFill(0.3f)).padding(12.dp)
+                )
+            },
+            confirmButton = { androidx.compose.material3.TextButton({ vm.renameChat(rid, text); renaming = null }) { Text(t("সংরক্ষণ"), color = Glass.pink) } },
+            dismissButton = { androidx.compose.material3.TextButton({ renaming = null }) { Text(t("বাতিল"), color = Glass.textMuted) } }
+        )
     }
     confirmDelete?.let { id ->
         androidx.compose.material3.AlertDialog(

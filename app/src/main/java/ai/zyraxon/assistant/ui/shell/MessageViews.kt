@@ -391,9 +391,23 @@ fun MediaView(item: MediaItem) {
             }
             "audio" -> AudioPlayer(item.path, item.title)
             "video" -> VideoPlayer(item.path)
-            else -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                AppIcon(AppIcons.description, null, size = 16.dp, tint = Glass.textPrimary)
-                Text(file.name, color = Glass.textPrimary, fontSize = 13.sp)
+            else -> {
+                val ctx = LocalContext.current
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    AppIcon(AppIcons.description, null, size = 16.dp, tint = Glass.textPrimary)
+                    Column(Modifier.weight(1f)) {
+                        Text(file.name, color = Glass.textPrimary, fontSize = 13.sp, maxLines = 1)
+                        if (file.exists()) Text(
+                            if (file.length() >= 1024) "${file.length() / 1024} KB" else "${file.length()} B",
+                            color = Glass.textMuted, fontSize = 11.sp
+                        )
+                    }
+                    Text(
+                        t("খোলো"), color = Glass.textPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(Glass.pink.copy(alpha = 0.22f))
+                            .clickable { openFile(ctx, file) }.padding(horizontal = 12.dp, vertical = 7.dp)
+                    )
+                }
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -449,4 +463,30 @@ private fun VideoPlayer(path: String) {
         },
         modifier = Modifier.fillMaxWidth().height(210.dp).clip(RoundedCornerShape(10.dp))
     )
+}
+
+
+/** Opens a file the agent made in whatever app on the phone handles it (Word, Sheets, Slides, a PDF viewer…). */
+internal fun openFile(context: android.content.Context, file: File) {
+    val mime = when (file.extension.lowercase()) {
+        "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        "xlsx" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        "pdf" -> "application/pdf"
+        "png" -> "image/png"
+        "jpg", "jpeg" -> "image/jpeg"
+        "svg" -> "image/svg+xml"
+        "html", "htm" -> "text/html"
+        "txt", "md", "csv" -> "text/plain"
+        else -> "*/*"
+    }
+    runCatching {
+        val uri = androidx.core.content.FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
+        context.startActivity(
+            android.content.Intent(android.content.Intent.ACTION_VIEW).setDataAndType(uri, mime)
+                .addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+    }.onFailure {
+        android.widget.Toast.makeText(context, t("এই ফাইল খোলার মতো অ্যাপ নেই — শেয়ার চাপো"), android.widget.Toast.LENGTH_LONG).show()
+    }
 }

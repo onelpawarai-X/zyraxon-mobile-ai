@@ -48,6 +48,53 @@ object PreviewBridge {
     val problems = MutableStateFlow<List<Problem>>(emptyList())
     private val consoleLines = ArrayDeque<String>()
 
+    /** A part of the page the user tapped in pick mode, described for the agent. */
+    data class Picked(
+        val selector: String, val tag: String, val text: String,
+        val html: String, val styles: String, val url: String
+    )
+
+    /** True while the next tap on the page selects an element instead of using it. */
+    val picking = MutableStateFlow(false)
+    val picked = MutableStateFlow<Picked?>(null)
+    @Volatile private var pickerSource: String? = null
+    @Volatile private var appContext: Context? = null
+
+    private class PickBridge {
+        @android.webkit.JavascriptInterface
+        fun pick(json: String) {
+            val o = runCatching { JSONObject(json) }.getOrNull() ?: return
+            picked.value = Picked(
+                o.optString("selector"), o.optString("tag"), o.optString("text"),
+                o.optString("html"), o.optString("styles"), o.optString("url")
+            )
+            picking.value = false
+        }
+    }
+
+    private fun pickerJs(): String {
+        pickerSource?.let { return it }
+        val ctx = appContext ?: return ""
+        val js = runCatching { ctx.assets.open("web/zx-picker.js").bufferedReader().use { it.readText() } }.getOrDefault("")
+        pickerSource = js
+        return js
+    }
+
+    /** Turns pick mode on or off on the page that is showing. */
+    fun setPicking(context: Context, on: Boolean) {
+        view(context)
+        picking.value = on
+        if (on) picked.value = null
+        main.post {
+            val js = pickerJs()
+            if (js.isNotEmpty()) webView?.evaluateJavascript(
+                js + "\n;window.__zxPicker." + (if (on) "on" else "off") + "();", null
+            )
+        }
+    }
+
+    fun clearPicked() { picked.value = null }
+
     val problemFlow: StateFlow<List<Problem>> get() = problems
 
     /**
@@ -95,6 +142,8 @@ object PreviewBridge {
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                 userAgentString = userAgentString.replace("; wv", "")
             }
+            appContext = context.applicationContext
+            wv.addJavascriptInterface(PickBridge(), "ZxPick")
             wv.setBackgroundColor(0xFFFFFFFF.toInt())
             wv.webViewClient = object : WebViewClient() {
                 override fun onPageStarted(v: WebView, u: String, f: Bitmap?) {
@@ -102,6 +151,10 @@ object PreviewBridge {
                 }
                 override fun onPageFinished(v: WebView, u: String) {
                     url.value = u; title.value = v.title.orEmpty(); progress.value = 100
+                    if (picking.value) {
+                        val js = pickerJs()
+                        if (js.isNotEmpty()) v.evaluateJavascript(js + "\n;window.__zxPicker.on();", null)
+                    }
                     canBack.value = v.canGoBack(); canForward.value = v.canGoForward()
                 }
                 override fun onReceivedError(v: WebView, r: WebResourceRequest, e: WebResourceError) {

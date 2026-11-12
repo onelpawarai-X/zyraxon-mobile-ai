@@ -69,6 +69,10 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
     var full by remember { mutableStateOf(false) }
     var mini by remember { mutableStateOf(false) }
     var agent by remember { mutableStateOf(false) }
+    val picking by PreviewBridge.picking.collectAsState()
+    val picked by PreviewBridge.picked.collectAsState()
+    // The moment a part of the page is picked, the little agent box opens with it.
+    LaunchedEffect(picked) { if (picked != null) { agent = true; mini = false } }
     LaunchedEffect(url) { if (!editing) field = if (url == "about:blank") "" else url }
     LaunchedEffect(Unit) { PreviewBridge.view(ctx) }
 
@@ -101,6 +105,7 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
                 Pill(t("সাইজ"), false, icon = if (full) AppIcons.compress else AppIcons.fullscreen) { full = !full }
                 Pill(t("ছোট করো"), false, icon = AppIcons.remove) { mini = true }
                 Pill(if (problems.isEmpty()) t("ফিক্স") else t("ফিক্স ({0})", problems.size), problems.isNotEmpty(), Glass.red, AppIcons.build) { vm.fixPreviewProblems() }
+                Pill(if (picking) t("অংশে ট্যাপ করো…") else t("অংশ বাছো"), picking, Glass.pink, AppIcons.edit) { PreviewBridge.setPicking(ctx, !picking) }
                 Pill(t("এজেন্ট"), agent, Glass.pink, AppIcons.smartToy) { agent = !agent }
             }
         }
@@ -189,6 +194,22 @@ private fun MiniAgent(vm: ZyraxonViewModel, modifier: Modifier, onClose: () -> U
             Text(t("এজেন্ট এই পেজ দেখছে"), color = Glass.textPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
             AppIcon(AppIcons.close, t("বন্ধ করো"), size = 16.dp, tint = Glass.textMuted, modifier = Modifier.clickable { onClose() }.padding(4.dp))
         }
+        val pk by PreviewBridge.picked.collectAsState()
+        pk?.let { p ->
+            Row(
+                Modifier.fillMaxWidth().padding(top = 6.dp).clip(RoundedCornerShape(12.dp)).background(Glass.pink.copy(alpha = 0.16f))
+                    .border(1.dp, Glass.pink, RoundedCornerShape(12.dp)).padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("<" + p.tag + ">  " + p.selector, color = Glass.textPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                    if (p.text.isNotBlank()) Text(p.text, color = Glass.textSecondary, fontSize = 11.5.sp, maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                }
+                AppIcon(AppIcons.close, t("সরাও"), size = 16.dp, tint = Glass.textMuted, modifier = Modifier.clickable { PreviewBridge.clearPicked() }.padding(4.dp))
+            }
+        }
         if (last != null && last.text.isNotBlank()) {
             Box(Modifier.heightIn(max = 130.dp).padding(vertical = 6.dp).androidxScroll()) { Text(last.text.takeLast(900), color = Glass.textSecondary, fontSize = 12.sp) }
         }
@@ -196,7 +217,7 @@ private fun MiniAgent(vm: ZyraxonViewModel, modifier: Modifier, onClose: () -> U
         Row(verticalAlignment = Alignment.CenterVertically) {
             BasicTextField(q, { q = it }, Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(Glass.rowFill(0.4f)).padding(9.dp),
                 textStyle = TextStyle(color = Glass.textPrimary, fontSize = 13.sp), cursorBrush = SolidColor(Glass.pink),
-                decorationBox = { inner -> if (q.isEmpty()) Text(t("এই পেজ নিয়ে বলো…"), color = Glass.textMuted, fontSize = 13.sp); inner() })
+                decorationBox = { inner -> if (q.isEmpty()) Text(if (pk != null) t("এই অংশটা কী করবো? লেখো…") else t("এই পেজ নিয়ে বলো…"), color = Glass.textMuted, fontSize = 13.sp); inner() })
             AppIcon(AppIcons.send, t("পাঠাও"), size = 20.dp, tint = Glass.pink, modifier = Modifier.clickable { if (q.isNotBlank()) { vm.askAboutPreview(q); q = "" } }.padding(horizontal = 10.dp))
         }
     }
