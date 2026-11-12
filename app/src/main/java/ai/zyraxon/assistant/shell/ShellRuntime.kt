@@ -254,8 +254,32 @@ object ShellRuntime {
         val busyboxBin = installedBusybox(context)
         val sh = installedSh(context)
         File(home, "tmp").mkdirs()
+        val usr = File(context.filesDir, "usr")
+        val usrBin = File(usr, "bin")
+        val usrLib = File(usr, "lib")
+        val pathStr = if (usrBin.isDirectory) {
+            "${bin.absolutePath}:${usrBin.absolutePath}:/system/bin:/system/xbin:/vendor/bin"
+        } else {
+            "${bin.absolutePath}:/system/bin:/system/xbin:/vendor/bin"
+        }
+        val ldStr = if (usrLib.isDirectory) {
+            "${usrLib.absolutePath}:${context.applicationInfo.nativeLibraryDir}:/system/lib64:/system/lib"
+        } else {
+            context.applicationInfo.nativeLibraryDir
+        }
+        val extra = mutableMapOf<String, String>()
+        if (usr.isDirectory) {
+            extra["PREFIX"] = usr.absolutePath
+            extra["TERMUX_PREFIX"] = usr.absolutePath
+            val aptConf = File(usr, "etc/apt/apt.conf")
+            if (aptConf.isFile) extra["APT_CONFIG"] = aptConf.absolutePath
+            val dpkgDir = File(usr, "var/lib/dpkg")
+            if (dpkgDir.isDirectory) extra["DPKG_ADMINDIR"] = dpkgDir.absolutePath
+            val terminfo = File(usr, "share/terminfo")
+            if (terminfo.isDirectory) extra["TERMINFO"] = terminfo.absolutePath
+        }
         return mapOf(
-            "PATH" to "${bin.absolutePath}:/system/bin:/system/xbin:/vendor/bin",
+            "PATH" to pathStr,
             "HOME" to home.absolutePath,
             "TMPDIR" to File(home, "tmp").absolutePath,
             "PWD" to home.absolutePath,
@@ -268,8 +292,8 @@ object ShellRuntime {
             "LANG" to "en_US.UTF-8",
             "ANDROID_ROOT" to (System.getenv("ANDROID_ROOT") ?: "/system"),
             "ANDROID_DATA" to (System.getenv("ANDROID_DATA") ?: "/data"),
-            "LD_LIBRARY_PATH" to context.applicationInfo.nativeLibraryDir
-        ) + HttpProxy.env()
+            "LD_LIBRARY_PATH" to ldStr
+        ) + extra + HttpProxy.env()
     }
 
     data class Result(

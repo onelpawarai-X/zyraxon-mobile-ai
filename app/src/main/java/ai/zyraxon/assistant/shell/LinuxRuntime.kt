@@ -204,7 +204,12 @@ object LinuxRuntime {
         // Termux. Overwriting those files is the only thing that makes the system
         // ZYRAXON's; the binaries are untouched and keep working exactly as before.
         applyBranding(context, root, log)
+        ensureSystemDirectories(root)
+        writeAptAndDpkgConfig(root)
+        fixScriptShebangs(root)
+        fixAptMethods(root)
         fixExecutablePermissions(context)
+        try { File(root, BRANDED).writeText(System.currentTimeMillis().toString()) } catch (_: Exception) {}
         val ready = isInstalled(context)
         log(if (ready) "ZYRAXON Linux is ready. Run a command with: linux <command>"
             else "Install did not finish; open the Terminal again to retry.")
@@ -231,7 +236,7 @@ object LinuxRuntime {
     }
 
     /** True once [applyBranding] has run for the installed guest. */
-    private const val BRANDED = ".zyraxon-branded"
+    private const val BRANDED = ".zyraxon-configured-v2"
 
     /**
      * Applies the branding to a guest that was installed by an older build, whose
@@ -245,6 +250,11 @@ object LinuxRuntime {
         if (File(root, BRANDED).isFile) return
         runCatching {
             applyBranding(context, root) { }
+            ensureSystemDirectories(root)
+            writeAptAndDpkgConfig(root)
+            fixScriptShebangs(root)
+            fixAptMethods(root)
+            fixExecutablePermissions(context)
             File(root, BRANDED).writeText(System.currentTimeMillis().toString())
         }
     }
@@ -304,6 +314,113 @@ object LinuxRuntime {
         }
     }
 
+    /**
+     * Creates all required standard directories for APT and DPKG to run cleanly
+     * without missing directory warnings or packaging system errors.
+     */
+    fun ensureSystemDirectories(root: File) {
+        listOf(
+            "tmp",
+            "etc/apt/apt.conf.d",
+            "etc/apt/preferences.d",
+            "etc/apt/sources.list.d",
+            "etc/apt/trusted.gpg.d",
+            "etc/dpkg/dpkg.cfg.d",
+            "var/lib/apt/lists/partial",
+            "var/cache/apt/archives/partial",
+            "var/lib/dpkg/updates",
+            "var/lib/dpkg/info",
+            "var/lib/dpkg/triggers",
+            "var/log/apt"
+        ).forEach { rel ->
+            File(root, rel).mkdirs()
+        }
+        val status = File(root, "var/lib/dpkg/status")
+        if (!status.exists()) {
+            runCatching { status.createNewFile() }
+        }
+        val available = File(root, "var/lib/dpkg/available")
+        if (!available.exists()) {
+            runCatching { available.createNewFile() }
+        }
+    }
+
+    /**
+     * Generates apt.conf and dpkg.cfg directing package tools to our app's storage,
+     * fully resolving Termux hardcoded paths (Exit 100 DirectoryExists error).
+     */
+    fun writeAptAndDpkgConfig(root: File) {
+        val realPath = root.absolutePath
+        val etcApt = File(root, "etc/apt").apply { mkdirs() }
+        val confContent = """
+Dir "$realPath";
+Dir::State "var/lib/apt";
+Dir::State::status "var/lib/dpkg/status";
+Dir::Cache "var/cache/apt";
+Dir::Etc "etc/apt";
+Dir::Etc::sourcelist "sources.list";
+Dir::Etc::sourceparts "sources.list.d";
+Dir::Etc::parts "apt.conf.d";
+Dir::Etc::preferences "preferences";
+Dir::Etc::preferencesparts "preferences.d";
+Dir::Bin::methods "lib/apt/methods";
+Dir::Bin::dpkg "bin/dpkg";
+Dir::Media::MountPath "media/apt";
+Acquire::Languages "none";
+""".trimIndent()
+        File(etcApt, "apt.conf").writeText(confContent)
+        val aptConfD = File(etcApt, "apt.conf.d").apply { mkdirs() }
+        File(aptConfD, "00zyraxon.conf").writeText(confContent)
+
+        val etcDpkg = File(root, "etc/dpkg").apply { mkdirs() }
+        File(etcDpkg, "dpkg.cfg").writeText("admindir $realPath/var/lib/dpkg\n")
+        val dpkgCfgD = File(etcDpkg, "dpkg.cfg.d").apply { mkdirs() }
+        File(dpkgCfgD, "00zyraxon.cfg").writeText("admindir $realPath/var/lib/dpkg\n")
+    }
+
+    /**
+     * Patches hardcoded Termux shebangs and prefixes in bundled shell scripts (like pkg).
+     */
+    fun fixScriptShebangs(root: File) {
+        val real = root.absolutePath
+        val compat = COMPAT_PREFIX
+        listOf(File(root, "bin"), File(root, "etc"), File(root, "libexec")).forEach { dir ->
+            if (dir.exists()) {
+                dir.walkTopDown().maxDepth(3).forEach { file ->
+                    if (file.isFile && file.length() in 1..262144) {
+                        try {
+                            val head = ByteArray(64)
+                            val read = file.inputStream().use { it.read(head) }
+                            if (read >= 2 && head[0] == '#'.code.toByte() && head[1] == '!'.code.toByte()) {
+                                val text = file.readText()
+                                if (text.contains(compat)) {
+                                    file.writeText(text.replace(compat, real))
+                                }
+                            }
+                        } catch (_: Exception) {}
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Ensures the HTTPS method binary/symlink for APT exists and is executable.
+     */
+    fun fixAptMethods(root: File) {
+        val methodsDir = File(root, "lib/apt/methods")
+        if (methodsDir.exists()) {
+            val http = File(methodsDir, "http")
+            val https = File(methodsDir, "https")
+            if (http.exists() && (!https.exists() || !https.canExecute())) {
+                runCatching {
+                    https.delete()
+                    Runtime.getRuntime().exec(arrayOf("ln", "-sf", "http", https.absolutePath)).waitFor()
+                }
+            }
+        }
+    }
+
 
     private fun writeExecutable(file: File, text: String) {
         file.writeText(text)
@@ -345,14 +462,17 @@ printf ' - Upgrade: pkg upgrade\n\n'
 
     private val ZYRAXON_BRAND_SH = """
 # ZYRAXON brand for the guest shell. Sourced before every command, and by
-# /etc/profile for a login shell. Cosmetic only.
+# /etc/profile for a login shell.
 export ZYRAXON=1
-export PREFIX="$GUEST_PREFIX"
+[ -z "${'$'}PREFIX" ] && export PREFIX="$GUEST_PREFIX"
+export TERMUX_PREFIX="${'$'}PREFIX"
+[ -f "${'$'}PREFIX/etc/apt/apt.conf" ] && export APT_CONFIG="${'$'}PREFIX/etc/apt/apt.conf"
+[ -d "${'$'}PREFIX/var/lib/dpkg" ] && export DPKG_ADMINDIR="${'$'}PREFIX/var/lib/dpkg"
+[ -d "${'$'}PREFIX/share/dpkg" ] && export DPKG_DATADIR="${'$'}PREFIX/share/dpkg"
+[ -d "${'$'}PREFIX/share/terminfo" ] && export TERMINFO="${'$'}PREFIX/share/terminfo"
 PS1='\[\e[1;35m\]zyraxon\[\e[0m\]:\[\e[0;36m\]\w\[\e[0m\]\$ '
-# The banner belongs to a shell a person is looking at. The app runs a command
-# with `bash -lc`, which is not interactive, so it stays quiet.
 case "$-" in
-    *i*) [ -r "$GUEST_PREFIX/etc/zyraxon-motd.sh" ] && "$GUEST_PREFIX/etc/zyraxon-motd.sh" ;;
+    *i*) [ -r "${'$'}PREFIX/etc/zyraxon-motd.sh" ] && "${'$'}PREFIX/etc/zyraxon-motd.sh" ;;
 esac
 """.trimIndent()
 
@@ -548,7 +668,7 @@ esac
             val line = raw.trim()
             val sep = line.indexOf('←')
             if (sep <= 0) return@forEach
-            val target = guestTarget(line.substring(0, sep))
+            val target = guestTarget(line.substring(0, sep), dest)
             val link = File(dest, line.substring(sep + 1).removePrefix("./"))
             link.parentFile?.mkdirs()
             // `-f` replaces an existing link, so there is nothing to clean up first.
@@ -658,9 +778,18 @@ esac
         val linker = if (is64 && java.io.File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"
         val bashPath = java.io.File(real, "bin/bash").absolutePath
         val execCmd = if (java.io.File(linker).exists()) "$linker $bashPath" else bashPath
-        return "cd $home && PATH=$real/bin:$native:/system/bin " +
-            "LD_LIBRARY_PATH=$real/lib:$native:/system/lib64:/system/lib " +
-            "HOME=$home PREFIX=$real TMPDIR=$real/tmp TERM=xterm-256color LANG=C.UTF-8 ZYRAXON=1 " +
+        return "cd $home && " +
+            "export PREFIX=$real && " +
+            "export TERMUX_PREFIX=$real && " +
+            "export HOME=$home && " +
+            "export TMPDIR=$real/tmp && " +
+            "export APT_CONFIG=$real/etc/apt/apt.conf && " +
+            "export DPKG_ADMINDIR=$real/var/lib/dpkg && " +
+            "export DPKG_DATADIR=$real/share/dpkg && " +
+            "export TERMINFO=$real/share/terminfo && " +
+            "export PATH=$real/bin:$native:/system/bin && " +
+            "export LD_LIBRARY_PATH=$real/lib:$native:/system/lib64:/system/lib && " +
+            "export TERM=xterm-256color LANG=C.UTF-8 ZYRAXON=1 && " +
             "$execCmd -c ${q(command)}"
     }
 
@@ -724,8 +853,15 @@ esac
      * prefix the guest sees. A target that is relative, or already clean, is
      * returned unchanged. Pure, so the rule can be checked off-device.
      */
-    internal fun guestTarget(target: String): String =
-        if (target.startsWith(COMPAT_PREFIX)) GUEST_PREFIX + target.removePrefix(COMPAT_PREFIX) else target
+    internal fun guestTarget(target: String, dest: File? = null): String {
+        if (target.startsWith(COMPAT_PREFIX)) {
+            val rel = target.removePrefix(COMPAT_PREFIX).removePrefix("/")
+            return if (dest != null) File(dest, rel).absolutePath else "$GUEST_PREFIX/$rel"
+        }
+        return target
+    }
+
+    internal fun guestTarget(target: String): String = guestTarget(target, null)
 
     private fun q(s: String): String = "'" + s.replace("'", "'\\''") + "'"
 }
