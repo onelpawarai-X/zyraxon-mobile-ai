@@ -2,9 +2,11 @@ name: TEST-CI
 
 # A test build for checking a change on a real phone. It never publishes a
 # release: this workflow has no tag trigger and read-only token permissions, so
-# it cannot touch releases even if it tried. The APK it produces is signed with
+# it cannot touch releases even if it tried. The APKs it produces are signed with
 # the debug key and uploaded as a run artifact, which is exactly what is wanted
-# for installing by hand and testing.
+# for installing by hand and testing. It builds the same three variants the
+# release does — arm64, arm32 and universal — and checks what each one carries,
+# so a release mistake fails here instead of on a phone.
 #
 # Run it from Actions -> CI (test build) -> Run workflow.
 
@@ -65,31 +67,49 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Testing ZYRAXON v$VERSION"
 
-      - name: Build debug APK
+      - name: Build the test APKs (arm64 + arm32 + universal)
         run: |
           base64 -d debug.keystore.base64 > debug.keystore
-          gradle :app:assembleDebug \
-            -x lintVitalRelease -x lintVitalAnalyzeRelease \
-            --stacktrace
+          # The same three variants the release builds, so a wrong abiFilters
+          # case or a wrong payload source set fails here rather than on a phone.
+          for ABI in arm64 arm32 universal; do
+            gradle :app:assembleDebug \
+              -PzyraxonAbi="$ABI" \
+              -x lintVitalRelease -x lintVitalAnalyzeRelease \
+              --stacktrace
+            cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/app-debug-$ABI.apk"
+          done
+          ls -la "$RUNNER_TEMP"/app-debug-*.apk
 
-      - name: Collect the test APK
+      - name: Check what each APK carries
+        run: |
+          for ABI in arm64 arm32 universal; do
+            scripts/verify-apk-abi.sh "$RUNNER_TEMP/app-debug-$ABI.apk" "$ABI"
+          done
+
+      - name: Collect the test APKs
         id: apk
         run: |
           VERSION="${{ steps.ver.outputs.version }}"
-          APK="app/build/outputs/apk/debug/app-debug.apk"
-          NAME="ZYRAXON-v${VERSION}-test.apk"
-          cp "$APK" "$RUNNER_TEMP/$NAME"
-          (cd "$RUNNER_TEMP" && sha256sum "$NAME" > "$NAME.sha256")
-          echo "name=$NAME" >> "$GITHUB_OUTPUT"
-          ls -la "$RUNNER_TEMP/$NAME"
+          for ABI in arm64 arm32 universal; do
+            NAME="ZYRAXON-v${VERSION}-test-$ABI.apk"
+            cp "$RUNNER_TEMP/app-debug-$ABI.apk" "$RUNNER_TEMP/$NAME"
+            (cd "$RUNNER_TEMP" && sha256sum "$NAME" > "$NAME.sha256")
+            echo "$ABI=$NAME" >> "$GITHUB_OUTPUT"
+          done
+          ls -la "$RUNNER_TEMP"/ZYRAXON-v*-test-*.apk
 
-      - name: Upload the test APK
+      - name: Upload the test APKs
         uses: actions/upload-artifact@v4
         with:
           name: ZYRAXON-test-apk
           path: |
-            ${{ runner.temp }}/${{ steps.apk.outputs.name }}
-            ${{ runner.temp }}/${{ steps.apk.outputs.name }}.sha256
+            ${{ runner.temp }}/ZYRAXON-v*-test-arm64.apk
+            ${{ runner.temp }}/ZYRAXON-v*-test-arm64.apk.sha256
+            ${{ runner.temp }}/ZYRAXON-v*-test-arm32.apk
+            ${{ runner.temp }}/ZYRAXON-v*-test-arm32.apk.sha256
+            ${{ runner.temp }}/ZYRAXON-v*-test-universal.apk
+            ${{ runner.temp }}/ZYRAXON-v*-test-universal.apk.sha256
           retention-days: 30
 
       - name: Job summary
@@ -97,9 +117,16 @@ jobs:
           {
             echo "### ZYRAXON v${{ steps.ver.outputs.version }} — test build"
             echo ""
-            echo "This is a **debug** APK for testing. It is not a release."
+            echo "These are **debug** APKs for testing. They are not a release."
             echo ""
-            echo "- Artifact: \`ZYRAXON-test-apk\` (\`${{ steps.apk.outputs.name }}\`)"
-            echo "- sha256: \`$(cut -d' ' -f1 "$RUNNER_TEMP/${{ steps.apk.outputs.name }}.sha256")\`"
+            echo "Three files, the same three the release builds, each checked for the CPU family and the Linux payload it carries:"
+            echo ""
+            echo "| APK | For |"
+            echo "| --- | --- |"
+            echo "| \`${{ steps.apk.outputs.arm64 }}\` | 64-bit phones (arm64-v8a) |"
+            echo "| \`${{ steps.apk.outputs.arm32 }}\` | 32-bit phones (armeabi-v7a) |"
+            echo "| \`${{ steps.apk.outputs.universal }}\` | either arm phone — both systems in one file |"
+            echo ""
+            echo "- Artifact: \`ZYRAXON-test-apk\`"
             echo "- Note: ${{ inputs.note }}"
           } >> "$GITHUB_STEP_SUMMARY"

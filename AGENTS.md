@@ -61,26 +61,28 @@ Run: `gradle :app:testDebugUnitTest` (412 tests) and `gradle :app:assembleDebug`
 ## Release
 
 GitHub Actions `.github/workflows/release.yml` ("Build & Release APK") builds the
-signed release on a `v*` tag push (or manual dispatch) and attaches **two** APKs:
+signed release on a `v*` tag push (or manual dispatch) and attaches **three** APKs:
 
 | Asset | For |
 | --- | --- |
 | `ZYRAXON-vX.Y.Z-arm64.apk` | 64-bit phones (`arm64-v8a`), ~229 MB |
 | `ZYRAXON-vX.Y.Z-arm32.apk` | 32-bit phones (`armeabi-v7a`), ~210 MB |
+| `ZYRAXON-vX.Y.Z-universal.apk` | either arm phone — both families in one file, ~406 MB |
 
-Plus a `SHA256SUMS` asset covering both. Bump `versionCode`/`versionName` in
+Plus a `SHA256SUMS` asset covering all three. Bump `versionCode`/`versionName` in
 `app/build.gradle.kts`, commit, push `main`, push the tag. The release is created
 with a default title/body — edit it afterwards with `gh release edit` for a
 proper title and notes.
 
-### Two APKs, one per CPU family
+### Three APKs: two per-family, one universal
 
 The Linux payload is a whole operating system: **165–183 MB per architecture**.
-A single universal APK therefore made every phone carry two systems it could
-never start, which is why the release ships one APK per family.
+Two per-family APKs keep a phone from carrying a second system it could never
+start, and they download faster. The universal APK carries both arm families so
+a user who cannot name their phone's family still gets a working file.
 
-The choice is made at build time with `-PzyraxonAbi=arm64` or
-`-PzyraxonAbi=arm32`. It drives two things, and they must stay in step:
+The choice is made at build time with `-PzyraxonAbi=arm64`, `-PzyraxonAbi=arm32`
+or `-PzyraxonAbi=universal`. It drives two things, and they must stay in step:
 
 1. `ndk { abiFilters }` — which native libraries are packed.
 2. The `sourceSets` block — which payload folder is added as an asset directory.
@@ -90,8 +92,12 @@ Each payload lives in its own source set, and only the matching one is added:
 ```
 app/src/payload64/assets/linux/aarch64   <- -PzyraxonAbi=arm64
 app/src/payload32/assets/linux/arm       <- -PzyraxonAbi=arm32
-app/src/payloadx64/assets/linux/x86_64   <- universal builds only
+app/src/payloadx64/assets/linux/x86_64   <- local builds only, never a phone
 ```
+
+`-PzyraxonAbi=universal` adds both arm payloads and both arm `abiFilters`, and
+nothing else — the x86 libraries and the x86_64 payload stay out, because no
+phone runs them.
 
 With no `-PzyraxonAbi`, every payload is added and the build is universal
 (~599 MB) — that is what a plain `assembleDebug` and the unit tests get, so
@@ -100,6 +106,13 @@ module, so the source sets must sit under `app/src/`, not at the repo root.
 
 A third payload for `i686` is **not** vendored, so a 32-bit x86 device finds no
 payload and the terminal reports that rather than failing obscurely.
+
+`scripts/verify-apk-abi.sh <apk> <arm64|arm32|universal>` reads an APK's own
+member list and fails if the CPU family or the Linux payload inside does not
+match the variant it claims. Both `release.yml` and `TEST-CI.yml` run it on every
+variant they build, so a wrong `abiFilters` case or a wrong payload source set
+fails the build instead of the phone. `TEST-CI.yml` builds and checks all three
+variants as debug APKs, so a release mistake is caught before a tag is pushed.
 
 ## UI strings and translation
 

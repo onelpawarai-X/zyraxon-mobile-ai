@@ -127,6 +127,12 @@ jobs:
           "$BUILD_TOOLS/apksigner" verify --print-certs "$RUNNER_TEMP/${{ steps.apk.outputs.a32 }}"
           "$BUILD_TOOLS/apksigner" verify --print-certs "$RUNNER_TEMP/${{ steps.apk.outputs.auni }}"
 
+      - name: Check what each APK carries
+        run: |
+          scripts/verify-apk-abi.sh "$RUNNER_TEMP/${{ steps.apk.outputs.a64 }}"  arm64
+          scripts/verify-apk-abi.sh "$RUNNER_TEMP/${{ steps.apk.outputs.a32 }}"  arm32
+          scripts/verify-apk-abi.sh "$RUNNER_TEMP/${{ steps.apk.outputs.auni }}" universal
+
       - name: Resolve the release tag
         id: tag
         env:
