@@ -234,6 +234,9 @@ object ToolRegistry {
             .put("parameters", S(JSONObject().put("kind", str()).put("html", str()).put("svg", str())
                 .put("width", num()).put("height", num()).put("filename", str()).put("transparent", bool())
                 .put("format", str().put("enum", JSONArray(listOf("png", "pdf", "both")))), emptyList())),
+        "open_file" to JSONObject()
+            .put("description", "Open a file you made (or any file on the phone) so the user SEES it. Default `in`=app: ZYRAXON steps aside and the phone's own app for that type opens the file (Word/Docs, Sheets, Slides, PDF viewer, Gallery, browser…). After it opens, call screen_shot or read_screen to confirm it is really on screen. `in`=preview shows it inside ZYRAXON's Preview panel instead (Word, Excel, PowerPoint, PDF, pictures, Markdown, CSV, code and web pages all work there). Call this right after every make_document / make_design / write_file you want the user to look at.")
+            .put("parameters", S(JSONObject().put("path", str()).put("in", str().put("enum", JSONArray(listOf("app", "preview")))), listOf("path"))),
         "present_slides" to JSONObject()
             .put("description", "Present slides out loud: the 3D character on the home screen speaks while slide cards show underneath, and the next slide opens by itself when the voice finishes. Pass `slides` = [{title, bullets:[…], speech}] where `speech` is exactly what to say for that slide, in the user's language, 2 to 4 natural sentences. Use it when the user asks you to present, explain with slides, or teach a topic aloud. Do not read the slides back in your reply.")
             .put("parameters", S(JSONObject().put("slides", JSONObject().put("type", "array").put("items", JSONObject().put("type", "object")))
@@ -476,7 +479,7 @@ object ToolRegistry {
     private val MEMORY_TOOLS = setOf("memory_write", "memory_read", "memory_delete")
 
     /** Office files and designs work in every mode: asking for a letter or a poster should never need Agent mode. */
-    private val OFFICE_TOOLS = setOf("make_document", "office_template", "make_design", "brand_kit", "present_slides")
+    private val OFFICE_TOOLS = setOf("make_document", "office_template", "make_design", "brand_kit", "present_slides", "open_file")
 
     private val BUILD_TOOLS = MEMORY_TOOLS + OFFICE_TOOLS + setOf(
         "edit_file", "read_file", "list_dir", "find_files", "grep_files", "delete_file", "download_file",
@@ -583,8 +586,10 @@ object ToolRegistry {
             f.absolutePath.startsWith("/storage/emulated/0") ||
             f.absolutePath.startsWith("/sdcard")
         if (inAppStorage) return f
-        val relative = p.trimStart('/', '\\')
-        return File(workspace(context), relative)
+        // Any other absolute path is the path the agent asked for: /data/local/tmp, an SD card,
+        // /mnt, /system… The phone's own permissions decide, and a refusal is reported as it is
+        // (and retried at system level when Shizuku runs) — it is never quietly moved elsewhere.
+        return f
     }
 
     suspend fun execute(context: Context, name: String, args: JSONObject): JSONObject =
@@ -603,6 +608,7 @@ object ToolRegistry {
     ): JSONObject = try {
         when (name) {
             "open_app" -> openApp(context, args)
+            "open_file" -> openFileTool(context, args)
             "youtube_play" -> youtubePlay(context, args)
             "network_status" -> networkStatus(context)
             "list_apps" -> ok(DeviceBridge.listApps(context).take(6000), "ইনস্টল করা অ্যাপের তালিকা")
@@ -751,6 +757,32 @@ object ToolRegistry {
 
     private fun clipboard(context: Context): ClipboardManager =
         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
+    /**
+     * Opens a file for the user. In `app` mode the file goes to the phone's own viewer through a
+     * FileProvider link, which brings that app to the front and so puts ZYRAXON in the background;
+     * if no app can show the type, the in-app Preview shows it instead, so something always opens.
+     */
+    private fun openFileTool(context: Context, args: JSONObject): JSONObject {
+        val f = resolve(context, args.safe("path"))
+        if (!f.isFile) return err("no-file", "ফাইলটি নেই: ${f.path}")
+        val inPreview = args.safe("in").equals("preview", true)
+        if (!inPreview) {
+            val launched = runCatching {
+                val uri = androidx.core.content.FileProvider.getUriForFile(context, context.packageName + ".fileprovider", f)
+                val i = Intent(Intent.ACTION_VIEW).setDataAndType(uri, ai.zyraxon.assistant.viewer.DocViewer.mimeOf(f))
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(i)
+            }.isSuccess
+            if (launched) return ok(JSONObject().put("path", f.absolutePath).put("in", "app"),
+                "${f.name} অন্য অ্যাপে খোলা হয়েছে — এখন screen_shot দিয়ে যাচাই করো")
+        }
+        return runCatching {
+            PreviewBridge.openFile(context, f)
+            ok(JSONObject().put("path", f.absolutePath).put("in", "preview"),
+                if (inPreview) "${f.name} প্রিভিউতে খোলা হয়েছে" else "${f.name} খোলার অ্যাপ নেই — প্রিভিউতে খোলা হয়েছে")
+        }.getOrElse { err("open-failed", "ফাইল খোলা যায়নি: ${it.message}") }
+    }
 
     private fun openApp(context: Context, args: JSONObject): JSONObject {
         val target = args.safe("package").ifBlank { args.safe("name") }
@@ -1373,7 +1405,7 @@ object ToolRegistry {
             bmp.recycle()
         }
         return ok(
-            JSONObject().put("files", files).put("size", "${w}x$h").put("source", File(dir, "$base.html").absolutePath),
+            JSONObject().put("files", files).put("next", "এবার open_file দিয়ে খুলে ইউজারকে দেখাও, তারপর screen_shot দিয়ে যাচাই করো").put("size", "${w}x$h").put("source", File(dir, "$base.html").absolutePath),
             "ডিজাইন তৈরি হয়েছে (${w}×$h)"
         ).put("media", media)
     }
@@ -1472,7 +1504,8 @@ object ToolRegistry {
         }
         val label = when (type) { "docx" -> "ডকুমেন্ট"; "xlsx" -> "শিট"; else -> "স্লাইড" }
         return ok(
-            JSONObject().put("path", file.absolutePath).put("bytes", file.length()),
+            JSONObject().put("path", file.absolutePath).put("bytes", file.length())
+                .put("next", "এবার open_file(path) দিয়ে খুলে ইউজারকে দেখাও, তারপর screen_shot দিয়ে যাচাই করো"),
             "$label তৈরি হয়েছে: ${file.name}"
         ).put("media", JSONArray().put(JSONObject().put("kind", "file").put("path", file.absolutePath).put("title", file.name)))
     }
@@ -1485,7 +1518,13 @@ object ToolRegistry {
             if (args.safe("mode", "overwrite") == "append") f.appendText(content)
             else f.writeText(content)
             return ok(JSONObject().put("path", f.absolutePath).put("bytes", f.length()), "${f.name} লেখা হয়েছে (${f.length()} বাইট)")
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            // An absolute path outside the app: try again at system level, then report the real reason.
+            if (File(args.safe("path").trim()).isAbsolute) {
+                val sysErr = systemWrite(context, f, content, args.safe("mode", "overwrite") == "append")
+                if (sysErr == null) return ok(JSONObject().put("path", f.absolutePath).put("via", "system"), "${f.name} সিস্টেম-লেভেলে লেখা হয়েছে")
+                return err("write-denied", "${f.path} এ লেখা যায়নি: ${e.message ?: e}. $sysErr")
+            }
             // A path the model invented — a bad character, a reserved name, a
             // directory where a file should be — must not end the job with
             // "ফাইল লেখা যায়নি". The content is written to a safe name inside the
@@ -1507,6 +1546,19 @@ object ToolRegistry {
                 err((e.message ?: e.toString()), "ফাইল লেখা যায়নি: ${args.safe("path")}")
             }
         }
+    }
+
+    /** Writes through Shizuku (root or the adb shell user) when the app sandbox refuses a path. Null on success, else the reason. */
+    private fun systemWrite(context: Context, target: File, content: String, append: Boolean): String? {
+        val tmp = File(context.getExternalFilesDir(null) ?: context.cacheDir, "sys_write.tmp")
+        return try {
+            tmp.writeText(content)
+            val q = { x: String -> "'" + x.replace("'", "'\\''") + "'" }
+            val cmd = "mkdir -p ${q(target.parent ?: "/")} && cat ${q(tmp.absolutePath)} ${if (append) ">>" else ">"} ${q(target.absolutePath)}"
+            val r = SystemShell.runBest(context, cmd)
+                ?: return "সিস্টেম-লেভেল পেতে Shizuku চালু করে ZYRAXON-কে অনুমতি দাও (setup_shizuku), অথবা /sdcard/Download-এর মতো খোলা জায়গায় লেখো।"
+            if (r.ok) null else (r.stderr.ifBlank { r.stdout }.trim().take(200))
+        } catch (e: Exception) { e.message ?: e.toString() } finally { runCatching { tmp.delete() } }
     }
 
     private fun editFile(context: Context, args: JSONObject): JSONObject {
@@ -1625,12 +1677,24 @@ object ToolRegistry {
                 "$ ${cmd.trim()} ${if (g.ok) "ok" else "failed"}"
             )
         }
-        val r = ShellRuntime.runStreaming(
+        var r = ShellRuntime.runStreaming(
             context, cmd,
             cwd = cwd,
             timeoutMs = timeout,
             onChunk = { _, text -> live?.invoke(text) }
         )
+        // The app's own shell is sandboxed. When it is refused (permission / not permitted) and
+        // Shizuku runs, the same command is repeated at system level, so the agent can work anywhere.
+        var viaSystem = false
+        if (r.code != 0 && Regex("(?i)permission denied|operation not permitted|read-only file system|EACCES").containsMatchIn(r.stderr + r.stdout)) {
+            val sys = runCatching {
+                SystemShell.runBest(context, (if (cwd.isDirectory) "cd '${cwd.absolutePath.replace("'", "'\\''")}' && " else "") + cmd, timeout)
+            }.getOrNull()
+            if (sys != null) {
+                viaSystem = true
+                r = r.copy(code = sys.code, stdout = sys.stdout, stderr = sys.stderr)
+            }
+        }
         if (r.code == -1 && r.stderr.isEmpty() && r.stdout.isEmpty()) {
             return err("failed", "Could not run the command: $cmd")
         }
@@ -1646,7 +1710,7 @@ object ToolRegistry {
                 .put("stdout", r.stdout)
                 .put("stderr", r.stderr)
                 .put("timed_out", r.timedOut)
-                .put("shell", ShellRuntime.shell(context)),
+                .put("shell", if (viaSystem) "system (Shizuku)" else ShellRuntime.shell(context)),
             label
         )
     }

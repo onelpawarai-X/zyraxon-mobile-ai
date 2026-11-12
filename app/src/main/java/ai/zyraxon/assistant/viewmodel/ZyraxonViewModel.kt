@@ -558,6 +558,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     val voiceAge: StateFlow<String> = _voiceAge.asStateFlow()
 
     init {
+        // A document opened in the Preview (by the agent or a tap) brings the Preview tab forward.
+        viewModelScope.launch {
+            var last = PreviewBridge.showRequest.value
+            PreviewBridge.showRequest.collect { n -> if (n != last) { last = n; _activeTab.value = AppTab.PREVIEW } }
+        }
         // A saved brand kit recolours the app again on every launch.
         runCatching {
             val bp = getApplication<Application>().getSharedPreferences("zyraxon_brand", android.content.Context.MODE_PRIVATE)
@@ -1064,7 +1069,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      */
     private fun toolIcon(name: String): String = when {
         name == "run_shell" || name == "system_shell" || name == "linux_run" || name == "terminal_run" -> "keyboard"
-        name == "present_slides" || name == "make_design" || name == "make_document" || name == "office_template" || name == "read_file" || name == "write_file" || name == "edit_file" || name == "list_dir" ||
+        name == "open_file" || name == "present_slides" || name == "make_design" || name == "make_document" || name == "office_template" || name == "read_file" || name == "write_file" || name == "edit_file" || name == "list_dir" ||
             name == "find_files" || name == "grep_files" || name == "delete_file" -> "file"
         name == "web_search" || name == "read_url" || name == "http_request" || name == "verify_url" -> "search"
         name == "download_file" || name == "publish_website" || name == "publish_github" -> "upload"

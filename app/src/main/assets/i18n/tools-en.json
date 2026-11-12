@@ -382,5 +382,9 @@
   "কানেক্ট করা যায়নি": "Could not connect",
   "ছবি আঁকা হচ্ছে": "Drawing the image",
   "টি স্লাইডের প্রেজেন্টেশন শুরু হয়েছে": " slides — presentation started",
-  "স্লাইড দেওয়া হয়নি": "No slides were given"
+  "স্লাইড দেওয়া হয়নি": "No slides were given",
+  "অন্য অ্যাপে খোলা হয়েছে — এখন screen_shot দিয়ে যাচাই করো": "opened in another app — now confirm with screen_shot",
+  "খোলার অ্যাপ নেই — প্রিভিউতে খোলা হয়েছে": "no app can open it — opened in the Preview instead",
+  "প্রিভিউতে খোলা হয়েছে": "opened in the Preview",
+  "ফাইল খোলা যায়নি:": "Could not open the file:"
 }

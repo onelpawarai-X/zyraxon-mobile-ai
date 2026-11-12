@@ -198,7 +198,41 @@ object PreviewBridge {
         return "https://www.google.com/search?q=" + URLEncoder.encode(t, "UTF-8")
     }
 
+    /** Bumped when something should bring the Preview tab to the front (a document was opened there). */
+    val showRequest = kotlinx.coroutines.flow.MutableStateFlow(0)
+
+    /**
+     * Shows any file inside the Preview: Word, Excel, PowerPoint, PDF, pictures, Markdown, CSV, code,
+     * and web pages. Documents become a page the WebView can draw; web files open as they are.
+     */
+    fun openFile(context: Context, file: java.io.File): String {
+        val dir = java.io.File(context.cacheDir, "preview").apply { mkdirs() }
+        val target = when (ai.zyraxon.assistant.viewer.DocViewer.kindOf(file)) {
+            ai.zyraxon.assistant.viewer.DocViewer.Kind.HTML -> file
+            ai.zyraxon.assistant.viewer.DocViewer.Kind.IMAGE -> java.io.File(dir, "img_${file.nameWithoutExtension}.html").also {
+                it.writeText(ai.zyraxon.assistant.viewer.DocViewer.page(file.name,
+                    "<img src=\"${file.toURI()}\" style=\"display:block;max-width:100%;margin:10px auto;background:#fff\">", "img"))
+            }
+            ai.zyraxon.assistant.viewer.DocViewer.Kind.PDF -> java.io.File(dir, "pdf_${file.nameWithoutExtension}.html").also {
+                it.writeText(ai.zyraxon.assistant.viewer.PdfPages.toHtml(file, java.io.File(dir, "pdf_${file.nameWithoutExtension}")))
+            }
+            else -> java.io.File(dir, "doc_${file.name}.html").also { it.writeText(ai.zyraxon.assistant.viewer.DocViewer.toHtml(file)) }
+        }
+        open(context, target.toURI().toString())
+        showRequest.value = showRequest.value + 1
+        return target.toURI().toString()
+    }
+
+    private val VIEWABLE = setOf("docx", "dotx", "xlsx", "xlsm", "pptx", "potx", "pdf", "csv", "tsv", "md", "markdown", "png", "jpg", "jpeg", "gif", "webp", "bmp",
+        "txt", "log", "json", "xml", "yaml", "yml", "kt", "java", "js", "ts", "py", "sh", "toml", "ini", "sql")
+
     fun open(context: Context, raw: String) {
+        // A path to a document opens in the viewer instead of being handed to the WebView as a download.
+        val local = raw.trim().removePrefix("file://").takeIf { it.startsWith("/") }
+        if (local != null) {
+            val f = java.io.File(android.net.Uri.decode(local))
+            if (f.isFile && f.extension.lowercase() in VIEWABLE) { openFile(context, f); return }
+        }
         val u = normalize(raw)
         view(context)
         onMain { webView?.loadUrl(u) }

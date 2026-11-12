@@ -58,6 +58,17 @@ private fun WebHost(modifier: Modifier) {
 @Composable
 fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
     val ctx = LocalContext.current
+    val pickDoc = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) runCatching {
+            val name = ctx.contentResolver.query(uri, null, null, null, null)?.use { c ->
+                val i = c.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME); if (c.moveToFirst() && i >= 0) c.getString(i) else null
+            } ?: "document"
+            val dir = java.io.File(ctx.cacheDir, "preview_in").apply { mkdirs() }
+            val f = java.io.File(dir, name.replace(Regex("[^\\p{L}\\p{N}._-]"), "_"))
+            ctx.contentResolver.openInputStream(uri)?.use { input -> f.outputStream().use { input.copyTo(it) } }
+            PreviewBridge.openFile(ctx, f)
+        }
+    }
     val url by PreviewBridge.url.collectAsState()
     val title by PreviewBridge.title.collectAsState()
     val progress by PreviewBridge.progress.collectAsState()
@@ -102,6 +113,7 @@ fun PreviewPanel(vm: ZyraxonViewModel, modifier: Modifier = Modifier) {
             // Row 2: page title on the left, tools on the right.
             Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 3.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(title.ifBlank { t("প্রিভিউ") }, color = Glass.textMuted, fontSize = 11.sp, maxLines = 1, modifier = Modifier.weight(1f))
+                Pill(t("ফাইল খোলো"), false, icon = AppIcons.folderOpen) { pickDoc.launch(arrayOf("*/*")) }
                 Pill(t("সাইজ"), false, icon = if (full) AppIcons.compress else AppIcons.fullscreen) { full = !full }
                 Pill(t("ছোট করো"), false, icon = AppIcons.remove) { mini = true }
                 Pill(if (problems.isEmpty()) t("ফিক্স") else t("ফিক্স ({0})", problems.size), problems.isNotEmpty(), Glass.red, AppIcons.build) { vm.fixPreviewProblems() }
