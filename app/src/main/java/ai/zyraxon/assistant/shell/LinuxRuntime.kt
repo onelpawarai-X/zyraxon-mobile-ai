@@ -1,3 +1,7 @@
+// ZYRAXON AI — Copyright (c) 2026 onelpawarai. All rights reserved.
+// Distributed under the ZYRAXON Sovereign License, X Edition (ZSL-X).
+// See LICENSE in the repository root.
+
 package ai.zyraxon.assistant.shell
 
 import android.content.Context
@@ -47,19 +51,11 @@ object LinuxRuntime {
     const val GUEST_HOME = "/home"
 
     /**
-     * The path the payload's own binaries were built against, which now carries
-     * the app's package name. It equals the guest's `/usr` on disk, so it is bound
-     * only for completeness; nothing resolves against the old name.
+     * The path the payload's own binaries were built against, which carries the
+     * app's package name. It equals the guest's `/usr` on disk, so it is bound
+     * only for completeness.
      */
     private const val COMPAT_PREFIX = "/data/data/ai.zyraxon/files/usr"
-
-    /**
-     * The prefix the package archive is built around. A `.deb` fetched from the
-     * package repository unpacks its files under this path, and the binaries in
-     * it carry this path in their RUNPATH. Binding the guest there too is what
-     * lets those packages run without touching their contents.
-     */
-    private const val ARCHIVE_PREFIX = "/data/data/com.termux/files/usr"
 
     private const val MARKER = "SYMLINKS.txt"
 
@@ -209,9 +205,9 @@ object LinuxRuntime {
         home(context).mkdirs()
 
         try { File(root, DONE).writeText(System.currentTimeMillis().toString()) } catch (_: Exception) {}
-        // The guest ships its own welcome text and prompt, which name the upstream
-        // project. Overwriting those files is what makes the system read as
-        // ZYRAXON's; the binaries are untouched and keep working exactly as before.
+        // The guest ships its own welcome text and prompt. Overwriting those files
+        // is what makes the system read as ZYRAXON's; the binaries are untouched
+        // and keep working exactly as before.
         applyBranding(context, root, log)
         ensureSystemDirectories(root)
         writeAptAndDpkgConfig(root)
@@ -248,10 +244,10 @@ object LinuxRuntime {
     private const val BRANDED = ".zyraxon-configured-v2"
 
     /**
-     * Applies the branding to a guest that was installed by an older build, whose
-     * files still carry the upstream text. Called before a command runs; the marker
-     * makes it a single `isFile` check once it has been done. Never throws: a
-     * read-only or full filesystem must not stop a command from running.
+     * Writes the branding into a guest installed by an earlier build, whose files
+     * may predate it. Called before a command runs; the marker makes it a single
+     * `isFile` check once it has been done. Never throws: a read-only or full
+     * filesystem must not stop a command from running.
      */
     fun ensureBranding(context: Context) {
         val root = root(context)
@@ -269,11 +265,10 @@ object LinuxRuntime {
     }
 
     /**
-     * Writes ZYRAXON's own welcome text and prompt into the guest, replacing the
-     * upstream ones. The binaries carry their build path in their RUNPATH, but
-     * nothing the user reads has to name another project, and this is where that
-     * is fixed. Every file written here is cosmetic: removing them would only
-     * bring the upstream text back, never break a command.
+     * Writes ZYRAXON's welcome text and prompt into the guest. The binaries carry
+     * their build path in their RUNPATH, but nothing the user reads has to name
+     * anything else, and this is where that is settled. Every file written here is
+     * cosmetic: removing one never breaks a command.
      */
     private fun applyBranding(context: Context, root: File, log: (String) -> Unit) {
         val etc = File(root, "etc").apply { mkdirs() }
@@ -288,7 +283,7 @@ object LinuxRuntime {
         writeExecutable(File(etc, "zyraxon-brand.sh"), ZYRAXON_BRAND_SH)
 
         // The static motd `login` falls back to, the dynamic one it prefers, and
-        // the Play Store variant — all three named the upstream project before this.
+        // the Play Store variant.
         File(etc, "motd").writeText(ZYRAXON_MOTD_TEXT)
         File(etc, "motd-playstore").writeText(ZYRAXON_MOTD_TEXT)
         writeExecutable(File(etc, "motd.sh"), ZYRAXON_MOTD)
@@ -305,7 +300,7 @@ object LinuxRuntime {
             NAME="ZYRAXON"
             ID=zyraxon
             PRETTY_NAME="ZYRAXON Mobile Linux"
-            VERSION="6.24.7"
+            VERSION="6.24.8"
             HOME_URL="https://zyraxonai.lovable.app"
             SUPPORT_URL="https://github.com/onelpawarai-X/zyraxon-mobile-ai/issues"
             """.trimIndent() + "\n"
@@ -581,8 +576,8 @@ esac
             }
             val extract = File(work, "x").apply { mkdirs() }
             if (!run(context, work, "tar", "xf", tar.absolutePath, "-C", extract.absolutePath)) return false
-            // The payload stores files under its own absolute data path. That is
-            // an upstream detail, so the `files` directory is located, not guessed.
+            // The payload stores files under its own absolute data path, so the
+            // `files` directory is located, not guessed.
             val payloadRoot = findPayloadRoot(extract)
             if (payloadRoot != null) payloadRoot.copyRecursively(dest, overwrite = true)
             work.deleteRecursively()
@@ -868,7 +863,6 @@ esac
             else append("-b /dev -b /proc ")
             append("-b $real:$GUEST_PREFIX ")
             append("-b $real:$COMPAT_PREFIX ")
-            append("-b $real:$ARCHIVE_PREFIX ")
             append("-b $realHome:$GUEST_HOME ")
             append("-b $real/tmp:/tmp ")
             append("-w $GUEST_HOME ")

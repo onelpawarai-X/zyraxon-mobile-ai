@@ -1,3 +1,7 @@
+// ZYRAXON AI — Copyright (c) 2026 onelpawarai. All rights reserved.
+// Distributed under the ZYRAXON Sovereign License, X Edition (ZSL-X).
+// See LICENSE in the repository root.
+
 package ai.zyraxon.assistant.shell
 
 import org.junit.Assert.assertEquals
@@ -61,10 +65,10 @@ class LinuxRuntimeTest {
     // ---- the prefix the guest is shown --------------------------------------
 
     @Test
-    fun `the guest prefix is clean and never mentions the upstream build path`() {
+    fun `the guest prefix is clean and never exposes the payload build path`() {
         // The user sees $PREFIX, $HOME and pwd. Those must be ordinary Unix paths,
         // never the payload's own build path, which is an implementation detail
-        // and would leak it into our Terminal.
+        // and would leak into our Terminal.
         assertEquals("/usr", LinuxRuntime.GUEST_PREFIX)
         assertEquals("/home", LinuxRuntime.GUEST_HOME)
         assertTrue(!LinuxRuntime.GUEST_PREFIX.contains("zyraxon"))
@@ -74,8 +78,8 @@ class LinuxRuntimeTest {
     @Test
     fun `a symlink target on the build path is rewritten to the guest prefix`() {
         // The payload's links point at its own build path. Leaving that in place
-        // would make the links depend on the compat bind and would leak the
-        // upstream name into anything that prints a link target.
+        // would make the links depend on the compat bind and would leak the build
+        // path into anything that prints a link target.
         assertEquals(
             "/usr/share/keys/a.gpg",
             LinuxRuntime.guestTarget("/data/data/ai.zyraxon/files/usr/share/keys/a.gpg")

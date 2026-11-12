@@ -248,6 +248,38 @@ The Terminal uses JetBrains Mono followed by Noto Sans Bengali in one
 `FontFamily`; Compose falls through per glyph, keeping code monospaced while
 shaping Bengali correctly.
 
+## The payload's branding
+
+The bundled Linux payload reads as ZYRAXON everywhere a user can look: paths,
+RUNPATHs, `dpkg` metadata, mirror URLs, shell scripts and man pages. A user must
+never meet a second name in the Terminal, in `pkg`, in a package listing or in
+the filesystem.
+
+Two byte-level rules keep the payload working, and the verifier checks both
+before a release:
+
+- **A symbol name is never rewritten.** Names in `.dynstr` are hashed by
+  `.gnu.hash`; changing one byte makes the library fail to load. The names in
+  `libzyrxon-core_nos_c_tre.so` and `libzyrxon-exec_nos_c_tre.so` are internal
+  symbols, no user ever sees them, and they keep their exact bytes.
+- **A signing key is never rewritten.** The `.gpg` files under
+  `share/zyrxon-keyring/` are binary signatures, not text; changing their bytes
+  invalidates them. The keyring file names read ZYRAXON; the key bytes stay.
+
+Everything else — `copyright` files, `licenses/` text, the handle in
+`var/lib/dpkg/status` and the mirror hosts — reads ZYRAXON. A legal file also
+carries the ZYRAXON copyright header, so the distribution states its own
+authorship on top of the component's text.
+
+**The mirror and repository URLs carry the name too.** `etc/apt/sources.list`
+and `etc/zyrxon/mirrors/*` read `packages-cf.zyrxon.dev/apt/zyrxon-main` and so
+on, consistently, or `pkg` cannot resolve. Do not leave a mix of two hostnames:
+a host that does not resolve is worse than one that does.
+
+`LinuxRuntime` binds the guest at `COMPAT_PREFIX` (`/data/data/ai.zyraxon/files/usr`),
+which equals the app's own data path, so the payload's absolute paths resolve on
+disk. One path covers everything.
+
 ## Release process (GitHub Actions)
 
 Two workflows, deliberately separate:

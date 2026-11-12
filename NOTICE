@@ -1,16 +1,27 @@
 # NOTICE
 
-ZYRAXON AI — the Android app — is distributed under the ZYRAXON Sovereign
-License, X Edition (ZSL-X). See [LICENSE](LICENSE).
+## Ownership
+
+**ZYRAXON AI is the original work of onelpawarai.**
 
 Copyright (c) 2026 onelpawarai. All rights reserved.
 Trademark: ZYRAXON, MEKRA, MYRA — registered marks of onelpawarai.
 
+The application — its name, interface, design, architecture, source code,
+build system, agent and licensing systems, documentation and branding — is
+owned by onelpawarai and is distributed under the ZYRAXON Sovereign License,
+X Edition (ZSL-X). See [LICENSE](LICENSE).
+
+Everything a user sees, types, or taps is ZYRAXON: the launcher entry, the
+welcome screen, the terminal prompt, the command set, the environment, the
+filesystem paths and the bundled Linux banner.
+
 ## Third-party components
 
-ZYRAXON is built on the work of others. Each component below stays under its
-own license, and that license governs that component. Nothing in the ZSL-X
-changes, replaces, or restricts those terms.
+Some parts are built on the work of others, and each of those parts stays
+under its own license. That license governs that part, and it requires that
+its own copyright notice and license text are kept as the author wrote them.
+Keeping them is what makes ZYRAXON compliant; removing them would not.
 
 | Component | License |
 | --- | --- |
@@ -30,6 +41,8 @@ changes, replaces, or restricts those terms.
 The Linux environment the app can run ships third-party binaries. Their
 licenses travel with them, inside the app bundle, unchanged — every copyright
 and license file the packages ship is kept exactly as its authors wrote it.
+ZYRAXON adds its own systems, interface and branding on top; it does not
+claim authorship of those binaries.
 
 ## Reporting a security issue
 

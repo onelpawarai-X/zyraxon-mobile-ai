@@ -1,3 +1,7 @@
+// ZYRAXON AI — Copyright (c) 2026 onelpawarai. All rights reserved.
+// Distributed under the ZYRAXON Sovereign License, X Edition (ZSL-X).
+// See LICENSE in the repository root.
+
 package ai.zyraxon.assistant.update
 
 import ai.zyraxon.assistant.core.safe
