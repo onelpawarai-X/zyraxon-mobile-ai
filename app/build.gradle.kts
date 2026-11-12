@@ -9,13 +9,14 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   // Which CPU family this APK is for, chosen at build time with
-  // `-PzyraxonAbi=arm64` or `-PzyraxonAbi=arm32`. Empty means a universal build
-  // that carries both, which is what a local `assembleDebug` gets.
+  // `-PzyraxonAbi=arm64`, `-PzyraxonAbi=arm32` or `-PzyraxonAbi=universal`.
+  // `universal` carries both arm families in one file, so a phone whose CPU
+  // family the user cannot name still installs a working APK.
   //
   // Two things follow from it: only that family's native libraries are packed,
   // and only that family's Linux payload is packed. The payload is 165-183 MB
-  // per architecture, so a universal APK made every phone carry a whole second
-  // operating system it could never start.
+  // per architecture, so a per-family APK keeps a phone from carrying a whole
+  // second operating system it could never start.
   val zyraxonAbi = (findProperty("zyraxonAbi") as String?)?.trim()?.lowercase().orEmpty()
 
   defaultConfig {
@@ -34,8 +35,9 @@ android {
       when (zyraxonAbi) {
         "arm64" -> abiFilters += listOf("arm64-v8a")
         "arm32" -> abiFilters += listOf("armeabi-v7a")
-        // A universal build leaves the filters alone, so it packs every native
-        // library the project has — exactly what it did before this split.
+        // Both arm families in one file, and nothing else: the desktop x86
+        // libraries have no phone to run on.
+        "universal" -> abiFilters += listOf("arm64-v8a", "armeabi-v7a")
         else -> {}
       }
     }
@@ -134,10 +136,16 @@ android {
       when (zyraxonAbi) {
         "arm64" -> assets.directories.add("src/payload64/assets")
         "arm32" -> assets.directories.add("src/payload32/assets")
+        // Both arm payloads in one file, so the universal APK runs on either
+        // family. The x86 payload stays out: no phone runs it.
+        "universal" -> {
+          assets.directories.add("src/payload64/assets")
+          assets.directories.add("src/payload32/assets")
+        }
         else -> {
-          // A universal build — a local `assembleDebug`, the unit tests, or a
-          // release built without the flag — carries every payload, exactly as
-          // it did before this split existed.
+          // A local `assembleDebug`, the unit tests, or a release built without
+          // the flag — carries every payload, exactly as it did before this
+          // split existed.
           assets.directories.add("src/payload64/assets")
           assets.directories.add("src/payload32/assets")
           assets.directories.add("src/payloadx64/assets")

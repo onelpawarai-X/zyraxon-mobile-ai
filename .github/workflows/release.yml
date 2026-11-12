@@ -71,15 +71,16 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Building ZYRAXON v$VERSION"
 
-      - name: Build signed release APKs (arm64 + arm32)
+      - name: Build signed release APKs (arm64 + arm32 + universal)
         env:
           KEYSTORE_PATH: ${{ runner.temp }}/release.jks
           STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          # One APK per CPU family. Each carries only its own Linux system, so a
-          # phone downloads what it can actually run instead of two systems it
-          # never starts — the payload is 165-183 MB per architecture.
+          # One APK per CPU family, plus one that carries both arm families so a
+          # phone whose family the user cannot name still gets a working file.
+          # Each single-family APK carries only its own Linux system, so a phone
+          # downloads what it can run instead of two systems it never starts.
           gradle :app:assembleRelease \
             -PzyraxonAbi=arm64 \
             -Djava.awt.headless=true \
@@ -94,6 +95,13 @@ jobs:
             --stacktrace
           cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/app-release-arm32.apk"
 
+          gradle :app:assembleRelease \
+            -PzyraxonAbi=universal \
+            -Djava.awt.headless=true \
+            -x lintVitalRelease -x lintVitalAnalyzeRelease \
+            --stacktrace
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/app-release-universal.apk"
+
           ls -la "$RUNNER_TEMP"/app-release-*.apk
 
       - name: Collect artifacts
@@ -102,18 +110,22 @@ jobs:
           VERSION="${{ steps.ver.outputs.version }}"
           A64="ZYRAXON-v${VERSION}-arm64.apk"
           A32="ZYRAXON-v${VERSION}-arm32.apk"
+          AUNI="ZYRAXON-v${VERSION}-universal.apk"
           cp "$RUNNER_TEMP/app-release-arm64.apk" "$RUNNER_TEMP/$A64"
           cp "$RUNNER_TEMP/app-release-arm32.apk" "$RUNNER_TEMP/$A32"
-          (cd "$RUNNER_TEMP" && sha256sum "$A64" "$A32" > "SHA256SUMS")
+          cp "$RUNNER_TEMP/app-release-universal.apk" "$RUNNER_TEMP/$AUNI"
+          (cd "$RUNNER_TEMP" && sha256sum "$A64" "$A32" "$AUNI" > "SHA256SUMS")
           echo "a64=$A64" >> "$GITHUB_OUTPUT"
           echo "a32=$A32" >> "$GITHUB_OUTPUT"
-          ls -la "$RUNNER_TEMP/$A64" "$RUNNER_TEMP/$A32"
+          echo "auni=$AUNI" >> "$GITHUB_OUTPUT"
+          ls -la "$RUNNER_TEMP/$A64" "$RUNNER_TEMP/$A32" "$RUNNER_TEMP/$AUNI"
 
       - name: Verify the signatures
         run: |
           BUILD_TOOLS=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
           "$BUILD_TOOLS/apksigner" verify --print-certs "$RUNNER_TEMP/${{ steps.apk.outputs.a64 }}"
           "$BUILD_TOOLS/apksigner" verify --print-certs "$RUNNER_TEMP/${{ steps.apk.outputs.a32 }}"
+          "$BUILD_TOOLS/apksigner" verify --print-certs "$RUNNER_TEMP/${{ steps.apk.outputs.auni }}"
 
       - name: Resolve the release tag
         id: tag
@@ -136,8 +148,9 @@ jobs:
           TAG: ${{ steps.tag.outputs.tag }}
           A64: ${{ steps.apk.outputs.a64 }}
           A32: ${{ steps.apk.outputs.a32 }}
+          AUNI: ${{ steps.apk.outputs.auni }}
         run: |
-          ASSETS=("$RUNNER_TEMP/$A64" "$RUNNER_TEMP/$A32" "$RUNNER_TEMP/SHA256SUMS")
+          ASSETS=("$RUNNER_TEMP/$A64" "$RUNNER_TEMP/$A32" "$RUNNER_TEMP/$AUNI" "$RUNNER_TEMP/SHA256SUMS")
           if gh release view "$TAG" --repo "${{ github.repository }}" > /dev/null 2>&1; then
             gh release upload "$TAG" "${ASSETS[@]}" \
               --repo "${{ github.repository }}" --clobber
@@ -166,14 +179,15 @@ jobs:
             echo ""
             echo "- Tag: \`${{ steps.tag.outputs.tag }}\`"
             echo ""
-            echo "Two APKs, one per CPU family. The phone installs the one that matches it."
+            echo "Three APKs: two for one CPU family each, one that carries both arm families."
             echo ""
             echo "| APK | For |"
             echo "| --- | --- |"
             echo "| \`${{ steps.apk.outputs.a64 }}\` | 64-bit phones (arm64-v8a) — most phones from 2017 on |"
             echo "| \`${{ steps.apk.outputs.a32 }}\` | 32-bit phones (armeabi-v7a) — older and low-end phones |"
+            echo "| \`${{ steps.apk.outputs.auni }}\` | either arm phone — both systems in one file, so it works when the family is unknown |"
             echo ""
-            echo "Not sure which? Install the arm64 one first; if the phone refuses it, install arm32."
+            echo "Not sure which? Install the arm64 one first; if the phone refuses it, install arm32. If you would rather not choose at all, install the universal one — it is larger because it carries both systems."
             echo ""
             echo "sha256 checksums are in the \`SHA256SUMS\` asset."
           } >> "$GITHUB_STEP_SUMMARY"
