@@ -60,6 +60,9 @@ jobs:
       - name: Unit tests
         run: gradle :app:testDebugUnitTest --stacktrace
 
+      - name: Verify the version is written down
+        run: scripts/verify-version.sh
+
       - name: Read version from build.gradle.kts
         id: ver
         run: |

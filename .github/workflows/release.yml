@@ -64,6 +64,12 @@ jobs:
           echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
           base64 -d debug.keystore.base64 > debug.keystore
 
+      # The version and the ledger must agree before a byte is built. A release
+      # whose number is not in VERSIONS.md would ship with an empty body and
+      # leave the next version to be guessed.
+      - name: Verify the version is written down
+        run: scripts/verify-version.sh
+
       - name: Read version from build.gradle.kts
         id: ver
         run: |
@@ -171,17 +177,13 @@ jobs:
             gh release upload "$TAG" "${ASSETS[@]}" \
               --repo "${{ github.repository }}" --clobber
           else
-            # `--notes-from-tag` cannot be combined with `--repo`, so the tag's
-            # own annotation is read from the local repo and passed as a notes
-            # file. Fetch the tag explicitly first: the checkout is shallow and
-            # the annotation object is not guaranteed to be present. A tag with
-            # no annotation falls back to a one-line note rather than an empty
-            # release body.
-            git fetch --force --tags --depth=1 origin "+refs/tags/$TAG:refs/tags/$TAG" 2>/dev/null || true
-            git tag -l --format='%(contents)' "$TAG" > "$RUNNER_TEMP/notes.md"
-            if [ ! -s "$RUNNER_TEMP/notes.md" ]; then
-              echo "ZYRAXON $TAG" > "$RUNNER_TEMP/notes.md"
-            fi
+            # The notes come from VERSIONS.md, not from the tag annotation. The
+            # annotation is a single line, which is why every release body used to
+            # look empty; VERSIONS.md holds the real description for each version
+            # under a "## vX.Y.Z" heading, and the script fails rather than
+            # publishing an empty body. A version with no section there is a
+            # version that was never written down, and the release stops.
+            scripts/release-notes.sh "$TAG" "$RUNNER_TEMP/notes.md"
             gh release create "$TAG" "${ASSETS[@]}" \
               --repo "${{ github.repository }}" \
               --title "ZYRAXON $TAG" \

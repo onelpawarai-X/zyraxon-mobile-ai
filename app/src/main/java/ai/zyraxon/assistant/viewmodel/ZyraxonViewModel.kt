@@ -1554,7 +1554,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             val existing = repository.getMemoriesPromptContext()
             if (existing.isBlank()) {
                 repository.saveMemory("নাম", "ব্যবহারকারী")
-                repository.saveMemory("সহকারী", "ZYRAXON v2.0.0")
+                // Read from the build rather than typed here: a hardcoded name went
+                // stale and the assistant told the user the wrong version.
+                repository.saveMemory(
+                    "সহকারী",
+                    "ZYRAXON v" + com.zyraxon.assistant.BuildConfig.VERSION_NAME
+                )
                 repository.saveMemory("পছন্দের_ভাষা", "বাংলা")
             }
         }

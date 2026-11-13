@@ -13,13 +13,14 @@ zx-ready/
 ├── app/                    ← একমাত্র Gradle মডিউল (পুরো অ্যাপ)
 ├── gradle/                 ← wrapper + version catalog
 ├── .github/workflows/      ← CI/CD (টেস্ট + রিলিজ)
-├── scripts/                ← APK ABI যাচাই
+├── scripts/                ← APK ABI যাচাই, ভার্সন-যাচাই, রিলিজ-বর্ণনা
 ├── tools/                  ← অনুবাদ ও স্ক্রিনশট টুল
 ├── build.gradle.kts        ← রুট বিল্ড (মডিউল তালিকা)
 ├── settings.gradle.kts     ← রুট নাম "ZYRAXON", include(":app")
 ├── gradle.properties       ← JVM মেমরি ও AndroidX সেটিং
 ├── AGENTS.md               ← এজেন্ট-নোট (নিয়ম ও সিদ্ধান্ত)
 ├── STRUCTURE.md            ← এই ফাইল
+├── VERSIONS.md             ← ভার্সন-লেজার (সব ভার্সন, কোনটি পরবর্তী, রিলিজ-বর্ণনা)
 ├── README.md               ← মূল ভূমিকা
 ├── README.{bn,hi,ar,zh}.md ← অনূদিত ভূমিকা
 ├── LICENSE                 ← ZYRAXON Sovereign License, X Edition (ZSL-X)
@@ -236,6 +237,8 @@ app/
 | পথ | কাজ |
 |---|---|
 | `scripts/verify-apk-abi.sh` | APK-এর ABI যাচাই |
+| `scripts/verify-version.sh` | `versionName`/`versionCode` আর `VERSIONS.md` মেলে কি না যাচাই (CI-তে চলে) |
+| `scripts/release-notes.sh` | `VERSIONS.md` থেকে নির্দিষ্ট ভার্সনের রিলিজ-বর্ণনা বের করে |
 | `tools/kotlin_strings.py` | Kotlin স্ট্রিং নিষ্কাশন |
 | `tools/localize_ui.py` | UI অনুবাদ |
 | `tools/translate_*.py` | অনুবাদ পাইপলাইন |
@@ -268,8 +271,12 @@ ZyraxonViewModel ──► ZyraxonAiEngine ──► ProviderCatalog (Groq/Gemin
 | | |
 |---|---|
 | বর্তমান | **6.25.0** / versionCode 62 |
+| নেটিভ ইঞ্জিন | **v3.1.0** (Zero Lag) |
+| ভার্সন-লেজার | **`VERSIONS.md`** — সব ভার্সন, কোনটি প্রকাশিত, কোনটি পরবর্তী |
 | রিলিজ সম্পদ | `ZYRAXON-v6.25.0-{arm64,arm32,universal}.apk` + `SHA256SUMS` |
 | প্রকাশ পথ | GitHub Releases (ট্যাগ চাপলেই স্বয়ংক্রিয়) |
+| রিলিজ-বর্ণনা | `VERSIONS.md`-এর `## vX.Y.Z` সেকশন থেকে (`scripts/release-notes.sh`) |
+| ভার্সন-যাচাই | `scripts/verify-version.sh` — CI ও রিলিজ উভয়ে বাধ্যতামূলক |
 | ইন-অ্যাপ আপডেট | `Updater.kt` — রিলিজ থেকে APK নামিয়ে ইনস্টল |
 
 ---

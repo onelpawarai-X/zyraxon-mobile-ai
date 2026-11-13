@@ -65,6 +65,9 @@ versionCode is bumped on every build, so it installs straight over the previous 
 A sha256 is published next to the APK — verify it before installing.
 ```
 
+Every version is recorded in **[VERSIONS.md](VERSIONS.md)** — the full list, which
+is current, and the notes for each release.
+
 **Minimum:** Android 5.0 (API 21) • **Compile:** Android 16 (API 36) • **Target:** Android 9 (API 28)
 
 The build compiles against API 36 but deliberately targets API 28. See

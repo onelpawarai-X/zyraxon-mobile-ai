@@ -325,27 +325,52 @@ PY
 Bump `versionCode` for every shipped build or the APK will not install over the
 previous one.
 
-### Version numbers
+### Version numbers — `VERSIONS.md` is the source of truth
 
-The version the user sees is `versionName`, and it must follow the **last
-released** version by one — not the last version you happened to write into the
-file. Before tagging, read what is actually released:
+`VERSIONS.md` in the repository root is the version ledger: every version, which
+is published, which is next, and the full release notes for each. **Read it
+before choosing a version.** The next version comes from that file, never from
+the working tree and never from memory.
+
+`scripts/verify-version.sh` enforces the match and runs in both workflows, so a
+version that is not written down fails CI before anything is built. It checks
+that:
+
+- `versionName` is a plain `X.Y.Z` with no suffix,
+- `VERSIONS.md` carries a table row for it,
+- `VERSIONS.md` carries a `## vX.Y.Z` section for it (the release body comes from
+  there — see below), and
+- the `versionCode` in that section, when stated, matches `build.gradle.kts`.
+
+`versionCode` is one more than the last published `versionCode` and never
+decreases; Android compares it, and a code that is not greater will not install
+over the build on the phone. `versionName` and `versionCode` always move together.
+
+Do **not** invent versions (that produced a jump from 6.23.2 to 6.23.7), and do
+**not** add a suffix such as `-test1` to a release tag. Every release carries the
+plain `vX.Y.Z` form. A test build is produced by `TEST-CI.yml`, which publishes no
+release at all — the release workflow is the only thing that tags.
+
+**The app version and the native engine version are two different things.** The
+app version is `versionName`; the native engine version is the
+`ZYRAXON Native Engine vX.Y.Z` label in `Sheets.kt`, and it moves on its own. A
+change to the phone's own voice engine bumps that label, not `versionName`; the
+app version still steps by the rules above, and `VERSIONS.md` records that the
+engine moved with it.
+
+### Release notes come from `VERSIONS.md`
+
+The release body is **not** the tag annotation — that is one line, which is why
+every release used to look empty. It is the version's `## vX.Y.Z` section in
+`VERSIONS.md`, pulled out by `scripts/release-notes.sh`. Write the real
+description there, in English, and the release shows it; write nothing and the
+release workflow stops rather than publishing an empty body.
+
+Preview what a release will say before tagging:
 
 ```bash
-gh release list --limit 5          # the released versions, newest first
-git show <last-tag>:app/build.gradle.kts | grep -E 'versionCode|versionName'
+scripts/release-notes.sh 6.25.0
 ```
-
-Then set `versionName` to the next number in that line and `versionCode` to one
-more than the released `versionCode`. `versionCode` is the integer Android
-compares, so a build with a code that is not greater will not install over the
-one on the phone.
-
-Do **not** invent versions from the working tree (that produced a jump from
-6.23.2 to 6.23.7), and do **not** add a suffix such as `-test1` to a release
-tag. Every release carries the plain `vX.Y.Z` form, and its notes are written in
-English. A test build is produced by `TEST-CI.yml`, which publishes no release at
-all — the release workflow is the only thing that tags.
 
 The release APKs are ~229 MB (arm64) and ~210 MB (arm32), because each carries
 its own Linux payload. Any step that builds an APK needs a generous timeout.
