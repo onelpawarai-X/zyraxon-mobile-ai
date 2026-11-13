@@ -1,0 +1,209 @@
+name: Build & Release APK
+
+# Run it by hand (Actions -> Build & Release APK -> Run workflow) and the signed
+# APK is built and uploaded to the latest release automatically. Pushing a v*
+# tag does the same for that tag.
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag to upload to (blank = latest release)"
+        required: false
+        default: ""
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        run: |
+          # The ubuntu runner already ships the Android SDK and cmdline-tools.
+          # The setup-android action's default "tools platform-tools" list
+          # fails because the old `tools` package is gone, so install only
+          # what this project needs with the sdkmanager already present.
+          SDK="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          SDKMANAGER="$(ls -d "$SDK"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | sort -V | tail -1)"
+          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36.1" "build-tools;36.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.3.1"
+
+      - name: Decode signing keystores
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          base64 -d debug.keystore.base64 > debug.keystore
+
+      - name: Read version from build.gradle.kts
+        id: ver
+        run: |
+          VERSION=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts | head -1)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building ZYRAXON v$VERSION"
+
+      - name: Build signed release APKs (arm64 + arm32 + universal)
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/release.jks
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          # One APK per CPU family, plus one that carries both arm families so a
+          # phone whose family the user cannot name still gets a working file.
+          # Each single-family APK carries only its own Linux system, so a phone
+          # downloads what it can run instead of two systems it never starts.
+          gradle :app:assembleRelease \
+            -PzyraxonAbi=arm64 \
+            -Djava.awt.headless=true \
+            -x lintVitalRelease -x lintVitalAnalyzeRelease \
+            --stacktrace
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/app-release-arm64.apk"
+
+          gradle :app:assembleRelease \
+            -PzyraxonAbi=arm32 \
+            -Djava.awt.headless=true \
+            -x lintVitalRelease -x lintVitalAnalyzeRelease \
+            --stacktrace
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/app-release-arm32.apk"
+
+          gradle :app:assembleRelease \
+            -PzyraxonAbi=universal \
+            -Djava.awt.headless=true \
+            -x lintVitalRelease -x lintVitalAnalyzeRelease \
+            --stacktrace
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/app-release-universal.apk"
+
+          ls -la "$RUNNER_TEMP"/app-release-*.apk
+
+      - name: Collect artifacts
+        id: apk
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          A64="ZYRAXON-v${VERSION}-arm64.apk"
+          A32="ZYRAXON-v${VERSION}-arm32.apk"
+          AUNI="ZYRAXON-v${VERSION}-universal.apk"
+          cp "$RUNNER_TEMP/app-release-arm64.apk" "$RUNNER_TEMP/$A64"
+          cp "$RUNNER_TEMP/app-release-arm32.apk" "$RUNNER_TEMP/$A32"
+          cp "$RUNNER_TEMP/app-release-universal.apk" "$RUNNER_TEMP/$AUNI"
+          (cd "$RUNNER_TEMP" && sha256sum "$A64" "$A32" "$AUNI" > "SHA256SUMS")
+          echo "a64=$A64" >> "$GITHUB_OUTPUT"
+          echo "a32=$A32" >> "$GITHUB_OUTPUT"
+          echo "auni=$AUNI" >> "$GITHUB_OUTPUT"
+          ls -la "$RUNNER_TEMP/$A64" "$RUNNER_TEMP/$A32" "$RUNNER_TEMP/$AUNI"
+
+      - name: Verify the signatures
+        run: |
+          BUILD_TOOLS=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BUILD_TOOLS/apksigner" verify --print-certs "$RUNNER_TEMP/${{ steps.apk.outputs.a64 }}"
+          "$BUILD_TOOLS/apksigner" verify --print-certs "$RUNNER_TEMP/${{ steps.apk.outputs.a32 }}"
+          "$BUILD_TOOLS/apksigner" verify --print-certs "$RUNNER_TEMP/${{ steps.apk.outputs.auni }}"
+
+      - name: Check what each APK carries
+        run: |
+          scripts/verify-apk-abi.sh "$RUNNER_TEMP/${{ steps.apk.outputs.a64 }}"  arm64
+          scripts/verify-apk-abi.sh "$RUNNER_TEMP/${{ steps.apk.outputs.a32 }}"  arm32
+          scripts/verify-apk-abi.sh "$RUNNER_TEMP/${{ steps.apk.outputs.auni }}" universal
+
+      # A release is the last place a hardening regression can be caught, so the
+      # same check CI runs is run here, on the real signed APKs. If a class name,
+      # a source-file name or the prompt text survives, the build stops before
+      # anything is published.
+      - name: Prove the release APKs are hardened
+        run: |
+          scripts/verify-hardening.sh "$RUNNER_TEMP/${{ steps.apk.outputs.a64 }}"
+          scripts/verify-hardening.sh "$RUNNER_TEMP/${{ steps.apk.outputs.a32 }}"
+          scripts/verify-hardening.sh "$RUNNER_TEMP/${{ steps.apk.outputs.auni }}"
+
+      - name: Resolve the release tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${{ github.ref_name }}"
+          elif [ -n "${{ inputs.release_tag }}" ]; then
+            TAG="${{ inputs.release_tag }}"
+          else
+            TAG=$(gh release list --repo "${{ github.repository }}" --limit 1 --json tagName --jq '.[0].tagName')
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Uploading to release: $TAG"
+
+      - name: Publish the APKs to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          A64: ${{ steps.apk.outputs.a64 }}
+          A32: ${{ steps.apk.outputs.a32 }}
+          AUNI: ${{ steps.apk.outputs.auni }}
+        run: |
+          ASSETS=("$RUNNER_TEMP/$A64" "$RUNNER_TEMP/$A32" "$RUNNER_TEMP/$AUNI" "$RUNNER_TEMP/SHA256SUMS")
+          if gh release view "$TAG" --repo "${{ github.repository }}" > /dev/null 2>&1; then
+            gh release upload "$TAG" "${ASSETS[@]}" \
+              --repo "${{ github.repository }}" --clobber
+          else
+            # `--notes-from-tag` cannot be combined with `--repo`, so the tag's
+            # own annotation is read from the local repo and passed as a notes
+            # file. Fetch the tag explicitly first: the checkout is shallow and
+            # the annotation object is not guaranteed to be present. A tag with
+            # no annotation falls back to a one-line note rather than an empty
+            # release body.
+            git fetch --force --tags --depth=1 origin "+refs/tags/$TAG:refs/tags/$TAG" 2>/dev/null || true
+            git tag -l --format='%(contents)' "$TAG" > "$RUNNER_TEMP/notes.md"
+            if [ ! -s "$RUNNER_TEMP/notes.md" ]; then
+              echo "ZYRAXON $TAG" > "$RUNNER_TEMP/notes.md"
+            fi
+            gh release create "$TAG" "${ASSETS[@]}" \
+              --repo "${{ github.repository }}" \
+              --title "ZYRAXON $TAG" \
+              --notes-file "$RUNNER_TEMP/notes.md"
+          fi
+
+      - name: Job summary
+        run: |
+          {
+            echo "### ZYRAXON v${{ steps.ver.outputs.version }} released"
+            echo ""
+            echo "- Tag: \`${{ steps.tag.outputs.tag }}\`"
+            echo ""
+            echo "Three APKs: two for one CPU family each, one that carries both arm families."
+            echo ""
+            echo "| APK | For |"
+            echo "| --- | --- |"
+            echo "| \`${{ steps.apk.outputs.a64 }}\` | 64-bit phones (arm64-v8a) — most phones from 2017 on |"
+            echo "| \`${{ steps.apk.outputs.a32 }}\` | 32-bit phones (armeabi-v7a) — older and low-end phones |"
+            echo "| \`${{ steps.apk.outputs.auni }}\` | either arm phone — both systems in one file, so it works when the family is unknown |"
+            echo ""
+            echo "Not sure which? Install the arm64 one first; if the phone refuses it, install arm32. If you would rather not choose at all, install the universal one — it is larger because it carries both systems."
+            echo ""
+            echo "sha256 checksums are in the \`SHA256SUMS\` asset."
+          } >> "$GITHUB_STEP_SUMMARY"

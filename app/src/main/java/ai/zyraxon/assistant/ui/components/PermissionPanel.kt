@@ -1,0 +1,269 @@
+// ZYRAXON AI — Copyright (c) 2026 onelpawarai. All rights reserved.
+// Distributed under the ZYRAXON Sovereign License, X Edition (ZSL-X).
+// See LICENSE in the repository root.
+
+package ai.zyraxon.assistant.ui.components
+
+import ai.zyraxon.assistant.i18n.t
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import ai.zyraxon.assistant.ui.icons.AppIcon
+import ai.zyraxon.assistant.ui.icons.AppIcons
+import ai.zyraxon.assistant.ui.theme.Glass
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+
+/**
+ * One data-control row on the privacy pane: an icon, a title, what it removes,
+ * and a button that performs it. Kept apart from [PermissionRow] because the two
+ * say different things — a permission is granted, data is deleted.
+ */
+@Composable
+fun PrivacyAction(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    desc: String,
+    onAction: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(Glass.fill(0.30f))
+            .padding(10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+            AppIcon(icon, null, size = 18.dp, tint = Glass.pinkFill)
+            Spacer(modifier = Modifier.width(10.dp))
+            Column {
+                Text(title, color = Glass.textPrimary, fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
+                Text(desc, color = Glass.textMuted, fontSize = 11.sp)
+            }
+        }
+        Button(
+            onClick = onAction,
+            colors = ButtonDefaults.buttonColors(containerColor = Glass.pinkFill)
+        ) {
+            AppIcon(AppIcons.delete, null, size = 13.dp, tint = Glass.textOnAccent)
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(t("মুছুন"), color = Glass.textOnAccent, fontSize = 11.5.sp)
+        }
+    }
+}
+
+/** One permission the assistant needs, with the exact wording shown to the user. */
+data class PermissionRow(
+    val key: String,
+    val label: String,
+    val why: String,
+    val androidPermission: String? = null,
+    /** Every permission that must be granted together for the row to read as done. */
+    val androidPermissions: List<String> = emptyList(),
+    val specialAction: String? = null
+)
+
+/**
+ * Every permission in one place. Tapping a row raises the system dialog on top of
+ * this screen, so the user only ever presses Allow — they never have to walk into
+ * a settings screen themselves.
+ */
+@Composable
+fun PermissionPanel(
+    context: Context,
+    accessibilityOn: Boolean,
+    onRequestPermission: (PermissionRow) -> Unit,
+    onOpenSpecial: (String) -> Unit
+) {
+    var refresh by remember { mutableStateOf(0) }
+
+    val rows = remember(refresh, accessibilityOn) {
+        listOf(
+            PermissionRow("mic", t("মাইক্রোফোন"), t("কথা শোনার জন্য — মাইক সবসময় চালু থাকবে"), Manifest.permission.RECORD_AUDIO),
+            PermissionRow("camera", t("ক্যামেরা"), t("ছবি ও ভিডিও দেখতে"), Manifest.permission.CAMERA),
+            PermissionRow("location", t("লোকেশন"), t("ম্যাপ ও স্থানীয় তথ্যের জন্য"), Manifest.permission.ACCESS_FINE_LOCATION),
+            PermissionRow("notifications", t("নোটিফিকেশন"), t("ব্যাকগ্রাউন্ডে কাজ চললে জানাতে"), Manifest.permission.POST_NOTIFICATIONS),
+            // Android 13+ needs the three media types separately; older versions
+            // only understand READ_EXTERNAL_STORAGE. Declaring the right set for
+            // the running version is what makes "read my photos" actually work.
+            if (Build.VERSION.SDK_INT >= 33)
+                PermissionRow(
+                    "files", t("ফাইল ও মিডিয়া"), t("ছবি, ভিডিও, অডিও ও ডকুমেন্ট পড়তে"),
+                    androidPermissions = listOf(
+                        "android.permission.READ_MEDIA_IMAGES",
+                        "android.permission.READ_MEDIA_VIDEO",
+                        "android.permission.READ_MEDIA_AUDIO"
+                    )
+                )
+            else
+                PermissionRow(
+                    "files", t("ফাইল ও মিডিয়া"), t("ছবি, ভিডিও ও ডকুমেন্ট পড়তে"),
+                    androidPermission = Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
+            PermissionRow("overlay", t("ওভারলে"), t("অন্য অ্যাপের উপরে কাজ দেখাতে"), specialAction = "overlay"),
+            PermissionRow("accessibility", t("অ্যাক্সেসিবিলিটি"), t("স্ক্রিন দেখে ট্যাপ করতে — এটাই আসল অটোমেশন"), specialAction = "accessibility"),
+            PermissionRow("battery", t("ব্যাটারি অপটিমাইজেশন"), t("ব্যাকগ্রাউন্ডে থেমে না যাওয়ার জন্য"), specialAction = "battery")
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(Glass.fill(0.30f))
+            .border(1.dp, Glass.pinkFill.copy(alpha = 0.20f), RoundedCornerShape(18.dp))
+            .padding(14.dp)
+    ) {
+        Text(
+            t("পারমিশন"),
+            color = Glass.textPrimary,
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            t("প্রতিটি লাইনে চাপ দিলে উপরে সিস্টেমের পপ-আপ আসবে — শুধু Allow চাপো, ভিতরে ঢুকতে হবে না।"),
+            color = Glass.textSecondary,
+            fontSize = 11.sp
+        )
+        Spacer(Modifier.height(10.dp))
+
+        rows.forEach { row ->
+            val granted = when {
+                row.key == "accessibility" -> accessibilityOn
+                row.key == "overlay" -> canDrawOverlays(context)
+                row.key == "battery" -> isBatteryUnrestricted(context)
+                row.androidPermissions.isNotEmpty() -> row.androidPermissions.all {
+                    ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+                }
+                row.androidPermission != null ->
+                    ContextCompat.checkSelfPermission(context, row.androidPermission) ==
+                        PackageManager.PERMISSION_GRANTED
+                else -> false
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 3.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (granted) Glass.greenFill.copy(alpha = 0.14f) else Glass.rowFill(0.30f))
+                    .clickable {
+                        if (!granted) {
+                            if (row.specialAction != null) onOpenSpecial(row.specialAction)
+                            else onRequestPermission(row)
+                            refresh++
+                        }
+                    }
+                    .padding(horizontal = 10.dp, vertical = 9.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(row.label, color = Glass.textPrimary, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                    Text(row.why, color = Glass.textSecondary, fontSize = 10.5.sp)
+                }
+                Spacer(Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(9.dp))
+                        .background(if (granted) Glass.greenFill.copy(alpha = 0.24f) else Glass.pinkFill.copy(alpha = 0.20f))
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = if (granted) t("দেওয়া আছে") else "Allow",
+                        color = if (granted) Glass.greenFill else Glass.pinkFill,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        // The Play Protect note: the AI can walk the screen itself, so the panel
+        // offers the shortcut and states the trade-off instead of declaring it
+        // impossible. The user keeps the final say.
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Glass.amber.copy(alpha = 0.14f))
+                .border(1.dp, Glass.amber.copy(alpha = 0.30f), RoundedCornerShape(12.dp))
+                .padding(11.dp)
+        ) {
+            Column {
+                Text(
+                    t("গুগল প্লে প্রটেক্টর"),
+                    color = Glass.amber,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    t("প্লে প্রটেক্টর কোনো কাজ আটকে দিলে এআই নিজেই এই পেজে গিয়ে স্ক্রিন দেখে ধাপে ধাপে বন্ধ করে দিতে পারে — ") +
+                        t("কিন্তু সিদ্ধান্তটা তোমার, তাই সে আগে জিজ্ঞেস করবে। বন্ধ করলে ফোনে কোনো অ্যাপ চেক ছাড়াই চলবে। ") +
+                        t("নিজে করতে চাইলে: Play Store প্রোফাইল ছবি Play Protect সেটিং ") +
+                        t("\"Scan apps with Play Protect\" বন্ধ করো।"),
+                    color = Glass.amber,
+                    fontSize = 10.5.sp,
+                    lineHeight = 15.sp
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    t("Play Store খুলে দাও "),
+                    color = Glass.amber,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(9.dp))
+                        .background(Glass.amber.copy(alpha = 0.24f))
+                        .clickable { onOpenSpecial("play_protect") }
+                        .padding(horizontal = 11.dp, vertical = 6.dp)
+                )
+            }
+        }
+    }
+}
+
+private fun canDrawOverlays(context: Context): Boolean =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) android.provider.Settings.canDrawOverlays(context) else true
+
+private fun isBatteryUnrestricted(context: Context): Boolean {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+    val pm = context.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager ?: return true
+    return pm.isIgnoringBatteryOptimizations(context.packageName)
+}

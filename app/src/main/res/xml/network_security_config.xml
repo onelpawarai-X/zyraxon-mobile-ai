@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+   Cleartext is closed everywhere except the loopback interface.
+
+   ZYRAXON runs a local HTTP proxy on 127.0.0.1 so the bundled busybox can hand
+   its traffic to the app, which then does the encrypted leg on its behalf. That
+   proxy only ever listens on loopback, so allowing cleartext there is safe: the
+   bytes never leave the phone. Every other host must be https, which stops a
+   redirect or a misconfigured endpoint from downgrading a real request to plain
+   text on the network.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">::1</domain>
+    </domain-config>
+    <!-- A debug build may be pointed at a debugging proxy; a release build
+         never trusts a certificate the user installed, so nothing can stand
+         between the app and the provider holding the account key. -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="user" />
+            <certificates src="system" />
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>
