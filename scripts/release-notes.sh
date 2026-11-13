@@ -36,6 +36,9 @@ fi
 NOTES="$(awk -v tag="$TAG" '
   $0 ~ "^## " tag "[[:space:]]*$" { found = 1; next }
   found && /^## / { exit }
+  # Skip the metadata line; the release body is the notes only.
+  found && /^\*\*Date:\*\*/ { next }
+  found && /^### Release notes[[:space:]]*$/ { next }
   found { print }
 ' "$FILE")"
 

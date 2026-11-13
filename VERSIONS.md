@@ -1,111 +1,117 @@
-# ZYRAXON ভার্সন-লেজার (VERSIONS.md)
+# ZYRAXON Version Ledger (VERSIONS.md)
 
-এই ফাইলটাই ভার্সনের একমাত্র সত্য। নতুন ভার্সন বানানোর আগে **এই ফাইলটি পড়ুন**,
-তারপর `app/build.gradle.kts`-এ লিখুন। এই ফাইলে না থাকা কোনো ভার্সন কোথাও ব্যবহার
-করবেন না।
+This file is the single source of truth for version numbers. Read it **before**
+choosing a version, then write the number into `app/build.gradle.kts`. A version
+that is not written down here must not be used anywhere.
 
 ---
 
-## ১. নিয়ম — পরবর্তী ভার্সন কীভাবে ঠিক হবে
+## 1. The rule — how the next version is chosen
 
-**প্রতিটি রিলিজের আগে এই চারটি ধাপ, এই ক্রমে:**
+**Four steps, in this order, before every release:**
 
-| ধাপ | কাজ |
+| Step | Action |
 | --- | --- |
-| ১ | এই ফাইলে **সর্বশেষ ✅ প্রকাশিত** ভার্সনটি দেখুন (নিচের টেবিলে) |
-| ২ | নিচের নিয়মে পরবর্তী নম্বর ঠিক করুন |
-| ৩ | `app/build.gradle.kts`-এ `versionName` ও `versionCode` বসান |
-| ৪ | এই ফাইলে নতুন ভার্সনের একটি নতুন সারি ও নতুন সেকশন যোগ করুন |
+| 1 | Read the **last ✅ published** version in the table below |
+| 2 | Pick the next number by the rule underneath |
+| 3 | Set `versionName` and `versionCode` in `app/build.gradle.kts` |
+| 4 | Add the new row and the new section to this file |
 
-### কোন অংশ বাড়বে
+### Which part moves
 
-`versionName` তিনটি সংখ্যা: **`MAJOR.MINOR.PATCH`** (যেমন `6.25.0`)।
+`versionName` is three numbers: **`MAJOR.MINOR.PATCH`** (for example `6.25.0`).
 
-| কোনটি বাড়বে | কখন | উদাহরণ |
+| Part | When it moves | Example |
 | --- | --- | --- |
-| **MAJOR** | এমন পরিবর্তন যা পুরোনো সেটিংস/ডেটা ভেঙে দেয়, বা সংরক্ষিত ফরম্যাট বদলায় | `6.x.x` → `7.0.0` |
-| **MINOR** | নতুন ক্ষমতা, নতুন পর্দা, নতুন টুল — পুরোনো সব অক্ষত থাকে | `6.24.11` → `6.25.0` |
-| **PATCH** | শুধু বাগ-ঠিক, অনুবাদ, ছোট সমন্বয় — নতুন কিছু নেই | `6.25.0` → `6.25.1` |
+| **MAJOR** | A change that breaks old settings or data, or changes a stored format | `6.x.x` → `7.0.0` |
+| **MINOR** | New capability, new screen, new tool — everything old still works | `6.24.11` → `6.25.0` |
+| **PATCH** | Bug fixes, translations, small adjustments only — nothing new | `6.25.0` → `6.25.1` |
 
-যেটি বাড়বে সেটি **এক করে বাড়বে**; তার ডান দিকের সব সংখ্যা **শূন্য** হবে
-(`6.24.11` → MINOR বাড়লে `6.25.0`, PATCH বাড়লে `6.24.12`)।
+The part that moves moves by **one**, and every number to its right becomes
+**zero** (`6.24.11` → MINOR gives `6.25.0`, PATCH gives `6.24.12`).
 
-### versionCode — কঠোর নিয়ম
+### versionCode — a hard rule
 
-`versionCode` একটি পূর্ণসংখ্যা, আর **এটি কখনো কমবে না**। Android এই সংখ্যাটাই
-তুলনা করে; কম হলে নতুন APK পুরোনোটির উপরে বসবেই না।
+`versionCode` is an integer and it **never decreases**. Android compares this
+number; if it is not greater, the new APK will not install over the one on the
+phone.
 
 ```
-নতুন versionCode = সর্বশেষ প্রকাশিত versionCode + 1
+new versionCode = last published versionCode + 1
 ```
 
-`versionName` আর `versionCode` সবসময় একসাথে বাড়বে। একটি বাড়িয়ে অন্যটি ভুলে
-যাওয়া এই প্রকল্পে আগে হয়েছে, আর ফল হয়েছিল এমন একটি APK যা ইনস্টলই হয় না।
+`versionName` and `versionCode` always move together. Bumping one and forgetting
+the other has happened in this project before, and the result was an APK that
+would not install.
 
-### নিষিদ্ধ
+### Not allowed
 
-- **একই ভার্সন দুইবার** — কোনো ভার্সন প্রকাশের পর সেটি আবার ব্যবহার করা যাবে না।
-- **ট্যাগে প্রত্যয়** — `v6.25.0-test1` নয়; সব রিলিজ ট্যাগ শুধু `vX.Y.Z`।
-- **ওয়ার্কিং ট্রি থেকে ভার্সন বানানো** — ভার্সন আসবে এই ফাইল থেকে, কল্পনা থেকে নয়।
-- **`versionName` ছাড়া ট্যাগ** — ট্যাগ আর `versionName` হুবহু এক হবে।
-- **অ্যাপের ভার্সন আর নেটিভ ইঞ্জিনের ভার্সন মেশানো** — দুটি আলাদা জিনিস, নিচে দেখুন।
+- **The same version twice** — once a version is published it can never be reused.
+- **A suffix on a tag** — `v6.25.0-test1` is wrong; every release tag is `vX.Y.Z`.
+- **Inventing a version from the working tree** — the version comes from this
+  file, not from memory.
+- **A tag without a matching `versionName`** — the tag and `versionName` are
+  identical.
+- **Mixing the app version with the native engine version** — they are two
+  different things, see below.
 
 ---
 
-## ২. দুইটি আলাদা ভার্সন — গুলিয়ে ফেলবেন না
+## 2. Two different versions — do not confuse them
 
-| নাম | কোথায় থাকে | কী বোঝায় |
+| Name | Where it lives | What it means |
 | --- | --- | --- |
-| **অ্যাপের ভার্সন** | `app/build.gradle.kts` → `versionName` | পুরো অ্যাপ্লিকেশনের সংস্করণ; রিলিজ ট্যাগ, APK-এর নাম, ইন-অ্যাপ আপডেট — সব এটির উপর |
-| **নেটিভ ইঞ্জিনের ভার্সন** | `Sheets.kt` → `ZYRAXON Native Engine vX.Y.Z` লেখাটি | শুধু ফোনের নিজস্ব ভয়েস ইঞ্জিনের (STT + TTS) সংস্করণ |
+| **App version** | `app/build.gradle.kts` → `versionName` | The version of the whole application; the release tag, the APK name and the in-app update all key off it |
+| **Native engine version** | `Sheets.kt` → the `ZYRAXON Native Engine vX.Y.Z` label | Only the version of the phone's own voice engine (STT + TTS) |
 
-নেটিভ ইঞ্জিন অ্যাপের ভিতরের একটি অংশ। এটি বদলালে **শুধু এই লেবেলটি** বাড়বে,
-`versionName` নয় — অ্যাপের ভার্সন তখন MINOR বা PATCH হিসেবে বাড়বে এবং এই ফাইলে
-লিখে দেওয়া হবে যে ইঞ্জিনও বদলেছে।
+The native engine is one part inside the app. When it changes, **only that label**
+moves, not `versionName` — the app version still steps by the rules above, and
+this file records that the engine moved with it.
 
-**বর্তমান নেটিভ ইঞ্জিন: `v3.1.0` (Zero Lag)।**
+**Current native engine: `v3.1.0` (Zero Lag).**
 
 ---
 
-## ৩. ভার্সন-টেবিল (সব ভার্সন, এক জায়গায়)
+## 3. Version table (every version, in one place)
 
-অবস্থা: **✅ প্রকাশিত** · **🟡 প্রস্তুত (এখনো প্রকাশ হয়নি)** · **🔜 পরিকল্পিত**
+Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planned**
 
-| ভার্সন | versionCode | তারিখ | অবস্থা | সংক্ষেপে |
+| Version | versionCode | Date | Status | In short |
 | --- | --- | --- | --- | --- |
-| `6.21.0` | — | — | ✅ প্রকাশিত | কম্পোজার পুনর্গঠন; মাইক কন্ট্রোল ফিরে আসে (`ComposerMicButton`) |
-| `6.23.2` | — | — | ✅ প্রকাশিত | (ইতিহাসে রেকর্ডকৃত) |
-| `6.23.7` | — | — | ✅ প্রকাশিত | (ইতিহাসে রেকর্ডকৃত) |
-| `6.24.2` | — | — | ✅ প্রকাশিত | (ইতিহাসে রেকর্ডকৃত) |
-| `6.24.3` | — | — | ✅ প্রকাশিত | (ইতিহাসে রেকর্ডকৃত) |
-| `6.24.6` | — | — | ✅ প্রকাশিত | `pickApk` ABI বাছাই ঠিক — ৬৪-বিট ফোন আর ৩২-বিট APK পায় না |
-| `6.24.7` | — | — | ✅ প্রকাশিত | (ইতিহাসে রেকর্ডকৃত) |
-| `6.24.8` | — | — | ✅ প্রকাশিত | (ইতিহাসে রেকর্ডকৃত) |
-| `6.24.9` | — | — | ✅ প্রকাশিত | (ইতিহাসে রেকর্ডকৃত) |
-| `6.24.10` | `60` | 2026-11-13 | ✅ প্রকাশিত | রিলিজ হার্ডেনিং কী কী লাগে তা লিখে রাখা |
-| `6.24.11` | `61` | 2026-11-13 | ✅ প্রকাশিত | দুই মোড (Build ও Agent), সেটিংস রিভার্ক, গ্যাপলেস স্পিচ |
-| `6.25.0` | `62` | 2026-11-13 | 🟡 প্রস্তুত | নিজস্ব অ্যাপ লক (পাসওয়ার্ড + প্যাটার্ন), সব সেকশনে আইকন, নেটিভ ইঞ্জিন v3.1.0 (Zero Lag) |
-| `6.25.1` | `63` | — | 🔜 পরিকল্পিত | পরবর্তী বাগ-ঠিকের জন্য সংরক্ষিত |
-| `6.26.0` | `64` | — | 🔜 পরিকল্পিত | পরবর্তী নতুন ক্ষমতার জন্য সংরক্ষিত |
+| `6.21.0` | — | — | ✅ published | Composer rework; the microphone control returns (`ComposerMicButton`) |
+| `6.23.2` | — | — | ✅ published | (recorded in history) |
+| `6.23.7` | — | — | ✅ published | (recorded in history) |
+| `6.24.2` | — | — | ✅ published | (recorded in history) |
+| `6.24.3` | — | — | ✅ published | (recorded in history) |
+| `6.24.6` | — | — | ✅ published | `pickApk` ABI selection fixed — a 64-bit phone no longer gets the 32-bit APK |
+| `6.24.7` | — | — | ✅ published | (recorded in history) |
+| `6.24.8` | — | — | ✅ published | (recorded in history) |
+| `6.24.9` | — | — | ✅ published | (recorded in history) |
+| `6.24.10` | `60` | 2026-11-13 | ✅ published | Write down what hardening a release actually takes |
+| `6.24.11` | `61` | 2026-11-13 | ✅ published | Two modes that both act, a settings rework, and gapless speech |
+| `6.25.0` | `62` | 2026-11-13 | ✅ published | The app's own lock (password + pattern), an icon on every heading, native engine v3.1.0 (Zero Lag) |
+| `6.25.1` | `63` | — | 🔜 planned | Reserved for the next bug fix |
+| `6.26.0` | `64` | — | 🔜 planned | Reserved for the next new capability |
 
-> **পরবর্তী ভার্সন কত?** — সর্বশেষ ✅ সারির নিচের 🟡 সারিটি (এখন `6.25.0`)।
-> `6.25.0` প্রকাশ হয়ে গেলে 🟡 → ✅ হবে, আর পরবর্তী কাজের ধরন বুঝে
-> `6.25.1` (বাগ-ঠিক) বা `6.26.0` (নতুন ক্ষমতা) বেছে নিতে হবে।
+> **What is the next version?** — the 🟡 row below the last ✅ row. Once `6.25.0`
+> is published the 🟡 becomes ✅, and the next number is chosen by the kind of
+> work: `6.25.1` (a bug fix) or `6.26.0` (a new capability).
 
 ---
 
-## ৪. প্রতিটি ভার্সনের বিস্তারিত
+## 4. Each version in detail
 
-নিচের প্রতিটি সেকশনের শিরোনাম হুবহু `## vX.Y.Z` আকারে রাখা বাধ্যতামূলক — রিলিজ
-ওয়ার্কফ্লো (`scripts/release-notes.sh`) এই শিরোনাম ধরে রিলিজের বর্ণনা তৈরি করে।
+Every section heading below must stay in the exact form `## vX.Y.Z` — the release
+workflow (`scripts/release-notes.sh`) finds the notes by that heading. The notes
+themselves are written in English, because they are the release body.
 
 ## v6.25.0
 
-**তারিখ:** 2026-11-13 · **versionCode:** 62 · **নেটিভ ইঞ্জিন:** v3.1.0
+**Date:** 2026-11-13 · **versionCode:** 62 · **Native engine:** v3.1.0
 
-### রিলিজ বর্ণনা
+### Release notes
 
-**The lock is now the app's own, and it no longer drags ZYRAXON back to the front.**
+The lock is now the app's own, and it no longer drags ZYRAXON back to the front.
 
 Two defects were really one. The cover went up in `onStop()` — which fires when an
 agent opens a browser, a dialler, or any other app — and it asked for the phone's
@@ -141,33 +147,42 @@ submitted without waiting for it, and the duplicate final that follows is droppe
 The window itself is 1.6s rather than 2.5s, and the turn tail and restart floor
 are shorter too.
 
-### এই ভার্সনে যা বদলেছে
+**A version ledger, so the next version is read rather than guessed.** The whole
+list lives in `VERSIONS.md`: which versions are published, which is next, and the
+full notes for each. The release body now comes from this file rather than the tag
+annotation, so it is 61 lines instead of 1. Two scripts hold it in place, and both
+run in CI and in the release workflow before a byte is built.
 
-| ক্ষেত্র | পরিবর্তন |
+### What changed
+
+| Area | Change |
 | --- | --- |
-| অ্যাপ লক | ফোনের ক্রেডেনশিয়াল বাদ; নিজস্ব পাসওয়ার্ড (৪–৮ সংখ্যা) ও ৩×৩ প্যাটার্ন যোগ |
-| লকের সময় | `onStop()` → `onStart()` — এজেন্ট অন্য অ্যাপ খুললে আর সামনে আসে না |
-| নিরাপত্তা | `AppLockStore.kt` — PBKDF2-HMAC-SHA256, প্রতি-ইনস্টলে আলাদা সল্ট, constant-time তুলনা |
-| সেটিংস | লক প্যান নতুন; পাসওয়ার্ড/প্যাটার্ন নির্বাচন ও লক সরানোর পথ |
-| সেকশন টাইটেল | `HorrorSectionTitle`-এ আইকন প্যারামিটার; ২০টি শিরোনামে নিজস্ব আইকন |
-| আইকন | `AppIcons`-এ `gesture`, `password`, `pin` যোগ |
-| নেটিভ ইঞ্জিন | v3.0.0 → **v3.1.0** — স্থির পার্শিয়াল সাথে সাথে পাঠানো, নীরবতা-অপেক্ষা ২.৫s → ১.৬s |
-| মেমরি | সহকারীর ভার্সন-নাম হার্ডকোড বাদ → `BuildConfig.VERSION_NAME` |
-| ইতিহাস | পুরোনো সব কমিট, ট্যাগ ও রিলিজ মুছে নতুন ইতিহাস শুরু |
+| App lock | Phone credential dropped; the app's own password (4–8 digits) and 3×3 pattern |
+| Lock timing | `onStop()` → `onStart()` — opening another app no longer brings ZYRAXON forward |
+| Security | `AppLockStore.kt` — PBKDF2-HMAC-SHA256, per-install salt, constant-time compare |
+| Settings | New lock pane; password/pattern choice and a way to remove the lock |
+| Section titles | `HorrorSectionTitle` takes an icon; 20 headings now carry their own |
+| Icons | `gesture`, `password` and `pin` added to `AppIcons` |
+| Native engine | v3.0.0 → **v3.1.0** — a settled partial is submitted at once; silence window 2.5s → 1.6s |
+| Version ledger | `VERSIONS.md` added; `scripts/verify-version.sh` and `scripts/release-notes.sh` |
+| Memory | The hardcoded assistant version name is gone; it reads `BuildConfig.VERSION_NAME` |
+| History | Every old commit, tag and release removed; the repository starts fresh |
 
-### যাচাই
+### Verified
 
-- `gradle :app:compileDebugKotlin` — সফল
-- `gradle :app:testDebugUnitTest` — **সব টেস্ট পাস**
-- লক স্ক্রিন সবার উপরে আঁকা হয় (কী-প্রম্পট, বুট স্ক্রিন, নোটিস — সবকিছুর উপরে)
+- `gradle :app:compileDebugKotlin` — success
+- `gradle :app:testDebugUnitTest` — all tests pass
+- The lock screen draws over everything (key prompt, boot screen, notices)
+- `scripts/verify-version.sh` — the version is written down
+- Release workflow — build success, three signed APKs published
 
 ---
 
 ## v6.24.11
 
-**তারিখ:** 2026-11-13 · **versionCode:** 61
+**Date:** 2026-11-13 · **versionCode:** 61
 
-### রিলিজ বর্ণনা
+### Release notes
 
 Two modes that both act, a settings rework, and gapless speech.
 
@@ -184,18 +199,18 @@ Two modes that both act, a settings rework, and gapless speech.
 - Version `6.24.10` / `60` → `6.24.11` / `61`. The TTS `User-Agent` no longer
   hardcodes a version; it reads `BuildConfig`.
 
-### যাচাই
+### Verified
 
-- `gradle :app:testDebugUnitTest` — ৪২৪টি টেস্ট পাস
-- `TEST-CI` সফল
+- `gradle :app:testDebugUnitTest` — 424 tests pass
+- `TEST-CI` — success
 
 ---
 
 ## v6.24.10
 
-**তারিখ:** 2026-11-13 · **versionCode:** 60
+**Date:** 2026-11-13 · **versionCode:** 60
 
-### রিলিজ বর্ণনা
+### Release notes
 
 Write down what hardening a release actually takes, and make the release workflow
 prove it on the real signed APKs before anything is published.
@@ -204,7 +219,7 @@ prove it on the real signed APKs before anything is published.
 
 ## v6.24.6
 
-### রিলিজ বর্ণনা
+### Release notes
 
 Fix APK selection for the phone's CPU family. GitHub returns release assets in
 name order, so `-arm32` arrives before `-arm64`; taking the first APK handed a
@@ -217,7 +232,7 @@ first APK.
 
 ## v6.21.0
 
-### রিলিজ বর্ণনা
+### Release notes
 
 Composer rework: `BottomComposer` renamed away, and the microphone control — which
 had been dropped from the app entirely — restored as `ComposerMicButton` in
@@ -225,23 +240,24 @@ had been dropped from the app entirely — restored as `ComposerMicButton` in
 
 ---
 
-## ৫. রিলিজ করার পদ্ধতি
+## 5. How to release
 
 ```bash
-# ১) ভার্সন বাড়ান (এই ফাইলের নিয়ম অনুযায়ী) — app/build.gradle.kts
-# ২) এই ফাইলে নতুন সারি ও নতুন "## vX.Y.Z" সেকশন যোগ করুন
-# ৩) কমিট ও পুশ
+# 1) Bump the version by the rule above — app/build.gradle.kts
+# 2) Add the new row and the new "## vX.Y.Z" section to this file
+# 3) Commit and push
 git add -A && git commit -m "..." && git push origin main
-# ৪) ট্যাগ — versionName হুবহু, কোনো প্রত্যয় নয়
+# 4) Tag — exactly the versionName, with no suffix
 git tag -a v6.25.0 -m "..." && git push origin v6.25.0
 ```
 
-ট্যাগ পুশ হলেই `release.yml` নিজে থেকে:
+Pushing the tag makes `release.yml`:
 
-1. `versionName` পড়ে (`app/build.gradle.kts` থেকে),
-2. তিনটি signed APK বিল্ড করে (arm64, arm32, universal),
-3. সিগনেচার ও হার্ডেনিং যাচাই করে,
-4. **এই ফাইল থেকে রিলিজের বর্ণনা নিয়ে** (`scripts/release-notes.sh`) রিলিজ প্রকাশ করে।
+1. read `versionName` from `app/build.gradle.kts`,
+2. build three signed APKs (arm64, arm32, universal),
+3. verify the signatures and the hardening,
+4. publish the release **with the notes from this file**
+   (`scripts/release-notes.sh`).
 
-রিলিজের বর্ণনা এই ফাইল থেকেই আসে, তাই বর্ণনা কখনো ছোট বা ফাঁকা হবে না — এখানে
-যতটা লিখবেন, রিলিজে ঠিক ততটাই দেখাবে।
+The release body comes from this file, so it can never be short or empty — as
+much as is written here is as much as the release shows.
