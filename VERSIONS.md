@@ -90,12 +90,12 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.24.10` | `60` | 2026-11-13 | ✅ published | Write down what hardening a release actually takes |
 | `6.24.11` | `61` | 2026-11-13 | ✅ published | Two modes that both act, a settings rework, and gapless speech |
 | `6.25.0` | `62` | 2026-11-13 | ✅ published | The app's own lock (password + pattern), an icon on every heading, native engine v3.1.0 (Zero Lag) |
-| `6.25.1` | `63` | — | 🔜 planned | Reserved for the next bug fix |
+| `6.25.1` | `63` | 2026-11-14 | 🟡 ready | Duplicate voice turns stopped, every language complete, apt repaired, links go to `/mobile` |
 | `6.26.0` | `64` | — | 🔜 planned | Reserved for the next new capability |
 
-> **What is the next version?** — the 🟡 row below the last ✅ row. Once `6.25.0`
+> **What is the next version?** — the 🟡 row below the last ✅ row. Once `6.25.1`
 > is published the 🟡 becomes ✅, and the next number is chosen by the kind of
-> work: `6.25.1` (a bug fix) or `6.26.0` (a new capability).
+> work: `6.25.2` (a bug fix) or `6.26.0` (a new capability).
 
 ---
 
@@ -104,6 +104,54 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 Every section heading below must stay in the exact form `## vX.Y.Z` — the release
 workflow (`scripts/release-notes.sh`) finds the notes by that heading. The notes
 themselves are written in English, because they are the release body.
+
+## v6.25.1
+
+**Date:** 2026-11-14 · **versionCode:** 63 · **Native engine:** v3.1.0
+
+### Release notes
+
+Four defects, one release. Two were in the voice loop, one hid behind a
+translation table that was never written, and one was apt refusing to start.
+
+**A spoken phrase was sent twice.** The recognizer closes a phrase only after its
+silence window, so a partial that holds still is submitted early — and then the
+recognizer's own final arrives carrying the same words and is sent again. The two
+are not always byte-identical; an engine trims, or collapses a double space,
+between them. `SttDecision.isSameTurn` now folds case and whitespace and treats
+the second one as the same turn, within a six-second window so that a phrase
+repeated on purpose later is still a new turn. The rule runs on **both** arrival
+orders, and the record is written by whichever side actually sent, so the
+duplicate is dropped whichever one it turns out to be.
+
+**Bengali showed in every language.** Forty-five strings in `AppLockScreen`,
+`Sheets` and `PermissionPanel` — the lock, the security pane, the permission
+pane — were in no table at all, so no language could translate them and the
+fallback handed Bengali back. They are now in all 59 tables, the `tools-*` tables
+are filled to match `tools-en`, and the translation tooling writes to
+`assets-src/i18n` — the path the build seals — instead of the old
+`app/src/main/assets/i18n`, which nothing has read for some time.
+
+The same tooling had a second fault, found while filling the tables: it let the
+translator rewrite a URL. Serbian turned `zyraxonai.lovable.app` into Cyrillic
+`апп.алл-хандс.дев`, a link that goes nowhere. A URL is now masked through the
+endpoint exactly like a `{N}` placeholder, so it comes back as it went out.
+
+**apt could not choose its backend.** `apt update` and everything else stopped at
+`unable to determine a suitable packaging system type` (exit 100). The cause is in
+apt's own source: `pkgInitSystem` scores each known system from three raw
+`stat()` calls — `Dir::State::status`, `Dir::Bin::dpkg` and `/etc/debian_version`
+— and picks the highest. Both of the first two were written as **relative** paths,
+so they resolved against the process's working directory (`/home`), where neither
+file exists, the score stayed at zero, and apt gave up before running anything.
+Both are now absolute, which takes the score to 20. The configuration marker is
+bumped to `v3`, so a Linux system installed by an earlier build is rewritten once
+and picks up the fix without the user reinstalling anything.
+
+**The key prompt opens the mobile page.** The first-run box that asks for a token,
+and the provider sheet in Settings, both opened the site root. They now open
+`https://zyraxonai.lovable.app/mobile`, the page that belongs to the app, in all
+60 languages.
 
 ## v6.25.0
 
