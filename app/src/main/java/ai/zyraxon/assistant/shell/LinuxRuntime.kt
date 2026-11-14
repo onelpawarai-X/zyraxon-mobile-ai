@@ -311,7 +311,7 @@ object LinuxRuntime {
     /**
      * True when every library link in the guest resolves to a real file.
      *
-     * The check is limited to `lib/*.so*` links: those are what the loader
+     * The check is limited to library links: those are what the loader
      * resolves before a program can start, and a broken one is exactly the state
      * an old unpack left behind. Links to applets and man pages are not checked,
      * because a missing one there is cosmetic and would force needless rebuilds.
