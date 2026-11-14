@@ -240,8 +240,22 @@ stop, so a prompt can be answered by typing into the running command.
   own libs through its `$ORIGIN` runpath.
 - The guest prefix shown to the user is `/usr`; the payload's real build path
   (`/data/data/ai.zyraxon/files/usr`) is bound too, because the binaries embed it.
-- Symlinks are created with bundled busybox, not `java.nio.file.Files` (API 26+;
-  minSdk is 21). Absolute targets on the build path are rewritten to `/usr`.
+- Symlinks are created with `android.system.Os.symlink` (kernel direct), not
+  `java.nio.file.Files` (API 26+; minSdk is 21). Absolute targets on the build
+  path are rewritten to `/usr`. The busybox `ln` is only a fallback.
+- **Unpacking a `.deb` must never use `copyRecursively`.** It follows a symlink
+  and copies what it points at, and it stops the whole copy at the first link
+  whose target is not written yet. Both silently drop the SONAME links the
+  loader needs — `libreadline.so.8.3` asks for `libncursesw.so.6` while the
+  archive holds only `libncursesw.so.6.5` — and the guest then fails at
+  `bash` with `CANNOT LINK EXECUTABLE ... Library "libncursesw.so.6" not found`.
+  `mergeTree` recreates links with `Os.symlink` and classifies entries by
+  `Os.lstat` `st_mode`, so a dangling link is still a link.
+- A guest installed by an older build is repaired once, before the first
+  command: `ensureBranding` rebuilds the links from the manifest inside the APK
+  (not from the guest's copy) and, if a library target is missing, rebuilds the
+  tree from the payload. The `.zyraxon-configured-vN` marker is bumped whenever
+  that repair has to run again.
 - The system is unpacked in the background on first launch; there is no install
   step for the user. Nothing needs Shizuku to run the Terminal.
 

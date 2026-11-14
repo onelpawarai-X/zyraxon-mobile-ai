@@ -59,6 +59,17 @@ object LinuxRuntime {
 
     private const val MARKER = "SYMLINKS.txt"
 
+    // The `st_mode` file-type bits, which Kotlin has no binding for. `lstat` is
+    // what tells a symbolic link from the file it points at, and a link whose
+    // target is not written yet is exactly the case `File.isFile` gets wrong.
+    private const val S_IFMT = 0xF000
+    private const val S_IFLNK = 0xA000
+    private const val S_IFDIR = 0x4000
+    private const val S_IFREG = 0x8000
+
+    /** What a directory entry is, decided from `lstat` rather than from `File`. */
+    enum class EntryKind { FILE, DIR, LINK, OTHER }
+
     /** The app's native library directory — the one place Android lets us exec from. */
     fun nativeLib(context: Context): File = File(context.applicationInfo.nativeLibraryDir)
 
@@ -253,9 +264,9 @@ object LinuxRuntime {
      *
      * The suffix is bumped whenever the generated configuration changes shape, so
      * a guest installed by an earlier build is rewritten once instead of keeping
-     * a config that no longer matches the code — v3 is the absolute-path apt.conf.
+     * a config that no longer matches the code — v4 rebuilds the SONAME symlinks; v3 was the absolute-path apt.conf.
      */
-    private const val BRANDED = ".zyraxon-configured-v3"
+    private const val BRANDED = ".zyraxon-configured-v4"
 
     /**
      * Writes the branding into a guest installed by an earlier build, whose files
@@ -270,11 +281,87 @@ object LinuxRuntime {
         runCatching {
             applyBranding(context, root) { }
             ensureSystemDirectories(root)
-            writeAptAndDpkgConfig(root)
-            fixScriptShebangs(root)
-            fixAptMethods(root)
-            fixExecutablePermissions(context)
+            // A guest installed before the link pass was fixed is missing the
+            // SONAME links its libraries need, and the install is not re-run for
+            // it. The links are rebuilt from the manifest in the APK's own
+            // bootstrap, not from the copy in the guest — that copy is the very
+            // file an older build failed to act on.
+            repairLinksFromPayload(context, root)
+            if (librariesResolve(root)) {
+                writeAptAndDpkgConfig(root)
+                fixScriptShebangs(root)
+                fixAptMethods(root)
+                fixExecutablePermissions(context)
+            } else {
+                // A link on its own is not enough: the file it points at can be
+                // missing too, because the old unpack stopped at the first link
+                // whose target had not been written yet. Only a fresh install
+                // repairs that, so the tree is removed and rebuilt from the
+                // payload once. `isInstalled` also accepts a tree with `bin/dpkg`
+                // but no DONE, so the whole tree has to go, not just the marker.
+                root.deleteRecursively()
+                install(context) { }
+            }
+            // Written in both cases: this is a one-shot repair, and a repair that
+            // failed must not wipe the guest again on every later command.
             File(root, BRANDED).writeText(System.currentTimeMillis().toString())
+        }
+    }
+
+    /**
+     * True when every library link in the guest resolves to a real file.
+     *
+     * The check is limited to `lib/*.so*` links: those are what the loader
+     * resolves before a program can start, and a broken one is exactly the state
+     * an old unpack left behind. Links to applets and man pages are not checked,
+     * because a missing one there is cosmetic and would force needless rebuilds.
+     */
+    private fun librariesResolve(root: File): Boolean {
+        val manifest = File(root, MARKER)
+        if (!manifest.isFile) return false
+        val libDir = File(root, "lib")
+        return manifest.readLines().all { line ->
+            val link = parseSymlinkLine(line) ?: return@all true
+            val name = link.second.substringAfterLast('/')
+            if (!link.second.startsWith("lib/") || !name.contains(".so")) return@all true
+            File(libDir, name).exists()
+        }
+    }
+
+    /**
+     * Rebuilds the guest's symbolic links from the manifest inside the APK.
+     *
+     * The install is skipped once a guest is finished, so a link pass that failed
+     * in an older build would never be retried. Reading the manifest straight out
+     * of the bundled archive is what makes the repair independent of whatever the
+     * guest was left holding. A missing archive or manifest is not an error here:
+     * this is a repair pass, and it must never stop a command from running.
+     */
+    private fun repairLinksFromPayload(context: Context, root: File) {
+        val assets = assetDir(context) ?: return
+        val text = try {
+            context.assets.open("$assets/bootstrap.zip").use { input ->
+                java.util.zip.ZipInputStream(input.buffered()).use { zis ->
+                    var entry = zis.nextEntry
+                    var body: String? = null
+                    while (entry != null) {
+                        if (entry.name == MARKER) {
+                            body = zis.readBytes().toString(Charsets.UTF_8)
+                            break
+                        }
+                        entry = zis.nextEntry
+                    }
+                    body
+                }
+            }
+        } catch (_: Exception) {
+            null
+        } ?: return
+        try {
+            val manifest = File(root, MARKER)
+            manifest.writeText(text)
+            applySymlinks(context, manifest, root) { }
+        } catch (_: Exception) {
         }
     }
 
@@ -603,12 +690,91 @@ esac
             // The payload stores files under its own absolute data path, so the
             // `files` directory is located, not guessed.
             val payloadRoot = findPayloadRoot(extract)
-            if (payloadRoot != null) payloadRoot.copyRecursively(dest, overwrite = true)
+            if (payloadRoot != null) mergeTree(payloadRoot, dest)
             work.deleteRecursively()
             true
         } catch (e: Exception) {
             log(" Could not unpack deb (${deb.name}): ${e.message}")
             false
+        }
+    }
+
+    /**
+     * Classifies a `st_mode` into the four cases the merge cares about.
+     *
+     * Pure, so the rule can be checked off-device. The one that matters is
+     * [EntryKind.LINK]: a symbolic link is neither a file nor a directory to the
+     * merge, because it must be recreated as a link rather than followed. Reading
+     * it through `File.isFile` would report false for a link whose target is not
+     * written yet, and the link would then be dropped instead of recreated.
+     */
+    internal fun entryKind(mode: Int): EntryKind = when (mode and S_IFMT) {
+        S_IFREG -> EntryKind.FILE
+        S_IFDIR -> EntryKind.DIR
+        S_IFLNK -> EntryKind.LINK
+        else -> EntryKind.OTHER
+    }
+
+    /**
+     * Merges one package's tree into the guest, preserving symbolic links.
+     *
+     * `copyRecursively` is the obvious call and the wrong one twice over: it
+     * follows a link and copies what it points at, so `libncursesw.so.6` becomes a
+     * second copy of the library rather than the link the loader looks for; and on
+     * a link whose target has not been written yet it stops the whole copy, so the
+     * files after it never arrive. Both leave a guest whose libraries cannot be
+     * resolved, and the failure is silent — the package reports success.
+     *
+     * Directories merge. A file or link replaces whatever is already there, which
+     * is how a later package upgrades an earlier one.
+     */
+    private fun mergeTree(source: File, dest: File) {
+        when (entryKind(lstatMode(source) ?: return)) {
+            EntryKind.LINK -> replaceWithSymlink(source, dest)
+            EntryKind.DIR -> {
+                if (!dest.exists()) dest.mkdirs()
+                source.listFiles()?.forEach { child -> mergeTree(child, File(dest, child.name)) }
+            }
+            EntryKind.FILE -> {
+                dest.parentFile?.mkdirs()
+                if (isSymlink(dest)) dest.delete()
+                source.copyTo(dest, overwrite = true)
+            }
+            EntryKind.OTHER -> Unit
+        }
+    }
+
+    /**
+     * The `st_mode` of [file] without following it, or null when it is not there.
+     *
+     * `lstat` rather than `File.exists()`: a link whose target is not written yet
+     * still has to be recognised as a link and recreated, and `exists()` reports
+     * false for it. `android.system.Os` is used rather than `java.nio.file`, which
+     * is API 26+ while this app supports API 21.
+     */
+    private fun lstatMode(file: File): Int? = try {
+        android.system.Os.lstat(file.absolutePath).st_mode
+    } catch (_: Exception) {
+        null
+    }
+
+    private fun isSymlink(file: File): Boolean = entryKind(lstatMode(file) ?: 0) == EntryKind.LINK
+
+    /** Points [dest] at whatever [source] points at, rather than copying the target. */
+    private fun replaceWithSymlink(source: File, dest: File) {
+        val target = try {
+            android.system.Os.readlink(source.absolutePath)
+        } catch (_: Exception) {
+            return
+        }
+        try {
+            dest.delete()
+        } catch (_: Exception) {
+        }
+        dest.parentFile?.mkdirs()
+        try {
+            android.system.Os.symlink(target, dest.absolutePath)
+        } catch (_: Exception) {
         }
     }
 
@@ -704,29 +870,81 @@ esac
     }
 
     /**
-     * A zip cannot hold symlinks, so the bootstrap ships them as a `target←link`
-     * text file. Without them `sh`, `env` and most applets do not exist.
+     * Recreates every link listed in the archive's `SYMLINKS.txt`.
      *
-     * The links are made with the bundled busybox rather than
-     * `java.nio.file.Files`, which is API 26+ and this app supports API 21. Any
-     * absolute target that points at the payload's build path is rewritten to the
-     * prefix the guest actually sees, so a link never depends on the compat bind.
+     * A zip cannot hold symlinks, so the bootstrap ships them as a `target←link`
+     * text file. Without them `sh`, `env` and most applets do not exist, and a
+     * shared object cannot find the version of its dependency it was built
+     * against — `libreadline.so.8.3` asks for `libncursesw.so.6` while the
+     * archive holds only `libncursesw.so.6.5`, so without the link every program
+     * that pulls in readline dies at startup with `Library ... not found`.
+     *
+     * The links are made with the kernel directly rather than through the bundled
+     * toolbox, which may not be ready yet while the guest is still being unpacked,
+     * and not through `java.nio.file.Files`, which is API 26+ while this app
+     * supports API 21. Any absolute target that points at the payload's build path
+     * is rewritten to the prefix the guest actually sees, so a link never depends
+     * on the compat bind. A failure is counted and reported rather than passed
+     * over in silence.
      */
     private fun applySymlinks(context: Context, manifest: File, dest: File, log: (String) -> Unit) {
-        if (!manifest.exists()) return
-        if (!ShellRuntime.isAvailable(context)) return
-        var made = 0
-        manifest.readLines().forEach { raw ->
-            val line = raw.trim()
-            val sep = line.indexOf('←')
-            if (sep <= 0) return@forEach
-            val target = guestTarget(line.substring(0, sep), dest)
-            val link = File(dest, line.substring(sep + 1).removePrefix("./"))
-            link.parentFile?.mkdirs()
-            // `-f` replaces an existing link, so there is nothing to clean up first.
-            if (run(context, dest, "ln", "-sf", target, link.absolutePath)) made++
+        if (!manifest.exists()) {
+            log(" no link manifest in the payload")
+            return
         }
-        log(" $made symlinks")
+        var made = 0
+        var failed = 0
+        manifest.readLines().forEach { raw ->
+            val link = parseSymlinkLine(raw) ?: return@forEach
+            val target = guestTarget(link.first, dest)
+            val file = File(dest, link.second)
+            file.parentFile?.mkdirs()
+            if (makeSymlink(context, dest, file, target)) made++ else failed++
+        }
+        log(" $made symlinks" + if (failed > 0) " ($failed could not be made)" else "")
+    }
+
+    /**
+     * Splits one `target←link` line of the manifest, or null when it is not one.
+     *
+     * The separator is a real `←` (U+2190), not an ASCII arrow, and the link half
+     * is written relative to the prefix. Blank lines, comments and anything that
+     * does not carry the separator are skipped rather than guessed at. Pure, so
+     * the format can be checked without a payload.
+     */
+    internal fun parseSymlinkLine(line: String): Pair<String, String>? {
+        val text = line.trim()
+        val sep = text.indexOf('←')
+        if (sep <= 0) return null
+        val target = text.substring(0, sep).trim()
+        val link = text.substring(sep + 1).trim().removePrefix("./")
+        if (target.isEmpty() || link.isEmpty()) return null
+        return target to link
+    }
+
+    /**
+     * Creates one symbolic link, kernel first and toolbox second.
+     *
+     * `Os.symlink` is the direct call and needs nothing else present. The toolbox
+     * is kept as the fallback for the case where the kernel refuses the call, and
+     * its own absence is no longer a reason to skip the link.
+     */
+    private fun makeSymlink(context: Context, dir: File, link: File, target: String): Boolean {
+        // `delete` removes the link itself, never what it points at, and succeeds
+        // on a dangling link where `exists` would report false.
+        try {
+            link.delete()
+        } catch (_: Exception) {
+        }
+        try {
+            android.system.Os.symlink(target, link.absolutePath)
+            return true
+        } catch (_: Exception) {
+        }
+        if (ShellRuntime.isAvailable(context)) {
+            if (run(context, dir, "ln", "-sf", target, link.absolutePath)) return true
+        }
+        return false
     }
 
     /**
@@ -753,6 +971,10 @@ esac
     ): ShellRuntime.Result? {
         if (!isInstalled(context)) return null
 
+        // A guest installed by an earlier build may predate a fix to the unpack
+        // or link pass, and the install is not re-run for it. This repairs it in
+        // place once, before the first command. A single marker check afterwards.
+        ensureBranding(context)
         // Ensure permissions are intact before running
         fixExecutablePermissions(context)
         // 1. Prioritize Direct Linker Execution: 100% immune to SECCOMP Exit 159 & noexec restrictions

@@ -91,12 +91,12 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.24.11` | `61` | 2026-11-13 | ✅ published | Two modes that both act, a settings rework, and gapless speech |
 | `6.25.0` | `62` | 2026-11-13 | ✅ published | The app's own lock (password + pattern), an icon on every heading, native engine v3.1.0 (Zero Lag) |
 | `6.25.1` | `63` | 2026-11-14 | ✅ published | Duplicate voice turns stopped, every language complete, apt repaired, links go to `/mobile` |
-| `6.25.2` | `64` | — | 🔜 planned | Reserved for the next bug fix |
+| `6.25.2` | `64` | 2026-11-14 | 🟡 ready | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start |
 | `6.26.0` | `65` | — | 🔜 planned | Reserved for the next new capability |
 
-> **What is the next version?** — the 🟡 row below the last ✅ row. Once `6.25.1`
+> **What is the next version?** — the 🟡 row below the last ✅ row. Once `6.25.2`
 > is published the 🟡 becomes ✅, and the next number is chosen by the kind of
-> work: `6.25.2` (a bug fix) or `6.26.0` (a new capability).
+> work: `6.25.3` (a bug fix) or `6.26.0` (a new capability).
 
 ---
 
@@ -105,6 +105,51 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 Every section heading below must stay in the exact form `## vX.Y.Z` — the release
 workflow (`scripts/release-notes.sh`) finds the notes by that heading. The notes
 themselves are written in English, because they are the release body.
+
+## v6.25.2
+
+**Date:** 2026-11-14 · **versionCode:** 64 · **Native engine:** v3.1.0
+
+### Release notes
+
+The Linux system could not run a single command. `bash` refused to start with
+
+```
+CANNOT LINK EXECUTABLE ".../files/usr/bin/bash":
+Library "libncursesw.so.6" not found: needed by
+".../files/usr/lib/libreadline.so.8.3"
+```
+
+and every command that needs a shell — `apt update` above all — died with it.
+
+**The link was never made.** A shared object records the dependency it was built
+against, and that name is not always the file that is installed:
+`libreadline.so.8.3` asks for `libncursesw.so.6`, while the package ships only
+`libncursesw.so.6.5`. The shorter name is supplied by a symbolic link, and the
+`.deb` does contain it. The unpack threw it away.
+
+Unpacking a package copied its tree with `copyRecursively`, which is the obvious
+call and wrong twice over. It follows a symbolic link and copies what it points
+at, so the link became a second copy of the library instead of the link the
+loader looks for. And when it meets a link whose target has not been written yet
+it stops the whole copy, so every file after it in that package never arrives —
+silently, with the package still reported as installed. The payload needs
+**twenty** of those links. The guest was left with none of the ones that matter.
+
+The tree is now merged entry by entry. A symbolic link is recreated as a link
+with `Os.symlink`, and a directory entry is classified by `Os.lstat`'s `st_mode`
+rather than by `File`, because a link whose target is missing has to still be
+recognised as a link. A test reads the real payload and proves every library a
+binary asks for can be resolved, so a payload swap that drops a link fails in CI
+rather than on a phone.
+
+**A guest already installed is repaired, not thrown away.** The install is
+skipped once it has finished, so the link pass would never run again for anyone
+who already had the system. Before the first command, a guest from an older build
+has its links rebuilt from the manifest inside the APK — the guest's own copy is
+the very file the old build failed to act on — and if a library target is missing
+as well, the tree is rebuilt from the payload once. The configuration marker moves
+to `v4` so the repair runs exactly one time.
 
 ## v6.25.1
 
