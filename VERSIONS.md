@@ -90,8 +90,9 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.24.10` | `60` | 2026-11-13 | ✅ published | Write down what hardening a release actually takes |
 | `6.24.11` | `61` | 2026-11-13 | ✅ published | Two modes that both act, a settings rework, and gapless speech |
 | `6.25.0` | `62` | 2026-11-13 | ✅ published | The app's own lock (password + pattern), an icon on every heading, native engine v3.1.0 (Zero Lag) |
-| `6.25.1` | `63` | 2026-11-14 | 🟡 ready | Duplicate voice turns stopped, every language complete, apt repaired, links go to `/mobile` |
-| `6.26.0` | `64` | — | 🔜 planned | Reserved for the next new capability |
+| `6.25.1` | `63` | 2026-11-14 | ✅ published | Duplicate voice turns stopped, every language complete, apt repaired, links go to `/mobile` |
+| `6.25.2` | `64` | — | 🔜 planned | Reserved for the next bug fix |
+| `6.26.0` | `65` | — | 🔜 planned | Reserved for the next new capability |
 
 > **What is the next version?** — the 🟡 row below the last ✅ row. Once `6.25.1`
 > is published the 🟡 becomes ✅, and the next number is chosen by the kind of
