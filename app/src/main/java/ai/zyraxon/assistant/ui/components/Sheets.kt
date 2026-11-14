@@ -2305,7 +2305,7 @@ fun SettingsSheet(
                                     context.startActivity(
                                         android.content.Intent(
                                             android.content.Intent.ACTION_VIEW,
-                                            android.net.Uri.parse("https://zyraxonai.lovable.app")
+                                            android.net.Uri.parse("https://zyraxonai.lovable.app/mobile")
                                         ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                                     )
                                 } catch (_: Exception) {

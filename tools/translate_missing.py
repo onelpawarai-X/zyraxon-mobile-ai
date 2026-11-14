@@ -21,13 +21,14 @@ same shape the Kotlin call site looks up.
 import json
 import os
 import sys
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kotlin_strings as K  # noqa: E402
 import translate_ui as T  # noqa: E402
 
 ROOT = K.ROOT
-OUT_DIR = os.path.join(ROOT, "app", "src", "main", "assets", "i18n")
+OUT_DIR = os.path.join(ROOT, "assets-src", "i18n")
 RUNTIME_FILE = os.path.join(ROOT, "tools", "runtime_keys.json")
 
 
@@ -49,6 +50,52 @@ def wanted_keys():
     return sorted(keys)
 
 
+def tool_keys():
+    """The tool-message fragments, keyed by the English table.
+
+    These are translated by fragment and substituted into a Bengali summary at
+    runtime, so they are a table of their own: `tools-en.json` is the reference
+    and every other `tools-*.json` is filled from it. English is complete, so
+    the runtime fallback never leaves Bengali behind, but a language with its own
+    entry is the one a reader actually gets.
+    """
+    ref = os.path.join(OUT_DIR, "tools-en.json")
+    if not os.path.exists(ref):
+        return []
+    return sorted(json.load(open(ref, encoding="utf-8")))
+
+
+def translate_table(path, missing, code):
+    """Translates [missing] into [code] and merges them into the table at [path]."""
+    table = json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {}
+    added = {}
+    for start in range(0, len(missing), T.BATCH):
+        chunk = missing[start : start + T.BATCH]
+        protected = []
+        names = []
+        for text in chunk:
+            masked, found = T.protect(T.guard_brand(text))
+            protected.append(masked)
+            names.append(found)
+        results = T.fetch(protected, code)
+        for text, translated, found in zip(chunk, results, names):
+            value = T.restore_brand(T.restore(translated, found)).strip()
+            if not value or any(value.count(name) != 1 for name in found):
+                value = text
+            # The endpoint transliterates the product name, so a value that
+            # lost it falls back to the source rather than shipping another brand.
+            if T.BRAND.search(text) and "ZYRAXON" not in value.upper():
+                value = text
+            added[text] = value
+        # A longer gap between batches: the endpoint starts answering with the
+        # source text (which reads as "untranslated") when the whole table is
+        # pushed through it back to back.
+        time.sleep(1.6)
+    table.update(added)
+    json.dump(table, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1, sort_keys=True)
+    return len(added), len(table)
+
+
 def main():
     force = "--force" in sys.argv
     keys = wanted_keys()
@@ -62,6 +109,9 @@ def main():
     for key in keys:
         bn.setdefault(key, key)
     json.dump(bn, open(bn_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1, sort_keys=True)
+
+    fragments = tool_keys()
+    print("tool fragments:", len(fragments))
 
     failures = []
     for lang in languages:
@@ -81,42 +131,27 @@ def main():
                 for k in sorted(set(keys) | set(table))
                 if k not in table or (table[k] == k and K.BENGALI.search(k))
             ]
-        if not missing:
+        tools_path = os.path.join(OUT_DIR, "tools-" + code + ".json")
+        tools_table = json.load(open(tools_path, encoding="utf-8")) if os.path.exists(tools_path) else {}
+        tools_missing = [
+            k
+            for k in fragments
+            if k not in tools_table or (tools_table[k] == k and K.BENGALI.search(k))
+        ]
+        if not missing and not tools_missing:
             print("%-6s up to date" % code, flush=True)
             continue
-        added = {}
         try:
-            for start in range(0, len(missing), T.BATCH):
-                chunk = missing[start : start + T.BATCH]
-                protected = []
-                names = []
-                for text in chunk:
-                    masked, found = T.protect(T.guard_brand(text))
-                    protected.append(masked)
-                    names.append(found)
-                results = T.fetch(protected, code)
-                for text, translated, found in zip(chunk, results, names):
-                    value = T.restore_brand(T.restore(translated, found)).strip()
-                    if not value or any(value.count(name) != 1 for name in found):
-                        value = text
-                    # The endpoint transliterates the product name, so a value that
-                    # lost it falls back to the source rather than shipping another brand.
-                    if T.BRAND.search(text) and "ZYRAXON" not in value.upper():
-                        value = text
-                    added[text] = value
-                import time
-
-                # A longer gap between batches: the endpoint starts answering with
-                # the source text (which reads as "untranslated") when the whole
-                # table is pushed through it back to back.
-                time.sleep(1.6)
+            ui_added = translate_table(path, missing, code) if missing else None
+            tool_added = translate_table(tools_path, tools_missing, code) if tools_missing else None
         except Exception as error:
             failures.append("%s: %s" % (code, error))
             print("%-6s FAILED %s" % (code, error), flush=True)
             continue
-        table.update(added)
-        json.dump(table, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1, sort_keys=True)
-        print("%-6s +%d (now %d)" % (code, len(added), len(table)), flush=True)
+        if ui_added:
+            print("%-6s ui +%d (now %d)" % (code, ui_added[0], ui_added[1]), flush=True)
+        if tool_added:
+            print("%-6s tools +%d (now %d)" % (code, tool_added[0], tool_added[1]), flush=True)
 
     if failures:
         print("failed: %s" % ", ".join(failures), file=sys.stderr)

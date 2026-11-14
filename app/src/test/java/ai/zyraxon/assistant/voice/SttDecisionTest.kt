@@ -160,4 +160,59 @@ class SttDecisionTest {
         assertTrue(SttDecision.isRealInterruption("থামো"))
         assertFalse(SttDecision.isRealInterruption("তোমার"))
     }
+
+    // ── one turn, one send ────────────────────────────────────────────────
+    //
+    // The user's report: "এক কথা দুইবার করে উঠতেছে". A partial that holds still
+    // is sent without waiting for the engine's silence window, and the engine's
+    // own final then carries the same words. These lock in that the final is
+    // dropped — and that a phrase genuinely repeated later is not.
+
+    @Test
+    fun `the final that repeats its own settled partial is the same turn`() {
+        assertTrue(
+            SttDecision.isSameTurn(
+                text = "আজকের আবহাওয়া কেমন",
+                previous = "আজকের আবহাওয়া কেমন",
+                elapsedMs = 400L
+            )
+        )
+    }
+
+    @Test
+    fun `an engine that re-spaces or re-cases the final is still the same turn`() {
+        assertTrue(
+            SttDecision.isSameTurn(
+                text = "  আজকের   আবহাওয়া কেমন ",
+                previous = "আজকের আবহাওয়া কেমন",
+                elapsedMs = 400L
+            )
+        )
+        assertTrue(
+            SttDecision.isSameTurn(
+                text = "Open the   Settings",
+                previous = "open the settings",
+                elapsedMs = 300L
+            )
+        )
+    }
+
+    @Test
+    fun `the same words said again later are a new turn`() {
+        assertFalse(
+            SttDecision.isSameTurn(
+                text = "আজকের আবহাওয়া কেমন",
+                previous = "আজকের আবহাওয়া কেমন",
+                elapsedMs = 30_000L
+            )
+        )
+    }
+
+    @Test
+    fun `different words are never the same turn`() {
+        assertFalse(
+            SttDecision.isSameTurn("আজকের আবহাওয়া কেমন", "কালকের আবহাওয়া কেমন", 200L)
+        )
+        assertFalse(SttDecision.isSameTurn("যেকোনো কথা", "", 100L))
+    }
 }

@@ -205,7 +205,7 @@ fun ApexKeyPrompt(vm: ZyraxonViewModel, onDone: () -> Unit) {
                 onClick = {
                     try {
                         context.startActivity(
-                            Intent(Intent.ACTION_VIEW, Uri.parse("https://zyraxonai.lovable.app"))
+                            Intent(Intent.ACTION_VIEW, Uri.parse("https://zyraxonai.lovable.app/mobile"))
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         )
                     } catch (_: Exception) {

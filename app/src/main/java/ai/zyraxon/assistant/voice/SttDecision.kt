@@ -32,6 +32,14 @@ object SttDecision {
     /** A settled fragment shorter than this is too little to be a whole turn. */
     const val SETTLE_MIN_CHARS = 8
 
+    /**
+     * How long after a settled partial its own final still counts as the same
+     * turn. The final follows the partial by well under a second in practice; the
+     * window only has to cover the recognizer's own silence timeout, and staying
+     * short is what keeps a genuinely repeated phrase sendable.
+     */
+    const val DUPLICATE_WINDOW_MS = 6_000L
+
     /** One-word phrases that genuinely mean "stop" and may cut the assistant off. */
     val STOP_COMMANDS = setOf(
         "থামো", "থাম", "শোনো", "শোন", "স্টপ", "বন্ধ",
@@ -131,4 +139,33 @@ object SttDecision {
         if (words.size >= 2) return true
         return words.any { it in STOP_COMMANDS }
     }
+
+    /**
+     * True when a recognized phrase is the same turn as words already sent from a
+     * settled partial, so sending it again would put one sentence in the chat
+     * twice.
+     *
+     * This is the duplicate the zero-lag path creates: a partial that holds still
+     * is sent without waiting for the engine's silence window, and the engine's
+     * own final then arrives carrying the same words. The two are not always
+     * byte-identical — an engine trims, or collapses a double space, between
+     * them — so the comparison folds case and whitespace.
+     *
+     * [elapsedMs] bounds it. A phrase repeated on purpose later in the
+     * conversation is a new turn, and only the final that follows its own partial
+     * by less than [DUPLICATE_WINDOW_MS] is treated as the same one.
+     */
+    fun isSameTurn(
+        text: String,
+        previous: String,
+        elapsedMs: Long,
+        windowMs: Long = DUPLICATE_WINDOW_MS
+    ): Boolean {
+        if (previous.isBlank()) return false
+        if (elapsedMs > windowMs) return false
+        return normalize(text) == normalize(previous)
+    }
+
+    private fun normalize(text: String): String =
+        text.trim().replace(Regex("\\s+"), " ").lowercase()
 }

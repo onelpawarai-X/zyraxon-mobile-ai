@@ -34,7 +34,7 @@ import kotlin_strings  # noqa: E402  (same directory, used for literal extractio
 
 ROOT = kotlin_strings.ROOT
 LANGS_FILE = os.path.join(ROOT, "tools", "languages.json")
-OUT_DIR = os.path.join(ROOT, "app", "src", "main", "assets", "i18n")
+OUT_DIR = os.path.join(ROOT, "assets-src", "i18n")
 
 BATCH = 40
 ENDPOINT = "https://clients5.google.com/translate_a/t"
@@ -120,16 +120,25 @@ def tokenize(text):
 # few languages collapse the pair.
 MASKED = re.compile(r"\[{1,2}\s*(\d+)\s*\]{1,2}")
 
+# A `{N}` placeholder must survive the round trip, and so must a URL. The endpoint
+# treats a bare domain as a transliterable word — Serbian turns
+# `zyraxonai.lovable.app` into Cyrillic `апп.алл-хандс.дев`, which is a link that
+# goes nowhere. Both are masked through the same table, so the order they appear
+# in is preserved and one restore puts every one of them back.
+PROTECTED = re.compile(
+    r"\{\d+\}|\b(?:https?://)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?:/[^\s\u0980-\u09FF]*)?"
+)
+
 
 def protect(text):
-    """Mask the `{N}` tokens so the translator cannot renumber or drop them."""
+    """Mask the `{N}` tokens and any URL so the translator cannot rewrite them."""
     names = []
 
     def repl(match):
         names.append(match.group(0))
         return "[[%d]]" % (len(names) - 1)
 
-    return re.sub(r"\{\d+\}", repl, text), names
+    return PROTECTED.sub(repl, text), names
 
 
 def restore(text, names):
@@ -141,17 +150,23 @@ def restore(text, names):
     return MASKED.sub(repl, text)
 
 
-BRAND = re.compile(r"ZYRAXON|জাইরাক্সন", re.I)
 # The endpoint transliterates the product name — Latin `ZYRAXON` comes back as
 # Cyrillic `Ксираксон`, Japanese katakana, or even the trademark `Xerox`. Holding
 # it as a bracketed marker keeps it out of the translator's reach; the marker
 # itself survives every script, including Serbian, which is the one language that
 # transliterates an ASCII marker instead of passing it through.
+#
+# A name that is part of a domain (`zyraxonai.lovable.app`) is left for `protect`,
+# which masks the whole URL: masking the prefix first would strand `ai.lovable.app`
+# and the endpoint would then translate that instead.
+BRAND = re.compile(r"(?:ZYRAXON|জাইরাক্সন)(?![\w-]*\.[a-z]{2,})", re.I)
 BRAND_MARK = "[[B]]"
 # Amharic collapses the marker to a single pair (`[ለ]`), so one or two brackets
 # on either side are accepted. The window is small, so an ordinary bracketed word
-# in a translation cannot be swallowed by mistake.
-_BRAND_BACK = re.compile(r"\[{1,2}[^\]]{0,6}\]{1,2}")
+# in a translation cannot be swallowed by mistake. A numeric marker is excluded:
+# those belong to `restore`, and turning a leftover one into the product name
+# would silently corrupt a URL that failed to come back.
+_BRAND_BACK = re.compile(r"\[{1,2}(?!\s*\d+\s*\]{1,2})[^\]]{0,6}\]{1,2}")
 
 
 def guard_brand(text):

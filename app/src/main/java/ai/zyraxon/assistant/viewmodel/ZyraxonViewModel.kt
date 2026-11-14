@@ -127,8 +127,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private var lastPartialMs = 0L
     private var settleJob: kotlinx.coroutines.Job? = null
 
-    /** The words already sent from a settled partial, so the final is not sent twice. */
+    /**
+     * The words already sent from a settled partial, and when. The recognizer's
+     * final carries the same phrase a beat later, and it is not always
+     * byte-identical — an engine trims, or collapses a double space, between the
+     * partial and the final. The two are one turn, so the comparison is
+     * normalized and time-bounded: the same words said again on purpose later in
+     * the conversation are still a new turn.
+     */
     private var lastSentSttText = ""
+    private var lastSentSttMs = 0L
 
     /**
      * True while a spoken reply is paused because the user is talking over it.
@@ -1617,11 +1625,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 }
                 SttDecision.Action.SUBMIT -> {
                     _inputText.value = text
-                    // The settled partial above may already have sent these exact
-                    // words; the recognizer's final then carries them again. One
-                    // turn, one send.
-                    if (text == lastSentSttText) return@stt
                     if (_autoSend.value) {
+                        // The settled partial above may already have sent these
+                        // words; the recognizer's final then carries them again.
+                        // One turn, one send. The record is written here as well
+                        // as in [armSettleSubmit] because the two can arrive in
+                        // either order, and only the one that sent is the one the
+                        // other has to recognise as its duplicate.
+                        if (isDuplicateStt(text)) return@stt
+                        lastSentSttText = text
+                        lastSentSttMs = System.currentTimeMillis()
                         onUserStartedSpeaking()
                         sendMessage(text)
                     } else if (pausedByUser) {
@@ -1688,12 +1701,27 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             if (!ai.zyraxon.assistant.voice.SttDecision.isSettled(unchanged, still)) return@launch
             if (voiceManager.isSpeakerActive()) return@launch
             if (liveVoice.isActive) return@launch
+            // The recognizer's own final can land first — it carries the same
+            // words and has already been sent. The settled partial is then the
+            // duplicate, not the final, so the guard has to run on this side too.
+            if (isDuplicateStt(still)) return@launch
             lastSentSttText = still
+            lastSentSttMs = System.currentTimeMillis()
             _inputText.value = still
             onUserStartedSpeaking()
             sendMessage(still)
         }
     }
+
+    /**
+     * True when a recognized phrase is the same turn as the words already sent
+     * from a settled partial, so it must not be sent a second time. The rule
+     * lives in [SttDecision.isSameTurn] so it can be tested without a phone.
+     */
+    private fun isDuplicateStt(text: String): Boolean =
+        ai.zyraxon.assistant.voice.SttDecision.isSameTurn(
+            text, lastSentSttText, System.currentTimeMillis() - lastSentSttMs
+        )
 
     /**
      * True when a recognized phrase is really the assistant's own last words,

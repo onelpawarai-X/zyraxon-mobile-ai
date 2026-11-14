@@ -248,8 +248,14 @@ object LinuxRuntime {
         }
     }
 
-    /** True once [applyBranding] has run for the installed guest. */
-    private const val BRANDED = ".zyraxon-configured-v2"
+    /**
+     * True once [applyBranding] has run for the installed guest.
+     *
+     * The suffix is bumped whenever the generated configuration changes shape, so
+     * a guest installed by an earlier build is rewritten once instead of keeping
+     * a config that no longer matches the code — v3 is the absolute-path apt.conf.
+     */
+    private const val BRANDED = ".zyraxon-configured-v3"
 
     /**
      * Writes the branding into a guest installed by an earlier build, whose files
@@ -373,24 +379,34 @@ object LinuxRuntime {
     /**
      * Generates apt.conf and dpkg.cfg directing package tools to our app's storage,
      * fully resolving the payload's hardcoded paths (Exit 100 DirectoryExists error).
+     *
+     * Every `Dir::` value that apt *stats* is written absolute, and that is what
+     * fixes "Unable to determine a suitable packaging system type". apt picks its
+     * backend by score (`pkgInitSystem` → `debSystem::Score`), and the score comes
+     * from three raw `stat()` calls — `Dir::State::status`, `Dir::Bin::dpkg` and
+     * `/etc/debian_version`. A relative value is resolved against the process's
+     * working directory (`/home`), where neither file exists, so the score stays
+     * zero and apt exits 100 before doing anything. The absolute prefix is the
+     * same path the payload was built with, and it is visible inside the guest
+     * both through proot's bind and as part of the real rootfs.
      */
     fun writeAptAndDpkgConfig(root: File) {
         val realPath = root.absolutePath
         val etcApt = File(root, "etc/apt").apply { mkdirs() }
         val confContent = """
 Dir "$realPath";
-Dir::State "var/lib/apt";
-Dir::State::status "var/lib/dpkg/status";
-Dir::Cache "var/cache/apt";
-Dir::Etc "etc/apt";
+Dir::State "$realPath/var/lib/apt";
+Dir::State::status "$realPath/var/lib/dpkg/status";
+Dir::Cache "$realPath/var/cache/apt";
+Dir::Etc "$realPath/etc/apt";
 Dir::Etc::sourcelist "sources.list";
 Dir::Etc::sourceparts "sources.list.d";
 Dir::Etc::parts "apt.conf.d";
 Dir::Etc::preferences "preferences";
 Dir::Etc::preferencesparts "preferences.d";
-Dir::Bin::methods "lib/apt/methods";
-Dir::Bin::dpkg "bin/dpkg";
-Dir::Media::MountPath "media/apt";
+Dir::Bin::methods "$realPath/lib/apt/methods";
+Dir::Bin::dpkg "$realPath/bin/dpkg";
+Dir::Media::MountPath "$realPath/media/apt";
 Acquire::Languages "none";
 """.trimIndent()
         File(etcApt, "apt.conf").writeText(confContent)
