@@ -158,7 +158,8 @@ class SttDecisionTest {
         assertTrue(SttDecision.isRealInterruption("একটু থামো"))
         assertTrue(SttDecision.isRealInterruption("stop now"))
         assertTrue(SttDecision.isRealInterruption("থামো"))
-        assertFalse(SttDecision.isRealInterruption("তোমার"))
+        assertTrue(SttDecision.isRealInterruption("তোমার"))
+        assertFalse(SttDecision.isRealInterruption("হ্যাঁ"))
     }
 
     // ── one turn, one send ────────────────────────────────────────────────
@@ -214,5 +215,20 @@ class SttDecisionTest {
             SttDecision.isSameTurn("আজকের আবহাওয়া কেমন", "কালকের আবহাওয়া কেমন", 200L)
         )
         assertFalse(SttDecision.isSameTurn("যেকোনো কথা", "", 100L))
+    }
+
+    @Test
+    fun `a final that drops or completes a trailing word is the same turn`() {
+        assertTrue(SttDecision.isSameTurn("আজকের আবহাওয়া কেমন আছে বলো", "আজকের আবহাওয়া কেমন আছে বলো না", 900L))
+        assertTrue(SttDecision.isSameTurn("আজকের আবহাওয়া কেমন আছে বলো না", "আজকের আবহাওয়া কেমন আছে বলো", 900L))
+        assertTrue(SttDecision.isSameTurn("open the settings app", "open the settings", 1200L))
+        assertTrue(SttDecision.isSameTurn("what is the weath", "what is the weather today", 800L))
+    }
+
+    @Test
+    fun `a short different sentence is still a new turn`() {
+        assertFalse(SttDecision.isSameTurn("আজকের আবহাওয়া কেমন", "কালকের আবহাওয়া কেমন", 200L))
+        assertFalse(SttDecision.isSameTurn("open the camera", "open the settings", 500L))
+        assertFalse(SttDecision.isSameTurn("হ্যাঁ", "না", 500L))
     }
 }

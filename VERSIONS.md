@@ -91,7 +91,7 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.24.11` | `61` | 2026-11-13 | ✅ published | Two modes that both act, a settings rework, and gapless speech |
 | `6.25.0` | `62` | 2026-11-13 | ✅ published | The app's own lock (password + pattern), an icon on every heading, native engine v3.1.0 (Zero Lag) |
 | `6.25.1` | `63` | 2026-11-14 | ✅ published | Duplicate voice turns stopped, every language complete, apt repaired, links go to `/mobile` |
-| `6.25.2` | `64` | 2026-11-14 | 🟡 ready | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start |
+| `6.25.2` | `64` | 2026-11-14 | 🟡 ready | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start; voice turn sent once, speaking over the assistant cuts it off, 1.5 s of silence auto-sends |
 | `6.26.0` | `65` | — | 🔜 planned | Reserved for the next new capability |
 
 > **What is the next version?** — the 🟡 row below the last ✅ row. Once `6.25.2`
@@ -111,6 +111,12 @@ themselves are written in English, because they are the release body.
 **Date:** 2026-11-14 · **versionCode:** 64 · **Native engine:** v3.1.0
 
 ### Release notes
+
+**Voice.** A spoken sentence no longer appears twice: the recognizer's final is
+compared word by word with the partial already sent, so a dropped or completed
+trailing word still counts as the same turn. A single real word now cuts the
+assistant off, a phrase spoken over it is sent after its pause instead of waiting
+for the recognizer's slow final, and 1.5 s of silence sends the message.
 
 The Linux system could not run a single command. `bash` refused to start with
 

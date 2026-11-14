@@ -27,7 +27,7 @@ object SttDecision {
      * the recognizer's silence window. Short enough to feel instant, long enough
      * that a breath in the middle of a sentence is not mistaken for the end.
      */
-    const val SETTLE_MS = 900L
+    const val SETTLE_MS = 1_500L
 
     /** A settled fragment shorter than this is too little to be a whole turn. */
     const val SETTLE_MIN_CHARS = 8
@@ -137,7 +137,10 @@ object SttDecision {
             .split(Regex("[^\\p{L}\\p{M}\\p{N}]+"))
             .filter { it.length >= 2 }
         if (words.size >= 2) return true
-        return words.any { it in STOP_COMMANDS }
+        // The ear is always open for the user: even a single real word cuts the
+        // assistant off. The assistant's own voice never gets here — it is
+        // dropped earlier by the text match against its last reply.
+        return words.any { it in STOP_COMMANDS || it.count { c -> Character.isLetter(c) } >= 3 }
     }
 
     /**
@@ -163,7 +166,34 @@ object SttDecision {
     ): Boolean {
         if (previous.isBlank()) return false
         if (elapsedMs > windowMs) return false
-        return normalize(text) == normalize(previous)
+        val a = normalize(text)
+        val b = normalize(previous)
+        if (a == b) return true
+        return overlapsAsSameTurn(a, b)
+    }
+
+    /**
+     * The recognizer's final often differs a little from the partial that was
+     * already sent: a trailing word dropped, a half-heard last word completed,
+     * or one word re-guessed. Words are compared from the front and from the
+     * back; when the shared words cover at least three quarters of the shorter
+     * phrase (and it has two words or more, or is a prefix of the longer one),
+     * it is the same utterance, not a new one.
+     */
+    private fun overlapsAsSameTurn(a: String, b: String): Boolean {
+        val x = a.split(' ').filter { it.isNotEmpty() }
+        val y = b.split(' ').filter { it.isNotEmpty() }
+        if (x.isEmpty() || y.isEmpty()) return false
+        val (short, long) = if (x.size <= y.size) x to y else y to x
+        // One phrase simply continues the other, down to a half-heard last word.
+        if (short.size == 1) return long[0].startsWith(short[0]) && short[0].length >= 3
+        var p = 0
+        while (p < short.size && short[p] == long[p]) p++
+        if (p < short.size && long[p].startsWith(short[p]) && p == short.size - 1) p++
+        var q = 0
+        while (q < short.size - p && short[short.size - 1 - q] == long[long.size - 1 - q]) q++
+        val covered = minOf(short.size, p + q)
+        return short.size >= 2 && covered * 4 >= short.size * 3
     }
 
     private fun normalize(text: String): String =

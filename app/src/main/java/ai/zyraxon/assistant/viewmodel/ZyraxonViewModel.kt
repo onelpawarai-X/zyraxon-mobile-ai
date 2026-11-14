@@ -1688,7 +1688,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      */
     private fun armSettleSubmit(text: String) {
         if (!_autoSend.value) return
-        if (voiceManager.isSpeakerActive()) return
+        if (speakerBlocksUser()) return
         val now = System.currentTimeMillis()
         lastPartialText = text
         lastPartialMs = now
@@ -1699,7 +1699,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             val unchanged = System.currentTimeMillis() - lastPartialMs
             if (still != text) return@launch
             if (!ai.zyraxon.assistant.voice.SttDecision.isSettled(unchanged, still)) return@launch
-            if (voiceManager.isSpeakerActive()) return@launch
+            if (speakerBlocksUser()) return@launch
             if (liveVoice.isActive) return@launch
             // The recognizer's own final can land first — it carries the same
             // words and has already been sent. The settled partial is then the
@@ -1712,6 +1712,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             sendMessage(still)
         }
     }
+
+    /**
+     * True while the assistant's voice really is in the way of the mic. Once the
+     * user has cut in, the voice is paused and what follows is theirs, so the
+     * block lifts for [INTERRUPT_GRACE_MS] — otherwise the user's own sentence
+     * would wait for the recognizer's slow final instead of being sent after
+     * their pause.
+     */
+    private fun speakerBlocksUser(): Boolean =
+        voiceManager.isSpeakerActive() &&
+            System.currentTimeMillis() - lastUserInterruptMs > INTERRUPT_GRACE_MS
 
     /**
      * True when a recognized phrase is the same turn as the words already sent
