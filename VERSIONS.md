@@ -91,12 +91,13 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.24.11` | `61` | 2026-11-13 | ✅ published | Two modes that both act, a settings rework, and gapless speech |
 | `6.25.0` | `62` | 2026-11-13 | ✅ published | The app's own lock (password + pattern), an icon on every heading, native engine v3.1.0 (Zero Lag) |
 | `6.25.1` | `63` | 2026-11-14 | ✅ published | Duplicate voice turns stopped, every language complete, apt repaired, links go to `/mobile` |
-| `6.25.2` | `64` | 2026-11-14 | 🟡 ready | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start; voice turn sent once, speaking over the assistant cuts it off, 1.5 s of silence auto-sends; all system prompts rewritten in English with one shared core |
-| `6.26.0` | `65` | — | 🔜 planned | Reserved for the next new capability |
+| `6.25.2` | `64` | 2026-11-14 | ✅ published | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start |
+| `6.26.0` | `65` | 2026-11-14 | 🟡 ready | Voice turns sent once, cut-in by voice, 1.5 s auto-send; all system prompts rewritten in English with one shared human core |
+| `6.26.1` | `66` | — | 🔜 planned | Reserved for the next bug fix |
 
-> **What is the next version?** — the 🟡 row below the last ✅ row. Once `6.25.2`
+> **What is the next version?** — the 🟡 row below the last ✅ row. Once `6.26.0`
 > is published the 🟡 becomes ✅, and the next number is chosen by the kind of
-> work: `6.25.3` (a bug fix) or `6.26.0` (a new capability).
+> work: `6.26.1` (a bug fix) or `6.27.0` (a new capability).
 
 ---
 
@@ -106,19 +107,38 @@ Every section heading below must stay in the exact form `## vX.Y.Z` — the rele
 workflow (`scripts/release-notes.sh`) finds the notes by that heading. The notes
 themselves are written in English, because they are the release body.
 
+## v6.26.0
+
+**Date:** 2026-11-14 · **versionCode:** 65 · **Native engine:** v3.1.0
+
+### Release notes
+
+**The prompts are English now, and share one core.** All four system prompts and
+the six character prompts are rewritten, so they cost fewer tokens and the
+characters answer in whatever language the user speaks. Every file carries the
+same block: a human identity that never calls itself an AI, one rule set for
+working (stated once), one speaking style — a short opening, short lines while
+working, a short wrap-up — and one rule for asking: do nearly everything first,
+then ask a single short question with a recommendation, and wait. A landing page
+or a website is built straight away and opened in the preview with no publishing;
+an app is built as asked; full-stack work asks for the back-end choices first.
+
+**A spoken sentence is sent once.** The recognizer closes a phrase only after its
+silence window, so a partial that holds still is submitted early — and then the
+recognizer's own final arrives carrying the same words and is sent again. The two
+are not always byte-identical; the engine trims, or completes a trailing word,
+between them. The final is now compared word by word with the partial already
+sent, so a dropped or completed trailing word still counts as the same turn.
+
+**Speaking over the assistant works.** A single real word now cuts it off, a
+phrase spoken over it is sent after its own pause instead of waiting for the
+recognizer's slow final, and 1.5 s of silence sends the message.
+
 ## v6.25.2
 
 **Date:** 2026-11-14 · **versionCode:** 64 · **Native engine:** v3.1.0
 
 ### Release notes
-
-**Prompts.** All four system prompts (`assets-src/knowledge/`) and the six character prompts are now English, so they cost fewer tokens and the characters answer in whatever language the user speaks. Every file carries the same core block: a human identity that never calls itself an AI, one rule set for working (said once), one speaking style (a short opening, short lines while working, a short wrap-up), and a rule for asking — do nearly everything first, ask one short question with a recommendation, then wait. Landing pages and websites are built straight away and opened in the preview with no publishing; apps are built as asked; full-stack work asks for the back-end choices first.
-
-**Voice.** A spoken sentence no longer appears twice: the recognizer's final is
-compared word by word with the partial already sent, so a dropped or completed
-trailing word still counts as the same turn. A single real word now cuts the
-assistant off, a phrase spoken over it is sent after its pause instead of waiting
-for the recognizer's slow final, and 1.5 s of silence sends the message.
 
 The Linux system could not run a single command. `bash` refused to start with
 
