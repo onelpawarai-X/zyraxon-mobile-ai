@@ -118,11 +118,11 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.25.2` | `64` | 2026-11-14 | ✅ published | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start |
 | `6.25.3` | `65` | 2026-11-15 | ✅ published | Voice turns sent once, cut-in by voice, 1.5 s auto-send; all system prompts rewritten in English with one shared human core |
 | `6.25.4` | `66` | 2026-11-16 | ✅ published | API keys and tokens sealed in the Android keystore; the app lock is a pattern or a PIN plus optional spoken lock and unlock words |
-| `6.25.5` | `67` | 2026-11-15 | 🟡 ready (not yet published) | Settings → System → Documentation (20 chapters, 60 languages, search) and the Automation hub (skills, autopilot, money for any country, timeline, brain, call agent) |
+| `6.25.5` | `67` | 2026-11-15 | ✅ published | Settings → System → Documentation (20 chapters, 60 languages, search) and the Automation hub (skills, autopilot, money for any country, timeline, brain, call agent) |
 
-> **What is the next version?** — the 🟡 row below the last ✅ row, and nothing
-> else. Once `6.25.4` is published the 🟡 becomes ✅ and the next is `6.25.5` —
-> the last published number with its last part increased by one. There is no
+> **What is the next version?** — the row below the last ✅ row, and nothing
+> else. With `6.25.5` published the next is `6.25.6` — the last published number
+> with its last part increased by one. There is no
 > "next new capability" number: every release, large or small, takes the next
 > serial. `6.26.0` and `6.26.1` were reserved here once and are now **dropped**,
 > because a serial never leaves a gap.
