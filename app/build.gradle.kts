@@ -108,7 +108,7 @@ android {
     // this to 29+ silently breaks the whole Linux path. See AGENTS.md.
     targetSdk = 28
     versionCode = 65
-    versionName = "6.26.0"
+    versionName = "6.25.3"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
