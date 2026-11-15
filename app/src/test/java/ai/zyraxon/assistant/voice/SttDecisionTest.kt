@@ -83,8 +83,11 @@ class SttDecisionTest {
 
     @Test
     fun `a short partial during speech is ignored, not treated as an interruption`() {
+        // Below the bar: one letter is not a word the ear should act on. A
+        // single *real* word does cut in — see the interruption test below —
+        // so the fragment here has to be shorter than that bar.
         val action = SttDecision.decide(
-            text = "তোমার",
+            text = "ই",
             isFinal = false,
             speakerActive = true,
             repeatsReply = false
