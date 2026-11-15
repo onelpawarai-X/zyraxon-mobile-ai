@@ -427,6 +427,34 @@ Two things that wasted time, now known:
 - `sandbox_id` must be passed when reusing a warm sandbox, otherwise a new
   sandbox is provisioned and can hit the daily sandbox limit.
 
+## Cloud continuity — what happens while the phone is away
+
+A cloud turn does not stop when the phone does: the sandbox keeps working. The
+phone only sees what its socket delivers, and the socket only lives while the
+app does, so continuity is a *persisted* problem, not a transport one.
+
+- The read cursor is the position in a conversation's event log, written down by
+  `CloudStore.setCursor` as the read advances and cleared by `unbind` with the
+  binding. It is deliberately **not** kept in memory: a relaunch, a killed
+  process and a lost network all destroy memory, and the cursor is exactly the
+  thing that must survive them.
+- `CloudBridge.catchUp(apiKey, chatId)` reads every event after the cursor and
+  reports `running` (still working) alongside them. A chat with **no** cursor is
+  skipped — its transcript is pulled whole by the history import, and reading it
+  here too would show everything twice.
+- `CloudBridge.attachTurn` re-attaches the socket and REST tail to a turn already
+  in flight. It sends nothing and re-runs nothing: a phone tool the cloud asked
+  for while the phone was away is shown as a line, never replayed.
+- Triggers are: chat open, `onResume`, and a `registerDefaultNetworkCallback`
+  that fires when connectivity returns. The network one is the only way a phone
+  that lost signal mid-turn learns the turn is still going.
+- `CloudStore.setRunning/runningFor` persists the "working" marker for the same
+  reason. Without it a relaunched chat opens looking idle while the cloud works.
+  Offline must **not** clear it — no network is not evidence the turn stopped.
+
+Reads are inclusive, so a page opens with the cursor event itself; that one event
+is skipped by timestamp, the same way the live REST tail does it.
+
 ## Cloud transport — everything goes through the ZYRAXON gateway
 
 The app never talks to an upstream host. `CloudClient.CLOUD` is
