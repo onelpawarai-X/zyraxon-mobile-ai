@@ -499,6 +499,15 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             // place instead of an empty screen: the transcript is pulled down once,
             // then kept live by the socket like any other chat.
             launch { runCatching { importCloudHistory(c) } }
+            // A turn the cloud was still running when the phone went away is shown
+            // as running again from the first frame, because that is what it is.
+            // The flag is read from disk rather than memory: the process this turn
+            // began in is long gone, and without this the chat opened looking idle
+            // while the cloud kept working on it.
+            if (cloudStore.runningFor(c.id)) busyIds.update { it + c.id }
+            // Anything the cloud produced while this chat was closed is read back and
+            // shown, and a turn still running over there is followed live again.
+            catchUpCloud(c.id)
         }
     }
 
@@ -667,6 +676,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 runCatching { ai.zyraxon.assistant.auto.AutoRuntime.tick(app) }
             }
         }
+        // A cloud turn outlives the phone's network. The moment the network comes
+        // back, every chat is read up to date and any turn still running over there
+        // is followed again — registered once, for the life of the process.
+        watchForNetwork()
     }
 
     /** Runs an automation task (an autopilot rule, a call summary) as an agent turn in its own chat, without pulling the user away from theirs. */
@@ -5078,8 +5091,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // a hundred — enough for a short chat, but on a real one it stopped before
         // reaching any finished message, so the transcript came down empty. The
         // window is taken from the tail of the log, which is where the messages are.
-        val events = cloudClient.recentEvents(key, conv, limit = 600)
-        if (events.isEmpty()) return
+        val recorded = cloudClient.recentRecorded(key, conv, limit = 600)
+        if (recorded.isEmpty()) return
+        val events = recorded.map { it.event }
         val imported = ArrayList<ChatMessage>(events.size)
         // Finished messages are the transcript; a delta is one token of an answer
         // that a later finished message already carries whole. Importing both would
@@ -5140,6 +5154,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         flushStreamed()
         if (imported.isEmpty()) return
         repository.saveMessages(imported, c.id)
+        // The import just showed everything up to the newest event, so that event
+        // is where the next read resumes. Without this the chat had no cursor at
+        // all until its first turn ran, and a conversation opened, closed and
+        // reopened before the user typed anything had nothing to resume from.
+        recorded.lastOrNull { it.at.isNotBlank() }?.let { cloudStore.setCursor(c.id, it.at) }
         cloudHistoryImported.add(c.id)
     }
 
@@ -5147,6 +5166,252 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      *  pulled again on every open. Held in memory: a relaunch re-reads once,
      *  which is harmless because every row is written with REPLACE. */
     private val cloudHistoryImported = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+    /** Chats with a catch-up read already running, so a burst of triggers runs one. */
+    private val cloudCatchUpRunning = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+    /**
+     * Brings a cloud chat back up to date after the phone was away, and keeps it
+     * marked as working while the cloud is still working.
+     *
+     * This is the repair for the one gap the live socket cannot cover by itself: the
+     * socket only exists while the app does. A turn keeps running on the cloud after
+     * the phone goes away — that is the whole point of a cloud conversation — but
+     * the events it produces in that time were read from a cursor held in memory, so
+     * a closed app, a dead network or a killed process left them unread and the chat
+     * opened as though nothing had happened.
+     *
+     * Called when a chat is opened and when the app returns to the foreground. Safe
+     * to call repeatedly: one read runs per chat at a time, and a read that finds
+     * nothing new writes nothing.
+     */
+    fun catchUpCloud(chatId: String? = null) {
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isBlank() || !aiEngine.isOnline()) return
+        val id = chatId ?: _activeConversationId.value
+        if (!cloudCatchUpRunning.add(id)) return
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val c = session(id)
+                val catchUp = runCatching { cloudBridge.catchUp(key, id) }.getOrNull()
+                // A null means "nothing to read here" — no network, no binding, or a
+                // chat never read on this phone. The marker is deliberately left
+                // alone then: offline is not evidence that the cloud stopped, and
+                // clearing it would hide a turn that is still running.
+                if (catchUp == null) return@launch
+                val shown = renderCatchUp(c, catchUp.events)
+                // The flag is written down, not just held: this is what a relaunch
+                // reads to decide whether to show the chat as still working.
+                cloudStore.setRunning(id, catchUp.running)
+                if (catchUp.running) {
+                    busyIds.update { it + id }
+                    // The turn is alive on the cloud, so the app follows it again —
+                    // this is what turns a stale transcript into a live one.
+                    resumeCloudTurn(c)
+                } else {
+                    busyIds.update { it - id }
+                }
+                if (shown > 0) c.messages.update { it }
+            } finally {
+                cloudCatchUpRunning.remove(id)
+            }
+        }
+    }
+
+    /**
+     * Writes the events a chat missed into its transcript, in order, skipping any
+     * that is already there.
+     *
+     * De-duplication is by the cloud's own event id, so a read that overlaps what
+     * the socket already delivered cannot show a message twice. Deltas are gathered
+     * into one bubble rather than one per token — the same shape a live turn has —
+     * and an observation becomes the same "🔧 tool" line the live path writes.
+     *
+     * @return how many messages were added, so a caller can skip a pointless redraw.
+     */
+    private suspend fun renderCatchUp(c: ChatSession, events: List<ai.zyraxon.assistant.cloud.CloudEvent>): Int {
+        if (events.isEmpty()) return 0
+        val existing = c.messages.value.map { it.id }.toSet()
+        val added = ArrayList<ChatMessage>()
+        val streamed = StringBuilder()
+        fun flushStreamed() {
+            val text = streamed.toString().trim()
+            streamed.setLength(0)
+            if (text.isBlank()) return
+            added.add(
+                ChatMessage(
+                    id = "oh-catchup-" + c.id + "-" + added.size,
+                    role = MessageRole.ASSISTANT,
+                    text = text,
+                    timestamp = currentTimeString(),
+                    modelName = _selectedModel.value.name
+                )
+            )
+        }
+        for (e in events) {
+            when (e) {
+                is ai.zyraxon.assistant.cloud.CloudEvent.Delta -> {
+                    if (e.text.isBlank()) continue
+                    streamed.append(e.text)
+                }
+                is ai.zyraxon.assistant.cloud.CloudEvent.Message -> {
+                    // A finished message carries a whole answer a delta was spelling
+                    // out token by token, so it replaces the gathered deltas instead
+                    // of following them.
+                    flushStreamed()
+                    if (e.text.isBlank()) continue
+                    val id = "oh-" + e.id.ifBlank { UUID.randomUUID().toString() }
+                    if (id in existing) continue
+                    added.add(
+                        ChatMessage(
+                            id = id,
+                            role = if (e.role == "user") MessageRole.USER else MessageRole.ASSISTANT,
+                            text = e.text,
+                            timestamp = currentTimeString(),
+                            modelName = _selectedModel.value.name
+                        )
+                    )
+                }
+                is ai.zyraxon.assistant.cloud.CloudEvent.Observation -> {
+                    flushStreamed()
+                    if (e.text.isBlank()) continue
+                    val id = "oh-" + e.id.ifBlank { UUID.randomUUID().toString() }
+                    if (id in existing) continue
+                    added.add(
+                        ChatMessage(
+                            id = id,
+                            role = MessageRole.ASSISTANT,
+                            text = "🔧 " + e.name + "\n" + e.text.take(4000),
+                            timestamp = currentTimeString(),
+                            modelName = _selectedModel.value.name
+                        )
+                    )
+                }
+                else -> continue
+            }
+        }
+        flushStreamed()
+        if (added.isEmpty()) return 0
+        c.messages.update { it + added }
+        repository.saveMessages(added, c.id)
+        return added.size
+    }
+
+    /**
+     * Follows a cloud turn that is already running on the other side.
+     *
+     * The user's own turn has long since returned — the app was closed, the socket
+     * died — so there is no flow left to attach to. This opens a fresh socket and
+     * pipes it through the same handling a live turn uses, which is what makes the
+     * rest of a long job appear on the phone as it happens instead of only when it
+     * is asked for again.
+     *
+     * Guarded by [c]'s own generating flag: a turn the user started in this process
+     * is already streaming, and a second reader on the same conversation would show
+     * everything twice.
+     */
+    private fun resumeCloudTurn(c: ChatSession) {
+        if (c.isGenerating.value) return
+        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+        if (key.isBlank() || !aiEngine.isOnline()) return
+        if (!cloudResumeRunning.add(c.id)) return
+        c.isGenerating.value = true
+        c.job = viewModelScope.launch {
+            val assistantMsgId = UUID.randomUUID().toString()
+            val bubble = ChatMessage(
+                id = assistantMsgId, role = MessageRole.ASSISTANT, text = "",
+                timestamp = currentTimeString(), isStreaming = true, modelName = _selectedModel.value.name
+            )
+            c.messages.update { it + bubble }
+            c.currentMsgId = assistantMsgId
+            c.turnStartedAt = System.currentTimeMillis()
+            val fullReply = StringBuilder()
+            val thinkingBuf = StringBuilder()
+            var lastUiUpdate = 0L
+            try {
+                cloudBridge.attachTurn(key, c.id).collect { chunk ->
+                    if (chunk.startsWith(ZyraxonAiEngine.REASONING_PREFIX)) {
+                        thinkingBuf.append(chunk.removePrefix(ZyraxonAiEngine.REASONING_PREFIX))
+                    } else {
+                        fullReply.append(chunk)
+                    }
+                    val now = System.currentTimeMillis()
+                    if (now - lastUiUpdate >= UI_UPDATE_MS) {
+                        lastUiUpdate = now
+                        val text = fullReply.toString()
+                        val thinking = thinkingBuf.toString()
+                        c.messages.update { l ->
+                            l.map { m ->
+                                if (m.id == assistantMsgId) m.copy(text = text, thinking = thinking, isStreaming = true) else m
+                            }
+                        }
+                    }
+                }
+            } catch (_: Exception) {
+                // The catch-up read is a repair, not a turn the user is waiting on:
+                // a failure here leaves what was already shown in place.
+            } finally {
+                withContext(NonCancellable) {
+                    c.isGenerating.value = false
+                    busyIds.update { it - c.id }
+                    cloudResumeRunning.remove(c.id)
+                    val text = fullReply.toString()
+                    val thinking = thinkingBuf.toString()
+                    val final = c.messages.value.firstOrNull { it.id == assistantMsgId }
+                    if (final != null) {
+                        if (text.isBlank() && thinking.isBlank()) {
+                            // Nothing arrived: the placeholder would sit as an empty
+                            // bubble forever, so it is dropped instead.
+                            c.messages.update { l -> l.filterNot { it.id == assistantMsgId } }
+                        } else {
+                            val closed = final.copy(text = text, thinking = thinking, isStreaming = false)
+                            c.messages.update { l -> l.map { if (it.id == assistantMsgId) closed else it } }
+                            repository.saveMessage(closed, c.id)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** Chats with a follow-the-cloud-turn socket already open. */
+    private val cloudResumeRunning = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+    /**
+     * Watches for the network coming back and catches every cloud chat up when it does.
+     *
+     * The other half of the same problem [catchUpCloud] solves. A phone that loses
+     * its network mid-turn keeps the app in memory but cannot reach the cloud, so the
+     * socket dies and nothing more arrives; when the network returns, the turn is
+     * still running on the other side and the app has no idea. Waiting for the user
+     * to reopen the chat would leave it stale exactly when they are watching it, so
+     * the return of the network is the trigger instead.
+     *
+     * Registered once, from the ViewModel's own init. Android holds the callback for
+     * as long as the process lives, which is the right lifetime: the ViewModel is the
+     * thing that outlives every screen here.
+     */
+    private fun watchForNetwork() {
+        runCatching {
+            val cm = getApplication<android.app.Application>()
+                .getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+            cm.registerDefaultNetworkCallback(object : android.net.ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: android.net.Network) {
+                    // Every chat, not only the open one: a turn started in one chat and
+                    // left behind while the user moved to another is just as likely to
+                    // have produced work that never arrived.
+                    viewModelScope.launch(Dispatchers.IO) {
+                        val key = aiEngine.getApiKey(ZYRAXON_APEX)
+                        if (key.isBlank()) return@launch
+                        for ((chatId, _) in cloudStore.bindings()) {
+                            catchUpCloud(chatId)
+                        }
+                        catchUpCloud()
+                    }
+                }
+            })
+        }
+    }
 
     /**
      * The user's own "fix it now" button on the home screen.

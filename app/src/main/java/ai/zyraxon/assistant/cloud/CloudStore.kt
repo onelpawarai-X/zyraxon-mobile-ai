@@ -42,10 +42,51 @@ class CloudStore(context: Context) {
      * The sandbox id goes with it. It used to be pushed into a pool for other
      * chats to reuse, which is how a chat could inherit a machine that had since
      * been reclaimed and spend a whole failed start on it.
+     *
+     * The read cursor goes too, and it has to: a cursor is a position in *one*
+     * conversation's event log. The caller drops the binding precisely because a
+     * fresh conversation is about to be built, and that new log starts empty — a
+     * cursor kept from the dead one would ask the new log for events after a
+     * timestamp it has never reached, so the first messages of the new
+     * conversation would be silently skipped.
      */
     fun unbind(chatId: String) {
-        prefs.edit().remove("conv_$chatId").remove("sandbox_$chatId").apply()
+        prefs.edit()
+            .remove("conv_$chatId").remove("sandbox_$chatId")
+            .remove("cursor_$chatId").remove("running_$chatId")
+            .apply()
     }
+
+    /**
+     * How far this chat's cloud transcript has been read, as an event timestamp.
+     *
+     * This is the one piece of cloud state that must outlive the process. It used
+     * to live in a local `var` inside a turn, so closing the app — or a network
+     * that died with the app still in the background — threw it away, and every
+     * event the cloud produced while the phone was away was simply never asked
+     * for again. Written down here, a relaunch resumes from the exact event the
+     * phone last handled, however long it was gone.
+     */
+    fun cursorFor(chatId: String): String? =
+        prefs.getString("cursor_$chatId", null)?.takeIf { it.isNotBlank() }
+
+    fun setCursor(chatId: String, at: String) {
+        if (at.isBlank()) return
+        prefs.edit().putString("cursor_$chatId", at).apply()
+    }
+
+    /**
+     * True while the cloud last reported this chat's turn still running.
+     *
+     * Also survives the process. A turn does not stop because the phone went
+     * away, so on relaunch this is what says "there is work still happening over
+     * there" — without it the chat opened as idle and the user had no way to know
+     * their task was still being carried out.
+     */
+    fun runningFor(chatId: String): Boolean = prefs.getBoolean("running_$chatId", false)
+
+    fun setRunning(chatId: String, running: Boolean) =
+        prefs.edit().putBoolean("running_$chatId", running).apply()
 
     /** The last conversation the user had open, so a relaunch lands where they left. */
     var lastConversationId: String?

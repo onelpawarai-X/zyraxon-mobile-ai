@@ -638,6 +638,24 @@ class CloudClient(
     data class CloudRecorded(val at: String, val event: CloudEvent)
 
     /**
+     * The newest recorded events with their timestamps, oldest of the window first.
+     *
+     * [recentEvents] drops the timestamps, which is fine for showing a transcript
+     * and useless for setting a cursor: a cursor has to name the exact event the
+     * next read resumes after, and only the timestamp does that. This is the same
+     * newest-window read with the timestamps kept, so an import can hand the chat
+     * a resume point that matches what it just showed.
+     */
+    suspend fun recentRecorded(apiKey: String, conv: CloudConversation, limit: Int = 40): List<CloudRecorded> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                eventsWindow(apiKey, conv, limit = limit.coerceIn(1, EVENTS_PAGE))
+                    .asReversed()
+                    .mapNotNull { e -> CloudEvent.parse(e.toString())?.let { CloudRecorded(e.str("timestamp"), it) } }
+            }.getOrDefault(emptyList())
+        }
+
+    /**
      * The events recorded after [since], oldest first — a true tail of the log.
      *
      * This is the read a dropped socket is repaired with. Asking by cursor rather

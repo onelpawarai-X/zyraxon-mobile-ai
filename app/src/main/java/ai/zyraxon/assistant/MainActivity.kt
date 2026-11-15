@@ -325,6 +325,11 @@ class MainActivity : ComponentActivity() {
         // written in the ZYRAXON web app — so the sidebar shows the full history
         // from the moment the app opens, and any of them can be resumed.
         viewModel.syncCloudConversations()
+        // Whatever the cloud produced while this app was in the background — or while
+        // the phone had no network — is read back and shown now, and a turn still
+        // running on the other side is followed live again. Without this the app
+        // returned to a frozen transcript with the work continuing unseen.
+        viewModel.catchUpCloud()
     }
 
     override fun onDestroy() {

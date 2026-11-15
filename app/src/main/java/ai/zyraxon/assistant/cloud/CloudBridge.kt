@@ -192,6 +192,12 @@ class CloudBridge(
         // stored `finished` from the last turn would be read as *this* turn
         // ending, and a turn that never ran would be declared over.
         val turnStart = client.latestTimestamp(live)
+        // The chat is now working, and it says so on disk before the first byte is
+        // sent. The cloud does not stop when the phone does, so this flag is the
+        // only thing a relaunch has to go on: without it a chat whose turn was
+        // still running on the other side opened looking idle, and the user could
+        // neither see it nor wait for it.
+        store.setRunning(chatId, true)
         // The socket is attached first, then the message is sent. The other order
         // loses the opening of the turn: the cloud starts answering the instant a
         // message arrives, and tokens produced before anything is listening are
@@ -237,6 +243,11 @@ class CloudBridge(
         // words were queued, not dropped, and are sent here as the next turn so a
         // mid-task message is answered instead of lost.
         fun finishTurn() {
+            // The cloud is done with this chat, and that must outlive the process
+            // too: the flag is what tells a relaunch whether to keep showing the
+            // chat as working. Clearing it only in memory meant a chat reopened
+            // after a finished turn still claimed to be running.
+            store.setRunning(chatId, false)
             val late = drainInjections()
             if (late.isEmpty()) {
                 close()
@@ -380,12 +391,19 @@ class CloudBridge(
         // longest to arrive. The cursor cannot skip anything, and it is what lets
         // this run at any length with no ceiling.
         val fallback = launch {
-            var cursor = turnStart
+            // Where the read resumes from. The turn boundary is the floor — an
+            // event older than this turn belongs to a turn already on screen — but
+            // a cursor written down by an earlier run can be *newer*, and then it
+            // is the one to use: it marks the last event this chat ever handled, so
+            // taking the floor instead would re-read a whole turn's worth of events
+            // and show the user their own answer twice.
+            var cursor = laterOf(store.cursorFor(chatId).orEmpty(), turnStart)
+            store.setCursor(chatId, cursor)
             var quiet = 0
             // The cursor is inclusive, so the very first read hands back the
             // event the cursor *is* — the previous turn's last one. It is not
             // this turn's and must not be replayed as though it were.
-            var skipCursorEvent = turnStart.isNotBlank()
+            var skipCursorEvent = cursor.isNotBlank()
             while (isActive) {
                 delay(2000)
                 val batch = client.eventsSince(live, cursor)
@@ -407,7 +425,15 @@ class CloudBridge(
                 val skip = skipCursorEvent
                 skipCursorEvent = false
                 for ((at, e) in batch) {
-                    if (at.isNotBlank()) cursor = at
+                    if (at.isNotBlank()) {
+                        cursor = at
+                        // Written down as the read advances, not at the end of the
+                        // turn. A turn can be interrupted, killed or simply outlive
+                        // the process, and the cursor is what a relaunch resumes
+                        // from; saving it only on a clean finish would lose the
+                        // whole turn every time the phone went away first.
+                        store.setCursor(chatId, at)
+                    }
                     if (skip && at == turnStart) continue
                     // The socket is authoritative and already delivered these;
                     // only an event it did not is worth replaying.
@@ -500,6 +526,206 @@ class CloudBridge(
             watcher.cancel()
             fallback.cancel()
             injector.cancel()
+        }
+    }.flowOn(Dispatchers.IO)
+
+    /**
+     * What a chat missed while the phone was away.
+     *
+     * @param events the cloud's events after the chat's cursor, oldest first.
+     * @param cursor where the read finished — the chat's new cursor.
+     * @param running true while the cloud still reports the turn going.
+     */
+    data class CatchUp(
+        val events: List<CloudEvent>,
+        val cursor: String,
+        val running: Boolean
+    ) {
+        val isEmpty: Boolean get() = events.isEmpty()
+    }
+
+    /**
+     * Reads back what a chat's cloud conversation produced while the phone was gone.
+     *
+     * A turn does not stop because the phone did: the sandbox keeps working on the
+     * other side. The read cursor used to be a local `var` inside a turn, so closing
+     * the app — or losing the network with the app still in the background — threw it
+     * away, and every event the cloud went on producing was never asked for again.
+     * The cursor now lives on disk, and this is the read that resumes from it.
+     *
+     * Also reports whether the turn is still going, which is what lets a relaunched
+     * chat keep showing it as working instead of opening as though nothing had
+     * happened. The status is taken from the last lifecycle event in the read, and
+     * falls back to what the conversation itself reports when the read holds none.
+     *
+     * Returns null when there is nothing to resume — no key, no network, no binding,
+     * or a chat that has never been read on this phone — so a caller treats it as
+     * "nothing to do" rather than an error.
+     */
+    suspend fun catchUp(apiKey: String, chatId: String): CatchUp? = withContext(Dispatchers.IO) {
+        if (apiKey.isBlank() || !online()) return@withContext null
+        val convId = store.conversationFor(chatId) ?: return@withContext null
+        val from = store.cursorFor(chatId).orEmpty()
+        // A chat with no cursor has never been read here. Its transcript is pulled
+        // whole by the history import, and reading the entire log here as well would
+        // show every message twice.
+        if (from.isBlank()) return@withContext null
+        val conv = runCatching { client.ensureRunning(apiKey, convId) }.getOrNull()
+            ?: return@withContext null
+        val batch = client.eventsSince(conv, from)
+        var cursor = from
+        var lastStatus = ""
+        val out = ArrayList<CloudEvent>(batch.size)
+        // The read is inclusive, so its first page opens with the very event the
+        // cursor is — one already shown. Skipped by timestamp, the same way the live
+        // tail does it: an event sharing the boundary's timestamp is a repeat far
+        // more often than it is news, and a repeat shown twice is worse than the
+        // rare token it might cost.
+        for ((at, e) in batch) {
+            if (at.isNotBlank()) cursor = at
+            if (at == from) continue
+            if (e is CloudEvent.Status && e.value.isNotBlank()) lastStatus = e.value
+            out.add(e)
+        }
+        if (cursor != from) store.setCursor(chatId, cursor)
+        val running = when {
+            lastStatus.isNotBlank() -> lastStatus == "running" || lastStatus == "working"
+            else -> conv.executionStatus == "running" || conv.executionStatus == "working"
+        }
+        CatchUp(out, cursor, running)
+    }
+
+    /**
+     * Follows a cloud turn that is already running, as a token stream.
+     *
+     * This is [runTurn] without the sending. A turn the user started does not end
+     * when the phone goes away — the sandbox carries on — so when the app comes
+     * back the only thing missing is a reader. This is that reader: it attaches the
+     * same event socket and runs the same REST tail, so the rest of a long job
+     * streams onto the phone exactly as it would have had the app never closed.
+     *
+     * Nothing is sent and nothing is re-run: a phone tool the cloud asked for
+     * while the phone was away is not replayed, because running a user's tool
+     * twice is far worse than a stale line in the transcript. The turn's own
+     * cursor is the floor, so only genuinely new events are shown.
+     *
+     * The flow ends when the cloud says the turn is finished, or when the log has
+     * been silent long enough that the turn must be over.
+     */
+    fun attachTurn(apiKey: String, chatId: String): Flow<String> = channelFlow {
+        if (apiKey.isBlank() || !online()) return@channelFlow
+        val convId = store.conversationFor(chatId) ?: return@channelFlow
+        val conv = withContext(Dispatchers.IO) {
+            runCatching { client.ensureRunning(apiKey, convId) }.getOrNull()
+        } ?: return@channelFlow
+        if (conv.sandboxStatus != "RUNNING") return@channelFlow
+
+        val delivered = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+        val sawRunning = java.util.concurrent.atomic.AtomicBoolean(false)
+        val lastStatus = java.util.concurrent.atomic.AtomicReference("")
+        var ended = false
+
+        fun endIfDone() {
+            if (ended) return
+            ended = true
+            store.setRunning(chatId, false)
+            close()
+        }
+
+        // A turn with no socket yet cannot be assumed running: it is only running
+        // once the log says so, or once the conversation itself reports it.
+        sawRunning.set(conv.executionStatus == "running" || conv.executionStatus == "working")
+        if (conv.executionStatus.isNotBlank()) lastStatus.set(conv.executionStatus)
+
+        val watcher = launch {
+            client.events(apiKey, conv, { !ended }, reconnect = {
+                client.ensureRunning(apiKey, conv.id) { }
+            }).collect { e ->
+                if (e.id.isNotBlank() && !delivered.add(e.id)) return@collect
+                when (e) {
+                    is CloudEvent.Delta -> {
+                        if (e.reasoning.isNotEmpty()) trySend(ZyraxonAiEngine.REASONING_PREFIX + e.reasoning)
+                        if (e.text.isNotEmpty()) trySend(e.text)
+                    }
+                    is CloudEvent.Message -> {
+                        if (e.role == "assistant") {
+                            if (e.reasoning.isNotEmpty()) trySend(ZyraxonAiEngine.REASONING_PREFIX + e.reasoning)
+                            if (e.text.isNotEmpty()) trySend(e.text)
+                        }
+                    }
+                    is CloudEvent.Status -> {
+                        if (e.value == "running" || e.value == "working") sawRunning.set(true)
+                        if (e.value.isNotBlank()) lastStatus.set(e.value)
+                        if ((e.value == "finished" || e.value == "idle") && sawRunning.get()) endIfDone()
+                    }
+                    is CloudEvent.Failure -> endIfDone()
+                    else -> Unit
+                }
+            }
+        }
+
+        // The REST tail under the socket, for the same reason [runTurn] has one: a
+        // network that drops the socket without a close frame would otherwise leave
+        // the screen frozen while the cloud worked on.
+        val fallback = launch {
+            var cursor = store.cursorFor(chatId).orEmpty()
+            var quiet = 0
+            // The read is inclusive, so its first page opens with the very event the
+            // cursor is. Kept as its own fixed value: `cursor` moves as the page is
+            // walked, and comparing against the moved value would skip every event.
+            val from = cursor
+            var skipCursorEvent = from.isNotBlank()
+            while (!ended) {
+                delay(2000)
+                val batch = withContext(Dispatchers.IO) { client.eventsSince(conv, cursor) }
+                if (batch.isEmpty()) {
+                    quiet++
+                    // Silence does not end a turn by itself — a long command says
+                    // nothing for minutes — so it ends only when the last word was
+                    // that it had finished.
+                    if (quiet >= 4) {
+                        val last = lastStatus.get()
+                        if ((last == "finished" || last == "idle") && sawRunning.get()) endIfDone()
+                        quiet = 0
+                    }
+                    continue
+                }
+                quiet = 0
+                val skip = skipCursorEvent
+                skipCursorEvent = false
+                for ((at, e) in batch) {
+                    if (at.isNotBlank()) {
+                        cursor = at
+                        store.setCursor(chatId, at)
+                    }
+                    if (skip && at == from) continue
+                    if (e.id.isNotBlank() && !delivered.add(e.id)) continue
+                    when (e) {
+                        is CloudEvent.Delta -> {
+                            if (e.reasoning.isNotEmpty()) trySend(ZyraxonAiEngine.REASONING_PREFIX + e.reasoning)
+                            if (e.text.isNotEmpty()) trySend(e.text)
+                        }
+                        is CloudEvent.Message -> {
+                            if (e.role == "assistant") {
+                                if (e.reasoning.isNotEmpty()) trySend(ZyraxonAiEngine.REASONING_PREFIX + e.reasoning)
+                                if (e.text.isNotEmpty()) trySend(e.text)
+                            }
+                        }
+                        is CloudEvent.Status -> {
+                            if (e.value == "running" || e.value == "working") sawRunning.set(true)
+                            if (e.value.isNotBlank()) lastStatus.set(e.value)
+                            if ((e.value == "finished" || e.value == "idle") && sawRunning.get()) endIfDone()
+                        }
+                        is CloudEvent.Failure -> endIfDone()
+                        else -> Unit
+                    }
+                }
+            }
+        }
+
+        awaitClose {
+            watcher.cancel()
+            fallback.cancel()
         }
     }.flowOn(Dispatchers.IO)
 
@@ -743,4 +969,19 @@ class CloudBridge(
             return out
         }
     }
+}
+
+/**
+ * Whichever of two event timestamps is later, treating a blank one as absent.
+ *
+ * Both come from the same service in the same ISO form, so comparing them as text
+ * orders them correctly; parsing would only add a failure mode for a shape the
+ * cloud is not obliged to keep. Used to decide where a resume starts: the later of
+ * the last cursor this chat ever handled and the boundary of the turn starting now.
+ */
+internal fun laterOf(a: String, b: String): String = when {
+    a.isBlank() -> b
+    b.isBlank() -> a
+    a >= b -> a
+    else -> b
 }

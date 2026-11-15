@@ -119,9 +119,10 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.25.3` | `65` | 2026-11-15 | ✅ published | Voice turns sent once, cut-in by voice, 1.5 s auto-send; all system prompts rewritten in English with one shared human core |
 | `6.25.4` | `66` | 2026-11-16 | ✅ published | API keys and tokens sealed in the Android keystore; the app lock is a pattern or a PIN plus optional spoken lock and unlock words |
 | `6.25.5` | `67` | 2026-11-15 | ✅ published | Settings → System → Documentation (20 chapters, 60 languages, search) and the Automation hub (skills, autopilot, money for any country, timeline, brain, call agent) |
+| `6.25.6` | `68` | 2026-11-15 | 🟡 ready (not yet published) | A cloud turn no longer loses its events when the phone goes away — the read cursor is written down, so a relaunch, a closed app or a lost network is caught up from where the chat stopped, and a turn still running on the cloud is shown as running and followed live again |
 
 > **What is the next version?** — the row below the last ✅ row, and nothing
-> else. With `6.25.5` published the next is `6.25.6` — the last published number
+> else. With `6.25.6` published the next is `6.25.7` — the last published number
 > with its last part increased by one. There is no
 > "next new capability" number: every release, large or small, takes the next
 > serial. `6.26.0` and `6.26.1` were reserved here once and are now **dropped**,
@@ -134,6 +135,31 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 Every section heading below must stay in the exact form `## vX.Y.Z` — the release
 workflow (`scripts/release-notes.sh`) finds the notes by that heading. The notes
 themselves are written in English, because they are the release body.
+
+## v6.25.6
+
+**Date:** 2026-11-15 · **versionCode:** 68 · **Native engine:** v3.1.0
+
+### Release notes
+
+**A cloud turn survives the phone going away.** A turn keeps running on the cloud
+after the app closes, the process is killed, or the network drops — that is the
+whole point of a cloud conversation — but the phone only knew what happened while
+its socket was open. The read cursor lived in memory inside the turn, so anything
+the cloud produced while the phone was away was never asked for again: reopening
+the chat showed a stale transcript, and a job still running on the other side
+looked finished.
+
+The cursor is now written down as the read advances, beside the conversation
+binding, and is cleared with it. When a chat is opened, when the app returns to
+the foreground, and when the network comes back, everything recorded after that
+cursor is read back and folded into the transcript — in order, de-duplicated by
+the cloud's own event ids, so nothing is shown twice. A turn the cloud is still
+running is shown as running again from the first frame, and the app re-attaches
+to it live, so the rest of a long job streams onto the phone as it happens.
+
+Tools the cloud ran while the phone was away are shown as lines, never re-run:
+replaying a user's tool would be worse than a stale line.
 
 ## v6.25.5
 
