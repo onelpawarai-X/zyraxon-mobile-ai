@@ -702,6 +702,7 @@ fun SettingsSheet(
             Triple("session", AppIcons.touch, t("নেভিগেশন")),
             Triple("memory", AppIcons.storage, t("মেমরি")),
             Triple("skills", AppIcons.extension, t("স্কিল গাইড")),
+            Triple("hub", AppIcons.hub, t("অটোমেশন হাব")),
             Triple("help", AppIcons.description, t("ডকুমেন্টেশন"))
         )
     )
@@ -1042,6 +1043,8 @@ fun SettingsSheet(
                     "model" -> ModelListPane(viewModel = viewModel, onPicked = {})
 
                     "updates" -> UpdatePane(viewModel = viewModel)
+                    "hub" -> ai.zyraxon.assistant.hub.HubPane(viewModel)
+                    "help" -> ai.zyraxon.assistant.help.HelpPane(viewModel)
 
                     // App lock lives on its own now: it is a privacy control, not a
                     // permission, and buried after the permission list it was the
@@ -2584,8 +2587,6 @@ fun SettingsSheet(
                             }
                         }
                     }
-
-                    "help" -> ai.zyraxon.assistant.help.HelpPane(viewModel)
 
                     "skills" -> {
                         // SKILLS & TOOLS GUIDE

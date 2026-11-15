@@ -2,8 +2,11 @@ package ai.zyraxon.assistant.auto
 
 import ai.zyraxon.assistant.DeviceBridge
 import ai.zyraxon.assistant.ai.ToolRegistry
-import ai.zyraxon.assistant.callagent.CallSession
-import ai.zyraxon.assistant.callagent.Reply
+import ai.zyraxon.assistant.hub.Names
+import ai.zyraxon.assistant.i18n.Loc
+import ai.zyraxon.assistant.world.CallSession
+import ai.zyraxon.assistant.world.LangPack
+import ai.zyraxon.assistant.world.Reply
 import ai.zyraxon.assistant.voice.NativeVoiceManager
 import android.app.Application
 import android.content.Context
@@ -55,8 +58,8 @@ class CallAgentRuntime(
 
     fun onActive() {
         if (!screening || session != null) return
-        val owner = prefs().getString("owner", "")?.ifBlank { null } ?: "মালিক"
-        val s = CallSession(owner, number, name); session = s
+        val owner = prefs().getString("owner", "")?.ifBlank { null } ?: Names.of("মালিক")
+        val s = CallSession(owner, number, name, pack = LangPack.forLanguage(Loc.current)); session = s
         val audio = app.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         prevSpeaker = audio.isSpeakerphoneOn
         runCatching { audio.isSpeakerphoneOn = true; audio.setStreamVolume(AudioManager.STREAM_VOICE_CALL, audio.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL), 0) }
@@ -64,7 +67,7 @@ class CallAgentRuntime(
         voice.onSpeechRecognized = { text, isFinal -> if (isFinal) onCaller(text) }
         voice.setMicEnabled(true)
         lastActivity = System.currentTimeMillis()
-        scope.launch { delay(1000); say(s.greeting()) }
+        scope.launch { delay(1000); handle(s, s.start()) }
         watcher = scope.launch {
             while (session === s) {
                 delay(1000)
@@ -88,7 +91,7 @@ class CallAgentRuntime(
         if (r.model) {
             scope.launch {
                 val answer = runCatching { askModel(s.modelPrompt(lastCaller)) }.getOrDefault("")
-                handle(s, s.modelSaid(answer.ifBlank { "আমি বার্তাটা জানিয়ে দেব।" }))
+                handle(s, s.modelSaid(answer))
             }
             return
         }
@@ -108,14 +111,14 @@ class CallAgentRuntime(
         voice.onSpeechRecognized = prevHandler; voice.setMicEnabled(prevMic)
         runCatching { (app.getSystemService(Context.AUDIO_SERVICE) as AudioManager).isSpeakerphoneOn = prevSpeaker }
         val sum = s.summary()
-        val owner = prefs().getString("owner", "")?.ifBlank { null } ?: "মালিক"
-        val text = sum.text(owner)
+        val owner = prefs().getString("owner", "")?.ifBlank { null } ?: Names.of("মালিক")
+        val text = sum.text(owner, Names.callWords)
         runCatching {
             val d = File(ToolRegistry.workspace(app), "calls").apply { mkdirs() }
             File(d, SimpleDateFormat("yyyyMMdd-HHmmss").format(Date()) + ".md").writeText(text)
         }
-        DeviceBridge.notify(app, if (sum.urgent) "জরুরি কল ধরা হয়েছে" else "কল ধরা হয়েছে", sum.smsToOwner())
+        DeviceBridge.notify(app, if (sum.urgent) Names.of("জরুরি কল ধরা হয়েছে") else Names.of("কল ধরা হয়েছে"), sum.smsToOwner())
         if (s.transcript().any { it.who == "caller" })
-            report("কল সারাংশ", "[কল-এজেন্ট] আমার অনুপস্থিতিতে একটা কল ধরা হয়েছিল। নিচের সারাংশ থেকে আমাকে বাংলায় ২-৩ লাইনে জানাও কে কী চেয়েছে, জরুরি কি না, আর আমার কী করা উচিত (যেমন কল ব্যাক বা উত্তর)। দরকার না হলে কিছু করবে না।\n\n$text")
+            report(Names.of("কল সারাংশ"), "[Call agent] A call was answered for me while I was away. From the summary below, tell me in 2-3 lines, in my own language, who called, what they want, whether it is urgent, and what I should do (for example call back or reply). Do nothing if nothing is needed.\n\n$text")
     }
 }

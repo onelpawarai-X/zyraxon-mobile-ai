@@ -654,6 +654,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // Autopilot: rules fire agent turns; tasks that arrived while the app was closed run now; the clock is checked every 30 s.
         ai.zyraxon.assistant.auto.AutoTools.dispatcher = { title, prompt -> runAutoTask(title, prompt) }
         callAgent.applySetting()
+        // The words of the money ledger, call summaries and the Automation hub, in the chosen language, even where no hand-made file exists yet.
+        viewModelScope.launch(Dispatchers.IO) {
+            delay(15_000)
+            runCatching { ai.zyraxon.assistant.hub.HubTranslator.ensure(getApplication<Application>()) { askLong(it) } }
+        }
         viewModelScope.launch(Dispatchers.IO) {
             val app = getApplication<Application>()
             runCatching { ai.zyraxon.assistant.auto.AutoRuntime.drain(app) }
@@ -684,7 +689,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         sb.toString().trim()
     }.orEmpty()
 
-    /** One plain model answer with a longer wait, used to translate the documentation into the reader's language. */
+    /** One plain model answer with a longer wait, for the Automation hub's and the documentation's translations. */
     suspend fun askLong(prompt: String, timeoutMs: Long = 150_000): String = withTimeoutOrNull(timeoutMs) {
         val sb = StringBuilder()
         aiEngine.streamAiResponse(
@@ -702,7 +707,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         when (state) {
             "ringing" -> {
                 viewModelScope.launch(Dispatchers.IO) { runCatching { ai.zyraxon.assistant.auto.AutoRuntime.event(app, ai.zyraxon.assistant.autopilot.Kind.CALL, from = number) } }
-                if (!callAgent.onRinging(number)) sendMessage("ইনকামিং কল এসেছে: $number")
+                if (!callAgent.onRinging(number)) sendMessage("An incoming call just arrived from $number. Tell me in my own language who it is if you know.")
             }
             "active" -> callAgent.onActive()
             "ended" -> callAgent.onEnded()

@@ -77,8 +77,32 @@ object Loc {
         loadTools(context, code)
         // English is the second stop, so a string a language has not been given yet
         // reads in English rather than Bengali.
-        if (english.isEmpty()) english = read(context, "en")
-        table = if (code == BENGALI) bengali else read(context, code)
+        if (english.isEmpty()) english = read(context, "en") + read(context, "hub/en")
+        // the Automation hub's words are a second, separate file per language; words a language still lacks
+        // were translated on the phone by the chosen model and saved under filesDir/hub_i18n
+        table = if (code == BENGALI) bengali else read(context, code) + read(context, "hub/$code") + savedTranslation(context, code)
+    }
+
+    private fun savedTranslation(context: Context, code: String): Map<String, String> = runCatching {
+        val f = java.io.File(java.io.File(context.filesDir, "hub_i18n"), "$code.json")
+        if (!f.isFile) emptyMap() else { val o = JSONObject(f.readText()); buildMap { o.keys().forEach { k -> put(k, o.getString(k)) } } }
+    }.getOrDefault(emptyMap())
+
+    /** The English text for [key] (the source for translating into languages that have no file yet). */
+    fun englishOf(key: String): String? = english[key]
+
+    /** True when [key] has a real translation in the current language (so nothing needs translating on the phone). */
+    fun has(key: String): Boolean = current == BENGALI || table.containsKey(key)
+
+    /** Adds words translated on the phone and keeps them for the next start. */
+    fun addTranslations(context: Context, code: String, extra: Map<String, String>) {
+        if (extra.isEmpty()) return
+        runCatching {
+            val dir = java.io.File(context.filesDir, "hub_i18n").apply { mkdirs() }
+            val merged = savedTranslation(context, code) + extra
+            java.io.File(dir, "$code.json").writeText(JSONObject(merged as Map<*, *>).toString())
+        }
+        if (code == current) table = table + extra
     }
 
     /** The sealed asset text, so nothing readable ships in the APK. */

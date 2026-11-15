@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 
 /** The small left drawer: a New chat button and every chat. Chats keep running while you look at another. */
 @Composable
-fun Sidebar(vm: ZyraxonViewModel) {
+fun Sidebar(vm: ZyraxonViewModel, onOpenPane: (String) -> Unit = {}) {
     val chats by vm.chats.collectAsState()
     val active by vm.activeConversationId.collectAsState()
     val theme by vm.themeMode.collectAsState()
@@ -70,6 +70,16 @@ fun Sidebar(vm: ZyraxonViewModel) {
                         AppIcon(AppIcons.edit, t("নাম বদলাও"), size = 14.dp, tint = Glass.textMuted, modifier = Modifier.clickable { renaming = c.id to c.title }.padding(start = 8.dp))
                         AppIcon(AppIcons.close, t("মুছো"), size = 14.dp, tint = Glass.textMuted, modifier = Modifier.clickable { confirmDelete = c.id }.padding(start = 8.dp))
                     }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                listOf("hub" to "⚡ " + t("অটোমেশন হাব"), "help" to "📖 " + t("ডকুমেন্টেশন")).forEach { (pane, label) ->
+                    Text(
+                        label, fontSize = 11.sp, maxLines = 1, color = Glass.textPrimary,
+                        modifier = Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(Glass.rowFill(0.3f)).clickable { onOpenPane(pane) }.padding(vertical = 9.dp, horizontal = 4.dp),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
                 }
             }
             Spacer(Modifier.height(8.dp))

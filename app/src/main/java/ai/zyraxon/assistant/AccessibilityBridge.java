@@ -64,9 +64,48 @@ public class AccessibilityBridge extends AccessibilityService {
      * assistant always know which app is on screen without being asked, and
      * without any tool call.
      */
+    /** Hears what the person does by hand (taps, typing, scrolling) while "Teach by doing" is recording. */
+    public interface UserEvents { void onUserEvent(String kind, String text, String id, String cls, int x, int y, boolean editable, String pkg); }
+    public static volatile UserEvents userListener = null;
+
+    private void forwardUserEvent(AccessibilityEvent e) {
+        UserEvents l = userListener; if (l == null) return;
+        CharSequence pk = e.getPackageName(); String pkg = pk == null ? "" : pk.toString();
+        if (pkg.equals(getPackageName())) return;
+        int t = e.getEventType();
+        String kind = t == AccessibilityEvent.TYPE_VIEW_CLICKED ? "tap" : t == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED ? "type" : t == AccessibilityEvent.TYPE_VIEW_SCROLLED ? "scroll" : "";
+        if (kind.isEmpty()) return;
+        String text = "", id = "", cls = ""; int x = 0, y = 0; boolean editable = false;
+        AccessibilityNodeInfo n = e.getSource();
+        if (n != null) {
+            try {
+                CharSequence c = n.getText(); if (c == null || c.length() == 0) c = n.getContentDescription();
+                if (c == null || c.length() == 0) c = firstText(n, 0);
+                text = c == null ? "" : c.toString();
+                id = n.getViewIdResourceName() == null ? "" : n.getViewIdResourceName();
+                cls = n.getClassName() == null ? "" : n.getClassName().toString();
+                editable = n.isEditable();
+                android.graphics.Rect r = new android.graphics.Rect(); n.getBoundsInScreen(r); x = r.centerX(); y = r.centerY();
+            } catch (Exception ignored) {} finally { try { n.recycle(); } catch (Exception ignored) {} }
+        }
+        if (kind.equals("type")) { java.util.List<CharSequence> tx = e.getText(); text = tx != null && !tx.isEmpty() && tx.get(0) != null ? tx.get(0).toString() : text; editable = true; }
+        l.onUserEvent(kind, text, id, cls, x, y, editable, pkg);
+    }
+
+    private static CharSequence firstText(AccessibilityNodeInfo n, int depth) {
+        if (n == null || depth > 3) return null;
+        for (int i = 0; i < n.getChildCount(); i++) {
+            AccessibilityNodeInfo c = n.getChild(i); if (c == null) continue;
+            try { CharSequence t = c.getText(); if (t != null && t.length() > 0) return t; t = c.getContentDescription(); if (t != null && t.length() > 0) return t; t = firstText(c, depth + 1); if (t != null) return t; }
+            finally { try { c.recycle(); } catch (Exception ignored) {} }
+        }
+        return null;
+    }
+
     @Override
     public void onAccessibilityEvent(AccessibilityEvent e) {
         if (e == null) return;
+        if (userListener != null) { try { forwardUserEvent(e); } catch (Exception ignored) {} }
         try {
             if (e.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
                     || e.getEventType() == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {

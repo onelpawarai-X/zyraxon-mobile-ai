@@ -118,7 +118,7 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.25.2` | `64` | 2026-11-14 | ✅ published | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start |
 | `6.25.3` | `65` | 2026-11-15 | ✅ published | Voice turns sent once, cut-in by voice, 1.5 s auto-send; all system prompts rewritten in English with one shared human core |
 | `6.25.4` | `66` | 2026-11-16 | ✅ published | API keys and tokens sealed in the Android keystore; the app lock is a pattern or a PIN plus optional spoken lock and unlock words |
-| `6.25.5` | `67` | 2026-11-15 | 🟡 ready (not yet published) | Settings → System → Documentation: 20 chapters, 60 languages, search |
+| `6.25.5` | `67` | 2026-11-15 | 🟡 ready (not yet published) | Settings → System → Documentation (20 chapters, 60 languages, search) and the Automation hub (skills, autopilot, money for any country, timeline, brain, call agent) |
 
 > **What is the next version?** — the 🟡 row below the last ✅ row, and nothing
 > else. Once `6.25.4` is published the 🟡 becomes ✅ and the next is `6.25.5` —
@@ -149,6 +149,14 @@ auto-permission levels, approvals, settings, models, security, languages,
 updates, tips and troubleshooting. Pick any of the 60 app languages from the
 chips; chapters ship in English and Bengali and other languages use the
 on-device model with the result cached. A search box filters chapters.
+
+**Automation hub, worldwide.** Settings → System → Automation hub (also in the
+side drawer) puts skills (with "Teach by doing"), autopilot rules, the money
+ledger, the timeline, the brain search and the call agent behind buttons. The
+money ledger reads wallet and bank SMS of any country, in any currency and
+language, and keeps each currency apart. The call agent answers in the caller's
+own language (rule packs for 15 languages, the model for the rest). The agent's
+prompts and tool descriptions know all of it and can use it.
 
 ## v6.25.4
 

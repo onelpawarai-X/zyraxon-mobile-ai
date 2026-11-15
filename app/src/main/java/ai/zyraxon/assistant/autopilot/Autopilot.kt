@@ -101,15 +101,16 @@ object Autopilot {
     }
 
     /** The message the agent receives when a rule fires. */
+    /** The task handed to the assistant when a rule fires. English on purpose: the assistant answers in the user's own language. */
     fun taskPrompt(rule: Rule, e: Event?): String = buildString {
-        append("[অটোপাইলট] নিয়ম: ").append(rule.title).append('\n')
+        append("[Autopilot] Rule: ").append(rule.title).append('\n')
         if (e != null) {
-            append("ঘটনা: ").append(when (e.kind) { Kind.SMS -> "SMS এসেছে"; Kind.NOTIFICATION -> "নোটিফিকেশন এসেছে"; Kind.CALL -> "কল এসেছে"; Kind.APP_OPENED -> "অ্যাপ খোলা হয়েছে"; Kind.BATTERY_LOW -> "ব্যাটারি কমেছে (${e.battery}%)"; else -> "নির্ধারিত সময় হয়েছে" })
+            append("Event: ").append(when (e.kind) { Kind.SMS -> "an SMS arrived"; Kind.NOTIFICATION -> "a notification arrived"; Kind.CALL -> "a call came in"; Kind.APP_OPENED -> "an app was opened"; Kind.BATTERY_LOW -> "the battery is low (${e.battery}%)"; else -> "the scheduled time has come" })
             if (e.from.isNotBlank()) append(" — ").append(e.from)
-            if (e.text.isNotBlank()) append("\nবিষয়বস্তু: ").append(e.text.take(600))
+            if (e.text.isNotBlank()) append("\nContent: ").append(e.text.take(600))
             append('\n')
         }
-        append("কাজ: ").append(rule.task).append("\nইউজারকে না জিজ্ঞেস করে কাজটা শেষ করো; শেষে এক লাইনে জানাও কী করেছ।")
+        append("Task: ").append(rule.task).append("\nDo the task without asking the user. Reply in the user's own language, and finish with one line saying what you did.")
     }
 
     fun toJson(rules: List<Rule>): String = MiniJson.stringify(rules.map { r ->
@@ -147,15 +148,16 @@ object Autopilot {
             MiniJson.long(a["at_ms"]), MiniJson.int(a["every_minutes"]), MiniJson.int(a["below"]), MiniJson.str(a["pkg"]))
     }
 
+    /** A short label for lists; screens translate the kind through their own strings, this is the plain fallback. */
     fun describe(r: Rule, now: Long = System.currentTimeMillis()): String {
         val t = r.trigger
         val w = when (t.kind) {
             Kind.SMS -> "SMS" + (if (t.from.isNotBlank()) " (${t.from})" else "") + (if (t.any.isNotEmpty()) " — ${t.any.joinToString("/")}" else "")
-            Kind.NOTIFICATION -> "নোটিফিকেশন" + (if (t.pkg.isNotBlank()) " (${t.pkg})" else "")
-            Kind.CALL -> "কল" + (if (t.from.isNotBlank()) " (${t.from})" else "")
-            Kind.DAILY -> "প্রতিদিন %02d:%02d".format(t.hour, t.minute)
-            Kind.ONCE -> "একবার"; Kind.INTERVAL -> "প্রতি ${t.everyMin} মিনিট"
-            Kind.BATTERY_LOW -> "ব্যাটারি ${t.below}%-এর নিচে"; Kind.APP_OPENED -> "অ্যাপ খুললে (${t.pkg.ifBlank { t.from }})"
+            Kind.NOTIFICATION -> "Notification" + (if (t.pkg.isNotBlank()) " (${t.pkg})" else "")
+            Kind.CALL -> "Call" + (if (t.from.isNotBlank()) " (${t.from})" else "")
+            Kind.DAILY -> "Daily %02d:%02d".format(t.hour, t.minute)
+            Kind.ONCE -> "Once"; Kind.INTERVAL -> "Every ${t.everyMin} min"
+            Kind.BATTERY_LOW -> "Battery below ${t.below}%"; Kind.APP_OPENED -> "App opened (${t.pkg.ifBlank { t.from }})"
         }
         return "${r.title}: $w → ${r.task.take(60)}"
     }

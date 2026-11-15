@@ -8,10 +8,11 @@ import ai.zyraxon.assistant.autopilot.Rule
 import ai.zyraxon.assistant.brain.Brain
 import ai.zyraxon.assistant.core.MiniJson
 import ai.zyraxon.assistant.core.safe
-import ai.zyraxon.assistant.finance.Dir
-import ai.zyraxon.assistant.finance.Fmt
-import ai.zyraxon.assistant.finance.Ledger
-import ai.zyraxon.assistant.finance.SmsParser
+import ai.zyraxon.assistant.hub.Names
+import ai.zyraxon.assistant.world.Ledger
+import ai.zyraxon.assistant.world.Money
+import ai.zyraxon.assistant.world.Report
+import ai.zyraxon.assistant.world.SmsParser
 import ai.zyraxon.assistant.i18n.Loc
 import ai.zyraxon.assistant.office.OfficeFiles
 import ai.zyraxon.assistant.skills.Skill
@@ -94,6 +95,10 @@ object AutoTools {
     // ------------------------------------------------------------------ skills
     @Volatile private var rec: SkillEngine.Recorder? = null
     private var recApp = ""
+    /** Saves a skill learned outside the agent (the person taught it by hand in the Automation hub). */
+    fun saveSkill(c: Context, sk: Skill) { File(skillsDir(c), skillName(sk.name) + ".zxskill").writeText(sk.toJson()) }
+    fun skillFile(c: Context, name: String): File = File(skillsDir(c), skillName(name) + ".zxskill")
+
     private fun skillsDir(c: Context) = File(dir(c), "skills").apply { mkdirs() }
     private fun skillName(s: String) = s.trim().replace(Regex("[^\\p{L}\\p{N}_-]+"), "-").trim('-').take(40)
     private fun loadSkill(c: Context, name: String): Skill? =
@@ -213,7 +218,7 @@ object AutoTools {
         val t = SmsParser.parse(sender, body, timeMs) ?: return null
         val l = loadLedger(c); if (!l.add(t)) return null
         saveLedger(c, l)
-        (if (t.dir == Dir.IN) "+" else "−") + Fmt.money(t.amount) + " " + t.type + (if (t.party.isNotBlank()) " (${t.party})" else "") + " · ${t.category}"
+        Report.line(t) { Names.of(it) }
     }
 
     private fun readInbox(c: Context, sinceMs: Long, max: Int): List<Triple<String, String, Long>> {
@@ -229,13 +234,16 @@ object AutoTools {
         val c = Calendar.getInstance(); c.set(Calendar.HOUR_OF_DAY, 0); c.set(Calendar.MINUTE, 0); c.set(Calendar.SECOND, 0); c.set(Calendar.MILLISECOND, 0)
         val today = c.timeInMillis; val day = 86_400_000L
         return when (p.lowercase()) {
-            "today", "আজ" -> Triple(today, today + day, "আজ")
-            "yesterday", "গতকাল" -> Triple(today - day, today, "গতকাল")
-            "month", "মাস" -> { c.set(Calendar.DAY_OF_MONTH, 1); Triple(c.timeInMillis, today + day, "এই মাসে") }
-            "all", "সব" -> Triple(0L, today + day, "মোট")
-            else -> Triple(today - 6 * day, today + day, "গত ৭ দিনে")
+            "today", "আজ" -> Triple(today, today + day, "today")
+            "yesterday", "গতকাল" -> Triple(today - day, today, "yesterday")
+            "month", "মাস" -> { c.set(Calendar.DAY_OF_MONTH, 1); Triple(c.timeInMillis, today + day, "month") }
+            "all", "সব" -> Triple(0L, today + day, "all")
+            else -> Triple(today - 6 * day, today + day, "week")
         }
     }
+
+    private fun plainMap(m: Map<String, Any>): Map<String, Any?> = m.mapValues { toJ(it.value) }
+    private fun toJ(v: Any?): Any? = when (v) { is Map<*, *> -> JSONObject(v.entries.associate { it.key.toString() to toJ(it.value) }); is List<*> -> JSONArray(v.map { toJ(it) }); else -> v }
 
     private fun ledgerTool(c: Context, name: String, args: JSONObject): JSONObject = when (name) {
         "ledger_scan" -> {
@@ -252,24 +260,24 @@ object AutoTools {
         }
         "ledger_budget" -> {
             val l = loadLedger(c); val cat = args.safe("category")
-            if (cat.isNotBlank()) { if (args.optDouble("limit", 0.0) > 0) l.budgets[cat] = args.optDouble("limit") else l.budgets.remove(cat); saveLedger(c, l) }
+            // "food" for the main currency, or "food@USD" when a currency is given
+            val key = if (args.safe("currency").isNotBlank()) cat + "@" + args.safe("currency").uppercase() else cat
+            if (cat.isNotBlank()) { if (args.optDouble("limit", 0.0) > 0) l.budgets[key] = args.optDouble("limit") else l.budgets.remove(key); saveLedger(c, l) }
             val (f, t, _) = period("month")
-            ok(JSONObject().put("budgets", JSONObject(l.budgets as Map<*, *>)).put("alerts", JSONArray(l.alerts(f, t))), "বাজেট সেট করা আছে: ${l.budgets.size}টি")
+            ok(JSONObject().put("budgets", JSONObject(l.budgets as Map<*, *>)).put("alerts", JSONArray(l.alerts(f, t).map { JSONObject(Report.alertMap(it)) })), "বাজেট সেট করা আছে: ${l.budgets.size}টি")
         }
         "ledger_report" -> {
-            val l = loadLedger(c); val (from, to, label) = period(args.safe("period", "week"))
-            val s = l.summarize(from, to); val alerts = l.alerts(period("month").first, period("month").second)
-            val data = JSONObject().put("period", label).put("income", s.income).put("spent", s.spent).put("fees", s.fees).put("count", s.count).put("balance", s.lastBalance)
-                .put("by_category", JSONArray(s.byCategory.map { JSONObject().put("category", it.first).put("amount", it.second) }))
-                .put("top_parties", JSONArray(s.topParties.map { JSONObject().put("party", it.first).put("amount", it.second) }))
-                .put("alerts", JSONArray(alerts)).put("spoken", Fmt.spoken(s, alerts, label))
+            val l = loadLedger(c); val (from, to, label) = period(args.safe("period", "week")); val (af, at, _) = period("month")
+            val facts = Report.facts(l, from, to, af, at)
+            val data = JSONObject(plainMap(facts)).put("period", label).put("from", from).put("to", to)
+                .put("tell_user", "Tell the user these figures in the user's own language and currency symbols; mention any alert; never convert between currencies.")
             if (args.safe("format", "text").lowercase() == "xlsx") {
-                val (tx, sum) = Fmt.rows(l, from, to)
-                val out = File(File(ai.zyraxon.assistant.ai.ToolRegistry.workspace(c), "documents").apply { mkdirs() }, "hisab-${args.safe("period", "week")}.xlsx")
-                val bos = ByteArrayOutputStream(); OfficeFiles.xlsx(listOf(OfficeFiles.Sheet("লেনদেন", tx), OfficeFiles.Sheet("সারাংশ", sum)), bos); out.writeBytes(bos.toByteArray())
+                val (tx, sum) = Report.rows(l, from, to, { Names.of(it) })
+                val out = File(File(ai.zyraxon.assistant.ai.ToolRegistry.workspace(c), "documents").apply { mkdirs() }, "ledger-${args.safe("period", "week")}.xlsx")
+                val bos = ByteArrayOutputStream(); OfficeFiles.xlsx(listOf(OfficeFiles.Sheet(Names.of("sheet_transactions"), tx), OfficeFiles.Sheet(Names.of("sheet_summary"), sum)), bos); out.writeBytes(bos.toByteArray())
                 data.put("path", out.absolutePath)
                 ok(data, "হিসাবের Excel রিপোর্ট তৈরি হয়েছে").put("media", mediaFile(out, out.name))
-            } else ok(data, "$label খরচ ${Fmt.money(s.spent)}, আয় ${Fmt.money(s.income)}")
+            } else ok(data, "${facts["transactions"]}টি লেনদেনের হিসাব তৈরি")
         }
         else -> err("unknown", name)
     }
@@ -400,7 +408,7 @@ object AutoRuntime {
         for ((i, r) in rules.withIndex()) {
             if (!Autopilot.matches(r, e)) continue
             rules[i] = r.copy(lastFired = e.timeMs.takeIf { it > 0 } ?: System.currentTimeMillis(), fired = r.fired + 1); changed = true
-            dispatch(c, "অটোপাইলট: ${r.title}", Autopilot.taskPrompt(r, e))
+            dispatch(c, Names.of("অটোপাইলট") + ": ${r.title}", Autopilot.taskPrompt(r, e))
         }
         if (changed) AutoTools.saveRules(c, rules)
     }
@@ -414,7 +422,7 @@ object AutoRuntime {
         val rules = AutoTools.loadRules(c); var changed = false
         for ((i, r) in rules.withIndex()) if (Autopilot.due(r, now)) {
             rules[i] = r.copy(lastFired = now, fired = r.fired + 1, enabled = r.enabled && r.trigger.kind != Kind.ONCE); changed = true
-            dispatch(c, "অটোপাইলট: ${r.title}", Autopilot.taskPrompt(r, null))
+            dispatch(c, Names.of("অটোপাইলট") + ": ${r.title}", Autopilot.taskPrompt(r, null))
         }
         if (changed) AutoTools.saveRules(c, rules)
         val level = (c.getSystemService(Context.BATTERY_SERVICE) as? android.os.BatteryManager)?.getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CAPACITY) ?: -1

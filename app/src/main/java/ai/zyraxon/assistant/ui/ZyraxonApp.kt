@@ -213,7 +213,7 @@ fun ZyraxonApp(viewModel: ZyraxonViewModel) {
         }
 
         ai.zyraxon.assistant.present.PresentationOverlay(viewModel)
-        if (sidebarOpen) Sidebar(viewModel)
+        if (sidebarOpen) Sidebar(viewModel) { pane -> viewModel.settingsPane = pane; viewModel.setSidebarOpen(false); showSettingsSheet = true }
 
         // The agent's check-in. It sits above every panel and below the lock, so a
         // gated tool waits on the user no matter which screen they are on.
