@@ -91,7 +91,7 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.24.11` | `61` | 2026-11-13 | ✅ published | Two modes that both act, a settings rework, and gapless speech |
 | `6.25.0` | `62` | 2026-11-13 | ✅ published | The app's own lock (password + pattern), an icon on every heading, native engine v3.1.0 (Zero Lag) |
 | `6.25.1` | `63` | 2026-11-14 | ✅ published | Duplicate voice turns stopped, every language complete, apt repaired, links go to `/mobile` |
-| `6.25.2` | `64` | 2026-11-14 | 🟡 ready | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start; voice turn sent once, speaking over the assistant cuts it off, 1.5 s of silence auto-sends |
+| `6.25.2` | `64` | 2026-11-14 | 🟡 ready | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start; voice turn sent once, speaking over the assistant cuts it off, 1.5 s of silence auto-sends; all system prompts rewritten in English with one shared core |
 | `6.26.0` | `65` | — | 🔜 planned | Reserved for the next new capability |
 
 > **What is the next version?** — the 🟡 row below the last ✅ row. Once `6.25.2`
@@ -111,6 +111,8 @@ themselves are written in English, because they are the release body.
 **Date:** 2026-11-14 · **versionCode:** 64 · **Native engine:** v3.1.0
 
 ### Release notes
+
+**Prompts.** All four system prompts (`assets-src/knowledge/`) and the six character prompts are now English, so they cost fewer tokens and the characters answer in whatever language the user speaks. Every file carries the same core block: a human identity that never calls itself an AI, one rule set for working (said once), one speaking style (a short opening, short lines while working, a short wrap-up), and a rule for asking — do nearly everything first, ask one short question with a recommendation, then wait. Landing pages and websites are built straight away and opened in the preview with no publishing; apps are built as asked; full-stack work asks for the back-end choices first.
 
 **Voice.** A spoken sentence no longer appears twice: the recognizer's final is
 compared word by word with the partial already sent, so a dropped or completed

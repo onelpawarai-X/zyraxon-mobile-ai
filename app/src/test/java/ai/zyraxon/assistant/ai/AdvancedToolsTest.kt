@@ -189,10 +189,10 @@ class AdvancedToolsTest {
         assertTrue("লাইভ প্রম্পট ফাঁকা", liveText.isNotBlank())
         // The live contract is about speaking, so it must say so and must warn
         // against the markdown and long turns the text contract allows. The
-        // contract is written in Bengali, so the tokens are Bengali too.
+        // contract is written in English, so the tokens are English.
         assertTrue("speech-to-speech উল্লেখ থাকতে হবে", liveText.contains("speech-to-speech"))
-        assertTrue("ছোট পালা (বাক্য) বলতে হবে", liveText.contains("বাক্য"))
-        assertTrue("ইন্টারাপ্ট/থামার নিয়ম থাকতে হবে", liveText.contains("থামো"))
+        assertTrue("ছোট পালা (বাক্য) বলতে হবে", liveText.contains("One to three sentences"))
+        assertTrue("ইন্টারাপ্ট/থামার নিয়ম থাকতে হবে", liveText.contains("stop at once"))
         assertFalse("লাইভ নিয়ম টেক্সট কনট্র্যাক্টে থাকা উচিত নয়", textPart.contains("speech-to-speech"))
     }
 
@@ -200,7 +200,7 @@ class AdvancedToolsTest {
     fun `the text contract documents the danger lock and the tools are advertised`() {
         val text = repoFile("assets-src/knowledge/zyraxon-system-prompt.md").readText()
         assertTrue("device_lock ডকুমেন্ট করা হয়নি", text.contains("device_lock"))
-        assertTrue("বিপদের নিয়ম নেই", text.contains("আগে `device_lock`"))
+        assertTrue("বিপদের নিয়ম নেই", text.contains("lock the device with `device_lock`"))
         // Tool names and descriptions travel in the function-calling schema, not
         // in the prompt, so a tool's real contract is the schema the model sees.
         val offered = schemaNames()
