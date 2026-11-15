@@ -1,0 +1,14 @@
+Troubleshooting
+- No answer: check your internet and API key (Settings → Providers & API shows the real error). Try another model or an on-device model.
+- Microphone does nothing: allow the microphone permission; check "Keep the mic on"; check the recognition language.
+- ZYRAXON hears itself: this is filtered by text; if it still happens, lower the volume or use headphones.
+- A sentence appears twice: fixed in current versions; update the app.
+- It will not tap or read the screen: switch on the Accessibility service (Settings → Permissions).
+- It stops in the background: allow notifications and battery optimization exemption; the overlay for the floating eye.
+- A tool keeps asking permission: change the level in Settings → Automation, or answer the card.
+- Play Protect blocks something: see the Permissions chapter, or let the agent guide the steps.
+- Terminal or Linux does not start: wait for the first-time unpack at app start; check free storage.
+- Update will not install: allow ZYRAXON as an install source.
+- Cannot publish: add the GitHub token for GitHub; for a public link the agent can use a tunnel.
+- Documentation language shows English: the translation needs your model to answer; check your key and internet, then reopen the chapter.
+- Something odd: use Settings → Navigation → New session to start clean (it clears chat history only; memory stays).

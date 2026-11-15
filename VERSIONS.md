@@ -118,7 +118,7 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.25.2` | `64` | 2026-11-14 | ✅ published | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start |
 | `6.25.3` | `65` | 2026-11-15 | ✅ published | Voice turns sent once, cut-in by voice, 1.5 s auto-send; all system prompts rewritten in English with one shared human core |
 | `6.25.4` | `66` | 2026-11-16 | ✅ published | API keys and tokens sealed in the Android keystore; the app lock is a pattern or a PIN plus optional spoken lock and unlock words |
-| `6.25.5` | `67` | — | 🔜 planned | Reserved for the next bug fix |
+| `6.25.5` | `67` | 2026-11-15 | 🟡 ready (not yet published) | Settings → System → Documentation: 20 chapters, 60 languages, search |
 
 > **What is the next version?** — the 🟡 row below the last ✅ row, and nothing
 > else. Once `6.25.4` is published the 🟡 becomes ✅ and the next is `6.25.5` —
@@ -134,6 +134,21 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 Every section heading below must stay in the exact form `## vX.Y.Z` — the release
 workflow (`scripts/release-notes.sh`) finds the notes by that heading. The notes
 themselves are written in English, because they are the release body.
+
+## v6.25.5
+
+**Date:** 2026-11-15 · **versionCode:** 67 · **Native engine:** v3.1.0
+
+### Release notes
+
+**Documentation inside the app.** Settings → System → Documentation is a
+readable manual in plain text: 20 chapters covering the two modes (Agent and
+Build), every button, voice, every tool group (phone, files, build, media,
+cloud, skills, autopilot, timeline undo, call agent, memory), permissions and
+auto-permission levels, approvals, settings, models, security, languages,
+updates, tips and troubleshooting. Pick any of the 60 app languages from the
+chips; chapters ship in English and Bengali and other languages use the
+on-device model with the result cached. A search box filters chapters.
 
 ## v6.25.4
 

@@ -684,6 +684,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         sb.toString().trim()
     }.orEmpty()
 
+    /** One plain model answer with a longer wait, used to translate the documentation into the reader's language. */
+    suspend fun askLong(prompt: String, timeoutMs: Long = 150_000): String = withTimeoutOrNull(timeoutMs) {
+        val sb = StringBuilder()
+        aiEngine.streamAiResponse(
+            prompt = prompt, history = emptyList(), persona = _selectedPersona.value, model = _selectedModel.value,
+            alwaysSeeScreen = false, mode = AgentMode.AGENT
+        ).collect { ch -> if (!ch.startsWith("\u0001")) sb.append(ch) }
+        sb.toString().trim()
+    }.orEmpty()
+
     private var lastForegroundPkg = ""
 
     /** Call state from the phone: the call agent takes the call when it is on; otherwise the agent is told as before. */

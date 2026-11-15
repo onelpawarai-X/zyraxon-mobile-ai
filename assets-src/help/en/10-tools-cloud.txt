@@ -1,0 +1,21 @@
+Cloud, network, models and helpers
+## Cloud and the internet
+- `web_search` (network): search the real web. `read_url` (network): fetch a page as text. `http_request` (network): any HTTP call (GET, POST, PUT, PATCH, DELETE) with headers and body. `verify_url` (network): check a link really exists and get the true status. `download_file` (Personal, network): download a URL to a file.
+- The agent opens links only when you ask it to.
+- AI models run in the cloud through the providers you added (ZYRAXON, ZYRAXON Apex cloud agent, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). The model list loads live and fills as each provider answers.
+- Builds, publishing and pull requests run through GitHub and Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Switch on "on-device only" (Automation settings) and no cloud call is made at all: no provider, no web, no upload.
+
+## MCP servers
+MCP lets outside services give the agent extra tools. Connect Canva, Cloudflare, Supabase, GitHub or your own server by its address (optional token). Connected servers' tools join the agent's tool list as `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (see what is connected and which tools exist), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (watch a resource for changes), `mcp_complete` (autocomplete arguments), `mcp_ping`, `mcp_log_level`. Their calls are network calls, and unknown MCP tools ask for permission by default.
+- The MCP screen lists each server with Connected status, its tools, resources and prompt templates, and Add, Disconnect, Remove, Allow buttons.
+
+## Sub-agents
+`sub_agent` (System): hand parts of a big job to helper agents running in the background. Actions: spawn, status, list, result, message, stop, wait. Each can use its own model. The agent combines and checks their results before saying "done".
+
+## On-device model
+`on_device_model` (System): list, load and run a language model that lives on the phone, with no internet. In Settings → Model & identity → On-device you download models (small to large: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); a Hugging Face token is optional and needed only for gated files. A loaded model is remembered and reloaded at launch.
+
+## Messaging channels
+`channel_post` (System) opens Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail or SMS with your text ready. You press send yourself.

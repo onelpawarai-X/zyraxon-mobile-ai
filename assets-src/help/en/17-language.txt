@@ -1,0 +1,16 @@
+Languages
+## App language
+Settings → Language & translation. 60 languages. The whole interface and the agent's tool messages follow it. Each language has its own translation file. Any line that a language file does not have yet is shown in English, never left blank.
+
+## What you speak
+The agent always answers in the language you speak to it, any language in the world. If you switch, it switches. It uses the friendly-respectful form of "you" in your language. Brand and technology names stay as they are.
+
+## Voice languages
+- Recognition language (what you speak into the microphone): Settings → Voice & mic → Mic & language.
+- Speaking voice: Settings → Voice & mic → Voice profile, and the Voice lab for languages such as Bengali, Hindi, English, Urdu, Arabic, Tamil, Nepali, Spanish, French, German, Japanese, Korean, Chinese, Russian, Turkish.
+
+## This documentation
+Use the language chips on top of this page. English and Bengali are written by hand. For any other language the app asks your chosen model to translate a chapter the first time you open it, and keeps the result on the phone so it opens instantly next time and works offline.
+
+## Writing in your own script
+Documents, posters and designs can be made in any script. For Bengali designs the right font is used; for other scripts the matching font is chosen.

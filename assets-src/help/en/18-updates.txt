@@ -1,0 +1,7 @@
+Updates
+Settings → Updates → App update, or the banner at the top of the app.
+- The app checks for new releases and shows "New update available — version".
+- Check for updates: asks now. If you are current it says so.
+- Download & install: downloads with a percentage. When finished press Install. Your chats, memory and settings stay.
+- If Android blocks the install, press the permission button, allow ZYRAXON as an install source, then try again.
+- The banner buttons: Download, Install, Allow, and Close.

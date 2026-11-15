@@ -1,0 +1,15 @@
+Providers, models and keys
+## Providers
+ZYRAXON (own line and the Apex cloud agent, always connected), OpenCode (free quota), Groq (very fast Llama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek and OpenRouter. Add any key in Settings → Providers & API. The key is saved on your phone, checked against the provider's catalogue, and the models stream into the selector as each provider answers.
+
+## Choosing a model
+Use the model button in the message bar or Settings → Model & identity → Model. Search by name, filter All or Custom. Your choice is saved and restored at launch; a refresh never replaces your saved model. Models marked Live can speak in their own voice (see Live voice).
+
+## On-device models
+Settings → Model & identity → On-device. The model runs on the phone with no data leaving it. Files are large (hundreds of MB to a few GB), so download on Wi-Fi. They are listed small to large; on a phone with little RAM choose the lightest. Tool calling is supported by the Gemma and FunctionGemma bundles. A Hugging Face token is only for gated files. Loaded models are remembered.
+
+## The ZYRAXON website
+zyraxonai.lovable.app: create an account (email or Google), open Settings, API Key / Access Token, create a key and paste it in the app. Without a key you can still use the app with on-device models and local tools.
+
+## Costs and data
+Cloud providers bill you according to their own rules. With "On-device only" turned on nothing is sent to any provider.

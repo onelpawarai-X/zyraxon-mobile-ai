@@ -701,7 +701,8 @@ fun SettingsSheet(
             Triple("automation", AppIcons.bolt, t("অটোমেশন")),
             Triple("session", AppIcons.touch, t("নেভিগেশন")),
             Triple("memory", AppIcons.storage, t("মেমরি")),
-            Triple("skills", AppIcons.extension, t("স্কিল গাইড"))
+            Triple("skills", AppIcons.extension, t("স্কিল গাইড")),
+            Triple("help", AppIcons.description, t("ডকুমেন্টেশন"))
         )
     )
 
@@ -2583,6 +2584,8 @@ fun SettingsSheet(
                             }
                         }
                     }
+
+                    "help" -> ai.zyraxon.assistant.help.HelpPane(viewModel)
 
                     "skills" -> {
                         // SKILLS & TOOLS GUIDE

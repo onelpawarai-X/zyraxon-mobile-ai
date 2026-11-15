@@ -1,0 +1,10 @@
+Security and privacy
+- All of ZYRAXON's data lives on your phone: chats, memory, ledger, skills, timeline, brain index. Nothing is kept on a ZYRAXON server.
+- Cloud models receive only what is needed for the turn you send. With "On-device only" nothing is sent at all.
+- The prompts and language files shipped in the app are encrypted inside the APK.
+- App lock: set a password or pattern in Settings → Security & privacy → App lock. ZYRAXON then locks when you open it or return from the background. "Remove lock" deletes the saved password or pattern.
+- Approval levels guard every tool call in code (see Approval levels). Unknown tools always ask.
+- You can erase: all memory, the chat history, and your GitHub token, each with one button in Privacy & data.
+- Safety: if you say someone is threatening or following you, or wants your phone or data, the agent locks the phone first (if the device-admin permission is on) and then talks to you calmly.
+- Payments: before any payment or transfer the agent says what it will pay and asks you to confirm.
+- Honesty: the agent only says something worked after it saw a result. It never invents links, files or results.

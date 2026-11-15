@@ -1,0 +1,21 @@
+Building: sites, apps, preview and publishing
+## How to ask
+- "Make me a landing page for my coffee shop." The agent builds it right away, starts it on your phone and opens it in Preview. You get 2–3 lines describing it. Nothing is published unless you ask.
+- "Build a to-do app." Built directly with a sensible stack, run and shown. A back end, database or login only if you ask.
+- "Build a full-stack app." The agent first asks one short question about the back-end language, database, login and where it runs, with recommended defaults, then builds all of it with seed data and tests one full flow.
+- "Make a Windows/Linux/macOS/Android program." Source is written, a build workflow is added, it is pushed and built in the cloud with GitHub Actions, and you get the real download link.
+
+## Tools
+- `edit_file` and `write_file`: write the real files (complete code, never stubs). `code_box` shows them live.
+- `preview` (Safe): the built-in real browser. Actions: open (a link, `localhost:PORT` or a file), reload, back, forward, screenshot, scroll, click, type, read page text, console errors, eval. The agent looks at its own work before it says it is done.
+- `serve_local` (System): starts a web server on the phone for a folder and returns the LAN address other devices on your Wi-Fi can open.
+- `publish_website` (System): serves a site on a public port from the phone. `publish_cloudflare` (System): puts a site on the internet with no account through a Cloudflare tunnel and returns a public https link. `publish_github` (System): publishes a project to a GitHub repository (Pages) with your token.
+- `git` (System): clone, init, status, add, commit, push, pull, branch, checkout, log, diff with your saved token. `github_pr` (System): create, list, merge and comment on pull requests. `github_actions` (System): list workflows, run them, poll runs and read logs, so builds run in the cloud from the phone.
+- `build_app` (System): builds this project with Gradle on the phone and installs the result.
+- `files_panel`, `todo_write`: file browser and task board.
+
+## Quality rules the agent follows
+Complete layout, responsive design, working JavaScript, animation, consistent colours and fonts (dark and light where it fits), not a generic template. A landing page is usually 300–900 lines; bigger things more.
+
+## If something looks broken
+Press Fix in Preview, or tell the agent. It reads the console, fixes the cause, reopens the page and checks again.

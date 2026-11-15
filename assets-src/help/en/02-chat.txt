@@ -1,0 +1,51 @@
+The chat screen and every button
+## Top of the screen
+- Menu: opens the left drawer with your chats.
+- Chat / Terminal / Code / Preview: switch the main view. Chat is the conversation; Terminal is the real terminal; Code is the file workspace with Git; Preview is the built-in browser.
+- Aura: shows the animated character screen. Its side buttons are Mic, Chat (back to the conversation) and Refresh (reconnects the cloud and reloads the model list).
+- Settings: opens the eight settings sections.
+- A banner shows the microphone state: "Listening…", "Mic off — tap", or "Speaking… tap to stop".
+- When a new version is ready an update banner appears with Download, Install and Allow buttons (see Updates).
+
+## The left menu (chats)
+- "+ New chat": starts a new conversation.
+- Each chat in the list shows a running mark while the agent is busy there. The pencil renames it; the cross deletes it (after a confirmation: all messages in it are erased).
+- Theme: choose Horror (blood, fire and shadow), Dark (clean dark glass) or Light (bright glass).
+
+## The message bar
+- Attach (paperclip): gallery photo, camera photo, document scan (turns the text in a photo into an editable .docx), share the screen so the agent can see it ("Screen watching" on or off), and audio or video files. Attached items show as chips; the cross removes one, "Clear all" removes all.
+- Mode button: Agent or Build.
+- Mic button: turns the always-listening microphone on or off.
+- Model button: opens the model list with a search box. Models marked "Live" can speak in their own voice.
+- Send: sends the message. While the agent is working this becomes Stop.
+- The input says "What should I do?" in Agent mode and "What should I build? Say it short" in Build mode.
+
+## Messages
+- Copy, Share and Listen (reads the message aloud; press again to stop) are under each message.
+- "Thinking" shows the model's reasoning when the model provides it.
+- Code the agent writes appears live in a box, line by line, with Copy, Download and Open.
+- Files the agent makes show as cards with Open (in the phone's real app), Play, Share and "Other app…".
+- Pictures, audio and video show a live progress percentage while they are made.
+- Tool cards show what the agent is doing: running, done, success or failed.
+
+## Panels (todo, tools, files, sub-agents)
+- Todo board: the plan the agent writes for a big job and its progress (n/total done). You can add your own task and delete tasks.
+- Tools: the list of every tool call, with live status.
+- Files: every file the agent created, with Open, Share, Publish and Delete (with confirmation) and a search box.
+- Sub-agents: helper agents running in the background, with a Stop button.
+- Terminal tab: the real terminal (see the Files and Terminal chapter).
+
+## Preview panel
+- Back, Forward, Stop, Reload and an address bar (type a web address, or search Google).
+- Open file: shows Word, Excel, PowerPoint, PDF, images, Markdown, CSV, code and sites right inside the app.
+- Size: shrink or enlarge the panel.
+- Fix: sends the page's problems (console errors, failed loads) to the agent, which fixes them in the background.
+- Pick part: tap a part of the page, then tell the agent what to do with that part.
+- Agent button: ask something about the page; the agent receives a picture of it.
+- Quick open: shortcuts to recent pages.
+
+## Code workspace
+- Left side: your files (new file, open, save).
+- Editor: shows lines and characters; changes made by the agent show up at once.
+- Git: new repo, clone from GitHub, scan, status, commit with a message, push, pull, branches, token.
+- Pull requests: create, merge, close. Workflows: list runs, run a workflow. Log shows command output.

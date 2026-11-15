@@ -1050,5 +1050,19 @@
   "আনলক করার কথা": "Unlock word",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Lock and unlock with voice commands",
   "আবার আঁকো": "Draw again",
-  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Password or pattern — pick one; a new one replaces the old."
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Password or pattern — pick one; a new one replaces the old.",
+ "ডকুমেন্টেশন": "Documentation",
+ "ZYRAXON-এর প্রতিটা বিষয় অধ্যায় ধরে। নিচে আপনার ভাষা বাছুন।": "Every part of ZYRAXON, chapter by chapter. Pick your language below.",
+ "ডকুমেন্টেশনের ভাষা": "Documentation language",
+ "এই ভাষার অধ্যায় প্রথমবার খুললে আপনার মডেল অনুবাদ করে ফোনে রেখে দেয়; পরের বার সঙ্গে সঙ্গে খোলে।": "The first time you open a chapter in this language your model translates it and keeps it on the phone; next time it opens at once.",
+ "অনুবাদ চলছে…": "Translating…",
+ "সব অধ্যায় অনুবাদ করে রাখো": "Translate all chapters",
+ "আবার অনুবাদ করো": "Translate again",
+ "খুঁজুন… (যেমন: অটোপাইলট, আনডু, পারমিশন)": "Search… (for example: autopilot, undo, permissions)",
+ "সব খুলুন": "Open all",
+ "সব বন্ধ করুন": "Close all",
+ "অনুবাদ করা গেল না। কী ও ইন্টারনেট দেখুন।": "Could not translate. Check your key and internet.",
+ "আবার চেষ্টা": "Try again",
+ "অনুবাদ হচ্ছে…": "Translating…",
+ "কিছু পাওয়া যায়নি।": "Nothing found."
 }
