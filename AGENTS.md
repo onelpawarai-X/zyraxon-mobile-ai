@@ -593,6 +593,22 @@ The local container lost its JDK/Android SDK/Gradle after a restart and building
 the APK there costs ~480 MB of memory, which has caused restarts mid-build. The
 supported path is the `TEST-CI` workflow (`workflow_dispatch`):
 
+Unit tests, though, do run locally and are worth running before a push — they
+catch a compile error or a broken assertion in ~3 minutes instead of a full CI
+round-trip. The toolchain sits under `/workspace/tools` and
+`/workspace/gradle-home`, not `/opt`:
+
+```bash
+export JAVA_HOME=/workspace/tools/amazon-corretto-21.0.13.0.11-linux-x64
+export ANDROID_HOME=/workspace/android-sdk ANDROID_SDK_ROOT=/workspace/android-sdk
+export GRADLE_USER_HOME=/workspace/gradle-home
+export PATH=$JAVA_HOME/bin:/workspace/tools/gradle-9.3.1/bin:$PATH
+cd /workspace/zx3 && gradle --offline :app:testDebugUnitTest
+```
+
+Run it in the background and poll the log: the full suite takes about three
+minutes, which is longer than a foreground command is allowed to sit.
+
 ```bash
 curl -s -X POST -H "Authorization: Bearer $GITHUB_TOKEN" \
   -H "Accept: application/vnd.github+json" \
