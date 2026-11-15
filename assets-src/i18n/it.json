@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Di' una parola per bloccare, un'altra per sbloccare.",
   "লক করার কথা": "Parola di blocco",
   "আনলক করার কথা": "Parola di sblocco",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Schema e password — entrambi sono impostati.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Blocca e sblocca con comandi vocali",
-  "আবার আঁকো": "Ridisegna"
+  "আবার আঁকো": "Ridisegna",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Password o schema — scegline uno; il nuovo sostituisce il vecchio."
 }

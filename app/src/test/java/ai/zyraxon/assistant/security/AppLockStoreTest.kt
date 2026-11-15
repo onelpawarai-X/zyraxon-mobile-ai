@@ -17,9 +17,10 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 /**
- * The app lock is two independent secrets: a pattern and a PIN. These tests hold
- * that line — setting one must never disturb the other, and a guess is checked
- * only against the kind it claims.
+ * The app lock is one secret — a pattern or a PIN, whichever was chosen last —
+ * with an optional spoken word stacked on top. These tests hold the two rules
+ * that matter: choosing a second secret replaces the first rather than adding a
+ * second door, and a guess is checked only against the kind it claims.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
@@ -50,40 +51,40 @@ class AppLockStoreTest {
     }
 
     @Test
-    fun `setting a pin leaves the pattern alone`() {
+    fun `setting a pin replaces the pattern`() {
         lock.setPattern("0-4-8")
         lock.setPin("1379")
-        assertTrue(lock.hasPattern)
-        assertTrue(lock.hasPin)
-        assertTrue(lock.verifyPattern("0-4-8"))
-        assertTrue(lock.verifyPin("1379"))
-    }
-
-    @Test
-    fun `setting a pattern leaves the pin alone`() {
-        lock.setPin("1379")
-        lock.setPattern("0-4-8")
-        assertTrue(lock.verifyPin("1379"))
-        assertTrue(lock.verifyPattern("0-4-8"))
-    }
-
-    @Test
-    fun `removing the pattern keeps the pin`() {
-        lock.setPattern("0-1-2")
-        lock.setPin("2468")
-        lock.removePattern()
         assertFalse(lock.hasPattern)
         assertTrue(lock.hasPin)
-        assertTrue(lock.verifyPin("2468"))
+        assertTrue(lock.verifyPin("1379"))
+        assertFalse(lock.verifyPattern("0-4-8"))
     }
 
     @Test
-    fun `removing the pin keeps the pattern`() {
-        lock.setPattern("0-1-2")
-        lock.setPin("2468")
-        lock.removePin()
-        assertTrue(lock.hasPattern)
+    fun `setting a pattern replaces the pin`() {
+        lock.setPin("1379")
+        lock.setPattern("0-4-8")
         assertFalse(lock.hasPin)
+        assertTrue(lock.hasPattern)
+        assertTrue(lock.verifyPattern("0-4-8"))
+        assertFalse(lock.verifyPin("1379"))
+    }
+
+    @Test
+    fun `a spoken word stacks on top of a secret`() {
+        lock.setPin("1379")
+        lock.unlockCommand = "খুলে দাও"
+        assertTrue(lock.hasPin)
+        assertTrue(lock.hasVoice)
+        assertTrue(lock.verifyPin("1379"))
+        assertTrue(lock.matchesUnlock("খুলে দাও"))
+    }
+
+    @Test
+    fun `a spoken word alone is a lock too`() {
+        lock.unlockCommand = "খুলে দাও"
+        assertTrue(lock.hasVoice)
+        assertFalse(lock.hasSecret)
     }
 
     @Test
@@ -101,25 +102,21 @@ class AppLockStoreTest {
     }
 
     @Test
-    fun `the active kind follows the preference when both are set`() {
-        lock.setPattern("0-1-2-3")
+    fun `the active kind is whichever secret was chosen last`() {
         lock.setPin("1234")
-        lock.preferredKind = AppLockStore.MODE_PIN
         assertEquals(AppLockStore.MODE_PIN, lock.activeKind)
-        lock.preferredKind = AppLockStore.MODE_PATTERN
+        lock.setPattern("0-1-2-3")
         assertEquals(AppLockStore.MODE_PATTERN, lock.activeKind)
     }
 
     @Test
-    fun `the active kind falls back to whichever exists`() {
-        lock.setPin("1234")
-        lock.preferredKind = AppLockStore.MODE_PATTERN
-        assertEquals(AppLockStore.MODE_PIN, lock.activeKind)
+    fun `the active kind is null when only a spoken word is set`() {
+        lock.unlockCommand = "খুলে দাও"
+        assertNull(lock.activeKind)
     }
 
     @Test
     fun `verify with an explicit kind checks that kind`() {
-        lock.setPattern("0-1-2-3")
         lock.setPin("1234")
         assertTrue(lock.verify("1234", AppLockStore.MODE_PIN))
         assertFalse(lock.verify("1234", AppLockStore.MODE_PATTERN))

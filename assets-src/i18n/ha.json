@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Ka ce kalma ɗaya don kullewa, wata don buɗewa.",
   "লক করার কথা": "Kalmar kullewa",
   "আনলক করার কথা": "Kalmar buɗewa",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Tsari da kalmar sirri — dukansu an saita.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Kulle da buɗewa da umarnin murya",
-  "আবার আঁকো": "Sake zana"
+  "আবার আঁকো": "Sake zana",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Kalmar sirri ko tsari — zaɓi ɗaya; sabo yana maye gurbin tsohon."
 }

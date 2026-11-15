@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Say one word to lock, another to unlock.",
   "লক করার কথা": "Lock word",
   "আনলক করার কথা": "Unlock word",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Pattern and password — both are set.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Lock and unlock with voice commands",
-  "আবার আঁকো": "Draw again"
+  "আবার আঁকো": "Draw again",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Password or pattern — pick one; a new one replaces the old."
 }

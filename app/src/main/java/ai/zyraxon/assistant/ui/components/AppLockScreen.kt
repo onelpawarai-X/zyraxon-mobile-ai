@@ -81,7 +81,7 @@ fun AppLockScreen(vm: ZyraxonViewModel) {
     val mode by vm.appLockMode.collectAsState()
     val hasPattern by vm.appLockHasPattern.collectAsState()
     val hasPin by vm.appLockHasPin.collectAsState()
-    val bothSet = hasPattern && hasPin
+    val hasVoice by vm.appLockHasVoice.collectAsState()
     val isPattern = (mode ?: AppLockStore.MODE_PATTERN) == AppLockStore.MODE_PATTERN
 
     BackHandler(enabled = true) { }
@@ -92,25 +92,24 @@ fun AppLockScreen(vm: ZyraxonViewModel) {
         else t("আপনার পাসওয়ার্ড দিয়ে আনলক করুন।"),
         icon = AppIcons.lock
     ) {
-        if (bothSet) {
-            // Two secrets, one cover: the user chooses which to answer with.
+        if (hasVoice) {
+            // A spoken word is a second way in, so the cover says so. Saying it
+            // lifts the cover on its own; the secret below still works too.
             Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+                Modifier.clip(RoundedCornerShape(12.dp))
+                    .background(Glass.cyanFill.copy(alpha = 0.14f))
+                    .border(1.dp, Glass.cyanFill.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                KindChip(
-                    label = t("প্যাটার্ন"),
-                    icon = AppIcons.gesture,
-                    selected = isPattern
-                ) { vm.setAppLockPreferredKind(AppLockStore.MODE_PATTERN) }
-                Spacer(Modifier.width(10.dp))
-                KindChip(
-                    label = t("পাসওয়ার্ড"),
-                    icon = AppIcons.password,
-                    selected = !isPattern
-                ) { vm.setAppLockPreferredKind(AppLockStore.MODE_PIN) }
+                AppIcon(AppIcons.mic, null, size = 15.dp, tint = Glass.cyanFill)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    t("একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।"),
+                    color = Glass.textSecondary, fontSize = 11.5.sp
+                )
             }
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(6.dp))
         }
         if (isPattern) {
             PatternPad(
@@ -236,36 +235,6 @@ private fun ResetButton(modifier: Modifier, onClick: () -> Unit) {
         AppIcon(AppIcons.arrowBack, null, size = 16.dp, tint = Glass.textPrimary)
         Spacer(Modifier.width(6.dp))
         Text(t("আবার আঁকো"), color = Glass.textPrimary, fontSize = 14.sp)
-    }
-}
-
-/** One of the two choices on the unlock cover when both secrets are set. */
-@Composable
-private fun KindChip(
-    label: String,
-    icon: ImageVector,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Row(
-        Modifier.clip(RoundedCornerShape(12.dp))
-            .background(if (selected) Glass.pinkFill.copy(alpha = 0.18f) else Glass.fill(0.28f))
-            .border(
-                (if (selected) 1.5f else 1f).dp,
-                if (selected) Glass.pinkFill else Glass.borderSoft,
-                RoundedCornerShape(12.dp)
-            )
-            .pointerInput(label) { detectTapGestures { onClick() } }
-            .padding(horizontal = 12.dp, vertical = 7.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AppIcon(icon, null, size = 14.dp, tint = if (selected) Glass.pink else Glass.textSecondary)
-        Spacer(Modifier.width(6.dp))
-        Text(
-            label,
-            color = if (selected) Glass.pink else Glass.textSecondary,
-            fontSize = 12.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
-        )
     }
 }
 

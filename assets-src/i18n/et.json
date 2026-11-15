@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Ütle üks sõna lukustamiseks ja teine avamiseks.",
   "লক করার কথা": "Lukustussõna",
   "আনলক করার কথা": "Avamissõna",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Muster ja parool — mõlemad on seatud.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Lukusta ja ava häälkäskudega",
-  "আবার আঁকো": "Joonista uuesti"
+  "আবার আঁকো": "Joonista uuesti",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Parool või muster — vali üks; uus asendab vana."
 }

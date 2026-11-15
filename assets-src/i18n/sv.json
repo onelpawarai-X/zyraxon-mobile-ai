@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Säg ett ord för att låsa, ett annat för att låsa upp.",
   "লক করার কথা": "Låsord",
   "আনলক করার কথা": "Låsupp-ord",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Mönster och lösenord — båda är inställda.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Lås och lås upp med röstkommandon",
-  "আবার আঁকো": "Rita igen"
+  "আবার আঁকো": "Rita igen",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Lösenord eller mönster — välj ett; ett nytt ersätter det gamla."
 }

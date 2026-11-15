@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Saki vienu vārdu, lai aizslēgtu, citu, lai atslēgtu.",
   "লক করার কথা": "Aizslēgšanas vārds",
   "আনলক করার কথা": "Atslēgšanas vārds",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Raksts un parole — abi ir iestatīti.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Aizslēgt un atslēgt ar balss komandām",
-  "আবার আঁকো": "Zīmēt vēlreiz"
+  "আবার আঁকো": "Zīmēt vēlreiz",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Parole vai raksts — izvēlies vienu; jauns aizstās veco."
 }

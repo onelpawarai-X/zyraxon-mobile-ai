@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Dites un mot pour verrouiller, un autre pour déverrouiller.",
   "লক করার কথা": "Mot de verrouillage",
   "আনলক করার কথা": "Mot de déverrouillage",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Motif et mot de passe — les deux sont définis.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Verrouiller et déverrouiller par commande vocale",
-  "আবার আঁকো": "Redessiner"
+  "আবার আঁকো": "Redessiner",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Mot de passe ou motif — choisissez-en un ; le nouveau remplace l'ancien."
 }

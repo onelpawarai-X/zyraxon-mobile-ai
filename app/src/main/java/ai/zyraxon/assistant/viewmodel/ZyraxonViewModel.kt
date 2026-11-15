@@ -880,9 +880,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private val _appLockHasPattern = MutableStateFlow(appLock.hasPattern)
     val appLockHasPattern: StateFlow<Boolean> = _appLockHasPattern.asStateFlow()
 
-    /** True when a PIN is set, independent of the pattern. */
+    /** True when a PIN is set. Never both with the pattern. */
     private val _appLockHasPin = MutableStateFlow(appLock.hasPin)
     val appLockHasPin: StateFlow<Boolean> = _appLockHasPin.asStateFlow()
+
+    /** True when a spoken unlock word is set, which the cover then also asks for. */
+    private val _appLockHasVoice = MutableStateFlow(appLock.hasVoice)
+    val appLockHasVoice: StateFlow<Boolean> = _appLockHasVoice.asStateFlow()
 
     /** The spoken word that locks the app, or empty. */
     private val _appLockVoiceLock = MutableStateFlow(appLock.lockCommand.orEmpty())
@@ -1611,7 +1615,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             // so they work whether the cover is up or the app is in use. A word
             // the user chose to speak is a command, not a message: it is acted on
             // and never shown in the chat.
-            if (appLock.hasSecret) {
+            if (appLock.hasVoice) {
                 if (_appLocked.value && appLock.matchesUnlock(text)) {
                     _appLocked.value = false
                     return@stt
@@ -2036,15 +2040,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         _appLockMode.value = appLock.activeKind
         _appLockHasPattern.value = appLock.hasPattern
         _appLockHasPin.value = appLock.hasPin
+        _appLockHasVoice.value = appLock.hasVoice
         _appLockEnabled.value = appLock.isEnabled
         _appLockVoiceLock.value = appLock.lockCommand.orEmpty()
         _appLockVoiceUnlock.value = appLock.unlockCommand.orEmpty()
-    }
-
-    /** Remembers which kind the cover asks for first when both are set. */
-    fun setAppLockPreferredKind(kind: String) {
-        appLock.preferredKind = kind
-        refreshAppLockState()
     }
 
     /** Stores the spoken word that locks the app; empty clears it. */
@@ -2057,6 +2056,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun setAppLockVoiceUnlock(word: String) {
         appLock.unlockCommand = word
         _appLockVoiceUnlock.value = appLock.unlockCommand.orEmpty()
+        _appLockHasVoice.value = appLock.hasVoice
     }
 
     /** True when the app should answer this spoken phrase by locking itself. */

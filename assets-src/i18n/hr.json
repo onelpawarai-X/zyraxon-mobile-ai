@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Reci jednu riječ za zaključavanje, drugu za otključavanje.",
   "লক করার কথা": "Riječ za zaključavanje",
   "আনলক করার কথা": "Riječ za otključavanje",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Uzorak i lozinka — oboje je postavljeno.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Zaključaj i otključaj glasovnim naredbama",
-  "আবার আঁকো": "Nacrtaj ponovno"
+  "আবার আঁকো": "Nacrtaj ponovno",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Lozinka ili uzorak — odaberi jedno; novo zamjenjuje staro."
 }

@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Shono igama elilodwa ukukhiya, elinye ukuvula.",
   "লক করার কথা": "Igama lokukhiya",
   "আনলক করার কথা": "Igama lokuvula",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Iphethini nephaswedi — zombili zisethiwe.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Khiya futhi vula ngemiyalo yezwi",
-  "আবার আঁকো": "Dweba futhi"
+  "আবার আঁকো": "Dweba futhi",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Iphaswedi noma iphethini — khetha okukodwa; okusha kuthatha indawo yakudala."
 }

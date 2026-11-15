@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Sag ein Wort zum Sperren, ein anderes zum Entsperren.",
   "লক করার কথা": "Sperrwort",
   "আনলক করার কথা": "Entsperrwort",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Muster und Passwort — beide sind gesetzt.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Sperren und Entsperren per Sprachbefehl",
-  "আবার আঁকো": "Erneut zeichnen"
+  "আবার আঁকো": "Erneut zeichnen",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Passwort oder Muster — wähle eines; ein neues ersetzt das alte."
 }

@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Magsabi ng isang salita para i-lock, isa pa para i-unlock.",
   "লক করার কথা": "Salitang pang-lock",
   "আনলক করার কথা": "Salitang pang-unlock",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Pattern at password — pareho ay nakatakda.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "I-lock at i-unlock gamit ang voice command",
-  "আবার আঁকো": "Gumuhit muli"
+  "আবার আঁকো": "Gumuhit muli",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Password o pattern — pumili ng isa; pinapalitan ng bago ang luma."
 }

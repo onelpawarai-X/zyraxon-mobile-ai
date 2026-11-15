@@ -10,9 +10,14 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
 /**
- * The app's own lock secret. A pattern and a PIN are two independent locks: the
- * user may set either, or both, and each is checked on its own — a pattern is
- * never "both at once" with a PIN, and setting one never disturbs the other.
+ * The app's own lock. There are three ways in, and they combine:
+ *
+ *  - a **pattern** or a **PIN** — the same slot, two shapes. Setting one replaces
+ *    the other, because a second secret for the same door is a way to be locked
+ *    out, not a way to be safer.
+ *  - a **spoken word**, which is optional and stacks on top. Set only a word and
+ *    the voice opens the app; set a word *and* a secret and both are asked for,
+ *    so the word is a second lock rather than a replacement for the first.
  *
  * The device credential is not used here. It is a good secret, but it belongs to
  * the phone, and asking for it opens a system screen — a second activity on top
@@ -35,22 +40,17 @@ class AppLockStore(context: Context) {
 
     private val prefs = context.getSharedPreferences("zyraxon_app_lock", Context.MODE_PRIVATE)
 
-    /** True once a pattern has been set. Independent of the PIN. */
+    /** True once a pattern has been set. */
     val hasPattern: Boolean get() = prefs.contains(KEY_PATTERN_HASH)
 
-    /** True once a PIN has been set. Independent of the pattern. */
+    /** True once a PIN has been set. Never both: setting one clears the other. */
     val hasPin: Boolean get() = prefs.contains(KEY_PIN_HASH)
 
-    /** True when either kind of secret exists. */
+    /** True when a pattern or a PIN exists. */
     val hasSecret: Boolean get() = hasPattern || hasPin
 
-    /**
-     * Which kind the cover asks for first when both are set. The user picks it on
-     * the lock screen; the value is remembered so the choice sticks.
-     */
-    var preferredKind: String
-        get() = prefs.getString(KEY_PREFERRED, MODE_PATTERN) ?: MODE_PATTERN
-        set(value) = prefs.edit().putString(KEY_PREFERRED, value).apply()
+    /** True when a spoken unlock word is set. */
+    val hasVoice: Boolean get() = !unlockCommand.isNullOrBlank()
 
     /** Whether the lock is armed. A lock with no secret is off regardless. */
     var isEnabled: Boolean
@@ -61,30 +61,35 @@ class AppLockStore(context: Context) {
     val isArmed: Boolean get() = isEnabled && hasSecret
 
     /**
-     * The kind to show first: the preferred one when it is set, otherwise
-     * whichever exists. Null only when neither is set.
+     * The kind of secret in force. The pattern and the PIN are one slot, so at
+     * most one of them is ever set; this is which. Null when neither is set.
      */
     val activeKind: String?
         get() = when {
-            preferredKind == MODE_PATTERN && hasPattern -> MODE_PATTERN
-            preferredKind == MODE_PIN && hasPin -> MODE_PIN
             hasPattern -> MODE_PATTERN
             hasPin -> MODE_PIN
             else -> null
         }
 
+    /**
+     * Sets the pattern. The PIN is removed first: the pattern and the PIN are the
+     * same slot, so the newest one is the one that opens the door.
+     */
     fun setPattern(pattern: String) {
         val salt = newSalt()
         prefs.edit()
+            .remove(KEY_PIN_SALT).remove(KEY_PIN_HASH)
             .putString(KEY_PATTERN_SALT, encode(salt))
             .putString(KEY_PATTERN_HASH, encode(hash(pattern, salt)))
             .putBoolean(KEY_ENABLED, true)
             .apply()
     }
 
+    /** Sets the PIN, replacing any pattern for the same reason [setPattern] does. */
     fun setPin(pin: String) {
         val salt = newSalt()
         prefs.edit()
+            .remove(KEY_PATTERN_SALT).remove(KEY_PATTERN_HASH)
             .putString(KEY_PIN_SALT, encode(salt))
             .putString(KEY_PIN_HASH, encode(hash(pin, salt)))
             .putBoolean(KEY_ENABLED, true)
@@ -196,7 +201,6 @@ class AppLockStore(context: Context) {
         const val PATTERN_MIN_DOTS = 4
 
         private const val KEY_ENABLED = "enabled"
-        private const val KEY_PREFERRED = "preferred_kind"
         private const val KEY_PATTERN_SALT = "pattern_salt"
         private const val KEY_PATTERN_HASH = "pattern_hash"
         private const val KEY_PIN_SALT = "pin_salt"

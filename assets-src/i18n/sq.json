@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Thuaj një fjalë për të kyçur, një tjetër për të shkyçur.",
   "লক করার কথা": "Fjala e kyçjes",
   "আনলক করার কথা": "Fjala e shkyçjes",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Modeli dhe fjalëkalimi — të dy janë vendosur.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Kyç dhe shkyç me komanda zanore",
-  "আবার আঁকো": "Vizato përsëri"
+  "আবার আঁকো": "Vizato përsëri",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Fjalëkalim ose model — zgjidh një; i reja zëvendëson të vjetrën."
 }

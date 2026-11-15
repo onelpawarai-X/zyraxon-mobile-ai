@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Mondj egy szót a zároláshoz, egy másikat a feloldáshoz.",
   "লক করার কথা": "Zároló szó",
   "আনলক করার কথা": "Feloldó szó",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Minta és jelszó — mindkettő be van állítva.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Zárolás és feloldás hangutasítással",
-  "আবার আঁকো": "Újrarajzolás"
+  "আবার আঁকো": "Újrarajzolás",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Jelszó vagy minta — válassz egyet; az új lecseréli a régit."
 }

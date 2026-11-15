@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Kilitlemek için bir kelime, açmak için başka bir kelime söyle.",
   "লক করার কথা": "Kilitleme kelimesi",
   "আনলক করার কথা": "Kilit açma kelimesi",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Desen ve parola — ikisi de ayarlı.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Sesli komutlarla kilitle ve aç",
-  "আবার আঁকো": "Yeniden çiz"
+  "আবার আঁকো": "Yeniden çiz",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Parola veya desen — birini seç; yeni olan eskisinin yerini alır."
 }

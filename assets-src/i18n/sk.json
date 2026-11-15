@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Povedz jedno slovo na zamknutie a druhé na odomknutie.",
   "লক করার কথা": "Slovo na zamknutie",
   "আনলক করার কথা": "Slovo na odomknutie",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Vzor a heslo — obe sú nastavené.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Zamknúť a odomknúť hlasovými príkazmi",
-  "আবার আঁকো": "Nakresli znova"
+  "আবার আঁকো": "Nakresli znova",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Heslo alebo vzor — vyber jedno; nové nahradí staré."
 }

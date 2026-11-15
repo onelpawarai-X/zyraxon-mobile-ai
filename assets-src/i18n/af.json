@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Sê een woord om te sluit, nog een om oop te maak.",
   "লক করার কথা": "Sluitwoord",
   "আনলক করার কথা": "Oopmaakwoord",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Patroon en wagwoord — albei is gestel.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Sluit en ontsluit met stemopdragte",
-  "আবার আঁকো": "Teken weer"
+  "আবার আঁকো": "Teken weer",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Wagwoord of patroon — kies een; 'n nuwe een vervang die ou een."
 }

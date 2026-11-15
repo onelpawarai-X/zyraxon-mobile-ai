@@ -117,7 +117,7 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.25.1` | `63` | 2026-11-14 | ✅ published | Duplicate voice turns stopped, every language complete, apt repaired, links go to `/mobile` |
 | `6.25.2` | `64` | 2026-11-14 | ✅ published | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start |
 | `6.25.3` | `65` | 2026-11-15 | ✅ published | Voice turns sent once, cut-in by voice, 1.5 s auto-send; all system prompts rewritten in English with one shared human core |
-| `6.25.4` | `66` | 2026-11-16 | ✅ published | API keys and tokens sealed in the Android keystore; the app lock is a pattern and a PIN, kept apart, plus spoken lock and unlock words |
+| `6.25.4` | `66` | 2026-11-16 | ✅ published | API keys and tokens sealed in the Android keystore; the app lock is a pattern or a PIN plus optional spoken lock and unlock words |
 | `6.25.5` | `67` | — | 🔜 planned | Reserved for the next bug fix |
 
 > **What is the next version?** — the 🟡 row below the last ✅ row, and nothing
@@ -152,11 +152,11 @@ holds the key; on 5.x, which has no AES keystore, a per-install key is used and
 the weaker guarantee is written down. Keys already on a device are moved into the
 sealed store the first time they are read, and the plaintext copy is deleted.
 
-**The app lock is a pattern *and* a PIN, kept apart.** The two are independent
-locks now: set either, or both, and each is checked on its own. Setting a PIN no
-longer overwrites a pattern, and either can be removed without touching the
-other. When both are set, the cover shows a small switch so the user answers with
-whichever they remember.
+**The app lock is a pattern or a PIN — one slot, two shapes.** Setting a PIN no
+longer leaves a pattern behind as a second way in; the newest secret is the one
+that opens the door, and either shape can be chosen from the same card. A spoken
+word is optional and stacks on top: set only a word and the voice opens the app,
+set a word *and* a secret and the cover asks for both.
 
 **Setting a lock is a flow, not a trap.** Draw or type the secret, see that it is
 ready, then choose: Save commits it, and the button to draw again discards the

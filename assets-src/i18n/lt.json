@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Pasakyk vieną žodį užrakinti, kitą atrakinti.",
   "লক করার কথা": "Užrakinimo žodis",
   "আনলক করার কথা": "Atrakinimo žodis",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Raštas ir slaptažodis — abu nustatyti.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Užrakinti ir atrakinti balso komandomis",
-  "আবার আঁকো": "Brėžti iš naujo"
+  "আবার আঁকো": "Brėžti iš naujo",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Slaptažodis arba raštas — pasirink vieną; naujas pakeis seną."
 }

@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Sebut satu perkataan untuk kunci, satu lagi untuk buka.",
   "লক করার কথা": "Perkataan kunci",
   "আনলক করার কথা": "Perkataan buka",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Corak dan kata laluan — kedua-duanya ditetapkan.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Kunci dan buka dengan arahan suara",
-  "আবার আঁকো": "Lukis semula"
+  "আবার আঁকো": "Lukis semula",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Kata laluan atau corak — pilih satu; yang baharu menggantikan yang lama."
 }

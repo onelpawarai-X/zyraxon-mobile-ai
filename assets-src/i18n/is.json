@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Segðu eitt orð til að læsa, annað til að opna.",
   "লক করার কথা": "Læsingarorð",
   "আনলক করার কথা": "Opnunarorð",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Mynstur og lykilorð — hvort tveggja er sett.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Læsa og opna með raddskipunum",
-  "আবার আঁকো": "Teikna aftur"
+  "আবার আঁকো": "Teikna aftur",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Lykilorð eða mynstur — veldu eitt; nýtt kemur í stað gamals."
 }

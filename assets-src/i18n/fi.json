@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Sano yksi sana lukitaksesi ja toinen avataksesi.",
   "লক করার কথা": "Lukitussana",
   "আনলক করার কথা": "Avaussana",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Kuvio ja salasana — molemmat on asetettu.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Lukitse ja avaa äänikomennoilla",
-  "আবার আঁকো": "Piirrä uudelleen"
+  "আবার আঁকো": "Piirrä uudelleen",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Salasana tai kuvio — valitse yksi; uusi korvaa vanhan."
 }

@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Spune un cuvânt pentru blocare și altul pentru deblocare.",
   "লক করার কথা": "Cuvânt de blocare",
   "আনলক করার কথা": "Cuvânt de deblocare",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Model și parolă — ambele sunt setate.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Blochează și deblochează prin comenzi vocale",
-  "আবার আঁকো": "Desenează din nou"
+  "আবার আঁকো": "Desenează din nou",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Parolă sau model — alege unul; cel nou îl înlocuiește pe cel vechi."
 }

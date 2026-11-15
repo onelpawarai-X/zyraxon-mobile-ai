@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Diga uma palavra para bloquear e outra para desbloquear.",
   "লক করার কথা": "Palavra de bloqueio",
   "আনলক করার কথা": "Palavra de desbloqueio",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Padrão e palavra-passe — ambos estão definidos.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Bloquear e desbloquear com comandos de voz",
-  "আবার আঁকো": "Desenhar de novo"
+  "আবার আঁকো": "Desenhar de novo",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Palavra-passe ou padrão — escolha um; o novo substitui o antigo."
 }

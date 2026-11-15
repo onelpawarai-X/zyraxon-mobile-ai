@@ -1087,7 +1087,6 @@ fun SettingsSheet(
                                             Text(t("অ্যাপ লক"), color = Glass.textPrimary, fontSize = 13.sp)
                                             Text(
                                                 when {
-                                                    hasPattern && hasPin -> t("প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।")
                                                     hasPattern -> t("প্যাটার্ন সেট করা আছে — চালু আছে।")
                                                     hasPin -> t("পাসওয়ার্ড সেট করা আছে — চালু আছে।")
                                                     else -> t("এখনো কোনো পাসওয়ার্ড বা প্যাটার্ন সেট করা হয়নি।")
@@ -1113,6 +1112,11 @@ fun SettingsSheet(
                                 )
                                 Spacer(modifier = Modifier.height(14.dp))
                                 HorrorSectionTitle(t("পাসওয়ার্ড"), AppIcons.password)
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    t("পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।"),
+                                    color = Glass.textMuted, fontSize = 11.sp
+                                )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                     LockKindCard(
@@ -1130,22 +1134,13 @@ fun SettingsSheet(
                                         modifier = Modifier.weight(1f)
                                     ) { setup = "pattern" }
                                 }
-                                if (hasPattern) {
+                                if (hasSecret) {
                                     Spacer(modifier = Modifier.height(10.dp))
                                     PrivacyAction(
-                                        icon = AppIcons.gesture,
-                                        title = t("প্যাটার্ন"),
+                                        icon = if (hasPattern) AppIcons.gesture else AppIcons.password,
+                                        title = if (hasPattern) t("প্যাটার্ন") else t("পাসওয়ার্ড"),
                                         desc = t("সংরক্ষিত পাসওয়ার্ড বা প্যাটার্ন মুছে ফেলুন"),
-                                        onAction = { viewModel.removeAppLockPattern() }
-                                    )
-                                }
-                                if (hasPin) {
-                                    Spacer(modifier = Modifier.height(10.dp))
-                                    PrivacyAction(
-                                        icon = AppIcons.password,
-                                        title = t("পাসওয়ার্ড"),
-                                        desc = t("সংরক্ষিত পাসওয়ার্ড বা প্যাটার্ন মুছে ফেলুন"),
-                                        onAction = { viewModel.removeAppLockPin() }
+                                        onAction = { viewModel.removeAppLockSecret() }
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(16.dp))

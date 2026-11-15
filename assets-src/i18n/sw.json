@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Sema neno moja kufunga, lingine kufungua.",
   "লক করার কথা": "Neno la kufunga",
   "আনলক করার কথা": "Neno la kufungua",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Mchoro na nenosiri — zote zimewekwa.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Funga na fungua kwa amri za sauti",
-  "আবার আঁকো": "Chora tena"
+  "আবার আঁকো": "Chora tena",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Nenosiri au mchoro — chagua kimoja; kipya huchukua nafasi ya cha zamani."
 }

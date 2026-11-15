@@ -1048,7 +1048,7 @@
   "একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।": "Zeg één woord om te vergrendelen, een ander om te ontgrendelen.",
   "লক করার কথা": "Vergrendelwoord",
   "আনলক করার কথা": "Ontgrendelwoord",
-  "প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।": "Patroon en wachtwoord — beide zijn ingesteld.",
   "ভয়েস কমান্ড দিয়ে লক ও আনলক": "Vergrendelen en ontgrendelen met spraakopdrachten",
-  "আবার আঁকো": "Opnieuw tekenen"
+  "আবার আঁকো": "Opnieuw tekenen",
+  "পাসওয়ার্ড আর প্যাটার্নের যেকোনো একটা — নতুনটা বাছলে আগেরটা বদলে যাবে।": "Wachtwoord of patroon — kies er één; een nieuwe vervangt de oude."
 }
