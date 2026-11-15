@@ -116,7 +116,7 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.25.0` | `62` | 2026-11-13 | ✅ published | The app's own lock (password + pattern), an icon on every heading, native engine v3.1.0 (Zero Lag) |
 | `6.25.1` | `63` | 2026-11-14 | ✅ published | Duplicate voice turns stopped, every language complete, apt repaired, links go to `/mobile` |
 | `6.25.2` | `64` | 2026-11-14 | ✅ published | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start |
-| `6.25.3` | `65` | 2026-11-14 | 🟡 ready | Voice turns sent once, cut-in by voice, 1.5 s auto-send; all system prompts rewritten in English with one shared human core |
+| `6.25.3` | `65` | 2026-11-15 | ✅ published | Voice turns sent once, cut-in by voice, 1.5 s auto-send; all system prompts rewritten in English with one shared human core |
 | `6.25.4` | `66` | — | 🔜 planned | Reserved for the next bug fix |
 
 > **What is the next version?** — the 🟡 row below the last ✅ row, and nothing
