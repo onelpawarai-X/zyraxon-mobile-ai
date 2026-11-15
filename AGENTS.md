@@ -941,3 +941,19 @@ the others. Check all three after any change to the build config.
 failure. Run it on every release; CI and the release workflow already do. When
 you tighten the build, tighten the check in the same commit — the check once
 used a hard-coded list of four class names and 28 leaked file names passed it.
+
+## Secrets and the app lock (v6.25.4)
+
+- **Never write a secret with `prefs.edit().putString(...)`.** Provider keys,
+  the GitHub token and every MCP token go through
+  `security/Secrets.kt`, which seals them with `SecureStore`
+  (AES-256-GCM, key in the Android keystore; a per-install key on API 21–22).
+  A legacy plaintext value is migrated on first read and the old copy deleted.
+- **The lock is one secret plus an optional spoken word.** `AppLockStore` holds
+  a pattern *or* a PIN (setting one replaces the other) and an optional
+  lock/unlock word that stacks on top. Lock screens live in
+  `ui/components/AppLockScreen.kt`; the settings pane is the `"lock"` branch in
+  `Sheets.kt`.
+- **New UI strings must be added to all 60 tables in `assets-src/i18n/`.**
+  `LocalizationTest` fails if any language falls back to the Bengali source
+  (Assamese excepted).
