@@ -117,10 +117,11 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.25.1` | `63` | 2026-11-14 | ✅ published | Duplicate voice turns stopped, every language complete, apt repaired, links go to `/mobile` |
 | `6.25.2` | `64` | 2026-11-14 | ✅ published | The Linux guest's library links are kept when a package is unpacked, so `bash` and `apt` start |
 | `6.25.3` | `65` | 2026-11-15 | ✅ published | Voice turns sent once, cut-in by voice, 1.5 s auto-send; all system prompts rewritten in English with one shared human core |
-| `6.25.4` | `66` | — | 🔜 planned | Reserved for the next bug fix |
+| `6.25.4` | `66` | 2026-11-16 | ✅ published | API keys and tokens sealed in the Android keystore; the app lock is a pattern and a PIN, kept apart, plus spoken lock and unlock words |
+| `6.25.5` | `67` | — | 🔜 planned | Reserved for the next bug fix |
 
 > **What is the next version?** — the 🟡 row below the last ✅ row, and nothing
-> else. Once `6.25.3` is published the 🟡 becomes ✅ and the next is `6.25.4` —
+> else. Once `6.25.4` is published the 🟡 becomes ✅ and the next is `6.25.5` —
 > the last published number with its last part increased by one. There is no
 > "next new capability" number: every release, large or small, takes the next
 > serial. `6.26.0` and `6.26.1` were reserved here once and are now **dropped**,
@@ -133,6 +134,46 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 Every section heading below must stay in the exact form `## vX.Y.Z` — the release
 workflow (`scripts/release-notes.sh`) finds the notes by that heading. The notes
 themselves are written in English, because they are the release body.
+
+## v6.25.4
+
+**Date:** 2026-11-16 · **versionCode:** 66 · **Native engine:** v3.1.0
+
+### Release notes
+
+**API keys are sealed, not written in the clear.** Every provider key, the GitHub
+token, and every MCP access, refresh and client secret used to sit in a
+preferences file as readable text. A preferences file is private to other *apps*,
+but it is not private to a rooted phone or to anything that copies the file off
+the device — and a key read once is a key spent. Each value is now encrypted with
+AES-256-GCM under a key that lives in the Android keystore and never leaves it,
+so a copy of the file is a copy of ciphertext. On Android 6.0 and up the keystore
+holds the key; on 5.x, which has no AES keystore, a per-install key is used and
+the weaker guarantee is written down. Keys already on a device are moved into the
+sealed store the first time they are read, and the plaintext copy is deleted.
+
+**The app lock is a pattern *and* a PIN, kept apart.** The two are independent
+locks now: set either, or both, and each is checked on its own. Setting a PIN no
+longer overwrites a pattern, and either can be removed without touching the
+other. When both are set, the cover shows a small switch so the user answers with
+whichever they remember.
+
+**Setting a lock is a flow, not a trap.** Draw or type the secret, see that it is
+ready, then choose: Save commits it, and the button to draw again discards the
+draft. Nothing is stored until Save is pressed, so a pattern drawn by mistake is
+never the one that locks the app. The button labels follow the user's language,
+like every other control.
+
+**Lock and unlock by voice.** Two spoken words can be set — one that locks the
+app, one that unlocks it. Say the lock word and the cover comes down; say the
+unlock word and it lifts. The words are matched before anything else the
+recognizer returns, so they work whether the cover is up or the app is in use,
+and they are never shown in the chat as a message.
+
+**Every new string is translated in all 60 languages.** No language falls back to
+the Bengali source, and the test that proves it still passes.
+
+---
 
 ## v6.25.3
 

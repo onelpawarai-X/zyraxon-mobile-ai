@@ -34,6 +34,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.activity.compose.BackHandler
@@ -63,47 +64,67 @@ import androidx.compose.ui.unit.sp
 /**
  * The cover shown over the app while it is locked.
  *
- * It asks for the secret the user set inside ZYRAXON — a password or a pattern —
- * and nothing else. The phone's own credential is deliberately not used: asking
- * for it opens a system screen, which must come to the foreground, and that is
- * what used to pull the app back to the front while the agent was working in
- * another app. A secret this app owns is asked for on this screen, so the cover
- * can be raised without ever taking the foreground from anything.
+ * It asks for the secret the user set inside ZYRAXON — a pattern or a PIN — and
+ * nothing else. The phone's own credential is deliberately not used: asking for
+ * it opens a system screen, which must come to the foreground, and that is what
+ * used to pull the app back to the front while the agent was working in another
+ * app. A secret this app owns is asked for on this screen, so the cover can be
+ * raised without ever taking the foreground from anything.
  *
- * There is no way past it except the right answer: back is swallowed, and there
- * is no shortcut off the cover.
+ * When both a pattern and a PIN are set, a small switch lets the user answer with
+ * either, so forgetting one is not a lockout. There is no other way past it: back
+ * is swallowed.
  */
 @Composable
 fun AppLockScreen(vm: ZyraxonViewModel) {
     val context = LocalContext.current
     val mode by vm.appLockMode.collectAsState()
+    val hasPattern by vm.appLockHasPattern.collectAsState()
+    val hasPin by vm.appLockHasPin.collectAsState()
+    val bothSet = hasPattern && hasPin
+    val isPattern = (mode ?: AppLockStore.MODE_PATTERN) == AppLockStore.MODE_PATTERN
 
-    // The back gesture must not lift the cover. There is nothing behind it to
-    // return to.
     BackHandler(enabled = true) { }
 
     LockChrome(
         title = t("ZYRAXON লক করা আছে"),
-        subtitle = if (mode == AppLockStore.MODE_PATTERN) {
-            t("আপনার প্যাটার্ন টেনে আনলক করুন।")
-        } else {
-            t("আপনার পাসওয়ার্ড দিয়ে আনলক করুন।")
-        },
+        subtitle = if (isPattern) t("আপনার প্যাটার্ন টেনে আনলক করুন।")
+        else t("আপনার পাসওয়ার্ড দিয়ে আনলক করুন।"),
         icon = AppIcons.lock
     ) {
-        if (mode == AppLockStore.MODE_PATTERN) {
+        if (bothSet) {
+            // Two secrets, one cover: the user chooses which to answer with.
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                KindChip(
+                    label = t("প্যাটার্ন"),
+                    icon = AppIcons.gesture,
+                    selected = isPattern
+                ) { vm.setAppLockPreferredKind(AppLockStore.MODE_PATTERN) }
+                Spacer(Modifier.width(10.dp))
+                KindChip(
+                    label = t("পাসওয়ার্ড"),
+                    icon = AppIcons.password,
+                    selected = !isPattern
+                ) { vm.setAppLockPreferredKind(AppLockStore.MODE_PIN) }
+            }
+            Spacer(Modifier.height(4.dp))
+        }
+        if (isPattern) {
             PatternPad(
                 onComplete = { drawn ->
-                    val ok = vm.verifyAppLock(drawn)
+                    val ok = vm.verifyAppLock(drawn, AppLockStore.MODE_PATTERN)
                     if (ok) vm.unlockApp() else Glass.vibrate(context, 26)
                     ok
                 }
             )
         } else {
-            PasswordPad(
+            PinPad(
                 confirmLabel = t("আনলক করো"),
                 onComplete = { typed ->
-                    val ok = vm.verifyAppLock(typed)
+                    val ok = vm.verifyAppLock(typed, AppLockStore.MODE_PIN)
                     if (ok) vm.unlockApp() else Glass.vibrate(context, 26)
                     ok
                 }
@@ -113,11 +134,12 @@ fun AppLockScreen(vm: ZyraxonViewModel) {
 }
 
 /**
- * The screen that collects a new password or pattern, opened from settings.
+ * The screen that collects a new pattern or PIN, opened from settings.
  *
- * It asks twice — the secret, then the same secret again — because a lock set
- * with a typo is a lock the owner cannot open, and there is no reset to fall
- * back on: the secret is not stored anywhere it could be recovered from.
+ * The two are set separately. Each flow asks once, shows what was drawn or typed,
+ * and then waits for the user: [t("সেভ")] commits it, [t("বাতিল")] throws it away
+ * and lets them try again. Nothing is stored until Save is pressed, so a pattern
+ * drawn by mistake is never the one that locks the app.
  */
 @Composable
 fun AppLockSetup(
@@ -126,27 +148,14 @@ fun AppLockSetup(
     onDone: (String) -> Unit
 ) {
     val context = LocalContext.current
-    var first by remember { mutableStateOf<String?>(null) }
-    var mismatch by remember { mutableStateOf(false) }
-
-    val confirming = first != null
+    var draft by remember { mutableStateOf<String?>(null) }
     val isPattern = kind == AppLockStore.MODE_PATTERN
-
-    val edge by animateFloatAsState(
-        targetValue = if (mismatch) 1f else 0f,
-        animationSpec = tween(220),
-        label = "setupEdge"
-    )
 
     Column(
         Modifier.fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(Glass.fill(0.35f))
-            .border(
-                (1f + edge).dp,
-                Glass.pinkFill.copy(alpha = 0.30f + 0.45f * edge),
-                RoundedCornerShape(16.dp)
-            )
+            .border(1.dp, Glass.pinkFill.copy(alpha = 0.30f), RoundedCornerShape(16.dp))
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -164,44 +173,47 @@ fun AppLockSetup(
         }
         Text(
             when {
-                mismatch -> t("দুইবার একই দিতে হবে — মিলল না, আবার চেষ্টা করুন।")
-                confirming -> t("একইটি আরেকবার দিন, নিশ্চিত করার জন্য।")
+                draft != null -> t("ঠিক থাকলে সেভ চাপুন, নাহলে বাতিল করে আবার আঁকুন।")
                 isPattern -> t("কমপক্ষে চারটি বিন্দু জুড়ে একটি প্যাটার্ন আঁকুন।")
                 else -> t("৪ থেকে ৮ সংখ্যার একটি পাসওয়ার্ড দিন।")
             },
-            color = if (mismatch) Glass.pinkFill else Glass.textMuted,
+            color = Glass.textMuted,
             fontSize = 11.5.sp, lineHeight = 17.sp, textAlign = TextAlign.Center
         )
-        if (isPattern) {
-            PatternPad(
-                onComplete = { drawn ->
-                    val seen = first
-                    when {
-                        seen == null -> { first = drawn; true }
-                        seen == drawn -> { onDone(drawn); true }
-                        else -> {
-                            mismatch = true; first = null
-                            Glass.vibrate(context, 26); false
-                        }
-                    }
-                }
-            )
+
+        if (draft == null) {
+            if (isPattern) {
+                PatternPad(onComplete = { drawn -> draft = drawn; true })
+            } else {
+                PinPad(confirmLabel = null, onComplete = { typed -> draft = typed; true })
+            }
         } else {
-            PasswordPad(
-                confirmLabel = if (confirming) t("নিশ্চিত করুন") else t("পরবর্তী"),
-                onComplete = { typed ->
-                    val seen = first
-                    when {
-                        seen == null -> { first = typed; true }
-                        seen == typed -> { onDone(typed); true }
-                        else -> {
-                            mismatch = true; first = null
-                            Glass.vibrate(context, 26); false
-                        }
-                    }
-                }
+            Text(
+                t("প্রস্তুত — সেভ চাপলে সেট হবে।"),
+                color = Glass.pink, fontSize = 13.sp, fontWeight = FontWeight.Bold
             )
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Reset: drop the draft and draw again. The label follows the
+                // user's language, like every other button.
+                ResetButton(Modifier.weight(1f)) { draft = null }
+                Button(
+                    onClick = { onDone(draft!!) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Glass.pinkFill,
+                        contentColor = Glass.textOnAccent
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    AppIcon(AppIcons.check, null, size = 16.dp, tint = Glass.textOnAccent)
+                    Spacer(Modifier.width(6.dp))
+                    Text(t("সেভ"), color = Glass.textOnAccent, fontSize = 14.sp)
+                }
+            }
         }
+
         TextButton(onClick = onCancel) {
             AppIcon(AppIcons.close, null, size = 14.dp, tint = Glass.textMuted)
             Spacer(Modifier.width(5.dp))
@@ -210,8 +222,55 @@ fun AppLockSetup(
     }
 }
 
+/** A "draw again" button with the back arrow, so the intent reads at a glance. */
+@Composable
+private fun ResetButton(modifier: Modifier, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Glass.fill(0.30f),
+            contentColor = Glass.textPrimary
+        ),
+        modifier = modifier
+    ) {
+        AppIcon(AppIcons.arrowBack, null, size = 16.dp, tint = Glass.textPrimary)
+        Spacer(Modifier.width(6.dp))
+        Text(t("আবার আঁকো"), color = Glass.textPrimary, fontSize = 14.sp)
+    }
+}
+
+/** One of the two choices on the unlock cover when both secrets are set. */
+@Composable
+private fun KindChip(
+    label: String,
+    icon: ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        Modifier.clip(RoundedCornerShape(12.dp))
+            .background(if (selected) Glass.pinkFill.copy(alpha = 0.18f) else Glass.fill(0.28f))
+            .border(
+                (if (selected) 1.5f else 1f).dp,
+                if (selected) Glass.pinkFill else Glass.borderSoft,
+                RoundedCornerShape(12.dp)
+            )
+            .pointerInput(label) { detectTapGestures { onClick() } }
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AppIcon(icon, null, size = 14.dp, tint = if (selected) Glass.pink else Glass.textSecondary)
+        Spacer(Modifier.width(6.dp))
+        Text(
+            label,
+            color = if (selected) Glass.pink else Glass.textSecondary,
+            fontSize = 12.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+        )
+    }
+}
+
 /**
- * One choice card on the lock settings: the password pad, or the pattern grid.
+ * One choice card on the lock settings: the PIN pad, or the pattern grid.
  * [selected] draws the ring, so the user can see which kind is in force without
  * reading the description.
  */
@@ -248,6 +307,30 @@ fun LockKindCard(
                 Text(t("সেট আছে"), color = Glass.pink, fontSize = 10.5.sp)
             }
         }
+    }
+}
+
+/**
+ * A field where the user types the spoken word that locks or unlocks. The words
+ * are commands, not secrets, so they are shown as typed.
+ */
+@Composable
+fun VoiceCommandField(
+    label: String,
+    hint: String,
+    value: String,
+    onValueChange: (String) -> Unit
+) {
+    Column(Modifier.fillMaxWidth()) {
+        Text(label, color = Glass.textPrimary, fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(6.dp))
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text(hint, color = Glass.textMuted, fontSize = 12.sp) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
@@ -307,16 +390,16 @@ private fun LockChrome(
 }
 
 /**
- * A numeric password pad. Digits fill a row of dots; the filled count is the
- * only feedback the pad gives, and it never shows more than the maximum, so the
- * exact length of a shorter secret is not advertised.
+ * A numeric PIN pad. Digits fill a row of dots; the filled count is the only
+ * feedback the pad gives, and it never shows more than the maximum, so the exact
+ * length of a shorter secret is not advertised.
  */
 @Composable
-private fun PasswordPad(confirmLabel: String?, onComplete: (String) -> Boolean) {
+private fun PinPad(confirmLabel: String?, onComplete: (String) -> Boolean) {
     val context = LocalContext.current
     var typed by remember { mutableStateOf("") }
-    val min = AppLockStore.PASSWORD_MIN
-    val max = AppLockStore.PASSWORD_MAX
+    val min = AppLockStore.PIN_MIN
+    val max = AppLockStore.PIN_MAX
 
     fun submit() {
         if (typed.length < min) return

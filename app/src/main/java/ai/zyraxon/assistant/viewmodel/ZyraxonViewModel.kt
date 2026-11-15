@@ -872,9 +872,25 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     private val _appLockEnabled = MutableStateFlow(appLock.isEnabled)
     val appLockEnabled: StateFlow<Boolean> = _appLockEnabled.asStateFlow()
 
-    /** Which secret the lock asks for: "none", "password" or "pattern". */
-    private val _appLockMode = MutableStateFlow(appLock.mode)
-    val appLockMode: StateFlow<String> = _appLockMode.asStateFlow()
+    /** Which secret the cover is asking for: "pattern" or "pin" (null = none set). */
+    private val _appLockMode = MutableStateFlow(appLock.activeKind)
+    val appLockMode: StateFlow<String?> = _appLockMode.asStateFlow()
+
+    /** True when a pattern is set, independent of the PIN. */
+    private val _appLockHasPattern = MutableStateFlow(appLock.hasPattern)
+    val appLockHasPattern: StateFlow<Boolean> = _appLockHasPattern.asStateFlow()
+
+    /** True when a PIN is set, independent of the pattern. */
+    private val _appLockHasPin = MutableStateFlow(appLock.hasPin)
+    val appLockHasPin: StateFlow<Boolean> = _appLockHasPin.asStateFlow()
+
+    /** The spoken word that locks the app, or empty. */
+    private val _appLockVoiceLock = MutableStateFlow(appLock.lockCommand.orEmpty())
+    val appLockVoiceLock: StateFlow<String> = _appLockVoiceLock.asStateFlow()
+
+    /** The spoken word that unlocks the app, or empty. */
+    private val _appLockVoiceUnlock = MutableStateFlow(appLock.unlockCommand.orEmpty())
+    val appLockVoiceUnlock: StateFlow<String> = _appLockVoiceUnlock.asStateFlow()
 
     /**
      * True while the lock screen is actually covering the UI. Separate from
@@ -1591,6 +1607,20 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             // The live session has its own mic and transcripts; the phone's
             // recognizer must not also feed the chat.
             if (liveVoice.isActive) return@stt
+            // The spoken lock and unlock words are answered before anything else,
+            // so they work whether the cover is up or the app is in use. A word
+            // the user chose to speak is a command, not a message: it is acted on
+            // and never shown in the chat.
+            if (appLock.hasSecret) {
+                if (_appLocked.value && appLock.matchesUnlock(text)) {
+                    _appLocked.value = false
+                    return@stt
+                }
+                if (!_appLocked.value && appLock.matchesLock(text)) {
+                    _appLocked.value = true
+                    return@stt
+                }
+            }
             // The tail after a stop: once the user has cut the assistant off, its
             // voice is gone, so the phrase arriving next is the user's even if the
             // "speaking" flag has not fallen yet. Without this the final result of
@@ -1999,8 +2029,41 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         prefs.edit().putBoolean("tts_enabled", enabled).apply()
     }
 
-    /** True when a password or pattern has been set, so the cover has an answer. */
-    val hasAppLockSecret: Boolean get() = appLock.mode != AppLockStore.MODE_NONE
+    /** True when a pattern or a PIN has been set, so the cover has an answer. */
+    val hasAppLockSecret: Boolean get() = appLock.hasSecret
+
+    private fun refreshAppLockState() {
+        _appLockMode.value = appLock.activeKind
+        _appLockHasPattern.value = appLock.hasPattern
+        _appLockHasPin.value = appLock.hasPin
+        _appLockEnabled.value = appLock.isEnabled
+        _appLockVoiceLock.value = appLock.lockCommand.orEmpty()
+        _appLockVoiceUnlock.value = appLock.unlockCommand.orEmpty()
+    }
+
+    /** Remembers which kind the cover asks for first when both are set. */
+    fun setAppLockPreferredKind(kind: String) {
+        appLock.preferredKind = kind
+        refreshAppLockState()
+    }
+
+    /** Stores the spoken word that locks the app; empty clears it. */
+    fun setAppLockVoiceLock(word: String) {
+        appLock.lockCommand = word
+        _appLockVoiceLock.value = appLock.lockCommand.orEmpty()
+    }
+
+    /** Stores the spoken word that unlocks the app; empty clears it. */
+    fun setAppLockVoiceUnlock(word: String) {
+        appLock.unlockCommand = word
+        _appLockVoiceUnlock.value = appLock.unlockCommand.orEmpty()
+    }
+
+    /** True when the app should answer this spoken phrase by locking itself. */
+    fun isAppLockVoiceLock(spoken: String): Boolean = appLock.matchesLock(spoken)
+
+    /** True when the app should answer this spoken phrase by unlocking itself. */
+    fun isAppLockVoiceUnlock(spoken: String): Boolean = appLock.matchesUnlock(spoken)
 
     /**
      * Turns the app lock on or off. Turning it on with no secret set does
@@ -2010,8 +2073,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun setAppLockEnabled(enabled: Boolean) {
         if (enabled && !hasAppLockSecret) return
         appLock.isEnabled = enabled
-        _appLockEnabled.value = enabled
-        _appLockMode.value = appLock.mode
+        refreshAppLockState()
     }
 
     /**
@@ -2020,30 +2082,42 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * app comes back to the front.
      */
     fun setAppLockPassword(password: String) {
-        appLock.setPassword(password)
-        _appLockMode.value = appLock.mode
-        _appLockEnabled.value = true
+        appLock.setPin(password)
         _appLocked.value = false
+        refreshAppLockState()
     }
 
-    /** Stores a new pattern and arms the lock, the same way a password does. */
+    /** Stores a new pattern and arms the lock. Leaves any PIN untouched. */
     fun setAppLockPattern(pattern: String) {
         appLock.setPattern(pattern)
-        _appLockMode.value = appLock.mode
-        _appLockEnabled.value = true
         _appLocked.value = false
+        refreshAppLockState()
     }
 
-    /** Removes the secret and turns the lock off. */
+    /** Removes the pattern only. A PIN, if set, keeps working. */
+    fun removeAppLockPattern() {
+        appLock.removePattern()
+        _appLocked.value = false
+        refreshAppLockState()
+    }
+
+    /** Removes the PIN only. A pattern, if set, keeps working. */
+    fun removeAppLockPin() {
+        appLock.removePin()
+        _appLocked.value = false
+        refreshAppLockState()
+    }
+
+    /** Removes both secrets and turns the lock off. */
     fun removeAppLockSecret() {
         appLock.clear()
-        _appLockMode.value = appLock.mode
-        _appLockEnabled.value = false
         _appLocked.value = false
+        refreshAppLockState()
     }
 
-    /** Checks a guess against the stored digest. */
-    fun verifyAppLock(guess: String): Boolean = appLock.verify(guess)
+    /** Checks a guess against the stored digest for [kind], or the active kind. */
+    fun verifyAppLock(guess: String, kind: String? = null): Boolean =
+        if (kind == null) appLock.verify(guess) else appLock.verify(guess, kind)
 
     /** Marks the cover as answered. */
     fun unlockApp() {

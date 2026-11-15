@@ -1047,7 +1047,11 @@ fun SettingsSheet(
                     // thing users could not find.
                     "lock" -> {
                         val appLock by viewModel.appLockEnabled.collectAsState()
-                        val lockMode by viewModel.appLockMode.collectAsState()
+                        val hasPattern by viewModel.appLockHasPattern.collectAsState()
+                        val hasPin by viewModel.appLockHasPin.collectAsState()
+                        val voiceLock by viewModel.appLockVoiceLock.collectAsState()
+                        val voiceUnlock by viewModel.appLockVoiceUnlock.collectAsState()
+                        val hasSecret = hasPattern || hasPin
                         var setup by remember { mutableStateOf<String?>(null) }
 
                         HorrorSectionTitle(t("অ্যাপ লক"), AppIcons.fingerprint)
@@ -1059,7 +1063,6 @@ fun SettingsSheet(
                         // was working elsewhere.
                         when (val kind = setup) {
                             null -> {
-                                val hasSecret = lockMode != "none"
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -1083,9 +1086,10 @@ fun SettingsSheet(
                                         Column {
                                             Text(t("অ্যাপ লক"), color = Glass.textPrimary, fontSize = 13.sp)
                                             Text(
-                                                when (lockMode) {
-                                                    "pattern" -> t("প্যাটার্ন সেট করা আছে — চালু আছে।")
-                                                    "password" -> t("পাসওয়ার্ড সেট করা আছে — চালু আছে।")
+                                                when {
+                                                    hasPattern && hasPin -> t("প্যাটার্ন ও পাসওয়ার্ড — দুইটাই সেট আছে।")
+                                                    hasPattern -> t("প্যাটার্ন সেট করা আছে — চালু আছে।")
+                                                    hasPin -> t("পাসওয়ার্ড সেট করা আছে — চালু আছে।")
                                                     else -> t("এখনো কোনো পাসওয়ার্ড বা প্যাটার্ন সেট করা হয়নি।")
                                                 },
                                                 color = Glass.textMuted, fontSize = 11.sp
@@ -1115,26 +1119,56 @@ fun SettingsSheet(
                                         icon = AppIcons.password,
                                         title = t("পাসওয়ার্ড"),
                                         desc = t("৪–৮ সংখ্যার পিন"),
-                                        selected = lockMode == "password",
+                                        selected = hasPin,
                                         modifier = Modifier.weight(1f)
-                                    ) { setup = "password" }
+                                    ) { setup = "pin" }
                                     LockKindCard(
                                         icon = AppIcons.gesture,
                                         title = t("প্যাটার্ন"),
                                         desc = t("৩×৩ বিন্দু"),
-                                        selected = lockMode == "pattern",
+                                        selected = hasPattern,
                                         modifier = Modifier.weight(1f)
                                     ) { setup = "pattern" }
                                 }
-                                if (hasSecret) {
-                                    Spacer(modifier = Modifier.height(12.dp))
+                                if (hasPattern) {
+                                    Spacer(modifier = Modifier.height(10.dp))
                                     PrivacyAction(
-                                        icon = AppIcons.lockOpen,
-                                        title = t("লক সরান"),
+                                        icon = AppIcons.gesture,
+                                        title = t("প্যাটার্ন"),
                                         desc = t("সংরক্ষিত পাসওয়ার্ড বা প্যাটার্ন মুছে ফেলুন"),
-                                        onAction = { viewModel.removeAppLockSecret() }
+                                        onAction = { viewModel.removeAppLockPattern() }
                                     )
                                 }
+                                if (hasPin) {
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    PrivacyAction(
+                                        icon = AppIcons.password,
+                                        title = t("পাসওয়ার্ড"),
+                                        desc = t("সংরক্ষিত পাসওয়ার্ড বা প্যাটার্ন মুছে ফেলুন"),
+                                        onAction = { viewModel.removeAppLockPin() }
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(16.dp))
+                                HorrorSectionTitle(t("ভয়েস কমান্ড দিয়ে লক ও আনলক"), AppIcons.mic)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    t("একটি কথা বললেই লক হবে, আরেকটি বললেই খুলবে।"),
+                                    color = Glass.textSecondary, fontSize = 11.5.sp
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                VoiceCommandField(
+                                    label = t("লক করার কথা"),
+                                    hint = t("ভয়েস কমান্ড"),
+                                    value = voiceLock,
+                                    onValueChange = { viewModel.setAppLockVoiceLock(it) }
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                VoiceCommandField(
+                                    label = t("আনলক করার কথা"),
+                                    hint = t("ভয়েস কমান্ড"),
+                                    value = voiceUnlock,
+                                    onValueChange = { viewModel.setAppLockVoiceUnlock(it) }
+                                )
                             }
                             else -> {
                                 AppLockSetup(

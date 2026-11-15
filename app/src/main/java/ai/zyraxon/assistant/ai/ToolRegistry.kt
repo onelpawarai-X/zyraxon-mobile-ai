@@ -2142,8 +2142,7 @@ object ToolRegistry {
      * with a plain personal access token, no git binary needed.
      */
     private fun publishGithub(context: Context, args: JSONObject): JSONObject {
-        val token = context.getSharedPreferences("zyraxon_ai_prefs", Context.MODE_PRIVATE)
-            .getString("gh_token", "")?.trim().orEmpty()
+        val token = ai.zyraxon.assistant.security.Secrets.githubToken(context)
         if (token.isEmpty()) {
             return err("no-github-token", "GitHub টোকেন নেই — সেটিংসে টোকেন দিন, তারপর আবার বলো")
         }
@@ -2321,8 +2320,7 @@ object ToolRegistry {
      * tool is what polls `status` until a run finishes.
      */
     private fun githubActions(context: Context, args: JSONObject): JSONObject {
-        val token = context.getSharedPreferences("zyraxon_ai_prefs", Context.MODE_PRIVATE)
-            .getString("gh_token", "")?.trim().orEmpty()
+        val token = ai.zyraxon.assistant.security.Secrets.githubToken(context)
         if (token.isEmpty()) {
             return err("no-github-token", "GitHub টোকেন নেই — সেটিংসে টোকেন দিন, তারপর আবার বলো")
         }

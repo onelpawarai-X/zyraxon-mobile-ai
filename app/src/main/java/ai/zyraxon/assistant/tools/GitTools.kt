@@ -31,10 +31,10 @@ object GitTools {
         .readTimeout(60, TimeUnit.SECONDS).build()
 
     fun token(context: Context): String =
-        context.getSharedPreferences("zyraxon_ai_prefs", Context.MODE_PRIVATE).getString("gh_token", "")?.trim().orEmpty()
+        ai.zyraxon.assistant.security.Secrets.githubToken(context)
 
     fun setToken(context: Context, token: String) {
-        context.getSharedPreferences("zyraxon_ai_prefs", Context.MODE_PRIVATE).edit().putString("gh_token", token.trim()).apply()
+        ai.zyraxon.assistant.security.Secrets.setGithubToken(context, token)
     }
 
     private fun creds(context: Context) = token(context).takeIf { it.isNotBlank() }

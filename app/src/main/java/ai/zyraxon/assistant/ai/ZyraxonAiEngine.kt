@@ -271,26 +271,18 @@ Speak in whatever language the user speaks to you — calm, unhurried and far-si
         )
     }
 
-    fun getApiKey(provider: String = "gemini"): String {
-        val saved = prefs.getString("key_$provider", null)
-        if (!saved.isNullOrBlank()) return saved.trim()
-
-        if (provider == "gemini") {
-            return System.getenv("GEMINI_API_KEY").orEmpty().trim()
-        }
-        return ""
-    }
+    fun getApiKey(provider: String = "gemini"): String =
+        ai.zyraxon.assistant.security.Secrets.apiKey(context, provider)
 
     fun setApiKey(provider: String, key: String) {
-        prefs.edit().putString("key_$provider", key.trim()).apply()
+        ai.zyraxon.assistant.security.Secrets.setApiKey(context, provider, key)
     }
 
-    fun getGithubToken(): String {
-        return prefs.getString("gh_token", "") ?: ""
-    }
+    fun getGithubToken(): String =
+        ai.zyraxon.assistant.security.Secrets.githubToken(context)
 
     fun setGithubToken(token: String) {
-        prefs.edit().putString("gh_token", token.trim()).apply()
+        ai.zyraxon.assistant.security.Secrets.setGithubToken(context, token)
     }
 
     private fun generateOpenCodeSession(): String {

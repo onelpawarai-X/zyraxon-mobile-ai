@@ -5,6 +5,7 @@
 package ai.zyraxon.assistant.mcp
 
 import ai.zyraxon.assistant.core.safe
+import ai.zyraxon.assistant.security.Secrets
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -348,7 +349,7 @@ class McpManager(
     suspend fun connectWithToken(server: McpServer, token: String?): McpConnection =
         withContext(Dispatchers.IO) {
             update(server.id) { it.copy(status = McpStatus.CONNECTING, error = "") }
-            token?.takeIf { it.isNotBlank() }?.let { prefs.edit().putString(patKey(server.id), it).apply() }
+            token?.takeIf { it.isNotBlank() }?.let { Secrets.setMcp(context, patKey(server.id), it) }
             // A new token means a new session.
             clients.remove(server.id)?.close()
 
@@ -532,7 +533,7 @@ class McpManager(
             if (name.isBlank()) it else it.copy(name = name, id = McpCatalog.slugId("custom", name))
         }
         persistServer(server)
-        token?.takeIf { it.isNotBlank() }?.let { prefs.edit().putString(patKey(server.id), it).apply() }
+        token?.takeIf { it.isNotBlank() }?.let { Secrets.setMcp(context, patKey(server.id), it) }
         update(server.id) { McpConnection(server) }
         return server
     }
@@ -768,9 +769,9 @@ class McpManager(
     /** The token that is already stored, without refreshing. */
     private fun storedToken(server: McpServer): String? =
         if (server.auth == McpAuth.TOKEN) {
-            prefs.getString(patKey(server.id), null)
+            Secrets.mcp(context, patKey(server.id))
         } else {
-            prefs.getString(accessKey(server.id), null) ?: prefs.getString(patKey(server.id), null)
+            Secrets.mcp(context, accessKey(server.id)) ?: Secrets.mcp(context, patKey(server.id))
         }
 
     /**
@@ -782,10 +783,10 @@ class McpManager(
         // after connecting would fail with "permission expired".
         if (server.auth == McpAuth.NONE) return null
 
-        val pat = prefs.getString(patKey(server.id), null)
+        val pat = Secrets.mcp(context, patKey(server.id))
         if (server.auth == McpAuth.TOKEN) return pat
 
-        val access = prefs.getString(accessKey(server.id), null)
+        val access = Secrets.mcp(context, accessKey(server.id))
         val expires = prefs.getLong(expiresKey(server.id), 0L)
         if (access.isNullOrBlank()) {
             if (pat != null) return pat
@@ -793,7 +794,7 @@ class McpManager(
         }
         if (expires == 0L || expires - 60_000L > System.currentTimeMillis()) return access
 
-        val refresh = prefs.getString(refreshKey(server.id), null)
+        val refresh = Secrets.mcp(context, refreshKey(server.id))
             ?: throw McpAuthRequired("${server.id}: রিফ্রেশ টোকেন নেই")
         val clientId = prefs.getString(clientIdKey(server.id), null)
             ?: throw McpAuthRequired("${server.id}: ক্লায়েন্ট আইডি হারিয়ে গেছে")
@@ -806,7 +807,7 @@ class McpManager(
         )
         val tokens = McpOAuth.refresh(
             endpoints,
-            OAuthClient(clientId, prefs.getString(clientSecretKey(server.id), null)),
+            OAuthClient(clientId, Secrets.mcp(context, clientSecretKey(server.id))),
             refresh,
             server.url
         )
@@ -898,8 +899,8 @@ class McpManager(
                 ?.let { runCatching { McpStatus.valueOf(it) }.getOrNull() }
                 ?: McpStatus.DISCONNECTED
             // A token that was never persisted cannot still be connected.
-            val hasAuth = prefs.getString(accessKey(id), null) != null ||
-                prefs.getString(patKey(id), null) != null
+            val hasAuth = Secrets.mcp(context, accessKey(id)) != null ||
+                Secrets.mcp(context, patKey(id)) != null
             val effective = if (status == McpStatus.CONNECTED && !hasAuth && server.auth != McpAuth.NONE) {
                 McpStatus.NEEDS_AUTH
             } else status
@@ -1078,25 +1079,27 @@ class McpManager(
             .putString(tokenEpKey(id), e.tokenEndpoint)
             .putString(regEpKey(id), e.registrationEndpoint)
             .putString(clientIdKey(id), c.clientId)
-            .putString(clientSecretKey(id), c.clientSecret)
             .putString(scopesKey(id), JSONArray(e.scopesSupported).toString())
             .apply()
+        Secrets.setMcp(context, clientSecretKey(id), c.clientSecret)
     }
 
     private fun storeTokens(id: String, t: OAuthTokens) {
-        prefs.edit()
-            .putString(accessKey(id), t.accessToken)
-            .putString(refreshKey(id), t.refreshToken)
-            .putLong(expiresKey(id), t.expiresAtMillis)
-            .apply()
+        prefs.edit().putLong(expiresKey(id), t.expiresAtMillis).apply()
+        Secrets.setMcp(context, accessKey(id), t.accessToken)
+        Secrets.setMcp(context, refreshKey(id), t.refreshToken)
     }
 
     private fun clearAuth(id: String) {
+        Secrets.setMcp(context, accessKey(id), null)
+        Secrets.setMcp(context, refreshKey(id), null)
+        Secrets.setMcp(context, clientSecretKey(id), null)
+        Secrets.setMcp(context, patKey(id), null)
         prefs.edit()
-            .remove(accessKey(id)).remove(refreshKey(id)).remove(expiresKey(id))
-            .remove(clientIdKey(id)).remove(clientSecretKey(id))
+            .remove(expiresKey(id))
+            .remove(clientIdKey(id))
             .remove(authzKey(id)).remove(tokenEpKey(id)).remove(regEpKey(id))
-            .remove(patKey(id)).remove(accountKey(id))
+            .remove(accountKey(id))
             .remove("verifier_$id").remove("state_$id")
             .apply()
     }

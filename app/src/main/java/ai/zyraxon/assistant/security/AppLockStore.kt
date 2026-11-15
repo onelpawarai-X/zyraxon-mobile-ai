@@ -10,76 +10,146 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
 /**
- * The app's own lock secret: a password, a pattern, or neither.
+ * The app's own lock secret. A pattern and a PIN are two independent locks: the
+ * user may set either, or both, and each is checked on its own — a pattern is
+ * never "both at once" with a PIN, and setting one never disturbs the other.
  *
  * The device credential is not used here. It is a good secret, but it belongs to
  * the phone, and asking for it opens a system screen — a second activity on top
  * of this app. That is what used to pull ZYRAXON back to the front while the
- * agent was working in another app, because the credential screen must be in the
- * foreground to be shown. A secret this app owns is asked for on a screen this
- * app draws, so the cover appears without ever taking the foreground from
- * whatever the agent opened.
+ * agent was working in another app. A secret this app owns is asked for on a
+ * screen this app draws, so the cover appears without ever taking the foreground
+ * from whatever the agent opened.
  *
- * Only the hash is kept. The secret itself is never written down, so a copy of
- * the preferences file gives an attacker nothing to read: what is stored is a
- * PBKDF2-HMAC-SHA256 digest over a per-install random salt, and the only way to
+ * Only hashes are kept. The secrets themselves are never written down, so a copy
+ * of the preferences file gives an attacker nothing to read: what is stored is a
+ * PBKDF2-HMAC-SHA256 digest over a per-secret random salt, and the only way to
  * check a guess is to run the same slow derivation against it.
+ *
+ * The spoken words that lock and unlock are stored as written: the agent has to
+ * be able to say the unlock word, and a word the user chose to speak aloud is not
+ * a secret to hide. They live here, not in the AI prefs, so the lock owns
+ * everything about locking.
  */
 class AppLockStore(context: Context) {
 
     private val prefs = context.getSharedPreferences("zyraxon_app_lock", Context.MODE_PRIVATE)
 
-    /**
-     * Which kind of secret is set. [MODE_NONE] means the lock has nothing to ask
-     * for, so it is off no matter what [isEnabled] says — a cover with no answer
-     * would only seal the owner out.
-     */
-    var mode: String
-        get() = prefs.getString(KEY_MODE, MODE_NONE) ?: MODE_NONE
-        private set(value) = prefs.edit().putString(KEY_MODE, value).apply()
+    /** True once a pattern has been set. Independent of the PIN. */
+    val hasPattern: Boolean get() = prefs.contains(KEY_PATTERN_HASH)
 
-    /** Whether a configured lock is armed. Independent of whether a secret is set. */
+    /** True once a PIN has been set. Independent of the pattern. */
+    val hasPin: Boolean get() = prefs.contains(KEY_PIN_HASH)
+
+    /** True when either kind of secret exists. */
+    val hasSecret: Boolean get() = hasPattern || hasPin
+
+    /**
+     * Which kind the cover asks for first when both are set. The user picks it on
+     * the lock screen; the value is remembered so the choice sticks.
+     */
+    var preferredKind: String
+        get() = prefs.getString(KEY_PREFERRED, MODE_PATTERN) ?: MODE_PATTERN
+        set(value) = prefs.edit().putString(KEY_PREFERRED, value).apply()
+
+    /** Whether the lock is armed. A lock with no secret is off regardless. */
     var isEnabled: Boolean
         get() = prefs.getBoolean(KEY_ENABLED, false)
         set(value) = prefs.edit().putBoolean(KEY_ENABLED, value).apply()
 
-    /** True once a secret exists and the user has armed it. */
-    val isArmed: Boolean get() = isEnabled && mode != MODE_NONE
+    /** True once at least one secret exists and the user has armed the lock. */
+    val isArmed: Boolean get() = isEnabled && hasSecret
 
-    fun setPassword(password: String) {
-        val salt = newSalt()
-        prefs.edit()
-            .putString(KEY_SALT, encode(salt))
-            .putString(KEY_HASH, encode(hash(password, salt)))
-            .putString(KEY_MODE, MODE_PASSWORD)
-            .putBoolean(KEY_ENABLED, true)
-            .apply()
-    }
+    /**
+     * The kind to show first: the preferred one when it is set, otherwise
+     * whichever exists. Null only when neither is set.
+     */
+    val activeKind: String?
+        get() = when {
+            preferredKind == MODE_PATTERN && hasPattern -> MODE_PATTERN
+            preferredKind == MODE_PIN && hasPin -> MODE_PIN
+            hasPattern -> MODE_PATTERN
+            hasPin -> MODE_PIN
+            else -> null
+        }
 
     fun setPattern(pattern: String) {
         val salt = newSalt()
         prefs.edit()
-            .putString(KEY_SALT, encode(salt))
-            .putString(KEY_HASH, encode(hash(pattern, salt)))
-            .putString(KEY_MODE, MODE_PATTERN)
+            .putString(KEY_PATTERN_SALT, encode(salt))
+            .putString(KEY_PATTERN_HASH, encode(hash(pattern, salt)))
             .putBoolean(KEY_ENABLED, true)
             .apply()
     }
 
-    /**
-     * Checks a guess. False for every guess when nothing is set, so a missing
-     * secret can never read as a match.
-     */
-    fun verify(guess: String): Boolean {
-        if (mode == MODE_NONE) return false
-        val salt = decode(prefs.getString(KEY_SALT, null)) ?: return false
-        val stored = decode(prefs.getString(KEY_HASH, null)) ?: return false
-        return constantTimeEquals(stored, hash(guess, salt))
+    fun setPin(pin: String) {
+        val salt = newSalt()
+        prefs.edit()
+            .putString(KEY_PIN_SALT, encode(salt))
+            .putString(KEY_PIN_HASH, encode(hash(pin, salt)))
+            .putBoolean(KEY_ENABLED, true)
+            .apply()
     }
 
-    /** Removes the secret and turns the lock off. */
-    fun clear() {
-        prefs.edit().clear().apply()
+    fun removePattern() = prefs.edit().remove(KEY_PATTERN_HASH).remove(KEY_PATTERN_SALT).apply()
+
+    fun removePin() = prefs.edit().remove(KEY_PIN_HASH).remove(KEY_PIN_SALT).apply()
+
+    /**
+     * Checks a pattern guess. False when no pattern is set, so a missing secret
+     * can never read as a match.
+     */
+    fun verifyPattern(guess: String): Boolean = verify(KEY_PATTERN_SALT, KEY_PATTERN_HASH, guess)
+
+    /** Checks a PIN guess. False when no PIN is set. */
+    fun verifyPin(guess: String): Boolean = verify(KEY_PIN_SALT, KEY_PIN_HASH, guess)
+
+    /**
+     * Checks a guess against whichever kind the cover is asking for, so the
+     * unlock screen does not have to know which store call to make.
+     */
+    fun verify(guess: String, kind: String = activeKind ?: MODE_PATTERN): Boolean =
+        if (kind == MODE_PIN) verifyPin(guess) else verifyPattern(guess)
+
+    /** Removes both secrets and turns the lock off. */
+    fun clear() = prefs.edit().clear().apply()
+
+    // ---- spoken commands ------------------------------------------------
+
+    /** The spoken word that locks the app, or null when none is set. */
+    var lockCommand: String?
+        get() = prefs.getString(KEY_LOCK_CMD, null)?.takeIf { it.isNotBlank() }
+        set(value) = store(KEY_LOCK_CMD, value)
+
+    /** The spoken word that unlocks the app, or null when none is set. */
+    var unlockCommand: String?
+        get() = prefs.getString(KEY_UNLOCK_CMD, null)?.takeIf { it.isNotBlank() }
+        set(value) = store(KEY_UNLOCK_CMD, value)
+
+    /**
+     * True when [spoken] is the unlock word. The comparison folds case and
+     * surrounding space, because a recognizer does not return a phrase the same
+     * way twice.
+     */
+    fun matchesUnlock(spoken: String): Boolean = matches(unlockCommand, spoken)
+
+    /** True when [spoken] is the lock word. */
+    fun matchesLock(spoken: String): Boolean = matches(lockCommand, spoken)
+
+    private fun matches(word: String?, spoken: String): Boolean {
+        if (word.isNullOrBlank()) return false
+        return word.trim().equals(spoken.trim(), ignoreCase = true)
+    }
+
+    private fun store(key: String, value: String?) {
+        if (value.isNullOrBlank()) prefs.edit().remove(key).apply()
+        else prefs.edit().putString(key, value.trim()).apply()
+    }
+
+    private fun verify(saltKey: String, hashKey: String, guess: String): Boolean {
+        val salt = decode(prefs.getString(saltKey, null)) ?: return false
+        val stored = decode(prefs.getString(hashKey, null)) ?: return false
+        return constantTimeEquals(stored, hash(guess, salt))
     }
 
     private fun newSalt(): ByteArray = ByteArray(SALT_BYTES).also { SecureRandom().nextBytes(it) }
@@ -115,20 +185,24 @@ class AppLockStore(context: Context) {
 
     companion object {
         const val MODE_NONE = "none"
-        const val MODE_PASSWORD = "password"
         const val MODE_PATTERN = "pattern"
+        const val MODE_PIN = "pin"
 
-        /** Shortest password the pad accepts. */
-        const val PASSWORD_MIN = 4
-        const val PASSWORD_MAX = 8
+        /** Shortest PIN the pad accepts. */
+        const val PIN_MIN = 4
+        const val PIN_MAX = 8
 
         /** A pattern that joins fewer than this many dots is not accepted. */
         const val PATTERN_MIN_DOTS = 4
 
-        private const val KEY_MODE = "mode"
         private const val KEY_ENABLED = "enabled"
-        private const val KEY_SALT = "salt"
-        private const val KEY_HASH = "hash"
+        private const val KEY_PREFERRED = "preferred_kind"
+        private const val KEY_PATTERN_SALT = "pattern_salt"
+        private const val KEY_PATTERN_HASH = "pattern_hash"
+        private const val KEY_PIN_SALT = "pin_salt"
+        private const val KEY_PIN_HASH = "pin_hash"
+        private const val KEY_LOCK_CMD = "voice_lock_command"
+        private const val KEY_UNLOCK_CMD = "voice_unlock_command"
 
         private const val SALT_BYTES = 16
         private const val KEY_BITS = 256
