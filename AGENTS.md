@@ -346,6 +346,14 @@ is published, which is next, and the full release notes for each. **Read it
 before choosing a version.** The next version comes from that file, never from
 the working tree and never from memory.
 
+**The number is a serial: last published + one, in its last part.** Published
+`6.25.2` means the next release is `6.25.3`, whatever it contains — a one-line
+fix or a whole rewrite. Do **not** jump (`6.25.2` → `6.26.0` is wrong) and do
+**not** go back to a number that was passed over. Only a change that breaks old
+settings or stored data steps the first part (`6.25.4` → `7.0.0`); that is the
+only jump there is. A "reserved" row in the ledger is a note, not a version — if
+it is passed over it is dropped, not returned to.
+
 `scripts/verify-version.sh` enforces the match and runs in both workflows, so a
 version that is not written down fails CI before anything is built. It checks
 that:

@@ -17,18 +17,38 @@ that is not written down here must not be used anywhere.
 | 3 | Set `versionName` and `versionCode` in `app/build.gradle.kts` |
 | 4 | Add the new row and the new section to this file |
 
+> ### The number is a serial — it steps by **one**, always
+>
+> The next version is **the last published version with its last part increased
+> by exactly one**. Nothing else chooses it.
+>
+> - Last published `6.25.2` → next is **`6.25.3`**. Not `6.26.0`, not `6.26.1`.
+> - A **bigger jump is never allowed**, however large the change looks. A large
+>   change is still `6.25.3`; the size of the work does not move the number.
+> - Only `MAJOR` is exempt: a change that breaks old settings or data steps the
+>   **first** part instead (`6.x.x` → `7.0.0`), and that is the only jump allowed.
+> - A version already published is never used again, and a version that was
+>   **skipped is never gone back to**. If `6.25.3` is published next, `6.25.4`
+>   follows it — `6.26.0` does not come back.
+>
+> **Worked example.** Published: `6.25.1`, `6.25.2`. The next release, whatever
+> it contains, is `6.25.3` (code `65`). The one after that is `6.25.4` (code
+> `66`). The `6.26.0` that was once reserved for "the next new capability" is
+> **dropped** — a reservation is not a version, and a serial never leaves a gap.
+
 ### Which part moves
 
-`versionName` is three numbers: **`MAJOR.MINOR.PATCH`** (for example `6.25.0`).
+`versionName` is three numbers: **`MAJOR.MINOR.PATCH`** (for example `6.25.3`).
 
 | Part | When it moves | Example |
 | --- | --- | --- |
-| **MAJOR** | A change that breaks old settings or data, or changes a stored format | `6.x.x` → `7.0.0` |
-| **MINOR** | New capability, new screen, new tool — everything old still works | `6.24.11` → `6.25.0` |
-| **PATCH** | Bug fixes, translations, small adjustments only — nothing new | `6.25.0` → `6.25.1` |
+| **MAJOR** | A change that breaks old settings or data, or changes a stored format — **the only part that may jump** | `6.x.x` → `7.0.0` |
+| **PATCH** | **Every other release**, whatever it contains — a fix, a translation, a new screen, a new tool | `6.25.2` → `6.25.3` |
 
-The part that moves moves by **one**, and every number to its right becomes
-**zero** (`6.24.11` → MINOR gives `6.25.0`, PATCH gives `6.24.12`).
+Only the last number moves, and it moves by **one**. The middle number is left
+where it is, so the series runs `6.25.2`, `6.25.3`, `6.25.4`, … with no gaps. The
+first number moves only when old data or settings would break, and then every
+number to its right becomes **zero** (`6.25.4` → `7.0.0`).
 
 ### versionCode — a hard rule
 
@@ -47,6 +67,10 @@ would not install.
 ### Not allowed
 
 - **The same version twice** — once a version is published it can never be reused.
+- **A jump in the number** — `6.25.2` → `6.26.0` is wrong; the next is `6.25.3`.
+  The size of the change does not move the number, only `MAJOR` may jump.
+- **Going back to a skipped number** — once `6.25.3` is published, the next is
+  `6.25.4`; a reservation that was passed over is dropped, never returned to.
 - **A suffix on a tag** — `v6.25.0-test1` is wrong; every release tag is `vX.Y.Z`.
 - **Inventing a version from the working tree** — the version comes from this
   file, not from memory.
@@ -95,9 +119,12 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.25.3` | `65` | 2026-11-14 | 🟡 ready | Voice turns sent once, cut-in by voice, 1.5 s auto-send; all system prompts rewritten in English with one shared human core |
 | `6.25.4` | `66` | — | 🔜 planned | Reserved for the next bug fix |
 
-> **What is the next version?** — the 🟡 row below the last ✅ row. Once `6.25.3`
-> is published the 🟡 becomes ✅, and the next number is chosen by the kind of
-> work: `6.25.4` (a bug fix) or `6.26.0` (a new capability).
+> **What is the next version?** — the 🟡 row below the last ✅ row, and nothing
+> else. Once `6.25.3` is published the 🟡 becomes ✅ and the next is `6.25.4` —
+> the last published number with its last part increased by one. There is no
+> "next new capability" number: every release, large or small, takes the next
+> serial. `6.26.0` and `6.26.1` were reserved here once and are now **dropped**,
+> because a serial never leaves a gap.
 
 ---
 

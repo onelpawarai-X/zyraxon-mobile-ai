@@ -54,4 +54,20 @@ if [ -n "$SECTION_CODE" ] && [ "$SECTION_CODE" != "$CODE" ]; then
   fail "$LEDGER says versionCode $SECTION_CODE for $NAME, but $GRADLE_FILE says $CODE"
 fi
 
+# The number is a serial. The new version must be the last published version with
+# its last part increased by one — a bigger jump (6.25.2 -> 6.26.0) is refused
+# here, on the commit, instead of shipping a gap in the series.
+LAST_PUBLISHED="$(grep -E '^\| `[0-9]+\.[0-9]+\.[0-9]+` \|' "$LEDGER" \
+  | grep -F '✅ published' \
+  | grep -oP '^\| `\K[0-9]+\.[0-9]+\.[0-9]+' \
+  | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)"
+
+if [ -n "$LAST_PUBLISHED" ] && [ "$NAME" != "$LAST_PUBLISHED" ]; then
+  expected_same_series="$(printf '%s' "$LAST_PUBLISHED" | awk -F. '{print $1"."$2"."$3+1}')"
+  expected_major="$(printf '%s' "$LAST_PUBLISHED" | awk -F. '{print $1+1".0.0"}')"
+  if [ "$NAME" != "$expected_same_series" ] && [ "$NAME" != "$expected_major" ]; then
+    fail "version $NAME breaks the serial — after $LAST_PUBLISHED the next is $expected_same_series (or $expected_major only if old data would break)"
+  fi
+fi
+
 echo "verify-version: $NAME (versionCode $CODE) is written down in $LEDGER"

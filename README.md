@@ -68,6 +68,10 @@ A sha256 is published next to the APK — verify it before installing.
 Every version is recorded in **[VERSIONS.md](VERSIONS.md)** — the full list, which
 is current, and the notes for each release.
 
+Versions run as a **serial**: each release is the previous one with its last
+number increased by one — `6.25.2`, then `6.25.3`, then `6.25.4`. The size of a
+change never moves the number, so the series never leaves a gap.
+
 **Minimum:** Android 5.0 (API 21) • **Compile:** Android 16 (API 36) • **Target:** Android 9 (API 28)
 
 The build compiles against API 36 but deliberately targets API 28. See
