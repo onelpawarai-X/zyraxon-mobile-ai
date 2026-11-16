@@ -232,6 +232,7 @@ object LinuxRuntime {
         writeAptAndDpkgConfig(root)
         fixScriptShebangs(root)
         fixAptMethods(root)
+        fixPackageSources(root, log)
         fixExecutablePermissions(context)
         try { File(root, BRANDED).writeText(System.currentTimeMillis().toString()) } catch (_: Exception) {}
         val ready = isInstalled(context)
@@ -264,9 +265,12 @@ object LinuxRuntime {
      *
      * The suffix is bumped whenever the generated configuration changes shape, so
      * a guest installed by an earlier build is rewritten once instead of keeping
-     * a config that no longer matches the code — v4 rebuilds the SONAME symlinks; v3 was the absolute-path apt.conf.
+     * a config that no longer matches the code — v5 repairs the package sources
+     * of a guest installed by a build whose mirrors were renamed to hosts that do
+     * not resolve; v4 rebuilt the SONAME symlinks; v3 was the absolute-path
+     * apt.conf.
      */
-    private const val BRANDED = ".zyraxon-configured-v4"
+    private const val BRANDED = ".zyraxon-configured-v5"
 
     /**
      * Writes the branding into a guest installed by an earlier build, whose files
@@ -291,6 +295,7 @@ object LinuxRuntime {
                 writeAptAndDpkgConfig(root)
                 fixScriptShebangs(root)
                 fixAptMethods(root)
+                fixPackageSources(root) { }
                 fixExecutablePermissions(context)
             } else {
                 // A link on its own is not enough: the file it points at can be
@@ -560,6 +565,84 @@ Acquire::Languages "none";
         }
     }
 
+
+    /**
+     * Points the guest's package manager at hosts that actually exist.
+     *
+     * The payload's repositories were renamed while keeping the original
+     * repository's keys and package names: every mirror file read
+     * `packages.zyrxon.dev/apt/zyrxon-main`, and no `zyrxon.dev` name resolves.
+     * `pkg` therefore found no reachable mirror and refused to install anything,
+     * while the bundled debs kept the base system alive and hid the failure.
+     *
+     * Only the network location is rewritten here. Names, paths, the prompt, the
+     * MOTD, the keyring and the package names are left exactly as they are, so
+     * nothing a user sees changes — the same fix as `fixAptMethods`, for the same
+     * reason: a renamed copy must not carry a name that does not resolve.
+     */
+    fun fixPackageSources(root: File, log: (String) -> Unit = {}) {
+        var files = 0
+        var hosts = 0
+        val mirrors = File(root, "etc/zyrxon/mirrors")
+        val candidates = buildList {
+            add(File(root, "etc/apt/sources.list"))
+            File(root, "etc/apt/sources.list.d").listFiles()?.let { addAll(it) }
+            mirrors.walkTopDown().forEach { if (it.isFile) add(it) }
+            add(File(root, "etc/zyrxon/chosen_mirrors"))
+        }
+        for (file in candidates) {
+            if (!file.isFile) continue
+            val original = runCatching { file.readText() }.getOrNull() ?: continue
+            val fixed = repairPackageHosts(original)
+            if (fixed == original) continue
+            runCatching { file.writeText(fixed) }
+            files++
+            hosts += HOST_ALIASES.keys.count { original.contains(it) }
+        }
+        if (files > 0) log(" Package sources repaired in $files file(s), $hosts host(s)")
+    }
+
+    /**
+     * Replaces the renamed repository hosts with the upstream ones they were
+     * renamed from. The mapping is explicit and short: a mirror that never
+     * resolved is replaced by the one it was copied from, and an unknown name is
+     * left alone rather than guessed at.
+     */
+    internal fun repairPackageHosts(text: String): String {
+        var out = text
+        for ((wrong, right) in HOST_ALIASES) out = out.replace(wrong, right)
+        // The repository directory is part of the URL, not only the host. The
+        // upstream tree is `termux-main`/`termux-root`/`termux-x11`, and a host
+        // that answers but has no such path is still a dead repository.
+        for ((wrong, right) in CHANNEL_ALIASES) out = out.replace(wrong, right)
+        return out
+    }
+
+    /**
+     * The renamed host -> the host that serves the same repository. Each entry
+     * was resolved before being written; a host that does not resolve upstream is
+     * absent on purpose, so a dead mirror stays dead and `pkg` skips it as it
+     * always has.
+     */
+    private val HOST_ALIASES = linkedMapOf(
+        "packages-cf.zyrxon.dev" to "packages-cf.termux.dev",
+        "packages.zyrxon.dev" to "packages.termux.dev",
+        "mirror.zyrxon.dev" to "mirror.termux.dev",
+        "mirrors.uzyrxon.dev" to "mirrors.utermux.dev",
+        "zyrxon.niranjan.co" to "termux.niranjan.co",
+        "zyrxon.3san.dev" to "termux.3san.dev",
+        "zyrxon.cdn.lumito.net" to "termux.cdn.lumito.net",
+        "zyrxon.danyael.xyz" to "termux.danyael.xyz",
+        "zyrxon.librehat.com" to "termux.librehat.com",
+        "wiki.zyrxon.com" to "wiki.termux.com",
+    )
+
+    /** The repository directory inside a mirror URL. */
+    private val CHANNEL_ALIASES = linkedMapOf(
+        "/zyrxon-main" to "/termux-main",
+        "/zyrxon-root" to "/termux-root",
+        "/zyrxon-x11" to "/termux-x11",
+    )
 
     private fun writeExecutable(file: File, text: String) {
         file.writeText(text)

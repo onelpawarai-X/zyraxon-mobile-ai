@@ -116,7 +116,12 @@ object RemoteTtsRequest {
      */
     fun splitForUrl(text: String, max: Int = 600): List<String> {
         val trimmed = text.trim()
-        if (trimmed.length <= max) return if (trimmed.isEmpty()) emptyList() else listOf(trimmed)
+        if (trimmed.isEmpty()) return emptyList()
+        // Punctuation is not speech. A piece with no letter or digit comes back as
+        // silence after a full round trip, which is heard as a pause in the middle
+        // of an answer — so it is never sent.
+        fun speaks(part: String) = part.any { it.isLetterOrDigit() }
+        if (trimmed.length <= max) return if (speaks(trimmed)) listOf(trimmed) else emptyList()
         val out = mutableListOf<String>()
         var rest = trimmed
         while (rest.length > max) {
@@ -126,7 +131,7 @@ object RemoteTtsRequest {
             rest = rest.substring(cut).trim()
         }
         if (rest.isNotEmpty()) out.add(rest)
-        return out.filter { it.isNotEmpty() }
+        return out.filter { speaks(it) }
     }
 
     private fun encode(value: String): String = URLEncoder.encode(value, "UTF-8")

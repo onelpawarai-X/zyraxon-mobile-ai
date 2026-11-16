@@ -57,4 +57,30 @@ class SpeechSegmenterTest {
     fun `empty text produces nothing to speak`() {
         assertEquals(0, SpeechSegmenter.split("   ").size)
     }
+
+    @Test
+    fun `a punctuation-only piece is not its own request`() {
+        // A stray "।" on its own line, or after a space, became a piece of its own:
+        // a full round trip to the voice endpoint that produced no audio, heard as a
+        // pause in the middle of an answer. The wordless piece is dropped, and the
+        // two Bangla sentences that remain are joined into one run.
+        val parts = SpeechSegmenter.split("ঠিক আছে। । এখন যাই।")
+        assertEquals(1, parts.size)
+        assertEquals("ঠিক আছে। এখন যাই।", parts[0].text)
+    }
+
+    @Test
+    fun `nothing but punctuation produces nothing to speak`() {
+        assertEquals(0, SpeechSegmenter.split("।। !!! ???").size)
+    }
+
+    @Test
+    fun `a sentence break between languages is still two runs`() {
+        // Dropping wordless pieces must not disturb the real split: two languages in
+        // two sentences are still two runs, in order.
+        val parts = SpeechSegmenter.split("একটা কথা বলি। Now in English.")
+        assertEquals(2, parts.size)
+        assertEquals("bn-BD", parts[0].bcp47)
+        assertEquals("en-US", parts[1].bcp47)
+    }
 }

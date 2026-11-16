@@ -94,11 +94,28 @@ object SpeechTextCleaner {
         // 11. Drop markdown formatting symbols
         out = out.replace(Regex("[#*_>~|\\\\{}\\[\\]^]"), " ")
 
-        // 12. Drop invisible characters and noisy emoji
-        out = out.replace(Regex("[\\u200B-\\u200D\\uFE0F]"), "")
+        // 12. Drop invisible characters, variation selectors, tag characters and emoji.
+        //     The emoji are dropped by block, never by "does it look like an emoji":
+        //     a keycap (U+20E3) and the older dingbats (U+203C, U+2049, U+2122,
+        //     U+2139, U+2934, U+2935, U+3030, U+303D, U+3297, U+3299) sit outside the
+        //     pictograph ranges, so each one was spoken aloud as its own name.
+        out = out.replace(Regex("[\\u200B-\\u200F\\u202A-\\u202E\\u2060-\\u2064\\uFEFF]"), "")
+        out = out.replace(Regex("[\\uFE00-\\uFE0F]"), "")
+        out = out.replace(
+            Regex("[\\u203C\\u2049\\u20E3\\u2122\\u2139\\u2934\\u2935\\u3030\\u303D\\u3297\\u3299]"),
+            ""
+        )
         out = out.replace(Regex("[\\u2190-\\u21FF\\u2300-\\u27BF\\u2B00-\\u2BFF]"), "")
-        out = out.replace(Regex("[\\uD83C-\\uD83E][\\uDC00-\\uDFFF]"), "")
         out = out.replace(Regex("[\\u2600-\\u26FF\\u2700-\\u27BF]"), "")
+        // Emoji above the BMP. This was written as a surrogate-pair class
+        // ("[\\uD83C-\\uD83E][\\uDC00-\\uDFFF]"), which never matches: a Kotlin Regex
+        // is java.util.regex, and a bare surrogate pair is not folded into one code
+        // point there, so every astral emoji (😀 🎉 👍 🚀) reached the voice endpoint
+        // and was read aloud as its name. Matching by code point is what works.
+        out = out.replace(Regex("[\\x{1F000}-\\x{1FAFF}]"), "")
+        // Tag characters (a subdivision flag is a base plus these) and the variation
+        // selectors supplement.
+        out = out.replace(Regex("[\\x{E0020}-\\x{E007F}\\x{E0100}-\\x{E01EF}]"), "")
 
         // Normalize spaces and punctuation
         out = out.replace(Regex("[ \\t\\r\\n]+"), " ")

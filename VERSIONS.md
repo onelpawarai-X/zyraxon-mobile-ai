@@ -119,7 +119,7 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.25.3` | `65` | 2026-11-15 | ✅ published | Voice turns sent once, cut-in by voice, 1.5 s auto-send; all system prompts rewritten in English with one shared human core |
 | `6.25.4` | `66` | 2026-11-16 | ✅ published | API keys and tokens sealed in the Android keystore; the app lock is a pattern or a PIN plus optional spoken lock and unlock words |
 | `6.25.5` | `67` | 2026-11-15 | ✅ published | Settings → System → Documentation (20 chapters, 60 languages, search) and the Automation hub (skills, autopilot, money for any country, timeline, brain, call agent) |
-| `6.25.6` | `68` | 2026-11-15 | 🟡 ready (not yet published) | A cloud turn no longer loses its events when the phone goes away — the read cursor is written down, so a relaunch, a closed app or a lost network is caught up from where the chat stopped, and a turn still running on the cloud is shown as running and followed live again |
+| `6.25.6` | `68` | 2026-11-15 | 🟡 ready (not yet published) | A cloud turn no longer loses its events when the phone goes away — the read cursor is written down, so a relaunch, a closed app or a lost network is caught up from where the chat stopped, and a turn still running on the cloud is shown as running and followed live again. Also: the guest's package repositories are repointed at hosts that resolve, so `pkg install` works online, and emoji are dropped by code point before speech, so the voice neither reads them nor stalls on them |
 
 > **What is the next version?** — the row below the last ✅ row, and nothing
 > else. With `6.25.6` published the next is `6.25.7` — the last published number
@@ -160,6 +160,36 @@ to it live, so the rest of a long job streams onto the phone as it happens.
 
 Tools the cloud ran while the phone was away are shown as lines, never re-run:
 replaying a user's tool would be worse than a stale line.
+
+**The package manager works online again.** The Linux guest is a renamed copy of
+another distribution's, and the rename had reached the repository URLs: every
+mirror file under `etc/zyrxon/mirrors/` named a host under a domain that does not
+resolve, and the repository directory was renamed to match. `pkg` therefore found
+no reachable mirror and refused to install anything. The bundled packages kept the
+base system alive, so nothing looked wrong until the first `pkg install` — which
+failed with no reason given.
+
+Only the network location is rewritten. The signing keys, the package names, the
+prompt, the MOTD and every user-visible path are untouched, so the branding is
+exactly as it was; a mirror that does not answer upstream is left alone, and `pkg`
+skips it as it always has. The repair runs at install and once for a guest
+installed by an earlier build, so an existing phone is fixed without reinstalling.
+`scripts/verify-package-sources.sh` fails the build if a branded host ever comes
+back, and `scripts/fix-payload-sources.py` repoints the three payload archives.
+
+**Emoji no longer reach the voice.** The rule that dropped emoji above the BMP was
+written as a surrogate-pair class (`[\uD83C-\uD83E][\uDC00-\uDFFF]`). A Kotlin
+`Regex` is `java.util.regex`, which does not fold a surrogate pair into one code
+point, so the pattern never matched: every astral emoji (😀 🎉 👍 🚀) was sent to
+the voice endpoint and read aloud as its name, and the endpoint stalled on it. The
+same is true of a keycap, of the older dingbats (`‼ ⁉ ™ ℹ`), and of the tag
+characters behind a subdivision flag. All of them are dropped by code point now.
+
+A piece made only of punctuation — a stray `।` released by the sentence cutter —
+was sent as its own request and came back as silence, after a full round trip:
+heard as a pause in the middle of an answer. Such a piece is never sent, on either
+the streaming path or the whole-reply path. Nothing else about speech changed, so
+the real-time path is untouched.
 
 ## v6.25.5
 

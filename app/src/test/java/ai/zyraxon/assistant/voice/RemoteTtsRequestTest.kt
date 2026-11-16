@@ -96,6 +96,15 @@ class RemoteTtsRequestTest {
     }
 
     @Test
+    fun `punctuation alone makes no request at all`() {
+        // The streaming path hands over whatever the sentence cutter released, and a
+        // released "।" or "…" is not speech. Sending it costs a round trip that
+        // returns silence — a pause the listener hears but cannot account for.
+        assertTrue(RemoteTtsRequest.splitForUrl("।।").isEmpty())
+        assertTrue(RemoteTtsRequest.splitForUrl("  !!!  ").isEmpty())
+    }
+
+    @Test
     fun `a piece with no spaces is still cut to the limit`() {
         val parts = RemoteTtsRequest.splitForUrl("ক".repeat(250), max = 100)
         assertEquals(3, parts.size)

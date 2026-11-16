@@ -90,6 +90,15 @@ jobs:
             scripts/verify-apk-abi.sh "$RUNNER_TEMP/app-debug-$ABI.apk" "$ABI"
           done
 
+      - name: Check the package repositories resolve
+        run: |
+          # The payload is a renamed copy of another distribution's. The rename
+          # once reached the repository URLs, so every mirror named a host that
+          # does not resolve and `pkg install` failed on every phone — while the
+          # bundled packages kept the base system alive and hid it. This resolves
+          # every host in every payload, so a branded name cannot ship again.
+          scripts/verify-package-sources.sh
+
       - name: Build a release APK and check it is hardened
         run: |
           # R8 runs on release only, so a debug build cannot show whether the

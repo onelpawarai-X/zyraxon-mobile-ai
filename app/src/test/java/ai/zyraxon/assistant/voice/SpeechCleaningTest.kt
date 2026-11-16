@@ -86,4 +86,52 @@ class SpeechCleaningTest {
     fun collapsesWhitespace() {
         assertEquals("এক দুই", SpeechTextCleaner.clean("  এক    দুই  "))
     }
+
+    @Test
+    fun dropsEveryEmojiTheOldBlocksMissed() {
+        // These sit outside the pictograph ranges the first version covered, so each
+        // one was handed to the engine and read aloud as its own name — "trade mark
+        // sign", "keycap", "information source" — in the middle of a Bangla answer.
+        val spoken = SpeechTextCleaner.clean(
+            "ঠিক আছে \u203C \u2049 \u2122 \u2139 \u2934 \u3030 \u303D \u3297 \u3299 চলো"
+        )
+        assertEquals("ঠিক আছে চলো", spoken)
+        // A keycap is a digit followed by U+FE0F U+20E3. The mark is dropped and the
+        // digit stays: it is a number the sentence is about.
+        assertEquals("নম্বর 1 দেখো", SpeechTextCleaner.clean("নম্বর 1\uFE0F\u20E3 দেখো"))
+    }
+
+    @Test
+    fun dropsEmojiAboveTheBmp() {
+        // The previous rule spelled this as a surrogate-pair class, which java.util.regex
+        // does not fold into one code point, so it never matched and every one of these
+        // reached the voice endpoint.
+        assertEquals("ঠিক আছে চলো", SpeechTextCleaner.clean("ঠিক আছে \uD83D\uDE00 \uD83C\uDF89 চলো"))
+        assertEquals("ভালো লাগছে", SpeechTextCleaner.clean("ভালো \uD83D\uDC4D\uD83C\uDFFD লাগছে"))
+        assertEquals("দেশ ভালো", SpeechTextCleaner.clean("দেশ \uD83C\uDDE7\uD83C\uDDE9 ভালো"))
+    }
+
+    @Test
+    fun dropsTagCharactersAndVariationSelectors() {
+        // A subdivision flag is a tag sequence: the base is a pictograph, and the four
+        // tag characters behind it are not, so they survived as invisible-but-spoken
+        // code points.
+        val flag = "\uD83C\uDFF4\uDB40\uDC62\uDB40\uDC67\uDB40\uDC6C\uDB40\uDC7F"
+        assertEquals("পতাকা দেখো", SpeechTextCleaner.clean("পতাকা $flag দেখো"))
+        assertEquals("এক", SpeechTextCleaner.clean("এক\uFE00\uFE0F"))
+    }
+
+    @Test
+    fun keepsTextTheBlocksAreNotMeantToTouch() {
+        // The drops are by block, so nothing adjacent to an emoji is collateral:
+        // Bangla, Latin, digits, the Bangla full stop and the question mark all survive.
+        assertEquals(
+            "কাজ শেষ। 2 + 2 = 4",
+            SpeechTextCleaner.clean("কাজ শেষ। 2 + 2 = 4")
+        )
+        assertEquals(
+            "তিনি কী করেন? আমি যাচ্ছি।",
+            SpeechTextCleaner.clean("তিনি কী করেন? আমি যাচ্ছি।")
+        )
+    }
 }

@@ -35,9 +35,16 @@ object SpeechSegmenter {
         val trimmed = text.trim()
         if (trimmed.isBlank()) return emptyList()
 
-        // Split by sentence terminators or newlines first
-        val sentences = trimmed.split(Regex("(?<=[।!?\\n])\\s+")).filter { it.isNotBlank() }
+        // Split by sentence terminators or newlines first, then drop the pieces
+        // that carry no words. "।" on its own is a real piece here — the split
+        // runs after every terminator — and it used to become its own TTS
+        // request: a full round trip that produced nothing but a pause.
+        val sentences = trimmed.split(Regex("(?<=[।!?\\n])\\s+"))
+            .map { it.trim() }
+            .filter { it.hasWord() }
         if (sentences.isEmpty()) {
+            // Nothing but punctuation: there is no sound to make for it.
+            if (!trimmed.hasWord()) return emptyList()
             return listOf(Segment(trimmed, detectLanguage(trimmed, banglaTag, englishTag)))
         }
 
@@ -69,4 +76,13 @@ object SpeechSegmenter {
         if (LATIN.containsMatchIn(text)) return englishTag
         return banglaTag
     }
+
+    /**
+     * True when [text] carries a letter or a digit.
+     *
+     * Punctuation is not speech. A piece made only of it — "।", "!!", "..." — would
+     * be sent to the voice endpoint and come back as silence, after a full round
+     * trip: heard as a pause in the middle of an answer.
+     */
+    private fun String.hasWord(): Boolean = any { it.isLetterOrDigit() }
 }
