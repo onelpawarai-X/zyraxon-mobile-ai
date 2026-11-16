@@ -171,9 +171,11 @@ failed with no reason given.
 
 Only the network location is rewritten. The signing keys, the package names, the
 prompt, the MOTD and every user-visible path are untouched, so the branding is
-exactly as it was; a mirror that does not answer upstream is left alone, and `pkg`
-skips it as it always has. The repair runs at install and once for a guest
-installed by an earlier build, so an existing phone is fixed without reinstalling.
+exactly as it was. The repair is the rename run backwards, so it covers every
+host the rename touched — a mirror that does not answer upstream stays in the
+list, as it does in the upstream list, and `pkg` skips it as it always has. The
+repair runs at install and once for a guest installed by an earlier build, so an
+existing phone is fixed without reinstalling.
 `scripts/verify-package-sources.sh` fails the build if a branded host ever comes
 back, and `scripts/fix-payload-sources.py` repoints the three payload archives.
 

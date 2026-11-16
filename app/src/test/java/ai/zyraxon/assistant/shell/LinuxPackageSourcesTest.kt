@@ -131,4 +131,47 @@ class LinuxPackageSourcesTest {
         val untouched = """MAIN="https://mirror.albony.in/termux/termux-main""""
         assertEquals(untouched, LinuxRuntime.repairPackageHosts(untouched))
     }
+
+    @Test
+    fun `the repair covers every host the rename touched`() {
+        // The repair table is the rename run backwards, and it has to be complete: a
+        // host it misses keeps its branded name on a guest installed by an earlier
+        // build — the defect the repair exists for — and nothing else would notice.
+        // Each of these was found in the payload's mirror files before the repair.
+        val renamed = listOf(
+            "packages-cf.zyrxon.dev", "packages.zyrxon.dev", "mirror.zyrxon.dev",
+            "mirrors.uzyrxon.dev", "zyrxon.niranjan.co", "zyrxon.3san.dev",
+            "zyrxon.cdn.lumito.net", "zyrxon.danyael.xyz", "zyrxon.librehat.com",
+            "zyrxon.mentality.rip", "wiki.zyrxon.com"
+        )
+        for (host in renamed) {
+            val fixed = LinuxRuntime.repairPackageHosts("MAIN=\"https://$host/apt/zyrxon-main\"")
+            assertFalse("$host is branded and the repair does not cover it", fixed.contains("zyrxon"))
+            assertTrue("$host did not become the upstream host", fixed.contains("termux"))
+        }
+    }
+
+    @Test
+    fun `no repository file in the payload still carries a branded name`() {
+        // The payload is the thing that ships. If a branded name is in it, the repair
+        // table is irrelevant: the guest is installed with the bad name already there.
+        val checked = mutableListOf<String>()
+        for (rel in payloads) {
+            val file = open(rel) ?: continue
+            checked += rel
+            ZipFile(file).use { zip ->
+                for (name in repositoryFiles(zip)) {
+                    val text = zip.getInputStream(zip.getEntry(name)).readBytes()
+                        .toString(Charsets.UTF_8)
+                    val branded = Regex("https?://([^/\\s\"']*zyrxon[^/\\s\"']*)")
+                        .findAll(text).map { it.groupValues[1] }.toList()
+                    assertTrue(
+                        "$rel: $name still names $branded",
+                        branded.isEmpty()
+                    )
+                }
+            }
+        }
+        assertTrue("no payload archive found to check", checked.isNotEmpty())
+    }
 }

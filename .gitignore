@@ -28,3 +28,4 @@ __pycache__/
 
 # The sealed assets are generated into the build, never committed.
 /app/build/generated/sealedAssets/
+nohup.out

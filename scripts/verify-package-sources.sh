@@ -22,31 +22,29 @@ APK="${1:-}"
 echo "== ZYRAXON package-source check =="
 
 python3 - "$APK" <<'PY'
-import os, re, socket, sys, zipfile
+import io, os, re, socket, sys, zipfile
 
 apk = sys.argv[1] if len(sys.argv) > 1 else ""
-payloads = []
-if apk:
-    if not os.path.isfile(apk):
-        print(f"  not a file: {apk}")
-        sys.exit(2)
-    payloads.append(("APK", apk))
-else:
-    for abi, path in (
-        ("arm64", "app/src/payload64/assets/linux/aarch64/bootstrap.zip"),
-        ("arm32", "app/src/payload32/assets/linux/arm/bootstrap.zip"),
-        ("x86_64", "app/src/payloadx64/assets/linux/x86_64/bootstrap.zip"),
-    ):
-        if os.path.isfile(path):
-            payloads.append((abi, path))
-
-if not payloads:
-    print("  no payload found to check")
-    sys.exit(0)
-
 URL = re.compile(r"https?://([^/\s\"']+)")
 # The repository directory is part of the URL, not only the host.
 CHANNEL = re.compile(r"/(zyrxon-(?:main|root|x11))(?:[/\s\"']|$)")
+BRANDED = re.compile(r"zyrxon", re.I)
+
+# The repositories a fresh install actually uses. The rest of the list is a
+# mirror catalogue: it carries mirrors upstream also lists as dead, and `pkg`
+# skips those on its own, so a dead entry there is not a failure.
+DEFAULTS = ("etc/apt/sources.list", "etc/zyrxon/mirrors/default")
+
+
+def is_repo_file(name):
+    if name.endswith("/"):
+        return False
+    return (
+        name.startswith("etc/zyrxon/mirrors/")
+        or name == "etc/apt/sources.list"
+        or name.startswith("etc/apt/sources.list.d/")
+    )
+
 
 def resolve(host):
     try:
@@ -55,61 +53,74 @@ def resolve(host):
     except Exception:
         return False
 
-fail = 0
-for label, path in payloads:
-    with zipfile.ZipFile(path) as z:
-        names = [
-            n for n in z.namelist()
-            if (n.startswith("etc/zyrxon/mirrors/") and not n.endswith("/"))
-            or n in ("etc/apt/sources.list", "etc/zyrxon/mirrors/default")
-            or n.startswith("etc/apt/sources.list.d/")
-        ]
-        if not names:
-            print(f"  {label}: no repository files found")
-            continue
-        hosts, channels, default_hosts = set(), set(), set()
-        for n in names:
-            try:
-                text = z.read(n).decode("utf-8", "replace")
-            except Exception:
-                continue
-            found = set(URL.findall(text))
-            hosts |= found
-            channels |= set(CHANNEL.findall(text))
-            if n in ("etc/apt/sources.list", "etc/zyrxon/mirrors/default"):
-                default_hosts |= found
+
+def check(label, blob, problems):
+    """blob is the bytes of a bootstrap.zip."""
+    try:
+        z = zipfile.ZipFile(io.BytesIO(blob))
+    except Exception as e:
+        problems.append(f"{label}: cannot read the payload archive: {e}")
+        return 0
+    names = [n for n in z.namelist() if is_repo_file(n)]
+    if not names:
+        problems.append(f"{label}: no repository files in the payload")
+        return 0
+    hosts, channels, defaults = set(), set(), set()
+    for n in names:
+        text = z.read(n).decode("utf-8", "replace")
+        hosts |= set(URL.findall(text))
+        channels |= set(CHANNEL.findall(text))
+        if n in DEFAULTS:
+            defaults |= set(URL.findall(text))
 
     # The regression this guards against: the brand leaked into a network name.
-    # A name under the old domain never resolved, and a mirror that answers but
-    # has no such path is still a dead repository.
-    branded = sorted(h for h in hosts if "zyrxon" in h.lower())
+    branded = sorted(h for h in hosts if BRANDED.search(h))
     if branded:
-        fail = 1
-        print(f"  \033[31mFAIL\033[0m {label}: {len(branded)} repository host(s) still branded:")
-        for h in branded:
-            print(f"         {h}")
+        problems.append(f"{label}: {len(branded)} repository host(s) still branded: " + ", ".join(branded))
     if channels:
-        fail = 1
-        print(f"  \033[31mFAIL\033[0m {label}: renamed repository path(s) still present:")
-        for c in sorted(channels):
-            print(f"         /{c}  (the upstream path is /termux-...)")
-
-    # The repositories a fresh install actually uses must answer. The rest of the
-    # list is a mirror catalogue: it carries mirrors upstream also lists as dead,
-    # and `pkg` skips those on its own, so a dead entry there is not a failure.
-    dead_default = sorted(h for h in default_hosts if not resolve(h))
-    if dead_default:
-        fail = 1
-        print(f"  \033[31mFAIL\033[0m {label}: the default repository does not resolve:")
-        for h in dead_default:
-            print(f"         {h}")
-
-    if not branded and not channels and not dead_default:
+        problems.append(f"{label}: renamed repository path(s) still present: /" + ", /".join(sorted(channels)))
+    dead = sorted(h for h in defaults if not resolve(h))
+    if dead:
+        problems.append(f"{label}: the default repository does not resolve: " + ", ".join(dead))
+    if not branded and not channels and not dead:
         print(f"  \033[32mok\033[0m   {label}: {len(hosts)} host(s), default resolves, no branded names")
+    return len(hosts)
 
-if fail == 0:
-    print("  package sources are reachable")
-sys.exit(fail)
+
+problems = []
+checked = 0
+
+if apk:
+    if not os.path.isfile(apk):
+        print(f"  not a file: {apk}")
+        sys.exit(2)
+    with zipfile.ZipFile(apk) as z:
+        nested = [n for n in z.namelist() if re.match(r"assets/linux/[^/]+/bootstrap\.zip$", n)]
+        if not nested:
+            print(f"  {os.path.basename(apk)}: no Linux payload found")
+        for n in nested:
+            checked += 1
+            check(f"{os.path.basename(apk)} :: {n}", z.read(n), problems)
+else:
+    for abi, path in (
+        ("arm64", "app/src/payload64/assets/linux/aarch64/bootstrap.zip"),
+        ("arm32", "app/src/payload32/assets/linux/arm/bootstrap.zip"),
+        ("x86_64", "app/src/payloadx64/assets/linux/x86_64/bootstrap.zip"),
+    ):
+        if not os.path.isfile(path):
+            continue
+        checked += 1
+        check(abi, open(path, "rb").read(), problems)
+
+for p in problems:
+    print(f"  \033[31mFAIL\033[0m {p}")
+if checked == 0:
+    print("  no payload found to check")
+    sys.exit(0)
+if problems:
+    sys.exit(1)
+print("  package sources are reachable")
+sys.exit(0)
 PY
 rc=$?
 

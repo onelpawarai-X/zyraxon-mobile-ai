@@ -149,6 +149,15 @@ jobs:
           scripts/verify-hardening.sh "$RUNNER_TEMP/${{ steps.apk.outputs.a32 }}"
           scripts/verify-hardening.sh "$RUNNER_TEMP/${{ steps.apk.outputs.auni }}"
 
+      # The last gate before publishing. A repository host that does not resolve
+      # leaves every phone unable to install a package, and the bundled packages
+      # hide it — so it is checked here, on the payload that is about to ship.
+      - name: Prove the package repositories resolve
+        run: |
+          scripts/verify-package-sources.sh "$RUNNER_TEMP/${{ steps.apk.outputs.a64 }}"
+          scripts/verify-package-sources.sh "$RUNNER_TEMP/${{ steps.apk.outputs.a32 }}"
+          scripts/verify-package-sources.sh "$RUNNER_TEMP/${{ steps.apk.outputs.auni }}"
+
       - name: Resolve the release tag
         id: tag
         env:

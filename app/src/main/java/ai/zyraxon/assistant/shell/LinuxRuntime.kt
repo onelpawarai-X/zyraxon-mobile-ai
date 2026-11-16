@@ -619,10 +619,13 @@ Acquire::Languages "none";
     }
 
     /**
-     * The renamed host -> the host that serves the same repository. Each entry
-     * was resolved before being written; a host that does not resolve upstream is
-     * absent on purpose, so a dead mirror stays dead and `pkg` skips it as it
-     * always has.
+     * The renamed host -> the host the rename produced it from.
+     *
+     * This is the rename run backwards, applied to the host part of a URL, so it is
+     * complete by construction: a host that does not answer upstream stays in the
+     * list, and `pkg` skips it exactly as it skips the upstream list's own dead
+     * mirrors. Leaving one out would keep a branded name alive on a guest installed
+     * by an earlier build, which is the defect this repairs.
      */
     private val HOST_ALIASES = linkedMapOf(
         "packages-cf.zyrxon.dev" to "packages-cf.termux.dev",
@@ -634,6 +637,7 @@ Acquire::Languages "none";
         "zyrxon.cdn.lumito.net" to "termux.cdn.lumito.net",
         "zyrxon.danyael.xyz" to "termux.danyael.xyz",
         "zyrxon.librehat.com" to "termux.librehat.com",
+        "zyrxon.mentality.rip" to "termux.mentality.rip",
         "wiki.zyrxon.com" to "wiki.termux.com",
     )
 
