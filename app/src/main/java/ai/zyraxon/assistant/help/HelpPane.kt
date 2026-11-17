@@ -41,7 +41,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Settings → System → Documentation. Every part of ZYRAXON explained chapter by chapter.
+ * Settings → Documentation (its own section). Every part of ZYRAXON explained chapter by chapter.
  * English and Bengali are written by hand and open at once; any other language is translated
  * by the user's own model the first time a chapter is opened and then kept on the phone.
  */
@@ -78,6 +78,15 @@ fun HelpPane(viewModel: ZyraxonViewModel) {
     LaunchedEffect(lang) {
         docs.clear(); state.clear()
         HelpIndex.chapters.forEach { ch -> withContext(Dispatchers.IO) { HelpText.load(c, lang, ch) }?.let { docs[ch.id] = it } }
+        // Every language gets the whole guide, with nothing to tap: a language that is
+        // not hand-made is translated chapter after chapter in the background and each
+        // chapter is kept on the phone the moment it is done, so a closed screen or a
+        // lost connection only pauses the work and the next visit carries on from there.
+        if (!HelpText.handMade(lang)) {
+            bulk = true
+            HelpIndex.chapters.forEach { ch -> if (!docs.containsKey(ch.id)) ensure(ch) }
+            bulk = false
+        }
     }
     // A chapter that is open is loaded, or translated, when it is opened.
     LaunchedEffect(lang, open.toList()) { open.toList().forEach { id -> HelpIndex.chapters.firstOrNull { it.id == id }?.let { ensure(it) } } }
@@ -104,11 +113,15 @@ fun HelpPane(viewModel: ZyraxonViewModel) {
             }
         }
         if (!HelpText.handMade(lang)) {
-            Text(t("এই ভাষার অধ্যায় প্রথমবার খুললে আপনার মডেল অনুবাদ করে ফোনে রেখে দেয়; পরের বার সঙ্গে সঙ্গে খোলে।"), color = Glass.textMuted, fontSize = 11.sp)
+            Text(
+                t("এই ভাষায় পুরো গাইড আপনার মডেল নিজে থেকেই অনুবাদ করে ফোনে রেখে দেয়; একবার হলে পরের বার সঙ্গে সঙ্গে খোলে।") +
+                    "  " + docs.size + "/" + HelpIndex.chapters.size,
+                color = Glass.textMuted, fontSize = 11.sp
+            )
             Spacer(Modifier.height(6.dp))
             Row {
-                Pill(if (bulk) t("অনুবাদ চলছে…") else t("সব অধ্যায় অনুবাদ করে রাখো")) {
-                    if (!bulk) { bulk = true; scope.launch { HelpIndex.chapters.forEach { ensure(it) }; bulk = false } }
+                Pill(if (bulk) t("অনুবাদ চলছে…") else t("বাকি অধ্যায় অনুবাদ করো")) {
+                    if (!bulk) { bulk = true; state.clear(); scope.launch { HelpIndex.chapters.forEach { if (!docs.containsKey(it.id)) ensure(it) }; bulk = false } }
                 }
                 Spacer(Modifier.width(6.dp))
                 Pill(t("আবার অনুবাদ করো")) { HelpText.forget(c, lang); docs.clear(); state.clear(); open.clear() }

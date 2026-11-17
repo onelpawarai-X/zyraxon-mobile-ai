@@ -702,7 +702,11 @@ fun SettingsSheet(
             Triple("session", AppIcons.touch, t("নেভিগেশন")),
             Triple("memory", AppIcons.storage, t("মেমরি")),
             Triple("skills", AppIcons.extension, t("স্কিল গাইড")),
-            Triple("hub", AppIcons.hub, t("অটোমেশন হাব")),
+            Triple("hub", AppIcons.hub, t("অটোমেশন হাব"))
+        ),
+        // The guide is its own section: it used to be the sixth button of
+        // "system", squeezed into the same row as five others.
+        Triple("docs", AppIcons.description, t("ডকুমেন্টেশন")) to listOf(
             Triple("help", AppIcons.description, t("ডকুমেন্টেশন"))
         )
     )
@@ -754,7 +758,7 @@ fun SettingsSheet(
                         )
                     }
                     Text(
-                        text = t("৮টি সুবিন্যস্ত সেকশন — সম্পূর্ণ সিস্টেম নিয়ন্ত্রণ"),
+                        text = t("৯টি সুবিন্যস্ত সেকশন — সম্পূর্ণ সিস্টেম নিয়ন্ত্রণ"),
                         fontSize = 11.sp,
                         color = Glass.pink,
                         style = TextStyle(shadow = BloodGlow)
@@ -822,14 +826,17 @@ fun SettingsSheet(
                         .clip(RoundedCornerShape(12.dp))
                         .background(Glass.rowFill(0.40f))
                         .border(1.dp, Glass.borderSoft, RoundedCornerShape(12.dp))
+                        .horizontalScroll(rememberScrollState())
                         .padding(3.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                    // Each pill keeps its natural width and the row scrolls. With
+                    // `weight(1f)` six pills shared one screen width and every
+                    // label was squeezed or cut; scrolling keeps all of them whole.
                     currentMaster.second.forEach { (subId, subIcon, subLabel) ->
                         val isSubActive = activePane == subId
                         Row(
                             modifier = Modifier
-                                .weight(1f)
                                 .clip(RoundedCornerShape(9.dp))
                                 .background(if (isSubActive) Glass.pinkFill else Color.Transparent)
                                 .clickable {
@@ -837,7 +844,7 @@ fun SettingsSheet(
                                     activePane = subId
                                     viewModel.settingsPane = subId
                                 }
-                                .padding(vertical = 6.dp),
+                                .padding(horizontal = 12.dp, vertical = 7.dp),
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -849,6 +856,8 @@ fun SettingsSheet(
                             Text(
                                 text = subLabel,
                                 fontSize = 11.5.sp,
+                                maxLines = 1,
+                                softWrap = false,
                                 fontWeight = if (isSubActive) FontWeight.Bold else FontWeight.Normal,
                                 color = if (isSubActive) Color.White else Glass.textSecondary
                             )

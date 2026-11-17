@@ -45,6 +45,9 @@ class ChatSession(val id: String) {
     @Volatile var currentMsgId: String = ""
     @Volatile var turnStartedAt: Long = 0L
 
+    /** What the Content Shield has seen in this chat: hostile outside content taints the turn. */
+    val shield = ai.zyraxon.assistant.security.ContentShield.State()
+
     /**
      * The running turn's steps, in the order they happened. Kept beside the
      * message rather than inside it because a tool call and a text chunk are

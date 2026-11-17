@@ -364,12 +364,12 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * answer. The card shows what the tool is and what it will touch, so the
      * choice is made on the real action and not on a bare tool name.
      */
-    private suspend fun awaitToolApproval(name: String, args: JSONObject, s: ChatSession): Boolean {
+    private suspend fun awaitToolApproval(name: String, args: JSONObject, s: ChatSession, warning: String = ""): Boolean {
         val deferred = CompletableDeferred<Boolean>()
         approvalAnswer = deferred
         _pendingApproval.value = ToolApproval(
             tool = name,
-            detail = approvalDetail(name, args),
+            detail = (if (warning.isNotBlank()) warning + "\n" else "") + approvalDetail(name, args),
             tier = ai.zyraxon.assistant.permission.AutomationPolicy.tierOf(name)
         )
         return try {
@@ -2914,7 +2914,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     val b = async(Dispatchers.IO) {
                         if (isSub) emptyList() else repository.recallRelevant(effectivePrompt, limit = ContextWindow.RECALL_LIMIT_LONG)
                     }
-                    val d = async(Dispatchers.IO) { if (mode == AgentMode.AGENT) screenContext() else "" }
+                    val d = async(Dispatchers.IO) { if (mode == AgentMode.AGENT) screenContext(session = c) else "" }
                     Triple(a.await(), b.await(), d.await())
                 }
                 val recalled = longMemory.takeLast(ContextWindow.RECALL_LIMIT)
@@ -3005,7 +3005,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                     },
                     openTodos = { c.tasks.value.filter { !it.isCompleted }.map { it.text } },
                     drainScreenFrames = { drainScreenFrames() },
-                    screenNow = { withContext(Dispatchers.IO) { screenContext(force = true) } },
+                    screenNow = { withContext(Dispatchers.IO) { screenContext(force = true, session = c) } },
                     screenFrame = { withContext(Dispatchers.IO) { ToolRegistry.screenFrame() } },
                     mode = mode,
                     onToolArgs = { _, name, raw -> onToolArgs(c, name, raw) }
@@ -3806,7 +3806,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * tool call to find out. The accessibility service keeps this current in the
      * background.
      */
-    private fun screenContext(force: Boolean = false): String {
+    private fun screenContext(force: Boolean = false, session: ChatSession = activeSession): String {
         // The foreground app and the screen text are read live, not from the
         // snapshot the UI last pushed. That snapshot only refreshes while this
         // app is on screen, so asking "what am I doing?" from *outside* the app
@@ -3830,7 +3830,16 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             pkg.isNotBlank() -> "ব্যবহারকারীর সামনের অ্যাপ: $pkg।"
             else -> ""
         }
-        val text = if (snapshot.isBlank()) "" else "\nস্ক্রিনে এখন যা দেখা যাচ্ছে:\n$snapshot"
+        // The screen belongs to whatever app is open, so its text is outside content like any
+        // other: scanned, fenced when suspicious, and a hostile one taints the turn.
+        val shield = ai.zyraxon.assistant.security.ContentShield
+        // ZYRAXON's own screen is the user's own chat and settings, not outside content: it is
+        // not scanned (a conversation about security would otherwise taint every turn).
+        val ownScreen = pkg == getApplication<android.app.Application>().packageName
+        val found = if (ownScreen) shield.scan("") else shield.scan(snapshot)
+        if (found.level == ai.zyraxon.assistant.security.ContentShield.Level.HOSTILE) session.shield.mark(session.turnStartedAt, "screen", found.reasons)
+        val safeSnapshot = shield.present("screen", snapshot, found)
+        val text = if (safeSnapshot.isBlank()) "" else "\nস্ক্রিনে এখন যা দেখা যাচ্ছে:\n$safeSnapshot"
         val result = where + text
         screenCacheText = result
         screenCacheAtMs = now
@@ -3879,7 +3888,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             return JSONObject().put("ok", false).put("error", "on-device-only")
                 .put("summary", t("'শুধু অন-ডিভাইস' চালু আছে — '{0}' ইন্টারনেট ব্যবহার করে, তাই চলবে না। অন-ডিভাইস পথে কাজ করো।", name))
         }
-        if (gate.asks(gate.level(getApplication()), name) && !awaitToolApproval(name, args, s)) {
+        // The Content Shield: once outside content (a page, a message, the screen) has tried to
+        // give the agent orders in this turn, every tool that is not a pure read asks first, at
+        // every automation level — a hidden instruction cannot ride a trusted level into action.
+        val shield = ai.zyraxon.assistant.security.ContentShield
+        val tainted = shield.mustAsk(s.shield, s.turnStartedAt, name)
+        if ((tainted || gate.asks(gate.level(getApplication()), name)) &&
+            !awaitToolApproval(name, args, s, if (tainted) t("সন্দেহজনক বাইরের নির্দেশ পাওয়া গেছে") + " " + shield.why(s.shield) else "")
+        ) {
             return JSONObject().put("ok", false).put("error", "user-declined")
                 .put("summary", t("ইউজার '{0}' চালানোর অনুমতি দেননি — বন্ধ রাখো, অন্য পথে কাজ করো", name))
         }
@@ -3894,6 +3910,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             } catch (e: Exception) {
                 JSONObject().put("ok", false).put("summary", "টুল চলেনি: ${e.message ?: e.toString()}")
             }
+            if (ai.zyraxon.assistant.security.ContentShield.isUntrusted(name)) {
+                result = shieldResult(name, result, s)
+            }
             if (name in VERIFIED_TOOLS && result.optBoolean("ok", false)) {
                 val v = runCatching { verifyLine(name, args) }.getOrNull().orEmpty()
                 if (v.isNotBlank()) {
@@ -3902,6 +3921,27 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             }
         } finally {
             finishToolCall(s, id, name, result, System.currentTimeMillis() - t0)
+        }
+        return result
+    }
+
+    /**
+     * Runs the Content Shield over every text field of an outside-content result: hidden
+     * characters come out, a suspicious text is fenced as data, and a hostile one taints
+     * the turn so the next changing action asks the user.
+     */
+    private fun shieldResult(name: String, result: JSONObject, s: ChatSession): JSONObject {
+        val shield = ai.zyraxon.assistant.security.ContentShield
+        val keys = mutableListOf<String>()
+        val iter = result.keys()
+        while (iter.hasNext()) keys.add(iter.next())
+        for (k in keys) {
+            val v = result.opt(k) as? String ?: continue
+            if (v.length < 12) continue
+            val finding = shield.scan(v)
+            if (finding.level == ai.zyraxon.assistant.security.ContentShield.Level.HOSTILE) s.shield.mark(s.turnStartedAt, name, finding.reasons)
+            val shown = shield.present(name, v, finding)
+            if (shown != v) result.put(k, shown)
         }
         return result
     }
