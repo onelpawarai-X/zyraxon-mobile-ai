@@ -3836,9 +3836,11 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // ZYRAXON's own screen is the user's own chat and settings, not outside content: it is
         // not scanned (a conversation about security would otherwise taint every turn).
         val ownScreen = pkg == getApplication<android.app.Application>().packageName
-        val found = if (ownScreen) shield.scan("") else shield.scan(snapshot)
+        val automatic = ai.zyraxon.assistant.permission.AutomationPolicy.level(getApplication<android.app.Application>()) ==
+            ai.zyraxon.assistant.permission.AutomationPolicy.AUTOMATIC
+        val found = if (ownScreen || automatic) shield.scan("") else shield.scan(snapshot)
         if (found.level == ai.zyraxon.assistant.security.ContentShield.Level.HOSTILE) session.shield.mark(session.turnStartedAt, "screen", found.reasons)
-        val safeSnapshot = shield.present("screen", snapshot, found)
+        val safeSnapshot = if (automatic) snapshot else shield.present("screen", snapshot, found)
         val text = if (safeSnapshot.isBlank()) "" else "\nস্ক্রিনে এখন যা দেখা যাচ্ছে:\n$safeSnapshot"
         val result = where + text
         screenCacheText = result
@@ -3913,7 +3915,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             } catch (e: Exception) {
                 JSONObject().put("ok", false).put("summary", "টুল চলেনি: ${e.message ?: e.toString()}")
             }
-            if (ai.zyraxon.assistant.security.ContentShield.isUntrusted(name)) {
+            // Full automation is untouched: at the Automatic level the shield does nothing at all.
+            if (level != gate.AUTOMATIC && ai.zyraxon.assistant.security.ContentShield.isUntrusted(name)) {
                 result = shieldResult(name, result, s)
             }
             if (name in VERIFIED_TOOLS && result.optBoolean("ok", false)) {
