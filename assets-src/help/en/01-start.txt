@@ -17,4 +17,4 @@ Next to the message box there is a mode button with two modes: Agent and Build. 
 - Chat screen: messages, the todo board, tool list, files, the terminal.
 - Preview and Code panels: see and edit what the agent builds.
 - Settings: eight sections, covered one by one in this documentation.
-- This documentation: Settings → System → Documentation (you are here).
+- This documentation: Settings → Documentation (you are here).
