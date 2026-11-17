@@ -3889,11 +3889,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 .put("summary", t("'শুধু অন-ডিভাইস' চালু আছে — '{0}' ইন্টারনেট ব্যবহার করে, তাই চলবে না। অন-ডিভাইস পথে কাজ করো।", name))
         }
         // The Content Shield: once outside content (a page, a message, the screen) has tried to
-        // give the agent orders in this turn, every tool that is not a pure read asks first, at
-        // every automation level — a hidden instruction cannot ride a trusted level into action.
+        // give the agent orders in this turn, every tool that is not a pure read asks first.
+        // At the AUTOMATIC level the user has chosen that nothing ever stops to ask, and that
+        // choice is kept whole: the shield then never interrupts (it only marks hostile text as
+        // data). The three asking levels get the extra stop.
         val shield = ai.zyraxon.assistant.security.ContentShield
-        val tainted = shield.mustAsk(s.shield, s.turnStartedAt, name)
-        if ((tainted || gate.asks(gate.level(getApplication()), name)) &&
+        val level = gate.level(getApplication())
+        val tainted = level != gate.AUTOMATIC && shield.mustAsk(s.shield, s.turnStartedAt, name)
+        if ((tainted || gate.asks(level, name)) &&
             !awaitToolApproval(name, args, s, if (tainted) t("সন্দেহজনক বাইরের নির্দেশ পাওয়া গেছে") + " " + shield.why(s.shield) else "")
         ) {
             return JSONObject().put("ok", false).put("error", "user-declined")
