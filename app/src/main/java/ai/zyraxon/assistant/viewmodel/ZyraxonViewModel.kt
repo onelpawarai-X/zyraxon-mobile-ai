@@ -3836,11 +3836,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // ZYRAXON's own screen is the user's own chat and settings, not outside content: it is
         // not scanned (a conversation about security would otherwise taint every turn).
         val ownScreen = pkg == getApplication<android.app.Application>().packageName
-        val automatic = ai.zyraxon.assistant.permission.AutomationPolicy.level(getApplication<android.app.Application>()) ==
-            ai.zyraxon.assistant.permission.AutomationPolicy.AUTOMATIC
-        val found = if (ownScreen || automatic) shield.scan("") else shield.scan(snapshot)
-        if (found.level == ai.zyraxon.assistant.security.ContentShield.Level.HOSTILE) session.shield.mark(session.turnStartedAt, "screen", found.reasons)
-        val safeSnapshot = if (automatic) snapshot else shield.present("screen", snapshot, found)
+        val screenMode = shield.modeFor(ai.zyraxon.assistant.permission.AutomationPolicy.level(getApplication<android.app.Application>()))
+        val found = if (ownScreen || screenMode == ai.zyraxon.assistant.security.ContentShield.Mode.OFF) shield.scan("") else shield.scan(snapshot)
+        if (shield.effective(found.level, screenMode) == ai.zyraxon.assistant.security.ContentShield.Level.HOSTILE) session.shield.mark(session.turnStartedAt, "screen", found.reasons)
+        val safeSnapshot = shield.present("screen", snapshot, found, screenMode)
         val text = if (safeSnapshot.isBlank()) "" else "\nস্ক্রিনে এখন যা দেখা যাচ্ছে:\n$safeSnapshot"
         val result = where + text
         screenCacheText = result
@@ -3897,7 +3896,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         // data). The three asking levels get the extra stop.
         val shield = ai.zyraxon.assistant.security.ContentShield
         val level = gate.level(getApplication())
-        val tainted = level != gate.AUTOMATIC && shield.mustAsk(s.shield, s.turnStartedAt, name)
+        val shieldMode = shield.modeFor(level)
+        val tainted = shield.mustAsk(s.shield, s.turnStartedAt, name, shieldMode, gate.isSystem(name))
         if ((tainted || gate.asks(level, name)) &&
             !awaitToolApproval(name, args, s, if (tainted) t("সন্দেহজনক বাইরের নির্দেশ পাওয়া গেছে") + " " + shield.why(s.shield) else "")
         ) {
@@ -3916,8 +3916,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 JSONObject().put("ok", false).put("summary", "টুল চলেনি: ${e.message ?: e.toString()}")
             }
             // Full automation is untouched: at the Automatic level the shield does nothing at all.
-            if (level != gate.AUTOMATIC && ai.zyraxon.assistant.security.ContentShield.isUntrusted(name)) {
-                result = shieldResult(name, result, s)
+            if (shieldMode != ai.zyraxon.assistant.security.ContentShield.Mode.OFF && ai.zyraxon.assistant.security.ContentShield.isUntrusted(name)) {
+                result = shieldResult(name, result, s, shieldMode)
             }
             if (name in VERIFIED_TOOLS && result.optBoolean("ok", false)) {
                 val v = runCatching { verifyLine(name, args) }.getOrNull().orEmpty()
@@ -3936,7 +3936,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * characters come out, a suspicious text is fenced as data, and a hostile one taints
      * the turn so the next changing action asks the user.
      */
-    private fun shieldResult(name: String, result: JSONObject, s: ChatSession): JSONObject {
+    private fun shieldResult(name: String, result: JSONObject, s: ChatSession, mode: ai.zyraxon.assistant.security.ContentShield.Mode): JSONObject {
         val shield = ai.zyraxon.assistant.security.ContentShield
         val keys = mutableListOf<String>()
         val iter = result.keys()
@@ -3945,8 +3945,8 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             val v = result.opt(k) as? String ?: continue
             if (v.length < 12) continue
             val finding = shield.scan(v)
-            if (finding.level == ai.zyraxon.assistant.security.ContentShield.Level.HOSTILE) s.shield.mark(s.turnStartedAt, name, finding.reasons)
-            val shown = shield.present(name, v, finding)
+            if (shield.effective(finding.level, mode) == ai.zyraxon.assistant.security.ContentShield.Level.HOSTILE) s.shield.mark(s.turnStartedAt, name, finding.reasons)
+            val shown = shield.present(name, v, finding, mode)
             if (shown != v) result.put(k, shown)
         }
         return result
