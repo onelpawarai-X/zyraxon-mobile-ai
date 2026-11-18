@@ -2,21 +2,18 @@ package ai.zyraxon.assistant.help
 
 import ai.zyraxon.assistant.sealed.SealedAssets
 import android.content.Context
-import java.io.File
 
 /** A chapter ready to show: its title and its body (the body keeps the "## " and "- " markers). */
 class HelpDoc(val title: String, val body: String)
 
 /**
- * Loads a chapter in the reader's language. English and Bengali come from the app's sealed assets;
- * any other language is read from the phone's own cache, where an earlier translation was kept.
+ * Loads a chapter in the reader's language from the app's sealed assets.
+ *
+ * Every language the picker offers ships all twenty-one chapters inside the APK, so this is a
+ * plain read: nothing is translated on the phone and nothing is fetched. A chapter a language
+ * somehow lacks falls back to the English one.
  */
 object HelpText {
-
-    private const val CACHE = "help_i18n"
-    private val HAND_MADE = setOf("en", "bn")
-
-    fun handMade(lang: String): Boolean = lang in HAND_MADE
 
     fun parse(text: String): HelpDoc {
         val lines = text.replace("\r", "").trim().lines()
@@ -27,28 +24,10 @@ object HelpText {
     private fun asset(c: Context, lang: String, ch: HelpChapter): String? =
         SealedAssets.textOrAsset(c, "help/$lang/${ch.file}")
 
-    private fun cacheFile(c: Context, lang: String, ch: HelpChapter): File =
-        File(File(File(c.filesDir, CACHE), lang.replace(Regex("[^A-Za-z0-9_-]"), "_")).apply { mkdirs() }, ch.file)
-
-    /** The English source of a chapter, which every translation starts from. */
+    /** The English source of a chapter. */
     fun english(c: Context, ch: HelpChapter): HelpDoc? = asset(c, "en", ch)?.let(::parse)
 
-    /** The chapter in [lang], or null when it has not been translated yet. */
-    fun load(c: Context, lang: String, ch: HelpChapter): HelpDoc? {
-        // A chapter written out in this language and shipped inside the app always wins; only a
-        // chapter that has no bundled text falls back to a translation kept on the phone.
-        asset(c, lang, ch)?.let { return parse(it) }
-        if (handMade(lang)) return english(c, ch)
-        val f = cacheFile(c, lang, ch)
-        return if (f.isFile) runCatching { parse(f.readText()) }.getOrNull() else null
-    }
-
-    fun save(c: Context, lang: String, ch: HelpChapter, text: String) {
-        runCatching { cacheFile(c, lang, ch).writeText(text) }
-    }
-
-    /** Forgets every saved translation for [lang] so the next open translates again. */
-    fun forget(c: Context, lang: String) {
-        runCatching { File(File(c.filesDir, CACHE), lang.replace(Regex("[^A-Za-z0-9_-]"), "_")).deleteRecursively() }
-    }
+    /** The chapter in [lang], falling back to English when it is missing. */
+    fun load(c: Context, lang: String, ch: HelpChapter): HelpDoc? =
+        (asset(c, lang, ch) ?: asset(c, "en", ch))?.let(::parse)
 }

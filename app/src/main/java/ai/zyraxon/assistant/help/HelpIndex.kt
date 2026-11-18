@@ -3,7 +3,7 @@ package ai.zyraxon.assistant.help
 /** One chapter of the built-in documentation. The text lives in `assets-src/help/<lang>/<file>`. */
 class HelpChapter(val id: String, val icon: String, val file: String)
 
-/** The chapters in reading order. English and Bengali are written by hand; every other language is translated on the phone. */
+/** The chapters in reading order. Every language the app offers ships all of them in the APK. */
 object HelpIndex {
     val chapters: List<HelpChapter> = listOf(
         HelpChapter("start", "🚀", "01-start.txt"),
