@@ -1,51 +1,51 @@
+Ekran razgovora i svaki gumb
+## Vrh ekrana
+- Menu: otvara lijevu ladicu s vašim razgovorima.
+- Chat / Terminal / Code / Preview: mijenjaju glavni prikaz. Chat je razgovor; Terminal je pravi terminal; Code je radni prostor datoteka s Gitom; Preview je ugrađeni preglednik.
+- Aura: prikazuje zaslon animiranog lika. Njegovi bočni gumbi su Mic, Chat (natrag na razgovor) i Refresh (ponovno povezuje oblak i ponovno učitava popis modela).
+- Settings: otvara osam odjeljaka postavki.
+- Natpis prikazuje stanje mikrofona: "Slušam…", "Mikrofon isključen — dodirnite" ili "Govorim… dodirnite za zaustavljanje".
+- Kad je nova verzija spremna, pojavljuje se natpis za ažuriranje s gumbima Download, Install i Allow (vidi Ažuriranja).
 
-## 
-- 
-- 
-- 
-- 
-- 
-- 
+## Lijevi izbornik (razgovori)
+- "+ Novi razgovor": započinje novi razgovor.
+- Svaki razgovor na popisu prikazuje oznaku rada dok je agent u njemu zauzet. Olovka ga preimenuje; križić ga briše (nakon potvrde: sve poruke u njemu se brišu).
+- Tema: odaberite Horror (krv, vatra i sjena), Dark (čisto tamno staklo) ili Light (svijetlo staklo).
 
-## 
-- 
-- 
-- 
+## Traka za poruke
+- Attach (spajalica): fotografija iz galerije, fotografija kamerom, skeniranje dokumenta (pretvara tekst s fotografije u uređivi .docx), dijeljenje zaslona kako bi ga agent vidio ("Screen watching" uključeno ili isključeno) te audio ili video datoteke. Priložene stavke prikazuju se kao čipovi; križić uklanja jednu, "Clear all" uklanja sve.
+- Gumb za način rada: Agent ili Build.
+- Gumb Mic: uključuje ili isključuje mikrofon koji uvijek sluša.
+- Gumb za model: otvara popis modela s poljem za pretraživanje. Modeli označeni "Live" mogu govoriti vlastitim glasom.
+- Send: šalje poruku. Dok agent radi, postaje Stop.
+- Polje za unos kaže "Što da radim?" u načinu Agent i "Što da izgradim? Recite kratko" u načinu Build.
 
-## 
-- 
-- 
-- 
-- 
-- 
-- 
+## Poruke
+- Copy, Share i Listen (čita poruku naglas; pritisnite ponovno za zaustavljanje) nalaze se ispod svake poruke.
+- "Thinking" prikazuje razmišljanje modela kad ga model pruža.
+- Kod koji agent piše pojavljuje se uživo u okviru, redak po redak, s Copy, Download i Open.
+- Datoteke koje agent izradi prikazuju se kao kartice s Open (u pravoj aplikaciji telefona), Play, Share i "Other app…".
+- Slike, audio i video prikazuju postotak napretka uživo dok se izrađuju.
+- Kartice alata pokazuju što agent radi: u tijeku, gotovo, uspjeh ili neuspjeh.
 
-## 
-- 
-- 
-- 
-- 
-- 
-- 
-
-## 
-- 
-- 
+## Ploče (zadaci, alati, datoteke, podagenti)
+- Todo ploča: plan koji agent piše za veliki posao i njegov napredak (n/ukupno gotovo). Možete dodati vlastiti zadatak i brisati zadatke.
+- Tools: popis svakog poziva alata, sa stanjem uživo.
 - Datoteke: svaka datoteka koju je agent stvorio, s opcijama Otvaranje, Dijeljenje, Objava i Brisanje (uz potvrdu) i polje za pretraživanje.
-- 
-- 
+- Sub-agents: pomoćni agenti koji rade u pozadini, s gumbom Stop.
+- Kartica Terminal: pravi terminal (vidi poglavlje Datoteke i terminal).
 
-## 
-- 
-- 
-- 
-- 
-- 
-- 
-- 
+## Ploča Preview
+- Back, Forward, Stop, Reload i adresna traka (upišite web adresu ili pretražite Google).
+- Open file: prikazuje Word, Excel, PowerPoint, PDF, slike, Markdown, CSV, kod i web-stranice izravno unutar aplikacije.
+- Size: smanjite ili povećajte ploču.
+- Fix: šalje probleme stranice (pogreške konzole, neuspjela učitavanja) agentu, koji ih popravlja u pozadini.
+- Pick part: dodirnite dio stranice, zatim recite agentu što da učini s tim dijelom.
+- Gumb Agent: pitajte nešto o stranici; agent dobiva njezinu sliku.
+- Quick open: prečaci do nedavnih stranica.
 
-## 
-- 
-- 
-- 
-- 
+## Radni prostor za kod
+- Lijeva strana: vaše datoteke (nova datoteka, otvori, spremi).
+- Uređivač: prikazuje retke i znakove; promjene koje napravi agent pojavljuju se odmah.
+- Git: novi repozitorij, kloniranje s GitHuba, skeniranje, status, commit s porukom, push, pull, grane, token.
+- Pull requests: stvaranje, spajanje, zatvaranje. Workflows: popis pokretanja, pokretanje workflowa. Log prikazuje izlaz naredbi.

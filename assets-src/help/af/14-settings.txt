@@ -33,9 +33,9 @@ Wys die huidige weergawe, kyk vir 'n nuwer weergawe, laai dit af met 'n vorderin
 ## 8. Stelsel
 Hierdie afdeling het sy eie ry knoppies wat sywaarts rol, sodat niks gedruk word nie.
 - Outomatisering: goedkeuringsvlak en slegs op die toestel (sien Goedkeuringsvlakke).
-- 
+- Navigation: 'n lys van areas om na toe te spring — "geen knoppies bo-aan nie, alles is hier" — insluitend die ⌘ ZX-stelselskulp, 'n "New session"-knoppie (vee kletsgeskiedenis uit vir 'n skoon begin), boodskaptelling en die mikrofoonskakelaar.
 - Geheue: die plaaslike SQL geheue met die feite ZYRAXON onthou; voeg 'n sleutel en waarde by; vee alles uit.
-- 
+- Skill guide: 'n vinnige lys voorbeeldvermoëns (boodskap-apps, webwerfbou, skermleser, flitslig, kamera, Wi-Fi en instellings) met voorbeeldfrases.
 - Outomatiseringspilpunt: vaardighede, autopilot, geld, tydlyn, brein en die oproepagent op een plek (sien Outomatiseringspilpunt).
 
 ## 9. Dokumentasie

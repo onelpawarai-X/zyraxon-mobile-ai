@@ -17,20 +17,20 @@ Odaberite jezik cijele aplikacije i poruka alata agenta. Pretražite popis i dod
 Prikazuje trenutnu verziju, traži novije izdanje, preuzima ga s trakom napretka i instalira. Vaši razgovori, memorija i postavke ostaju. Ako Android treba dopuštenje za instalaciju, gumb otvara tu postavku.
 
 ## 5. Model & identitet
-- 
-- 
-- 
+- Identity: odaberite lik (vidi poglavlje Likovi).
+- Model: katalog modela uživo s poljem za pretraživanje, filtrima "All models" i "Custom"; brzi modeli prvi.
+- On-device: preuzimanje, učitavanje i otpuštanje modela koji rade izvan mreže; poredani od malih prema velikima; neobvezni Hugging Face token; prikazuje stanja učitano, učitava se i neuspjelo.
 
-## 
-- 
-- 
+## 6. Aura & theme
+- Theme: Horror, Dark ili Light.
+- Aura & background: stil i boja aure (krv, ružičasta, ljubičasta, nebesko plava, zelena, vatra) s finom kontrolom nijanse; veličina aure, jačina sjaja, brzina rotacije, prozirnost ploča; plutajuće oko (uključeno/isključeno, dizajn, rub zaslona, glasovne naredbe/riječi za buđenje, dodajte vlastite); shader način; prilagođeni URL pozadine (mp4, gif ili slika); brzina animacije.
 
-## 
-- 
-- 
-- 
+## 7. Security & privacy
+- App lock: lozinka (4–8 znamenki) ili uzorak točaka 3×3; potvrdite unošenjem dvaput; uklanjanje zaključavanja.
+- Permissions: popis iz poglavlja Dopuštenja, s pomoći za Play Protect.
+- Privacy & data: svi podaci ostaju na telefonu. Gumbi: izbriši svu memoriju, izbriši povijest razgovora, izbriši GitHub token.
 
-## 
+## 8. System
 Ovaj odjeljak ima vlastiti niz gumba koji se pomiču bočno, tako da se ništa ne stišće.
 - Automatizacija: razina odobrenja i samo na uređaju (pogledajte Razine odobrenja).
 - Navigacija: popis područja za skok — "bez gumba na vrhu, sve je ovdje" — uključujući ⌘ ljusku sustava ZX, gumb "Nova sesija" (briše povijest razgovora za čisti početak), broj poruka i prekidač mikrofona.
