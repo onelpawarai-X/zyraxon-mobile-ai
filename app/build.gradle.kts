@@ -107,8 +107,8 @@ android {
     // app's data dir, and the bundled Linux runs its binaries from there. Raising
     // this to 29+ silently breaks the whole Linux path. See AGENTS.md.
     targetSdk = 28
-    versionCode = 68
-    versionName = "6.25.6"
+    versionCode = 69
+    versionName = "6.25.7"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
