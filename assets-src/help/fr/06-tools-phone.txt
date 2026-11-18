@@ -1,0 +1,34 @@
+Outils d'automatisation du téléphone
+L'agent pilote votre téléphone grâce à des outils. Vous ne les appelez jamais vous-même ; vous dites ce que vous voulez et l'agent choisit les outils. Ce chapitre liste chaque outil qui touche au téléphone, et comment il est protégé (voir Niveaux d'approbation : Safe, Personal, System).
+
+## Ouvrir et trouver
+- `open_app` (Safe) : ouvre n'importe quelle application installée par nom ou paquet. `list_apps` (Safe) : liste les applications installées. `open_settings` (Safe) : ouvre une page de réglages système (accessibilité, superposition, notifications, applications, Wi-Fi, batterie, Play Protect). `launch_url` (Safe) : ouvre un lien dans le navigateur. `youtube_play` (Safe) : ouvre YouTube sur les résultats de recherche de ce que vous avez demandé et le lit.
+
+## Voir l'écran
+- `read_screen` (Personal) : lit chaque texte et élément de l'écran avec les positions de toucher. `screen_shot` (Personal) : une vraie capture d'écran. Ils nécessitent l'autorisation Accessibilité.
+- `look_camera` (Personal) : prend une photo avec l'appareil et l'examine. `read_media` (Personal) : lit une image, un audio ou une vidéo (depuis un chemin ou un lien) pour que le modèle la comprenne.
+
+## Agir sur l'écran
+- `tap` (Personal) : touche un point. `tap_text` (Personal) : touche l'élément portant ce libellé, plus sûr que les coordonnées. `swipe` (Personal) : défiler ou geste de retour. `type_text` (Personal) : saisir dans le champ actif. `press_key` (Personal) : retour, accueil, récents, notifications, réglages rapides, verrouillage.
+- Les actions d'écran s'exécutent une par une, dans l'ordre, et après chacune l'agent regarde le nouvel écran.
+
+## Téléphone, messages et presse-papiers
+- `call_dial` (Personal) : passe un appel par numéro ou nom de contact. `call_state` (Personal) : un appel sonne-t-il ou est-il actif ? `call_answer` (Personal) : décrocher. `call_hangup` (Personal) : raccrocher.
+- `read_sms` (Personal) : lit le SMS le plus récent, par exemple un code OTP ; peut filtrer par texte ou expéditeur.
+- `clipboard_read` et `clipboard_write` (Personal) : lire ou écrire le presse-papiers.
+- `notify` (Personal) : publie une vraie notification Android. `share` (Personal) : ouvre la feuille de partage avec un texte, un lien ou un fichier. `channel_post` (System) : ouvre Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail ou SMS avec votre texte déjà saisi, prêt à envoyer.
+
+## État et informations système
+- `network_status` (Safe) : en ligne ou non, Wi-Fi ou données mobiles, nom du Wi-Fi. `sys_info` (Safe) : version d'Android, modèle, processeur, RAM, stockage, application en cours. `platform_info` (Safe) : où l'agent s'exécute. `process_list` (Safe) : processus en cours.
+
+## Autorisations et écran
+- `request_permission` (Safe) : ouvre la boîte de dialogue d'autorisation système d'une touche quand un outil échoue faute d'autorisation. `device_lock` (System) : verrouille vraiment l'écran, ou configure l'autorisation qui le permet. `floating_bubble` (Personal) : active ou désactive la bulle flottante.
+- `voice_change` (Personal) : change la vitesse, la hauteur ou le genre de la voix. `live_voice` (System) : active ou désactive le mode voix à voix en direct.
+
+## Aides d'interface
+- `code_box` et `files_panel` : ouvrent le cadre de code en direct ou l'explorateur de fichiers pour que vous suiviez le travail. `todo_write` : le tableau de tâches en direct.
+
+## Conseils
+- Vous pouvez enchaîner : « Ouvre les Réglages, trouve le Wi-Fi et dis-moi le nom du réseau ». L'agent lit l'écran après chaque étape et décide de la suivante.
+- Si un toucher ne fait rien, l'agent relit l'écran et essaie un autre élément ; il ne touche jamais au hasard.
+- Si Play Protect bloque quelque chose, l'agent peut parcourir les réglages avec vous (voir Autorisations).

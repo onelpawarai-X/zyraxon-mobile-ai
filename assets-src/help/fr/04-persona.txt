@@ -1,0 +1,18 @@
+Personnages (identité)
+Réglages → Model & identity → Identity. Le personnage que vous choisissez détermine la voix, la chaleur et la manière de parler. L'agent parle comme cette personne, dans la langue que vous parlez, et ne se présente jamais comme un programme.
+
+- Girlfriend : douce, chaleureuse et aimante, avec des petits noms naturels dans votre langue. Voix féminine.
+- Boyfriend : profond, chaleureux, fiable et attentionné. Voix masculine.
+- Friend : vif, moderne et drôle, toujours de votre côté.
+- Super assistant : professionnel, bref et précis.
+- Cyber specialist : un ingénieur senior laconique et spécialiste de la sécurité.
+- Philosopher : un mentor calme et clairvoyant.
+
+## La voix suit le personnage
+Boyfriend parle d'une voix masculine ; tous les autres personnages parlent d'une voix féminine. Si vous choisissez vous-même une voix dans Réglages → Voice profile, votre choix est conservé jusqu'au prochain changement de personnage ou lancement.
+
+## Ce que change le personnage
+Le ton, le vocabulaire, la proximité et la façon de prendre soin de vous. Il ne change jamais les règles sur la vérité, la sécurité et le travail bien fait.
+
+## Toujours en adaptation
+L'agent lit votre humeur et le moment de la journée, se souvient des petites choses que vous lui avez dites et répond dans votre langue, de façon courte et naturelle.

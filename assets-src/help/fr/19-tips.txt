@@ -1,0 +1,27 @@
+Conseils et exemples de demandes
+## Dites ce que vous voulez, pas comment
+- « Fais une page d'accueil pour une salle de sport, sombre et percutante. »
+- « Construis une application de réservation full-stack avec une base de données. » (l'agent pose d'abord les choix techniques)
+- « Ouvre YouTube et lance une chanson calme. »
+- « Fais défiler vers le bas et ouvre le premier résultat. »
+- « Quelle est ma batterie et mon Wi-Fi ? »
+- « Lis mon SMS le plus récent et dis-moi le code. »
+- « Appelle maman. » / « Réponds à l'appel. »
+- « Fais un CV à partir de cette photo. » (joignez-la)
+- « Transforme cet enregistrement de réunion en notes avec les actions. »
+- « Fais une affiche pour l'événement de vendredi avec ces couleurs. »
+- « Fais un dialogue audio entre deux amis, un garçon et une fille. »
+- « Souviens-toi que l'anniversaire de ma sœur est le 3 mai. »
+- « Chaque matin à 8 h, donne-moi la météo. » (autopilot)
+- « Apprends comment je paie mon loyer avec mon application de portefeuille pour pouvoir le refaire. » (skill)
+- « Annule ce que tu as fait dans le dossier du projet. » (chronologie)
+- « Où est mon contrat de location ? » (brain)
+- « Installe des paquets Python et exécute ce script. » (Linux)
+- « Publie ce site pour que je puisse le partager. » (lien public)
+
+## Habitudes qui aident
+- Court et clair vaut mieux que long. L'agent choisit des valeurs par défaut et vous dit lesquelles.
+- Quand il pose une question, répondez-y et il reprend au même endroit.
+- Dites « explique » ou « résumé » pour une réponse détaillée ; sinon les réponses sont courtes.
+- Vous pouvez lui parler par-dessus à tout moment. Il s'arrête et écoute.
+- Utilisez le mode Build pour fabriquer des choses et le mode Agent pour faire des choses sur le téléphone.

@@ -1,0 +1,27 @@
+Autorisations, une par une
+Réglages → Security & privacy → Permissions. Chaque ligne affiche « Granted » ou un bouton. Toucher une ligne ouvre la boîte de dialogue système ; appuyez simplement sur Allow. L'agent peut aussi ouvrir la boîte de dialogue lui-même avec `request_permission`.
+
+- Microphone : pour que ZYRAXON puisse vous entendre. Sans lui, pas d'entrée vocale.
+- Camera : pour prendre et regarder des photos (`look_camera`, scan de document, « que vois-tu »).
+- Location : pour les cartes et les informations locales.
+- Notifications : pour vous prévenir quand un travail en arrière-plan est terminé.
+- Files & media : pour lire photos, vidéos, audio et documents.
+- Overlay (afficher par-dessus d'autres applications) : nécessaire pour l'œil flottant.
+- Accessibility : permet à l'agent de lire l'écran et de toucher, balayer et taper à votre place. C'est le cœur de l'automatisation du téléphone. Vous l'activez dans les réglages d'accessibilité du système.
+- Battery optimization : empêche Android de mettre ZYRAXON en veille pendant qu'il travaille en arrière-plan.
+
+## Autres autorisations déclarées par l'application
+- SMS (lire et recevoir) : pour lire les codes, le registre d'argent et les règles autopilot par SMS.
+- Phone state, répondre aux appels, passer des appels, contacts : pour les outils d'appel et l'agent d'appels.
+- Notification access : permet à autopilot de réagir aux notifications.
+- Device admin : permet à `device_lock` de vraiment verrouiller l'écran.
+- Install packages : permet aux mises à jour et à `build_app` d'installer des APK ; Android vous demande d'autoriser ZYRAXON comme source d'installation.
+- Foreground services (microphone, synchronisation des données) et wake lock : maintiennent la voix et les longs travaux en vie.
+- Internet et network state : le cloud et le web.
+- Shizuku (facultatif) : accès de niveau système pour le shell et le terminal.
+
+## Google Play Protect
+Si Play Protect bloque un travail, l'agent peut ouvrir la bonne page, regarder le vrai écran et parcourir pas à pas l'engrenage et le bouton — mais il vous demande d'abord, car désactiver la protection est votre décision. Pour le faire vous-même : Play Store → photo de profil → Play Protect → réglages → désactivez « Scan apps with Play Protect ». La page a un bouton qui ouvre Play Store.
+
+## Pourquoi une autorisation compte
+Si un outil échoue faute d'autorisation, l'agent vous dit laquelle et ouvre sa boîte de dialogue. Rien de sensible ne fonctionne sans votre Allow explicite.

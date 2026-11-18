@@ -1,0 +1,7 @@
+Mises à jour
+Réglages → Updates → App update, ou la bannière en haut de l'application.
+- L'application vérifie les nouvelles versions et affiche « Nouvelle mise à jour disponible — version ».
+- Check for updates : demande maintenant. Si vous êtes à jour, il le dit.
+- Download & install : télécharge avec un pourcentage. Une fois terminé, appuyez sur Install. Vos discussions, votre mémoire et vos réglages restent.
+- Si Android bloque l'installation, appuyez sur le bouton d'autorisation, autorisez ZYRAXON comme source d'installation, puis réessayez.
+- Les boutons de la bannière : Download, Install, Allow et Close.
