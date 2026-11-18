@@ -1,0 +1,35 @@
+Suara: berbicara, mendengarkan, dan berbicara langsung
+## Mendengarkan (mikrofon)
+Pengaturan → Suara & mikrofon → Mikrofon & bahasa.
+- Bahasa pengenalan ucapan: bahasa yang Anda ucapkan ke mikrofon. Ubah kapan saja.
+- Tetap aktifkan mikrofon (selalu mendengarkan): saat aktif, mikrofon tetap terbuka. Saat mati, Anda menyalakannya sendiri.
+- Kirim otomatis saat Anda berhenti berbicara: setelah sekitar 1,5 detik hening, kalimat Anda terkirim dengan sendirinya. Saat mati, tulisan tunggu di dalam kotak untuk Anda tekan Kirim.
+- Tombol mikrofon di bilah pesan dan spanduk di bagian atas melakukan fungsi hidup/mati yang sama.
+- Mikrofon selalu terbuka untuk Anda, bahkan saat ZYRAXON sedang berbicara. Saat Anda mulai berbicara, ia berhenti dan mendengarkan, lalu menjawab Anda. Suaranya sendiri yang keluar melalui mikrofon disaring dengan membandingkan teks dengan balasan terakhirnya.
+- Sebuah kalimat dikirim hanya sekali. Jika pengenal kemudian mengulangi versi yang sedikit berbeda dari kalimat yang sama, maka akan dijatuhkan pada giliran yang sama.
+
+## Berbicara (teks-ke-ucapan)
+Pengaturan → Suara & mikrofon → Profil suara.
+- Pilih suara: perempuan (manis dan romantis) atau laki-laki (dalam dan percaya diri). Suara situs web digunakan jika sudah siap; mesin ucapan telepon itu sendiri adalah penggantinya.
+- Penggeser kecepatan dan nada, serta "Uji suara".
+- "Bacakan jawaban dengan lantang" mengaktifkan atau menonaktifkan pembicaraan.
+- Jika ponsel tidak memiliki mesin ucapan, instal Google Layanan Ucapan. Jika ponsel tidak memiliki data suara Bengali, ada tombol yang memungkinkan Anda mendownloadnya.
+- Ketuk spanduk berbicara untuk menghentikan suara. Ketuk Dengar di bawah pesan apa pun untuk mendengarnya.
+- ZYRAXON tidak pernah membacakan kode, tautan, JSON atau nama alat dengan keras.
+
+## Lab suara (pengubah suara)
+Pilih dari katalog server berdasarkan jenis kelamin (semua, perempuan, laki-laki), usia (anak, remaja, dewasa, senior), dan bahasa (Bengali, Hindi, Inggris, Urdu, Arab, Tamil, Nepal, Spanyol, Prancis, Jerman, Jepang, Korea, Cina, Rusia, Turki…). "Dengarkan" mempratinjau suara; "Kembali ke default" memulihkan suara karakter. Untuk audio dengan banyak suara, tanyakan kepada agen: setiap bagian dialog mempunyai suaranya sendiri.
+
+## Suara langsung (ucapan-ke-ucapan)
+Pengaturan → Suara & mikrofon → Suara langsung. Dengan model waktu nyata (Gemini Langsung, OpenAI Waktu nyata, dan sejenisnya), model mendengar mikrofon dan menjawab dengan suaranya sendiri, dalam satu aliran, dan Anda dapat menyelanya di tengah kata. Ucapan telepon dimatikan dalam sesi ini sehingga Anda tidak pernah mendengar dua suara.
+- Gunakan suara model sendiri: on = live talk; mati = telepon membaca jawaban teks.
+- Status menunjukkan: menghubungkan, mendengarkan, berbicara, menunggu.
+- Memilih model waktu nyata akan mengaktifkannya dengan sendirinya.
+- Jika tidak ada model realtime yang dimuat, tambahkan kunci Gemini atau OpenAI di penyedia AI.
+- Suara yang Anda pilih di profil suara juga digunakan dalam mode langsung.
+
+## Mata mengambang
+Pengaturan → Aura & tema → Aura & latar belakang.
+- Bola mengambang kecil yang berada di atas setiap aplikasi lainnya. Ketuk untuk menghidupkan atau mematikan mikrofon; tekan lama untuk membuka kotak teks dan menutupnya lagi.
+- Delapan desain: mata, bola cahaya, cincin neon, galaksi, orbit, plasma, pulsar, prisma. Penempatan di tepi layar.
+- Perintah suara (kata-kata bangun): ketika aplikasi berada di latar belakang, mengucapkan nama akan membangunkan mata yang melayang dan ZYRAXON menjawab. Default: "zyraxon", "hey zyraxon" dan ejaan umum dalam bahasa Bengali dan Inggris. Tambahkan kata-kata Anda sendiri dalam bahasa apa pun; hapus kapan saja.

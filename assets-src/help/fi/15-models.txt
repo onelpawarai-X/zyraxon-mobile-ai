@@ -1,0 +1,15 @@
+Toimittajat, mallit ja avaimet
+## Palveluntarjoajat
+ZYRAXON (oma linja ja Apex pilviagentti, aina kytkettynä), OpenCode (ilmainen kiintiö), Groq (erittäin nopea Llama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek ja OpenRouter. Lisää mikä tahansa avain kohdassa Asetukset → Providers & API. Avain tallennetaan puhelimeesi, verrataan palveluntarjoajan luetteloon, ja mallit siirtyvät valitsimeen kunkin palveluntarjoajan vastaaessa.
+
+## Mallin valinta
+Käytä mallipainiketta viestipalkissa tai Asetukset → Malli ja identiteetti → Malli. Hae nimellä, suodata Kaikki tai Mukautettu. Valintasi tallennetaan ja palautetaan käynnistyksen yhteydessä; päivitys ei koskaan korvaa tallennettua mallia. Mallit, joissa on merkintä Live, voivat puhua omalla äänellään (katso Live-ääni).
+
+## Laitteessa olevat mallit
+Asetukset → Malli ja identiteetti → Laitteessa. Malli toimii puhelimessa ilman dataa. Tiedostot ovat suuria (sadoista megatavuista muutamaan gigatavuun), joten lataa ne osoitteesta Wi-Fi. Ne on lueteltu pienistä suuriin; puhelimessa, jossa on vähän RAM-muistia, valitse kevyin. Gemma- ja FunctionGemma-niput tukevat työkalukutsua. Tunnus Hugging Face on vain porteilla oleville tiedostoille. Ladatut mallit muistetaan.
+
+## ZYRAXON-verkkosivusto
+zyraxonai.lovable.app: luo tili (sähköposti tai Google), avaa Asetukset, API Key / Access Token, luo avain ja liitä se sovellukseen. Ilman avainta voit silti käyttää sovellusta laitteessa olevien mallien ja paikallisten työkalujen kanssa.
+
+## Kustannukset ja tiedot
+Pilvipalveluntarjoajat laskuttavat sinua omien sääntöjensä mukaan. Kun "Vain laitteella" on käytössä, mitään ei lähetetä millekään palveluntarjoajalle.

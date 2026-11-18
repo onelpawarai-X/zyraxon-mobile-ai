@@ -1,0 +1,20 @@
+Automatiseerimiskeskus
+Seadistused → Süsteem → Automatiseerimisjaotur. Iga nupp, mida ZYRAXON saab ise teha, on ühes kohas, kuuel vahelehel. Iga vahekaart algab lühikese selgitusega selle toimimise kohta.
+
+## Oskused
+Õpetage ZYRAXON ülesannet kahel viisil: öelge see vestluses ("õppige seda ülesannet") või vajutage salvestamisnuppu ja tehke ülesanne ise teises rakenduses, seejärel tulge tagasi ja vajutage Stopp. Juurdepääsetavuse teenus peab olema sisse lülitatud või teie kraanid pole nähtavad. Õpitud teave kuvatakse jaotises „Õpitud oskused” ja seda saab uuesti esitada või kustutada.
+
+## Autopiloot
+Reeglid "kui see juhtub, tehke seda". Kui sündmus juhtub ZYRAXON ärkab iseenesest ja teeb töö ilma küsimata. Reegli saate luua ka vestluses öeldes. Iga reegel näitab, mitu korda seda on käivitatud.
+
+## Raha
+Loeb SMS-e mis tahes pangast või rahakotist mis tahes riigis (PayPal, M-Pesa, UPI, Pix, bKash, kaardid…) ja peab ühte sissetulekute, kulude, tasude ja saldo pearaamatut. Saate määrata eelarve ja saate selle läbimisel hoiatuse. Telefonis töötab ja midagi ei saadeta kuhugi.
+
+## Ajaskaala
+Siin on kirjas kõik, mida ZYRAXON tegi. Failide kirjutamist, redigeerimist ja kustutamist saab ühe nupuga tagasi võtta. Käitatud käsku ei saa tagasi võtta.
+
+## Aju
+Otsib teie failidest (tekst, Word, Excel, PowerPoint, CSV) ja kui lubate, siis ka teie SMS-idest ilma Internetita ja mis tahes keeles. Vajutage esmalt "Indeks" ja seejärel otsige.
+
+## Helista agentuurile
+Kui te ei saa kõnet vastu võtta, vastab ZYRAXON, räägib helistaja emakeeles, saab teada nime ja põhjuse ning annab teile kõne lõppedes kokkuvõtte. Viisteist keelt kasutavad kiireid sisseehitatud reegleid; iga teise keelega tegeleb mudel, mis vastab helistaja keeles. Sõnadest, mis tähendavad hüvasti, kiireloomulist või rämpsposti, mõistetakse korraga kõigis keeltes. Tabatud kõnede kokkuvõtted on loetletud vahekaardil.

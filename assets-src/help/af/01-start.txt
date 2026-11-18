@@ -1,0 +1,20 @@
+Aan die gang
+ZYRAXON is 'n assistent wat in jou Android foon woon. Dit praat met jou, luister na jou en kan werklike werk doen: maak toepassings oop, tik en tik op die skerm, bel mense, skryf lêers, bou webwerwe en toepassings, bestuur 'n Linux stelsel, maak prente, oudio, video en kantoordokumente, en onthou jou oor maande. Dit werk in enige taal wat jy praat.
+
+## Die eerste minute
+- Met die eerste bekendstelling wys ZYRAXON 'n kort kennisgewing dat die agent self op jou foon kan optree. Druk "Got it, start" om voort te gaan.
+- Voeg 'n KI-sleutel by (Instellings → Verskaffers & API → KI-verskaffers). Plak 'n sleutel vir enige verskaffer waarvan jy hou (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Wanneer jy 'n sleutel stoor, lees die toepassing daardie verskaffer se katalogus en kontroleer dit werklik, sodat jy 'n ware "gekoppelde" en die aantal modelle sien.
+- Geen sleutel nie? Jy kan steeds die op-toestel-modelle gebruik (Instellings → Model en identiteit → Op-toestel). Hulle hardloop op die telefoon sonder internet.
+- Kies 'n model met die modelknoppie in die boodskapbalk, en 'n karakter (Instellings → Model & identiteit → Identiteit).
+- Gee toestemmings wanneer 'n kenmerk een benodig (sien die Toestemmings-hoofstuk). Die agent kan ook die toestemmingsdialoog vir jou oopmaak met een tik.
+- Praat of tik net. "Maak vir my 'n landing page vir my bakkery", "maak YouTube oop en speel 'n liedjie", "wat is my battery?", "bel Ma".
+
+## Die twee maniere van werk
+Langs die boodskapkassie is daar 'n modusknoppie met twee modusse: Agent en Bou. Sien die Modi-hoofstuk.
+
+## Waar dinge is
+- Linkerkieslys: jou geselsies, nuwe klets, hernoem, vee uit en die temaskakelaar.
+- Kletsskerm: boodskappe, die taakbord, gereedskaplys, lêers, die terminale.
+- Voorskou- en kodepanele: sien en wysig wat die agent bou.
+- Instellings: agt afdelings, een vir een gedek in hierdie dokumentasie.
+- Hierdie dokumentasie: Instellings → Dokumentasie (jy is hier).

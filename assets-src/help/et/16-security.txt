@@ -1,0 +1,11 @@
+Turvalisus ja privaatsus
+- Kõik kasutaja ZYRAXON andmed on teie telefonis: vestlused, mälu, pearaamat, oskused, ajaskaala, ajuregister. Midagi ei hoita ZYRAXON serveris.
+- Pilvemudelid saavad ainult seda, mis on teie saadetud pöörde jaoks vajalik. Valikuga „Ainult seadmes” ei saadeta midagi.
+- Rakenduses tarnitavad viibad ja keelefailid on krüpteeritud APK sees.
+- Rakenduse lukk: määrake parool või muster menüüs Seaded → Turvalisus ja privaatsus → Rakenduse lukk. ZYRAXON lukustub siis, kui avate selle või naasete taustalt. "Eemalda lukk" kustutab salvestatud parooli või mustri.
+- Kinnitustasemed valvavad iga tööriista koodi sissekutsumise eest (vt Kinnitustasemed). Tundmatud tööriistad küsivad alati.
+- Saate kustutada: kogu mälu, vestluste ajaloo ja oma GitHub märgi, millest igaühel on üks nupp jaotises Privaatsus ja andmed.
+- Ohutus: kui ütlete, et keegi ähvardab või jälitab teid või soovib teie telefoni või andmeid, lukustab agent esmalt telefoni (kui seadme administraatori luba on sisse lülitatud) ja seejärel räägib teiega rahulikult.
+- Maksed: enne mis tahes makset või ülekannet ütleb agent, mida ta maksab, ja palub teil seda kinnitada.
+- Ausus: agent ütleb alles pärast seda, kui see tulemust nägi. See ei leiuta kunagi linke, faile ega tulemusi.
+- Sisukilp: mida iganes agent väljastpoolt loeb – teise rakenduse ekraan, veebileht, sõnum, fail, ühendatud server – kontrollitakse koodis teksti jaoks, mis üritab agendile korraldusi anda (paljudes keeltes, sh nähtamatute tähemärkidega peidetud tekst). Kahtlane tekst on aiaga piiratud, nii et mudel käsitleb seda ainult andmetena. Kui range see järgib teie heakskiidu taset: Lukustatud kohtleb kõike kahtlast vaenulikuna; Järelevalve piirab kahtlase teksti ja kui tekst on selgelt vaenulik, lukustab ülejäänud pöörde, nii et iga vahetatav tööriist küsib kõigepealt sinult (kaardil on kirjas, miks); Tasakaalustatud toimib ainult selgelt vaenuliku teksti puhul ja ainult süsteemitaseme tööriistad lõpetavad küsimise; Automaatne lülitab varjestuse täielikult välja – midagi ei skannita, peatata, ei märgita ega muudeta. Teie uus sõnum kustutab selle.

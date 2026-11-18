@@ -1,0 +1,21 @@
+Awan, rangkaian, model dan pembantu
+## Awan dan internet
+- `web_search` (rangkaian): cari di web sebenar. `read_url` (rangkaian): ambil halaman sebagai teks. `http_request` (rangkaian): sebarang panggilan HTTP (GET, POST, PUT, PATCH, DELETE) dengan pengepala dan badan. `verify_url` (rangkaian): semak pautan benar-benar wujud dan dapatkan status sebenar. `download_file` (Peribadi, rangkaian): muat turun URL ke fail.
+- Ejen membuka pautan hanya apabila anda memintanya.
+- Model AI dijalankan dalam awan melalui pembekal yang anda tambahkan (ZYRAXON, ZYRAXON Apex ejen awan, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Senarai model dimuatkan secara langsung dan diisi apabila setiap pembekal menjawab.
+- Membina, menerbitkan dan menarik permintaan dijalankan melalui GitHub dan Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Hidupkan "pada peranti sahaja" (tetapan Automasi) dan tiada panggilan awan dibuat sama sekali: tiada pembekal, tiada web, tiada muat naik.
+
+## MCP pelayan
+MCP membolehkan perkhidmatan luar memberikan alat tambahan kepada ejen. Sambungkan Canva, Cloudflare, Supabase, GitHub atau pelayan anda sendiri dengan alamatnya (token pilihan). Alat pelayan yang disambungkan menyertai senarai alat ejen sebagai `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (lihat perkara yang disambungkan dan alat yang wujud), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (lihat sumber untuk perubahan), `mcp_complete` (argumen autolengkap), `mcp_ping`, `mcp_log_level`. Panggilan mereka adalah panggilan rangkaian, dan alat MCP yang tidak diketahui meminta kebenaran secara lalai.
+- Skrin MCP menyenaraikan setiap pelayan dengan status Bersambung, alatan, sumber dan templat gesaannya, dan butang Tambah, Putuskan sambungan, Alih Keluar, Benarkan.
+
+## Sub-agen
+`sub_agent` (Sistem): menyerahkan bahagian tugas besar kepada ejen pembantu yang berjalan di latar belakang. Tindakan: bertelur, status, senarai, hasil, mesej, berhenti, tunggu. Masing-masing boleh menggunakan model sendiri. Ejen menggabungkan dan menyemak keputusan mereka sebelum berkata "selesai".
+
+## Model pada peranti
+`on_device_model` (Sistem): senarai, muatkan dan jalankan model bahasa yang hidup pada telefon, tanpa internet. Dalam Tetapan → Model & identiti → Pada peranti anda memuat turun model (kecil hingga besar: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); token Hugging Face adalah pilihan dan diperlukan hanya untuk fail berpagar. Model yang dimuatkan diingati dan dimuat semula semasa pelancaran.
+
+## Saluran mesej
+`channel_post` (Sistem) membuka Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail atau SMS dengan teks anda sedia. Anda tekan hantar sendiri.

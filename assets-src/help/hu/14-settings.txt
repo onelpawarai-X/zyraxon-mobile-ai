@@ -1,0 +1,42 @@
+Minden beállítási képernyő egyenként
+A beállítások nyolc részből állnak. Minden részhez vannak tabletták az alképernyőkhöz. Az utoljára használt szakasz legközelebb újra megnyílik.
+
+## 1. Nyelv és fordítás → Alkalmazások és eszközök nyelve
+Válassza ki az egész alkalmazás és az ügynök eszközüzeneteinek nyelvét. Keressen a listában, és koppintson az egyikre. A képernyőn megjelenik az aktuális nyelv, valamint hogy be van-e kapcsolva a felhasználói felület fordítása és az üzenetfordítás. 60 nyelv áll rendelkezésre. Lásd a Nyelv fejezetet.
+
+## 2. Hang és mikrofon
+- Hangprofil: válasszon női vagy férfi hangot, sebességet, hangmagasságot, „Válaszok hangos felolvasása”, Teszthang, bengáli hangletöltési tipp.
+- Mikrofon és nyelv: felismerési nyelv, a mikrofon bekapcsolva tartása, automatikus küldés, ha abbahagyja a beszélgetést.
+- Élő hang: beszéd-beszéd be/ki, állapot, a valós idejű modellek listája.
+
+## 3. Szolgáltatók és API
+- AI-szolgáltatók: saját API-kulcsok (ZYRAXON, OpenCode ingyenes kvóta, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) és a ZYRAXON Apex felhőügynök. A mentett kulcsot a szolgáltató valós katalógusának elolvasása ellenőrzi, és megmutatja a modellszámot vagy a pontos hibát. Egy gomb megnyitja a ZYRAXON webhelyet, ahol kulcsot hoz létre.
+- GitHub: az Ön GitHub hozzáférési jogkivonata (repo hatókörre van szüksége) a közzétételhez, Git push és pull kérésekhez. Mentse el vagy törölje a tokent; az állapot mutatja, ha be van állítva.
+
+## 4. Frissítések → Alkalmazásfrissítés
+Megjeleníti az aktuális verziót, ellenőrzi, hogy van-e újabb kiadás, letölti a folyamatjelző sávval és telepíti. A beszélgetések, a memória és a beállítások megmaradnak. Ha a Android-nak engedélyre van szüksége a telepítéshez, egy gomb megnyitja ezt a beállítást.
+
+## 5. Modell és identitás
+- Identitás: válassza ki a karaktert (lásd a Karakterek fejezetet).
+- Modell: élő modellkatalógus keresőmezővel, „Minden modell” és „Egyéni” szűrőkkel; gyors modellek először.
+- Eszközön: offline módban futó modellek letöltése, betöltése és eltávolítása; kicsitől nagyig válogatva; opcionális Hugging Face token; megjeleníti a betöltött, betöltési és sikertelen állapotokat.
+
+## 6. Aura és téma
+- Téma: Horror, Sötét vagy Világos.
+- Aura és háttér: az aura stílusa és színe (vér, rózsaszín, ibolya, ég, zöld, tűz) finom árnyalatszabályozással; aura mérete, izzás erőssége, forgási sebessége, panel átlátszósága; a lebegő szem (be/ki, tervezés, képernyő széle, hangutasítások/ébresztési szavak, add hozzá a sajátodat); shader mód; egyéni háttér URL (mp4, gif vagy kép); animációs sebesség.
+
+## 7. Biztonság és adatvédelem
+- Alkalmazászár: jelszó (4–8 számjegy) vagy 3×3 pontminta; erősítse meg kétszeri beírásával; távolítsa el a zárat.
+- Engedélyek: az Engedélyek fejezet listája Play Protect segítségével.
+- Adatvédelem és adatok: minden adat a telefonon marad. Gombok: az összes memória törlése, a csevegési előzmények törlése, a GitHub token törlése.
+
+## 8. Rendszer
+Ennek a résznek saját gombsora van, amely oldalra gördül, így semmi sem szorít.
+- Automatizálás: jóváhagyási szint és csak az eszközön (lásd: Jóváhagyási szintek).
+- Navigáció: azon területek listája, amelyekre ugorhat – „nincs gomb a tetején, minden itt van” – beleértve a ⌘ ZX rendszerhéjat, az „Új munkamenet” gombot (törli a csevegési előzményeket a tiszta kezdéshez), az üzenetek számát és a mikrofon kapcsolót.
+- Memória: a helyi SQL memória a tényekkel ZYRAXON emlékezik; kulcs és érték hozzáadása; törölje az összeset.
+- Ügyességi útmutató: példaképességek (üzenetküldő alkalmazások, webhelykészítés, képernyőolvasó, zseblámpa, kamera, Wi-Fi és beállítások) gyors listája példamondatokkal.
+- Automatizálási központ: készségek, robotpilóta, pénz, idővonal, agy és hívóügynök egy helyen (lásd: Automatizálási központ).
+
+## 9. Dokumentáció
+Saját rész a Beállításokban, külön a Rendszertől. Ez az útmutató: huszonegy fejezet, egy keresőmező és egy nyelvi chipsor. Az alkalmazás minden nyelve már teljes egészében ki van írva az alkalmazáson belül – semmit sem fordít le a telefon, és nincs szükség internetre az olvasáshoz.

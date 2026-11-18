@@ -1,0 +1,11 @@
+Beveiliging en privacy
+- Alle gegevens van ZYRAXON staan ​​op je telefoon: chats, geheugen, grootboek, vaardigheden, tijdlijn, hersenindex. Niets wordt bewaard op een ZYRAXON-server.
+- Cloudmodellen ontvangen alleen wat nodig is voor de beurt die u verzendt. Met "On-device only" wordt er helemaal niets verzonden.
+- De prompts en taalbestanden die in de app worden verzonden, zijn gecodeerd in de APK.
+- App-vergrendeling: stel een wachtwoord of patroon in in Instellingen → Beveiliging en privacy → App-vergrendeling. ZYRAXON wordt vervolgens vergrendeld wanneer u het opent of terugkeert van de achtergrond. "Verwijder slot" verwijdert het opgeslagen wachtwoord of patroon.
+- Goedkeuringsniveaus bewaken elke gereedschapsaanroep in code (zie Goedkeuringsniveaus). Onbekende tools vragen altijd.
+- U kunt het volgende wissen: al het geheugen, de chatgeschiedenis en uw GitHub-token, elk met één knop in Privacy & gegevens.
+- Veiligheid: als u zegt dat iemand u bedreigt of volgt, of uw telefoon of gegevens wil, vergrendelt de agent eerst de telefoon (als de toestemming van de apparaatbeheerder is ingeschakeld) en praat dan rustig met u.
+- Betalingen: vóór elke betaling of overschrijving zegt de agent wat hij zal betalen en vraagt ​​hij u om dit te bevestigen.
+- Eerlijkheid: de agent zegt pas dat iets werkt nadat hij resultaat heeft gezien. Het bedenkt nooit links, bestanden of resultaten.
+- Content Shield: alles wat de agent van buitenaf leest – het scherm van een andere app, een webpagina, een bericht, een bestand, een verbonden server – wordt in code gecontroleerd op tekst die de agent opdrachten probeert te geven (in veel talen, inclusief tekst verborgen met onzichtbare tekens). Verdachte tekst wordt afgeschermd, zodat het model deze uitsluitend als gegevens behandelt. Hoe streng het is, hangt af van uw goedkeuringsniveau: Vergrendeld behandelt alles wat verdacht is als vijandig; Onder toezicht wordt verdachte tekst afgeschermd en, als de tekst duidelijk vijandig is, wordt de rest van die beurt vergrendeld, zodat elk wisselend gereedschap u eerst vraagt ​​(de kaart zegt waarom); Evenwichtig handelt alleen op duidelijk vijandige tekst en alleen tools op systeemniveau stoppen met vragen; Automatisch schakelt het schild volledig uit - er wordt niets gescand, gestopt, gemarkeerd of gewijzigd. Een nieuw bericht van jou maakt het leeg.

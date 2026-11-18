@@ -1,0 +1,35 @@
+Izwi: ukukhuluma, ukulalela nokukhuluma bukhoma
+## Ukulalela (umbhobho)
+Izilungiselelo → Izwi nemakrofoni → Imakrofoni nolimi.
+- Ulimi lokuqaphela inkulumo: ulimi olukhuluma kumakrofoni. Ishintshe noma nini.
+- Gcina imakrofoni ivuliwe (uhlezi ulalela): uma ivuliwe, imakrofoni ihlala ivuliwe. Uma icishiwe, uzivulela wena.
+- Thumela ngokuzenzakalelayo uma uyeka ukukhuluma: ngemva kwemizuzwana engu-1.5 yokuthula umusho wakho uthunyelwa wodwa. Uma icishiwe, amagama alinda ebhokisini ukuze ucindezele okuthi Thumela.
+- Inkinobho yemakrofoni kubha yomlayezo kanye nesibhengezo phezulu zenza okufanayo vula/ukuvala.
+- Umbhobho uhlala uvulele wena, ngisho noma u-ZYRAXON ekhuluma. Uma uqala ukukhuluma iyama futhi ilalele, bese iyakuphendula. Izwi lalo elibuya ngemakrofoni lihlungwa ngokuqhathanisa umbhalo nempendulo yawo yokugcina.
+- Umusho uthunyelwa kanye kuphela. Uma isiboni kamuva siphinda inguqulo ehluke kancane yomusho ofanayo, idedelwa njengethuba elifanayo.
+
+## Ukukhuluma (umbhalo-kuya-enkulumweni)
+Izilungiselelo → Izwi nemakrofoni → Iphrofayela yezwi.
+- Khetha izwi: insikazi (elimnandi nelothando) noma owesilisa (elijulile futhi elizethembayo). Amazwi ewebhusayithi asetshenziswa uma eselungile; Injini yenkulumo yefoni iwukubuyela emuva.
+- Izilayidi zesivinini ne-pitch, kanye "Nezwi lokuhlola".
+- "Funda izimpendulo ngokuzwakalayo" amaswishi akhuluma avule noma avale.
+- Uma ifoni ingenayo injini yokukhuluma, faka Google Amasevisi Enkulumo. Uma ifoni ingenayo idatha yezwi yesiBengali, inkinobho ikuvumela ukuthi uyilande.
+- Thepha isibhengezo sokukhuluma ukuze umise izwi. Thinta Lalela ngaphansi kwanoma yimuphi umlayezo ukuze uwuzwe.
+- ZYRAXON akalokothi afunde ikhodi, izixhumanisi, JSON noma amagama amathuluzi ngokuphimisela.
+
+## Ilebhu yezwi (isishintshi sezwi)
+Khetha kukhathalogi yeseva ngobulili (konke, intombazane, umfana), ubudala (ingane, intsha, omdala, omdala), nolimi (isi-Bengali, isi-Hindi, isiNgisi, isi-Urdu, isi-Arabic, isi-Tamil, isi-Nepali, i-Spanish, isi-French, isiJalimane, isi-Japanese, isi-Korean, isi-Chinese, isi-Russian, isi-Turkish…). "Lalela" ihlola kuqala izwi; "Buyela kokumisiwe" kubuyisela izwi lomlingiswa. Ngomsindo onamazwi amaningi buza i-ejenti: ingxenye ngayinye yengxoxo ithola izwi layo.
+
+## Izwi elibukhoma (inkulumo-kuya-inkulumo)
+Izilungiselelo → Izwi nemakrofoni → Izwi elibukhoma. Ngemodeli yesikhathi sangempela (Gemini Bukhoma, OpenAI Isikhathi sangempela nokunye okufanayo) imodeli izwa umbhobho futhi iphendule ngezwi layo, ngokusakaza okukodwa, futhi ungayiphazamisa phakathi negama. Inkulumo yocingo uqobo ivaliwe kulesi sikhathi ukuze ungalokothi uzwe amazwi amabili.
+- Sebenzisa izwi lemodeli uqobo: ku = inkulumo ebukhoma; off = ifoni ifunda izimpendulo zombhalo.
+- Isimo sikhombisa: ukuxhuma, ukulalela, ukukhuluma, ukulinda.
+- Ukukhetha imodeli yesikhathi sangempela kuzivulela ngokwayo.
+- Uma ingekho imodeli yesikhathi sangempela elayishiwe, engeza ukhiye we-Gemini noma u-OpenAI kubahlinzeki be-AI.
+- Izwi olikhethile kuphrofayela yezwi lisetshenziswa kumodi ebukhoma futhi.
+
+## Iso elintantayo
+Izilungiselelo → I-Aura netimu → I-Aura nengemuva.
+- I-orb encane entantayo ehlala phezu kwazo zonke ezinye izinhlelo zokusebenza. Thepha ukuze uvule noma uvale imakrofoni; cindezela isikhathi eside ukuze uvule ibhokisi lombhalo bese ulivala futhi.
+- Imiklamo eyisishiyagalombili: iso, i-orb ekhanyayo, indandatho ye-neon, umthala, i-orbit, i-plasma, i-pulsar, i-prism. Ukubekwa komkhawulo wesikrini.
+- Imiyalo yezwi (amagama okuvusa): uma uhlelo lokusebenza lungemuva, ukusho igama kuvusa iso elintantayo kanye nezimpendulo ZYRAXON. Okuzenzakalelayo: "zyraxon", "hey zyraxon" nezipelingi ezivamile ngesi-Bengali nesiNgisi. Faka amagama akho kunoma yiluphi ulimi; zisuse noma nini.

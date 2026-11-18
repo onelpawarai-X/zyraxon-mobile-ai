@@ -1,0 +1,35 @@
+Röst: tala, lyssna och liveprata
+## Lyssna (mikrofon)
+Inställningar → Röst & mikrofon → Mikrofon & språk.
+- Taligenkänningsspråk: språket du talar till mikrofonen. Ändra det när som helst.
+- Håll mikrofonen på (lyssnar alltid): när den är på förblir mikrofonen öppen. När du är av slår du på den själv.
+- Skicka automatiskt när du slutar prata: efter cirka 1,5 sekunders tystnad skickas din mening av sig själv. När den är avstängd väntar orden i rutan på att du ska trycka på Skicka.
+- Mikrofonknappen i meddelandefältet och bannern högst upp gör samma på/av.
+- Mikrofonen är alltid öppen för dig, även när ZYRAXON talar. I samma ögonblick som du börjar prata stannar den och lyssnar och svarar dig sedan. Dess egen röst som kommer tillbaka genom mikrofonen filtreras bort genom att jämföra texten med dess senaste svar.
+- En mening skickas endast en gång. Om igenkännaren senare upprepar en något annorlunda version av samma mening, tas den bort som samma tur.
+
+## Tala (text-till-tal)
+Inställningar → Röst & mikrofon → Röstprofil.
+- Välj en röst: kvinnlig (söt och romantisk) eller manlig (djup och självsäker). Webbplatsens egna röster används när de är klara; telefonens egen talmotor är en reserv.
+- Reglage för hastighet och tonhöjd, och "Testa röst".
+- "Läs svar högt" slår på eller av talar.
+- Om telefonen inte har någon talmotor installerar du Google Taltjänster. Om telefonen inte har några bengaliska röstdata låter en knapp dig ladda ner den.
+- Tryck på den talande banderollen för att stoppa rösten. Tryck på Lyssna under ett meddelande för att höra det.
+- ZYRAXON läser aldrig kod, länkar, JSON eller verktygsnamn högt.
+
+## Röstlabb (röstväxlare)
+Välj från serverns katalog efter kön (alla, flicka, pojke), ålder (barn, tonåring, vuxen, senior) och språk (bengaliska, hindi, engelska, urdu, arabiska, tamil, nepalesiska, spanska, franska, tyska, japanska, koreanska, kinesiska, ryska, turkiska ...). "Lyssna" förhandsgranskar en röst; "Tillbaka till standard" återställer karaktärens röst. För ljud med många röster, fråga agenten: varje del av en dialog får sin egen röst.
+
+## Levande röst (tal-till-tal)
+Inställningar → Röst & mikrofon → Live röst. Med en realtidsmodell (Gemini Live, OpenAI Realtime och liknande) hör modellen mikrofonen och svarar med sin egen röst, i en ström, och du kan avbryta den mitt i ordet. Telefonens eget tal är avstängt i denna session så att du aldrig hör två röster.
+- Använd modellens egen röst: on = live talk; av = telefonen läser textsvar.
+- Status visar: ansluter, lyssnar, talar, väntar.
+- Att välja en realtidsmodell slår på den av sig själv.
+- Om ingen realtidsmodell laddas, lägg till en Gemini- eller OpenAI-nyckel i AI-leverantörer.
+- Rösten du valde i röstprofilen används också i liveläge.
+
+## Flytande öga
+Inställningar → Aura & tema → Aura & bakgrund.
+- En liten flytande klot som sitter över varannan app. Tryck för att slå på eller av mikrofonen; tryck länge för att öppna en textruta och stänga den igen.
+- Åtta mönster: öga, glödkula, neonring, galax, omloppsbana, plasma, pulsar, prisma. Placering i kanten av skärmen.
+- Röstkommandon (vakna ord): när appen är i bakgrunden väcker namnet det flytande ögat och ZYRAXON svarar. Standard: "zyraxon", "hey zyraxon" och vanliga stavningar på bengaliska och engelska. Lägg till dina egna ord på valfritt språk; ta bort dem när som helst.

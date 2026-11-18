@@ -1,0 +1,35 @@
+Ses: konuşma, dinleme ve canlı konuşma
+## Dinleme (mikrofon)
+Ayarlar → Ses ve mikrofon → Mikrofon ve dil.
+- Konuşma tanıma dili: mikrofona konuştuğunuz dil. İstediğiniz zaman değiştirin.
+- Mikrofonu açık tutun (her zaman dinleyin): açıkken mikrofon açık kalır. Kapatıldığında, kendiniz açarsınız.
+- Konuşmayı bıraktığınızda otomatik gönder: Yaklaşık 1,5 saniyelik sessizlikten sonra cümleniz kendiliğinden gönderilir. Kapalıyken, sözcükler Gönder tuşuna basmanız için kutuda bekler.
+- Mesaj çubuğundaki mikrofon düğmesi ve üstteki başlık aynı işlemi yapar/kapatır.
+- ZYRAXON konuşurken bile mikrofon sizin için her zaman açıktır. Konuşmaya başladığınız anda durur ve dinler, sonra size cevap verir. Mikrofondan gelen kendi sesi, metin ile son yanıtı karşılaştırılarak filtrelenir.
+- Bir cümle yalnızca bir kez gönderilir. Eğer tanıyıcı daha sonra aynı cümlenin biraz farklı bir versiyonunu tekrarlarsa, aynı sıra ile bırakılır.
+
+## Konuşma (metinden konuşmaya)
+Ayarlar → Ses ve mikrofon → Ses profili.
+- Bir ses seçin: kadın (tatlı ve romantik) veya erkek (derin ve kendinden emin). Hazır olduğunda web sitesinin kendi sesleri kullanılır; telefonun kendi konuşma motoru geri dönüştür.
+- Hız ve ses perdesi kaydırıcıları ve "Sesi test et".
+- "Yanıtları yüksek sesle oku" özelliği konuşmayı açar veya kapatır.
+- Telefonun konuşma motoru yoksa Google Konuşma Hizmetlerini yükleyin. Telefonda Bengalce ses verisi yoksa, bir düğme onu indirmenize olanak tanır.
+- Sesi durdurmak için konuşma başlığına dokunun. Dinlemek için herhangi bir mesajın altındaki Dinle'ye dokunun.
+- ZYRAXON asla kodu, bağlantıları, JSON veya araç adlarını yüksek sesle okumaz.
+
+## Ses laboratuvarı (ses değiştirici)
+Sunucunun kataloğundan cinsiyete (tümü, kız, erkek), yaşa (çocuk, genç, yetişkin, yaşlı) ve dile (Bengalce, Hintçe, İngilizce, Urduca, Arapça, Tamilce, Nepalce, İspanyolca, Fransızca, Almanca, Japonca, Korece, Çince, Rusça, Türkçe…) göre seçim yapın. "Dinle" bir sesin ön izlemesini yapar; "Varsayılana dön" karakterin sesini geri yükler. Çok sesli ses için temsilciye sorun: diyaloğun her bölümü kendi sesini alır.
+
+## Canlı ses (konuşmadan konuşmaya)
+Ayarlar → Ses ve mikrofon → Canlı ses. Gerçek zamanlı bir modelde (Gemini Canlı, OpenAI Gerçek Zamanlı ve benzeri) model mikrofonu duyar ve tek bir akışta kendi sesiyle yanıt verir ve siz de onu kelimenin ortasında kesebilirsiniz. Bu oturumda telefonun kendi konuşması kapatılır, böylece hiçbir zaman iki ses duymazsınız.
+- Modelin kendi sesini kullanın: açık = canlı konuşma; kapalı = telefon metin yanıtlarını okur.
+- Durum gösterileri: bağlanma, dinleme, konuşma, bekleme.
+- Gerçek zamanlı bir model seçmek onu kendiliğinden açar.
+- Gerçek zamanlı model yüklenmemişse yapay zeka sağlayıcılarına bir Gemini veya OpenAI anahtarı ekleyin.
+- Ses profilinde seçtiğiniz ses, canlı modda da kullanılır.
+
+## Yüzen göz
+Ayarlar → Aura ve tema → Aura ve arka plan.
+- Diğer tüm uygulamaların üzerinde duran küçük, yüzen bir küre. Mikrofonu açmak veya kapatmak için dokunun; bir metin kutusunu açmak ve tekrar kapatmak için uzun basın.
+- Sekiz tasarım: göz, parıltılı küre, neon halka, galaksi, yörünge, plazma, pulsar, prizma. Ekranın kenarına yerleştirme.
+- Sesli komutlar (sözcükleri uyandırma): Uygulama arka plandayken, adın söylenmesi kayan gözü uyandırır ve ZYRAXON yanıt verir. Varsayılanlar: "zyraxon", "hey zyraxon" ve Bengalce ve İngilizcede yaygın yazımlar. Herhangi bir dilde kendi kelimelerinizi ekleyin; istediğiniz zaman bunları kaldırın.

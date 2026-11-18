@@ -1,0 +1,27 @@
+Ábendingar og dæmibeiðnir
+## Segðu það sem þú vilt, ekki hvernig
+- "Búðu til áfangasíðu fyrir líkamsræktarstöð, dökk og djörf."
+- "Bygðu til bókunarforrit fyrir fullan stafla með gagnagrunni." (umboðsmaðurinn spyr fyrst um tæknilegt val)
+- "Opnaðu YouTube og spilaðu rólegt lag."
+- "Skrunaðu niður og opnaðu fyrstu niðurstöðuna."
+- "Hvað er rafhlaðan mín og Wi-Fi?"
+- "Lestu nýjasta SMS-ið mitt og segðu mér kóðann."
+- "Hringdu í mömmu." / "Svaraðu símtalinu."
+- "Búðu til ferilskrá úr þessari mynd." (hengi við)
+- "Breyttu þessari fundarupptöku í minnispunkta með aðgerðaatriðum."
+- "Búðu til veggspjald fyrir föstudagsviðburðinn með þessum litum."
+- "Gerðu hljóðsamræður milli tveggja vina, eins stráks og einnar stelpu."
+- "Mundu að systir mín á afmæli 3. maí."
+- "Á hverjum morgni klukkan 8 segðu mér veðrið." (sjálfstýring)
+- "Lærðu hvernig ég sendi leiguna mína með veskisappinu mínu svo þú getir gert það aftur." (kunnátta)
+- "Afturkalla það sem þú gerðir í verkefnamöppunni." (tímalína)
+- "Hvar er leigusamningurinn minn?" (heila)
+- "Settu upp python pakka og keyrðu þetta handrit." (Linux)
+- "Birtu þessa síðu svo ég geti deilt henni." (opinber hlekkur)
+
+## Venjur sem hjálpa
+- Stuttir og skýrir taktar langir. Umboðsmaðurinn velur vanskil og segir þér hvað hann valdi.
+- Þegar það spyr einnar spurningar skaltu svara henni og hún heldur áfram frá sama stað.
+- Segðu "útskýra" eða "samantekt" til að fá ítarlegt svar; annars eru svör stutt.
+- Þú getur talað um það hvenær sem er. Það stoppar og hlustar.
+- Notaðu Build mode til að búa til hluti og Agent mode til að gera hluti í símanum.

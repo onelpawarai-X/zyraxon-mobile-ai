@@ -1,0 +1,15 @@
+Penyedia, model dan kunci
+## Penyedia
+ZYRAXON (jalur sendiri dan agen cloud Apex, selalu terhubung), OpenCode (kuota gratis), Groq (Llama sangat cepat), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek dan OpenRouter. Tambahkan kunci apa saja di Pengaturan → Penyedia & API. Kuncinya disimpan di ponsel Anda, diperiksa berdasarkan katalog penyedia, dan model dialirkan ke pemilih saat masing-masing penyedia menjawab.
+
+## Memilih model
+Gunakan tombol model di bilah pesan atau Pengaturan → Model & identitas → Model. Cari berdasarkan nama, filter Semua atau Kustom. Pilihan Anda disimpan dan dipulihkan saat peluncuran; penyegaran tidak pernah menggantikan model yang Anda simpan. Model bertanda Live dapat berbicara dengan suaranya sendiri (lihat Suara langsung).
+
+## Model di perangkat
+Pengaturan → Model & identitas → Pada perangkat. Model ini berjalan di ponsel tanpa ada data yang keluar. File berukuran besar (ratusan MB hingga beberapa GB), jadi unduh di Wi-Fi. Mereka terdaftar dari kecil hingga besar; pada ponsel dengan RAM kecil pilihlah yang paling ringan. Pemanggilan alat didukung oleh bundel Gemma dan FunctionGemma. Token Hugging Face hanya untuk file yang terjaga keamanannya. Model yang dimuat akan diingat.
+
+## Situs web ZYRAXON.
+zyraxonai.lovable.app: buat akun (email atau Google), buka Pengaturan, Kunci API/Token Akses, buat kunci dan tempel di aplikasi. Tanpa kunci, Anda masih dapat menggunakan aplikasi dengan model di perangkat dan alat lokal.
+
+## Biaya dan data
+Penyedia cloud menagih Anda sesuai dengan aturan mereka sendiri. Dengan mengaktifkan "Hanya di perangkat" tidak ada yang dikirim ke penyedia mana pun.

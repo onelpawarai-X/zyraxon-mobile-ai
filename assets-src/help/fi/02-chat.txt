@@ -1,0 +1,51 @@
+Chat-näyttö ja jokainen painike
+## Näytön yläreunassa
+- Valikko: avaa vasemman laatikon keskusteluillasi.
+- Chat / Pääte / Koodi / Esikatselu: vaihda päänäkymää. Chat on keskustelu; Terminaali on todellinen terminaali; Koodi on tiedostotyötila, jossa on Git; Esikatselu on sisäänrakennettu selain.
+- Aura: näyttää animoidun hahmonäytön. Sen sivupainikkeet ovat Mic, Chat (takaisin keskusteluun) ja Refresh (yhdistää pilven uudelleen ja lataa malliluettelon uudelleen).
+- Asetukset: avaa kahdeksan asetusosaa.
+- Banneri näyttää mikrofonin tilan: "Kuuntelee…", "Mic off – napauta" tai "Puhuu... lopeta napauttamalla".
+- Kun uusi versio on valmis, näkyviin tulee päivitysbanneri, jossa on Lataa-, Asenna- ja Salli-painikkeet (katso Päivitykset).
+
+## Vasen valikko (chatit)
+- "+ Uusi chat": aloittaa uuden keskustelun.
+- Jokaisessa luettelon keskustelussa näkyy juoksumerkki, kun agentti on varattu siellä. Lyijykynä nimeää sen uudelleen; risti poistaa sen (vahvistuksen jälkeen: kaikki siinä olevat viestit poistetaan).
+- Teema: valitse Kauhu (veri, tuli ja varjo), Tumma (puhdas tumma lasi) tai Vaalea (kirkas lasi).
+
+## Viestipalkki
+- Liitä (paperiliitin): galleriakuva, kameravalokuva, asiakirjan skannaus (muuttaa valokuvan tekstin muokattavaksi .docx-tiedostoksi), jaa näyttö, jotta agentti näkee sen ("Näytön katselu" päällä tai pois päältä), sekä ääni- tai videotiedostot. Liitetyt kohteet näkyvät siruina; risti poistaa yhden, "Tyhjennä kaikki" poistaa kaikki.
+- Tilapainike: Agent tai Build.
+- Mikrofonipainike: kytkee aina kuuntelevan mikrofonin päälle tai pois päältä.
+- Mallipainike: avaa malliluettelon hakukentän kanssa. Mallit, joissa on merkintä "Live", voivat puhua omalla äänellään.
+- Lähetä: lähettää viestin. Kun agentti työskentelee, tästä tulee Stop.
+- Syöte sanoo "Mitä minun pitäisi tehdä?" agenttitilassa ja "Mitä minun pitäisi rakentaa? Sano se lyhyesti" Build-tilassa.
+
+## Viestit
+- Kopioi, Jaa ja Kuuntele (lukee viestin ääneen; lopeta painamalla uudelleen) ovat jokaisen viestin alla.
+- "Ajatteleminen" näyttää mallin päättelyn, kun malli tarjoaa sen.
+- Agentin kirjoittama koodi näkyy livenä laatikossa, rivi riviltä, ​​Kopioi, Lataa ja Avaa.
+- Agentin tekemät tiedostot näkyvät korteina: Avaa (puhelimen oikeassa sovelluksessa), Play, Share ja "Muu sovellus…".
+- Kuvat, ääni ja video näyttävät etenemisprosentin livenä, kun niitä tehdään.
+- Työkalukortit näyttävät, mitä agentti tekee: käynnissä, tehty, onnistunut vai epäonnistunut.
+
+## Paneelit (tehtävä, työkalut, tiedostot, aliagentit)
+- Todo board: suunnitelma, jonka agentti kirjoittaa suurelle työlle ja sen edistymiselle (n/tehty yhteensä). Voit lisätä omia tehtäviä ja poistaa tehtäviä.
+- Työkalut: luettelo kaikista työkalukutsuista live-tilassa.
+- Tiedostot: jokainen agentin luoma tiedosto, jossa on Avaa, Jaa, Julkaise ja Poista (vahvistuksen kanssa) ja hakukenttä.
+- Aliagentit: taustalla toimivat apuagentit, joissa on Stop-painike.
+- Pääte-välilehti: todellinen pääte (katso kappaletta Tiedostot ja pääte).
+
+## Esikatselupaneeli
+- Takaisin, Eteenpäin, Pysäytä, Lataa uudelleen ja osoitepalkki (kirjoita verkko-osoite tai hae Google).
+- Avaa tiedosto: näyttää Word, Excel, PowerPoint, PDF, kuvat, Markdown, CSV, koodi ja sivustot suoraan sovelluksen sisällä.
+- Koko: pienennä tai suurenna paneelia.
+- Korjaa: lähettää sivun ongelmat (konsolivirheet, epäonnistuneet lataukset) agentille, joka korjaa ne taustalla.
+- Valitse osa: napauta osaa sivusta ja kerro agentille, mitä tälle osalle tulee tehdä.
+- Agent-painike: kysy jotain sivusta; agentti saa siitä kuvan.
+- Pikaavaus: pikakuvakkeet viimeisimmille sivuille.
+
+## Koodin työtila
+- Vasen puoli: tiedostosi (uusi tiedosto, avaa, tallenna).
+- Editor: näyttää rivit ja merkit; agentin tekemät muutokset näkyvät heti.
+- Git: uusi repo, klooni kohteesta GitHub, skannaus, tila, sitoutuminen viestillä, push, pull, haarat, token.
+- Vetopyynnöt: luo, yhdistä, sulje. Työnkulut: luettelo suoritetaan, suorita työnkulku. Loki näyttää komennon lähdön.

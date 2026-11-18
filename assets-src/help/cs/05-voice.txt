@@ -1,0 +1,35 @@
+Hlas: mluvení, poslech a živá řeč
+## Poslech (mikrofon)
+Nastavení → Hlas a mikrofon → Mikrofon a jazyk.
+- Jazyk rozpoznávání řeči: jazyk, kterým mluvíte do mikrofonu. Změňte to kdykoli.
+- Nechat mikrofon zapnutý (vždy poslouchá): když je zapnutý, mikrofon zůstane otevřený. Když je vypnutý, zapnete ho sami.
+- Automatické odeslání, když přestanete mluvit: po přibližně 1,5 sekundě ticha se vaše věta sama odešle. Když je vypnuto, slova čekají v poli, až stisknete Odeslat.
+- Tlačítko mikrofonu na liště zpráv a banner v horní části zapínají a vypínají totéž.
+- Mikrofon je pro vás vždy otevřený, i když mluví ZYRAXON. Ve chvíli, kdy začnete mluvit, přestane a poslouchá, pak vám odpoví. Jeho vlastní hlas, který se vrací přes mikrofon, je odfiltrován porovnáním textu s jeho poslední odpovědí.
+- Věta je odeslána pouze jednou. Pokud rozpoznávající později zopakuje mírně odlišnou verzi stejné věty, je vyřazena jako stejný tah.
+
+## Mluvení (převod textu na řeč)
+Nastavení → Hlas a mikrofon → Hlasový profil.
+- Vyberte si hlas: ženský (sladký a romantický) nebo mužský (hluboký a sebevědomý). Když jsou webové stránky připraveny, použijí se vlastní hlasy; Záložním nástrojem je vlastní řečový modul telefonu.
+- Posuvníky rychlosti a výšky a "Testovací hlas".
+- „Přečíst odpovědi nahlas“ zapíná nebo vypíná mluvení.
+- Pokud telefon nemá modul řeči, nainstalujte služby řeči Google. Pokud telefon nemá žádná bengálská hlasová data, můžete si je stáhnout tlačítkem.
+- Klepnutím na mluvící pruh zastavíte hlas. Klepnutím na Poslouchat pod libovolnou zprávou si ji poslechnete.
+- ZYRAXON nikdy nečte kód, odkazy, JSON nebo názvy nástrojů nahlas.
+
+## Hlasová laboratoř (hlasový měnič)
+Vyberte si z katalogu serveru podle pohlaví (všichni, dívka, chlapec), věku (dítě, dospívající, dospělý, senior) a jazyka (bengálština, hindština, angličtina, urdština, arabština, tamilština, nepálština, španělština, francouzština, němčina, japonština, korejština, čínština, ruština, turečtina…). "Poslouchat" zobrazí náhled hlasu; "Zpět na výchozí" obnoví hlas postavy. Pro zvuk s mnoha hlasy se zeptejte agenta: každá část dialogu dostane svůj vlastní hlas.
+
+## Živý hlas (řeč na řeč)
+Nastavení → Hlas a mikrofon → Živý hlas. S modelem v reálném čase (Gemini Živě, OpenAI V reálném čase a podobně) model slyší mikrofon a odpovídá svým vlastním hlasem v jednom streamu a můžete jej přerušit uprostřed slova. Vlastní řeč telefonu je v této relaci vypnutá, takže nikdy neuslyšíte dva hlasy.
+- Použijte vlastní hlas modelky: zapnuto = živý rozhovor; vypnuto = telefon čte textové odpovědi.
+- Stav zobrazuje: připojení, poslech, mluvení, čekání.
+- Výběr modelu v reálném čase jej zapne sám.
+- Pokud není načten žádný model v reálném čase, přidejte do poskytovatelů AI klíč Gemini nebo OpenAI.
+- Hlas, který jste vybrali v hlasovém profilu, se používá také v živém režimu.
+
+## Plovoucí oko
+Nastavení → Aura a motiv → Aura a pozadí.
+- Malá plovoucí koule, která sedí nad každou další aplikací. Klepnutím zapnete nebo vypnete mikrofon; dlouhým stisknutím otevřete textové pole a znovu jej zavřete.
+- Osm provedení: oko, zářící koule, neonový prstenec, galaxie, orbita, plazma, pulsar, hranol. Umístění na okraj obrazovky.
+- Hlasové příkazy (probuzení): když je aplikace na pozadí, vyslovení jména probudí vznášející se oko a ZYRAXON odpoví. Výchozí: "zyraxon", "hej zyraxon" a běžné hláskování v bengálštině a angličtině. Přidejte svá vlastní slova v libovolném jazyce; kdykoli je odstranit.

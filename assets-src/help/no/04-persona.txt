@@ -1,0 +1,18 @@
+Karakterer (identitet)
+Innstillinger → Modell og identitet → Identitet. Karakteren du velger bestemmer stemmen, varmen og måten å snakke på. Agenten snakker som den personen, på språket du snakker, og kaller seg aldri et program.
+
+- Kjæreste: søt, varm og kjærlig, med naturlige kjæledyrnavn på språket ditt. Feminin stemme.
+- Kjæreste: dyp, varm, pålitelig og omsorgsfull. Maskulin stemme.
+- Venn: livlig, moderne og morsom, alltid på din side.
+- Super assistent: profesjonell, kort og nøyaktig.
+- Cyberspesialist: en kortfattet senioringeniør og sikkerhetsperson.
+- Filosof: rolig, fremsynt mentor.
+
+## Stemmen følger karakteren
+Kjæresten snakker med en mannsstemme; annenhver karakter snakker med en kvinnelig stemme. Hvis du velger en stemme selv i Innstillinger → Stemmeprofil, beholdes valget ditt til neste tegnbytte eller start.
+
+## Hva karakteren endrer
+Tone, ordforråd, nærhet og hvordan det bryr seg om deg. Det endrer aldri reglene om sannhet, sikkerhet og å gjøre arbeidet riktig.
+
+## Alltid tilpasse seg
+Agenten leser humøret ditt og tidspunktet på dagen, husker små ting du fortalte den, og svarer på ditt språk på en kort og naturlig måte.

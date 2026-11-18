@@ -1,0 +1,11 @@
+Foto, audio, video, dokumente dhe dizajn
+- `generate_image` (rrjet): bëni një fotografi nga një përshkrim (shkruajeni me detaje; anglishtja funksionon më mirë). Shfaqet në bisedën me butonat e ndarjes. Për disa, kërkoni disa.
+- `generate_audio` (rrjet): audio e folur (.mp3) nga çdo tekst. Për një dialog ose tregim, jepini secilës pjesë zërin e vet (gjinia, mosha, gjuha, toni). Shumë gjuhë, duke përfshirë Bengalin, Hindu dhe Anglisht.
+- `generate_video`: një video e redaktuar reale (jo pamje me AI) nga skenat - imazhe, klipe, tekst, ngjyra, rrëfim, titrat, muzikë. `ffmpeg`: çdo modifikim i drejtpërdrejtë — prerje, bashkim, mbivendosje, titra, shpejtësi, përzierje audio, konvertim. Videot 5–10 minuta janë të mundshme, të ndërtuara hap pas hapi.
+- Progresi tregon drejtpërdrejt si përqindje në bisedë; kur të përfundojë skedari arrin me butonat Play dhe Share.
+- `make_document`: një skedar real Word (.docx), Excel (.xlsx) ose PowerPoint (.pptx) në telefon, nuk nevojitet instalim, asnjë gjuhë. `office_template`: letra të gatshme zyre me boshllëqe për të plotësuar (aplikacion për pushim, aplikim për punë, faturë, CV, propozim biznesi, kuotim, njoftim, procesverbal takimi, kontratë, llogari mujore dhe më shumë).
+- Dokument nga një foto: bashkëngjitni një foto (Skanimi i dokumentit). Teksti kopjohet saktësisht siç është shkruar (shënohen fjalët e paqarta), një tabelë bëhet .xlsx, përndryshe .docx.
+- Shënimet e takimit: nga audio, një transkript ose çfarë thoni. Dokumenti ka një përmbledhje, vendime, elemente veprimi (detyrë, pronar, data e duhur) dhe një draft të gatshëm të emailit.
+- `make_design`: postera, banderola, logo, karta, tregime, kopertina si PNG dhe PDF. `brand_kit`: jepni një logo ose ngjyra; ato ruhen, tema e aplikacionit ndryshon dhe që atëherë e tutje dokumentet, rrëshqitjet dhe sajtet përdorin ngjyrat e markës suaj.
+- `present_slides`: personazhi flet ndërsa shfaqen kartat e rrëshqitjes; rrëshqitjet ndryshojnë vetë kur zëri përfundon. Kërkoni një skedar .pptx nëse dëshironi një skedar.
+- `open_file`: hap atë që është bërë në aplikacionin e vërtetë të telefonit (Word/Dokumentet, Fletët, Diapozitivat, PDF, galeria, shfletuesi) ose në panelin e Pamjes; agjenti kontrollon ekranin për t'u siguruar që është hapur.

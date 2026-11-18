@@ -1,0 +1,21 @@
+Awọsanma, nẹtiwọki, awọn awoṣe ati awọn oluranlọwọ
+## Awọsanma ati ayelujara
+- `web_search` (nẹtiwọki): wa oju opo wẹẹbu gidi. `read_url` (nẹtiwọki): mu oju-iwe kan bi ọrọ. `http_request` (nẹtiwọọki): eyikeyi ipe HTTP (GET, POST, PUT, PATCH, DELETE) pẹlu awọn akọle ati ara. `verify_url` (nẹtiwọki): ṣayẹwo ọna asopọ kan wa gaan ki o gba ipo otitọ. `download_file` (Ti ara ẹni, nẹtiwọki): ṣe igbasilẹ URL si faili kan.
+- Aṣoju ṣii awọn ọna asopọ nikan nigbati o ba beere lọwọ rẹ.
+- Awọn awoṣe AI nṣiṣẹ ninu awọsanma nipasẹ awọn olupese ti o fi kun (ZYRAXON), ZYRAXON Apex aṣoju awọsanma, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode. Awoṣe atokọ n gbe laaye ati kun bi olupese kọọkan ṣe n dahun.
+- Kọ, titẹjade ati fa awọn ibeere ṣiṣe nipasẹ GitHub ati Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Yipada "lori ẹrọ nikan" (Awọn eto adaṣe) ko si si ipe awọsanma rara: ko si olupese, ko si wẹẹbu, ko si ikojọpọ.
+
+## MCP olupin
+MCP jẹ ki awọn iṣẹ ita fun oluranlowo ni afikun awọn irinṣẹ. Sopọ Canva, Cloudflare, Supabase, GitHub tabi olupin tirẹ nipasẹ adirẹsi rẹ (àmi yiyan). Awọn irinṣẹ olupin ti a ti sopọ darapọ mọ atokọ irinṣẹ oluranlowo bi `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (wo ohun ti a ti sopọ ati awọn irinṣẹ ti o wa), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (wo orisun kan fun awọn iyipada), `mcp_complete` (awọn ariyanjiyan pipe), `mcp_ping`, `mcp_log_level`. Awọn ipe wọn jẹ awọn ipe netiwọki, ati awọn irinṣẹ MCP ti a ko mọ beere fun igbanilaaye nipasẹ aiyipada.
+- Iboju MCP ṣe atokọ olupin kọọkan pẹlu ipo ti a ti sopọ, awọn irinṣẹ rẹ, awọn orisun ati awọn awoṣe kiakia, ati Fikun-un, Ge asopọ, Yọ, Awọn bọtini Gba laaye.
+
+## Awọn aṣoju abẹlẹ
+`sub_agent` (Eto): awọn ẹya ọwọ ti iṣẹ nla kan si awọn aṣoju oluranlọwọ ti n ṣiṣẹ ni abẹlẹ. Awọn iṣe: spawn, ipo, atokọ, abajade, ifiranṣẹ, da duro, duro. Olukuluku le lo awoṣe tirẹ. Aṣoju ṣopọ ati ṣayẹwo awọn abajade wọn ṣaaju sisọ “ṣe”.
+
+## On-ẹrọ awoṣe
+`on_device_model` (Eto): ṣe atokọ, ṣajọpọ ati ṣiṣe awoṣe ede ti o ngbe lori foonu, laisi intanẹẹti. Ninu Awọn Eto → Awoṣe & idanimọ → Lori ẹrọ o ṣe igbasilẹ awọn awoṣe (kekere si nla: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); a Hugging Face àmi jẹ iyan ati ki o nilo nikan fun gated awọn faili. A ṣe iranti awoṣe ti kojọpọ ati tun gbejade ni ifilọlẹ.
+
+## Awọn ikanni fifiranṣẹ
+`channel_post` (System) ṣi Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail tabi SMS pẹlu setan ọrọ rẹ. O tẹ firanṣẹ funrararẹ.

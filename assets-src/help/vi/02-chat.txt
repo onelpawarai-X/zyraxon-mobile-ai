@@ -1,0 +1,51 @@
+Màn hình trò chuyện và mọi nút
+## Phía trên màn hình
+- Menu: mở ngăn bên trái chứa các cuộc trò chuyện của bạn.
+- Chat/Terminal/Code/ Preview: chuyển đổi chế độ xem chính. Trò chuyện là cuộc trò chuyện; Thiết bị đầu cuối là thiết bị đầu cuối thực sự; Mã là không gian làm việc của tệp với Git; Xem trước là trình duyệt tích hợp.
+- Aura: hiển thị màn hình nhân vật hoạt hình. Các nút bên cạnh của nó là Mic, Chat (quay lại cuộc trò chuyện) và Refresh (kết nối lại đám mây và tải lại danh sách model).
+- Cài đặt: mở tám phần cài đặt.
+- Biểu ngữ hiển thị trạng thái micrô: "Đang nghe...", "Tắt micrô - chạm" hoặc "Đang nói... chạm để dừng".
+- Khi phiên bản mới sẵn sàng, biểu ngữ cập nhật sẽ xuất hiện cùng với các nút Tải xuống, Cài đặt và Cho phép (xem Cập nhật).
+
+## Menu bên trái (trò chuyện)
+- “+ Trò chuyện mới”: bắt đầu cuộc trò chuyện mới.
+- Mỗi cuộc trò chuyện trong danh sách hiển thị một dấu đang chạy trong khi tổng đài viên đang bận ở đó. Cây bút chì đổi tên nó; dấu thập sẽ xóa nó (sau khi xác nhận: tất cả tin nhắn trong đó sẽ bị xóa).
+- Chủ đề: chọn Kinh dị (máu, lửa và bóng tối), Bóng tối (kính tối sạch) hoặc Ánh sáng (kính sáng).
+
+## Thanh tin nhắn
+- Đính kèm (kẹp giấy): ảnh thư viện, ảnh camera, quét tài liệu (chuyển văn bản trong ảnh thành tệp .docx có thể chỉnh sửa), chia sẻ màn hình để tổng đài viên có thể nhìn thấy màn hình đó (bật hoặc tắt "Xem màn hình") và các tệp âm thanh hoặc video. Các mục đính kèm hiển thị dưới dạng chip; dấu thập xóa một, "Xóa tất cả" xóa tất cả.
+- Nút chế độ: Agent hoặc Build.
+- Nút mic: bật hoặc tắt micrô luôn nghe.
+- Nút mẫu: mở danh sách mẫu bằng hộp tìm kiếm. Những người mẫu được đánh dấu "Trực tiếp" có thể nói bằng giọng của chính họ.
+- Gửi: gửi tin nhắn. Trong khi tác nhân đang làm việc, thao tác này sẽ trở thành Dừng.
+- Đầu vào cho biết "Tôi nên làm gì?" ở chế độ Tác nhân và "Tôi nên xây dựng cái gì? Nói ngắn gọn" ở chế độ Xây dựng.
+
+## Tin nhắn
+- Sao chép, chia sẻ và nghe (đọc to tin nhắn; nhấn lần nữa để dừng) ở dưới mỗi tin nhắn.
+- “Suy nghĩ” thể hiện lý lẽ của mô hình khi mô hình đưa ra.
+- Mã mà tác nhân viết xuất hiện trực tiếp trong một hộp, từng dòng một, với Sao chép, Tải xuống và Mở.
+- Các tệp mà tác nhân tạo sẽ hiển thị dưới dạng thẻ với Mở (trong ứng dụng thực của điện thoại), Phát, Chia sẻ và "Ứng dụng khác...".
+- Hình ảnh, âm thanh và video hiển thị phần trăm tiến trình trực tiếp trong khi chúng được thực hiện.
+- Thẻ công cụ hiển thị những gì tác nhân đang làm: đang chạy, đã hoàn thành, thành công hay thất bại.
+
+## Bảng điều khiển (việc cần làm, công cụ, tệp, tác nhân phụ)
+- Bảng việc cần làm: kế hoạch mà người đại diện viết cho một công việc lớn và tiến độ của nó (n/tổng ​​số đã hoàn thành). Bạn có thể thêm nhiệm vụ của riêng bạn và xóa nhiệm vụ.
+- Công cụ: danh sách mọi cuộc gọi công cụ, có trạng thái hoạt động.
+- Tệp: mọi tệp mà tác nhân đã tạo, với Mở, Chia sẻ, Xuất bản và Xóa (có xác nhận) và hộp tìm kiếm.
+- Tác nhân phụ: tác nhân trợ giúp chạy ở chế độ nền, có nút Dừng.
+- Tab thiết bị đầu cuối: thiết bị đầu cuối thực (xem chương Tệp và Thiết bị đầu cuối).
+
+## Bảng xem trước
+- Quay lại, Chuyển tiếp, Dừng, Tải lại và một thanh địa chỉ (nhập địa chỉ web hoặc tìm kiếm Google).
+- Mở tệp: hiển thị Word, Excel, PowerPoint, PDF, hình ảnh, Markdown, CSV, mã và trang web ngay trong ứng dụng.
+- Kích thước: thu nhỏ hoặc phóng to bảng điều khiển.
+- Khắc phục: gửi các sự cố của trang (lỗi bảng điều khiển, tải không thành công) tới đại lý để khắc phục chúng ở chế độ nền.
+- Chọn phần: chạm vào một phần của trang, sau đó cho nhân viên biết phải làm gì với phần đó.
+- Nút đại lý: hỏi điều gì đó về trang; đại lý nhận được một hình ảnh của nó.
+- Mở nhanh: phím tắt đến các trang gần đây.
+
+## Không gian làm việc mã
+- Bên trái: các file của bạn (file mới, mở, lưu).
+- Trình soạn thảo: hiển thị dòng và ký tự; những thay đổi được thực hiện bởi tác nhân xuất hiện cùng một lúc.
+- Git: repo mới, sao chép từ GitHub, quét, trạng thái, cam kết bằng tin nhắn, đẩy, kéo, phân nhánh, mã thông báo.
+- Yêu cầu kéo: tạo, hợp nhất, đóng. Quy trình công việc: chạy danh sách, chạy quy trình công việc. Nhật ký hiển thị đầu ra lệnh.

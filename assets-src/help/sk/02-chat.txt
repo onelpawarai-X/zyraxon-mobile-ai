@@ -1,0 +1,51 @@
+Obrazovka chatu a každé tlačidlo
+## Horná časť obrazovky
+- Ponuka: otvorí ľavú zásuvku s vašimi rozhovormi.
+- Chat / Terminál / Kód / Náhľad: prepnutie hlavného zobrazenia. Chat je konverzácia; Terminál je skutočný terminál; Kód je pracovný priestor súboru s Git; Preview je vstavaný prehliadač.
+- Aura: zobrazuje obrazovku animovanej postavy. Jeho bočné tlačidlá sú Mic, Chat (späť na konverzáciu) a Refresh (opätovné pripojenie cloudu a opätovné načítanie zoznamu modelov).
+- Nastavenia: otvorí osem sekcií nastavení.
+- Banner zobrazuje stav mikrofónu: „Počúva sa…“, „Mikrofón je vypnutý – ťuknite“ alebo „Hovorím… klepnutím zastavíte“.
+- Keď je pripravená nová verzia, zobrazí sa aktualizačný banner s tlačidlami Stiahnuť, Inštalovať a Povoliť (pozri Aktualizácie).
+
+## Ľavé menu (chaty)
+- „+ Nový rozhovor“: začína novú konverzáciu.
+- Každý chat v zozname zobrazuje prebiehajúcu značku, keď je tam agent zaneprázdnený. Ceruzka to premenuje; krížik ho vymaže (po potvrdení: všetky správy v ňom sú vymazané).
+- Téma: vyberte si Horor (krv, oheň a tieň), Tmavý (čisté tmavé sklo) alebo Svetlý (svetlé sklo).
+
+## Panel správ
+- Pripojte (sponku): fotografiu z galérie, fotografiu z fotoaparátu, sken dokumentu (zmení text na fotografii na upraviteľný .docx), zdieľajte obrazovku, aby ju mohol agent vidieť (zapnutie alebo vypnutie funkcie „Sledovanie obrazovky“) a zvukové alebo video súbory. Priložené položky sa zobrazujú ako žetóny; kríž odstráni jeden, "Vymazať všetko" odstráni všetky.
+- Tlačidlo režimu: Agent alebo Build.
+- Tlačidlo mikrofónu: zapína alebo vypína vždy počúvajúci mikrofón.
+- Tlačidlo Model: otvorí zoznam modelov s vyhľadávacím poľom. Modelky označené „Live“ môžu hovoriť vlastným hlasom.
+- Odoslať: odošle správu. Kým agent pracuje, zmení sa na Stop.
+- Vstup hovorí „Čo mám robiť?“ v režime agenta a "Čo mám postaviť? Povedz to stručne" v režime zostavovania.
+
+## Správy
+- Kopírovať, Zdieľať a Počúvať (prečíta správu nahlas; opätovným stlačením zastavíte) sú pod každou správou.
+- „Myslenie“ ukazuje modelové uvažovanie, keď ho model poskytuje.
+- Kód, ktorý agent napíše, sa zobrazí naživo v poli, riadok po riadku, s možnosťami Kopírovať, Sťahovať a Otvoriť.
+- Súbory, ktoré agent zobrazuje ako karty s funkciami Otvoriť (v skutočnej aplikácii telefónu), Hrať, Zdieľať a „Iná aplikácia…“.
+- Obrázky, zvuk a video zobrazujú naživo percento pokroku pri ich vytváraní.
+- Karty nástrojov ukazujú, čo agent robí: beží, hotovo, úspech alebo zlyhanie.
+
+## Panely (úlohy, nástroje, súbory, podagenti)
+- Tabuľa úloh: plán, ktorý agent napíše pre veľkú úlohu a jej postup (n/celkom vykonaný). Môžete pridať svoju vlastnú úlohu a odstrániť úlohy.
+- Nástroje: zoznam každého volania nástroja s aktuálnym stavom.
+- Súbory: každý súbor, ktorý agent vytvoril, s možnosťami Otvoriť, Zdieľať, Publikovať a Odstrániť (s potvrdením) a vyhľadávacím poľom.
+- Sub-agents: pomocní agenti bežiaci na pozadí s tlačidlom Stop.
+- Záložka Terminál: skutočný terminál (pozri kapitolu Súbory a terminál).
+
+## Panel ukážky
+- Späť, Dopredu, Zastaviť, Znovu načítať a panel s adresou (zadajte webovú adresu alebo vyhľadajte Google).
+- Otvoriť súbor: zobrazuje Word, Excel, PowerPoint, PDF, obrázky, Markdown, CSV, kód a stránky priamo v aplikácii.
+- Veľkosť: zmenšiť alebo zväčšiť panel.
+- Oprava: odosiela problémy stránky (chyby konzoly, neúspešné načítania) agentovi, ktorý ich na pozadí opraví.
+- Vyberte časť: klepnite na časť stránky a potom povedzte agentovi, čo má s touto časťou urobiť.
+- Tlačidlo agenta: opýtať sa niečo o stránke; agent dostane jeho obrázok.
+- Rýchle otvorenie: skratky na posledné stránky.
+
+## Pracovný priestor kódu
+- Ľavá strana: vaše súbory (nový súbor, otvorenie, uloženie).
+- Editor: zobrazuje riadky a znaky; zmeny vykonané agentom sa prejavia okamžite.
+- Git: nové úložisko, klon z GitHub, skenovanie, stav, potvrdenie so správou, push, pull, vetvy, token.
+- Vytiahnite požiadavky: vytvorte, zlúčte, zatvorte. Pracovné postupy: spúšťanie zoznamu, spustenie pracovného postupu. Protokol zobrazuje výstup príkazu.

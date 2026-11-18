@@ -1,0 +1,27 @@
+Fayiloli, tasha da tsarin
+## Fayiloli
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Lafiya): karanta, jera, nemo tsarin suna, da bincika rubutu cikin fayiloli.
+- `write_file`, `edit_file`: ƙirƙira ko canza fayiloli. `edit_file` yana yin shi duka: sabon fayil, cikakken sake rubutawa, ko ainihin nemo-da-maye gurbinsu; lambar ta bayyana kai tsaye a cikin hira. `delete_file` (Tsarin): share fayil ko babban fayil.
+- Ana ba da izinin kowane babban fayil (/sdcard, Zazzagewa, Takardu, katin SD…). Ba da cikakkiyar hanya kuma ana amfani da shi kamar yadda aka rubuta.
+- Wakilin yana buɗe abin da ya kera: `open_file` (Safe) yana buɗe fayil a ainihin manhajar wayar, ko cikin samfoti na ZYRAXON.
+
+## Terminals (na gaske biyu)
+- android: harsashi na wayar (busybox da `sh`), a cikin akwatin sandbox na app. `run_shell` (System) yana gudanar da umarni a can, ba a gani.
+- linux: ZYRAXON cikakken tsarin Unix, wanda aka gina a cikin app: bash, apt/pkg, git na gaske, python, node, clang. Yana aiki a layi. `linux_run` (System) yana gudanar da umarni a can.
+- `terminal_run` (Tsarin): yana gudanar da layi a cikin Terminal shafin da kuke kallo, don haka zaku iya ganin yana aiki kuma ku ɗauka. Yi amfani da shell android ko Linux. `terminal_open` yana kawo shafin Terminal zuwa gaba (lokacin da kuka tambaya kawai).
+- `system_shell` (Tsarin): umarnin matakin-tsari, sama da akwatin sandbox, yadda tsarin harsashi ke yi; tare da Shizuku ko tushen zai iya kaiwa fiye da haka.
+- Babu ƙayyadaddun lokacin tsoho; babban `apt upgrade` ko ginin yana gudana zuwa ƙarshe.
+
+## Shizuku (shigar da tsarin)
+`setup_shizuku` (Tsarin) yana saita Shizuku, an haɗa shi cikin ZYRAXON: duba matsayi, shigarwa, buɗewa, neman izini. Kawai zaka iya matsa Shigar kuma Bada izini; wakilin ya gaya muku mataki a layi daya kuma ya yi sauran.
+
+## Dogon ayyuka da lokaci
+- `background_command` (Tsarin): umarni da ke ci gaba da gudana bayan kun rufe app ɗin (babban zazzagewa, clone, ginawa), tare da sanarwa da maɓallin Tsaya.
+- `schedule_command` (Tsarin): gudanar da umarni a ainihin lokaci ("a cikin mintuna 10", "a 2 na safe"); Android yana riƙe da lokaci, don haka yana aiki tare da rufe app.
+- `wait` (Lafiya): jira da gangan (dakika, har sai tashar jiragen ruwa ta buɗe, fayil ya bayyana, umarni ya ƙare) maimakon yin hasashe.
+
+## Linux mai amfani
+Shigar da fakitin (`apt install …`), gudanar da rubutun Python ko Node, tattara C, yi amfani da git, gudanar da sabar, zip da cire zip, curl, ffmpeg. Ana buɗe tsarin cikin nutsuwa lokacin da ƙa'idar ta fara kuma ta tsaya a cikin sake farawa.
+
+## Allon tasha
+Tashar tashar tashar tashar tashar tashar gaske ce tare da shafin ⌘ ZX. Rubuta umarnin kanku ko duba na wakilin. Allon kewayawa a cikin Saituna yana da gajeriyar hanya zuwa harsashin tsarin da maɓallin "Sabon zama" wanda ke share tarihin taɗi don fara sabo.

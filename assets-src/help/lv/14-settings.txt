@@ -1,0 +1,42 @@
+Katrs iestatījumu ekrāns pa vienam
+Iestatījumos ir astoņas sadaļas. Katrā sadaļā ir tabletes tās apakšekrāniem. Nākamajā reizē tiks atkārtoti atvērta pēdējā izmantotā sadaļa.
+
+## 1. Valoda un tulkošana → Lietotņu un rīku valoda
+Izvēlieties visas lietotnes un aģenta rīku ziņojumu valodu. Meklējiet sarakstā un pieskarieties vienam. Ekrānā tiek parādīta pašreizējā valoda un tas, vai ir ieslēgta lietotāja saskarnes tulkošana un rīka ziņojumu tulkošana. Ir pieejamas 60 valodas. Skatiet sadaļu Valoda.
+
+## 2. Balss un mikrofons
+- Balss profils: izvēlieties sieviešu vai vīriešu balsi, ātrumu, augstumu, "Lasīt atbildes skaļi", Pārbaudīt balsi, bengāļu balss lejupielādes mājienu.
+- Mikrofons un valoda: atpazīšanas valoda, turiet ieslēgtu mikrofonu, automātiska sūtīšana, kad pārtraucat runāt.
+- Tiešraides balss: runas pārvēršana runā ieslēgšana/izslēgšana, statuss, reāllaika modeļu saraksts.
+
+## 3. Pakalpojumu sniedzēji un API
+- AI nodrošinātāji: jūsu API atslēgas (ZYRAXON, OpenCode bezmaksas kvota, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) un ZYRAXON Apex mākoņa aģents. Saglabātā atslēga tiek pārbaudīta, izlasot pakalpojumu sniedzēja reālo katalogu un parāda modeļu skaitu vai precīzu kļūdu. Nospiežot pogu, tiek atvērta vietne ZYRAXON, kurā izveidojat atslēgu.
+- GitHub: jūsu GitHub piekļuves pilnvara (nepieciešams repo tvērums) publicēšanai, Git push un pull pieprasījumiem. Saglabājiet marķieri vai izdzēsiet to; statuss parāda, vai tas ir iestatīts.
+
+## 4. Atjauninājumi → Lietotnes atjauninājums
+Parāda pašreizējo versiju, pārbauda, ​​vai nav jaunāka versija, lejupielādē to ar progresa joslu un instalē. Jūsu tērzēšana, atmiņa un iestatījumi paliek. Ja Android nepieciešama instalēšanas atļauja, šis iestatījums tiek atvērts ar pogu.
+
+## 5. Modelis un identitāte
+- Identitāte: izvēlieties varoni (skatiet nodaļu Rakstzīmes).
+- Modelis: tiešsaistes modeļu katalogs ar meklēšanas lodziņu, filtriem "Visi modeļi" un "Pielāgots"; vispirms ātrie modeļi.
+- Ierīcē: lejupielādējiet, ielādējiet un izlādējiet modeļus, kas darbojas bezsaistē; šķiroti no maziem uz lieliem; neobligāts Hugging Face marķieris; parāda ielādes, ielādes un neveiksmes stāvokļus.
+
+## 6. Aura un tēma
+- Tēma: Šausmas, tumšs vai gaišs.
+- Aura un fons: auras stils un krāsa (asinis, rozā, violets, debesis, zaļš, uguns) ar smalku nokrāsu kontroli; auras izmērs, spīduma stiprums, griešanās ātrums, paneļa caurspīdīgums; peldošā acs (ieslēgts/izslēgts, dizains, ekrāna mala, balss komandas/pamodināšanas vārdi, pievienojiet savu); ēnotāja režīms; pielāgots fona URL (mp4, gif vai attēls); animācijas ātrums.
+
+## 7. Drošība un privātums
+- Lietojumprogrammas bloķēšana: parole (4–8 cipari) vai 3 × 3 punktu raksts; apstipriniet, ievadot to divreiz; noņemt slēdzeni.
+- Atļaujas: saraksts sadaļā Atļaujas ar Play Protect palīdzību.
+- Privātums un dati: visi dati paliek tālrunī. Pogas: dzēst visu atmiņu, dzēst tērzēšanas vēsturi, dzēst GitHub marķieri.
+
+## 8. Sistēma
+Šai sadaļai ir sava pogu rinda, kas ritinās uz sāniem, tāpēc nekas netiek saspiests.
+- Automatizācija: apstiprinājuma līmenis un tikai ierīcē (skatiet Apstiprinājuma līmeņus).
+- Navigācija: to apgabalu saraksts, uz kuriem pāriet — "nav pogu augšpusē, viss ir šeit" — tostarp ⌘ ZX sistēmas apvalks, poga "Jauna sesija" (izdzēš tērzēšanas vēsturi, lai sāktu tīru), ziņojumu skaits un mikrofona pārslēgs.
+- Atmiņa: vietējā SQL atmiņa ar faktiem ZYRAXON atceras; pievienot atslēgu un vērtību; dzēst visu.
+- Prasmju ceļvedis: īss spēju piemēru saraksts (ziņapmaiņas lietotnes, vietņu izveide, ekrāna lasītājs, lukturītis, kamera, Wi-Fi un iestatījumi) ar frāžu paraugiem.
+- Automatizācijas centrs: prasmes, autopilots, nauda, ​​laika skala, smadzenes un zvanu aģents vienuviet (skatiet Automatizācijas centru).
+
+## 9. Dokumentācija
+Sava sadaļa iestatījumos, atsevišķi no sistēmas. Šī rokasgrāmata: divdesmit viena nodaļa, meklēšanas lodziņš un valodas mikroshēmas rinda. Visas lietotnes valodas jau ir pilnībā izrakstītas lietotnē — jūsu tālrunī nekas netiek tulkots, un, lai to lasītu, nav nepieciešams internets.

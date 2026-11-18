@@ -1,0 +1,21 @@
+Construção: sites, aplicativos, visualização e publicação
+## Como perguntar
+- "Faça-me uma página de destino para minha cafeteria." O agente cria-o imediatamente, inicia-o no seu telefone e abre-o na Pré-visualização. Você obtém 2–3 linhas descrevendo isso. Nada é publicado a menos que você pergunte.
+- "Crie um aplicativo de tarefas." Construído diretamente com uma pilha sensata, executado e mostrado. Um back-end, banco de dados ou login somente se você solicitar.
+- "Crie um aplicativo full-stack." O agente primeiro faz uma breve pergunta sobre o idioma de back-end, banco de dados, login e onde ele é executado, com padrões recomendados, depois cria tudo isso com dados iniciais e testa um fluxo completo.
+- "Faça um programa Windows/Linux/macOS/Android." A fonte é escrita, um fluxo de trabalho de construção é adicionado, ele é enviado e construído na nuvem com GitHub ações e você obtém o link de download real.
+
+## Ferramentas
+- `edit_file` e `write_file`: escreve os arquivos reais (código completo, nunca stubs). `code_box` mostra-os ao vivo.
+- `preview` (Seguro): o navegador real integrado. Ações: abrir (um link, `localhost:PORT` ou um arquivo), recarregar, voltar, avançar, captura de tela, rolar, clicar, digitar, ler o texto da página, erros do console, avaliar. O agente analisa seu próprio trabalho antes de dizer que está concluído.
+- `serve_local` (Sistema): inicia um servidor web no telefone para uma pasta e retorna o endereço LAN que outros dispositivos em seu Wi-Fi podem abrir.
+- `publish_website` (Sistema): atende um site em uma porta pública a partir do telefone. `publish_cloudflare` (Sistema): coloca um site na internet sem conta através de um túnel Cloudflare e retorna um link https público. `publish_github` (Sistema): publica um projeto em um repositório GitHub (Páginas) com seu token.
+- `git` (Sistema): clone, init, status, add, commit, push, pull, branch, checkout, log, diff com seu token salvo. `github_pr` (Sistema): cria, lista, mescla e comenta pull requests. `github_actions` (Sistema): listar fluxos de trabalho, executá-los, pesquisar execuções e ler logs, para que as compilações sejam executadas na nuvem a partir do telefone.
+- `build_app` (Sistema): cria este projeto com Gradle no telefone e instala o resultado.
+- `files_panel`, `todo_write`: navegador de arquivos e quadro de tarefas.
+
+## Regras de qualidade que o agente segue
+Layout completo, design responsivo, JavaScript funcional, animação, cores e fontes consistentes (escuro e claro onde cabe), não um modelo genérico. Uma página de destino geralmente tem de 300 a 900 linhas; coisas maiores mais.
+
+## Se algo parece quebrado
+Pressione Corrigir na visualização ou informe o agente. Ele lê o console, corrige a causa, reabre a página e verifica novamente.

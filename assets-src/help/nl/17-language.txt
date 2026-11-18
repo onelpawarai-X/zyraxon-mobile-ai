@@ -1,0 +1,16 @@
+Talen
+## App-taal
+Instellingen → Taal en vertaling. 60 talen. De hele interface en de toolberichten van de agent volgen deze. Elke taal heeft zijn eigen vertaalbestand. Elke regel die een taalbestand nog niet heeft, wordt in het Engels weergegeven en mag nooit leeg worden gelaten.
+
+## Wat je spreekt
+De agent antwoordt altijd in de taal die u spreekt, in welke taal dan ook ter wereld. Als jij overstapt, schakelt hij. Het gebruikt de vriendelijk-respectvolle vorm van ‘jij’ in jouw taal. Merk- en technologienamen blijven zoals ze zijn.
+
+## Stemtalen
+- Herkenningstaal (wat je in de microfoon spreekt): Instellingen → Stem en microfoon → Microfoon en taal.
+- Spreekstem: Instellingen → Stem en microfoon → Spraakprofiel en het Stemlab voor talen zoals Bengaals, Hindi, Engels, Urdu, Arabisch, Tamil, Nepalees, Spaans, Frans, Duits, Japans, Koreaans, Chinees, Russisch, Turks.
+
+## Deze documentatie
+Gebruik de taalfiches bovenaan deze pagina. De hele gids wordt met de hand uitgeschreven in elke taal die de app ondersteunt, en wordt in de app verzonden. Er wordt niets op je telefoon vertaald: elk hoofdstuk wordt direct geopend, werkt offline en heeft geen model of sleutel nodig.
+
+## Schrijven in je eigen script
+Documenten, posters en ontwerpen kunnen in elk script worden gemaakt. Voor Bengaalse ontwerpen wordt het juiste lettertype gebruikt; voor andere scripts wordt het bijpassende lettertype gekozen.

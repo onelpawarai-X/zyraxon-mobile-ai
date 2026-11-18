@@ -1,0 +1,7 @@
+Uppdateringar
+Inställningar → Uppdateringar → Appuppdatering, eller bannern högst upp i appen.
+- Appen letar efter nya releaser och visar "Ny uppdatering tillgänglig — version".
+- Sök efter uppdateringar: frågar nu. Om du är aktuell står det så.
+- Ladda ner & installera: nedladdningar med en procentandel. När du är klar trycker du på Installera. Dina chattar, minne och inställningar finns kvar.
+- Om Android blockerar installationen, tryck på behörighetsknappen, tillåt ZYRAXON som installationskälla och försök sedan igen.
+- Bannerknapparna: Ladda ner, Installera, Tillåt och Stäng.

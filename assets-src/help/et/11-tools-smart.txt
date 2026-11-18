@@ -1,0 +1,45 @@
+Oskused, autopiloot, raha, ajaskaala ja tagasivõtmine, aju, kõneagent ja mälu
+Kasutate neid kõiki rääkides: öelge, mida soovite, ja agent helistab õigele tööriistale. Siin on loetletud kõik toimingud koos valikutega.
+
+## Oskused — õpetage tehes
+Oskus on telefoniülesanne, mille agent õppis, vaadates, kuidas te seda üks kord teete. See salvestab, kuidas iga elementi uuesti leida (selle ID, sõnad ja naabrid, mitte ekraani asukoht), nii et see töötab edasi, kui rakenduse paigutus muutub.
+- Lisage oskus:`skill_record`(Isiklik). Öelge "õpi seda kui <nimi>".`action: start`(nimega) alustab salvestamist; seejärel tehke ülesanne – avage rakendus, puudutage, tippige, vajutage klahve; iga samm salvestatakse.`action: stop`päästab selle. Peatuses saab mööda minna`params`sisestatud väärtuste muutmiseks parameetriteks (näiteks telefoninumbrist saab`number`, muutub summa`amount`) ja a`description`. `action: status`annab teada, kas salvestamine on sisse lülitatud.
+- Käivitage oskus:`skill_run`(Isiklik). Anna`args`selle parameetrite jaoks, nt. number ja summa. See taasesitab osa sammudest ja paraneb ise, kui rakendus muutub. Kui üks samm ebaõnnestub, ütleb tulemus, milline samm ja mis on ekraanil ning agent lõpetab ülejäänu käsitsi.
+- Loetlege oskused:`skill_list`(Turvaline) näitab nime, parameetreid, samme ja nende käitamise sagedust. Nime ja ekspordiga on jagatav`.zxskill`faili.
+- Jaga ja laadi:`skill_import`(Isiklikud) koormused a`.zxskill`allalaaditavast failist või jagatud failist oskusena.
+- Kustutage oskus:`skill_delete`(Süsteem).
+- Näide: „Vaadake, kuidas saadan rahakotirakenduse kaudu Rahimile 500”→sa teed seda üks kord→"Saada Karimile 700" järgmine kord.
+
+## Autopiloot – "kui X juhtub, tehke Y"
+Reegel äratab agendi iseenesest ja ta täidab ülesande ilma teilt küsimata.
+- Lisa:`autopilot_add`(Süsteem). Liigid: SMS, märguanne, kõne, iga päev, üks kord, intervall, aku, rakendus. Täitke ainult reegli jaoks vajalikud väljad:`from`(saatja nimi või number või rakenduse pealkiri),`any`(vähemalt üks neist sõnadest),`all`(iga sõna),`none`(mitte ükski neist sõnadest),`time`"HH:MM" (iga päev),`in_minutes` or `at_ms`(üks kord),`every_minutes`(intervall),`below`(aku protsent),`pkg`(rakenduse pakett või nimi, rakenduse ja teavitusreeglite jaoks). Agent muudab teie lause nendeks väljadeks. Tulemuses on loetletud kõik vajalikud load (SMS, juurdepääs teavitustele jne) ja agent palub teil need sisse lülitada.
+- Näited: "Kui minu rahakotirakendusest saabub makse SMS, lisage see minu pearaamatusse." "Igal hommikul kell 8, öelge mulle ilm." "20 minuti pärast tuletage mulle meelde, et ma leib välja võtaksin." "Iga 30 minuti järel, joogivee meeldetuletus." "Kui aku tühjeneb alla 15%, öelge mulle." "Kui keegi mulle helistab, logige number sisse." "Kui avan pangarakenduse, tuletage mulle meelde, et ma kontrolliksin eelarvet."
+- Loetelu:`autopilot_list`(Turvaline) näitab iga reeglit koos järgmise käitamisajaga ja sellega, kui sageli see käivitati.
+- Peatage või jätkake:`autopilot_toggle`(Süsteem). Kustuta:`autopilot_remove`(Süsteem), ID või pealkirja järgi.
+- Kui reegel käivitub, saate sellekohase teate ja agent lihtsalt teeb selle töö ära.
+
+## Raharaamat (isiklik finantsjuht)
+- `ledger_scan`(Isiklik): loe rahakoti ja panga SMS-i erareskontrasse: sissetulekud, kulutused, tasud, saldo ja kategooria.`days`ütleb, kui kaugele tagasi (vaikimisi 30). Koos`auto`sisse lülitatakse, iga uus rahaline SMS lisatakse iseenesest ja teid hoiatatakse, kui eelarve on vastu võetud. Töötab iga riigi rahakoti ja pangateadete jaoks, mis tahes valuutas.
+- `ledger_report`(Isiklik): periood täna, eile, nädal, kuu või kõik. Vormindage tekst (valmis suuline kokkuvõte) või xlsx (anExcelteile avatud fail tehingute ja kategooriate kogusummadega).
+- `ledger_budget`(Isiklik): määrake kategooria kuueelarve (toit, arved, transport, ostlemine, mobiili laadimine, ülekanded jne); piir 0 eemaldab selle; see loetleb ilma argumentideta eelarved ja jooksvad hoiatused.
+- Agent ei mõtle kunagi välja rahanumbreid; see loeb need pearaamatust välja.
+
+## Ajaskaala ja tühista
+- Kõik, mida agent teeb, kirjutatakse ajajoonele (viimased 400 toimingut). Failimuudatused säilitavad koopia sellest, mis seal varem oli.
+- `timeline_list`(Turvaline): mida agent hiljuti tegi, igaühe ID-ga ja milliseid muudatusi saab tagasi võtta.
+- `timeline_undo`(Isiklik):`id`tühistab kirjutamise, redigeerimise või kustutamise — fail tuleb tagasi täpselt sellisena, nagu see oli (fail, mida polnud olemas, eemaldatakse uuesti).`since_id`tühistab kõik alates sellest ID-st, uusim enne. Kasutage seda, kui ütlete "võta see tagasi" või "pane tagasi nagu varem".
+- Undo hõlmab failide kirjutamist, redigeerimist ja kustutamist. Käitatud käsku (nt millegi installimine või sõnumi saatmine) ei saa sel viisil tagasi võtta.
+- Vestlussõnumid: terve vestluse eemaldamiseks kasutage vasakpoolses menüüs või seadetes pliiatsit ja risti→Privaatsus ja andmed→Kustutage vestluste ajalugu või navigeerimine→Uus seanss.
+
+## Aju – teine ​​mälu teie failidele
+- `brain_index`(Turvaline): looge või värskendage võrguühenduseta registrit kaustade või failide (tekst,Markdown, CSV, Word, Excel, PowerPoint) ja valikuliselt SMS-i postkasti (`sms`sisse). Käivitage see enne esimest otsingut ja pärast uute failide ilmumist. Vaikimisi on teie tööruum.
+- `brain_search`(Seif): küsige oma sõnadega: "kus on minu üürileping?" — see töötab võrguühenduseta mis tahes keeles.`kind`on fail või sms;`days`viimaste üksuste piirangud. Avage leitud fail rakendusega`open_file`.
+
+## Helista agentuurile
+- `call_agent`(Isiklik): toiming sees, väljas või olek.`owner`on nimi, mida see ütleb ("Ma olen <omaniku> assistent").`answer_after_seconds`(vaikimisi 6) võimaldab teil esimesena järele tulla. Kui kõne tuleb ja te ei saa vastata, tervitab see helistaja keeles, küsib nime ja põhjust, vastab lihtsatele küsimustele, lõpetab viisakalt kõne ja teeb kokkuvõtte.
+- `call_log`(Turvaline): vastatud kõnede kokkuvõtted, uusimad enne.
+- Vajab kõne ja telefoni oleku lubasid.
+
+## Mälu
+- `memory_write`, `memory_read`, `memory_delete`(Turvaline): püsivad faktid teie kohta (nimi, eelistused, inimesed, kuupäevad, projektid) asuvad kohalikus andmebaasis ja jäävad püsima ka taaskäivitamisel. Öelge "mäleta seda" ja see on kirjutatud samas pöördes; kui midagi on valesti, siis see eemaldatakse või kirjutatakse ümber. Ka iga vana vestlus jääb alles ja teie öeldule vastavad minevikupöörded tulevad iseenesest tagasi isegi kuid hiljem.
+- Vaadake ja muutke seda kõike menüüs Seaded→Süsteem→Mälu (võti, väärtus, salvesta, kustuta kõik).

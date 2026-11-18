@@ -1,0 +1,42 @@
+Çdo ekran cilësimesh, një nga një
+Cilësimet kanë tetë seksione. Çdo seksion ka pilula për nën-ekranet e tij. Seksioni i fundit që keni përdorur do të rihapet herën tjetër.
+
+## 1. Gjuha dhe përkthimi → Gjuha e aplikacionit dhe e veglave
+Zgjidhni gjuhën e të gjithë aplikacionit dhe të mesazheve të veglave të agjentit. Kërkoni në listë dhe prekni një. Ekrani tregon gjuhën aktuale dhe nëse përkthimi i ndërfaqes së përdoruesit dhe përkthimi i mesazheve të veglave janë aktiv. 60 gjuhë janë në dispozicion. Shihni kapitullin Gjuha.
+
+## 2. Zëri dhe mikrofon
+- Profili i zërit: zgjidhni zërin femëror ose mashkullor, shpejtësinë, lartësinë, "Lexoni përgjigjet me zë", Testoni zërin, sugjerimin për shkarkimin e zërit Bengalisht.
+- Mikrofoni dhe gjuha: gjuha e njohjes, mbaje mikrofonin aktiv, dërgo automatikisht kur të ndalosh së foluri.
+- Zëri i drejtpërdrejtë: aktivizimi/fikja e fjalës në të folur, statusi, lista e modeleve në kohë reale.
+
+## 3. Ofruesit dhe API
+- Ofruesit e AI: çelësat tuaj API (ZYRAXON, OpenCode kuota falas, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) dhe agjenti i resë kompjuterike ZYRAXON Apex. Një çelës i ruajtur verifikohet duke lexuar katalogun real të ofruesit dhe tregon numrin e modelit ose gabimin e saktë. Një buton hap uebsajtin ZYRAXON ku krijoni një çelës.
+- GitHub: kodi juaj i aksesit GitHub (ka nevojë për hapësirën e repove) për publikim, Git shtytje dhe tërheqje të kërkesave. Ruani token ose fshijeni atë; statusi tregon nëse është vendosur.
+
+## 4. Përditësimet → Përditësimi i aplikacionit
+Shfaq versionin aktual, kontrollon për një version më të ri, e shkarkon atë me një shirit progresi dhe e instalon. Bisedat, memoria dhe cilësimet tuaja qëndrojnë. Nëse Android ka nevojë për leje për ta instaluar, një buton e hap atë cilësim.
+
+## 5. Modeli dhe identiteti
+- Identiteti: zgjidhni personazhin (shih kapitullin Personazhet).
+- Modeli: katalogu i modeleve të drejtpërdrejta me një kuti kërkimi, filtra "Të gjitha modelet" dhe "Custom"; modele të shpejta së pari.
+- Në pajisje: shkarkoni, ngarkoni dhe shkarkoni modelet që funksionojnë jashtë linje; të renditura nga të vogla në të mëdha; token opsional Hugging Face; tregon gjendjet e ngarkuara, ngarkuese dhe të dështuara.
+
+## 6. Aura & tema
+- Tema: Tmerr, Errësirë ​​ose Dritë.
+- Aura & sfondi: stili dhe ngjyra e aurës (gjak, rozë, vjollcë, qiell, jeshile, zjarr) me kontroll të hollë të nuancave; madhësia e aurës, forca e shkëlqimit, shpejtësia e rrotullimit, transparenca e panelit; syri lundrues (ndezur/fikur, dizajn, skaj të ekranit, komanda zanore/fjalë zgjuese, shtoni tuajat); modaliteti shader; URL e personalizuar e sfondit (mp4, gif ose imazh); shpejtësia e animacionit.
+
+## 7. Siguria dhe privatësia
+- Kyçja e aplikacionit: një fjalëkalim (4–8 shifra) ose një model 3×3 pika; konfirmoni duke e futur atë dy herë; hiqni bllokimin.
+- Lejet: lista në kapitullin Lejet, me ndihmën e Play Protect.
+- Privatësia dhe të dhënat: të gjitha të dhënat qëndrojnë në telefon. Butonat: fshini të gjithë kujtesën, fshini historikun e bisedave, fshini kodin GitHub.
+
+## 8. Sistemi
+Ky seksion ka rreshtin e vet të butonave që rrotullohen anash, kështu që asgjë nuk shtrydhet.
+- Automatizimi: niveli i miratimit dhe vetëm në pajisje (shihni Nivelet e miratimit).
+- Navigimi: një listë zonash ku duhet të hidheni - "pa butona sipër, gjithçka është këtu" - duke përfshirë guaskën e sistemit ⌘ ZX, një buton "sesioni i ri" (fshin historinë e bisedës për një fillim të pastër), numërimin e mesazheve dhe ndryshimin e mikrofonit.
+- Kujtesa: kujtesa lokale SQL me faktet ZYRAXON kujton; shtoni një çelës dhe vlerë; fshini të gjitha.
+- Udhëzues aftësish: një listë e shpejtë e aftësive shembull (aplikacionet e mesazheve, ndërtimi i faqes në internet, lexuesi i ekranit, pishtari, kamera, Wi-Fi dhe cilësimet) me fraza shembuj.
+- Qendra e automatizimit: aftësitë, autopilot, paratë, afati kohor, truri dhe agjenti i thirrjeve në një vend (shih qendrën e automatizimit).
+
+## 9. Dokumentacioni
+Seksioni i tij në Cilësimet, i ndarë nga Sistemi. Ky udhëzues: njëzet e një kapituj, një kuti kërkimi dhe një rresht i çipit të gjuhës. Çdo gjuhë në aplikacion është tashmë e shkruar plotësisht brenda aplikacionit – asgjë nuk përkthehet në telefonin tuaj dhe nuk nevojitet internet për ta lexuar atë.

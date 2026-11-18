@@ -1,0 +1,15 @@
+Pakkujad, mudelid ja võtmed
+## Pakkujad
+ZYRAXON (oma liin ja Apex pilveagent, alati ühendatud), OpenCode (tasuta kvoot), Groq (väga kiire laama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek ja OpenRouter. Lisage suvaline võti jaotises Seaded → Pakkujad ja API. Võti salvestatakse teie telefoni, võrreldakse teenusepakkuja kataloogiga ja mudelid voogedastuvad valijasse, kui iga pakkuja vastab.
+
+## Mudeli valimine
+Kasutage sõnumiribal mudelinuppu või seadeid → Mudel ja identiteet → Mudel. Otsige nime järgi, filtreerige kõik või kohandatud. Teie valik salvestatakse ja taastatakse käivitamisel; värskendus ei asenda kunagi teie salvestatud mudelit. Reaalajas märgiga mudelid saavad rääkida oma häälega (vt Otsehääl).
+
+## Seadmes olevad mudelid
+Seaded → Mudel ja identiteet → Seadmesisene. Mudel töötab telefonis ilma andmeteta. Failid on suured (sadu MB kuni paar GB), nii et laadige alla saidilt Wi-Fi. Need on loetletud väikestest suurteni; väikese RAM-iga telefonis valige kergeim. Tööriistade kutsumist toetavad Gemma ja FunctionGemma komplektid. Märk Hugging Face on ainult väravatega failide jaoks. Koormatud mudelid jäävad meelde.
+
+## Veebisait ZYRAXON
+zyraxonai.lovable.app: looge konto (e-post või Google), avage Settings, API Key / Access Token, looge võti ja kleepige see rakendusse. Ilma võtmeta saate siiski kasutada rakendust seadmesiseste mudelite ja kohalike tööriistadega.
+
+## Kulud ja andmed
+Pilveteenuse pakkujad arveldavad teile vastavalt oma reeglitele. Kui seade „Ainult seadmes” on sisse lülitatud, ei saadeta midagi ühelegi teenusepakkujale.

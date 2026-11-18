@@ -1,0 +1,23 @@
+Úrovne schválenia a bezpečnosť automatizácie
+Nastavenia → Systém → Automatizácia. Toto rozhoduje o tom, koľko môže agent urobiť, kým sa zastaví a opýta sa vás. Nastavenie je vynútené v kóde pri každom volaní nástroja; model ju nemôže rozšíriť.
+
+## Štyri úrovne
+Zmeňte úroveň v Nastaveniach → Systém → Automatizácia. Každá úroveň rozhoduje o tom, kedy sa agent zastaví a spýta sa, a tiež ako prísne Content Shield (pozri Bezpečnosť a súkromie) zaobchádza s textom, ktorý agent číta zvonku.
+1. Úplné spýtať sa (zamknuté): opýta sa pred čímkoľvek, čo zmení telefón, nech je akokoľvek malé. Najbezpečnejšie. Content Shield je prísny: akýkoľvek podozrivý text sa považuje za nepriateľský. Použite ho na zdieľanom telefóne alebo keď testujete niečo nové.
+2. Pod dohľadom (predvolené): pýta sa pred systémovými a osobnými akciami a bežnú prácu (čítanie, otváranie, vyhľadávanie, budovanie) vykonáva sám. Content Shield je štandard: podozrivý text je chránený ako dáta, a keď je text jasne nepriateľský, každý meniaci sa nástroj sa vás pýta na zvyšok tohto kroku.
+3. Vyvážené: pýta sa iba pred akciami na úrovni systému (shell, mazanie, publikovanie, plánovanie...). Osobné akcie, ako sú správy, klepnutia a písanie, prebiehajú samostatne. Content Shield je ľahký: pôsobí iba na jasne nepriateľský text a potom sa prestanú pýtať iba nástroje na úrovni systému.
+4. Plná automatizácia: nikdy sa nepýta a nikdy sa nezastaví. Všetko prebieha rovno a Content Shield je úplne vypnutý – nič sa nekontroluje, neoznačuje, neodstraňuje ani nemení. Toto je automatizácia v plnom zmysle: riziko nesiete vy.
+
+## Tri úrovne nástrojov
+- Bezpečné (nikdy sa nepýta na žiadnej úrovni): čítanie a zoznam súborov, pamäť, dokumenty, návrhy, stav, otváranie aplikácií a súborov, čakanie, zručnosti/autopilot/časová os/zoznamy hovorov, vyhľadávanie mozgu.
+- Osobné (požadované v prvých dvoch úrovniach): SMS, hovory, fotoaparát, čítanie obrazovky, klepnutia a písanie, schránka, sťahovanie, upozornenia, zdieľanie, zmena hlasu, prehratie zručností, peňažná kniha, agent hovoru, vrátenie späť na časovú os.
+- Systém (opýtané na každej úrovni okrem plnej automatizácie): shell, Linux, zostavy, publikovanie, mazanie, uzamknutie zariadenia, plánovanie, Git a GitHub, ffmpeg, model na zariadení, odosielanie do kanálov, pravidlá autopilota, schopnosti odstraňovania, Shizuku. Každý nástroj, ktorý aplikácia nerozpozná – vrátane MCP nástrojov – sa považuje za systém.
+
+## Schvaľovacia karta
+Keď nástroj potrebuje vaše schválenie, na karte sa zobrazí „Potrebné povolenie“, povie vám, čo chce agent urobiť, zobrazí sa jeho úroveň (Bezpečný, Osobný alebo Systémový) a ponúkne „Áno, spustiť“ alebo „Nie, ponechať vypnuté“. Karta vám tiež pripomína, že v Nastaveniach → Automatizácia môžete zmeniť, ako často sa to bude vyžadovať.
+
+## Iba na zariadení
+Keď je zapnutý, nič neopustí telefón: beží iba model na zariadení a miestne nástroje. Všetky sieťové nástroje (vyhľadávanie, načítanie, nahrávanie, publikovanie, GitHub, generovanie médií, MCP, cloudové modely) sú v kóde odmietnuté.
+
+## Oznámenie o prvom spustení
+Prvýkrát ZYRAXON vysvetľuje, že agent môže konať vo vašom telefóne a kde zapnúť povolenia. Stlačte „Rozumiem, začnite“.

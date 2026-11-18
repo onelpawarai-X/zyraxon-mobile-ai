@@ -1,0 +1,14 @@
+Modos: Agente e Construção
+Existem dois modos, escolhidos com o botão de modo próximo à caixa de mensagem. A escolha permanece até que você a altere. A voz ao vivo não é um terceiro modo; é uma forma de falar que você pode ativar nas Configurações (consulte o capítulo Voz).
+
+## Agente
+“Automação total do telefone e do sistema.” Tudo está aberto: ler e dirigir a tela do telefone, abrir aplicativos, chamadas, mensagens, câmera, arquivos, terminal e Linux, Git, visualização, mídia, subagentes, MCP servidores, habilidades, piloto automático e muito mais. Escolha Agente quando quiser fazer algo no seu telefone ou simplesmente conversar.
+
+## Construir
+"Aplicativos, sites e automação full-stack." O agente é um motor de construção: a partir de uma linha curta ele faz tudo, executa, olha e mostra para você. Possui arquivos, terminal, Git, visualização, publicação, mídia, memória e quadro de tarefas. O controle do telefone, subagentes e bloqueio do dispositivo pertencem ao modo Agente; se você precisar deles no Build, troque.
+- Landing page ou site: diga para que serve. O agente cria-o imediatamente, inicia-o no seu telefone e abre-o no painel Pré-visualização e, em seguida, informa o que ele criou. Ele não publica a menos que você pergunte.
+- Aplicativo: diga o que quiser e ele cria o aplicativo conforme solicitado. Um back-end, banco de dados ou login será adicionado somente se você solicitar.
+- Full-stack: quando você solicita um back-end ou banco de dados, o agente primeiro faz uma breve pergunta sobre as opções (idioma, banco de dados, login, onde roda), com sua recomendação, e constrói após você responder.
+
+## O que significa "perguntar"
+Quando o agente realmente precisa da sua decisão, ele faz todo o resto primeiro, faz uma breve pergunta com sua recomendação e espera. Sua resposta continua o trabalho de onde parou.

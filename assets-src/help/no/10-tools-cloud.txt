@@ -1,0 +1,21 @@
+Sky, nettverk, modeller og hjelpere
+## Sky og internett
+- `web_search` (nettverk): søk på det virkelige nettet. `read_url` (nettverk): hent en side som tekst. `http_request` (nettverk): alle HTTP-anrop (GET, POST, PUT, PATCH, DELETE) med overskrifter og brødtekst. `verify_url` (nettverk): sjekk at en kobling virkelig eksisterer og få den sanne statusen. `download_file` (Personlig, nettverk): last ned en URL til en fil.
+- Agenten åpner lenker bare når du ber den om det.
+- AI-modeller kjører i skyen gjennom leverandørene du la til (ZYRAXON, ZYRAXON Apex skyagent, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Modelllisten lastes live og fylles etter hvert som hver leverandør svarer.
+- Bygger, publisering og pull-forespørsler kjøres gjennom GitHub og Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Slå på "bare på enheten" (automatiseringsinnstillinger) og ingen sky-anrop foretas i det hele tatt: ingen leverandør, ingen nett, ingen opplasting.
+
+## MCP servere
+MCP lar eksterne tjenester gi agenten ekstra verktøy. Koble til Canva, Cloudflare, Supabase, GitHub eller din egen server ved hjelp av adressen (valgfritt token). Tilkoblede serveres verktøy blir med i agentens verktøyliste som `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (se hva som er koblet til og hvilke verktøy som finnes), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (se en ressurs for endringer), `mcp_complete` (autofullfør argumenter), `mcp_ping`, `mcp_log_level`. Samtalene deres er nettverksanrop, og ukjente MCP-verktøy ber om tillatelse som standard.
+- Skjermbildet MCP viser hver server med Tilkoblet-status, dens verktøy, ressurser og spørsmålsmaler, og Legg til, Koble fra, Fjern, Tillat-knapper.
+
+## Underagenter
+`sub_agent` (System): gi deler av en stor jobb til hjelpeagenter som kjører i bakgrunnen. Handlinger: spawn, status, liste, resultat, melding, stopp, vent. Hver kan bruke sin egen modell. Agenten kombinerer og sjekker resultatene før de sier "ferdig".
+
+## Modell på enheten
+`on_device_model` (System): liste opp, last inn og kjør en språkmodell som lever på telefonen, uten internett. I Innstillinger → Modell og identitet → På enheten laster du ned modeller (små til store: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); et Hugging Face-token er valgfritt og kun nødvendig for gatede filer. En lastet modell huskes og lastes på nytt ved lansering.
+
+## Meldingskanaler
+`channel_post` (System) åpner Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail eller SMS med teksten klar. Du trykker selv på send.

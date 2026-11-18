@@ -1,0 +1,14 @@
+Laasigbotitusita
+- Ko si idahun: ṣayẹwo intanẹẹti rẹ ati bọtini API (Awọn Eto → Awọn olupese & API n ṣe afihan aṣiṣe gidi). Gbiyanju awoṣe miiran tabi awoṣe ẹrọ lori ẹrọ.
+- Gbohungbohun ko ṣe nkankan: gba igbanilaaye gbohungbohun; ṣayẹwo "Jeki gbohungbohun tan"; ṣayẹwo ede idanimọ.
+- ZYRAXON gbọ tikararẹ: eyi jẹ filtered nipasẹ ọrọ; ti o ba tun ṣẹlẹ, dinku iwọn didun tabi lo awọn agbekọri.
+- Gbolohun kan han lẹmeji: ti o wa titi ni awọn ẹya lọwọlọwọ; imudojuiwọn app.
+- Kii yoo tẹ tabi ka iboju naa: yipada si iṣẹ Wiwọle (Awọn eto → Awọn igbanilaaye).
+- O duro ni abẹlẹ: gba awọn iwifunni laaye ati idasile batiri ti o dara ju; apọju fun oju lilefoofo.
+- Ọpa kan n tẹsiwaju lati beere igbanilaaye: yi ipele pada ni Awọn Eto → Adaṣiṣẹ, tabi dahun kaadi naa.
+- Play Protect ohun kan dina: wo ipin Awọn igbanilaaye, tabi jẹ ki aṣoju ṣe itọsọna awọn igbesẹ naa.
+- Terminal tabi Linux ko bẹrẹ: duro fun igba akọkọ ṣiṣi silẹ ni ibẹrẹ app; ṣayẹwo free ipamọ.
+- Imudojuiwọn kii yoo fi sii: gba ZYRAXON laaye gẹgẹbi orisun fifi sori ẹrọ.
+- Ko le ṣe atẹjade: ṣafikun GitHub àmi fun GitHub; fun ọna asopọ gbogbo eniyan oluranlowo le lo oju eefin kan.
+- Abala kan fihan Gẹẹsi: ipin yẹn ko ni ọrọ ni ede rẹ ni kikọ yii; imudojuiwọn app.
+- Nkankan ti ko dara: lo Eto → Lilọ kiri → Igba tuntun lati bẹrẹ mimọ (o n pa itan iwiregbe kuro nikan; iranti duro).

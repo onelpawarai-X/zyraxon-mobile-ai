@@ -1,0 +1,42 @@
+Kila skrini ya mipangilio, moja baada ya nyingine
+Mipangilio ina sehemu nane. Kila sehemu ina vidonge vya skrini zake ndogo. Sehemu ya mwisho uliyotumia itafunguliwa tena wakati ujao.
+
+## 1. Lugha na tafsiri → Lugha ya programu na zana
+Chagua lugha ya programu nzima na ya ujumbe wa zana za wakala. Tafuta orodha na uguse moja. Skrini inaonyesha lugha ya sasa na ikiwa tafsiri ya UI na tafsiri ya ujumbe wa zana imewashwa. Lugha 60 zinapatikana. Tazama sura ya Lugha.
+
+## 2. Sauti na maikrofoni
+- Wasifu wa sauti: chagua sauti ya kike au ya kiume, kasi, sauti, "Soma majibu kwa sauti", sauti ya majaribio, kidokezo cha upakuaji wa sauti ya Kibengali.
+- Maikrofoni na lugha: lugha ya utambuzi, washa maikrofoni, tuma kiotomatiki unapoacha kuzungumza.
+- Sauti ya moja kwa moja: kuwasha/kuzima hotuba-kwa-hotuba, hali, orodha ya miundo ya wakati halisi.
+
+## 3. Watoa huduma na API
+- Watoa huduma wa AI: funguo zako za API (ZYRAXON, OpenCode nafasi isiyolipishwa, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) na ZYRAXON Apex wakala wa wingu. Ufunguo uliohifadhiwa unathibitishwa kwa kusoma katalogi halisi ya mtoa huduma na kuonyesha idadi ya miundo au hitilafu kamili. Kitufe hufungua tovuti ya ZYRAXON ambapo unaunda ufunguo.
+- GitHub: tokeni GitHub yako ya ufikiaji (inahitaji upeo wa repo) kwa uchapishaji, Git maombi ya kusukuma na kuvuta. Hifadhi ishara au uifute; hali inaonyesha ikiwa imewekwa.
+
+## 4. Masasisho → Sasisho la programu
+Huonyesha toleo la sasa, hukagua toleo jipya zaidi, huipakua kwa upau wa maendeleo na kulisakinisha. Gumzo, kumbukumbu na mipangilio yako husalia. Ikiwa Android inahitaji ruhusa ya kusakinisha, kitufe hufungua mpangilio huo.
+
+## 5. Mfano & utambulisho
+- Utambulisho: chagua mhusika (tazama sura ya Wahusika).
+- Muundo: katalogi ya muundo wa moja kwa moja na kisanduku cha kutafutia, "Miundo yote" na vichujio vya "Custom"; mifano ya haraka kwanza.
+- Kwenye kifaa: pakua, pakia na kupakua miundo inayoendeshwa nje ya mtandao; iliyopangwa ndogo hadi kubwa; tokeni ya hiari Hugging Face; inaonyesha kupakiwa, kupakia na kushindwa hali.
+
+## 6. Aura & mandhari
+- Mandhari: Hofu, Giza au Mwanga.
+- Aura & background: mtindo wa aura na rangi (damu, pink, violet, anga, kijani, moto) na udhibiti mzuri wa rangi; saizi ya aura, nguvu ya mwanga, kasi ya mzunguko, uwazi wa paneli; jicho linaloelea (kuwasha/kuzima, muundo, ukingo wa skrini, amri za sauti/amka maneno, ongeza yako mwenyewe); hali ya shader; URL ya mandharinyuma maalum (mp4, gif au picha); kasi ya uhuishaji.
+
+## 7. Usalama na faragha
+- Kufunga programu: nenosiri (tarakimu 4-8) au muundo wa nukta 3 × 3; thibitisha kwa kuingia mara mbili; ondoa kufuli.
+- Ruhusa: orodha katika sura ya Ruhusa, kwa usaidizi wa Play Protect.
+- Faragha na data: data zote hukaa kwenye simu. Vifungo: futa kumbukumbu yote, futa historia ya gumzo, futa GitHub tokeni.
+
+## 8. Mfumo
+Sehemu hii ina safu mlalo yake ya vifungo ambavyo husogeza kando, kwa hivyo hakuna kitu kinachobanwa.
+- Uendeshaji otomatiki: kiwango cha idhini na kwenye kifaa pekee (angalia viwango vya Uidhinishaji).
+- Urambazaji: orodha ya maeneo ya kurukia — "hakuna vitufe juu, kila kitu kiko hapa" - ikijumuisha ⌘ shell ya mfumo wa ZX, kitufe cha "Kipindi kipya" (hufuta historia ya gumzo kwa mwanzo safi), idadi ya ujumbe na kigeuza maikrofoni.
+- Kumbukumbu: kumbukumbu SQL ya ndani yenye ukweli ZYRAXON inakumbuka; ongeza ufunguo na thamani; futa zote.
+- Mwongozo wa ujuzi: orodha ya haraka ya uwezo wa mfano (programu za kutuma ujumbe, ujenzi wa tovuti, kisomaji skrini, tochi, kamera, Wi-Fi na mipangilio) yenye vifungu vya mfano.
+- Kitovu cha otomatiki: ujuzi, majaribio ya kiotomatiki, pesa, rekodi ya matukio, ubongo na wakala wa simu katika sehemu moja (angalia kitovu cha Uendeshaji).
+
+## 9. Nyaraka
+Sehemu yake katika Mipangilio, tofauti na Mfumo. Mwongozo huu: sura ishirini na moja, kisanduku cha kutafutia, na safu mlalo ya chipu ya lugha. Kila lugha katika programu tayari imeandikwa kwa ukamilifu ndani ya programu - hakuna kinachotafsiriwa kwenye simu yako na hakuna intaneti inayohitajika ili kuisoma.

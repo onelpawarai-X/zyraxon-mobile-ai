@@ -1,0 +1,27 @@
+Ruhusa, moja baada ya nyingine
+Mipangilio → Usalama na faragha → Ruhusa. Kila safu inaonyesha "Imetolewa" au kitufe. Kugonga safu hufungua kidirisha cha mfumo; bonyeza tu Ruhusu. Wakala pia anaweza kufungua kidirisha chenyewe kwa kutumia `request_permission`.
+
+- Maikrofoni: ili ZYRAXON aweze kukusikia. Bila hiyo hakuna uingizaji wa sauti.
+- Kamera: kuchukua na kutazama picha (`look_camera`, kuchanganua hati, "unaona nini").
+- Mahali: kwa ramani na maelezo ya karibu.
+- Arifa: kukuambia kazi ya usuli inapokamilika.
+- Faili na media: kusoma picha, video, sauti na hati.
+- Wekelea (chora juu ya programu zingine): inahitajika kwa jicho linaloelea.
+- Ufikivu: huruhusu wakala kusoma skrini na kugonga, telezesha kidole na kukuandikia. Huu ndio moyo wa otomatiki wa simu. Unaiwasha katika mipangilio ya Ufikivu ya mfumo.
+- Uboreshaji wa betri: huzuia Android kuweka ZYRAXON kulala wakati inafanya kazi chinichini.
+
+## Ruhusa zingine ambazo programu inatangaza
+- SMS (soma na upokee): kwa misimbo ya kusoma, leja ya pesa na sheria za otomatiki za SMS.
+- Hali ya simu, jibu simu, piga simu, anwani: kwa zana za kupiga simu na wakala wa kupiga simu.
+- Ufikiaji wa arifa: huruhusu majaribio ya kiotomatiki kuitikia arifa.
+- Msimamizi wa kifaa: huruhusu `device_lock` kufunga skrini kabisa.
+- Sakinisha vifurushi: huruhusu masasisho na `build_app` kusakinisha APK; Android anakuomba kuruhusu ZYRAXON kama chanzo cha kusakinisha.
+- Huduma za mbele (maikrofoni, usawazishaji data) na wake lock: weka sauti na kazi ndefu hai.
+- Mtandao na hali ya mtandao: wingu na wavuti.
+- Shizuku (si lazima): ufikiaji wa kiwango cha mfumo kwa ganda na terminal.
+
+## Google Play Protect
+Play Protect akizuia kazi, wakala anaweza kufungua ukurasa sahihi, kuangalia skrini halisi na kwenda hatua kwa hatua kupitia gia na kigeuzi - lakini atakuuliza kwanza, kwa sababu kuzima ulinzi ni uamuzi wako. Ili kuifanya mwenyewe: Play Store → picha ya wasifu → Play Protect → mipangilio → zima "Changanua programu kwa Play Protect". Ukurasa una kitufe kinachofunguka Play Store.
+
+## Kwa nini ruhusa ni muhimu
+Zana ikishindwa kupata ruhusa inayokosekana, wakala atakuambia ni ipi na kufungua mazungumzo yake. Hakuna kitu nyeti kinachofanya kazi bila Ruhusu yako wazi.

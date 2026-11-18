@@ -1,0 +1,20 @@
+Polo dell'automazione
+Impostazioni → Sistema → Hub di automazione. Ogni pulsante relativo a ciò che ZYRAXON può fare da solo si trova in un unico posto, in sei schede. Ogni scheda inizia con una breve spiegazione di come funziona.
+
+## Competenze
+Insegna a ZYRAXON un'attività in due modi: dillo in chat ("impara questa attività") oppure premi il pulsante di registrazione ed esegui tu stesso l'attività in un'altra app, quindi torna indietro e premi Interrompi. Il servizio di accessibilità deve essere attivo altrimenti i tuoi tocchi non saranno visibili. Ciò che ha imparato appare sotto "Abilità apprese" e può essere riprodotto o cancellato.
+
+## Autopilota
+Regole del tipo “quando succede questo, fai quello”. Quando accade l'evento, ZYRAXON si sveglia da solo e fa il lavoro senza chiedere. Puoi anche creare una regola dicendola in chat. Ogni regola mostra quante volte è stata eseguita.
+
+## Soldi
+Legge gli SMS da qualsiasi banca o portafoglio in qualsiasi paese (PayPal, M-Pesa, UPI, Pix, bKash, carte...) e conserva un registro delle entrate, delle spese, delle commissioni e del saldo. Puoi impostare un budget e ricevere un avviso quando lo superi. Funziona al telefono e non viene inviato nulla da nessuna parte.
+
+## Cronologia
+Tutto ciò che ZYRAXON ha fatto è scritto qui. Le scritture, le modifiche e le eliminazioni dei file possono essere annullate con un solo pulsante. Un comando eseguito non può essere annullato.
+
+## Cervello
+Cerca i tuoi file (testo, Word, Excel, PowerPoint, CSV) e, se lo permetti, i tuoi SMS, senza Internet e in qualsiasi lingua. Premi prima "Indice", quindi cerca.
+
+## Chiama l'agente
+Quando non puoi rispondere a una chiamata, ZYRAXON risponde, parla nella lingua del chiamante, apprende il nome e il motivo e ti fornisce un riepilogo al termine della chiamata. Quindici lingue utilizzano regole integrate veloci; ogni altra lingua è gestita dal modello, che risponde nella lingua del chiamante. Le parole che significano arrivederci, urgente o spam sono comprese in tutte le lingue contemporaneamente. I riepiloghi delle chiamate intercettate sono elencati nella scheda.

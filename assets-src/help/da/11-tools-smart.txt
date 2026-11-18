@@ -1,0 +1,45 @@
+Færdigheder, autopilot, penge, tidslinje og fortryd, hjerne, opkaldsagent og hukommelse
+Du bruger alle disse ved at tale: Sig, hvad du vil, og agenten kalder det rigtige værktøj. Hver handling er angivet her med dens muligheder.
+
+## Færdigheder - undervis ved at gøre
+En færdighed er en telefonopgave, agenten lærte ved at se dig gøre det én gang. Den gemmer, hvordan man finder hvert element igen (dets id, ord og naboer, ikke dets skærmposition), så det bliver ved med at fungere, når appens layout ændres.
+- Tilføj en færdighed: `skill_record` (Personlig). Sig "lær dette som <navn>". `action: start` (med et navn) begynder at optage; udfør derefter opgaven — åbn appen, tryk, skriv, tryk på tasterne; hvert trin registreres. `action: stop` gemmer den. Ved stop kan du sende `params` for at omdanne indtastede værdier til parametre (for eksempel bliver telefonnummeret `number`, beløbet bliver `amount`) og et `description`. `action: status` fortæller dig, om optagelse er aktiveret.
+- Kør en færdighed: `skill_run` (Personlig). Angiv `args` for dens parametre, f.eks. antal og beløb. Den afspiller i en brøkdel af trinene og helbreder sig selv, når appen ændres. Hvis et trin mislykkes, siger resultatet hvilket trin og hvad der er på skærmen, og agenten afslutter resten i hånden.
+- Listefærdigheder: `skill_list` (Sikker) viser navn, parametre, trin og hvor ofte hver løb. Med et navn og eksport på bliver en delbar `.zxskill` fil.
+- Del og indlæs: `skill_import` (Personligt) indlæser en `.zxskill` fil fra en download eller en delt fil som en færdighed.
+- Slet en færdighed: `skill_delete` (System).
+- Eksempel: "Lær hvordan jeg sender 500 til Rahim med min tegnebogsapp" → du gør det én gang → "Send 700 til Karim" næste gang.
+
+## Autopilot - "når X sker, gør Y"
+En regel vækker agenten af ​​sig selv, og den klarer opgaven uden at spørge dig.
+- Tilføj: `autopilot_add` (System). Typer: sms, notifikation, opkald, dagligt, én gang, interval, batteri, app. Udfyld kun de felter, reglen skal bruge: `from` (afsendernavn eller nummer eller apptitel), `any` (mindst ét af disse ord), `all` (hvert ord), `none` (ingen af disse ord), `time` "TT:MM" (dagligt), `in_minutes` eller `at_ms` (en gang]), `every_minutes` (1 gang), `every_minutes` `pkg` (apppakke eller navn, for app- og notifikationsregler). Agenten forvandler din sætning til disse felter. Resultatet viser enhver tilladelse, der stadig er nødvendig (SMS, meddelelsesadgang...), og agenten beder dig om at slå den til.
+- Eksempler: "Når der kommer en betalings-sms fra min tegnebogsapp, skal du tilføje den til min hovedbog." "Hver morgen kl. 8, fortæl mig vejret." "Om 20 minutter, mind mig om at tage brødet ud." "Hvert 30. minut, drikkevandspåmindelse." "Når batteriet går under 15 %, så fortæl mig det." "Når nogen ringer til mig, log nummeret." "Når jeg åbner bankappen, så mind mig om at tjekke budgettet."
+- Liste: `autopilot_list` (Sikker) viser hver regel med dens næste køretid, og hvor ofte den har udløst.
+- Pause eller genoptag: `autopilot_toggle` (System). Slet: `autopilot_remove` (System), efter id eller titel.
+- Når en regel udløses, får du en besked, der siger det, og agenten klarer bare jobbet.
+
+## Pengebog (personlig økonomidirektør)
+- `ledger_scan` (Personligt): læs tegnebog og bank-SMS i en privat hovedbog: indkomst, forbrug, gebyrer, saldo og kategori. `days` siger hvor langt tilbage (standard 30). Med `auto` slået til tilføjes hver ny penge-SMS af sig selv, og du bliver advaret, når et budget er overstået. Virker til ethvert lands tegnebog og bankbeskeder, i enhver valuta.
+- `ledger_report` (Personligt): periode i dag, i går, uge, måned eller alle. Formater tekst (et færdigt talt resumé) eller xlsx (en Excel fil med transaktioner og kategoritotaler, åbnet for dig).
+- `ledger_budget` (Personligt): Angiv et månedligt budget for en kategori (mad, regninger, transport, indkøb, mobilopladning, overførsler...); en grænse på 0 fjerner den; uden argumenter viser den budgetter og aktuelle advarsler.
+- Agenten opfinder aldrig pengenumre; det læser dem fra hovedbogen.
+
+## Tidslinje og fortryd
+- Alt, hvad agenten gør, skrives til tidslinjen (de sidste 400 handlinger). Filændringer beholder en kopi af, hvad der var der før.
+- `timeline_list` (Sikker): hvad agenten gjorde for nylig, med et id for hver, og hvilke ændringer kan fortrydes.
+- `timeline_undo` (Personligt): `id` fortryder en skrivning, redigering eller sletning — filen kommer tilbage nøjagtigt, som den var (en fil, der ikke eksisterede, fjernes igen). `since_id` fortryder alt fra det id og frem, nyeste først. Brug det, når du siger "tag det tilbage" eller "sæt det tilbage som før".
+- Fortryd dækker filskrivning, redigering og sletning. En kommando, der kørte (for eksempel at installere noget eller sende en besked), kan ikke fortrydes på denne måde.
+- Chatbeskeder: for at fjerne en hel samtale, brug blyanten og kryds i menuen til venstre, eller Indstillinger → Privatliv og data → Slet chathistorik eller Navigation → Ny session.
+
+## Hjerne — anden hukommelse til dine filer
+- `brain_index` (Sikker): Byg eller opdater offlineindekset over mapper eller filer (tekst, Markdown, CSV, Word, Excel, PowerPoint) og eventuelt SMS-indbakken (`sms` til). Kør det før den første søgning og efter nye filer vises. Standard er dit arbejdsområde.
+- `brain_search` (Sikker): spørg med dine egne ord, "hvor er min lejekontrakt?" — det fungerer offline på alle sprog. `kind` er fil eller sms; `days` begrænsninger for seneste varer. Åbn en fundet fil med `open_file`.
+
+## Ring til agent
+- `call_agent` (Personligt): handling til, fra eller status. `owner` er det navn, der står ("Jeg er <ejer>s assistent"). `answer_after_seconds` (standard 6) lader dig hente først. Når der kommer et opkald, og du ikke kan svare, hilser den på den, der ringer op, spørger om navnet og årsagen, svarer på simple spørgsmål, lægger høfligt på og fortæller dig et resumé.
+- `call_log` (Sikker): oversigter over opkald, den besvarede, nyeste først.
+- Har brug for tilladelser til opkald og telefontilstand.
+
+## Hukommelse
+- `memory_write`, `memory_read`, `memory_delete` (Sikker): Varige fakta om dig (navn, præferencer, personer, datoer, projekter) bor i en lokal database og overlever genstarter. Sig "husk dette", og det er skrevet i samme vending; hvis noget er galt, fjernes eller omskrives det. Hver gammel samtale bliver også holdt, og tidligere vendinger, der matcher det, du siger, kommer tilbage af sig selv, selv måneder senere.
+- Se og ændre det hele i Indstillinger → System → Hukommelse (nøgle, værdi, gem, slet alt).

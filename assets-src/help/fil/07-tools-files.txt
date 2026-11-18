@@ -1,0 +1,27 @@
+Mga file, terminal at system
+## Mga file
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Ligtas): magbasa, maglista, maghanap ayon sa pattern ng pangalan, at maghanap ng text sa loob ng mga file.
+- `write_file`, `edit_file`: gumawa o magpalit ng mga file. Ginagawa ng `edit_file` ang lahat: bagong file, buong muling pagsulat, o eksaktong paghahanap-at-palitan; lalabas ang code nang live sa chat. `delete_file` (System): magtanggal ng file o folder.
+- Pinapayagan ang anumang folder (/sdcard, Download, Documents, SD card ...). Magbigay ng isang buong landas at ito ay ginagamit bilang nakasulat.
+- Binubuksan ng ahente kung ano ang ginagawa nito: `open_file` (Ligtas) ay nagbubukas ng file sa totoong app ng telepono, o sa loob ng preview ng ZYRAXON.
+
+## Mga terminal (dalawang tunay)
+- android: ang sariling shell ng telepono (busybox plus `sh`), sa loob ng sandbox ng app. `run_shell` (System) ay nagpapatakbo ng isang command doon, na hindi nakikita.
+- linux: ZYRAXON's sariling buong Unix system, na binuo sa app: bash, apt/pkg, real git, python, node, clang. Gumagana ito offline. `linux_run` (System) ay nagpapatakbo ng isang command doon.
+- `terminal_run` (System): nagpapatakbo ng isang linya sa tab na Terminal na iyong pinapanood, para makita mong gumagana ito at pumalit. Gumamit ng shell android o linux. Dinadala ng `terminal_open` ang tab na Terminal sa harap (kapag nagtanong ka lang).
+- `system_shell` (System): isang utos sa antas ng system, sa itaas ng sandbox ng app, ang paraan ng ginagawa ng shell ng system; na may Shizuku o ugat ay mas maabot nito.
+- Walang default na limitasyon sa oras; isang malaking `apt upgrade` o build ay tumatakbo hanggang sa dulo.
+
+## Shizuku (access ng system)
+Ang `setup_shizuku` (System) ay nagse-set up ng Shizuku, na naka-bundle sa loob ng ZYRAXON: suriin ang katayuan, i-install, buksan, humiling ng pahintulot. Ikaw lang ang makakapag-tap sa I-install at Payagan; sasabihin sa iyo ng ahente ang hakbang sa isang linya at gagawin ang iba.
+
+## Mahabang trabaho at timing
+- `background_command` (System): isang command na patuloy na tumatakbo pagkatapos mong isara ang app (big download, clone, build), na may notification at Stop button.
+- `schedule_command` (System): magpatakbo ng command sa totoong oras ("sa 10 minuto", "sa 2 a.m."); Hawak ng Android ang timer, kaya tumatakbo ito nang sarado ang app.
+- `wait` (Ligtas): maghintay nang kusa (mga segundo, hanggang sa magbukas ang isang port, may lumabas na file, matatapos ang isang command) sa halip na manghula.
+
+## Linux gamit
+Mag-install ng mga package (`apt install …`), magpatakbo ng Python o Node script, mag-compile ng C, gumamit ng git, magpatakbo ng mga server, mag-zip at mag-unzip, curl, ffmpeg. Tahimik na na-unpack ang system kapag nagsimula ang app at nananatili sa mga pag-restart.
+
+## Ang terminal screen
+Ang tab na Terminal ay isang tunay na terminal na may tab na ⌘ ZX. I-type ang sarili mong mga utos o panoorin ang mga utos ng ahente. Ang screen ng Navigation sa Mga Setting ay may shortcut sa shell ng system at isang "Bagong session" na button na nag-clear sa kasaysayan ng chat upang magsimula ng bago.

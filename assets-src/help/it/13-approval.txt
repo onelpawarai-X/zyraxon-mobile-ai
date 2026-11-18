@@ -1,0 +1,23 @@
+Livelli di omologazione e sicurezza dell'automazione
+Impostazioni → Sistema → Automazione. Questo decide quanto può fare l'agente prima che si fermi e te lo chieda. L'impostazione viene applicata nel codice ad ogni chiamata dello strumento; un modello non può ampliarlo.
+
+## I quattro livelli
+Modificare il livello in Impostazioni → Sistema → Automazione. Ogni livello decide quando l'agente si ferma e chiede, e anche quanto rigorosamente Content Shield (vedi Sicurezza e privacy) tratta il testo che l'agente legge dall'esterno.
+1. Richiesta completa (bloccata): chiede prima di qualsiasi cosa che cambi il telefono, per quanto piccola. Più sicuro. La Protezione contenuti è severa: qualsiasi testo sospetto viene considerato ostile. Usalo su un telefono condiviso o mentre stai testando qualcosa di nuovo.
+2. Supervisionato (predefinito): chiede prima delle azioni personali e del sistema e svolge il lavoro ordinario (lettura, apertura, ricerca, costruzione) da solo. La Protezione contenuto è standard: il testo sospetto viene recintato come dati e quando il testo è chiaramente ostile ogni strumento di modifica ti chiede il resto del turno.
+3. Bilanciato: chiede solo prima delle azioni a livello di sistema (shell, eliminazione, pubblicazione, pianificazione…). Le azioni personali come messaggi, tocchi e digitazione vengono eseguite da sole. Il Content Shield è leggero: agisce solo su testo chiaramente ostile, e quindi solo gli strumenti a livello di sistema smettono di chiedere.
+4. Automazione completa: non chiede mai e non si ferma mai. Tutto viene eseguito direttamente e la Protezione contenuto è completamente disattivata: nulla viene scansionato, contrassegnato, rimosso o modificato. Questa è automazione nel vero senso della parola: il rischio è a tuo carico.
+
+## I tre livelli di strumenti
+- Sicuro (non chiede mai a nessun livello): lettura ed elenco di file, memoria, documenti, progetti, stato, apertura di app e file, attesa, competenze/pilota automatico/sequenza temporale/elenchi chiamate, ricerca cerebrale.
+- Personale (richiesto nei primi due livelli): SMS, chiamate, fotocamera, lettura dello schermo, tocchi e digitazione, appunti, download, notifiche, condivisione, cambio voce, riproduzione abilità, registro soldi, agente chiamate, annullamento sequenza temporale.
+- Sistema (richiesto a ogni livello tranne l'automazione completa): shell, Linux, build, pubblicazione, eliminazione, blocco del dispositivo, pianificazione, Git e GitHub, ffmpeg, modello sul dispositivo, pubblicazione sui canali, regole del pilota automatico, eliminazione delle competenze, Shizuku. Qualsiasi strumento non riconosciuto dall'app, inclusi gli strumenti MCP, viene considerato come Sistema.
+
+## La carta di approvazione
+Quando uno strumento necessita della tua approvazione, una scheda dice "Autorizzazione necessaria", ti dice cosa vuole fare l'agente, mostra il suo livello (Sicuro, Personale o Sistema) e offre "Sì, eseguilo" o "No, tienilo spento". La scheda ti ricorda inoltre che puoi modificare la frequenza con cui ciò viene richiesto in Impostazioni → Automazione.
+
+## Solo sul dispositivo
+Quando è attivo, nulla lascia il telefono: vengono eseguiti solo il modello sul dispositivo e gli strumenti locali. Tutti gli strumenti di rete (ricerca, recupero, caricamenti, pubblicazione, GitHub, generazione di media, MCP, modelli cloud) vengono rifiutati nel codice.
+
+## Primo avviso di lancio
+La prima volta, ZYRAXON spiega che l'agente può agire sul tuo telefono e dove attivare le autorizzazioni. Premi "Capito, inizia".

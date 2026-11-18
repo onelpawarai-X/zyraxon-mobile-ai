@@ -1,0 +1,16 @@
+Nyelvek
+## Alkalmazás nyelve
+Beállítások → Nyelv és fordítás. 60 nyelven. Ezt követi a teljes felület és az ügynök eszközüzenetei. Minden nyelvnek saját fordítási fájlja van. Minden olyan sor, amely még nem rendelkezik egy nyelvi fájlban, angolul jelenik meg, és soha nem marad üresen.
+
+## Amit beszélsz
+Az ügynök mindig azon a nyelven válaszol, amelyen Ön beszél, a világ bármely nyelvén. Ha váltasz, akkor vált. Az Ön nyelvén a "te" barátságos-tisztelő formáját használja. A márka- és technológianevek változatlanok maradnak.
+
+## Hangnyelvek
+- Felismerési nyelv (amit a mikrofonba beszél): Beállítások → Hang és mikrofon → Mikrofon és nyelv.
+- Beszédhang: Beállítások → Hang és mikrofon → Hangprofil és a Hang labor olyan nyelvekhez, mint a bengáli, hindi, angol, urdu, arab, tamil, nepáli, spanyol, francia, német, japán, koreai, kínai, orosz, török.
+
+## Ez a dokumentáció
+Használja az oldal tetején található nyelvi chipeket. A teljes útmutatót az alkalmazás által támogatott összes nyelven kézzel írták ki, és az alkalmazáson belül szállítják. Semmit sem fordít le a telefon: minden fejezet azonnal megnyílik, offline módban működik, és nincs szükség modellre vagy kulcsra.
+
+## Írj saját forgatókönyvedben
+Dokumentumok, poszterek és tervek bármilyen forgatókönyvben elkészíthetők. A bengáli mintákhoz a megfelelő betűtípust használják; más szkriptekhez a megfelelő betűtípus kerül kiválasztásra.

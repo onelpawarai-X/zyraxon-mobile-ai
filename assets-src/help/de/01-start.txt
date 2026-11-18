@@ -1,0 +1,20 @@
+Erste Schritte
+ZYRAXON ist ein Assistent, der in Ihrem Android Telefon lebt. Es spricht mit Ihnen, hört Ihnen zu und kann echte Arbeit leisten: Apps öffnen, auf dem Bildschirm tippen und tippen, Leute anrufen, Dateien schreiben, Websites und Apps erstellen, ein Linux System betreiben, Bilder, Audio-, Video- und Bürodokumente erstellen und sich über Monate hinweg an Sie erinnern. Es funktioniert in jeder Sprache, die Sie sprechen.
+
+## Die ersten Minuten
+- Beim ersten Start zeigt ZYRAXON einen kurzen Hinweis an, dass der Agent selbstständig auf Ihrem Telefon agieren kann. Klicken Sie auf „Verstanden, starten“, um fortzufahren.
+- Fügen Sie einen AI-Schlüssel hinzu (Einstellungen → Anbieter und API → AI-Anbieter). Fügen Sie einen Schlüssel für einen beliebigen Anbieter ein (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Wenn Sie einen Schlüssel speichern, liest die App den Katalog dieses Anbieters und überprüft ihn auf Echtheit, sodass Sie ein echtes „verbundenes“ Modell und die Anzahl der Modelle sehen.
+- Kein Schlüssel? Sie können weiterhin die Modelle auf dem Gerät verwenden (Einstellungen → Modell & Identität → Auf dem Gerät). Sie telefonieren ohne Internet.
+- Wählen Sie ein Modell mit der Modellschaltfläche in der Nachrichtenleiste und einen Charakter aus (Einstellungen → Modell & Identität → Identität).
+- Erteilen Sie Berechtigungen, wenn eine Funktion diese benötigt (siehe Kapitel „Berechtigungen“). Der Agent kann den Berechtigungsdialog auch mit einem Fingertipp für Sie öffnen.
+- Einfach reden oder tippen. „Erstelle mir eine Landingpage für meine Bäckerei“, „Öffne YouTube und spiele ein Lied“, „Wie viel Batterie habe ich?“, „Mama anrufen“.
+
+## Die zwei Arbeitsweisen
+Neben dem Meldungsfeld befindet sich eine Modusschaltfläche mit zwei Modi: Agent und Build. Siehe Kapitel „Modi“.
+
+## Wo die Dinge sind
+- Linkes Menü: Ihre Chats, neuer Chat, Umbenennen, Löschen und der Themenwechsel.
+- Chat-Bildschirm: Nachrichten, ToDo-Board, Werkzeugliste, Dateien, Terminal.
+- Vorschau- und Codefenster: Sehen und bearbeiten Sie, was der Agent erstellt.
+- Einstellungen: acht Abschnitte, die in dieser Dokumentation einzeln behandelt werden.
+- Diese Dokumentation: Einstellungen → Dokumentation (Sie sind hier).

@@ -1,0 +1,51 @@
+A tela de bate-papo e todos os botões
+## Parte superior da tela
+- Menu: abre a gaveta esquerda com seus chats.
+- Chat/Terminal/Código/Visualização: alterna a visualização principal. Bate-papo é a conversa; Terminal é o terminal real; Código é o espaço de trabalho do arquivo com Git; A visualização é o navegador integrado.
+- Aura: mostra a tela do personagem animado. Seus botões laterais são Mic, Chat (volta à conversa) e Atualizar (reconecta a nuvem e recarrega a lista de modelos).
+- Configurações: abre as oito seções de configurações.
+- Um banner mostra o estado do microfone: "Ouvindo…", "Microfone desligado — toque" ou "Falando… toque para parar".
+- Quando uma nova versão estiver pronta, um banner de atualização aparecerá com os botões Baixar, Instalar e Permitir (consulte Atualizações).
+
+## O menu esquerdo (bate-papos)
+- "+ Novo chat": inicia uma nova conversa.
+- Cada chat na lista mostra uma marca em execução enquanto o agente está ocupado lá. O lápis o renomeia; a cruz o apaga (após uma confirmação: todas as mensagens nele contidas são apagadas).
+- Tema: escolha Terror (sangue, fogo e sombra), Escuro (vidro escuro limpo) ou Claro (vidro brilhante).
+
+## A barra de mensagens
+- Anexar (clipe de papel): foto da galeria, foto da câmera, digitalização de documentos (transforma o texto de uma foto em um .docx editável), compartilhar a tela para que o agente possa vê-la (ativar ou desativar "Visualização de tela") e arquivos de áudio ou vídeo. Os itens anexados aparecem como fichas; a cruz remove um, "Limpar tudo" remove todos.
+- Botão de modo: Agente ou Build.
+- Botão Mic: liga ou desliga o microfone que está sempre ouvindo.
+- Botão Modelo: abre a lista de modelos com uma caixa de pesquisa. Os modelos marcados como "Live" podem falar com sua própria voz.
+- Enviar: envia a mensagem. Enquanto o agente está trabalhando, isso se torna Stop.
+- A entrada diz "O que devo fazer?" no modo Agente e "O que devo construir? Diga brevemente" no modo Construir.
+
+## Mensagens
+- Copiar, Compartilhar e Ouvir (lê a mensagem em voz alta; pressione novamente para parar) estão abaixo de cada mensagem.
+- “Pensar” mostra o raciocínio do modelo quando o modelo o fornece.
+- O código que o agente escreve aparece em uma caixa, linha por linha, com Copiar, Baixar e Abrir.
+- Arquivos que o agente mostra como cartões com Abrir (no aplicativo real do telefone), Reproduzir, Compartilhar e "Outro aplicativo…".
+- Fotos, áudio e vídeo mostram uma porcentagem de progresso ao vivo enquanto são feitos.
+- Os cartões de ferramentas mostram o que o agente está fazendo: em execução, concluído, com sucesso ou com falha.
+
+## Painéis (tarefas, ferramentas, arquivos, subagentes)
+- Quadro de tarefas: o plano que o agente escreve para um grande trabalho e seu progresso (n/total realizado). Você pode adicionar sua própria tarefa e excluir tarefas.
+- Ferramentas: a lista de todas as chamadas de ferramentas, com status ativo.
+- Arquivos: todo arquivo criado pelo agente, com Abrir, Compartilhar, Publicar e Excluir (com confirmação) e uma caixa de pesquisa.
+- Subagentes: agentes auxiliares em execução em segundo plano, com um botão Parar.
+- Guia Terminal: o terminal real (veja o capítulo Arquivos e Terminal).
+
+## Painel de visualização
+- Voltar, Avançar, Parar, Recarregar e uma barra de endereço (digite um endereço da web ou pesquise Google).
+- Arquivo aberto: mostra Word, Excel, PowerPoint, PDF, imagens, Markdown, CSV, código e sites dentro do aplicativo.
+- Tamanho: reduza ou aumente o painel.
+- Correção: envia os problemas da página (erros do console, falhas de carregamento) ao agente, que os corrige em segundo plano.
+- Escolher parte: toque em uma parte da página e diga ao agente o que fazer com essa parte.
+- Botão Agente: pergunte algo sobre a página; o agente recebe uma foto dele.
+- Abertura rápida: atalhos para páginas recentes.
+
+## Espaço de trabalho de código
+- Lado esquerdo: seus arquivos (novo arquivo, abrir, salvar).
+- Editor: mostra falas e personagens; as alterações feitas pelo agente aparecem imediatamente.
+- Git: novo repositório, clonar de GitHub, varredura, status, commit com uma mensagem, push, pull, ramificações, token.
+- Solicitações pull: criar, mesclar, fechar. Fluxos de trabalho: liste execuções, execute um fluxo de trabalho. O log mostra a saída do comando.

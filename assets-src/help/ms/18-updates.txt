@@ -1,0 +1,7 @@
+Kemas kini
+Tetapan → Kemas Kini → Kemas kini apl atau sepanduk di bahagian atas apl.
+- Apl menyemak keluaran baharu dan menunjukkan "Kemas kini baharu tersedia — versi".
+- Semak kemas kini: tanya sekarang. Jika anda semasa ia berkata begitu.
+- Muat turun & pasang: muat turun dengan peratusan. Apabila selesai tekan Pasang. Sembang, memori dan tetapan anda kekal.
+- Jika Android menyekat pemasangan, tekan butang kebenaran, benarkan ZYRAXON sebagai sumber pemasangan, kemudian cuba lagi.
+- Butang sepanduk: Muat turun, Pasang, Benarkan dan Tutup.

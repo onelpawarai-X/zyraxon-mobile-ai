@@ -1,0 +1,45 @@
+Įgūdžiai, autopilotas, pinigai, laiko juosta ir atšaukimas, smegenys, skambučių agentas ir atmintis
+Visa tai naudojate kalbėdami: pasakykite, ko norite, ir agentas iškviečia tinkamą įrankį. Kiekvienas veiksmas čia pateikiamas su jo parinktimis.
+
+## Įgūdžiai – mokykis darydamas
+Įgūdis yra telefono užduotis, kurią agentas išmoko vieną kartą stebėdamas, kaip tai atliekate. Jame išsaugoma, kaip vėl rasti kiekvieną elementą (jo ID, žodžius ir kaimynus, o ne ekrano padėtį), todėl ji ir toliau veikia, kai pasikeičia programos išdėstymas.
+- Pridėkite įgūdį:`skill_record`(asmeninis). Pasakykite „mokyk tai kaip <vardas>“.`action: start`(su vardu) pradeda įrašymą; tada atlikite užduotį – atidarykite programą, bakstelėkite, įveskite, paspauskite klavišus; kiekvienas žingsnis įrašomas.`action: stop`jį išsaugo. Stotelėje galima pravažiuoti`params`įvestas reikšmes paversti parametrais (pavyzdžiui, telefono numeris tampa`number`, suma tampa`amount`) ir a`description`. `action: status`praneša, ar įjungtas įrašymas.
+- Vykdykite įgūdžius:`skill_run`(asmeninis). Duok`args`jo parametrams, pvz. skaičius ir suma. Jis kartojasi per dalį žingsnių ir išgydo, kai programa pasikeičia. Jei vienas veiksmas nepavyksta, rezultatas nurodo, kuris veiksmas ir kas rodoma ekrane, o agentas ranka užbaigia kitus veiksmus.
+- Įgūdžių sąrašas:`skill_list`(Seifas) rodo pavadinimą, parametrus, veiksmus ir kaip dažnai kiekvienas veikė. Su pavadinimu ir eksportu galima bendrinti`.zxskill`failą.
+- Bendrinti ir įkelti:`skill_import`(asmeniniai) kroviniai a`.zxskill`failą iš atsisiųsto arba bendrinamo failo kaip įgūdžių.
+- Ištrinkite įgūdį:`skill_delete`(Sistema).
+- Pavyzdys: „Sužinokite, kaip aš galiu nusiųsti 500 Rahim naudodamas piniginės programą“→tu tai padaryk vieną kartą→„Siųsk Karimui 700“ kitą kartą.
+
+## Autopilotas – „kai atsitinka X, daryk Y“
+Taisyklė pažadina agentą pati ir jis atlieka užduotį jūsų neprašydamas.
+- Pridėti:`autopilot_add`(Sistema). Rūšys: SMS, pranešimas, skambutis, kasdien, vieną kartą, intervalas, baterija, programėlė. Užpildykite tik tuos laukus, kurių reikia taisyklei:`from`(siuntėjo vardas arba numeris arba programos pavadinimas),`any`(bent vienas iš šių žodžių),`all`(kiekvienas žodis),`none`(nė vienas iš šių žodžių),`time`"HH:MM" (kasdien),`in_minutes` or `at_ms`(vieną kartą),`every_minutes`(intervalas),`below`(akumuliatoriaus procentas),`pkg`(programėlės paketas arba pavadinimas, programos ir pranešimų taisyklėms). Agentas paverčia jūsų sakinį šiais laukais. Rezultate pateikiami visi reikalingi leidimai (SMS, pranešimų prieiga ir kt.), o agentas prašo jį įjungti.
+- Pavyzdžiai: „Kai iš mano piniginės programos gausite mokėjimo SMS, pridėkite ją prie mano knygos“. „Kiekvieną rytą 8 val., pasakyk man orą“. „Po 20 minučių primink man, kad išneščiau duoną“. „Kas 30 minučių, priminimas apie vandens gėrimą“. "Kai akumuliatorius išsikrauna žemiau 15%, pasakykite man." "Kai man kas nors paskambins, užregistruokite numerį." „Kai atidarysiu banko programėlę, priminkite man patikrinti biudžetą.
+- Sąrašas:`autopilot_list`(Saugus) rodo kiekvieną taisyklę su kitu vykdymo laiku ir jos suaktyvinimo dažnumu.
+- Pristabdyti arba tęsti:`autopilot_toggle`(Sistema). Ištrinti:`autopilot_remove`(Sistema), pagal ID arba pavadinimą.
+- Suaktyvinus taisyklę, gaunate pranešimą, kuriame teigiama, o agentas tiesiog atlieka savo darbą.
+
+## Pinigų knyga (asmeninis finansų direktorius)
+- `ledger_scan`(Asmeninis): perskaitykite piniginę ir banko SMS į privačią knygą: pajamos, išlaidos, mokesčiai, likutis ir kategorija.`days`nurodo, kiek atgal (numatytasis 30). Su`auto`įjungta, kiekviena nauja pinigų SMS pridedama savaime ir būsite įspėjami, kai bus patvirtintas biudžetas. Veikia su bet kurios šalies pinigine ir banko žinutėmis bet kokia valiuta.
+- `ledger_report`(asmeninis): laikotarpis šiandien, vakar, savaitė, mėnuo arba visi. Formatuokite tekstą (parengtą sakytinę santrauką) arba xlsx (anExcelfailas su operacijų ir kategorijų sumomis, atidarytas jums).
+- `ledger_budget`(asmeninis): nustatykite mėnesio biudžetą kategorijai (maistas, sąskaitos, transportas, apsipirkimas, mobiliojo telefono papildymas, pervedimai...); 0 riba jį pašalina; be argumentų pateikiami biudžetai ir dabartiniai įspėjimai.
+- Agentas niekada nesugalvoja pinigų skaičių; ji nuskaito juos iš knygos.
+
+## Laiko juosta ir anuliuoti
+- Viskas, ką agentas daro, įrašoma į laiko juostą (400 paskutinių veiksmų). Failų pakeitimai išsaugo to, kas buvo anksčiau, kopiją.
+- `timeline_list`(Saugus): ką agentas padarė neseniai, su kiekvieno ID ir kuriuos pakeitimus galima anuliuoti.
+- `timeline_undo`(asmeninis):`id`anuliuojamas įrašymas, redagavimas arba ištrynimas – failas grąžinamas tiksliai toks, koks buvo (nebuvęs failas vėl pašalinamas).`since_id`atšaukia viską nuo to id, naujausius iš pradžių. Naudokite jį sakydami „atsiimk atgal“ arba „grąžink kaip anksčiau“.
+- Anuliuoti apima failų rašymą, redagavimą ir trynimą. Vykdytos komandos (pavyzdžiui, ką nors įdiegti ar išsiųsti pranešimą) tokiu būdu anuliuoti negalima.
+- Pokalbių pranešimai: norėdami pašalinti visą pokalbį, naudokite pieštuką ir kryžių kairiajame meniu arba Nustatymai→Privatumas ir duomenys→Ištrinkite pokalbių istoriją arba Navigaciją→Nauja sesija.
+
+## Smegenys – antroji atmintis jūsų failams
+- `brain_index`(Saugus): sukurkite arba atnaujinkite neprisijungus pasiekiamą aplankų ar failų (teksto,Markdown, CSV, Word, Excel, PowerPoint) ir pasirinktinai SMS gautuosius (`sms`įjungta). Paleiskite jį prieš pirmą paiešką ir pasirodžius naujiems failams. Numatytoji yra jūsų darbo sritis.
+- `brain_search`(Seifas): paklauskite savais žodžiais: "kur yra mano nuomos sutartis?" — veikia neprisijungus bet kuria kalba.`kind`yra failas arba sms;`days`naujausių elementų apribojimai. Atidarykite rastą failą naudodami`open_file`.
+
+## Skambinkite agentui
+- `call_agent`(Asmeninis): veiksmas įjungtas, išjungtas arba būsena.`owner`yra pavadinimas, kurį sako („Aš esu <savininko> padėjėjas“).`answer_after_seconds`(numatytasis 6) leidžia pasiimti pirmas. Kai skambina ir negalite atsiliepti, pasisveikina skambinančiojo kalba, klausia vardo ir priežasties, atsako į paprastus klausimus, mandagiai padeda ragelį ir pasako santrauką.
+- `call_log`(Saugus): skambučių, į kuriuos atsiliepė, suvestinės, naujausi nauji.
+- Reikia skambučio ir telefono būsenos leidimų.
+
+## Atmintis
+- `memory_write`, `memory_read`, `memory_delete`(Saugus): ilgalaikiai faktai apie jus (vardas, pageidavimai, žmonės, datos, projektai) yra vietinėje duomenų bazėje ir išgyvena iš naujo. Pasakykite „prisimink tai“ ir bus parašyta tame pačiame posūkyje; jei kažkas negerai, jis pašalinamas arba perrašomas. Kiekvienas senas pokalbis taip pat saugomas, o praeities posūkiai, atitinkantys jūsų pasakymą, grįžta savaime, net po kelių mėnesių.
+- Viską peržiūrėkite ir pakeiskite nustatymuose→Sistema→Atmintis (raktas, reikšmė, išsaugoti, ištrinti viską).

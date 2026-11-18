@@ -1,0 +1,14 @@
+Hanyoyi: Wakili da Gina
+Akwai hanyoyi guda biyu, waɗanda aka zaɓa tare da maɓallin yanayin kusa da akwatin saƙo. Zaɓin yana tsayawa har sai kun canza shi. Muryar raye-raye ba hanya ce ta uku ba; hanya ce ta magana zaka iya kunnawa a cikin Saituna (duba babin Murya).
+
+## Wakili
+"Cikakken sarrafa wayar da tsarin." Komai a buɗe yake: karantawa da tuƙi allon wayar, buɗe aikace-aikacen, kira, saƙonni, kyamara, fayiloli, tashar tashar da Linux, Git, samfoti, kafofin watsa labarai, ƙananan wakilai, MCP sabobin, ƙwarewa, autopilot da ƙari. Zaɓi Wakili lokacin da kuke son yin wani abu akan wayarku ko kuna son yin magana kawai.
+
+## Gina
+"Cikakken kayan aiki, gidajen yanar gizo da aiki da kai." Wakilin injin gini ne: daga ɗan gajeren layi yana yin duka, gudanar da shi, duba shi kuma ya nuna muku. Yana da fayiloli, tasha, Git, samfoti, bugu, kafofin watsa labarai, ƙwaƙwalwar ajiya da allon todo. Ikon waya, ƙananan wakilai da kulle na'urar suna cikin yanayin Agent; idan kuna buƙatar su a Gina, canza.
+- Shafin saukowa ko gidan yanar gizo: faɗi abin da ake so. Wakilin ya gina ta nan da nan, ya fara ta a wayarka kuma ya buɗe ta a cikin Preview panel, sannan ya gaya muku abin da ta yi. Ba ya bugawa sai an tambaya.
+- App: faɗi abin da kuke so kuma yana gina ƙa'idar kamar yadda aka tambaya. Ana ƙara ƙarshen baya, bayanan bayanai ko shiga kawai idan kun nemi ta.
+- Cikakkun bayanai: lokacin da kake neman bayanan baya ko bayanan bayanai, wakilin zai fara tambayarka gajeriyar tambaya guda ɗaya game da zaɓin (harshe, bayanai, shiga, inda yake gudana), tare da shawararsa, kuma yana ginawa bayan ka amsa.
+
+## Abin da "tambaya" ke nufi
+Lokacin da wakilin yana buƙatar shawarar ku da gaske ya fara yin komai, ya yi gajeriyar tambaya ɗaya tare da shawararta, kuma yana jira. Amsar ku ta ci gaba da aiki daga inda ta tsaya.

@@ -1,0 +1,11 @@
+Bilder, lyd, video, dokumenter og design
+- `generate_image` (nettverk): lag et bilde fra en beskrivelse (skriv det med detaljer; engelsk fungerer best). Det vises i chatten med deleknapper. For flere, be om flere.
+- `generate_audio` (nettverk): talelyd (.mp3) fra hvilken som helst tekst. For en dialog eller historie, gi hver del sin egen stemme (kjønn, alder, språk, tone). Mange språk, inkludert bengali, hindi og engelsk.
+- `generate_video`: en ekte redigert video (ikke AI-opptak) fra scener – bilder, klipp, tekst, farger, fortellerstemme, bildetekster, musikk. `ffmpeg`: enhver direkte redigering - klipp, bli med, overlegg, undertekster, hastighet, lydmiks, konverter. 5–10 minutters videoer er mulig, bygget trinn for trinn.
+- Fremdrift viser live som en prosentandel i chatten; når du er ferdig, kommer filen med Play og Share-knappene.
+- `make_document`: en ekte Word (.docx), Excel (.xlsx) eller PowerPoint (.pptx) fil på telefonen, ingen installasjon nødvendig, noe språk. `office_template`: klare kontorpapirer med tomme felt å fylle ut (legg igjen søknad, jobbsøknad, faktura, CV, forretningsforslag, tilbud, innkalling, møtereferater, kontrakt, månedsregnskap og mer).
+- Dokument fra et bilde: legg ved et bilde (Dokumentskanning). Teksten kopieres nøyaktig som skrevet (uklare ord markeres), en tabell blir .xlsx, ellers .docx.
+- Møtenotater: fra lyd, en utskrift eller det du sier. Dokumentet har et sammendrag, beslutninger, handlingspunkter (oppgave, eier, forfallsdato) og et klart e-postutkast.
+- `make_design`: plakater, bannere, logoer, kort, historier, omslag som PNG og PDF. `brand_kit`: gi en logo eller farger; de lagres, app-temaet endres, og fra da av bruker dokumenter, lysbilder og nettsteder merkefargene dine.
+- `present_slides`: karakteren snakker mens lysbildekort vises; lysbildene endres av seg selv når stemmen er ferdig. Be om en .pptx-fil hvis du vil ha en fil.
+- `open_file`: åpner det som ble laget i telefonens ekte app (Word/Docs, Sheets, Slides, PDF, galleri, nettleser) eller i forhåndsvisningspanelet; agenten sjekker skjermen for å være sikker på at den åpnet.

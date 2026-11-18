@@ -1,0 +1,14 @@
+Njia: Wakala na Kujenga
+Kuna njia mbili, zilizochaguliwa na kifungo cha modi karibu na kisanduku cha ujumbe. Chaguo linabaki hadi ubadilishe. Sauti ya moja kwa moja sio hali ya tatu; ni njia ya kuongea unaweza kuwasha katika Mipangilio (tazama sura ya Sauti).
+
+## Wakala
+"Otomatiki kamili ya simu na mfumo." Kila kitu kiko wazi: kusoma na kuendesha skrini ya simu, kufungua programu, simu, ujumbe, kamera, faili, terminal na Linux, Git, onyesho la kuchungulia, midia, mawakala wadogo, MCP seva, ujuzi, majaribio ya kiotomatiki na zaidi. Chagua Wakala unapotaka jambo fulani lifanyike kwenye simu yako au ukitaka kuzungumza kwa urahisi.
+
+## Jenga
+"Programu zilizojaa, tovuti na otomatiki." Wakala ni injini ya kujenga: kutoka kwa mstari mfupi hufanya jambo zima, huendesha, huiangalia na kukuonyesha. Ina faili, terminal, Git, onyesho la kukagua, uchapishaji, media, kumbukumbu na ubao wa todo. Kidhibiti cha simu, ajenti ndogo na kufuli ya kifaa ni vya Hali ya Wakala; ikiwa unazihitaji katika Jenga, badilisha.
+- Ukurasa wa kutua au tovuti: sema ni ya nini. Wakala huiunda mara moja, huiwasha kwenye simu yako na kuifungua kwenye kidirisha cha Onyesho la Kuchungulia, kisha kukuambia ilichotengeneza. Haichapishi isipokuwa ukiuliza.
+- Programu: sema unachotaka na inaunda programu kama ilivyoulizwa. Mwisho wa nyuma, hifadhidata au kuingia huongezwa tu ikiwa utaiuliza.
+- Ratiba kamili: unapouliza sehemu ya nyuma au hifadhidata, wakala kwanza hukuuliza swali moja fupi kuhusu chaguo (lugha, hifadhidata, kuingia, mahali inapoendeshwa), pamoja na pendekezo lake, na huunda baada ya kujibu.
+
+## Nini maana ya "kuuliza".
+Wakati wakala anahitaji uamuzi wako hufanya kila kitu kingine kwanza, anauliza swali moja fupi na mapendekezo yake, na kusubiri. Jibu lako linaendelea na kazi kutoka pale iliposimama.

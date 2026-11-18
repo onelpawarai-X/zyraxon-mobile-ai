@@ -1,0 +1,27 @@
+Povolenia, jeden po druhom
+Nastavenia → Zabezpečenie a súkromie → Povolenia. Každý riadok zobrazuje „Granted“ alebo tlačidlo. Klepnutím na riadok otvoríte systémové dialógové okno; stačí stlačiť Povoliť. Agent môže tiež otvoriť samotné dialógové okno pomocou `request_permission`.
+
+- Mikrofón: aby vás ZYRAXON počul. Bez neho nie je možný hlasový vstup.
+- Fotoaparát: snímanie a prezeranie fotografií (`look_camera`, skenovanie dokumentov, „čo vidíš“).
+- Poloha: pre mapy a miestne informácie.
+- Upozornenia: oznámiť vám, keď práca na pozadí skončí.
+- Súbory a médiá: na čítanie fotografií, videí, zvuku a dokumentov.
+- Prekrytie (prekreslenie cez iné aplikácie): potrebné pre plávajúce oko.
+- Prístupnosť: umožňuje agentovi čítať obrazovku a klepať, ťahať a písať za vás. Toto je srdce automatizácie telefónu. Zapnete ho v systémových nastaveniach Prístupnosti.
+- Optimalizácia batérie: zabraňuje Android uspávať ZYRAXON, kým pracuje na pozadí.
+
+## Ďalšie povolenia, ktoré aplikácia deklaruje
+- SMS (čítať a prijímať): na čítanie kódov, pokladničnej knihy a pravidiel autopilota SMS.
+- Stav telefónu, prijímanie hovorov, volanie na telefón, kontakty: pre nástroje na volanie a hovorcu.
+- Prístup k upozorneniam: umožňuje autopilotovi reagovať na upozornenia.
+- Správca zariadenia: umožňuje `device_lock` skutočne uzamknúť obrazovku.
+- Inštalovať balíčky: umožňuje aktualizáciám a `build_app` inštalovať súbory APK; Android vás požiada, aby ste povolili ZYRAXON ako zdroj inštalácie.
+- Služby v popredí (mikrofón, synchronizácia údajov) a uzamknutie režimu spánku: udrží hlas a dlhé úlohy nažive.
+- Stav internetu a siete: cloud a web.
+- Shizuku (voliteľné): prístup na úrovni systému pre shell a terminál.
+
+## Google Play Protect
+Ak Play Protect zablokuje úlohu, agent môže otvoriť správnu stránku, pozrieť sa na skutočnú obrazovku a prejsť krok za krokom cez ozubené koliesko a prepínač – najprv sa však spýta vás, pretože vypnúť ochranu je vaše rozhodnutie. Urobte to sami: Play Store → profilový obrázok → Play Protect → nastavenia → vypnite „Skenovať aplikácie pomocou Play Protect“. Stránka má tlačidlo, ktoré otvorí Play Store.
+
+## Prečo na povolení záleží
+Ak nástroj zlyhá pre chýbajúce povolenie, agent vám povie, ktoré z nich, a otvorí svoje dialógové okno. Nič citlivé nefunguje bez vášho výslovného povolenia.

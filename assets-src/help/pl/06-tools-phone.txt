@@ -1,0 +1,34 @@
+Narzędzia do automatyzacji telefonu
+Agent kontroluje Twój telefon za pomocą narzędzi. Nigdy sam do nich nie dzwonisz; mówisz, czego chcesz, a agent wybiera narzędzia. W tym rozdziale opisano wszystkie narzędzia mające kontakt z telefonem oraz sposoby jego ochrony (zobacz Poziomy akceptacji: Bezpieczny, Osobisty, Systemowy).
+
+## Otwieranie i znajdowanie
+- `open_app` (Bezpieczny): otwórz dowolną zainstalowaną aplikację według nazwy lub pakietu. `list_apps` (Bezpieczny): lista zainstalowanych aplikacji. `open_settings` (Bezpieczny): otwarcie strony ustawień systemu (dostępność, nakładka, powiadomienia, aplikacje, Wi-Fi, bateria, Play Protect). `launch_url` (Bezpieczny): otwórz link w przeglądarce. `youtube_play` (Bezpieczny): otwórz YouTube w wynikach wyszukiwania tego, o co prosiłeś, i zagraj.
+
+## Widząc ekran
+- `read_screen` (Osobiste): czyta każdy tekst i element na ekranie po dotknięciu. `screen_shot` (Osobiste): prawdziwy zrzut ekranu. Wymagają one uprawnienia Dostępność.
+- `look_camera` (Osobiste): robi jedno zdjęcie aparatem i ogląda je. `read_media` (Osobiste): odczytuje obraz, dźwięk lub wideo (ze ścieżki lub łącza), aby model mógł je zrozumieć.
+
+## Gra na ekranie
+- `tap` (Osobiste): dotknij punktu. `tap_text` (Osobiste): dotknij elementu z tą etykietą, bezpieczniej niż współrzędne. `swipe` (Osobiste): przewijanie lub gest cofania. `type_text` (Osobiste): wpisz w wybranym polu. `press_key` (Osobiste): powrót, strona główna, ostatnie, powiadomienia, szybkie ustawienia, blokada.
+- Akcje na ekranie są wykonywane pojedynczo, w określonej kolejności, a po każdej akcji agent patrzy na nowy ekran.
+
+## Telefon, wiadomości i schowek
+- `call_dial` (Osobisty): nawiąż połączenie według numeru lub nazwy kontaktu. `call_state` (Osobiste): czy połączenie dzwoni czy jest aktywne? `call_answer` (Osobiste): odpowiedź. `call_hangup` (Osobiste): rozłącz się.
+- `read_sms` (Osobiste): przeczytaj najnowszy SMS, np. kod OTP; można filtrować według tekstu lub nadawcy.
+- `clipboard_read` i `clipboard_write` (Osobiste): czytaj lub zapisuj w schowku.
+- `notify` (Osobiste): opublikuj prawdziwe Android powiadomienie. `share` (Osobiste): otwórz arkusz udostępniania zawierający tekst, łącze lub plik. `channel_post` (System): otwórz Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail lub SMS z wstępnie wypełnionym tekstem, gotowy do wysłania.
+
+## Fakty dotyczące stanu i systemu
+- `network_status` (Bezpieczny): online lub nie, Wi-Fi lub mobilna transmisja danych, Wi-Fi nazwa. `sys_info` (Bezpieczny): Android wersja, model, procesor, pamięć RAM, pamięć, bieżąca aplikacja. `platform_info` (Bezpieczny): miejsce, w którym działa agent. `process_list` (Bezpieczny): uruchomione procesy.
+
+## Uprawnienia i ekran
+- `request_permission` (Bezpieczny): otwiera okno dialogowe uprawnień systemowych jednym dotknięciem, gdy narzędzie nie powiedzie się w związku z brakującym pozwoleniem. `device_lock` (System): naprawdę zablokuj ekran lub skonfiguruj uprawnienia, które to umożliwiają. `floating_bubble` (Osobiste): włącz lub wyłącz pływającą kulę.
+- `voice_change` (Osobiste): zmień prędkość mówienia, ton lub płeć. `live_voice` (System): włączanie lub wyłączanie trybu zamiany mowy na żywo.
+
+## Pomocnicy interfejsu
+- `code_box` i `files_panel`: otwórz okno kodu aktywnego lub przeglądarkę plików, aby obejrzeć pracę. `todo_write`: tablica zadań na żywo.
+
+## Porady
+- Możesz połączyć: „Otwórz Ustawienia, znajdź Wi-Fi i podaj nazwę sieci”. Agent po każdym kroku czyta ekran i decyduje o kolejnym.
+- Jeśli dotknięcie nic nie da, agent ponownie czyta ekran i próbuje innego elementu; nigdy nie stuka na ślepo.
+- Jeśli Play Protect coś blokuje, agent może z Tobą przejść przez ustawienia (patrz Uprawnienia).

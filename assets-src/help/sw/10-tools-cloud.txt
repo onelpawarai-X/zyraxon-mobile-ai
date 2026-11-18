@@ -1,0 +1,21 @@
+Wingu, mtandao, mifano na wasaidizi
+## Wingu na mtandao
+- `web_search` (mtandao): tafuta mtandao halisi. `read_url` (mtandao): leta ukurasa kama maandishi. `http_request` (mtandao): simu yoyote ya HTTP (GET, POST, PUT, PATCH, DELETE) yenye vichwa na mwili. `verify_url` (mtandao): angalia kiungo kipo na upate hali halisi. `download_file` (Binafsi, mtandao): pakua URL kwenye faili.
+- Wakala hufungua viungo unapomwomba tu.
+- Miundo ya AI huendeshwa kwenye wingu kupitia watoa huduma ulioongeza (ZYRAXON, ZYRAXON Apex wakala wa wingu, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode. Orodha ya modeli hupakia moja kwa moja na hujazwa kila mtoa huduma anapojibu.
+- Maombi ya kuunda, kuchapisha na kuvuta yanatekelezwa kupitia GitHub na Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Washa "kwenye kifaa pekee" (Mipangilio ya otomatiki) na hakuna simu ya wingu inayopigwa kabisa: hakuna mtoa huduma, hakuna wavuti, hakuna upakiaji.
+
+## MCP seva
+MCP huruhusu huduma za nje kumpa wakala zana za ziada. Unganisha Canva, Cloudflare, Supabase, GitHub au seva yako mwenyewe kwa anwani yake (tokeni ya hiari). Zana za seva zilizounganishwa hujiunga na orodha ya zana za wakala kama `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (angalia ni nini kimeunganishwa na zana zipi), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (tazama nyenzo kwa mabadiliko), `mcp_complete` (kamilisha hoja), `mcp_ping`, `mcp_log_level`. Simu zao ni simu za mtandao, na zana MCP zisizojulikana huomba ruhusa kwa chaguomsingi.
+- Skrini ya MCP huorodhesha kila seva iliyo na hali Imeunganishwa, zana zake, nyenzo na violezo vya kidokezo, na vitufe vya Ongeza, Ondoa, Ondoa, Ruhusu.
+
+## Mawakala wadogo
+`sub_agent` (Mfumo): kabidhi sehemu za kazi kubwa kwa mawakala wasaidizi wanaofanya kazi chinichini. Vitendo: spawn, hali, orodha, matokeo, ujumbe, kuacha, kusubiri. Kila mmoja anaweza kutumia mfano wake mwenyewe. Wakala huchanganya na kuangalia matokeo yao kabla ya kusema "nimemaliza".
+
+## Muundo wa kifaa
+`on_device_model` (Mfumo): orodhesha, pakia na endesha muundo wa lugha unaoishi kwenye simu, bila mtandao. Katika Mipangilio → Muundo na utambulisho → Kwenye kifaa unapakua miundo (ndogo hadi kubwa: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); tokeni ya Hugging Face ni ya hiari na inahitajika kwa faili zilizo na lango pekee. Muundo uliopakiwa hukumbukwa na kupakiwa upya wakati wa uzinduzi.
+
+## Vituo vya kutuma ujumbe
+`channel_post` (Mfumo) hufungua Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail au SMS ikiwa maandishi yako tayari. Unabonyeza tuma mwenyewe.

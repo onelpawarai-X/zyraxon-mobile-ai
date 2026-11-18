@@ -1,0 +1,51 @@
+Pokalbių ekranas ir kiekvienas mygtukas
+## Ekrano viršuje
+- Meniu: atidaromas kairysis stalčius su jūsų pokalbiais.
+- Pokalbis / terminalas / kodas / peržiūra: perjunkite pagrindinį vaizdą. Pokalbis yra pokalbis; Terminalas yra tikrasis terminalas; Kodas yra failo darbo sritis su Git; Peržiūra yra integruota naršyklė.
+- Aura: rodo animacinio veikėjo ekraną. Jo šoniniai mygtukai yra „Mic“, „Chat“ (grįžti į pokalbį) ir „Refresh“ (iš naujo prisijungia prie debesies ir iš naujo įkelia modelių sąrašą).
+- Nustatymai: atidaromos aštuonios nustatymų skiltys.
+- Reklamjuostė rodo mikrofono būseną: „Klausau…“, „Mikrofonas išjungtas – palieskite“ arba „Kalbėjimas… palieskite, kad sustabdytumėte“.
+- Kai nauja versija bus paruošta, pasirodo naujinimo reklamjuostė su mygtukais Atsisiųsti, įdiegti ir leisti (žr. Atnaujinimai).
+
+## Kairysis meniu (pokalbiai)
+- „+ Naujas pokalbis“: pradeda naują pokalbį.
+- Kiekvienas sąrašo pokalbis rodo eigą, kol agentas ten užsiėmęs. Pieštukas jį pervadina; kryžius jį ištrina (po patvirtinimo: visi jame esantys pranešimai ištrinami).
+- Tema: pasirinkite Siaubas (kraujas, ugnis ir šešėlis), Tamsus (švarus tamsus stiklas) arba Šviesus (ryškus stiklas).
+
+## Pranešimų juosta
+- Pridėkite (sąvaržėlę): galerijos nuotrauką, fotoaparato nuotrauką, dokumentų nuskaitymą (tekstą nuotraukoje paverčia redaguojamu .docx), bendrinkite ekraną, kad agentas jį matytų ("Ekrano žiūrėjimas" įjungtas arba išjungtas), ir garso ar vaizdo failus. Pridedami elementai rodomi kaip lustai; kryžius pašalina vieną, "Išvalyti viską" pašalina visus.
+- Režimo mygtukas: Agent arba Build.
+- Mikrofono mygtukas: įjungia arba išjungia visada klausantį mikrofoną.
+- Modelio mygtukas: atidaromas modelių sąrašas su paieškos laukeliu. Modeliai, pažymėti „Live“, gali kalbėti savo balsu.
+- Siųsti: siunčia žinutę. Kol agentas dirba, tai tampa Stop.
+- Įvestis sako "Ką turėčiau daryti?" agento režimu ir "Ką turėčiau sukurti? Trumpai pasakykite" kūrimo režimu.
+
+## Žinutės
+- Kopijuoti, bendrinti ir klausytis (garsiai skaito pranešimą; paspauskite dar kartą, kad sustabdytumėte) yra po kiekvienu pranešimu.
+- „Mąstymas“ parodo modelio samprotavimus, kai modelis tai pateikia.
+- Kodas, kurį rašo agentas, rodomas tiesiogiai langelyje, eilutė po eilutės su Kopijuoti, atsisiųsti ir atidaryti.
+- Failai, kuriuos agentas padaro, rodomi kaip kortelės su „Open“ (tikrojoje telefono programoje), „Play“, „Share“ ir „Kita programa…“.
+- Nuotraukos, garso ir vaizdo įrašai rodo tiesioginį progreso procentą, kol jie daromi.
+- Įrankių kortelės rodo, ką agentas veikia: veikia, padaryta, pasisekė ar nepavyko.
+
+## Skydai (todo, įrankiai, failai, antriniai agentai)
+- Todo lenta: agento parašytas planas dideliam darbui ir jo eigai (n/viso atlikta). Galite pridėti savo užduotį ir ištrinti užduotis.
+- Įrankiai: kiekvieno įrankio skambučio sąrašas su tiesiogine būsena.
+- Failai: kiekvienas agento sukurtas failas su Atidaryti, Bendrinti, Publikuoti ir Naikinti (su patvirtinimu) ir paieškos laukeliu.
+- Papildomi agentai: pagalbiniai agentai, veikiantys fone, su sustabdymo mygtuku.
+- Terminalo skirtukas: tikrasis terminalas (žr. skyrių Failai ir terminalas).
+
+## Peržiūros skydelis
+- Atgal, Pirmyn, Sustabdyti, Įkelti iš naujo ir adreso juostą (įveskite žiniatinklio adresą arba ieškokite Google).
+- Atidaryti failą: rodomi Word, Excel, PowerPoint, PDF, vaizdai, Markdown, CSV, kodas ir svetainės tiesiai programoje.
+- Dydis: sumažinkite arba padidinkite skydelį.
+- Pataisyti: siunčia puslapio problemas (konsolės klaidas, nesėkmingus įkėlimus) agentui, kuris jas ištaiso fone.
+- Pasirinkite dalį: palieskite puslapio dalį, tada pasakykite agentui, ką su ta dalimi daryti.
+- Agento mygtukas: paklauskite ko nors apie puslapį; agentas gauna jo nuotrauką.
+- Greitas atidarymas: nuorodos į naujausius puslapius.
+
+## Kodo darbo sritis
+- Kairėje pusėje: jūsų failai (naujas failas, atidaryti, išsaugoti).
+- Redaktorius: rodo eilutes ir simbolius; agento atlikti pakeitimai rodomi iš karto.
+- Git: naujas atpirkimas, klonas iš GitHub, nuskaitymas, būsena, įsipareigojimas pranešimu, stumimas, traukimas, šakos, prieigos raktas.
+- Ištraukti užklausas: sukurti, sujungti, uždaryti. Darbo eigos: paleidžiamas sąrašas, paleidžiama darbo eiga. Žurnalas rodo komandos išvestį.

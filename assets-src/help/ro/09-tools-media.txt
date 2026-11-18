@@ -1,0 +1,11 @@
+Imagini, audio, video, documente și design
+- `generate_image` (rețea): faceți o imagine dintr-o descriere (scrieți-o cu detalii; engleza funcționează cel mai bine). Apare în chat cu butoanele de partajare. Pentru mai multe, cereți pentru mai multe.
+- `generate_audio` (rețea): sunet vorbit (.mp3) din orice text. Pentru un dialog sau o poveste, acordă fiecărei părți propria voce (sex, vârstă, limbă, ton). Multe limbi, inclusiv bengaleză, hindi și engleză.
+- `generate_video`: un videoclip real editat (nu înregistrări AI) din scene — imagini, clipuri, text, culoare, narațiune, subtitrări, muzică. `ffmpeg`: orice editare directă — tăiere, alăturare, suprapunere, subtitrări, viteză, mixare audio, conversie. Sunt posibile videoclipuri de 5-10 minute, construite pas cu pas.
+- Progresul arată live ca procent în chat; când este gata, fișierul ajunge cu butoanele Play și Share.
+- `make_document`: un fișier real Word (.docx), Excel (.xlsx) sau PowerPoint (.pptx) pe telefon, nu necesită instalare, orice limbă. `office_template`: documente de birou gata cu spații libere de completat (cerere de concediu, cerere de angajare, factură, CV, propunere de afaceri, ofertă, anunț, proces-verbal de întâlnire, contract, conturi lunare și multe altele).
+- Document dintr-o fotografie: atașați o fotografie (Scanare document). Textul este copiat exact așa cum este scris (cuvintele neclare sunt marcate), un tabel devine .xlsx, în caz contrar .docx.
+- Note de întâlnire: din audio, o transcriere sau ceea ce spui. Documentul are un rezumat, decizii, elemente de acțiune (sarcină, proprietar, data scadentă) și o schiță de e-mail gata.
+- `make_design`: postere, bannere, sigle, felicitări, povești, coperți ca PNG și PDF. `brand_kit`: dați un logo sau culori; sunt salvate, tema aplicației se schimbă și, de atunci, documentele, diapozitivele și site-urile folosesc culorile mărcii dvs.
+- `present_slides`: personajul vorbește în timp ce se afișează cardurile; diapozitivele se schimbă de la sine când vocea se termină. Solicitați un fișier .pptx dacă doriți un fișier.
+- `open_file`: deschide ceea ce a fost realizat în aplicația reală a telefonului (Word/Docs, Sheets, Slides, PDF, galerie, browser) sau în panoul de previzualizare; agentul verifică ecranul pentru a se asigura că s-a deschis.

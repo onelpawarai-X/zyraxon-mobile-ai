@@ -1,0 +1,20 @@
+Bermula
+ZYRAXON ialah pembantu yang tinggal di dalam telefon Android anda. Ia bercakap dengan anda, mendengar anda dan boleh melakukan kerja sebenar: buka apl, ketik dan taip pada skrin, panggil orang, tulis fail, bina tapak web dan apl, jalankan sistem Linux, buat gambar, audio, video dan dokumen pejabat serta ingat anda selama berbulan-bulan. Ia berfungsi dalam mana-mana bahasa yang anda pertuturkan.
+
+## minit pertama
+- Pada pelancaran pertama ZYRAXON menunjukkan notis singkat bahawa ejen boleh bertindak pada telefon anda dengan sendirinya. Tekan "Oke, mula" untuk meneruskan.
+- Tambahkan kunci AI (Tetapan → Pembekal & API → pembekal AI). Tampalkan kunci untuk mana-mana pembekal yang anda suka (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Apabila anda menyimpan kunci, apl membaca katalog pembekal itu dan menyemaknya secara nyata, jadi anda melihat "disambungkan" benar dan bilangan model.
+- Tiada kunci? Anda masih boleh menggunakan model pada peranti (Tetapan → Model & identiti → Pada peranti). Mereka berjalan di telefon tanpa internet.
+- Pilih model dengan butang model dalam bar mesej dan aksara (Tetapan → Model & identiti → Identiti).
+- Berikan kebenaran apabila ciri memerlukannya (lihat bab Kebenaran). Ejen juga boleh membuka dialog kebenaran untuk anda dengan satu ketikan.
+- Hanya bercakap atau menaip. "Jadikan saya halaman pendaratan untuk kedai roti saya", "buka YouTube dan mainkan lagu", "apakah bateri saya?", "panggil Ibu".
+
+## Dua cara kerja
+Di sebelah kotak mesej terdapat butang mod dengan dua mod: Ejen dan Bina. Lihat bab Mod.
+
+## Di mana benda berada
+- Menu kiri: sembang anda, sembang baharu, namakan semula, padam dan suis tema.
+- Skrin sembang: mesej, papan tugasan, senarai alat, fail, terminal.
+- Panel Pratonton dan Kod: lihat dan edit perkara yang dibina oleh ejen.
+- Tetapan: lapan bahagian, diliputi satu demi satu dalam dokumentasi ini.
+- Dokumentasi ini: Tetapan → Dokumentasi (anda berada di sini).

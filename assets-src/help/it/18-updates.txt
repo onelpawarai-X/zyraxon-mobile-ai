@@ -1,0 +1,7 @@
+Aggiornamenti
+Impostazioni → Aggiornamenti → Aggiornamento dell'app o il banner nella parte superiore dell'app.
+- L'app verifica la presenza di nuove versioni e mostra "Nuovo aggiornamento disponibile - versione".
+- Controlla gli aggiornamenti: chiedi ora. Se sei attuale lo dice.
+- Download e installazione: download con una percentuale. Al termine, premere Installa. Le tue chat, la memoria e le impostazioni rimangono.
+- Se Android blocca l'installazione, premi il pulsante di autorizzazione, consenti ZYRAXON come origine di installazione, quindi riprova.
+- I pulsanti del banner: Scarica, Installa, Consenti e Chiudi.

@@ -1,0 +1,20 @@
+Hab automasi
+Tetapan → Sistem → Hab automasi. Setiap butang untuk apa yang ZYRAXON boleh lakukan dengan sendirinya berada di satu tempat, dalam enam tab. Setiap tab bermula dengan penerangan ringkas tentang cara ia berfungsi.
+
+## Kemahiran
+Ajar ZYRAXON tugasan dalam dua cara: beritahu dalam sembang ("belajar tugas ini"), atau tekan butang rekod dan lakukan sendiri tugasan itu dalam apl lain, kemudian kembali dan tekan Berhenti. Perkhidmatan Kebolehcapaian mesti dihidupkan, atau ketikan anda tidak dapat dilihat. Perkara yang dipelajari dipaparkan di bawah "Kemahiran yang dipelajari" dan boleh dimainkan semula atau dipadamkan.
+
+## Autopilot
+Peraturan seumpamanya "apabila ini berlaku, lakukan itu". Apabila peristiwa itu berlaku ZYRAXON terjaga dengan sendirinya dan melakukan kerja tanpa bertanya. Anda juga boleh membuat peraturan dengan menyebutnya dalam sembang. Setiap peraturan menunjukkan berapa kali ia telah dijalankan.
+
+## Wang
+Membaca SMS daripada mana-mana bank atau dompet di mana-mana negara (PayPal, M-Pesa, UPI, Pix, bKash, kad…) dan menyimpan satu lejar pendapatan, perbelanjaan, yuran dan baki. Anda boleh menetapkan belanjawan dan mendapat amaran apabila anda lulus. Ia berfungsi pada telefon, dan tiada apa-apa dihantar ke mana-mana.
+
+## Garis masa
+Semua yang ZYRAXON lakukan ditulis di sini. Penulisan, pengeditan dan pemadaman fail boleh dibuat asal dengan satu butang. Perintah yang dijalankan tidak boleh dibuat asal.
+
+## otak
+Mencari fail anda (teks, Word, Excel, PowerPoint, CSV) dan, jika anda membenarkannya, SMS anda, tanpa Internet dan dalam sebarang bahasa. Tekan "Indeks" dahulu, kemudian cari.
+
+## Hubungi ejen
+Apabila anda tidak boleh menerima panggilan, ZYRAXON menjawab, bercakap dalam bahasa pemanggil sendiri, mengetahui nama dan sebabnya, dan memberikan ringkasan kepada anda apabila panggilan ditamatkan. Lima belas bahasa menggunakan peraturan terbina dalam pantas; setiap bahasa lain dikendalikan oleh model, yang menjawab dalam bahasa pemanggil. Perkataan yang bermaksud selamat tinggal, mendesak atau spam difahami dalam semua bahasa sekaligus. Ringkasan panggilan yang ditangkap disenaraikan dalam tab.

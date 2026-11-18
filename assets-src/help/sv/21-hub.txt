@@ -1,0 +1,20 @@
+Automationsnav
+Inställningar → System → Automationsnav. Varje knapp för vad ZYRAXON kan göra själv finns på ett ställe, i sex flikar. Varje flik börjar med en kort beskrivning av hur det fungerar.
+
+## Färdigheter
+Lär ZYRAXON en uppgift på två sätt: berätta för den i chatten ("lär dig den här uppgiften"), eller tryck på inspelningsknappen och gör uppgiften själv i en annan app, kom sedan tillbaka och tryck på Stopp. Tillgänglighetstjänsten måste vara på, annars kan dina kranar inte ses. Vad den lärt sig visas under "Inlärda färdigheter" och kan spelas upp eller tas bort.
+
+## Autopilot
+Regler av typen "när detta händer, gör det". När händelsen inträffar vaknar ZYRAXON av sig själv och gör jobbet utan att fråga. Du kan också skapa en regel genom att säga den i chatten. Varje regel visar hur många gånger den har körts.
+
+## Pengar
+Läser SMS från vilken bank eller plånbok som helst i vilket land som helst (PayPal, M-Pesa, UPI, Pix, bKash, kort...) och för en huvudbok över inkomst, utgifter, avgifter och saldo. Du kan sätta en budget och få en varning när du passerar den. Det fungerar på telefonen, och ingenting skickas någonstans.
+
+## Tidslinje
+Allt ZYRAXON gjorde skrivs här. Filskrivningar, redigeringar och raderingar kan ångras med en knapp. Ett kommando som kördes kan inte ångras.
+
+## Hjärna
+Söker igenom dina filer (text, Word, Excel, PowerPoint, CSV) och, om du tillåter det, ditt SMS, utan internet och på något språk. Tryck på "Indexa" först och sök sedan.
+
+## Ring agenten
+När du inte kan ta ett samtal svarar ZYRAXON, talar på den som ringer upp, lär sig namnet och anledningen och ger dig en sammanfattning när samtalet avslutas. Femton språk använder snabba inbyggda regler; vartannat språk hanteras av modellen, som svarar på uppringarens språk. Ord som betyder adjö, brådskande eller spam förstås på alla språk samtidigt. Sammanfattningar av fångade samtal listas i fliken.

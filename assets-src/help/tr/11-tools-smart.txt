@@ -1,0 +1,45 @@
+Beceriler, otopilot, para, zaman çizelgesi ve geri alma, beyin, çağrı temsilcisi ve hafıza
+Bunların hepsini konuşarak kullanırsınız: ne istediğinizi söyleyin ve temsilci doğru aracı çağırsın. Burada her eylem seçenekleriyle birlikte listelenir.
+
+## Beceriler – yaparak öğretin
+Beceri, temsilcinin sizin bunu bir kez yapmanızı izleyerek öğrendiği bir telefon görevidir. Her bir öğenin nasıl tekrar bulunacağını saklar (ekran konumu değil, kimliği, sözcükleri ve komşuları), böylece uygulamanın düzeni değiştiğinde çalışmaya devam eder.
+- Bir beceri ekleyin: `skill_record` (Kişisel). "Bunu <isim> olarak öğren" deyin. `action: start` (bir adla) kayda başlar; ardından görevi yapın; uygulamayı açın, dokunun, yazın, tuşlara basın; her adım kaydedilir. `action: stop` onu kaydeder. Duruşta, yazılan değerleri parametrelere dönüştürmek için `params` iletebilirsiniz (örneğin, telefon numarası `number` olur, tutar `amount` olur) ve `description` olur. `action: status` size kaydın açık olup olmadığını söyler.
+- Bir beceriyi çalıştırın: `skill_run` (Kişisel). Parametreleri için `args` değerini verin, ör. sayısı ve tutarı. Adımların çok küçük bir kısmında tekrar oynatılır ve uygulama değiştiğinde kendini iyileştirir. Bir adım başarısız olursa, sonuç hangi adımın ve neyin olduğunu ekranda belirtir ve temsilci geri kalanını elle tamamlar.
+- Becerileri listele: `skill_list` (Güvenli) adı, parametreleri, adımları ve her birinin ne sıklıkta çalıştırıldığını gösterir. Üzerinde bir ad ve dışa aktarma ile paylaşılabilir bir `.zxskill` dosyası oluşturulur.
+- Paylaş ve yükle: `skill_import` (Kişisel), beceri olarak indirilen bir dosyadan veya paylaşılan bir dosyadan `.zxskill` dosyasını yükler.
+- Bir beceriyi silin: `skill_delete` (Sistem).
+- Örnek: "Cüzdan uygulamamla Rahim'e nasıl 500 gönderdiğimi öğren" → bunu bir kez yaparsın → Bir dahaki sefere "Karim'e 700 gönder".
+
+## Otomatik pilot - "X gerçekleştiğinde Y yapın"
+Bir kural, aracıyı kendiliğinden uyandırır ve görevi size sormadan yapar.
+- Ekle: `autopilot_add` (Sistem). Türler: sms, bildirim, çağrı, günlük, bir kez, aralıklı, pil, uygulama. Yalnızca kuralın gerektirdiği alanları doldurun: `from` (gönderenin adı veya numarası veya uygulama başlığı), `any` (bu kelimelerden en az biri), `all` (her kelime), `none` (bu kelimelerin hiçbiri), `time` "SS:DD" (günlük), `in_minutes` veya `at_ms` (bir kez), `every_minutes` (aralık), `below` (pil yüzdesi), `pkg` (uygulama paketi) veya uygulama ve bildirim kuralları için ad). Temsilci cümlenizi bu alanlara dönüştürür. Sonuç, hâlâ ihtiyaç duyulan tüm izinleri (SMS, bildirim erişimi…) listeler ve temsilci sizden bu izni açmanızı ister.
+- Örnekler: "Cüzdan uygulamamdan bir ödeme SMS'i geldiğinde bunu defterime ekle." "Her sabah saat 8'de bana hava durumunu söyle." "20 dakika sonra bana ekmeği çıkarmamı hatırlat." "Her 30 dakikada bir su içme hatırlatması." "Pil %15'in altına düştüğünde bana haber verin." "Birisi beni aradığında numarayı kaydedin." "Bankacılık uygulamasını açtığımda bana bütçeyi kontrol etmemi hatırlat."
+- Liste: `autopilot_list` (Güvenli) her kuralı bir sonraki çalışma süresiyle ve ne sıklıkta tetiklendiğini gösterir.
+- Duraklat veya devam ettir: `autopilot_toggle` (Sistem). Sil: `autopilot_remove` (Sistem), kimliğe veya başlığa göre.
+- Bir kural tetiklendiğinde bunu belirten bir mesaj alırsınız ve aracı yalnızca işi yapar.
+
+## Para defteri (kişisel CFO)
+- `ledger_scan` (Kişisel): Cüzdan ve banka SMS'lerini özel bir deftere okuyun: gelir, harcama, ücretler, bakiye ve kategori. `days` ne kadar geriye gittiğini belirtir (varsayılan 30). `auto` açıkken her yeni para SMS'i kendiliğinden eklenir ve bütçe aşıldığında uyarı alırsınız. Herhangi bir ülkenin cüzdanı ve banka mesajları için herhangi bir para biriminde çalışır.
+- `ledger_report` (Kişisel): bugün, dün, hafta, ay veya tümü. Metni (hazır bir sözlü özet) veya xlsx'i (sizin için açılan, işlemleri ve kategori toplamlarını içeren bir Excel dosyası) biçimlendirin.
+- `ledger_budget` (Kişisel): Bir kategori için aylık bütçe belirleyin (yemek, faturalar, ulaşım, alışveriş, mobil yükleme, transferler…); 0 sınırı onu kaldırır; hiçbir argüman olmadan bütçeleri ve mevcut uyarıları listeler.
+- Temsilci asla para rakamlarını icat etmez; bunları defterden okur.
+
+## Zaman çizelgesi ve geri alma
+- Temsilcinin yaptığı her şey zaman çizelgesine (son 400 eylem) yazılır. Dosya değişiklikleri daha önce orada olanların bir kopyasını tutar.
+- `timeline_list` (Güvenli): Aracının yakın zamanda yaptığı, her biri için bir kimlik içeren ve hangi değişikliklerin geri alınabileceği.
+- `timeline_undo` (Kişisel): `id` bir yazma, düzenleme veya silme işlemini geri alır — dosya tam olarak olduğu gibi geri gelir (var olmayan bir dosya yeniden kaldırılır). `since_id` bu kimlikten itibaren her şeyi geri alır, en yenisi önce gelir. "Şunu geri al" veya "eskisi gibi geri koy" derken bunu kullanın.
+- Geri al, dosya yazma, düzenleme ve silme işlemlerini kapsar. Çalıştırılan bir komut (örneğin bir şey yüklemek veya mesaj göndermek) bu şekilde geri alınamaz.
+- Sohbet mesajları: bir sohbetin tamamını kaldırmak için sol menüdeki kalemi ve çarpı işaretini kullanın veya Ayarlar → Gizlilik ve veriler → Sohbet geçmişini silin veya Gezinme → Yeni oturum.
+
+## Beyin — dosyalarınız için ikinci hafıza
+- `brain_index` (Güvenli): çevrimdışı dizini klasörler veya dosyalar (metin, Markdown, CSV, Word, Excel, PowerPoint) ve isteğe bağlı olarak SMS gelen kutusu (`sms` açık) üzerinde oluşturun veya yenileyin. İlk aramadan önce ve yeni dosyalar göründükten sonra çalıştırın. Varsayılan çalışma alanınızdır.
+- `brain_search` (Güvenli): kendi sözlerinizle sorun, "kira sözleşmem nerede?" — herhangi bir dilde çevrimdışı çalışır. `kind` dosya veya sms'dir; `days` son ​​öğelerle sınırlıdır. Bulunan dosyayı `open_file` ile açın.
+
+## Temsilciyi arayın
+- `call_agent` (Kişisel): eylem açık, kapalı veya durum. `owner`, söylediği addır ("Ben <sahibin> asistanıyım"). `answer_after_seconds` (varsayılan 6) ilk önce sizin açmanızı sağlar. Bir çağrı geldiğinde ve cevap veremediğinizde, arayanın dilinde selam verir, adını ve nedenini sorar, basit soruları yanıtlar, kibarca telefonu kapatır ve size bir özet anlatır.
+- `call_log` (Güvenli): Yanıtladığı aramaların özetleri, en yenisi önde olacak şekilde.
+- Arama ve telefon durumu izinlerine ihtiyacı var.
+
+## Hafıza
+- `memory_write`, `memory_read`, `memory_delete` (Güvenli): Hakkınızdaki kalıcı gerçekler (isim, tercihler, kişiler, tarihler, projeler) yerel bir veritabanında bulunur ve yeniden başlatmalardan sağ çıkar. "Bunu hatırla" deyin ve aynı sırayla yazılır; bir sorun varsa kaldırılır veya yeniden yazılır. Her eski konuşma da saklanır ve söylediklerinize uyan geçmiş dönüşler, aylar sonra bile kendiliğinden geri gelir.
+- Hepsini Ayarlar → Sistem → Bellek'te (anahtar, değer, kaydet, tümünü sil) görün ve değiştirin.

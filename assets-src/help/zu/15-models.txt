@@ -1,0 +1,15 @@
+Abahlinzeki, amamodeli nokhiye
+## Abahlinzeki
+ZYRAXON (umugqa owakhe kanye Apex nomenzeli wamafu, uhlale uxhumekile), OpenCode (isabelo samahhala), Groq (i-Llama eshesha kakhulu), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek kanye OpenRouter. Engeza noma yimuphi ukhiye kokuthi Izilungiselelo → Abahlinzeki ne-API. Ukhiye ugcinwa ocingweni lwakho, uhlolwe ngokumelene nekhathalogi yabahlinzeki, futhi amamodeli asakaza kusikhethi njengoba umhlinzeki ngamunye ephendula.
+
+## Ukukhetha imodeli
+Sebenzisa inkinobho yemodeli kubha yomlayezo noma Izilungiselelo → Imodeli & nomazisi → Imodeli. Sesha ngegama, hlunga Konke noma Ngokwezifiso. Inketho yakho igcinwa futhi ibuyiselwe ekuqalisweni; ukuvuselela akulokothi kuthathe indawo yemodeli yakho elondoloziwe. Amamodeli amakwe ngokuthi Bukhoma angakhuluma ngezwi lawo (bheka i-Live Voice).
+
+## Amamodeli akudivayisi
+Izilungiselelo → Imodeli nobuwena → Kudivayisi. Imodeli isebenza ocingweni kungekho datha eyishiyayo. Amafayela makhulu (amakhulu e-MB ukuya ku-GB ambalwa), ngakho landa kokuthi Wi-Fi. Zibalwe ezincane nezinkulu; ocingweni olune-RAM encane khetha okulula kakhulu. Ukushaya kwethuluzi kusekelwa Gemma nezinqwaba FunctionGemma. Ithokheni Hugging Face ingeyamafayela anesango kuphela. Amamodeli alayishiwe ayakhunjulwa.
+
+## Iwebhusayithi ZYRAXON
+zyraxonai.lovable.app: dala i-akhawunti (i-imeyili noma Google), vula Izilungiselelo, Ukhiye we-API / Ithokheni yokufinyelela, dala ukhiye bese unamathisele kuhlelo lokusebenza. Ngaphandle kokhiye usengasebenzisa uhlelo lokusebenza ngamamodeli akudivayisi namathuluzi endawo.
+
+## Izindleko nedatha
+Abahlinzeki bamafu bakukhokhisa ngokwemithetho yabo. Uma "Kudivayisi kuphela" kuvuliwe akukho okuthunyelwa kunoma yimuphi umhlinzeki.

@@ -1,0 +1,27 @@
+Awọn igbanilaaye, ọkan nipa ọkan
+Eto → Aabo & asiri → Awọn igbanilaaye. Lara kọọkan fihan "Ti gba" tabi bọtini kan. Titẹ ọna kan ṣii ọrọ sisọ eto; kan tẹ Gba laaye. Aṣoju tun le ṣii ọrọ sisọ funrararẹ pẹlu `request_permission`.
+
+- Gbohungbohun: ki ZYRAXON le gbọ ti o. Laisi rẹ ko si igbewọle ohun.
+- Kamẹra: lati ya ati wo awọn fọto (`look_camera`, ọlọjẹ iwe, "kini o ri").
+- Ipo: fun awọn maapu ati alaye agbegbe.
+- Awọn iwifunni: lati sọ fun ọ nigbati iṣẹ abẹlẹ ba pari.
+- Awọn faili & media: lati ka awọn fọto, awọn fidio, ohun ati awọn iwe aṣẹ.
+- Boju (ya lori awọn ohun elo miiran): nilo fun oju lilefoofo.
+- Wiwọle: jẹ ki oluranlowo ka iboju ki o tẹ ni kia kia, ra ati tẹ fun ọ. Eyi ni okan ti adaṣiṣẹ foonu. O yipada ni awọn eto Wiwọle ti eto naa.
+- Imudara batiri: da Android duro lati fi ZYRAXON sun nigba ti o n ṣiṣẹ ni abẹlẹ.
+
+## Awọn igbanilaaye miiran ti app n kede
+- SMS (ka ati gba): fun awọn koodu kika, iwe akọọlẹ owo ati awọn ofin autopilot SMS.
+- Ipo foonu, dahun awọn ipe, foonu ipe, awọn olubasọrọ: fun awọn irinṣẹ ipe ati oluranlowo ipe.
+- Wiwọle iwifunni: jẹ ki autopilot fesi si awọn iwifunni.
+- Abojuto ẹrọ: jẹ ki `device_lock` tii iboju naa gan.
+- Fi awọn akojọpọ sori ẹrọ: jẹ ki awọn imudojuiwọn ati `build_app` fi awọn apks sori ẹrọ; Android beere lọwọ rẹ lati gba ZYRAXON laaye gẹgẹbi orisun fifi sori ẹrọ.
+- Awọn iṣẹ iwaju (gbohungbohun, imuṣiṣẹpọ data) ati titiipa ji: jẹ ki ohun ati awọn iṣẹ pipẹ wa laaye.
+- Intanẹẹti ati ipo nẹtiwọọki: awọsanma ati wẹẹbu.
+- Shizuku (iyan): iwọle si ipele eto fun ikarahun ati ebute.
+
+## Google Play Protect
+Ti Play Protect ba ṣe idiwọ iṣẹ kan, aṣoju le ṣii oju-iwe ti o tọ, wo iboju gidi ki o lọ ni igbesẹ nipasẹ igbese nipasẹ jia ati toggle - ṣugbọn o beere lọwọ rẹ ni akọkọ, nitori titan aabo ni ipinnu rẹ. Lati ṣe funrararẹ: Play Store → aworan profaili → Play Protect → eto → pa “Ṣawari awọn ohun elo pẹlu Play Protect”. Oju-iwe naa ni bọtini kan ti o ṣi Play Store.
+
+## Kini idi ti igbanilaaye ṣe pataki
+Ti ọpa kan ba kuna fun igbanilaaye ti o padanu, aṣoju naa sọ fun ọ eyi ti o ṣii ọrọ sisọ rẹ. Ko si ohun ti o ni imọlara ti n ṣiṣẹ laisi Fi aaye gba laaye.

@@ -1,0 +1,34 @@
+Alati za automatizaciju telefona
+Agent kontrolira vaš telefon putem alata. Nikada ih ne zovete sami; vi kažete što želite i agent bira alate. Ovo poglavlje navodi svaki alat koji dodiruje telefon i kako je zaštićen (pogledajte Razine odobrenja: sigurno, osobno, sustav).
+
+## Otvaranje i pronalaženje
+- `open_app` (Sigurno): otvorite bilo koju instaliranu aplikaciju prema nazivu ili paketu. `list_apps` (Sigurno): popis instaliranih aplikacija. `open_settings` (Sigurno): otvorite stranicu postavki sustava (pristupačnost, sloj, obavijesti, aplikacije, Wi-Fi, baterija, Play Protect). `launch_url` (Sigurno): otvorite vezu u pregledniku. `youtube_play` (Sigurno): otvorite YouTube u rezultatima pretraživanja za ono što ste tražili i reproducirajte.
+
+## Gledajući ekran
+- `read_screen` (Osobno): čita svaki tekst i element na zaslonu s pozicijama dodirivanja. `screen_shot` (Osobno): pravi snimak zaslona. Za njih je potrebna dozvola za pristupačnost.
+- `look_camera` (Osobno): snima jednu fotografiju fotoaparatom i gleda je. `read_media` (Osobno): čita sliku, audio ili video (iz putanje ili veze) tako da ih model može razumjeti.
+
+## Gluma na ekranu
+- `tap` (Osobno): dodirnite točku. `tap_text` (Osobno): dodirnite element s ovom oznakom, sigurnije od koordinata. `swipe` (Osobno): pomicanje ili pokret natrag. `type_text` (Osobno): upišite u polje u fokusu. `press_key` (Osobno): povratak, početna, nedavne, obavijesti, brze postavke, zaključavanje.
+- Radnje na ekranu izvode se jedna po jedna, redom, a nakon svake agent gleda novi ekran.
+
+## Telefon, poruke i međuspremnik
+- `call_dial` (Osobno): uputite poziv prema broju ili imenu kontakta. `call_state` (Osobno): zvoni li poziv ili je aktivan? `call_answer` (Osobno): odgovor. `call_hangup` (Osobno): poklopi.
+- `read_sms` (Osobno): pročitajte najnoviji SMS, npr. OTP kod; može filtrirati prema tekstu ili pošiljatelju.
+- `clipboard_read` i `clipboard_write` (Osobno): čitanje ili pisanje međuspremnika.
+- `notify` (Osobno): objavite pravu Android obavijest. `share` (Osobno): otvorite list za dijeljenje s tekstom, vezom ili datotekom. `channel_post` (Sustav): otvorite Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail ili SMS s unaprijed ispunjenim tekstom, spreman za slanje.
+
+## Status i činjenice o sustavu
+- `network_status` (Sigurno): online ili ne, Wi-Fi ili mobilni podaci, Wi-Fi ime. `sys_info` (Sigurno): Android verzija, model, CPU, RAM, pohrana, trenutna aplikacija. `platform_info` (Sigurno): gdje je agent pokrenut. `process_list` (Sigurno): pokrenuti procesi.
+
+## Dopuštenja i zaslon
+- `request_permission` (Sigurno): otvara dijaloški okvir dopuštenja sustava jednim dodirom kada alat ne uspije pronaći dopuštenje koje nedostaje. `device_lock` (Sustav): stvarno zaključajte zaslon ili postavite dopuštenje koje to omogućuje. `floating_bubble` (Osobno): uključite ili isključite lebdeću kuglu.
+- `voice_change` (Osobno): promijenite brzinu govora, visinu ili spol. `live_voice` (Sustav): uključite ili isključite način govora u govor uživo.
+
+## Pomoćnici sučelja
+- `code_box` i `files_panel`: otvorite kutiju koda uživo ili preglednik datoteka kako biste mogli gledati kako se radi. `todo_write`: ploča sa zadacima uživo.
+
+## Savjeti
+- Možete lančano: "Otvorite postavke, pronađite Wi-Fi i recite mi naziv mreže". Agent čita ekran nakon svakog koraka i odlučuje o sljedećem.
+- Ako dodir ne učini ništa, agent ponovno čita zaslon i pokušava s drugim elementom; nikad ne tapka naslijepo.
+- Ako Play Protect nešto blokira, agent može s vama proći kroz postavke (pogledajte Dopuštenja).

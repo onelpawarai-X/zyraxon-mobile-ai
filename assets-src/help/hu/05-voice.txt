@@ -1,0 +1,35 @@
+Hang: beszéd, hallgatás és élő beszéd
+## Hallgatás (mikrofon)
+Beállítások → Hang és mikrofon → Mikrofon és nyelv.
+- Beszédfelismerő nyelv: az a nyelv, amelyet a mikrofonba beszél. Bármikor változtassa meg.
+- Tartsa bekapcsolva a mikrofont (mindig figyeljen): bekapcsolt állapotban a mikrofon nyitva marad. Ha ki van kapcsolva, akkor saját maga kapcsolja be.
+- Automatikus küldés, ha abbahagyja a beszédet: körülbelül 1,5 másodperces csend után a mondat magától elküldésre kerül. Ha ki van kapcsolva, a szavak a mezőben várnak arra, hogy megnyomja a Küldés gombot.
+- Az üzenetsorban lévő mikrofongomb és a tetején lévő szalaghirdetés ugyanezt teszi be/ki.
+- A mikrofon mindig nyitva áll előtted, még akkor is, ha ZYRAXON beszél. Abban a pillanatban, amikor elkezd beszélni, leáll, és hallgat, majd válaszol. A mikrofonon keresztül visszaköszönő saját hangját a rendszer kiszűri, ha összehasonlítja a szöveget az utolsó válaszával.
+- Egy mondat csak egyszer kerül elküldésre. Ha a felismerő később megismétli ugyanannak a mondatnak egy kicsit más változatát, akkor az ugyanazon fordulatként kiesik.
+
+## Beszéd (szövegfelolvasás)
+Beállítások → Hang és mikrofon → Hangprofil.
+- Válasszon hangot: női (édes és romantikus) vagy férfi (mély és magabiztos). A webhely saját hangjait használjuk, ha készen áll; a telefon saját beszédmotorja a tartalék.
+- Sebesség és hangmagasság csúszkák, és "Test voice".
+- A „Válaszok hangos felolvasása” funkció be- vagy kikapcsolja a beszédet.
+- Ha a telefon nem rendelkezik beszédmotorral, telepítse a Google Speech Services szolgáltatást. Ha a telefon nem rendelkezik bengáli hangadatokkal, egy gomb segítségével letöltheti azokat.
+- A hang leállításához érintse meg a beszélő szalaghirdetést. Az üzenet meghallgatásához érintse meg bármelyik üzenet alatti Meghallgatás lehetőséget.
+- ZYRAXON soha nem olvas fel kódot, hivatkozásokat, JSON vagy szerszámneveket.
+
+## Hanglabor (hangváltó)
+Válasszon a szerver katalógusából nem (minden, lány, fiú), kor (gyermek, tinédzser, felnőtt, idősebb) és nyelv (bengáli, hindi, angol, urdu, arab, tamil, nepáli, spanyol, francia, német, japán, koreai, kínai, orosz, török ​​stb.) szerint. A „Listen” egy hang előnézetét jeleníti meg; A „Vissza az alapértelmezettre” visszaállítja a karakter hangját. A sok hangú hanghoz kérdezze meg az ügynököt: a párbeszéd minden része megkapja a saját hangját.
+
+## Élő hang (beszédről beszédre)
+Beállítások → Hang és mikrofon → Élő hang. Valós idejű modellnél (Gemini Élő, OpenAI Valós idejű és hasonlók) a modell hallja a mikrofont és a saját hangján, egy adatfolyamban válaszol, és szó közben megszakíthatja. Ebben a munkamenetben a telefon saját beszéde ki van kapcsolva, így soha nem hallhat két hangot.
+- Használja a modell saját hangját: be = élő beszélgetés; kikapcsolva = a telefon szöveges válaszokat olvas.
+- Állapot mutat: kapcsolódás, hallgatás, beszéd, várakozás.
+- A valós idejű modell kiválasztása magától bekapcsol.
+- Ha nincs betöltve valós idejű modell, adjon hozzá egy Gemini vagy OpenAI kulcsot az AI-szolgáltatókban.
+- A hangprofilban kiválasztott hang élő módban is használatos.
+
+## Lebegő szem
+Beállítások → Aura és téma → Aura és háttér.
+- Egy kis lebegő gömb, amely minden más alkalmazás felett ül. Érintse meg a mikrofon be- vagy kikapcsolásához; hosszan nyomja meg a szövegdoboz megnyitásához, majd újra bezárásához.
+- Nyolc kivitel: szem, világító gömb, neongyűrű, galaxis, pálya, plazma, pulzár, prizma. Elhelyezés a képernyő szélén.
+- Hangutasítások (ébresztő szavak): amikor az alkalmazás a háttérben van, a név kimondása felébreszti a lebegő szemet, és ZYRAXON válaszol. Alapértelmezések: "zyraxon", "hey zyraxon" és gyakori írásmódok bengáli és angol nyelven. Adja hozzá saját szavait bármilyen nyelven; bármikor távolítsa el őket.

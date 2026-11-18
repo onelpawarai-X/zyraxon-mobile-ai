@@ -1,0 +1,35 @@
+Stem: spreken, luisteren en live praten
+## Luisteren (microfoon)
+Instellingen → Stem en microfoon → Microfoon en taal.
+- Spraakherkenningstaal: de taal die u tegen de microfoon spreekt. Wijzig het op elk gewenst moment.
+- Houd de microfoon ingeschakeld (altijd luisteren): wanneer deze is ingeschakeld, blijft de microfoon open. Als het uit staat, zet je het zelf aan.
+- Automatisch verzenden als u stopt met praten: na ongeveer 1,5 seconde stilte wordt uw zin vanzelf verzonden. Wanneer uitgeschakeld, wachten de woorden in het vak totdat u op Verzenden drukt.
+- De microfoonknop in de berichtenbalk en de banner bovenaan doen hetzelfde aan/uit.
+- De microfoon staat altijd voor je open, ook als ZYRAXON aan het woord is. Zodra u begint te praten, stopt het apparaat, luistert en geeft u vervolgens antwoord. De eigen stem die door de microfoon terugkomt, wordt eruit gefilterd door de tekst te vergelijken met het laatste antwoord.
+- Er wordt slechts één keer een zin verzonden. Als de herkenner later een iets andere versie van dezelfde zin herhaalt, wordt deze als dezelfde beurt geschrapt.
+
+## Spreken (tekst-naar-spraak)
+Instellingen → Stem en microfoon → Spraakprofiel.
+- Kies een stem: vrouwelijk (lief en romantisch) of mannelijk (diep en zelfverzekerd). De eigen stemmen van de website worden gebruikt wanneer ze klaar zijn; de eigen spraakengine van de telefoon is de terugval.
+- Snelheids- en toonhoogteschuifregelaars en "Teststem".
+- Met 'Antwoorden voorlezen' wordt het spreken in- of uitgeschakeld.
+- Als de telefoon geen spraakengine heeft, installeer dan Google Spraakservices. Als de telefoon geen Bengaalse spraakgegevens heeft, kunt u deze met een knop downloaden.
+- Tik op de sprekende banner om de stem te stoppen. Tik op Luister onder een bericht om het te horen.
+- ZYRAXON leest nooit code, links, JSON of toolnamen hardop voor.
+
+## Stemlab (stemwisselaar)
+Kies uit de catalogus van de server op geslacht (allemaal, meisje, jongen), leeftijd (kind, tiener, volwassene, senior) en taal (Bengaals, Hindi, Engels, Urdu, Arabisch, Tamil, Nepalees, Spaans, Frans, Duits, Japans, Koreaans, Chinees, Russisch, Turks...). "Luister" geeft een voorbeeld van een stem weer; "Back to default" herstelt de stem van het personage. Voor audio met veel stemmen kunt u het aan de agent vragen: elk deel van een dialoog krijgt zijn eigen stem.
+
+## Live stem (spraak-naar-spraak)
+Instellingen → Stem en microfoon → Live stem. Bij een realtime model (Gemini Live, OpenAI Realtime en dergelijke) hoort het model de microfoon en antwoordt met zijn eigen stem, in één stream, en je kunt hem midden in het woord onderbreken. Tijdens deze sessie wordt de eigen spraak van de telefoon uitgeschakeld, zodat je nooit twee stemmen hoort.
+- Gebruik de eigen stem van het model: aan = live talk; uit = de telefoon leest tekstantwoorden.
+- Status toont: verbinden, luisteren, spreken, wachten.
+- Als u een realtime model kiest, wordt dit vanzelf ingeschakeld.
+- Als er geen realtime model wordt geladen, voeg dan een Gemini of OpenAI sleutel toe in AI-providers.
+- De stem die u in het stemprofiel heeft gekozen, wordt ook in de livemodus gebruikt.
+
+## Zwevend oog
+Instellingen → Aura en thema → Aura en achtergrond.
+- Een kleine zwevende bol die boven elke andere app zit. Tik om de microfoon in of uit te schakelen; druk lang om een ​​tekstvak te openen en weer te sluiten.
+- Acht ontwerpen: oog, gloedbol, neonring, sterrenstelsel, baan, plasma, pulsar, prisma. Plaatsing aan de rand van het scherm.
+- Spraakopdrachten (Worden wakker): wanneer de app op de achtergrond staat, wordt door het zeggen van de naam het zwevende oog gewekt en antwoordt ZYRAXON. Standaardwaarden: "zyraxon", "hey zyraxon" en gebruikelijke spellingen in het Bengaals en Engels. Voeg uw eigen woorden toe in elke taal; verwijder ze op elk gewenst moment.

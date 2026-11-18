@@ -1,0 +1,16 @@
+Sprog
+## App sprog
+Indstillinger → Sprog og oversættelse. 60 sprog. Hele grænsefladen og agentens værktøjsmeddelelser følger den. Hvert sprog har sin egen oversættelsesfil. Enhver linje, som en sprogfil endnu ikke har, vises på engelsk, aldrig tom.
+
+## Hvad du taler
+Agenten svarer altid på det sprog, du taler til den, ethvert sprog i verden. Hvis du skifter, skifter den. Den bruger den venlige-respektfulde form for "dig" på dit sprog. Brand- og teknologinavne forbliver, som de er.
+
+## Stemmesprog
+- Genkendelsessprog (det du taler ind i mikrofonen): Indstillinger → Stemme og mikrofon → Mikrofon og sprog.
+- Talende stemme: Indstillinger → Stemme og mikrofon → Stemmeprofil og Voice lab for sprog som bengali, hindi, engelsk, urdu, arabisk, tamil, nepalesisk, spansk, fransk, tysk, japansk, koreansk, kinesisk, russisk, tyrkisk.
+
+## Denne dokumentation
+Brug sprogchipsene øverst på denne side. Hele guiden er skrevet på alle sprog, som appen understøtter, i hånden og sendes inde i appen. Intet er oversat på din telefon: hvert kapitel åbner øjeblikkeligt, fungerer offline og behøver ingen model eller nøgle.
+
+## At skrive i dit eget manuskript
+Dokumenter, plakater og designs kan laves i ethvert script. Til bengalske designs bruges den rigtige skrifttype; for andre scripts er den matchende skrifttype valgt.

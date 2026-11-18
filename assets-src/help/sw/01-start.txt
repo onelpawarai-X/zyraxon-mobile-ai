@@ -1,0 +1,20 @@
+Kuanza
+ZYRAXON ni msaidizi anayeishi ndani ya simu yako Android. Inazungumza nawe, inakusikiliza, na inaweza kufanya kazi halisi: kufungua programu, gusa na kuandika kwenye skrini, kuwapigia watu simu, kuandika faili, kuunda tovuti na programu, kuendesha mfumo wa Linux, kutengeneza picha, sauti, video na hati za ofisi, na kukukumbuka kwa miezi kadhaa. Inafanya kazi katika lugha yoyote unayozungumza.
+
+## Dakika za kwanza
+- Wakati wa uzinduzi wa kwanza ZYRAXON huonyesha arifa fupi kwamba wakala anaweza kuchukua hatua kwenye simu yako peke yake. Bonyeza "Nimeelewa, anza" ili kuendelea.
+- Ongeza ufunguo wa AI (Mipangilio → Watoa huduma na API → watoa huduma wa AI). Bandika ufunguo kwa mtoa huduma yeyote unayependa (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode. Unapohifadhi ufunguo programu husoma katalogi ya mtoa huduma huyo na kuikagua ikiwa ni halisi, ili uweze kuona "imeunganishwa" halisi na idadi ya miundo.
+- Hakuna ufunguo? Bado unaweza kutumia miundo iliyo kwenye kifaa (Mipangilio → Muundo na utambulisho → Kwenye kifaa). Wanaendesha kwenye simu bila mtandao.
+- Chagua muundo ulio na kitufe cha muundo katika upau wa ujumbe, na herufi (Mipangilio → Muundo na utambulisho → Utambulisho).
+- Toa ruhusa wakati kipengele kinahitaji moja (angalia sura ya Ruhusa). Wakala pia anaweza kukufungulia kidirisha cha ruhusa kwa mguso mmoja.
+- Ongea tu au chapa. "Nitengenezee ukurasa wa kutua wa duka langu la mikate", "fungua YouTube na ucheze wimbo", "betri yangu ni nini?", "Mpigie Mama".
+
+## Njia mbili za kufanya kazi
+Karibu na sanduku la ujumbe kuna kifungo cha mode na njia mbili: Wakala na Jenga. Tazama sura ya Njia.
+
+## Mambo ni wapi
+- Menyu ya kushoto: soga zako, soga mpya, badilisha jina, futa na swichi ya mandhari.
+- Skrini ya gumzo: ujumbe, ubao wa todo, orodha ya zana, faili, terminal.
+- Onyesho la kukagua na paneli za Msimbo: ona na uhariri kile wakala huunda.
+- Mipangilio: sehemu nane, zilizofunikwa moja baada ya nyingine katika hati hii.
+- Hati hii: Mipangilio → Hati (uko hapa).

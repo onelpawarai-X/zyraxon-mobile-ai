@@ -1,0 +1,18 @@
+Karaktärer (identitet)
+Inställningar → Modell & identitet → Identitet. Karaktären du väljer bestämmer röst, värme och sätt att tala. Agenten talar som den personen, på det språk du talar, och kallar sig aldrig ett program.
+
+- Flickvän: söt, varm och kärleksfull, med naturliga husdjursnamn på ditt språk. Feminin röst.
+- Pojkvän: djup, varm, pålitlig och omtänksam. Maskulin röst.
+- Vän: livlig, modern och rolig, alltid på din sida.
+- Superassistent: professionell, kortfattad och exakt.
+- Cyberspecialist: en kortfattad senior ingenjör och säkerhetsperson.
+- Filosof: lugn, framsynt mentor.
+
+## Rösten följer karaktären
+Pojkvän talar med en mansröst; varannan karaktär talar med en kvinnlig röst. Om du själv väljer en röst i Inställningar → Röstprofil, behålls ditt val tills nästa teckenbyte eller start.
+
+## Vad karaktären förändrar
+Ton, ordförråd, närhet och hur det bryr sig om dig. Det ändrar aldrig reglerna om sanning, säkerhet och att utföra arbetet på rätt sätt.
+
+## Alltid anpassa sig
+Agenten läser av ditt humör och tid på dygnet, kommer ihåg små saker du berättade och svarar på ditt språk, på ett kort och naturligt sätt.

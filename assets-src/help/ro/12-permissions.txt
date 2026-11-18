@@ -1,0 +1,27 @@
+Permisiuni, una câte una
+Setări → Securitate și confidențialitate → Permisiuni. Fiecare rând arată „Acordat” sau un buton. Atingerea unui rând deschide dialogul de sistem; doar apăsați pe Permite. Agentul poate deschide dialogul în sine cu `request_permission`.
+
+- Microfon: astfel încât ZYRAXON să te audă. Fără el nu există nicio intrare vocală.
+- Cameră: pentru a face și a privi fotografii (`look_camera`, scanare documente, „ce vezi”).
+- Locație: pentru hărți și informații locale.
+- Notificări: pentru a vă anunța când se termină munca de fundal.
+- Fișiere și media: pentru a citi fotografii, videoclipuri, sunet și documente.
+- Suprapunere (desenare peste alte aplicații): necesară pentru ochiul plutitor.
+- Accesibilitate: permite agentului să citească ecranul și să atingă, să gliseze și să tastați pentru dvs. Aceasta este inima automatizării telefonului. Îl porniți în setările de accesibilitate ale sistemului.
+- Optimizarea bateriei: oprește Android să pună ZYRAXON în repaus în timp ce funcționează în fundal.
+
+## Alte permisiuni pe care aplicația le declară
+- SMS (citire și primire): pentru citirea codurilor, registrul de bani și regulile pilot automat SMS.
+- Stare telefon, răspunde la apeluri, apel la telefon, contacte: pentru instrumente de apel și agent de apel.
+- Acces la notificări: permite pilotului automat să reacționeze la notificări.
+- Administrator dispozitiv: permite `device_lock` să blocheze cu adevărat ecranul.
+- Instalați pachete: permite actualizările și `build_app` instalarea APK-urilor; Android vă solicită să permiteți ZYRAXON ca sursă de instalare.
+- Servicii de prim-plan (microfon, sincronizare de date) și wake lock: mențineți vocea și lucrările lungi în viață.
+- Internet și starea rețelei: cloud și web.
+- Shizuku (opțional): acces la nivel de sistem pentru shell și terminal.
+
+## Google Play Protect
+Dacă Play Protect blochează o lucrare, agentul poate deschide pagina potrivită, se uită la ecranul real și poate trece pas cu pas prin roată și comutator - dar îți cere mai întâi, deoarece dezactivarea protecției este decizia ta. Pentru a o face singur: Play Store → poza de profil → Play Protect → setări → dezactivați „Scanați aplicațiile cu Play Protect”. Pagina are un buton care deschide Play Store.
+
+## De ce contează o permisiune
+Dacă un instrument eșuează pentru o permisiune lipsă, agentul vă spune care și deschide dialogul său. Nimic sensibil nu funcționează fără Permiterea dvs. explicită.

@@ -1,0 +1,21 @@
+Jengo: tovuti, programu, hakikisho na uchapishaji
+## Jinsi ya kuuliza
+- "Nifanyie ukurasa wa kutua kwa duka langu la kahawa." Wakala huitengeneza mara moja, huianzisha kwenye simu yako na kuifungua katika Onyesho la Kuchungulia. Unapata mistari 2-3 inayoielezea. Hakuna kinachochapishwa isipokuwa uulize.
+- "Tengeneza programu ya kufanya." Imejengwa moja kwa moja na stack ya busara, kukimbia na kuonyeshwa. Mwisho wa nyuma, hifadhidata au kuingia tu ikiwa utauliza.
+- "Unda programu kamili." Wakala kwanza anauliza swali moja fupi kuhusu lugha ya mwisho, hifadhidata, kuingia na mahali inapoendeshwa, kwa chaguomsingi zinazopendekezwa, kisha huiunda yote kwa data ya mbegu na hujaribu mtiririko mmoja kamili.
+- "Tengeneza programu ya Windows/Linux/macOS/Android. Chanzo kimeandikwa, mtiririko wa kazi wa kujenga huongezwa, unasukumwa na kujengwa katika wingu na GitHub Vitendo, na unapata kiungo halisi cha upakuaji.
+
+## Zana
+- `edit_file` na `write_file`: andika faili halisi (msimbo kamili, usishike kamwe). `code_box` huwaonyesha moja kwa moja.
+- `preview` (Salama): kivinjari halisi kilichojengewa ndani. Vitendo: fungua (kiungo, `localhost:PORT` au faili), pakia upya, nyuma, mbele, picha ya skrini, sogeza, bofya, chapa, soma maandishi ya ukurasa, hitilafu za kiweko, eval. Wakala huangalia kazi yake mwenyewe kabla ya kusema imekamilika.
+- `serve_local` (Mfumo): huanzisha seva ya wavuti kwenye simu kwa folda na kurudisha LAN anwani ya vifaa vingine kwenye Wi-Fi yako inaweza kufunguka.
+- `publish_website` (Mfumo): hutoa tovuti kwenye mlango wa umma kutoka kwa simu. `publish_cloudflare` (Mfumo): huweka tovuti kwenye mtandao bila akaunti kupitia njia ya Cloudflare na kurudisha kiungo cha umma cha https. `publish_github` (Mfumo): huchapisha mradi kwenye hazina ya GitHub (Kurasa) na tokeni yako.
+- `git` (Mfumo): linganisha, init, hadhi, ongeza, dhamiria, sukuma, vuta, tawi, lipa, weka, tofautisha na tokeni yako iliyohifadhiwa. `github_pr` (Mfumo): unda, orodhesha, unganisha na utoe maoni kuhusu maombi ya kuvuta. `github_actions` (Mfumo): orodhesha mtiririko wa kazi, iendeshe, kura ya maoni inaendeshwa na kusoma kumbukumbu, kwa hivyo huunda kwenye wingu kutoka kwa simu.
+- `build_app` (Mfumo): huunda mradi huu kwa Gradle kwenye simu na kusakinisha matokeo.
+- `files_panel`, `todo_write`: kivinjari cha faili na ubao wa kazi.
+
+## Kanuni za ubora ambazo wakala hufuata
+Mpangilio kamili, muundo unaojibu, JavaScript inayofanya kazi, uhuishaji, rangi na fonti thabiti (nyeusi na nyepesi panapofaa), si kiolezo cha kawaida. Ukurasa wa kutua kwa kawaida ni mistari 300–900; mambo makubwa zaidi.
+
+## Ikiwa kitu kinaonekana kuvunjika
+Bonyeza Kurekebisha katika Hakiki, au mwambie wakala. Inasoma console, kurekebisha sababu, kufungua ukurasa na kuangalia tena.

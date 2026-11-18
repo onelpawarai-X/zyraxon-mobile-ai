@@ -722,6 +722,37 @@ grep -rn 't(".*\$' app/src/main/java --include=*.kt
 
 Every hit must become `t("… {0} …", var)`.
 
+## The bundled guide and hub (assets-src/help, assets-src/i18n/hub)
+
+The Documentation screen shows 21 chapters per language from
+`assets-src/help/<code>/`, and the Automation hub's own words come from
+`assets-src/i18n/hub/<code>.json`. Both are bundled in the APK — nothing is
+translated on the phone and nothing is fetched at read time. `HelpText.load`
+is a sealed-asset read that falls back to English; `HelpTranslator` and the
+`help_i18n` cache directory are gone with the on-phone path.
+
+Every language in `languages.json` ships all 21 chapters and the full hub
+table. Six are written by hand — `en`, `bn`, `hi`, `ar`, `es`, `fr` — and the
+tools refuse to touch them (`HAND_WRITTEN` in `tools/translate_help.py`).
+Arabic is in that set for a second reason: it deliberately uses no `→`, so a
+shape check that counts arrows reads a correct file as broken.
+
+Two tools fill the rest, and both protect what must survive a translation:
+
+* `tools/translate_help.py` — a chapter is sent line by line, with the `## `
+  and `- ` markers removed first, and every backticked tool name, arrow,
+  `{N}` placeholder, URL, number and product name replaced by a `[[N]]`
+  marker. After each chapter it checks the line, heading, bullet, backtick
+  and arrow counts against the English. A line that fails is retried one
+  request per line, and then by translating only the words between markers,
+  which is the only method the endpoint cannot mangle.
+* `tools/translate_hub.py` — the hub table is keyed by Bengali, so the keys
+  are never sent; only the English values are, and only for the keys a
+  language still lacks (`--fill`). An existing value is never replaced.
+
+Add a chapter to `HelpIndex.chapters` and it must exist in all 60 help
+folders; the shape check in `translate_help.py` reports any that is short.
+
 ## Reading a screenshot
 
 `tools/read_screenshot.py` OCRs an image in English and Bengali and prints what

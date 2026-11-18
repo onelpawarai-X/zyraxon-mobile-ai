@@ -1,0 +1,27 @@
+Izimvume, ngayinye ngayinye
+Izilungiselelo → Ukuphepha nobumfihlo → Izimvume. Umugqa ngamunye ubonisa "Nikiwe" noma inkinobho. Ukuthepha umugqa kuvula ibhokisi lesistimu; vele ucindezele okuthi Vumela. Umenzeli angakwazi futhi ukuvula ibhokisi ngokwalo ngokuthi `request_permission`.
+
+- Imakrofoni: ukuze ZYRAXON ikuzwe. Ngaphandle kwayo akukho okokufaka kwezwi.
+- Ikhamera: ukuthatha nokubheka izithombe (`look_camera`, ukuskena kwedokhumenti, "ubonani").
+- Indawo: yamamephu nolwazi lwendawo.
+- Izaziso: ukukutshela uma umsebenzi ongemuva uqeda.
+- Amafayela nemidiya: ukufunda izithombe, amavidiyo, umsindo kanye nemibhalo.
+- Imbondela (dweba phezu kwezinye izinhlelo zokusebenza): edingekayo ngeso elintantayo.
+- Ukufinyeleleka: kuvumela i-ejenti ukuthi ifunde isikrini futhi ithephe, swayipha futhi ikuthayiphe. Lena inhliziyo ye-automation yefoni. Uyivula kuzilungiselelo zokufinyelela zesistimu.
+- Ukulungiselelwa kwebhethri: kumisa i-Android ekubekeni i-ZYRAXON ukulala ngenkathi isebenza ngemuva.
+
+## Ezinye izimvume ezivezwa uhlelo lokusebenza
+- I-SMS (funda futhi wamukele): yokufunda amakhodi, incwadi yemali kanye nemithetho ye-SMS yokuhlola okuzenzakalelayo.
+- Isimo sefoni, phendula izingcingo, shayela ucingo, abathintwayo: ngamathuluzi okushaya ucingo ne-ejenti yokushaya ucingo.
+- Ukufinyelela kwesaziso: kuvumela i-autopilot isabele kuzaziso.
+- Umphathi wedivayisi: ivumela `device_lock` ukukhiya isikrini ngempela.
+- Faka amaphakheji: sivumela izibuyekezo futhi `build_app` sifake ama-APK; Android ikucela ukuthi uvumele i-ZYRAXON njengomthombo wokufaka.
+- Amasevisi angaphambili (umbhobho, ukuvumelanisa idatha) kanye ne-wake lock: gcina izwi nemisebenzi ende iphila.
+- Isimo se-inthanethi nenethiwekhi: ifu newebhu.
+- Shizuku (ongakukhetha): ukufinyelela kwezinga lesistimu kwegobolondo netheminali.
+
+## Google Play Protect
+Uma Play Protect evimba umsebenzi, umenzeli angavula ikhasi elilungile, abuke isikrini sangempela futhi ahambe isinyathelo ngesinyathelo egiyeni kanye ne-toggle — kodwa uyakubuza kuqala, ngoba ukuvala ukuvikela kuyisinqumo sakho. Ukuze uzenzele wena: Play Store → isithombe sephrofayela → Play Protect → izilungiselelo → vala "Skena izinhlelo zokusebenza nge-Play Protect". Ikhasi linenkinobho evulayo Play Store.
+
+## Kungani imvume ibalulekile
+Uma ithuluzi lihluleka ukuthola imvume engekho, umenzeli uyakutshela ukuthi iyiphi bese evula ibhokisi layo. Akukho okuzwelayo okusebenzayo ngaphandle kokuvumela kwakho okusobala.

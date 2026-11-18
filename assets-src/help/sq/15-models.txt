@@ -1,0 +1,15 @@
+Ofruesit, modelet dhe çelësat
+## Ofruesit
+ZYRAXON (linja e vet dhe agjenti i resë kompjuterike Apex, gjithmonë i lidhur), OpenCode (kuota e lirë), Groq (Llama shumë e shpejtë), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek dhe OpenRouter. Shto ndonjë çelës te "Cilësimet" → Ofruesit dhe API. Çelësi ruhet në telefonin tuaj, kontrollohet në katalogun e ofruesit dhe modelet transmetohen në përzgjedhës ndërsa çdo ofrues përgjigjet.
+
+## Zgjedhja e një modeli
+Përdorni butonin e modelit në shiritin e mesazheve ose Cilësimet → Modeli dhe identiteti → Modeli. Kërkoni sipas emrit, filtroni të gjitha ose me porosi. Zgjedhja juaj ruhet dhe rikthehet në fillim; një rifreskim nuk e zëvendëson kurrë modelin tuaj të ruajtur. Modelet e shënuara Live mund të flasin me zërin e tyre (shih Zëri i drejtpërdrejtë).
+
+## Modelet në pajisje
+Cilësimet → Modeli dhe identiteti → Në pajisje. Modeli funksionon në telefon pa lënë të dhëna. Skedarët janë të mëdhenj (qindra MB deri në disa GB), prandaj shkarkoni në Wi-Fi. Ato renditen nga të vogla në të mëdha; në një telefon me pak RAM zgjidhni më të lehtën. Thirrja e veglave mbështetet nga paketat Gemma dhe FunctionGemma. Një shenjë Hugging Face është vetëm për skedarët e mbyllur. Modelet e ngarkuara mbahen mend.
+
+## Faqja e internetit ZYRAXON
+zyraxonai.lovable.app: krijoni një llogari (email ose Google), hapni Settings, API Key / Access Token, krijoni një çelës dhe ngjiteni në aplikacion. Pa një çelës, mund ta përdorni përsëri aplikacionin me modelet në pajisje dhe mjetet lokale.
+
+## Kostot dhe të dhënat
+Ofruesit e cloud ju faturojnë sipas rregullave të tyre. Me aktivizimin "Vetëm në pajisje" asgjë nuk dërgohet te asnjë ofrues.

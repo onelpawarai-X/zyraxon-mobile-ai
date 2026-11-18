@@ -1,0 +1,7 @@
+Värskendused
+Seaded → Värskendused → Rakenduse värskendus või rakenduse ülaosas olev bänner.
+- Rakendus otsib uusi väljalaseid ja kuvab "Uus värskendus saadaval – versioon".
+- Otsige värskendusi: küsib kohe. Kui olete praegune, ütleb see nii.
+- Laadi alla ja installi: allalaadimine protsendimääraga. Kui olete lõpetanud, vajutage Install. Teie vestlused, mälu ja seaded jäävad alles.
+- Kui Android blokeerib installi, vajutage loa nuppu, lubage ZYRAXON installiallikaks ja proovige uuesti.
+- Bännerinupud: Laadi alla, Installi, Luba ja Sule.

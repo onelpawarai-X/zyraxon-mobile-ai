@@ -1,0 +1,34 @@
+Telefoon outomatisering gereedskap
+Die agent beheer jou foon deur middel van gereedskap. Jy noem hulle nooit self nie; jy sê wat jy wil en die agent kies die gereedskap. Hierdie hoofstuk lys elke instrument wat die foon raak, en hoe dit bewaak word (sien Goedkeuringsvlakke: Veilig, Persoonlik, Stelsel).
+
+## Opening en vind
+- `open_app` (Veilig): maak enige geïnstalleerde toepassing op naam of pakket oop. `list_apps` (Veilig): lys geïnstalleerde programme. `open_settings` (Veilig): maak 'n stelselinstellingsbladsy oop (toeganklikheid, oorleg, kennisgewings, toepassings, Wi-Fi, battery, Play Protect). `launch_url` (Veilig): maak 'n skakel in die blaaier oop. `youtube_play` (Veilig): maak YouTube oop by die soekresultate vir wat jy gevra het, en speel dit.
+
+## Sien die skerm
+- `read_screen` (Persoonlik): lees elke teks en element op die skerm met tikposisies. `screen_shot` (Persoonlik): 'n regte skermskoot. Hierdie het die Toeganklikheidstoestemming nodig.
+- `look_camera` (Persoonlik): neem een ​​foto met die kamera en kyk daarna. `read_media` (Persoonlik): lees 'n prent, oudio of video (van 'n pad of skakel) sodat die model dit kan verstaan.
+
+## Optree op die skerm
+- `tap` (Persoonlik): tik 'n punt. `tap_text` (Persoonlik): tik op die element met hierdie etiket, veiliger as koördinate. `swipe` (Persoonlik): blaai of die teruggebaar. `type_text` (Persoonlik): tik in die gefokusde veld. `press_key` (Persoonlik): terug, huis, onlangse, kennisgewings, vinnige instellings, slot.
+- Skermaksies loop een op 'n slag, in volgorde, en na elkeen kyk die agent na die nuwe skerm.
+
+## Telefoon, boodskappe en knipbord
+- `call_dial` (Persoonlik): plaas 'n oproep volgens nommer of kontaknaam. `call_state` (Persoonlik): lui 'n oproep of is dit aktief? `call_answer` (Persoonlik): antwoord. `call_hangup` (Persoonlik): hang af.
+- `read_sms` (Persoonlik): lees die nuutste SMS, bv. 'n OTP-kode; kan volgens teks of sender filter.
+- `clipboard_read` en `clipboard_write` (Persoonlik): lees of skryf die knipbord.
+- `notify` (Persoonlik): plaas 'n regte Android kennisgewing. `share` (Persoonlik): maak die deelblad oop met teks, 'n skakel of 'n lêer. `channel_post` (Stelsel): maak Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail of SMS oop met jou teks vooraf ingevul, gereed om te stuur.
+
+## Status en stelselfeite
+- `network_status` (Veilig): aanlyn of nie, Wi-Fi of mobiele data, Wi-Fi naam. `sys_info` (Veilig): Android weergawe, model, SVE, RAM, berging, huidige toepassing. `platform_info` (Veilig): waar die agent aan die gang is. `process_list` (Veilig): lopende prosesse.
+
+## Toestemmings en skerm
+- `request_permission` (Veilig): maak die stelseltoestemmingsdialoog met een tik oop wanneer 'n instrument misluk vir 'n ontbrekende toestemming. `device_lock` (Stelsel): sluit die skerm werklik, of stel die toestemming op wat dit moontlik maak. `floating_bubble` (Persoonlik): skakel die drywende bol aan of af.
+- `voice_change` (Persoonlik): verander praatspoed, toonhoogte of geslag. `live_voice` (Stelsel): skakel die regstreekse spraak-na-spraak-modus aan of af.
+
+## Interface helpers
+- `code_box` en `files_panel`: maak die regstreekse kodekassie of die lêerblaaier oop sodat jy die werk kyk. `todo_write`: die lewendige taakbord.
+
+## Wenke
+- Jy kan ketting: "Maak instellings oop, vind Wi-Fi en vertel my die netwerknaam". Die agent lees die skerm na elke stap en besluit die volgende een.
+- As 'n tik niks doen nie, lees die agent weer die skerm en probeer 'n ander element; dit tik nooit blindelings nie.
+- As Play Protect iets blokkeer, kan die agent saam met jou deur die instellings stap (sien Toestemmings).

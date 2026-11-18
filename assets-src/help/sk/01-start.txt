@@ -1,0 +1,20 @@
+Začíname
+ZYRAXON je asistent, ktorý žije vo vašom telefóne Android. Rozpráva sa s vami, počúva vás a môže robiť skutočnú prácu: otvárať aplikácie, klepať a písať na obrazovke, volať ľuďom, písať súbory, vytvárať webové stránky a aplikácie, spúšťať Linux systém, vytvárať obrázky, zvuky, videá a kancelárske dokumenty a pamätať si vás celé mesiace. Funguje to v akomkoľvek jazyku, ktorým hovoríte.
+
+## Prvé minúty
+- Pri prvom spustení ZYRAXON zobrazí krátke upozornenie, že agent môže konať vo vašom telefóne sám. Pokračujte stlačením tlačidla „Rozumiem, začať“.
+- Pridajte kľúč AI (Nastavenia → Poskytovatelia & API → Poskytovatelia AI). Prilepte kľúč akéhokoľvek poskytovateľa, ktorý sa vám páči (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Keď uložíte kľúč, aplikácia prečíta katalóg poskytovateľa a skontroluje ho, či je skutočný, takže uvidíte skutočné „pripojené“ a počet modelov.
+- Žiadny kľúč? Naďalej môžete používať modely na zariadení (Nastavenia → Model a identita → Na zariadení). Bežia na telefóne bez internetu.
+- Vyberte model s tlačidlom modelu na paneli správ a postavu (Nastavenia → Model & identita → Identita).
+- Udeľte povolenia, keď ich funkcia potrebuje (pozrite si kapitolu Povolenia). Agent vám tiež môže jedným klepnutím otvoriť dialógové okno povolenia.
+- Stačí hovoriť alebo písať. „Urob mi vstupnú stránku pre moju pekáreň“, „otvor YouTube a prehraj pesničku“, „akú mám batériu?“, „zavolaj mame“.
+
+## Dva spôsoby práce
+Vedľa poľa správ sa nachádza tlačidlo režimu s dvoma režimami: Agent a Build. Pozrite si kapitolu Režimy.
+
+## Kde sú veci
+- Ľavá ponuka: vaše rozhovory, nový rozhovor, premenovanie, odstránenie a prepnutie témy.
+- Obrazovka chatu: správy, tabuľa úloh, zoznam nástrojov, súbory, terminál.
+- Panely Ukážka a Kód: pozrite si a upravte, čo vytvára agent.
+- Nastavenia: osem sekcií, popísaných v tejto dokumentácii.
+- Táto dokumentácia: Nastavenia → Dokumentácia (tu ste).

@@ -1,0 +1,45 @@
+Ujuzi, majaribio ya kiotomatiki, pesa, rekodi ya matukio na kutendua, ubongo, wakala wa simu na kumbukumbu
+Unatumia haya yote kwa kuzungumza: sema unachotaka na wakala anaita chombo sahihi. Kila kitendo kimeorodheshwa hapa na chaguo zake.
+
+## Ujuzi - fundisha kwa kufanya
+Ujuzi ni kazi ya simu ambayo wakala alijifunza kwa kukuona ukiifanya mara moja. Huhifadhi jinsi ya kupata kila kipengele tena (kitambulisho chake, maneno na majirani, sio nafasi yake ya skrini), kwa hivyo inaendelea kufanya kazi wakati mpangilio wa programu unabadilika.
+- Ongeza ujuzi:`skill_record`(Binafsi). Sema "jifunze hili kama <name>".`action: start`(na jina) huanza kurekodi; kisha fanya kazi - fungua programu, gonga, chapa, bonyeza vitufe; kila hatua inarekodiwa.`action: stop`huihifadhi. Kwa kuacha unaweza kupita`params`kugeuza maadili yaliyoandikwa kuwa vigezo (kwa mfano nambari ya simu inakuwa`number`, kiasi kinakuwa`amount`) na a`description`. `action: status`inakuambia ikiwa kurekodi kumewashwa.
+- Endesha ujuzi:`skill_run`(Binafsi). Toa`args`kwa vigezo vyake, k.m. idadi na kiasi. Hucheza tena katika sehemu ya hatua na hujiponya yenyewe wakati programu inabadilika. Ikiwa hatua moja itashindwa, matokeo husema ni hatua gani na ni nini kwenye skrini, na wakala anamaliza wengine kwa mkono.
+- Orodha ya ujuzi:`skill_list`(Salama) inaonyesha jina, vigezo, hatua na mara ngapi kila mbio. Kwa jina na usafirishaji juu yake hufanya kushirikiwa`.zxskill`faili.
+- Shiriki na upakie:`skill_import`(Binafsi) mizigo a`.zxskill`faili kutoka kwa upakuaji au faili iliyoshirikiwa kama ujuzi.
+- Futa ujuzi:`skill_delete`(Mfumo).
+- Mfano: "Jifunze jinsi ninavyotuma 500 kwa Rahim kwa programu ya pochi yangu"→unafanya mara moja→"Tuma 700 kwa Karim" wakati ujao.
+
+## Pilot otomatiki - "X inapotokea, fanya Y"
+Sheria huamsha wakala peke yake na hufanya kazi bila kukuuliza.
+- Ongeza:`autopilot_add`(Mfumo). Aina: sms, arifa, simu, kila siku, mara moja, muda, betri, programu. Jaza tu sehemu ambazo sheria inahitaji:`from`(jina la mtumaji au nambari au jina la programu),`any`(angalau moja ya maneno haya),`all`(kila neno),`none`(hakuna neno moja kati ya haya),`time`"HH:MM" (kila siku),`in_minutes` or `at_ms`(mara moja),`every_minutes`(kipindi),`below`(asilimia ya betri),`pkg`(kifurushi cha programu au jina, kwa sheria za programu na arifa). Wakala hugeuza sentensi yako kuwa nyanja hizi. Matokeo huorodhesha ruhusa yoyote ambayo bado inahitajika (SMS, ufikiaji wa arifa…), na wakala anakuuliza uwashe.
+- Mifano: "SMS ya malipo inapofika kutoka kwa programu ya pochi yangu, iongeze kwenye leja yangu." "Kila asubuhi saa 8, niambie hali ya hewa." "Baada ya dakika 20, nikumbushe kuchukua mkate nje." "Kila baada ya dakika 30, ukumbusho wa maji ya kunywa." "Betri inapokuwa chini ya 15%, niambie." "Wakati mtu ananipigia, andika nambari." "Ninapofungua programu ya benki, nikumbushe kuangalia bajeti."
+- Orodha:`autopilot_list`(Salama) inaonyesha kila sheria na wakati wake ujao wa kukimbia na mara ngapi imefuta.
+- Sitisha au uendelee:`autopilot_toggle`(Mfumo). Futa:`autopilot_remove`(Mfumo), kwa kitambulisho au kichwa.
+- Wakati sheria inawaka unapata ujumbe unaosema hivyo, na wakala hufanya kazi hiyo.
+
+## Leja ya fedha (CFO binafsi)
+- `ledger_scan`(Binafsi): soma pochi na SMS za benki kwenye leja ya kibinafsi: mapato, matumizi, ada, salio na kategoria.`days`inasema ni umbali gani wa nyuma (chaguo-msingi 30). Na`auto`kwenye, kila SMS mpya ya pesa inaongezwa yenyewe na unaonywa wakati bajeti inapitishwa. Hufanya kazi kwa pochi na jumbe za benki za nchi yoyote, katika sarafu yoyote.
+- `ledger_report`(Binafsi): kipindi leo, jana, wiki, mwezi au yote. Fomati maandishi (muhtasari ulio tayari kusemwa) au xlsx (anExcelfaili iliyo na miamala na jumla ya kategoria, iliyofunguliwa kwa ajili yako).
+- `ledger_budget`(Binafsi): weka bajeti ya kila mwezi kwa kategoria (chakula, bili, usafiri, ununuzi, malipo ya simu, uhamisho…); kikomo cha 0 huiondoa; bila hoja inaorodhesha bajeti na maonyo ya sasa.
+- Wakala kamwe hazuii nambari za pesa; inazisoma kutoka kwenye leja.
+
+## Rekodi ya matukio na kutendua
+- Kila kitu anachofanya wakala kimeandikwa kwa kalenda ya matukio (vitendo 400 vya mwisho). Mabadiliko ya faili huhifadhi nakala ya kile kilichokuwa hapo awali.
+- `timeline_list`(Salama): kile wakala alifanya hivi majuzi, akiwa na kitambulisho cha kila moja, na ni mabadiliko gani yanaweza kutenduliwa.
+- `timeline_undo`(Binafsi):`id`kutengua uandishi mmoja, kuhariri au kufuta - faili inarudi kama ilivyokuwa (faili ambayo haikuwepo imeondolewa tena).`since_id`hutendua kila kitu kuanzia kitambulisho hicho na kuendelea, kipya zaidi kwanza. Itumie unaposema "irudishe" au "irudishe kama hapo awali".
+- Tendua uandikaji, uhariri na ufutaji wa faili. Amri iliyotekelezwa (kwa mfano kusakinisha kitu au kutuma ujumbe) haiwezi kutenduliwa kwa njia hii.
+- Ujumbe wa gumzo: ili kuondoa mazungumzo yote tumia penseli na uvuka kwenye menyu ya kushoto, au Mipangilio→Faragha na data→Futa historia ya gumzo, au Urambazaji→Kipindi kipya.
+
+## Ubongo - kumbukumbu ya pili kwa faili zako
+- `brain_index`(Salama): jenga au onyesha upya fahirisi ya nje ya mtandao juu ya folda au faili (maandishi,Markdown, CSV, Word, Excel, PowerPoint) na kwa hiari kikasha pokezi cha SMS (`sms`juu). Iendeshe kabla ya utafutaji wa kwanza na baada ya faili mpya kuonekana. Chaguo-msingi ni nafasi yako ya kazi.
+- `brain_search`(Salama): uliza kwa maneno yako mwenyewe, "uko wapi mkataba wangu wa kukodisha?" - inafanya kazi nje ya mtandao katika lugha yoyote.`kind`ni faili au sms;`days`mipaka kwa vitu vya hivi karibuni. Fungua faili iliyopatikana na`open_file`.
+
+## Wakala wa simu
+- `call_agent`(Binafsi): kitendo kimewashwa, kimezimwa au hadhi.`owner`ni jina linalosema ("Mimi ni msaidizi wa <owner>").`answer_after_seconds`(chaguo-msingi 6) hukuruhusu kuchukua kwanza. Simu inapokuja na huwezi kujibu, inasalimia kwa lugha ya mpigaji, inauliza jina na sababu, inajibu maswali rahisi, inakata simu kwa upole na kukuambia muhtasari.
+- `call_log`(Salama): muhtasari wa simu zilizojibiwa, mpya zaidi kwanza.
+- Inahitaji ruhusa za simu na hali ya simu.
+
+## Kumbukumbu
+- `memory_write`, `memory_read`, `memory_delete`(Salama): ukweli wa kudumu kukuhusu (jina, mapendeleo, watu, tarehe, miradi) huishi katika hifadhidata ya karibu nawe na kuokoka kuanzishwa upya. Sema "kumbuka hili" na imeandikwa kwa zamu sawa; ikiwa kitu kibaya, huondolewa au kuandikwa upya. Kila mazungumzo ya zamani huhifadhiwa pia, na zamu zilizopita zinazolingana na unachosema rudi zenyewe, hata miezi kadhaa baadaye.
+- Tazama na uibadilishe yote katika Mipangilio→Mfumo→Kumbukumbu (ufunguo, thamani, hifadhi, futa yote).

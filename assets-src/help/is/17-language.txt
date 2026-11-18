@@ -1,0 +1,16 @@
+Tungumál
+## Tungumál apps
+Stillingar → Tungumál og þýðing. 60 tungumál. Allt viðmótið og verkfæraskilaboð umboðsmannsins fylgja því. Hvert tungumál hefur sína eigin þýðingarskrá. Sérhver lína sem tungumálaskrá hefur ekki enn er sýnd á ensku, aldrei skilin eftir auð.
+
+## Það sem þú talar
+Umboðsmaðurinn svarar alltaf á því tungumáli sem þú talar við hann, hvaða tungumáli sem er í heiminum. Ef þú skiptir, þá skiptir það. Það notar hið vingjarnlega-virðulega form „þú“ á þínu tungumáli. Vörumerki og tækninöfn haldast eins og þau eru.
+
+## Rödd tungumál
+- Tungumál auðkenningar (það sem þú talar í hljóðnemann): Stillingar → Rödd og hljóðnemi → Hljóðnemi og tungumál.
+- Talandi rödd: Stillingar → Radd- og hljóðnemi → Raddsnið og raddpróf fyrir tungumál eins og bengalsku, hindí, ensku, úrdú, arabísku, tamílsku, nepalsku, spænsku, frönsku, þýsku, japönsku, kóresku, kínversku, rússnesku, tyrknesku.
+
+## Þessi skjöl
+Notaðu tungumálakubbana efst á þessari síðu. Öll handbókin er skrifuð á hverju tungumáli sem appið styður, handvirkt og sendur inni í appinu. Ekkert er þýtt í símanum þínum: hver kafli opnast samstundis, virkar án nettengingar og þarf enga gerð eða lykil.
+
+## Að skrifa í eigin handrit
+Skjöl, veggspjöld og hönnun er hægt að gera í hvaða handriti sem er. Fyrir bengalska hönnun er rétt letur notað; fyrir önnur forskrift er samsvarandi leturgerð valin.

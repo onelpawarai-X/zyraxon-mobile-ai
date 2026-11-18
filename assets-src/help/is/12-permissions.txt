@@ -1,0 +1,27 @@
+Leyfi, eitt af öðru
+Stillingar → Öryggi og næði → Heimildir. Hver röð sýnir „Granted“ eða hnapp. Með því að banka á línu opnast kerfisglugginn; ýttu bara á Leyfa. Umboðsmaðurinn getur einnig opnað gluggann sjálfan með `request_permission`.
+
+- Hljóðnemi: svo ZYRAXON heyri í þér. Án þess er ekkert raddinntak.
+- Myndavél: til að taka og skoða myndir (`look_camera`, skanna skjal, "hvað sérðu").
+- Staðsetning: fyrir kort og staðbundnar upplýsingar.
+- Tilkynningar: til að segja þér þegar bakgrunnsvinnu lýkur.
+- Skrár og miðlar: til að lesa myndir, myndbönd, hljóð og skjöl.
+- Yfirlögn (teiknaðu yfir önnur forrit): nauðsynlegt fyrir fljótandi augað.
+- Aðgengi: gerir umboðsmanni kleift að lesa skjáinn og banka, strjúka og skrifa fyrir þig. Þetta er hjarta sjálfvirkni símans. Þú kveikir á því í Aðgengisstillingum kerfisins.
+- Rafhlaða fínstilling: kemur í veg fyrir að Android svæfi ZYRAXON á meðan það virkar í bakgrunni.
+
+## Aðrar heimildir sem appið lýsir yfir
+- SMS (lesa og taka á móti): til að lesa kóða, peningabókina og SMS sjálfstýringarreglur.
+- Símastaða, svara símtölum, hringja í síma, tengiliði: fyrir hringitól og umboðsmanninn.
+- Aðgangur að tilkynningum: gerir sjálfstýringu kleift að bregðast við tilkynningum.
+- Stjórnandi tækis: leyfir `device_lock` virkilega að læsa skjánum.
+- Settu upp pakka: leyfir uppfærslum og `build_app` að setja upp APKs; Android biður þig um að leyfa ZYRAXON sem uppsetningargjafa.
+- Forgrunnsþjónusta (hljóðnemi, gagnasamstilling) og vökulás: Haltu rödd og löngum störfum á lífi.
+- Internet og netkerfi: skýið og vefurinn.
+- Shizuku (valfrjálst): aðgangur á kerfisstigi fyrir skel og flugstöð.
+
+## Google Play Protect
+Ef Play Protect lokar á starf getur umboðsmaðurinn opnað rétta síðu, horft á raunverulegan skjá og farið skref fyrir skref í gegnum gírinn og rofann - en hann spyr þig fyrst, því að slökkva á vörninni er þín ákvörðun. Til að gera það sjálfur: Play Store → prófílmynd → Play Protect → stillingar → slökktu á „Skanna forrit með Play Protect. Á síðunni er hnappur sem opnar Play Store.
+
+## Hvers vegna leyfi skiptir máli
+Ef tól mistekst vegna heimildar sem vantar, segir umboðsmaðurinn þér hvaða og opnar gluggann. Ekkert viðkvæmt virkar án skýrs leyfis þíns.

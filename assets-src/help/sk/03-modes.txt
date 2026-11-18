@@ -1,0 +1,14 @@
+Režimy: Agent a Build
+Existujú dva režimy, ktoré sa vyberajú pomocou tlačidla režimu vedľa poľa správ. Voľba zostáva, kým ju nezmeníte. Živý hlas nie je tretí režim; je to spôsob hovorenia, ktorý môžete zapnúť v Nastaveniach (pozri kapitolu Hlas).
+
+## agent
+"Plná automatizácia telefónu a systému." Všetko je otvorené: čítanie a ovládanie obrazovky telefónu, otváranie aplikácií, hovory, správy, fotoaparát, súbory, terminál a Linux, Git, ukážka, médiá, pomocní agenti, MCP servery, zručnosti, autopilot a ďalšie. Vyberte Agent, keď chcete niečo urobiť na svojom telefóne alebo sa chcete jednoducho porozprávať.
+
+## Stavať
+"Full-stack aplikácií, webových stránok a automatizácie." Agent je stavebný stroj: z krátkeho riadku to celé vytvorí, spustí, pozrie a ukáže vám. Obsahuje súbory, terminál, Git, náhľad, publikovanie, médiá, pamäť a tabuľu úloh. Ovládanie telefónu, pomocní agenti a zámok zariadenia patria do režimu agenta; ak ich potrebujete v Build, prepnite.
+- Vstupná stránka alebo web: povedzte, na čo slúži. Agent ho okamžite vytvorí, spustí na vašom telefóne a otvorí ho na paneli ukážky a potom vám povie, čo vytvoril. Nezverejňuje sa, pokiaľ o to nepožiadate.
+- Aplikácia: povedzte, čo chcete, a vytvorí aplikáciu podľa požiadavky. Back-end, databáza alebo prihlasovacie údaje sa pridajú iba vtedy, ak o to požiadate.
+- Full-stack: keď požiadate o back-end alebo databázu, agent vám najskôr položí jednu krátku otázku o možnostiach (jazyk, databáza, prihlasovacie meno, kde beží) s odporúčaním a zostavy po odpovedi.
+
+## Čo znamená „spýtať sa“.
+Keď agent skutočne potrebuje vaše rozhodnutie, urobí najskôr všetko ostatné, položí jednu krátku otázku so svojím odporúčaním a čaká. Vaša odpoveď pokračuje v práci tam, kde sa zastavila.

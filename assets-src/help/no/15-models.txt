@@ -1,0 +1,15 @@
+Leverandører, modeller og nøkler
+## Leverandører
+ZYRAXON (egen linje og Apex skyagenten, alltid tilkoblet), OpenCode (gratis kvote), Groq (veldig rask Llama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek og OpenRouter. Legg til hvilken som helst nøkkel i Innstillinger → Leverandører og API. Nøkkelen lagres på telefonen din, sjekkes mot leverandørens katalog, og modellene strømmer inn i velgeren etter hvert som hver leverandør svarer.
+
+## Å velge en modell
+Bruk modellknappen i meldingslinjen eller Innstillinger → Modell og identitet → Modell. Søk etter navn, filtrer Alle eller Egendefinert. Valget ditt lagres og gjenopprettes ved lansering; en oppdatering erstatter aldri den lagrede modellen. Modeller merket Live kan snakke med sin egen stemme (se Live stemme).
+
+## Modeller på enheten
+Innstillinger → Modell og identitet → På enheten. Modellen kjører på telefonen uten at data forlater den. Filene er store (hundrevis av MB til noen få GB), så last ned på Wi-Fi. De er oppført små til store; på en telefon med lite RAM velger du den letteste. Verktøykalling støttes av pakkene Gemma og FunctionGemma. Et Hugging Face-token er bare for gatede filer. Lastede modeller huskes.
+
+## Nettstedet ZYRAXON
+zyraxonai.lovable.app: opprett en konto (e-post eller Google), åpne Innstillinger, API Key / Access Token, opprett en nøkkel og lim den inn i appen. Uten nøkkel kan du fortsatt bruke appen med modeller på enheten og lokale verktøy.
+
+## Kostnader og data
+Skyleverandører fakturerer deg i henhold til sine egne regler. Med "Kun på enheten" slått på sendes ingenting til noen leverandør.

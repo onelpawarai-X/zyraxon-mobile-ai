@@ -1,0 +1,34 @@
+Alat otomatisasi telepon
+Agen mengontrol ponsel Anda melalui alat. Anda sendiri tidak pernah menelepon mereka; Anda mengatakan apa yang Anda inginkan dan agen mengambil alatnya. Bab ini mencantumkan setiap alat yang menyentuh telepon, dan cara perlindungannya (lihat Tingkat persetujuan: Aman, Pribadi, Sistem).
+
+## Membuka dan menemukan
+- `open_app` (Aman): buka aplikasi apa pun yang diinstal berdasarkan nama atau paket. `list_apps` (Aman): daftar aplikasi yang diinstal. `open_settings` (Aman): membuka halaman pengaturan sistem (aksesibilitas, overlay, notifikasi, aplikasi, Wi-Fi, baterai, Play Protect). `launch_url` (Aman): membuka tautan di browser. `youtube_play` (Aman): buka YouTube di hasil pencarian untuk apa yang Anda minta, dan mainkan.
+
+## Melihat layar
+- `read_screen` (Pribadi): membaca setiap teks dan elemen di layar dengan posisi tap. `screen_shot` (Pribadi): tangkapan layar asli. Ini memerlukan izin Aksesibilitas.
+- `look_camera` (Pribadi): mengambil satu foto dengan kamera dan melihatnya. `read_media` (Pribadi): membaca gambar, audio, atau video (dari jalur atau tautan) sehingga model dapat memahaminya.
+
+## Bertindak di layar
+- `tap` (Pribadi): ketuk satu titik. `tap_text` (Pribadi): ketuk elemen dengan label ini, lebih aman daripada koordinat. `swipe` (Pribadi): gulir atau gerakan mundur. `type_text` (Pribadi): ketik di bidang fokus. `press_key` (Pribadi): kembali, beranda, terkini, notifikasi, pengaturan cepat, kunci.
+- Tindakan layar dijalankan satu per satu, secara berurutan, dan setelah setiap tindakan, agen melihat layar baru.
+
+## Telepon, pesan, dan papan klip
+- `call_dial` (Pribadi): melakukan panggilan berdasarkan nomor atau nama kontak. `call_state` (Pribadi): apakah panggilan berdering atau aktif? `call_answer` (Pribadi): jawaban. `call_hangup` (Pribadi): tutup telepon.
+- `read_sms` (Pribadi): membaca SMS terbaru, mis. kode OTP; dapat memfilter berdasarkan teks atau pengirim.
+- `clipboard_read` dan `clipboard_write` (Pribadi): membaca atau menulis clipboard.
+- `notify` (Pribadi): memposting notifikasi Android yang sebenarnya. `share` (Pribadi): membuka lembar berbagi dengan teks, tautan, atau file. `channel_post` (Sistem): buka Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail atau SMS dengan teks yang sudah diisi sebelumnya, siap dikirim.
+
+## Status dan fakta sistem
+- `network_status` (Aman): online atau tidak, Wi-Fi atau data seluler, Wi-Fi nama. `sys_info` (Aman): Android versi, model, CPU, RAM, penyimpanan, aplikasi saat ini. `platform_info` (Aman): tempat agen berjalan. `process_list` (Aman): proses yang berjalan.
+
+## Izin dan layar
+- `request_permission` (Aman): membuka dialog izin sistem dengan satu ketukan ketika alat gagal karena izin yang hilang. `device_lock` (Sistem): mengunci layar secara nyata, atau mengatur izin yang memungkinkannya. `floating_bubble` (Pribadi): menghidupkan atau mematikan bola mengambang.
+- `voice_change` (Pribadi): mengubah kecepatan bicara, nada, atau jenis kelamin. `live_voice` (Sistem): mengaktifkan atau menonaktifkan mode ucapan-ke-ucapan langsung.
+
+## Pembantu antarmuka
+- `code_box` dan `files_panel`: membuka kotak kode langsung atau browser file sehingga Anda dapat menonton karyanya. `todo_write`: papan tugas langsung.
+
+## Kiat
+- Anda dapat membuat rantai: "Buka Pengaturan, temukan Wi-Fi dan beri tahu saya nama jaringan". Agen membaca layar setelah setiap langkah dan memutuskan langkah berikutnya.
+- Jika ketukan tidak menghasilkan apa-apa, agen membaca layar lagi dan mencoba elemen lain; itu tidak pernah mengetuk secara membabi buta.
+- Jika Play Protect memblokir sesuatu, agen dapat memandu Anda melalui pengaturan (lihat Izin).

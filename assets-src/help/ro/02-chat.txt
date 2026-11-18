@@ -1,0 +1,51 @@
+Ecranul de chat și fiecare buton
+## Partea de sus a ecranului
+- Meniu: deschide sertarul din stânga cu chat-urile dvs.
+- Chat / Terminal / Cod / Previzualizare: comutați vizualizarea principală. Chatul este conversația; Terminalul este adevăratul terminal; Codul este spațiul de lucru al fișierului cu Git; Preview este browserul încorporat.
+- Aura: arată ecranul animat al personajului. Butoanele sale laterale sunt Mic, Chat (înapoi la conversație) și Refresh (reconectează cloud-ul și reîncarcă lista de modele).
+- Setări: deschide cele opt secțiuni de setări.
+- Un banner arată starea microfonului: „Ascult…”, „Mic dezactivat — atingeți” sau „Se vorbește... atingeți pentru a opri”.
+- Când o versiune nouă este gata, apare un banner de actualizare cu butoanele Descărcare, Instalare și Permitere (consultați Actualizări).
+
+## Meniul din stânga (chaturi)
+- „+ Chat nou”: începe o conversație nouă.
+- Fiecare chat din listă arată un semn de rulare în timp ce agentul este ocupat acolo. Creionul îl redenumește; crucea îl șterge (după o confirmare: toate mesajele din ea sunt șterse).
+- Temă: alegeți Horror (sânge, foc și umbră), Întuneric (sticlă întunecată curată) sau Lumină (sticlă strălucitoare).
+
+## Bara de mesaje
+- Atașați (clip de hârtie): fotografie din galerie, fotografie de cameră, scanare document (transformă textul dintr-o fotografie într-un .docx editabil), partajați ecranul pentru ca agentul să îl poată vedea („Vizionarea ecranului” activată sau dezactivată) și fișiere audio sau video. Elementele atașate sunt afișate ca jetoane; crucea îndepărtează una, „Șterge tot” îndepărtează toate.
+- Butonul Mod: Agent sau Construire.
+- Butonul microfon: pornește sau dezactivează microfonul care ascultă mereu.
+- Butonul Model: deschide lista de modele cu o casetă de căutare. Modelele marcate „Live” pot vorbi cu propria voce.
+- Trimitere: trimite mesajul. În timp ce agentul lucrează, acesta devine Stop.
+- Intrarea spune „Ce ar trebui să fac?” în modul Agent și „Ce ar trebui să construiesc? Spune-o scurt” în modul Construire.
+
+## Mesaje
+- Copiați, Partajați și Ascultați (citește mesajul cu voce tare; apăsați din nou pentru a opri) sunt sub fiecare mesaj.
+- „Gândirea” arată raționamentul modelului atunci când modelul îl oferă.
+- Codul pe care îl scrie agentul apare live într-o casetă, rând cu linie, cu Copiere, Descărcare și Deschidere.
+- Fișierele pe care agentul le face să apară sub formă de carduri cu Deschidere (în aplicația reală a telefonului), Redare, Partajare și „Altă aplicație…”.
+- Imaginile, audio și video arată un procentaj de progres live în timp ce sunt realizate.
+- Cardurile cu instrumente arată ce face agentul: rulează, gata, reușit sau eșuat.
+
+## Panouri (todo, instrumente, fișiere, sub-agenți)
+- Panou pentru toate: planul pe care agentul îl scrie pentru o treabă mare și progresul acesteia (n/total realizat). Puteți adăuga propria sarcină și puteți șterge sarcini.
+- Instrumente: lista fiecărui apel de instrumente, cu starea live.
+- Fișiere: fiecare fișier creat de agent, cu Deschidere, Partajare, Publicare și Ștergere (cu confirmare) și o casetă de căutare.
+- Sub-agenți: agenți de ajutor care rulează în fundal, cu un buton Stop.
+- Fila Terminal: terminalul real (vezi capitolul Fișiere și terminale).
+
+## Panoul de previzualizare
+- Înapoi, Înainte, Oprire, Reîncărcare și o bară de adrese (tastați o adresă web sau căutați Google).
+- Deschideți fișierul: arată Word, Excel, PowerPoint, PDF, imagini, Markdown, CSV, cod și site-uri chiar în interiorul aplicației.
+- Dimensiune: micșorați sau măriți panoul.
+- Remediere: trimite problemele paginii (erori de consolă, încărcări eșuate) către agent, care le rezolvă în fundal.
+- Alegeți o parte: atingeți o parte a paginii, apoi spuneți agentului ce să facă cu acea parte.
+- Buton agent: întrebați ceva despre pagină; agentul primește o poză a acesteia.
+- Deschidere rapidă: comenzi rapide către paginile recente.
+
+## Spațiul de lucru cod
+- Partea stângă: fișierele dvs. (fișier nou, deschideți, salvați).
+- Editor: afișează rânduri și personaje; modificările făcute de agent apar imediat.
+- Git: repo nou, clonare din GitHub, scanare, stare, comitere cu un mesaj, împingere, trage, ramuri, simbol.
+- Solicitări de tragere: creați, îmbinați, închideți. Fluxuri de lucru: listează rulările, rulează un flux de lucru. Jurnalul arată ieșirea comenzii.

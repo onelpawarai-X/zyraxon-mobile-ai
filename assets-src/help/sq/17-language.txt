@@ -1,0 +1,16 @@
+Gjuhët
+## Gjuha e aplikacionit
+Cilësimet → Gjuha dhe përkthimi. 60 gjuhë. E gjithë ndërfaqja dhe mesazhet e mjetit të agjentit e ndjekin atë. Çdo gjuhë ka skedarin e vet të përkthimit. Çdo rresht që një skedar gjuhësor nuk e ka ende shfaqet në anglisht, nuk lihet kurrë bosh.
+
+## Çfarë flisni
+Agjenti përgjigjet gjithmonë në gjuhën që ju flisni, në çdo gjuhë në botë. Nëse kaloni, ai kalon. Ai përdor formën miqësore-respektuese të "ju" në gjuhën tuaj. Emrat e markave dhe teknologjisë mbeten ashtu siç janë.
+
+## Gjuhët e zërit
+- Gjuha e njohjes (çfarë flisni në mikrofon): Cilësimet → Zëri dhe mikrofoni → Mikrofoni dhe gjuha.
+- Zëri që flet: Cilësimet → Zëri dhe mikrofoni → Profili i zërit dhe laboratori i zërit për gjuhë të tilla si bengali, hindu, anglisht, urdu, arabisht, tamilisht, nepalisht, spanjisht, frëngjisht, gjermanisht, japonisht, koreanisht, kinezisht, rusisht, turqisht.
+
+## Ky dokumentacion
+Përdorni çipat e gjuhës në krye të kësaj faqeje. I gjithë udhëzuesi është shkruar në çdo gjuhë që mbështet aplikacioni, me dorë dhe dërgohet brenda aplikacionit. Asgjë nuk përkthehet në telefonin tuaj: çdo kapitull hapet në çast, funksionon jashtë linje dhe nuk ka nevojë për model apo çelës.
+
+## Duke shkruar në skenarin tuaj
+Dokumentet, posterat dhe dizajnet mund të bëhen në çdo skenar. Për dizajnet Bengalisht përdoret fonti i duhur; për skriptet e tjera zgjidhet fonti që përputhet.

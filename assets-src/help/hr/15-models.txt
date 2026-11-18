@@ -1,0 +1,15 @@
+Davatelji, modeli i ključevi
+## Pružatelji usluga
+ZYRAXON (vlastita linija i Apex agent u oblaku, uvijek povezan), OpenCode (besplatna kvota), Groq (vrlo brza Llama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek i OpenRouter. Dodajte bilo koji ključ u Settings → Providers & API. Ključ se sprema na vaš telefon, provjerava u katalogu pružatelja usluga, a modeli se prikazuju u izborniku kako svaki pružatelj odgovara.
+
+## Odabir modela
+Koristite gumb modela na traci s porukama ili Postavke → Model i identitet → Model. Pretražujte po nazivu, filtrirajte Sve ili Prilagođeno. Vaš izbor se sprema i obnavlja pri pokretanju; osvježenje nikada ne zamjenjuje vaš spremljeni model. Modeli označeni Live mogu govoriti vlastitim glasom (pogledajte Live voice).
+
+## Modeli na uređaju
+Postavke → Model & identitet → Na uređaju. Model radi na telefonu bez napuštanja podataka. Datoteke su velike (stotine MB do nekoliko GB), pa preuzmite na Wi-Fi. Navedeni su od malih do velikih; na telefonu s malo RAM-a odaberite najlakši. Pozivanje alata podržavaju paketi Gemma i FunctionGemma. Token Hugging Face je samo za zatvorene datoteke. Učitani modeli se pamte.
+
+## Web stranica ZYRAXON.
+zyraxonai.lovable.app: kreirajte račun (e-pošta ili Google), otvorite Postavke, API ključ / pristupni token, izradite ključ i zalijepite ga u aplikaciju. Bez ključa i dalje možete koristiti aplikaciju s modelima na uređaju i lokalnim alatima.
+
+## Troškovi i podaci
+Pružatelji usluga u oblaku naplaćuju vam račun prema vlastitim pravilima. S uključenom postavkom "Samo na uređaju" ništa se ne šalje nijednom davatelju usluga.

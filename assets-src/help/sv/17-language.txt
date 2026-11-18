@@ -1,0 +1,16 @@
+Språk
+## Appens språk
+Inställningar → Språk och översättning. 60 språk. Hela gränssnittet och agentens verktygsmeddelanden följer det. Varje språk har sin egen översättningsfil. Alla rader som en språkfil inte har ännu visas på engelska, lämnas aldrig tom.
+
+## Vad du talar
+Agenten svarar alltid på det språk du talar till den, vilket språk som helst i världen. Om du byter så växlar den. Den använder den vänliga och respektfulla formen av "du" på ditt språk. Varumärken och tekniknamn förblir som de är.
+
+## Röstspråk
+- Igenkänningsspråk (vad du talar i mikrofonen): Inställningar → Röst & mikrofon → Mikrofon & språk.
+- Talande röst: Inställningar → Röst och mikrofon → Röstprofil och Voice-labbet för språk som bengali, hindi, engelska, urdu, arabiska, tamil, nepali, spanska, franska, tyska, japanska, koreanska, kinesiska, ryska, turkiska.
+
+## Denna dokumentation
+Använd språkbrickorna överst på denna sida. Hela guiden är skriven på alla språk som appen stöder, för hand och skickas in i appen. Ingenting översätts på din telefon: varje kapitel öppnas direkt, fungerar offline och behöver ingen modell eller nyckel.
+
+## Att skriva i eget manus
+Dokument, affischer och mönster kan göras i vilket manus som helst. För bengaliska mönster används rätt typsnitt; för andra skript väljs det matchande teckensnittet.

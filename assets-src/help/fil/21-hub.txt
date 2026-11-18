@@ -1,0 +1,20 @@
+Automation hub
+Mga Setting → System → Automation hub. Ang bawat button para sa kung ano ang maaaring gawin ng ZYRAXON nang mag-isa ay nasa isang lugar, sa anim na tab. Ang bawat tab ay nagsisimula sa isang maikling paliwanag kung paano ito gumagana.
+
+## Mga kasanayan
+Turuan ZYRAXON ang isang gawain sa dalawang paraan: sabihin ito sa chat ("alamin ang gawaing ito"), o pindutin ang record button at gawin ang gawain nang mag-isa sa ibang app, pagkatapos ay bumalik at pindutin ang Stop. Naka-on dapat ang serbisyo ng Accessibility, o hindi makikita ang iyong mga gripo. Ang natutunan nito ay lumalabas sa ilalim ng "Mga natutunang kasanayan" at maaaring i-replay o tanggalin.
+
+## Autopilot
+Mga tuntunin ng uri "kapag nangyari ito, gawin iyon". Kapag nangyari ang kaganapan ZYRAXON nagigising mag-isa at ginagawa ang gawain nang hindi nagtatanong. Maaari ka ring gumawa ng panuntunan sa pamamagitan ng pagsasabi nito sa chat. Ipinapakita ng bawat panuntunan kung ilang beses na itong tumakbo.
+
+## Pera
+Binabasa ang SMS mula sa anumang bangko o pitaka sa anumang bansa (PayPal, M-Pesa, UPI, Pix, bKash, mga card...) at pinapanatili ang isang ledger ng kita, paggastos, bayarin at balanse. Maaari kang magtakda ng badyet at makakuha ng babala kapag naipasa mo ito. Gumagana ito sa telepono, at walang ipinapadala kahit saan.
+
+## Timeline
+Lahat ng ginawa ZYRAXON ay nakasulat dito. Maaaring i-undo ang mga pagsusulat, pag-edit at pagtanggal ng file gamit ang isang button. Ang isang utos na pinatakbo ay hindi maaaring i-undo.
+
+## Utak
+Hinahanap ang iyong mga file (text, Word, Excel, PowerPoint, CSV) at, kung papayagan mo ito, ang iyong SMS, nang walang internet at sa anumang wika. Pindutin muna ang "Index", pagkatapos ay maghanap.
+
+## Tawagan ang ahente
+Kapag hindi ka makatawag, ZYRAXON ang sasagot, magsasalita sa sariling wika ng tumatawag, natututo ang pangalan at dahilan, at nagbibigay sa iyo ng buod kapag natapos ang tawag. Labinlimang wika ang gumagamit ng mabilis na built-in na mga panuntunan; bawat ibang wika ay pinangangasiwaan ng modelo, na sumasagot sa wika ng tumatawag. Ang mga salitang nangangahulugang paalam, apurahan o spam ay naiintindihan sa lahat ng mga wika nang sabay-sabay. Ang mga buod ng mga nahuli na tawag ay nakalista sa tab.

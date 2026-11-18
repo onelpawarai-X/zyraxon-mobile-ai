@@ -1,0 +1,21 @@
+Cloud, jaringan, model dan pembantu
+## Awan dan internet
+- `web_search` (jaringan): cari di web sebenarnya. `read_url` (jaringan): mengambil halaman sebagai teks. `http_request` (jaringan): panggilan HTTP apa pun (GET, POST, PUT, PATCH, DELETE) dengan header dan isi. `verify_url` (jaringan): periksa apakah tautan benar-benar ada dan dapatkan status sebenarnya. `download_file` (Pribadi, jaringan): unduh URL ke file.
+- Agen membuka tautan hanya jika Anda memintanya.
+- Model AI berjalan di cloud melalui penyedia yang Anda tambahkan (ZYRAXON, ZYRAXON Apex agen cloud, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Daftar model dimuat secara langsung dan terisi seiring jawaban masing-masing penyedia.
+- Permintaan pembuatan, penerbitan, dan penarikan dijalankan melalui GitHub dan Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Aktifkan "hanya di perangkat" (Pengaturan otomatisasi) dan tidak ada panggilan cloud yang dilakukan sama sekali: tidak ada penyedia, tidak ada web, tidak ada unggahan.
+
+## MCP server
+MCP memungkinkan layanan luar memberikan alat tambahan kepada agen. Hubungkan Canva, Cloudflare, Supabase, GitHub atau server Anda sendiri berdasarkan alamatnya (token opsional). Alat server yang terhubung bergabung dengan daftar alat agen sebagai `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (lihat apa yang terhubung dan alat apa yang ada), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (perhatikan perubahan pada sumber daya), `mcp_complete` (argumen pelengkapan otomatis), `mcp_ping`, `mcp_log_level`. Panggilan mereka adalah panggilan jaringan, dan alat MCP yang tidak dikenal meminta izin secara default.
+- Layar MCP mencantumkan setiap server dengan status Terhubung, alatnya, sumber daya dan templat perintahnya, serta tombol Tambah, Putuskan Sambungan, Hapus, Izinkan.
+
+## Sub-agen
+`sub_agent` (Sistem): menyerahkan bagian pekerjaan besar kepada agen pembantu yang berjalan di latar belakang. Tindakan: spawn, status, daftar, hasil, pesan, berhenti, tunggu. Masing-masing dapat menggunakan modelnya sendiri. Agen menggabungkan dan memeriksa hasilnya sebelum mengatakan "selesai".
+
+## Model di perangkat
+`on_device_model` (Sistem): daftar, muat, dan jalankan model bahasa yang ada di ponsel, tanpa internet. Di Pengaturan → Model & identitas → Di perangkat Anda mengunduh model (kecil hingga besar: FunctionGemma 270M, Qwen3 0,6B, Gemma 4 E2B…); token Hugging Face bersifat opsional dan hanya diperlukan untuk file yang terjaga keamanannya. Model yang dimuat akan diingat dan dimuat ulang saat peluncuran.
+
+## Saluran pesan
+`channel_post` (Sistem) membuka Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail atau SMS dengan teks Anda sudah siap. Anda menekan kirim sendiri.

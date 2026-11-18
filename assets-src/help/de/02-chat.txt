@@ -1,0 +1,51 @@
+Der Chat-Bildschirm und jede Schaltfläche
+## Oben auf dem Bildschirm
+- Menü: Öffnet die linke Schublade mit Ihren Chats.
+- Chat / Terminal / Code / Vorschau: Hauptansicht wechseln. Chat ist das Gespräch; Terminal ist das eigentliche Terminal; Code ist der Dateiarbeitsbereich mit Git; Vorschau ist der integrierte Browser.
+- Aura: Zeigt den animierten Charakterbildschirm. Die seitlichen Schaltflächen sind „Mikrofon“, „Chat“ (zurück zur Konversation) und „Aktualisieren“ (verbindet die Cloud erneut und lädt die Modellliste neu).
+- Einstellungen: öffnet die acht Einstellungsabschnitte.
+- Ein Banner zeigt den Mikrofonstatus an: „Zuhören…“, „Mikrofon aus – tippen“ oder „Sprechen… tippen, um zu stoppen“.
+- Wenn eine neue Version bereit ist, erscheint ein Update-Banner mit den Schaltflächen „Herunterladen“, „Installieren“ und „Zulassen“ (siehe Updates).
+
+## Das linke Menü (Chats)
+- „+ Neuer Chat“: startet ein neues Gespräch.
+- Jeder Chat in der Liste zeigt eine Laufmarkierung, während der Agent dort beschäftigt ist. Der Bleistift benennt es um; das Kreuz löscht es (nach einer Bestätigung: alle darin enthaltenen Nachrichten werden gelöscht).
+- Thema: Wählen Sie Horror (Blut, Feuer und Schatten), Dunkel (sauberes dunkles Glas) oder Licht (helles Glas).
+
+## Die Nachrichtenleiste
+- Anhängen (Büroklammer): Galeriefoto, Kamerafoto, Dokumentenscan (wandelt den Text in einem Foto in eine bearbeitbare DOCX-Datei um), geben Sie den Bildschirm frei, damit der Agent ihn sehen kann („Bildschirmüberwachung“ ein- oder ausschalten) und Audio- oder Videodateien. Angehängte Gegenstände werden als Chips angezeigt; Das Kreuz entfernt einen, „Alle löschen“ entfernt alle.
+- Modustaste: Agent oder Build.
+- Mikrofontaste: Schaltet das immer mithörende Mikrofon ein oder aus.
+- Schaltfläche „Modell“: Öffnet die Modellliste mit einem Suchfeld. Mit „Live“ gekennzeichnete Models können mit ihrer eigenen Stimme sprechen.
+- Senden: Sendet die Nachricht. Während der Agent arbeitet, wird dies zu „Stopp“.
+- Die Eingabe sagt „Was soll ich tun?“ im Agent-Modus und „Was soll ich erstellen? Kurz gesagt“ im Build-Modus.
+
+## Nachrichten
+- Unter jeder Nachricht befinden sich die Funktionen „Kopieren“, „Teilen“ und „Anhören“ (liest die Nachricht laut vor; zum Stoppen erneut drücken).
+- „Denken“ zeigt die Argumentation des Modells, wenn das Modell sie bereitstellt.
+- Der Code, den der Agent schreibt, erscheint Zeile für Zeile live in einem Feld mit den Optionen „Kopieren“, „Herunterladen“ und „Öffnen“.
+- Dateien, die der Agent erstellt, werden als Karten mit „Öffnen“ (in der echten App des Telefons), „Abspielen“, „Teilen“ und „Andere App…“ angezeigt.
+- Bilder, Audio und Video zeigen während der Erstellung einen Live-Fortschrittsprozentsatz.
+- Werkzeugkarten zeigen, was der Agent gerade tut: ausgeführt, erledigt, erfolgreich oder fehlgeschlagen.
+
+## Panels (Todo, Tools, Dateien, Subagenten)
+- Todo-Board: Der Plan, den der Agent für einen großen Auftrag schreibt, und dessen Fortschritt (n/insgesamt erledigt). Sie können Ihre eigene Aufgabe hinzufügen und Aufgaben löschen.
+- Werkzeuge: Die Liste aller Werkzeugaufrufe mit Live-Status.
+- Dateien: jede Datei, die der Agent erstellt hat, mit Öffnen, Teilen, Veröffentlichen und Löschen (mit Bestätigung) und einem Suchfeld.
+- Unteragenten: Hilfsagenten, die im Hintergrund ausgeführt werden, mit einer Stopp-Schaltfläche.
+- Registerkarte „Terminal“: das eigentliche Terminal (siehe Kapitel „Dateien und Terminal“).
+
+## Vorschaufenster
+- Zurück, Vorwärts, Stopp, Neu laden und eine Adressleiste (geben Sie eine Webadresse ein oder suchen Sie nach Google).
+- Datei öffnen: zeigt Word, Excel, PowerPoint, PDF, Bilder, Markdown, CSV, Code und Websites direkt in der App.
+- Größe: Das Panel verkleinern oder vergrößern.
+- Fix: Sendet die Probleme der Seite (Konsolenfehler, fehlgeschlagene Ladevorgänge) an den Agenten, der sie im Hintergrund behebt.
+- Teil auswählen: Tippen Sie auf einen Teil der Seite und sagen Sie dem Agenten, was er mit diesem Teil tun soll.
+- Agent-Schaltfläche: Fragen Sie etwas über die Seite. Der Agent erhält ein Bild davon.
+- Schnell öffnen: Verknüpfungen zu den letzten Seiten.
+
+## Code-Arbeitsbereich
+- Linke Seite: Ihre Dateien (Neue Datei, Öffnen, Speichern).
+- Editor: zeigt Zeilen und Zeichen an; Vom Agenten vorgenommene Änderungen werden sofort angezeigt.
+- Git: neues Repo, Klonen von GitHub, Scannen, Status, Festschreiben mit einer Nachricht, Push, Pull, Verzweigungen, Token.
+- Pull-Requests: erstellen, zusammenführen, schließen. Workflows: Läufe auflisten, einen Workflow ausführen. Das Protokoll zeigt die Befehlsausgabe.

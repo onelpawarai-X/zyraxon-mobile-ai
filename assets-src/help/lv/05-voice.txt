@@ -1,0 +1,35 @@
+Balss: runāšana, klausīšanās un dzīvā runāšana
+## Klausīšanās (mikrofons)
+Iestatījumi → Balss un mikrofons → Mikrofons un valoda.
+- Runas atpazīšanas valoda: valoda, kurā runājat ar mikrofonu. Mainiet to jebkurā laikā.
+- Turiet ieslēgtu mikrofonu (vienmēr klausieties): kad tas ir ieslēgts, mikrofons paliek atvērts. Kad tas ir izslēgts, jūs to ieslēdzat pats.
+- Automātiska sūtīšana, kad pārtraucat runāt: pēc aptuveni 1,5 sekundes klusuma jūsu teikums tiek nosūtīts pats par sevi. Kad tas ir izslēgts, vārdi gaida lodziņā, līdz jūs nospiežat Sūtīt.
+- To pašu ieslēdz/izslēdz arī mikrofona poga ziņojumu joslā un reklāmkarogs augšpusē.
+- Mikrofons jums vienmēr ir atvērts, pat kamēr ZYRAXON runā. Brīdī, kad sākat runāt, tas apstājas un klausās, pēc tam jums atbild. Tā paša balss, kas atgriežas caur mikrofonu, tiek filtrēta, salīdzinot tekstu ar tā pēdējo atbildi.
+- Sods tiek nosūtīts tikai vienu reizi. Ja atpazītājs vēlāk atkārto nedaudz atšķirīgu viena un tā paša teikuma versiju, tas tiek atmests kā tas pats pagrieziens.
+
+## Runāšana (teksta pārvēršana runā)
+Iestatījumi → Balss un mikrofons → Balss profils.
+- Izvēlieties balsi: sieviešu (mīļa un romantiska) vai vīrieša (dziļa un pārliecināta). Kad tas ir gatavs, tiek izmantotas pašas vietnes balsis; paša tālruņa runas dzinējs ir rezerves variants.
+- Ātruma un augstuma slīdņi un "Pārbaudes balss".
+- Funkcija “Lasīt atbildes skaļi” ieslēdz vai izslēdz runāšanu.
+- Ja tālrunim nav runas programmas, instalējiet Google runas pakalpojumus. Ja tālrunī nav bengāļu balss datu, poga ļauj tos lejupielādēt.
+- Pieskarieties runājošajam reklāmkarogam, lai apturētu balsi. Lai to dzirdētu, zem jebkura ziņojuma pieskarieties pie Klausīties.
+- ZYRAXON nekad skaļi nelasa kodu, saites, JSON vai rīku nosaukumus.
+
+## Balss laboratorija (balss mainītājs)
+Izvēlieties no servera kataloga pēc dzimuma (visi, meitene, zēns), vecuma (bērns, pusaudzis, pieaugušais, vecākais) un valodas (bengāļu, hindi, angļu, urdu, arābu, tamilu, nepāliešu, spāņu, franču, vācu, japāņu, korejiešu, ķīniešu, krievu, turku utt.). "Klausīties" priekšskata balsi; "Atgriezties uz noklusējuma vērtību" atjauno varoņa balsi. Par audio ar daudzām balsīm jautājiet aģentam: katra dialoga daļa iegūst savu balsi.
+
+## Dzīvā balss (runa-runa)
+Iestatījumi → Balss un mikrofons → Tiešraides balss. Izmantojot reāllaika modeli (Gemini tiešraidē, OpenAI reāllaikā un tamlīdzīgi) modelis dzird mikrofonu un atbild savā balsī, vienā straumē, un jūs varat to pārtraukt vārda vidū. Šajā sesijā paša tālruņa runa ir izslēgta, tāpēc jūs nekad nedzirdat divas balsis.
+- Izmantojiet paša modeļa balsi: ieslēgts = tiešraide; izslēgts = tālrunis nolasa teksta atbildes.
+- Statuss rāda: savienojas, klausās, runā, gaida.
+- Izvēloties reāllaika modeli, tas tiek ieslēgts pats par sevi.
+- Ja nav ielādēts neviens reāllaika modelis, AI nodrošinātājos pievienojiet atslēgu Gemini vai OpenAI.
+- Balss, kuru izvēlējāties balss profilā, tiek izmantota arī tiešraides režīmā.
+
+## Peldošā acs
+Iestatījumi → Aura un motīvs → Aura un fons.
+- Maza peldoša lode, kas atrodas pāri visām pārējām lietotnēm. Pieskarieties, lai ieslēgtu vai izslēgtu mikrofonu; ilgi nospiediet, lai atvērtu tekstlodziņu un aizvērtu to vēlreiz.
+- Astoņi modeļi: acs, mirdzoša lode, neona gredzens, galaktika, orbīta, plazma, pulsārs, prizma. Izvietojums ekrāna malā.
+- Balss komandas (pamodināšanas vārdi): kad lietotne darbojas fonā, vārda izrunāšana pamodina peldošo aci un ZYRAXON atbild. Noklusējumi: "zyraxon", "hey zyraxon" un parastā rakstība bengāļu un angļu valodā. Pievienojiet savus vārdus jebkurā valodā; noņemiet tos jebkurā laikā.

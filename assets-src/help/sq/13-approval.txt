@@ -1,0 +1,23 @@
+Nivelet e miratimit dhe siguria e automatizimit
+Cilësimet → Automatizimi i sistemit →. Kjo vendos se sa mund të bëjë agjenti përpara se të ndalojë dhe t'ju pyesë. Cilësimi zbatohet me kod në çdo thirrje mjeti; një model nuk mund ta zgjerojë atë.
+
+## Katër nivelet
+Ndrysho nivelin te Cilësimet → Automatizimi i sistemit →. Çdo nivel vendos kur agjenti ndalon dhe pyet, si dhe se sa rreptësisht e trajton Mburoja e përmbajtjes (shih Siguria dhe privatësia) tekstin që agjenti lexon nga jashtë.
+1. Pyetje e plotë (E kyçur): pyet para çdo gjëje që ndryshon telefonin, sado i vogël. Më e sigurta. Mburoja e përmbajtjes është e rreptë: çdo tekst i dyshimtë llogaritet si armiqësor. Përdoreni atë në një telefon të përbashkët ose ndërsa jeni duke testuar diçka të re.
+2. I mbikëqyrur (parazgjedhur): pyet përpara veprimeve të sistemit dhe personal dhe bën punë të zakonshme (lexim, hapje, kërkim, ndërtim) vetë. Mburoja e përmbajtjes është standarde: teksti i dyshimtë është i rrethuar si të dhëna, dhe kur teksti është qartësisht armiqësor, çdo mjet që ndryshon ju kërkon pjesën tjetër të asaj kthese.
+3. E balancuar: pyet vetëm përpara veprimeve në nivel sistemi (predha, fshirje, publikim, planifikim…). Veprimet personale të tilla si mesazhet, trokitje e lehtë dhe të shkruarit ekzekutohen vetëm. Mburoja e përmbajtjes është e lehtë: vepron vetëm në tekst qartësisht armiqësor dhe më pas vetëm mjetet e nivelit të sistemit ndalojnë të pyesin.
+4. Automatizimi i plotë: kurrë nuk pyet dhe nuk ndalon kurrë. Gjithçka kalon drejtpërdrejt dhe Mburoja e Përmbajtjes fiket plotësisht - asgjë nuk skanohet, shënohet, hiqet ose ndryshohet. Ky është automatizimi në kuptimin e plotë: ju zotëroni rrezikun.
+
+## Tre nivelet e mjeteve
+- I sigurt (kurrë nuk pyet në asnjë nivel): leximi dhe listimi i skedarëve, memoria, dokumentet, dizajnet, statusi, hapja e aplikacioneve dhe skedarëve, pritjet, aftësitë/autopilot/listat kohore/listat e thirrjeve, kërkimi i trurit.
+- Personal (të kërkuara në dy nivelet e para): SMS, telefonata, kamera, leximi në ekran, prekjet dhe shtypja, kujtesa, shkarkimet, njoftimet, ndarja, ndryshimi i zërit, riprodhimi i aftësive, libri i parave, agjenti i telefonatave, zhbërja e afatit kohor.
+- Sistemi (kërkohet në çdo nivel përveç automatizimit të plotë): guaska, Linux, ndërtime, publikim, fshirje, kyçje pajisjesh, planifikim, Git dhe GitHub, ffmpeg, modeli në pajisje, postimi në kanale, rregullat e autopilotit, aftësitë e fshirjes, Shizuku. Çdo mjet që aplikacioni nuk njeh - duke përfshirë veglat MCP - trajtohet si Sistem.
+
+## Kartën e miratimit
+Kur një mjet ka nevojë për miratimin tuaj, një kartë thotë "Nevojitet leje", ju tregon se çfarë dëshiron të bëjë agjenti, tregon nivelin e tij (Safe, Personal ose System) dhe ofron "Po, ekzekuto atë" ose "Jo, mbaje jashtë". Karta të kujton gjithashtu se mund të ndryshosh se sa shpesh kërkohet kjo te "Cilësimet" → Automatizimi.
+
+## Vetëm në pajisje
+Kur është i ndezur, asgjë nuk largohet nga telefoni: funksionojnë vetëm modeli në pajisje dhe mjetet lokale. Të gjitha mjetet e rrjetit (kërkimi, tërheqja, ngarkimet, publikimi, GitHub, gjenerimi i mediave, MCP, modelet e resë kompjuterike) refuzohen në kod.
+
+## Njoftimi i parë i nisjes
+Herën e parë, ZYRAXON shpjegon se agjenti mund të veprojë në telefonin tuaj dhe ku të aktivizojë lejet. Shtypni "E kuptova, fillo".

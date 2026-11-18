@@ -1,0 +1,7 @@
+Updates
+Instellingen → Updates → App-update, of de banner bovenaan de app.
+- De app controleert op nieuwe releases en toont "Nieuwe update beschikbaar - versie".
+- Controleer op updates: vraagt ​​nu. Als je actueel bent, staat dat zo.
+- Downloaden & installeren: downloads met een percentage. Wanneer u klaar bent, drukt u op Installeren. Je chats, geheugen en instellingen blijven behouden.
+- Als Android de installatie blokkeert, drukt u op de toestemmingsknop, staat u ZYRAXON toe als installatiebron en probeert u het opnieuw.
+- De bannerknoppen: Downloaden, Installeren, Toestaan ​​en Sluiten.

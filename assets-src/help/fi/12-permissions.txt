@@ -1,0 +1,27 @@
+Luvat yksitellen
+Asetukset → Turvallisuus ja yksityisyys → Käyttöoikeudet. Jokaisella rivillä näkyy "Myönnetty" tai painike. Napauttamalla riviä avautuu järjestelmävalintaikkuna; paina vain Salli. Agentti voi myös avata dialogin `request_permission`:lla.
+
+- Mikrofoni: jotta ZYRAXON kuulee sinut. Ilman sitä ei ole äänisyöttöä.
+- Kamera: ottaa ja katsella valokuvia (`look_camera`, asiakirjan skannaus, "mitä näet").
+- Sijainti: karttoja ja paikallisia tietoja varten.
+- Ilmoitukset: ilmoittavat, kun taustatyö on valmis.
+- Tiedostot ja media: kuvien, videoiden, äänen ja asiakirjojen lukemiseen.
+- Peittokuva (piirrä muiden sovellusten päälle): tarvitaan kelluvaa silmää varten.
+- Helppokäyttöisyys: antaa agentin lukea näyttöä ja napauttaa, pyyhkäistä ja kirjoittaa puolestasi. Tämä on puhelinautomaation sydän. Kytket sen päälle järjestelmän esteettömyysasetuksista.
+- Akun optimointi: estää Android asettamasta ZYRAXON nukkumaan, kun se toimii taustalla.
+
+## Muut sovelluksen ilmoittamat luvat
+- SMS (lue ja vastaanota): koodien, rahakirjan ja SMS-autopilotin sääntöjen lukemiseen.
+- Puhelimen tila, vastaa puheluihin, soita puhelimeen, yhteystiedot: soittotyökaluille ja soittoagentille.
+- Ilmoitusten käyttöoikeus: antaa autopilotin reagoida ilmoituksiin.
+- Laitteen järjestelmänvalvoja: antaa `device_lock` todella lukita näytön.
+- Asenna paketit: sallii päivitysten ja `build_app` APK:iden asentamisen; Android pyytää sallimaan ZYRAXON asennuslähteeksi.
+- Etualan palvelut (mikrofoni, datasynkronointi) ja lepotilan esto: pidä puhe ja pitkät työt elossa.
+- Internetin ja verkon tila: pilvi ja verkko.
+- Shizuku (valinnainen): järjestelmätason pääsy komentotulkoon ja terminaaliin.
+
+## Google Play Protect
+Jos Play Protect estää työn, agentti voi avata oikean sivun, katsoa todellista näyttöä ja käydä askel askeleelta läpi vaihteen ja kytkimen – mutta se kysyy ensin sinulta, koska suojauksen poistaminen on sinun päätös. Voit tehdä sen itse: Play Store → profiilikuva → Play Protect → asetukset → poista "Skannaa sovelluksia sovelluksella Play Protect" käytöstä. Sivulla on painike, joka avaa Play Store.
+
+## Miksi luvalla on väliä
+Jos työkalu epäonnistuu puuttuvan käyttöoikeuden suhteen, agentti kertoo, mikä niistä ja avaa valintaikkunan. Mikään arkaluonteinen ei toimi ilman nimenomaista Salli-asetusta.

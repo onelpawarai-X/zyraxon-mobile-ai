@@ -1,0 +1,20 @@
+Početak rada
+ZYRAXON je pomoćnik koji živi unutar vašeg Android telefona. Razgovara s vama, sluša vas i može raditi pravi posao: otvarati aplikacije, dodirivati ​​i tipkati po ekranu, zvati ljude, pisati datoteke, izrađivati ​​web stranice i aplikacije, pokretati Linux sustav, stvarati slike, audio, video i uredske dokumente i pamtiti vas mjesecima. Radi na bilo kojem jeziku koji govorite.
+
+## Prve minute
+- Pri prvom pokretanju ZYRAXON prikazuje kratku obavijest da agent može sam djelovati na vašem telefonu. Pritisnite "Razumijem, počni" za nastavak.
+- Dodajte AI ključ (Postavke → Pružatelji & API → AI pružatelji). Zalijepite ključ za bilo kojeg pružatelja usluga koji vam se sviđa (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Kada spremite ključ, aplikacija čita katalog tog pružatelja usluga i provjerava ga stvarno, tako da vidite pravi "povezani" i broj modela.
+- Nema ključa? I dalje možete koristiti modele na uređaju (Postavke → Model i identitet → Na uređaju). Rade na telefonu bez interneta.
+- Odaberite model pomoću gumba modela na traci s porukama i znaka (Postavke → Model i identitet → Identitet).
+- Dodijelite dopuštenja kada ih značajka treba (pogledajte poglavlje Dopuštenja). Agent također može otvoriti dijaloški okvir dopuštenja za vas jednim dodirom.
+- Samo pričajte ili tipkajte. "Napravi mi odredišnu stranicu za moju pekaru", "otvori YouTube i pusti pjesmu", "koja je moja baterija?", "nazovi mamu".
+
+## Dva načina rada
+Pokraj okvira s porukom nalazi se gumb načina rada s dva načina rada: Agent i Build. Pogledajte poglavlje Načini rada.
+
+## Gdje su stvari
+- Lijevi izbornik: vaši razgovori, novi razgovor, preimenovanje, brisanje i promjena teme.
+- Zaslon za chat: poruke, ploča s obavezama, popis alata, datoteke, terminal.
+- Ploče Pregled i Kod: pogledajte i uredite što agent gradi.
+- Postavke: osam odjeljaka, obrađeni jedan po jedan u ovoj dokumentaciji.
+- Ova dokumentacija: Postavke → Dokumentacija (vi ste ovdje).

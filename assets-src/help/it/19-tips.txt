@@ -1,0 +1,27 @@
+Suggerimenti e richieste di esempio
+## Di' quello che vuoi, non come
+- "Crea una landing page per una palestra, oscura e audace."
+- "Crea un'app di prenotazione completa con un database." (l'agente chiede prima le scelte tecniche)
+- "Apri YouTube e riproduci una canzone tranquilla."
+- "Scorri verso il basso e apri il primo risultato."
+- "Qual è la mia batteria e Wi-Fi?"
+- "Leggi il mio ultimo SMS e dimmi il codice."
+- "Chiama mamma." / "Rispondi alla chiamata."
+- "Crea un CV da questa foto." (allegarlo)
+- "Trasforma la registrazione della riunione in note con elementi di azione."
+- "Crea un poster per l'evento di venerdì con questi colori."
+- "Crea un dialogo audio tra due amici, un ragazzo e una ragazza."
+- "Ricordati che il compleanno di mia sorella è il 3 maggio."
+- "Ogni mattina alle 8 dimmi che tempo fa." (autopilota)
+- "Scopri come inviare l'affitto tramite l'app Wallet, così potrai farlo di nuovo." (abilità)
+- "Annulla ciò che hai fatto nella cartella del progetto." (cronologia)
+- "Dov'è il mio contratto d'affitto?" (cervello)
+- "Installa i pacchetti Python ed esegui questo script." (Linux)
+- "Pubblica questo sito così posso condividerlo." (collegamento pubblico)
+
+## Abitudini che aiutano
+- Battute brevi e chiare lunghe. L'agente sceglie le impostazioni predefinite e ti dice cosa ha scelto.
+- Quando fa una domanda, rispondi e continua dallo stesso punto.
+- Dì "spiega" o "riepilogo" per una risposta dettagliata; altrimenti le risposte sono brevi.
+- Puoi parlarne in qualsiasi momento. Si ferma e ascolta.
+- Utilizza la modalità Costruisci per creare cose e la modalità Agente per fare cose sul telefono.

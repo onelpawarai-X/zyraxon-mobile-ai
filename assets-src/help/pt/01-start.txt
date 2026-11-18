@@ -1,0 +1,20 @@
+Começando
+ZYRAXON é um assistente que fica dentro do seu telefone Android. Ele fala com você, ouve você e pode fazer um trabalho real: abrir aplicativos, tocar e digitar na tela, ligar para pessoas, gravar arquivos, criar sites e aplicativos, executar um sistema Linux, criar fotos, áudio, vídeos e documentos de escritório e lembrar de você durante meses. Funciona em qualquer idioma que você fale.
+
+## Os primeiros minutos
+- Na primeira inicialização, ZYRAXON mostra um breve aviso de que o agente pode agir sozinho em seu telefone. Pressione "Entendi, comece" para continuar.
+- Adicione uma chave de IA (Configurações → Provedores e API → Provedores de IA). Cole uma chave para qualquer provedor de sua preferência (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Quando você salva uma chave, o aplicativo lê o catálogo daquele provedor e verifica de verdade, para que você veja um verdadeiro “conectado” e a quantidade de modelos.
+- Sem chave? Você ainda pode usar os modelos no dispositivo (Configurações → Modelo e identidade → No dispositivo). Eles funcionam no telefone sem internet.
+- Escolha um modelo com o botão de modelo na barra de mensagens e um personagem (Configurações → Modelo e identidade → Identidade).
+- Conceda permissões quando um recurso precisar de uma (consulte o capítulo Permissões). O agente também pode abrir a caixa de diálogo de permissão para você com um toque.
+- Basta falar ou digitar. “Faça-me uma landing page para minha padaria”, “abra YouTube e toque uma música”, “qual é a minha bateria?”, “ligar para a mamãe”.
+
+## As duas formas de trabalhar
+Ao lado da caixa de mensagem há um botão de modo com dois modos: Agente e Construção. Consulte o capítulo Modos.
+
+## Onde as coisas estão
+- Menu esquerdo: seus bate-papos, novo bate-papo, renomear, excluir e mudança de tema.
+- Tela de bate-papo: mensagens, quadro de tarefas, lista de ferramentas, arquivos, terminal.
+- Painéis Visualização e Código: veja e edite o que o agente cria.
+- Configurações: oito seções, abordadas uma por uma nesta documentação.
+- Esta documentação: Configurações → Documentação (você está aqui).

@@ -1,0 +1,34 @@
+Verktyg för telefonautomatisering
+Agenten styr din telefon med hjälp av verktyg. Du kallar dem aldrig själv; du säger vad du vill och agenten väljer verktygen. Det här kapitlet listar alla verktyg som vidrör telefonen och hur den skyddas (se Godkännandenivåer: Säker, Personlig, System).
+
+## Öppna och hitta
+- `open_app` (Säker): öppna valfri installerad app med namn eller paket. `list_apps` (Säker): lista installerade appar. `open_settings` (Säker): öppna en sida med systeminställningar (tillgänglighet, överlagring, aviseringar, appar, Wi-Fi, batteri, Play Protect). `launch_url` (Säker): öppna en länk i webbläsaren. `youtube_play` (Safe): öppna YouTube i sökresultaten för det du frågade och spela upp det.
+
+## Ser skärmen
+- `read_screen` (Personligt): läser varje text och element på skärmen med tryckpositioner. `screen_shot` (Personligt): en riktig skärmdump. Dessa behöver tillgänglighetstillstånd.
+- `look_camera` (Personligt): tar ett foto med kameran och tittar på det. `read_media` (Personligt): läser en bild, ljud eller video (från en sökväg eller länk) så att modellen kan förstå det.
+
+## Agerar på skärmen
+- `tap` (Personligt): tryck på en punkt. `tap_text` (Personligt): tryck på elementet med denna etikett, säkrare än koordinater. `swipe` (Personligt): rulla eller bakåtgesten. `type_text` (Personligt): skriv i det fokuserade fältet. `press_key` (Personligt): tillbaka, hem, senaste, aviseringar, snabbinställningar, lås.
+- Skärmåtgärder körs en i taget, i ordning, och efter var och en tittar agenten på den nya skärmen.
+
+## Telefon, meddelanden och urklipp
+- `call_dial` (Personligt): ring ett samtal via nummer eller kontaktnamn. `call_state` (Personligt): ringer eller är ett samtal aktivt? `call_answer` (Personligt): svar. `call_hangup` (Personligt): lägg på.
+- `read_sms` (Personligt): läs det senaste SMS:et, t.ex. en OTP-kod; kan filtrera efter text eller avsändare.
+- `clipboard_read` och `clipboard_write` (Personligt): läs eller skriv urklippet.
+- `notify` (Personligt): skicka en riktig Android avisering. `share` (Personligt): öppna delningsarket med text, en länk eller en fil. `channel_post` (System): öppna Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail eller SMS med din text ifylld, redo att skickas.
+
+## Status och systemfakta
+- `network_status` (Säker): online eller inte, Wi-Fi eller mobildata, Wi-Fi namn. `sys_info` (Säker): Android version, modell, CPU, RAM, lagring, aktuell app. `platform_info` (Säker): där agenten körs. `process_list` (Säker): kör processer.
+
+## Behörigheter och skärm
+- `request_permission` (Säker): öppnar dialogrutan för systembehörighet med ett tryck när ett verktyg misslyckas på grund av en saknad behörighet. `device_lock` (System): lås skärmen på riktigt, eller ställ in den behörighet som gör det möjligt. `floating_bubble` (Personligt): slå på eller av den flytande orben.
+- `voice_change` (Personligt): ändra talhastighet, tonhöjd eller kön. `live_voice` (System): slå på eller av livetal-till-tal-läget.
+
+## Gränssnittshjälpare
+- `code_box` och `files_panel`: öppna live-kodrutan eller filläsaren så att du tittar på arbetet. `todo_write`: liveuppgiftstavlan.
+
+## Tips
+- Du kan kedja: "Öppna Inställningar, hitta Wi-Fi och berätta nätverksnamnet". Agenten läser av skärmen efter varje steg och bestämmer nästa.
+- Om en tryckning inte gör något läser agenten skärmen igen och provar ett annat element; den knackar aldrig blint.
+- Om Play Protect blockerar något kan agenten gå igenom inställningarna med dig (se Behörigheter).

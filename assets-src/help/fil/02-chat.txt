@@ -1,0 +1,51 @@
+Ang chat screen at ang bawat button
+## Itaas ng screen
+- Menu: binubuksan ang kaliwang drawer gamit ang iyong mga chat.
+- Chat / Terminal / Code / Preview: ilipat ang pangunahing view. Ang chat ay ang pag-uusap; Ang terminal ay ang tunay na terminal; Ang code ay ang file workspace na may Git; Ang Preview ay ang built-in na browser.
+- Aura: ipinapakita ang animated na screen ng character. Ang mga side button nito ay Mic, Chat (bumalik sa usapan) at Refresh (muling ikokonekta ang cloud at ire-reload ang listahan ng modelo).
+- Mga Setting: binubuksan ang walong seksyon ng mga setting.
+- Ipinapakita ng banner ang estado ng mikropono: "Nakikinig...", "I-off ang mikropono — i-tap", o "Nagsasalita... i-tap para huminto".
+- Kapag handa na ang isang bagong bersyon, lalabas ang banner ng update na may mga pindutang I-download, I-install at Payagan (tingnan ang Mga Update).
+
+## Ang kaliwang menu (mga chat)
+- "+ Bagong chat": nagsisimula ng bagong pag-uusap.
+- Ang bawat chat sa listahan ay nagpapakita ng running mark habang ang ahente ay abala doon. Pinalitan ito ng lapis; tinatanggal ito ng krus (pagkatapos ng kumpirmasyon: lahat ng mensahe dito ay mabubura).
+- Tema: piliin ang Horror (dugo, apoy at anino), Madilim (malinis na madilim na salamin) o Banayad (maliwanag na salamin).
+
+## Ang message bar
+- Mag-attach (paperclip): larawan sa gallery, larawan sa camera, pag-scan ng dokumento (ginagawa ang text sa isang larawan sa isang nae-edit na .docx), ibahagi ang screen para makita ito ng ahente ("Pagpapatingin sa screen" on o off), at mga audio o video file. Ang mga naka-attach na item ay ipinapakita bilang mga chips; ang krus ay nag-aalis ng isa, ang "I-clear ang lahat" ay nag-aalis ng lahat.
+- Button ng mode: Ahente o Build.
+- Button ng mikropono: i-on o i-off ang palaging nakikinig na mikropono.
+- Button ng modelo: binubuksan ang listahan ng modelo gamit ang isang box para sa paghahanap. Ang mga modelong may markang "Live" ay maaaring magsalita sa kanilang sariling boses.
+- Ipadala: ipinapadala ang mensahe. Habang nagtatrabaho ang ahente ito ay nagiging Stop.
+- Ang input ay nagsasabing "Ano ang dapat kong gawin?" sa Agent mode at "Ano ang dapat kong buuin? Say it short" sa Build mode.
+
+## Mga mensahe
+- Kopyahin, Ibahagi at Makinig (basahin ang mensahe nang malakas; pindutin muli upang ihinto) ay nasa ilalim ng bawat mensahe.
+- Ipinapakita ng "pag-iisip" ang pangangatwiran ng modelo kapag ibinigay ito ng modelo.
+- Ang code na isinulat ng ahente ay lumalabas nang live sa isang kahon, linya sa linya, na may Kopyahin, I-download at Buksan.
+- Ang mga file na ginagawa ng ahente ay ipinapakita bilang mga card na may Open (sa totoong app ng telepono), Play, Share at "Iba pang app...".
+- Ang mga larawan, audio at video ay nagpapakita ng isang live na porsyento ng pag-unlad habang ginagawa ang mga ito.
+- Ipinapakita ng mga tool card kung ano ang ginagawa ng ahente: tumatakbo, tapos na, nagtagumpay o nabigo.
+
+## Mga panel (todo, tool, file, sub-agents)
+- Todo board: ang planong isinulat ng ahente para sa isang malaking trabaho at ang pag-unlad nito (n/total done). Maaari kang magdagdag ng sarili mong gawain at magtanggal ng mga gawain.
+- Tools: ang listahan ng bawat tool call, na may live na status.
+- Mga File: bawat file na ginawa ng ahente, na may Buksan, Ibahagi, I-publish at Tanggalin (na may kumpirmasyon) at isang box para sa paghahanap.
+- Mga sub-agents: mga helper agent na tumatakbo sa background, na may Stop button.
+- Tab ng Terminal: ang totoong terminal (tingnan ang kabanata ng Mga File at Terminal).
+
+## Preview panel
+- Bumalik, Pagpasa, Ihinto, I-reload at isang address bar (mag-type ng web address, o maghanap Google).
+- Buksan ang file: nagpapakita ng Word, Excel, PowerPoint, PDF, mga larawan, Markdown, CSV, code at mga site sa loob mismo ng app.
+- Sukat: paliitin o palakihin ang panel.
+- Ayusin: ipinapadala ang mga problema ng page (mga error sa console, nabigong pag-load) sa ahente, na nag-aayos sa mga ito sa background.
+- Pumili ng bahagi: i-tap ang isang bahagi ng page, pagkatapos ay sabihin sa ahente kung ano ang gagawin sa bahaging iyon.
+- Button ng ahente: magtanong ng isang bagay tungkol sa pahina; ang ahente ay tumatanggap ng larawan nito.
+- Mabilis na bukas: mga shortcut sa mga kamakailang pahina.
+
+## Code workspace
+- Kaliwang bahagi: ang iyong mga file (bagong file, buksan, i-save).
+- Editor: nagpapakita ng mga linya at character; lalabas nang sabay-sabay ang mga pagbabagong ginawa ng ahente.
+- Git: bagong repo, clone mula sa GitHub, scan, status, commit sa isang mensahe, push, pull, branches, token.
+- Mga kahilingan sa pull: lumikha, pagsamahin, isara. Mga daloy ng trabaho: tumatakbo ang listahan, magpatakbo ng daloy ng trabaho. Ipinapakita ng log ang output ng command.

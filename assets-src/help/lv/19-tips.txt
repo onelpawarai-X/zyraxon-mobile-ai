@@ -1,0 +1,27 @@
+Padomi un piemēru pieprasījumi
+## Saki ko gribi, nevis kā
+- "Izveidojiet galveno lapu sporta zālei, tumšu un drosmīgu."
+- "Izveidojiet pilnu rezervēšanas lietotni ar datu bāzi." (aģents vispirms jautā tehniskās izvēles)
+- "Atveriet YouTube un atskaņojiet mierīgu dziesmu."
+- "Ritiniet uz leju un atveriet pirmo rezultātu."
+- "Kas ir mans akumulators un Wi-Fi?"
+- "Izlasiet manu jaunāko SMS un pasakiet man kodu."
+- "Zvani mammai." / "Atbildiet uz zvanu."
+- "Izveidojiet CV no šīs fotogrāfijas." (pievienojiet to)
+- "Pārvērtiet šo sapulces ierakstu piezīmēs ar darbības vienumiem."
+- "Izveidojiet plakātu piektdienas pasākumam ar šīm krāsām."
+- "Izveidojiet audio dialogu starp diviem draugiem, vienu zēnu un vienu meiteni."
+- "Atcerieties, ka manas māsas dzimšanas diena ir 3. maijā."
+- "Katru rītu pulksten 8 pasaki man laikapstākļus." (autopilots)
+- "Uzziniet, kā es varu nosūtīt īres maksu, izmantojot lietotni Wallet, lai jūs varētu to izdarīt vēlreiz." (prasme)
+- "Atsaukt to, ko darījāt projekta mapē." (laika skala)
+- "Kur ir mans īres līgums?" (smadzenes)
+- "Instalējiet python pakotnes un palaidiet šo skriptu." (Linux)
+- "Publicēt šo vietni, lai es varētu to kopīgot." (publiskā saite)
+
+## Ieradumi, kas palīdz
+- Īsi un skaidri sitieni gari. Aģents izvēlas noklusējuma iestatījumus un norāda, ko tas izvēlējās.
+- Kad tas uzdod vienu jautājumu, atbildiet uz to, un tas turpinās no tās pašas vietas.
+- Lai iegūtu detalizētu atbildi, sakiet "izskaidrot" vai "kopsavilkums"; pretējā gadījumā atbildes ir īsas.
+- Jūs varat par to runāt jebkurā laikā. Tas apstājas un klausās.
+- Izmantojiet veidošanas režīmu, lai izveidotu lietas, un aģenta režīmu, lai veiktu darbības pa tālruni.

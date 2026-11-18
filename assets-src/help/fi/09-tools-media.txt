@@ -1,0 +1,11 @@
+Kuvia, ääntä, videota, dokumentteja ja suunnittelua
+- `generate_image` (verkko): tee kuva kuvauksesta (kirjoita se yksityiskohtaisesti; englanti toimii parhaiten). Se näkyy chatissa jakamispainikkeilla. Usealle, pyydä useita.
+- `generate_audio` (verkko): puhuttu ääni (.mp3) mistä tahansa tekstistä. Anna jokaiselle vuoropuhelulle tai tarinalle oma äänensä (sukupuoli, ikä, kieli, sävy). Monet kielet, mukaan lukien bengali, hindi ja englanti.
+- `generate_video`: todellinen editoitu video (ei tekoälymateriaalia) kohtauksista – kuvia, leikkeitä, tekstiä, värejä, kerrontaa, kuvatekstejä, musiikkia. `ffmpeg`: mikä tahansa suora muokkaus – leikkaus, yhdistäminen, peittokuva, tekstitys, nopeus, äänisekoitus, muunnos. 5–10 minuutin videot ovat mahdollisia, rakennettu askel askeleelta.
+- Edistyminen näkyy livenä prosentteina chatissa; kun se on valmis, tiedosto saapuu Play- ja Share-painikkeilla.
+- `make_document`: todellinen Word (.docx), Excel (.xlsx) tai PowerPoint (.pptx) tiedosto puhelimessa, asennusta ei vaadita, mitään kieltä. `office_template`: valmiit toimistopaperit, joissa on täytettävä tyhjät kohdat (vapaahakemus, työhakemus, lasku, CV, liikeehdotus, tarjous, ilmoitus, kokouspöytäkirja, sopimus, kuukausitilit ja paljon muuta).
+- Asiakirja valokuvasta: liitä valokuva (Doc scan). Teksti kopioidaan täsmälleen sellaisena kuin se on kirjoitettu (epäselvät sanat on merkitty), taulukosta tulee .xlsx, muuten .docx.
+- Kokousmuistiinpanot: äänestä, pöytäkirjasta tai siitä, mitä sanot. Asiakirjassa on yhteenveto, päätökset, toimenpidekohdat (tehtävä, omistaja, eräpäivä) ja valmis sähköpostiluonnos.
+- `make_design`: julisteet, bannerit, logot, kortit, tarinat, kannet PNG- ja PDF-muodossa. `brand_kit`: anna logo tai värit; ne tallennetaan, sovelluksen teema vaihtuu, ja siitä lähtien asiakirjat, diat ja sivustot käyttävät tuotemerkkisi värejä.
+- `present_slides`: hahmo puhuu diakorttien näyttämisen aikana; diat muuttuvat itsestään, kun ääni loppuu. Pyydä .pptx-tiedosto, jos haluat tiedoston.
+- `open_file`: avaa sen, mitä on tehty puhelimen oikealla sovelluksella (Word/Docs, Sheets, Slides, PDF, galleria, selain) tai Esikatselu-paneelissa; agentti tarkistaa näytön varmistaakseen, että se on avattu.

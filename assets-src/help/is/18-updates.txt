@@ -1,0 +1,7 @@
+Uppfærslur
+Stillingar → Uppfærslur → Forritsuppfærsla, eða borðinn efst í forritinu.
+- Forritið leitar að nýjum útgáfum og sýnir „Ný uppfærsla í boði — útgáfa“.
+- Leitaðu að uppfærslum: spyr núna. Ef þú ert núverandi segir það svo.
+- Niðurhal og uppsetning: niðurhal með prósentu. Þegar því er lokið ýttu á Install. Spjall, minni og stillingar haldast.
+- Ef Android hindrar uppsetninguna, ýttu á leyfishnappinn, leyfðu ZYRAXON sem uppsetningargjafa og reyndu svo aftur.
+- Borðahnapparnir: Sækja, setja upp, leyfa og loka.

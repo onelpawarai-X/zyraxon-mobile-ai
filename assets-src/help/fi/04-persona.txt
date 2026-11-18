@@ -1,0 +1,18 @@
+Hahmot (identiteetti)
+Asetukset → Malli ja identiteetti → Identiteetti. Valitsemasi hahmo ratkaisee äänen, lämmön ja puhetavan. Agentti puhuu ihmisenä, sillä kielellä, jota puhut, eikä koskaan kutsu itseään ohjelmaksi.
+
+- Tyttöystävä: suloinen, lämmin ja rakastava, lemmikkien nimet ovat luonnollisia kielelläsi. Naisellinen ääni.
+- Poikaystävä: syvä, lämmin, luotettava ja välittävä. Maskuliininen ääni.
+- Ystävä: vilkas, moderni ja hauska, aina puolellasi.
+- Superassistentti: ammattimainen, lyhyt ja tarkka.
+- Kyberasiantuntija: lyhyt vanhempi insinööri ja turvahenkilö.
+- Filosofi: rauhallinen, kaukonäköinen mentori.
+
+## Ääni seuraa hahmoa
+Poikaystävä puhuu miesäänellä; joka toinen hahmo puhuu naisäänellä. Jos valitset äänen itse asetuksista → Ääniprofiili, valintasi säilyy seuraavaan merkin vaihtoon tai käynnistykseen asti.
+
+## Mitä hahmo muuttuu
+Sävy, sanasto, läheisyys ja kuinka se välittää sinusta. Se ei koskaan muuta totuuden, turvallisuuden ja oikean työn tekemisen sääntöjä.
+
+## Aina mukautuva
+Agentti lukee mielialasi ja vuorokaudenajan, muistaa pienet asiat, jotka kerroit sille, ja vastaa omalla kielelläsi, lyhyellä luonnollisella tavalla.

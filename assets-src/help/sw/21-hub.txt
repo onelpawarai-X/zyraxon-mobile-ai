@@ -1,0 +1,20 @@
+Kitovu cha otomatiki
+Mipangilio → Mfumo → Kitovu cha otomatiki. Kila kitufe cha kile ZYRAXON kinaweza kufanya peke yake kiko katika sehemu moja, katika vichupo sita. Kila kichupo huanza na maelezo mafupi ya jinsi kinavyofanya kazi.
+
+## Ujuzi
+Fundisha ZYRAXON kazi kwa njia mbili: iambie kwenye gumzo ("jifunze kazi hii"), au bonyeza kitufe cha kurekodi na ufanye jukumu hilo mwenyewe katika programu nyingine, kisha urudi na ubonyeze Acha. Huduma ya ufikivu lazima iwashwe, au migongo yako haiwezi kuonekana. Kilichojifunza kinaonekana chini ya "Ujuzi Uliojifunza" na kinaweza kuchezwa tena au kufutwa.
+
+## Otomatiki
+Sheria za aina "wakati hii itatokea, fanya hivyo". Tukio linapotokea ZYRAXON huamka peke yake na kufanya kazi bila kuuliza. Unaweza pia kuunda sheria kwa kusema kwenye gumzo. Kila sheria inaonyesha ni mara ngapi imeendesha.
+
+## Pesa
+Husoma SMS kutoka kwa benki au pochi yoyote katika nchi yoyote (PayPal, M-Pesa, UPI, Pix, bKash, kadi…) na huweka leja moja ya mapato, matumizi, ada na salio. Unaweza kuweka bajeti na kupata onyo unapoipitisha. Inafanya kazi kwenye simu, na hakuna kitu kinachotumwa popote.
+
+## Rekodi ya matukio
+Kila kitu ZYRAXON alifanya kimeandikwa hapa. Faili huandika, uhariri na ufutaji unaweza kutenduliwa kwa kitufe kimoja. Amri ambayo iliendeshwa haiwezi kutenduliwa.
+
+## Ubongo
+Hutafuta faili zako (maandishi, Word, Excel, PowerPoint, CSV) na, ukiiruhusu, SMS zako, bila mtandao na kwa lugha yoyote. Bonyeza "Index" kwanza, kisha utafute.
+
+## Wakala wa simu
+Wakati huwezi kupokea simu, ZYRAXON hujibu, huzungumza kwa lugha ya mpigaji simu mwenyewe, hujifunza jina na sababu, na kukupa muhtasari simu inapoisha. Lugha kumi na tano hutumia sheria zilizojengwa kwa haraka; kila lugha nyingine inashughulikiwa na modeli, ambayo hujibu kwa lugha ya mpigaji. Maneno ambayo yanamaanisha kwaheri, dharura au barua taka yanaeleweka katika lugha zote mara moja. Muhtasari wa simu zilizonaswa zimeorodheshwa kwenye kichupo.

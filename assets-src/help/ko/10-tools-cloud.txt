@@ -1,0 +1,21 @@
+클라우드, 네트워크, 모델 및 도우미
+## 클라우드와 인터넷
+- `web_search` (네트워크): 실제 웹을 검색합니다. `read_url` (네트워크): 페이지를 텍스트로 가져옵니다. `http_request` (네트워크): 헤더와 본문이 포함된 모든 HTTP 호출(GET, POST, PUT, PATCH, DELETE). `verify_url` (네트워크): 링크가 실제로 존재하는지 확인하고 실제 상태를 가져옵니다. `download_file` (개인, 네트워크): URL을 파일로 다운로드합니다.
+- 에이전트는 사용자가 요청할 때만 링크를 엽니다.
+- AI 모델은 추가한 공급자(ZYRAXON, ZYRAXON Apex 클라우드 에이전트, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode))를 통해 클라우드에서 실행됩니다. 모델 목록은 실시간으로 로드되고 각 공급자가 응답할 때 채워집니다.
+- 빌드, 게시 및 풀 요청은 GitHub 및 Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`)를 통해 실행됩니다.
+- "기기 내에서만"(자동화 설정)을 켜면 클라우드 호출이 전혀 이루어지지 않습니다. 공급자도, 웹도, 업로드도 없습니다.
+
+## MCP개의 서버
+MCP을 사용하면 외부 서비스에서 에이전트에게 추가 도구를 제공할 수 있습니다. Canva, Cloudflare, Supabase, GitHub 또는 자체 서버를 해당 주소(선택적 토큰)로 연결합니다. 연결된 서버의 도구는 에이전트의 도구 목록에 `server__tool`로 포함됩니다.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list`(무엇이 연결되어 있고 어떤 도구가 있는지 확인), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe`(리소스에서 변경 사항 확인), `mcp_complete`(자동 완성 인수), `mcp_ping`, `mcp_log_level`. 그들의 호출은 네트워크 호출이며 알려지지 않은 MCP 도구는 기본적으로 권한을 요청합니다.
+- MCP 화면에는 연결됨 상태, 해당 도구, 리소스, 프롬프트 템플릿, 추가, 연결 끊기, 제거, 허용 버튼이 있는 각 서버가 나열됩니다.
+
+## 하위 에이전트
+`sub_agent` (시스템): 큰 작업의 일부를 백그라운드에서 실행 중인 도우미 에이전트에 전달합니다. 작업: 생성, 상태, 목록, 결과, 메시지, 중지, 대기. 각각은 자체 모델을 사용할 수 있습니다. 에이전트는 "완료"라고 말하기 전에 결과를 결합하고 확인합니다.
+
+## 온디바이스 모델
+`on_device_model` (시스템): 인터넷 없이 전화로 작동하는 언어 모델을 나열하고 로드하고 실행합니다. 설정 → 모델 및 신원 → 장치에서 모델을 다운로드합니다(소형에서 대형: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); Hugging Face 토큰은 선택 사항이며 게이트된 파일에만 필요합니다. 로드된 모델은 실행 시 기억되고 다시 로드됩니다.
+
+## 메시징 채널
+`channel_post` (시스템)은 텍스트가 준비된 Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail 또는 SMS를 엽니다. 자신에게 보내기를 누르세요.

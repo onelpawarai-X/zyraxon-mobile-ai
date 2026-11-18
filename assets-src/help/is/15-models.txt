@@ -1,0 +1,15 @@
+Veitendur, gerðir og lyklar
+## Veitendur
+ZYRAXON (eigin lína og Apex skýjamiðlarinn, alltaf tengdur), OpenCode (ókeypis kvóti), Groq (mjög hröð Lama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek og OpenRouter. Bættu við hvaða lykli sem er í Stillingar → Veitendur og API. Lykillinn er vistaður í símanum þínum, athugaður með vörulista þjónustuveitunnar og módelin streyma inn í veljarann ​​þegar hver veitandi svarar.
+
+## Að velja fyrirmynd
+Notaðu líkanhnappinn á skilaboðastikunni eða Stillingar → Gerð og auðkenni → Gerð. Leitaðu eftir nafni, síaðu allt eða sérsniðið. Val þitt er vistað og endurheimt við ræsingu; endurnýjun kemur aldrei í stað vistaðrar líkans þíns. Módel merkt Live geta talað í sinni eigin rödd (sjá Live rödd).
+
+## Módel í tæki
+Stillingar → Gerð og auðkenni → Í tæki. Líkanið keyrir á símanum án þess að gögn fara úr honum. Skrár eru stórar (hundruð MB til nokkurra GB), svo hlaðið niður á Wi-Fi. Þeir eru skráðir smáir til stórir; á síma með lítið vinnsluminni veldu það léttasta. Verkfærasímtöl eru studd af Gemma og FunctionGemma búntum. Hugging Face tákn er aðeins fyrir hliðaðar skrár. Hlaðin módel er minnst.
+
+## Vefsíðan ZYRAXON
+zyraxonai.lovable.app: búðu til reikning (tölvupóstur eða Google), opnaðu Stillingar, API lykil / aðgangslykil, búðu til lykil og límdu hann í appið. Án lykils geturðu samt notað appið með gerðum í tækinu og staðbundnum verkfærum.
+
+## Kostnaður og gögn
+Skýjaveitendur rukka þig samkvæmt eigin reglum. Þegar kveikt er á „On-device only“ er ekkert sent til neins veitanda.

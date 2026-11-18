@@ -1,0 +1,14 @@
+Vianetsintä
+- Ei vastausta: tarkista internet- ja API-avaimesi (Asetukset → Providers & API näyttää todellisen virheen). Kokeile toista mallia tai laitteessa olevaa mallia.
+- Mikrofoni ei tee mitään: salli mikrofonin käyttöoikeus; valitse "Pidä mikrofoni päällä"; tarkista tunnistuskieli.
+- ZYRAXON kuulee itsensä: tämä suodatetaan tekstin perusteella; Jos näin tapahtuu edelleen, vähennä äänenvoimakkuutta tai käytä kuulokkeita.
+- Lause esiintyy kahdesti: korjattu nykyisissä versioissa; päivitä sovellus.
+- Se ei napauta tai lue näyttöä: ota käyttöön esteettömyyspalvelu (Asetukset → Käyttöoikeudet).
+- Se pysähtyy taustalla: salli ilmoitukset ja akun optimointivapautus; kelluvan silmän peittokuva.
+- Työkalu kysyy jatkuvasti lupaa: muuta tasoa Asetuksissa → Automaatio tai vastaa korttiin.
+- Play Protect estää jotain: katso Käyttöoikeudet-luku tai anna agentin ohjata vaiheet.
+- Pääte tai Linux ei käynnisty: odota ensimmäistä pakkauksen purkamista sovelluksen käynnistyksen yhteydessä; tarkista ilmainen tallennustila.
+- Päivitys ei asennu: salli ZYRAXON asennuslähteenä.
+- Ei voi julkaista: lisää GitHub-tunnus GitHub:lle; julkiselle linkille agentti voi käyttää tunnelia.
+- Kappale näyttää englantia: tässä luvussa ei ole tekstiä kielelläsi tässä koontiversiossa; päivitä sovellus.
+- Jotain outoa: käytä Asetukset → Navigointi → Uusi istunto aloittaaksesi puhtaan (se tyhjentää vain chat-historian; muisti pysyy).

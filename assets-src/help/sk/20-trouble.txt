@@ -1,0 +1,14 @@
+Riešenie problémov
+- Žiadna odpoveď: skontrolujte svoj internet a kľúč API (Nastavenia → Poskytovatelia a API zobrazujú skutočnú chybu). Skúste iný model alebo model na zariadení.
+- Mikrofón nerobí nič: povoľte povolenie mikrofónu; začiarknite políčko „Nechať zapnutý mikrofón“; skontrolujte jazyk rozpoznávania.
+- ZYRAXON počuje sám seba: toto je filtrované podľa textu; ak sa to stále deje, znížte hlasitosť alebo použite slúchadlá.
+- Veta sa objaví dvakrát: opravená v aktuálnych verziách; aktualizujte aplikáciu.
+- Nebude klepať ani čítať obrazovku: zapnite službu dostupnosti (Nastavenia → Povolenia).
+- Zastaví sa na pozadí: povoľte upozornenia a výnimku z optimalizácie batérie; prekrytie pre plávajúce oko.
+- Nástroj stále žiada o povolenie: zmeňte úroveň v Nastaveniach → Automatizácia alebo odpovedzte na kartu.
+- Play Protect niečo zablokuje: pozrite si kapitolu Povolenia alebo nechajte agenta viesť kroky.
+- Terminál alebo Linux sa nespustí: počkajte na prvé rozbalenie pri spustení aplikácie; skontrolujte voľné úložisko.
+- Aktualizácia sa nenainštaluje: povoľte ZYRAXON ako zdroj inštalácie.
+- Nedá sa zverejniť: pridajte token GitHub pre GitHub; pre verejné prepojenie môže agent použiť tunel.
+- Kapitola zobrazuje angličtinu: táto kapitola nemá v tejto zostave žiadny text vo vašom jazyku; aktualizujte aplikáciu.
+- Niečo zvláštne: na začatie čistenia použite Nastavenia → Navigácia → Nová relácia (vymaže iba históriu chatu; pamäť zostane).

@@ -1,0 +1,14 @@
+Mode: Agen dan Bangun
+Ada dua mode, dipilih dengan tombol mode di sebelah kotak pesan. Pilihannya tetap ada sampai Anda mengubahnya. Suara langsung bukanlah mode ketiga; ini adalah cara berbicara yang dapat Anda aktifkan di Pengaturan (lihat bab Suara).
+
+## Agen
+"Otomasi penuh pada telepon dan sistem." Semuanya terbuka: membaca dan menggerakkan layar ponsel, membuka aplikasi, panggilan, pesan, kamera, file, terminal dan Linux, Git, pratinjau, media, sub-agen, server MCP, keterampilan, autopilot, dan banyak lagi. Pilih Agen ketika Anda ingin melakukan sesuatu di ponsel Anda atau ingin sekadar berbicara.
+
+## Membangun
+"Aplikasi, situs web, dan otomatisasi full-stack." Agen adalah mesin pembuat: dari jalur pendek ia membuat semuanya, menjalankannya, melihatnya, dan menunjukkannya kepada Anda. Ini memiliki file, terminal, Git, pratinjau, penerbitan, media, memori dan papan tugas. Kontrol telepon, sub-agen dan kunci perangkat termasuk dalam mode Agen; jika Anda membutuhkannya di Build, ganti.
+- Halaman arahan atau situs web: sebutkan kegunaannya. Agen segera membuatnya, memulainya di ponsel Anda dan membukanya di panel Pratinjau, lalu memberi tahu Anda apa yang dibuatnya. Itu tidak dipublikasikan kecuali Anda memintanya.
+- Aplikasi: ucapkan apa yang Anda inginkan dan itu akan membuat aplikasi seperti yang diminta. Back end, database, atau login ditambahkan hanya jika Anda memintanya.
+- Full-stack: ketika Anda meminta back end atau database, agen terlebih dahulu menanyakan satu pertanyaan singkat tentang pilihan (bahasa, database, login, di mana ia dijalankan), dengan rekomendasinya, dan dibuat setelah Anda menjawab.
+
+## Apa maksudnya "bertanya".
+Ketika agen benar-benar membutuhkan keputusan Anda, ia akan melakukan hal lainnya terlebih dahulu, menanyakan satu pertanyaan singkat beserta rekomendasinya, dan menunggu. Jawaban Anda melanjutkan pekerjaan dari tempat berhentinya.

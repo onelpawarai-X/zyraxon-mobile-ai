@@ -1,0 +1,20 @@
+Noțiuni de bază
+ZYRAXON este un asistent care locuiește în interiorul telefonului tău Android. Vorbește cu tine, te ascultă și poate face o muncă reală: deschide aplicații, atinge și tasta pe ecran, cheamă persoane, scrie fișiere, creează site-uri web și aplicații, rulează un sistem Linux, realizează fotografii, audio, video și documente de birou și ține minte de-a lungul lunilor de zile. Funcționează în orice limbă pe care o vorbiți.
+
+## Primele minute
+- La prima lansare, ZYRAXON arată o scurtă notificare că agentul poate acționa singur asupra telefonului dvs. Apăsați „Am înțeles, începe” pentru a continua.
+- Adăugați o cheie AI (Setări → Furnizori și furnizori API → AI). Lipiți o cheie pentru orice furnizor care vă place (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Când salvați o cheie, aplicația citește catalogul furnizorului respectiv și îl verifică în mod real, astfel încât să vedeți un adevărat „conectat” și numărul de modele.
+- Nicio cheie? Puteți utiliza în continuare modelele de pe dispozitiv (Setări → Model și identitate → Pe dispozitiv). Ei rulează pe telefon fără internet.
+- Alegeți un model cu butonul de model din bara de mesaje și un caracter (Setări → Model și identitate → Identitate).
+- Acordați permisiuni atunci când o caracteristică are nevoie de una (consultați capitolul Permisiuni). Agentul vă poate deschide, de asemenea, dialogul de permisiune cu o singură atingere.
+- Doar vorbiți sau tastează. „Fă-mi o pagină de destinație pentru brutăria mea”, „deschide YouTube și cântă o melodie”, „care este bateria mea?”, „sună-l pe mama”.
+
+## Cele două moduri de lucru
+Lângă caseta de mesaj există un buton de mod cu două moduri: Agent și Build. Vezi capitolul Moduri.
+
+## Unde sunt lucrurile
+- Meniul din stânga: chat-urile dvs., chat nou, redenumiți, ștergeți și comutatorul temei.
+- Ecran de chat: mesaje, panoul de activități, lista de instrumente, fișiere, terminalul.
+- Panourile de previzualizare și cod: vedeți și editați ceea ce creează agentul.
+- Setări: opt secțiuni, acoperite una câte una în această documentație.
+- Această documentație: Setări → Documentație (ești aici).

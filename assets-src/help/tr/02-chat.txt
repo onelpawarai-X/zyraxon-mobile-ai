@@ -1,0 +1,51 @@
+Sohbet ekranı ve her düğme
+## Ekranın üst kısmı
+- Menü: sohbetlerinizin bulunduğu sol çekmeceyi açar.
+- Sohbet / Terminal / Kod / Önizleme: ana görünümü değiştirin. Sohbet sohbettir; Terminal gerçek terminaldir; Kod, Git içeren dosya çalışma alanıdır; Önizleme yerleşik tarayıcıdır.
+- Aura: Animasyonlu karakter ekranını gösterir. Yan düğmeleri Mikrofon, Sohbet (konuşmaya geri dön) ve Yenile (buluta yeniden bağlanır ve model listesini yeniden yükler).
+- Ayarlar: sekiz ayar bölümünü açar.
+- Bir başlıkta mikrofon durumu gösterilir: "Dinleniyor...", "Mikrofon kapalı — dokunun" veya "Konuşuyor... durdurmak için dokunun".
+- Yeni bir sürüm hazır olduğunda İndir, Yükle ve İzin Ver düğmelerini içeren bir güncelleme başlığı görünür (bkz. Güncellemeler).
+
+## Sol menü (sohbetler)
+- "+ Yeni sohbet": yeni bir görüşme başlatır.
+- Listedeki her sohbet, temsilci orada meşgulken bir çalışma işareti gösterir. Kalem onu ​​yeniden adlandırır; çarpı onu siler (bir onaydan sonra: içindeki tüm mesajlar silinir).
+- Tema: Korku (kan, ateş ve gölge), Karanlık (temiz koyu cam) veya Açık (parlak cam) seçeneğini seçin.
+
+## Mesaj çubuğu
+- Ekle (ataç): galeri fotoğrafı, kamera fotoğrafı, belge taraması (fotoğraftaki metni düzenlenebilir bir .docx'e dönüştürür), temsilcinin görebilmesi için ekranı paylaşın ("Ekran izleme" açık veya kapalı) ve ses veya video dosyaları. Ekli öğeler çip olarak gösterilir; artı işareti birini kaldırır, "Tümünü temizle" tümünü kaldırır.
+- Mod düğmesi: Aracı veya Derleme.
+- Mikrofon düğmesi: Her zaman dinleyen mikrofonu açar veya kapatır.
+- Model düğmesi: model listesini bir arama kutusuyla açar. "Canlı" olarak işaretlenen modeller kendi sesleriyle konuşabilirler.
+- Gönder: mesajı gönderir. Temsilci çalışırken bu Stop olur.
+- Girişte "Ne yapmalıyım?" yazıyor. Aracı modunda ve Oluşturma modunda "Ne oluşturmalıyım? Kısa söyle".
+
+## Mesajlar
+- Kopyala, Paylaş ve Dinle (mesajı yüksek sesle okur; durdurmak için tekrar basın) her mesajın altındadır.
+- "Düşünme", model bunu sağladığında modelin akıl yürütmesini gösterir.
+- Temsilcinin yazdığı kod, Kopyala, İndir ve Aç seçenekleriyle birlikte bir kutuda satır satır canlı olarak görünür.
+- Temsilcinin oluşturduğu dosyalar, Aç (telefonun gerçek uygulamasında), Oynat, Paylaş ve "Diğer uygulama..." içeren kartlar olarak gösterilir.
+- Resimler, ses ve video, yapım aşamasında canlı bir ilerleme yüzdesini gösterir.
+- Araç kartları, aracının ne yaptığını gösterir: çalışıyor, tamamlandı, başarılı veya başarısız.
+
+## Paneller (yapılacaklar, araçlar, dosyalar, alt aracılar)
+- Yapılacaklar panosu: Temsilcinin büyük bir iş için yazdığı plan ve ilerlemesi (n/toplam tamamlandı). Kendi görevinizi ekleyebilir ve görevleri silebilirsiniz.
+- Araçlar: Canlı durumla birlikte her araç çağrısının listesi.
+- Dosyalar: Aracının Aç, Paylaş, Yayınla ve Sil (onaylı) ve bir arama kutusuyla oluşturduğu her dosya.
+- Alt aracılar: Durdur düğmesiyle arka planda çalışan yardımcı aracılar.
+- Terminal sekmesi: gerçek terminal (Dosyalar ve Terminal bölümüne bakın).
+
+## Önizleme paneli
+- Geri, İleri, Durdur, Yeniden Yükle ve adres çubuğu (bir web adresi yazın veya Google arayın).
+- Dosyayı aç: Word, Excel, PowerPoint, PDF, görüntüleri, Markdown, CSV kodu ve siteleri doğrudan uygulamanın içinde gösterir.
+- Boyut: paneli küçültün veya büyütün.
+- Düzeltme: sayfanın sorunlarını (konsol hataları, başarısız yüklemeler) aracıya gönderir, aracı da bunları arka planda düzeltir.
+- Parça seçin: Sayfanın bir bölümüne dokunun ve ardından temsilciye bu bölümle ne yapacağını söyleyin.
+- Temsilci düğmesi: sayfa hakkında bir şeyler sorun; temsilci bunun bir resmini alır.
+- Hızlı açma: son sayfalara kısayollar.
+
+## Kod çalışma alanı
+- Sol taraf: dosyalarınız (yeni dosya, aç, kaydet).
+- Editör: satırları ve karakterleri gösterir; temsilci tarafından yapılan değişiklikler aynı anda görünür.
+- Git: yeni repo, GitHub'den klonlama, tarama, durum, mesajla işleme koyma, gönderme, çekme, dallar, jeton.
+- Çekme istekleri: oluştur, birleştir, kapat. İş akışları: liste çalıştırılır, bir iş akışı çalıştırılır. Günlük, komut çıktısını gösterir.

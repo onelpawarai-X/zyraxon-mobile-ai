@@ -1,0 +1,27 @@
+Skrár, flugstöð og kerfi
+## Skrár
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Öryggið): lestu, skráðu, finndu eftir nafnamynstri og leitaðu að texta í skrám.
+- `write_file`, `edit_file`: búa til eða breyta skrám. `edit_file` gerir þetta allt: ný skrá, fulla endurskrifun, eða nákvæmlega finna-og-skipta út; kóðinn birtist í beinni í spjallinu. `delete_file` (Kerfi): eyða skrá eða möppu.
+- Hvaða mappa er leyfð (/sdcard, niðurhal, skjöl, SD kort …). Gefðu fulla slóð og hún er notuð eins og skrifað er.
+- Umboðsmaðurinn opnar það sem hann gerir: `open_file` (Safe) opnar skrá í raunverulegu forriti símans, eða í forskoðun ZYRAXON.
+
+## Flugstöðvar (tvær raunverulegar)
+- android: eigin skel símans (busybox plús `sh`), inni í sandkassa appsins. `run_shell` (Kerfi) keyrir skipun þar, úr augsýn.
+- linux: ZYRAXON eigin Unix kerfi, innbyggt í appið: bash, apt/pkg, real git, python, node, clang. Það virkar offline. `linux_run` (Kerfi) keyrir skipun þar.
+- `terminal_run` (Kerfi): keyrir línu í Terminal flipanum sem þú ert að horfa á, svo þú getur séð það virka og taka við. Notaðu skel android eða linux. `terminal_open` færir Terminal flipann að framan (aðeins þegar þú spyrð).
+- `system_shell` (Kerfi): skipun á kerfisstigi, fyrir ofan sandkassa appsins, eins og kerfisskel gerir; með Shizuku eða rót getur það náð miklu meira.
+- Það er engin sjálfgefin tímamörk; stór `apt upgrade` eða smíði nær til enda.
+
+## Shizuku (kerfisaðgangur)
+`setup_shizuku` (Kerfi) setur upp Shizuku, sett í ZYRAXON: athuga stöðu, setja upp, opna, biðja um leyfi. Aðeins þú getur pikkað á Setja upp og leyfa; umboðsmaðurinn segir þér skrefið í einni línu og gerir afganginn.
+
+## Löng störf og tímasetning
+- `background_command` (Kerfi): skipun sem heldur áfram að keyra eftir að þú lokar forritinu (stórt niðurhal, klónað, byggt), með tilkynningu og stöðvunarhnappi.
+- `schedule_command` (Kerfi): keyrðu skipun í rauntíma ("eftir 10 mínútur", "kl. 2 að morgni."); Android heldur tímamælinum, svo hann keyrir með appið lokað.
+- `wait` (Safe): bíddu viljandi (sekúndur, þar til gátt opnast, skrá birtist, skipun lýkur) í stað þess að giska.
+
+## Linux notar
+Settu upp pakka (`apt install …`), keyrðu Python eða Node forskriftir, settu saman C, notaðu git, keyrðu netþjóna, zip og unzip, curl, ffmpeg. Kerfinu er pakkað niður hljóðlega þegar appið ræsir og heldur áfram að endurræsa það.
+
+## Flugstöðvarskjárinn
+Terminal flipinn er alvöru flugstöð með ⌘ ZX flipanum. Sláðu inn þínar eigin skipanir eða horfðu á umboðsmanninn. Leiðsöguskjárinn í Stillingar er með flýtileið að kerfisskelinni og „Ný lota“ hnappur sem hreinsar spjallferilinn til að byrja upp á nýtt.

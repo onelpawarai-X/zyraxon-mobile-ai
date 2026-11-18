@@ -1,0 +1,16 @@
+Diller
+## Uygulama dili
+Ayarlar → Dil ve çeviri. 60 dil. Tüm arayüz ve aracının araç mesajları bunu takip eder. Her dilin kendine ait çeviri dosyası bulunmaktadır. Dil dosyasında henüz bulunmayan herhangi bir satır İngilizce olarak gösterilir, hiçbir zaman boş bırakılmaz.
+
+## Ne konuşuyorsun
+Temsilci her zaman sizin konuştuğunuz dilde, yani dünyadaki herhangi bir dilde yanıt verir. Değiştirirseniz değişir. Sizin dilinizde "siz"in dost-saygılı biçimini kullanıyor. Marka ve teknoloji isimleri olduğu gibi kalır.
+
+## Ses dilleri
+- Tanıma dili (mikrofona konuştuğunuz dil): Ayarlar → Ses ve mikrofon → Mikrofon ve dil.
+- Konuşma sesi: Ayarlar → Ses ve mikrofon → Ses profili ve Bengalce, Hintçe, İngilizce, Urduca, Arapça, Tamilce, Nepalce, İspanyolca, Fransızca, Almanca, Japonca, Korece, Çince, Rusça, Türkçe gibi diller için Ses laboratuvarı.
+
+## Bu belgeler
+Bu sayfanın üst kısmındaki dil çiplerini kullanın. Kılavuzun tamamı, uygulamanın desteklediği her dilde elle yazılmış ve uygulama içinde gönderilmiştir. Telefonunuzda hiçbir şey çevrilmez: her bölüm anında açılır, çevrimdışı çalışır ve herhangi bir modele veya anahtara ihtiyaç duymaz.
+
+## Kendi senaryonuzda yazmak
+İstenilen senaryoda doküman, poster ve tasarımlar yapılabilmektedir. Bengalce tasarımlar için doğru yazı tipi kullanılır; diğer komut dosyaları için eşleşen yazı tipi seçilir.

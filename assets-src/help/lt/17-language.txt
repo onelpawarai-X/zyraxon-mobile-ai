@@ -1,0 +1,16 @@
+Kalbos
+## Programos kalba
+Nustatymai → Kalba ir vertimas. 60 kalbų. Po jos seka visa sąsaja ir agento įrankio pranešimai. Kiekviena kalba turi savo vertimo failą. Bet kuri eilutė, kurios kalbos faile dar nėra, rodoma anglų kalba, niekada nepaliekama tuščia.
+
+## Ką tu kalbi
+Agentas visada atsako ta kalba, kuria kalbate, bet kuria pasaulio kalba. Jei perjungiate, tai persijungia. Jūsų kalboje vartojama draugiška ir pagarbi „tu“ forma. Prekių ženklų ir technologijų pavadinimai išlieka tokie, kokie yra.
+
+## Balso kalbos
+- Atpažinimo kalba (ką kalbate į mikrofoną): nustatymai → Balsas ir mikrofonas → Mikrofonas ir kalba.
+- Kalbėjimo balsas: nustatymai → Balsas ir mikrofonas → Balso profilis ir balso laboratorija tokioms kalboms kaip bengalų, hindi, anglų, urdu, arabų, tamilų, nepaliečių, ispanų, prancūzų, vokiečių, japonų, korėjiečių, kinų, rusų, turkų.
+
+## Šią dokumentaciją
+Naudokite šio puslapio viršuje esančius kalbos lustus. Visas vadovas parašytas ranka visomis programėlės palaikomomis kalbomis ir pristatomas programėlės viduje. Jūsų telefone nieko neverčiama: kiekvienas skyrius atidaromas akimirksniu, veikia neprisijungus ir nereikia modelio ar rakto.
+
+## Rašymas pagal savo scenarijų
+Dokumentai, plakatai ir dizainai gali būti sukurti bet kokiu scenarijumi. Bengališkam dizainui naudojamas tinkamas šriftas; kitiems scenarijams pasirenkamas atitinkantis šriftas.

@@ -1,0 +1,11 @@
+Resimler, ses, video, belgeler ve tasarım
+- `generate_image` (ağ): bir açıklamadan resim oluşturun (ayrıntılı olarak yazın; İngilizce en iyi sonucu verir). Sohbette paylaş düğmeleriyle görünür. Birkaç tane için birkaç tane isteyin.
+- `generate_audio` (ağ): herhangi bir metinden sesli ses (.mp3). Bir diyalog veya hikaye için her parçaya kendi sesini verin (cinsiyet, yaş, dil, üslup). Bengalce, Hintçe ve İngilizce dahil birçok dil.
+- `generate_video`: sahnelerden (resimler, klipler, metin, renk, anlatım, altyazılar, müzik) gerçek anlamda düzenlenmiş bir video (Yapay Zeka görüntüleri değil). `ffmpeg`: herhangi bir doğrudan düzenleme — kesme, birleştirme, kaplama, altyazılar, hız, ses karışımı, dönüştürme. Adım adım oluşturulan 5-10 dakikalık videolar mümkündür.
+- İlerleme sohbette canlı olarak yüzde olarak gösterilir; tamamlandığında dosya Oynat ve Paylaş düğmeleriyle birlikte gelir.
+- `make_document`: telefonda gerçek bir Word (.docx), Excel (.xlsx) veya PowerPoint (.pptx) dosyası, kurulum gerekmez, herhangi bir dil. `office_template`: doldurulması gereken boşlukları olan hazır ofis kağıtları (izin başvurusu, iş başvurusu, fatura, özgeçmiş, iş teklifi, fiyat teklifi, bildirim, toplantı tutanakları, sözleşme, aylık hesaplar ve daha fazlası).
+- Fotoğraftan belge: fotoğraf ekleyin (Belge taraması). Metin aynen yazıldığı gibi kopyalanır (anlaşılmaz kelimeler işaretlenir), tablo .xlsx olur, aksi takdirde .docx olur.
+- Toplantı notları: sesten, transkriptten veya söylediklerinizden. Belgede bir özet, kararlar, eylem öğeleri (görev, sahip, son tarih) ve hazır bir e-posta taslağı bulunur.
+- `make_design`: PNG ve PDF olarak posterler, afişler, logolar, kartlar, hikayeler, kapaklar. `brand_kit`: bir logo veya renk verin; kaydedilir, uygulama teması değişir ve o andan itibaren belgeler, slaytlar ve siteler marka renklerinizi kullanır.
+- `present_slides`: slayt kartları gösterilirken karakter konuşur; Ses bittiğinde slaytlar kendiliğinden değişir. Dosya istiyorsanız .pptx dosyası isteyin.
+- `open_file`: telefonun gerçek uygulamasında (Word/Dokümanlar, E-Tablolar, Slaytlar, PDF, galeri, tarayıcı) veya Önizleme panelinde yapılanları açar; Temsilci, açıldığından emin olmak için ekranı kontrol eder.

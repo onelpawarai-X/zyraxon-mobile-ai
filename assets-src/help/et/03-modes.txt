@@ -1,0 +1,14 @@
+Režiimid: Agent ja Build
+On kaks režiimi, mis valitakse teatekasti kõrval oleva režiiminupuga. Valik jääb kehtima seni, kuni seda muudate. Elav hääl ei ole kolmas režiim; see on kõneviis, mille saate seadetes sisse lülitada (vt peatükki Hääl).
+
+## Agent
+"Telefoni ja süsteemi täielik automatiseerimine." Kõik on avatud: telefoni ekraani lugemine ja juhtimine, rakenduste, kõnede, sõnumite, kaamera, failide, terminali ja Linux, Git, eelvaade, meedia, allagendid, MCP serverid, oskused, autopiloot ja palju muud avamine. Valige Agent, kui soovite, et teie telefonis midagi tehtaks või kui soovite lihtsalt rääkida.
+
+## Ehitada
+"Täielikud rakendused, veebisaidid ja automatiseerimine." Agent on ehitusmootor: lühikesest joonest teeb see kogu asja, käivitab selle, vaatab seda ja näitab seda teile. Sellel on failid, terminal, Git, eelvaade, avaldamine, meedium, mälu ja ülesandeplaat. Telefoni juhtimine, alamagendid ja seadme lukk kuuluvad agendirežiimi; kui vajate neid Buildis, vahetage.
+- Sihtleht või veebisait: öelge, milleks see on mõeldud. Agent koostab selle korraga, käivitab selle teie telefonis ja avab eelvaate paneelil ning ütleb teile, mida see tegi. Seda ei avaldata, kui te ei küsi.
+- Rakendus: öelge, mida soovite, ja see loob rakenduse vastavalt soovile. Tagaots, andmebaas või sisselogimine lisatakse ainult siis, kui te seda küsite.
+- Täispinn: kui küsite tausta või andmebaasi, esitab agent esmalt ühe lühikese küsimuse valikute kohta (keel, andmebaas, sisselogimine, kus see töötab) koos soovitusega ja ehitab pärast teie vastamist.
+
+## Mida tähendab "küsi".
+Kui agent tõesti vajab teie otsust, teeb ta kõigepealt kõik muu, esitab ühe lühikese küsimuse koos soovitusega ja jääb ootama. Teie vastus jätkab tööd sealt, kus see pooleli jäi.

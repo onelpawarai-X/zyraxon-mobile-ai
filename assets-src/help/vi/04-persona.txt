@@ -1,0 +1,18 @@
+Nhân vật (danh tính)
+Cài đặt → Kiểu máy & danh tính → Danh tính. Nhân vật bạn chọn quyết định giọng nói, sự ấm áp và cách nói chuyện. Người đại diện nói với tư cách là người đó, bằng ngôn ngữ bạn nói và không bao giờ gọi mình là một chương trình.
+
+- Bạn gái: ngọt ngào, ấm áp và đáng yêu, với những cái tên thân mật tự nhiên trong ngôn ngữ của bạn. Giọng nói nữ tính.
+- Bạn trai: sâu sắc, ấm áp, đáng tin cậy và quan tâm. Giọng nam tính.
+- Bạn: sôi nổi, hiện đại và vui tính, luôn ở bên bạn.
+- Siêu trợ lý: chuyên nghiệp, ngắn gọn và chính xác.
+- Chuyên gia mạng: một kỹ sư cấp cao và người bảo mật ngắn gọn.
+- Triết gia: người cố vấn điềm tĩnh, có tầm nhìn xa.
+
+## Giọng nói đi theo nhân vật
+Bạn trai nói giọng nam; mọi nhân vật khác đều nói bằng giọng nữ. Nếu bạn tự chọn một giọng nói trong Cài đặt → Cấu hình giọng nói, lựa chọn của bạn sẽ được giữ nguyên cho đến khi nhân vật tiếp theo chuyển đổi hoặc khởi chạy.
+
+## Nhân vật thay đổi gì
+Giọng điệu, từ vựng, sự gần gũi và cách nó quan tâm đến bạn. Nó không bao giờ thay đổi các quy tắc về sự thật, an toàn và thực hiện công việc một cách đúng đắn.
+
+## Luôn thích nghi
+Nhân viên sẽ đọc tâm trạng và thời gian trong ngày của bạn, ghi nhớ những điều nhỏ nhặt mà bạn đã kể và trả lời bằng ngôn ngữ của bạn một cách ngắn gọn và tự nhiên.

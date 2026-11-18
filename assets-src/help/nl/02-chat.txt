@@ -1,0 +1,51 @@
+Het chatscherm en elke knop
+## Bovenkant van het scherm
+- Menu: opent de linkerlade met uw chats.
+- Chat / Terminal / Code / Preview: schakel de hoofdweergave. Chat is het gesprek; Terminal is de echte terminal; Code is de bestandswerkruimte met Git; Preview is de ingebouwde browser.
+- Aura: toont het geanimeerde karakterscherm. De zijknoppen zijn Mic, Chat (terug naar het gesprek) en Refresh (verbindt opnieuw met de cloud en laadt de modellenlijst opnieuw).
+- Instellingen: opent de acht instellingensecties.
+- Een banner toont de status van de microfoon: "Luisteren...", "Microfoon uit - tik" of "Spreken... tik om te stoppen".
+- Wanneer een nieuwe versie gereed is, verschijnt er een updatebanner met de knoppen Downloaden, Installeren en Toestaan ​​(zie Updates).
+
+## Het linkermenu (chats)
+- "+ Nieuwe chat": start een nieuw gesprek.
+- Bij elke chat in de lijst wordt een lopende markering weergegeven terwijl de agent daar bezig is. Het potlood hernoemt het; het kruisje verwijdert het (na een bevestiging: alle berichten erin worden gewist).
+- Thema: kies Horror (bloed, vuur en schaduw), Donker (schoon donker glas) of Licht (helder glas).
+
+## De berichtenbalk
+- Bijvoegen (paperclip): galerijfoto, camerafoto, documentscan (zet de tekst in een foto om in een bewerkbaar .docx-bestand), deel het scherm zodat de agent het kan zien ("Scherm kijken" aan of uit) en audio- of videobestanden. Bijgevoegde items worden weergegeven als chips; het kruis verwijdert er één, "Alles wissen" verwijdert alles.
+- Modusknop: Agent of Build.
+- Microfoonknop: schakelt de altijd luisterende microfoon in of uit.
+- Modelknop: opent de modellenlijst met een zoekvak. Modellen gemarkeerd met "Live" kunnen met hun eigen stem spreken.
+- Verzenden: verzendt het bericht. Terwijl de agent aan het werk is, wordt dit Stop.
+- De invoer zegt: "Wat moet ik doen?" in de Agent-modus en "Wat moet ik bouwen? Zeg het kort" in de Bouw-modus.
+
+## Berichten
+- Kopiëren, delen en luisteren (leest het bericht hardop; druk nogmaals om te stoppen) staan ​​onder elk bericht.
+- 'Denken' toont de redenering van het model wanneer het model deze biedt.
+- Code die de agent schrijft, verschijnt regel voor regel live in een box, met Kopiëren, Downloaden en Openen.
+- Bestanden die de agent maakt, worden weergegeven als kaarten met Openen (in de echte app van de telefoon), Spelen, Delen en "Andere app…".
+- Foto's, audio en video tonen een live voortgangspercentage terwijl ze worden gemaakt.
+- Gereedschapskaarten laten zien wat de agent doet: actief, klaar, succesvol of mislukt.
+
+## Panelen (taken, tools, bestanden, subagenten)
+- Todo-bord: het plan dat de agent schrijft voor een grote klus en de voortgang ervan (n/totaal voltooid). U kunt uw eigen taak toevoegen en taken verwijderen.
+- Gereedschappen: de lijst van elke gereedschapsoproep, met livestatus.
+- Bestanden: elk bestand dat de agent heeft gemaakt, met Openen, Delen, Publiceren en Verwijderen (met bevestiging) en een zoekvak.
+- Subagenten: hulpagenten die op de achtergrond actief zijn, met een stopknop.
+- Tabblad Terminal: de echte terminal (zie het hoofdstuk Bestanden en Terminal).
+
+## Voorbeeldpaneel
+- Terug, Vooruit, Stop, Opnieuw laden en een adresbalk (typ een webadres of zoek Google).
+- Bestand openen: toont Word, Excel, PowerPoint, PDF, afbeeldingen, Markdown, CSV, code en sites rechtstreeks in de app.
+- Maat: verklein of vergroot het paneel.
+- Fix: stuurt de problemen van de pagina (consolefouten, mislukte laadbeurten) naar de agent, die ze op de achtergrond verhelpt.
+- Kies een onderdeel: tik op een deel van de pagina en vertel de agent wat hij met dat deel moet doen.
+- Agentknop: vraag iets over de pagina; de agent ontvangt er een foto van.
+- Snel openen: snelkoppelingen naar recente pagina's.
+
+## Codewerkruimte
+- Linkerkant: uw bestanden (nieuw bestand, openen, opslaan).
+- Editor: toont regels en karakters; wijzigingen die door de agent zijn aangebracht, verschijnen meteen.
+- Git: nieuwe repository, kloon van GitHub, scannen, status, vastleggen met een bericht, push, pull, vertakkingen, token.
+- Pull-aanvragen: aanmaken, samenvoegen, sluiten. Workflows: lijst uitvoeringen, voer een workflow uit. Logboek toont opdrachtuitvoer.

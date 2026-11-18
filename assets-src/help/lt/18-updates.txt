@@ -1,0 +1,7 @@
+Atnaujinimai
+Nustatymai → Atnaujinimai → Programos naujinys arba reklamjuostė programos viršuje.
+- Programa tikrina, ar nėra naujų leidimų, ir rodo „Galimas naujas naujinimas – versija“.
+- Patikrinkite atnaujinimus: klausia dabar. Jei esate dabartinis, taip ir sakoma.
+- Atsisiųsti ir įdiegti: atsisiuntimai su procentais. Baigę paspauskite Įdiegti. Jūsų pokalbiai, atmintis ir nustatymai išlieka.
+- Jei Android blokuoja diegimą, paspauskite leidimo mygtuką, leiskite ZYRAXON kaip diegimo šaltinį, tada bandykite dar kartą.
+- Reklamjuostės mygtukai: Atsisiųsti, įdiegti, leisti ir uždaryti.

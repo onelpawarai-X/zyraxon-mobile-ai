@@ -1,0 +1,20 @@
+Başlarken
+ZYRAXON, Android telefonunuzun içinde yaşayan bir asistandır. Sizinle konuşur, sizi dinler ve gerçek işler yapabilir: uygulamaları açabilir, ekrana dokunup yazabilir, insanları arayabilir, dosyalar yazabilir, web siteleri ve uygulamalar oluşturabilir, bir Linux sistemi çalıştırabilir, resim, ses, video ve ofis belgeleri oluşturabilir ve sizi aylar boyunca hatırlayabilir. Konuştuğunuz her dilde çalışır.
+
+## İlk dakikalar
+- İlk başlatmada ZYRAXON, aracının telefonunuzda kendi başına işlem yapabileceğine dair kısa bir bildirim gösterir. Devam etmek için "Anladım, başla"ya basın.
+- Bir AI anahtarı ekleyin (Ayarlar → Sağlayıcılar ve API → AI sağlayıcıları). İstediğiniz herhangi bir sağlayıcı için bir anahtar yapıştırın (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Bir anahtarı kaydettiğinizde, uygulama o sağlayıcının kataloğunu okur ve gerçek olup olmadığını kontrol eder, böylece gerçek bir "bağlı" durumu ve model sayısını görürsünüz.
+- Anahtar yok mu? Cihazdaki modelleri hâlâ kullanabilirsiniz (Ayarlar → Model ve kimlik → Cihazda). İnternet olmadan telefonla çalışıyorlar.
+- Mesaj çubuğundaki model düğmesiyle bir model ve bir karakter seçin (Ayarlar → Model ve kimlik → Kimlik).
+- Bir özelliğin izin vermesi gerektiğinde izin verin (İzinler bölümüne bakın). Temsilci ayrıca tek dokunuşla sizin için izin iletişim kutusunu açabilir.
+- Sadece konuşun veya yazın. "Bana fırınım için bir açılış sayfası yap", "YouTube'ı aç ve bir şarkı çal", "pilim ne?", "Annemi ara".
+
+## Çalışmanın iki yolu
+Mesaj kutusunun yanında iki modu olan bir mod düğmesi vardır: Agent ve Build. Modlar bölümüne bakın.
+
+## Eşyalar nerede
+- Sol menü: sohbetleriniz, yeni sohbet, yeniden adlandırma, silme ve tema değiştirme.
+- Sohbet ekranı: mesajlar, yapılacaklar panosu, araç listesi, dosyalar, terminal.
+- Önizleme ve Kod panelleri: aracının oluşturduklarını görün ve düzenleyin.
+- Ayarlar: Bu belgede tek tek ele alınan sekiz bölüm.
+- Bu belgeler: Ayarlar → Belgeler (buradasınız).

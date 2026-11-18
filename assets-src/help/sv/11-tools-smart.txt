@@ -1,0 +1,45 @@
+Färdigheter, autopilot, pengar, tidslinje och ångra, hjärna, samtalsagent och minne
+Du använder alla dessa genom att prata: säg vad du vill och agenten ringer rätt verktyg. Varje åtgärd listas här med dess alternativ.
+
+## Färdigheter – lära ut genom att göra
+En färdighet är en telefonuppgift som agenten lärde sig genom att se dig göra den en gång. Den lagrar hur man hittar varje element igen (dess id, ord och grannar, inte dess skärmposition), så det fortsätter att fungera när appens layout ändras.
+- Lägg till en färdighet: `skill_record` (Personligt). Säg "lär dig detta som <namn>". `action: start` (med ett namn) börjar spela in; gör sedan uppgiften — öppna appen, tryck, skriv, tryck på tangenter; varje steg registreras. `action: stop` sparar det. Vid stopp kan du skicka `params` för att omvandla inskrivna värden till parametrar (till exempel telefonnumret blir `number`, beloppet blir `amount`) och en `description`. `action: status` talar om för dig om inspelning är på.
+- Kör en färdighet: `skill_run` (Personligt). Ge `args` för dess parametrar, t.ex. antal och belopp. Den spelas upp i en bråkdel av stegen och läker sig själv när appen ändras. Om ett steg misslyckas säger resultatet vilket steg och vad som visas på skärmen, och agenten avslutar resten för hand.
+- Lista färdigheter: `skill_list` (Safe) visar namn, parametrar, steg och hur ofta varje sprang. Med ett namn och export på blir en delbar `.zxskill` fil.
+- Dela och ladda: `skill_import` (Personligt) laddar en `.zxskill` fil från en nedladdning eller en delad fil som en färdighet.
+- Ta bort en färdighet: `skill_delete` (System).
+- Exempel: "Lär dig hur jag skickar 500 till Rahim med min plånboksapp" → du gör det en gång → "Skicka 700 till Karim" nästa gång.
+
+## Autopilot — "när X händer, gör Y"
+En regel väcker agenten av sig själv och den gör uppgiften utan att fråga dig.
+- Lägg till: `autopilot_add` (System). Typer: sms, avisering, samtal, dagligen, en gång, intervall, batteri, app. Fyll endast i fälten som regeln behöver: `from` (avsändarens namn eller nummer eller apptitel), `any` (minst ett av dessa ord), `all` (varje ord), `none` (inga av dessa ord), `time` "TT:MM" (dagligen), `in_minutes` eller `at_ms` (en gång]), `every_minutes` (en gång)), `every_minutes` (intervall) `pkg` (apppaket eller namn, för app- och aviseringsregler). Agenten förvandlar din mening till dessa fält. Resultatet listar alla behörigheter som fortfarande behövs (SMS, aviseringsåtkomst...), och agenten ber dig att slå på den.
+- Exempel: "När ett betalnings-SMS kommer från min plånboksapp, lägg till det i min reskontra." "Berätta vädret varje morgon klockan 8." "Om 20 minuter, påminn mig om att ta ut brödet." "Var 30:e minut, drickvattenpåminnelse." "Berätta för mig när batteriet går under 15 %." "När någon ringer mig, logga numret." "När jag öppnar bankappen, påminn mig om att kontrollera budgeten."
+- Lista: `autopilot_list` (Safe) visar varje regel med dess nästa körtid och hur ofta den har avfyrats.
+- Pausa eller återuppta: `autopilot_toggle` (System). Ta bort: `autopilot_remove` (System), efter id eller titel.
+- När en regel avfyras får du ett meddelande som säger det, och agenten gör bara jobbet.
+
+## Penningbok (personlig CFO)
+- `ledger_scan` (Personligt): läs plånbok och bank-SMS i en privat reskontra: inkomst, utgifter, avgifter, saldo och kategori. `days` säger hur långt tillbaka (standard 30). Med `auto` på läggs varje nytt penga-SMS till av sig självt och du varnas när en budget passeras. Fungerar för alla länders plånbok och bankmeddelanden, i vilken valuta som helst.
+- `ledger_report` (Personligt): period idag, igår, vecka, månad eller alla. Formatera text (en färdig uppläst sammanfattning) eller xlsx (en Excel fil med transaktioner och kategorisummor, öppnad för dig).
+- `ledger_budget` (Personligt): ställ in en månadsbudget för en kategori (mat, räkningar, transport, shopping, mobilladdning, överföringar...); en gräns på 0 tar bort den; utan argument listar den budgetar och aktuella varningar.
+- Agenten uppfinner aldrig penganummer; det läser dem från reskontran.
+
+## Tidslinje och ångra
+- Allt som agenten gör skrivs till tidslinjen (de senaste 400 åtgärderna). Filändringar behåller en kopia av det som fanns där tidigare.
+- `timeline_list` (Safe): vad agenten gjorde nyligen, med ett id för varje, och vilka ändringar som kan ångras.
+- `timeline_undo` (Personligt): `id` ångrar en skrivning, redigering eller radering – filen kommer tillbaka exakt som den var (en fil som inte fanns tas bort igen). `since_id` ångrar allt från det id:t och framåt, det senaste först. Använd det när du säger "ta tillbaka det" eller "lägg tillbaka det som tidigare".
+- Ångra omfattar filskrivning, redigering och radering. Ett kommando som kördes (till exempel att installera något eller skicka ett meddelande) kan inte ångras på detta sätt.
+- Chattmeddelanden: för att ta bort en hel konversation använd pennan och kryss i den vänstra menyn, eller Inställningar → Sekretess och data → Radera chatthistorik eller Navigering → Ny session.
+
+## Hjärna – andra minnet för dina filer
+- `brain_index` (Säker): bygg eller uppdatera offlineindexet över mappar eller filer (text, Markdown, CSV, Word, Excel, PowerPoint) och eventuellt SMS-inkorgen (`sms` på). Kör det före den första sökningen och efter att nya filer dyker upp. Standard är din arbetsyta.
+- `brain_search` (Säker): fråga med dina egna ord, "var är mitt hyreskontrakt?" — det fungerar offline på alla språk. `kind` är fil eller sms; `days` gränser för senaste objekt. Öppna en hittad fil med `open_file`.
+
+## Ring agenten
+- `call_agent` (Personligt): åtgärd på, av eller status. `owner` är namnet som står ("Jag är <ägarens assistent"). `answer_after_seconds` (standard 6) låter dig plocka upp först. När ett samtal kommer och du inte kan svara, hälsar den på uppringarens språk, frågar namnet och anledningen, svarar på enkla frågor, lägger på luren artigt och berättar en sammanfattning.
+- `call_log` (Säker): sammanfattningar av samtal den besvarade, senaste först.
+- Behöver samtals- och telefontillståndsbehörigheter.
+
+## Minne
+- `memory_write`, `memory_read`, `memory_delete` (Safe): bestående fakta om dig (namn, preferenser, personer, datum, projekt) bor i en lokal databas och överlever omstarter. Säg "kom ihåg detta" så skrivs det i samma sväng; om något är fel tas det bort eller skrivs om. Varje gammal konversation behålls också, och tidigare svängar som matchar det du säger kommer tillbaka av sig själva, även månader senare.
+- Se och ändra allt i Inställningar → System → Minne (nyckel, värde, spara, radera alla).

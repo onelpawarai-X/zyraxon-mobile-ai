@@ -1,0 +1,15 @@
+Watoa huduma, mifano na funguo
+## Watoa huduma
+ZYRAXON (laini inayomilikiwa na Apex wakala wa wingu, imeunganishwa kila wakati), OpenCode (kiasi kisicholipishwa), Groq (Llama ya haraka sana), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek na OpenRouter. Ongeza ufunguo wowote katika Mipangilio → Watoa Huduma na API. Ufunguo huhifadhiwa kwenye simu yako, ukiangaliwa dhidi ya orodha ya mtoa huduma, na miundo hutiririka hadi kwenye kiteuzi kila mtoa huduma anapojibu.
+
+## Kuchagua mfano
+Tumia kitufe cha muundo katika upau wa ujumbe au Mipangilio → Muundo na utambulisho → Muundo. Tafuta kwa jina, chuja Yote au Maalum. Chaguo lako limehifadhiwa na kurejeshwa wakati wa uzinduzi; uonyeshaji upya hauchukui nafasi ya muundo wako uliohifadhiwa. Miundo iliyoalamishwa Live inaweza kuzungumza kwa sauti zao wenyewe (tazama Sauti Moja kwa Moja).
+
+## Mifano kwenye kifaa
+Mipangilio → Muundo na utambulisho → Kwenye kifaa. Mfano huendesha kwenye simu bila data kuiacha. Faili ni kubwa (mamia ya MB hadi GB chache), kwa hivyo pakua kwenye Wi-Fi. Zimeorodheshwa ndogo hadi kubwa; kwenye simu yenye RAM kidogo chagua nyepesi zaidi. Kupiga simu kwa zana kunaauniwa na vifurushi vya Gemma na FunctionGemma. Tokeni ya Hugging Face ni ya faili zilizo na lango pekee. Mifano zilizopakiwa zinakumbukwa.
+
+## Tovuti ya ZYRAXON
+zyraxonai.lovable.app: fungua akaunti (barua pepe au Google), fungua Mipangilio, Ufunguo wa API / Tokeni ya Ufikiaji, unda ufunguo na ubandike kwenye programu. Bila ufunguo bado unaweza kutumia programu na miundo ya kifaa na zana za ndani.
+
+## Gharama na data
+Watoa huduma za wingu wanakutoza kulingana na sheria zao. Ukiwasha "Kwenye kifaa pekee" hakuna kinachotumwa kwa mtoa huduma yeyote.

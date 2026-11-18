@@ -1,0 +1,35 @@
+Głos: mówienie, słuchanie i rozmowa na żywo
+## Słuchanie (mikrofon)
+Ustawienia → Głos i mikrofon → Mikrofon i język.
+- Język rozpoznawania mowy: język, w którym mówisz do mikrofonu. Zmień to w dowolnym momencie.
+- Trzymaj mikrofon włączony (zawsze słuchaj): gdy jest włączony, mikrofon pozostaje otwarty. Gdy jest wyłączony, włączasz go sam.
+- Automatyczne wysyłanie, gdy przestaniesz mówić: po około 1,5 sekundzie ciszy Twoje zdanie zostanie wysłane samo. Gdy opcja ta jest wyłączona, słowa czekają w polu na naciśnięcie przycisku Wyślij.
+- Przycisk mikrofonu na pasku komunikatów i baner u góry wykonują tę samą funkcję włączania/wyłączania.
+- Mikrofon jest dla Ciebie zawsze otwarty, nawet gdy ZYRAXON mówi. W chwili, gdy zaczniesz mówić, zatrzymuje się i słucha, a następnie odpowiada. Jego własny głos dochodzący z mikrofonu jest filtrowany poprzez porównanie tekstu z ostatnią odpowiedzią.
+- Zdanie jest wysyłane tylko raz. Jeśli osoba rozpoznająca później powtórzy nieco inną wersję tego samego zdania, zostanie ono usunięte w tej samej turze.
+
+## Mówienie (zamiana tekstu na mowę)
+Ustawienia → Głos i mikrofon → Profil głosowy.
+- Wybierz głos: kobiecy (słodki i romantyczny) lub męski (głęboki i pewny siebie). Gdy witryna jest gotowa, wykorzystywane są własne głosy; Własny silnik mowy telefonu jest rozwiązaniem awaryjnym.
+- Suwaki prędkości i wysokości dźwięku oraz „Głos testowy”.
+- „Czytaj odpowiedzi na głos” włącza lub wyłącza mówienie.
+- Jeśli telefon nie ma silnika mowy, zainstaluj Google Usługi mowy. Jeśli telefon nie zawiera danych głosowych w języku bengalskim, przycisk umożliwia ich pobranie.
+- Kliknij transparent mówiący, aby zatrzymać głos. Kliknij opcję Słuchaj pod dowolną wiadomością, aby ją odsłuchać.
+- ZYRAXON nigdy nie czyta na głos kodu, linków, JSON ani nazw narzędzi.
+
+## Laboratorium głosowe (zmieniacz głosu)
+Wybierz z katalogu serwera według płci (wszyscy, dziewczynki, chłopcy), wieku (dziecko, nastolatka, dorosły, senior) i języka (bengalski, hindi, angielski, urdu, arabski, tamilski, nepalski, hiszpański, francuski, niemiecki, japoński, koreański, chiński, rosyjski, turecki…). „Słuchaj” wyświetla podgląd głosu; „Powrót do ustawień domyślnych” przywraca głos postaci. W przypadku dźwięku z wieloma głosami zapytaj agenta: każda część dialogu ma swój własny głos.
+
+## Głos na żywo (mowa na mowę)
+Ustawienia → Głos i mikrofon → Głos na żywo. W przypadku modelu czasu rzeczywistego (Gemini Live, OpenAI Realtime i podobne) model słyszy mikrofon i odpowiada własnym głosem, w jednym strumieniu, a Ty możesz mu przerwać w połowie słowa. W tej sesji mowa telefonu jest wyłączona, więc nigdy nie słychać dwóch głosów.
+- Użyj własnego głosu modelki: on = rozmowa na żywo; wyłączone = telefon czyta odpowiedzi tekstowe.
+- Status pokazuje: łączenie, słuchanie, mówienie, oczekiwanie.
+- Wybranie modelu czasu rzeczywistego włącza go samoczynnie.
+- Jeśli nie załadowano żadnego modelu czasu rzeczywistego, dodaj klucz Gemini lub OpenAI w dostawcach AI.
+- Głos wybrany w profilu głosowym będzie używany także w trybie na żywo.
+
+## Pływające oko
+Ustawienia → Aura i motyw → Aura i tło.
+- Mała pływająca kula, która znajduje się nad każdą inną aplikacją. Stuknij, aby włączyć lub wyłączyć mikrofon; naciśnij długo, aby otworzyć pole tekstowe i zamknąć je ponownie.
+- Osiem wzorów: oko, świecąca kula, pierścień neonowy, galaktyka, orbita, plazma, pulsar, pryzmat. Umieszczenie na krawędzi ekranu.
+- Polecenia głosowe (słowa budzenia): gdy aplikacja działa w tle, wypowiedzenie nazwy budzi pływające oko, a ZYRAXON odbiera. Wartości domyślne: „zyraxon”, „hej zyraxon” i popularna pisownia w języku bengalskim i angielskim. Dodaj własne słowa w dowolnym języku; usuń je w dowolnym momencie.

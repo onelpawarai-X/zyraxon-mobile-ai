@@ -1,0 +1,35 @@
+Stimme: Sprechen, Zuhören und Live-Talk
+## Zuhören (Mikrofon)
+Einstellungen → Stimme und Mikrofon → Mikrofon und Sprache.
+- Spracherkennungssprache: die Sprache, die Sie in das Mikrofon sprechen. Ändern Sie es jederzeit.
+- Lassen Sie das Mikrofon eingeschaltet (immer zuhören): Wenn es eingeschaltet ist, bleibt das Mikrofon geöffnet. Wenn es ausgeschaltet ist, schalten Sie es selbst ein.
+- Automatisches Senden, wenn Sie aufhören zu sprechen: Nach etwa 1,5 Sekunden Stille wird Ihr Satz von selbst gesendet. Wenn diese Option deaktiviert ist, warten die Wörter im Feld darauf, dass Sie auf „Senden“ klicken.
+- Die Mikrofontaste in der Nachrichtenleiste und das Banner oben bewirken dasselbe Ein-/Ausschalten.
+- Das Mikrofon ist immer für Sie geöffnet, auch während ZYRAXON spricht. Sobald Sie anfangen zu reden, hört es auf, hört zu und antwortet Ihnen dann. Die über das Mikrofon zurückkommende eigene Stimme wird durch den Vergleich des Textes mit der letzten Antwort herausgefiltert.
+- Ein Satz wird nur einmal gesendet. Wenn der Erkenner später eine leicht veränderte Version desselben Satzes wiederholt, wird er im selben Zug verworfen.
+
+## Sprechen (Text-to-Speech)
+Einstellungen → Stimme und Mikrofon → Sprachprofil.
+- Wählen Sie eine Stimme: weiblich (süß und romantisch) oder männlich (tief und selbstbewusst). Die eigenen Stimmen der Website werden verwendet, wenn sie bereit sind; Als Ausweichlösung dient die eigene Sprach-Engine des Telefons.
+- Geschwindigkeits- und Tonhöhenregler sowie „Teststimme“.
+- „Antworten laut vorlesen“ schaltet das Sprechen ein oder aus.
+- Wenn das Telefon über keine Sprach-Engine verfügt, installieren Sie Google Speech Services. Wenn das Telefon keine bengalischen Sprachdaten hat, können Sie diese über eine Schaltfläche herunterladen.
+- Tippen Sie auf das Sprechbanner, um die Stimme zu stoppen. Tippen Sie unter einer Nachricht auf „Anhören“, um sie anzuhören.
+- ZYRAXON liest niemals Code, Links, JSON oder Toolnamen laut vor.
+
+## Sprachlabor (Stimmenwechsler)
+Wählen Sie aus dem Katalog des Servers nach Geschlecht (alle, Mädchen, Junge), Alter (Kind, Teenager, Erwachsener, Senior) und Sprache (Bengali, Hindi, Englisch, Urdu, Arabisch, Tamil, Nepali, Spanisch, Französisch, Deutsch, Japanisch, Koreanisch, Chinesisch, Russisch, Türkisch…). „Hören“ zeigt eine Vorschau einer Stimme an; „Zurück zur Standardeinstellung“ stellt die Stimme des Charakters wieder her. Für Audio mit vielen Stimmen fragen Sie den Agenten: Jeder Teil eines Dialogs erhält seine eigene Stimme.
+
+## Live-Stimme (Speech-to-Speech)
+Einstellungen → Stimme und Mikrofon → Live-Stimme. Bei einem Echtzeitmodell (Gemini Live, OpenAI Realtime und ähnliches) hört das Modell das Mikrofon und antwortet mit seiner eigenen Stimme, in einem Stream, und Sie können es mitten im Wort unterbrechen. Die eigene Sprache des Telefons ist in dieser Sitzung ausgeschaltet, sodass Sie nie zwei Stimmen hören.
+- Verwenden Sie die eigene Stimme des Models: an = Live-Talk; aus = Das Telefon liest Textantworten.
+- Status zeigt: Verbinden, Zuhören, Sprechen, Warten.
+- Wenn Sie ein Echtzeitmodell auswählen, wird es automatisch aktiviert.
+- Wenn kein Echtzeitmodell geladen ist, fügen Sie in den KI-Anbietern einen Schlüssel Gemini oder OpenAI hinzu.
+- Die Stimme, die Sie im Sprachprofil ausgewählt haben, wird auch im Live-Modus verwendet.
+
+## Schwebendes Auge
+Einstellungen → Aura & Thema → Aura & Hintergrund.
+- Eine kleine schwebende Kugel, die über jeder anderen App sitzt. Tippen Sie, um das Mikrofon ein- oder auszuschalten. Langes Drücken öffnet ein Textfeld und schließt es wieder.
+- Acht Designs: Auge, Leuchtkugel, Neonring, Galaxie, Umlaufbahn, Plasma, Pulsar, Prisma. Platzierung am Bildschirmrand.
+- Sprachbefehle (Weckwörter): Wenn die App im Hintergrund läuft, weckt das Aussprechen des Namens das schwebende Auge und ZYRAXON antwortet. Standardeinstellungen: „zyraxon“, „hey zyraxon“ und gebräuchliche Schreibweisen in Bengali und Englisch. Fügen Sie Ihre eigenen Wörter in einer beliebigen Sprache hinzu; Sie können sie jederzeit entfernen.

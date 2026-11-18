@@ -1,0 +1,42 @@
+Setiap layar pengaturan, satu per satu
+Pengaturan memiliki delapan bagian. Setiap bagian memiliki pil untuk sub-layarnya. Bagian terakhir yang Anda gunakan dibuka kembali di lain waktu.
+
+## 1. Bahasa & terjemahan → Bahasa aplikasi & alat
+Pilih bahasa seluruh aplikasi dan pesan alat agen. Cari daftar dan ketuk salah satu. Layar menunjukkan bahasa saat ini dan apakah terjemahan UI dan terjemahan alat-pesan aktif. 60 bahasa tersedia. Lihat bab Bahasa.
+
+## 2. Suara & mikrofon
+- Profil suara: pilih suara wanita atau pria, kecepatan, nada, "Bacakan jawaban dengan lantang", Uji suara, petunjuk pengunduhan suara Bengali.
+- Mikrofon & bahasa: bahasa pengenalan, tetap aktifkan mikrofon, kirim otomatis saat Anda berhenti berbicara.
+- Suara langsung: nyala/mati ucapan-ke-ucapan, status, daftar model waktu nyata.
+
+## 3. Penyedia & API
+- Penyedia AI: kunci API Anda sendiri (ZYRAXON, OpenCode kuota gratis, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) dan agen cloud ZYRAXON Apex. Kunci yang disimpan diverifikasi dengan membaca katalog nyata penyedia dan menunjukkan jumlah model atau kesalahan sebenarnya. Sebuah tombol membuka situs web ZYRAXON tempat Anda membuat kunci.
+- GitHub: token akses GitHub Anda (membutuhkan cakupan repo) untuk penerbitan, Git permintaan dorong dan tarik. Simpan token atau hapus; status menunjukkan jika sudah diatur.
+
+## 4. Pembaruan → Pembaruan aplikasi
+Menampilkan versi saat ini, memeriksa rilis yang lebih baru, mengunduhnya dengan bilah kemajuan, dan menginstalnya. Obrolan, memori, dan pengaturan Anda tetap ada. Jika Android memerlukan izin untuk menginstal, sebuah tombol akan membuka pengaturan itu.
+
+## 5. Model & identitas
+- Identitas: pilih karakter (lihat bab Karakter).
+- Model: katalog model langsung dengan kotak pencarian, filter "Semua model" dan "Khusus"; model cepat terlebih dahulu.
+- Di perangkat: unduh, muat, dan keluarkan model yang berjalan offline; diurutkan dari kecil ke besar; token Hugging Face opsional; menunjukkan status dimuat, memuat, dan gagal.
+
+## 6. Aura & tema
+- Tema: Horor, Gelap atau Terang.
+- Aura & latar belakang: gaya dan warna aura (darah, merah muda, ungu, langit, hijau, api) dengan kontrol rona halus; ukuran aura, kekuatan cahaya, kecepatan putaran, transparansi panel; mata mengambang (hidup/mati, desain, tepi layar, perintah suara/kata-kata bangun, tambahkan milik Anda sendiri); mode bayangan; URL latar belakang khusus (mp4, gif atau gambar); kecepatan animasi.
+
+## 7. Keamanan & privasi
+- Kunci aplikasi: kata sandi (4–8 digit) atau pola titik 3×3; konfirmasi dengan memasukkannya dua kali; hapus kunci.
+- Izin: daftar di bab Izin, dengan bantuan Play Protect.
+- Privasi & data: semua data tetap ada di ponsel. Tombol: hapus semua memori, hapus riwayat obrolan, hapus token GitHub.
+
+## 8. Sistem
+Bagian ini memiliki deretan tombol tersendiri yang bergulir ke samping, sehingga tidak ada yang terjepit.
+- Otomatisasi: tingkat persetujuan dan hanya pada perangkat (lihat tingkat persetujuan).
+- Navigasi: daftar area untuk melompat — "tidak ada tombol di atas, semuanya ada di sini" — termasuk shell sistem ⌘ ZX, tombol "Sesi baru" (menghapus riwayat obrolan untuk awal yang bersih), jumlah pesan, dan tombol mikrofon.
+- Memori: memori lokal SQL dengan fakta yang diingat ZYRAXON; tambahkan kunci dan nilai; hapus semua.
+- Panduan keterampilan: daftar singkat contoh kemampuan (aplikasi perpesanan, pembuatan situs web, pembaca layar, senter, kamera, Wi-Fi dan pengaturan) dengan contoh frasa.
+- Pusat otomatisasi: keterampilan, autopilot, uang, garis waktu, otak, dan agen panggilan di satu tempat (lihat Pusat otomatisasi).
+
+## 9. Dokumentasi
+Bagiannya sendiri di Pengaturan, terpisah dari Sistem. Panduan ini: dua puluh satu bab, kotak pencarian, dan baris chip bahasa. Setiap bahasa di aplikasi sudah ditulis secara lengkap di dalam aplikasi — tidak ada yang diterjemahkan di ponsel Anda dan tidak diperlukan internet untuk membacanya.

@@ -1,0 +1,11 @@
+Foto's, audio, video, documenten en ontwerp
+- `generate_image` (netwerk): maak een foto van een beschrijving (schrijf deze gedetailleerd; Engels werkt het beste). Het verschijnt in de chat met deelknoppen. Voor meerdere, vraag om meerdere.
+- `generate_audio` (netwerk): gesproken audio (.mp3) van elke tekst. Geef voor een dialoog of verhaal elk onderdeel een eigen stem (geslacht, leeftijd, taal, toon). Veel talen, waaronder Bengaals, Hindi en Engels.
+- `generate_video`: een echte bewerkte video (geen AI-beelden) van scènes: afbeeldingen, clips, tekst, kleur, commentaar, bijschriften, muziek. `ffmpeg`: elke directe bewerking — knippen, samenvoegen, overlay, ondertitels, snelheid, audiomix, converteren. Video's van 5-10 minuten zijn mogelijk, stap voor stap opgebouwd.
+- Voortgang wordt live weergegeven als percentage in de chat; als het klaar is, arriveert het bestand met de knoppen Afspelen en Delen.
+- `make_document`: een echt Word (.docx), Excel (.xlsx) of PowerPoint (.pptx) bestand op de telefoon, geen installatie nodig, welke taal dan ook. `office_template`: kant-en-klare kantoorpapieren met lege plekken om in te vullen (verlofaanvraag, sollicitatie, factuur, CV, zakelijk voorstel, offerte, kennisgeving, notulen van vergaderingen, contract, maandelijkse rekeningen en meer).
+- Document van een foto: voeg een foto toe (Doc-scan). De tekst wordt exact gekopieerd zoals geschreven (onduidelijke woorden zijn gemarkeerd), een tabel wordt .xlsx, anders .docx.
+- Vergadernotities: van audio, een transcriptie of wat u zegt. Het document bevat een samenvatting, besluiten, actiepunten (taak, eigenaar, vervaldatum) en een kant-en-klaar e-mailconcept.
+- `make_design`: posters, banners, logo's, kaarten, verhalen, covers als PNG en PDF. `brand_kit`: geef een logo of kleuren; ze worden opgeslagen, het app-thema verandert en vanaf dat moment gebruiken documenten, slides en sites uw merkkleuren.
+- `present_slides`: het personage spreekt terwijl diakaarten worden weergegeven; dia's veranderen vanzelf wanneer de stem klaar is. Vraag om een ​​.pptx-bestand als je een bestand wilt.
+- `open_file`: opent wat er is gemaakt in de echte app van de telefoon (Word/Docs, Spreadsheets, Slides, PDF, galerij, browser) of in het voorbeeldpaneel; de agent controleert het scherm om er zeker van te zijn dat het is geopend.

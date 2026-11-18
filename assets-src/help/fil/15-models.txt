@@ -1,0 +1,15 @@
+Mga provider, modelo at susi
+## Mga tagapagbigay
+ZYRAXON (sariling linya at ang Apex cloud agent, palaging konektado), OpenCode (libreng quota), Groq (napakabilis na Llama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek at OpenRouter. Magdagdag ng anumang key sa Mga Setting → Mga Provider at API. Ang susi ay naka-save sa iyong telepono, sinusuri sa katalogo ng provider, at ang mga modelo ay nag-stream sa selector habang ang bawat provider ay sumasagot.
+
+## Pagpili ng isang modelo
+Gamitin ang button ng modelo sa message bar o Mga Setting → Modelo at pagkakakilanlan → Modelo. Maghanap ayon sa pangalan, i-filter ang Lahat o Custom. Ang iyong pinili ay nai-save at naibalik sa paglulunsad; hindi pinapalitan ng refresh ang iyong naka-save na modelo. Ang mga modelong may markang Live ay maaaring magsalita sa kanilang sariling boses (tingnan ang Live na boses).
+
+## Mga modelo sa device
+Mga Setting → Modelo at pagkakakilanlan → Sa device. Ang modelo ay tumatakbo sa telepono nang walang data na naiwan dito. Malalaki ang mga file (daan-daang MB hanggang ilang GB), kaya i-download sa Wi-Fi. Ang mga ito ay nakalista maliit hanggang malaki; sa isang telepono na may maliit na RAM piliin ang pinakamagaan. Ang tool na pagtawag ay sinusuportahan ng Gemma at FunctionGemma na mga bundle. Ang isang Hugging Face token ay para lamang sa mga naka-gate na file. Naaalala ang mga naka-load na modelo.
+
+## Ang ZYRAXON website
+zyraxonai.lovable.app: gumawa ng account (email o Google), buksan ang Mga Setting, API Key / Access Token, gumawa ng key at i-paste ito sa app. Kung walang key, magagamit mo pa rin ang app na may mga on-device na modelo at mga lokal na tool.
+
+## Mga gastos at data
+Sinisingil ka ng mga cloud provider ayon sa sarili nilang mga panuntunan. Kapag naka-on ang "On-device lang" walang ipinapadala sa anumang provider.

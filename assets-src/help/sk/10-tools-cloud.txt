@@ -1,0 +1,21 @@
+Cloud, sieť, modely a pomocníci
+## Cloud a internet
+- `web_search` (sieť): hľadajte na skutočnom webe. `read_url` (sieť): načítanie stránky ako textu. `http_request` (sieť): akékoľvek volanie HTTP (GET, POST, PUT, PATCH, DELETE) s hlavičkami a telom. `verify_url` (sieť): skontrolujte, či odkaz skutočne existuje a získajte skutočný stav. `download_file` (Osobné, sieť): stiahnutie adresy URL do súboru.
+- Agent otvorí odkazy iba vtedy, keď o to požiadate.
+- Modely AI fungujú v cloude prostredníctvom poskytovateľov, ktorých ste pridali (ZYRAXON, ZYRAXON Apex cloudový agent, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Zoznam modelov sa načítava naživo a napĺňa sa, keď každý poskytovateľ odpovie.
+- Požiadavky na zostavenie, publikovanie a vytiahnutie prebiehajú cez GitHub a Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Zapnite možnosť „iba na zariadení“ (nastavenia automatizácie) a neuskutoční sa žiadny cloudový hovor: žiadny poskytovateľ, žiadny web, žiadne nahrávanie.
+
+## MCP serverov
+MCP umožňuje externým službám poskytnúť agentovi ďalšie nástroje. Pripojte Canva, Cloudflare, Supabase, GitHub alebo svoj vlastný server podľa jeho adresy (voliteľný token). Nástroje pripojených serverov sa pripoja k zoznamu nástrojov agenta ako `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (pozrite si, čo je pripojené a aké nástroje existujú), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (sledujte zdroj zmien), `mcp_complete` (argumenty automatického dopĺňania), `mcp_ping`, `mcp_log_level`. Ich hovory sú sieťové hovory a neznáme MCP nástroje predvolene žiadajú o povolenie.
+- Na obrazovke MCP je uvedený každý server so stavom Pripojený, jeho nástroje, zdroje a šablóny výziev a tlačidlá Pridať, Odpojiť, Odstrániť, Povoliť.
+
+## Sub-agenti
+`sub_agent` (Systém): odovzdajte časti veľkej úlohy pomocným agentom bežiacim na pozadí. Akcie: spawn, stav, zoznam, výsledok, správa, zastavenie, čakanie. Každý môže použiť svoj vlastný model. Agent skombinuje a skontroluje ich výsledky predtým, ako povie „hotovo“.
+
+## Model na zariadení
+`on_device_model` (Systém): zoznam, načítanie a spustenie jazykového modelu, ktorý funguje v telefóne bez internetu. V Nastaveniach → Model & identita → Na zariadení stiahnete modely (od malých po veľké: FunctionGemma 270M, Qwen3 0,6B, Gemma 4 E2B…); token Hugging Face je voliteľný a potrebný len pre gatované súbory. Načítaný model sa zapamätá a pri spustení sa znova načíta.
+
+## Kanály správ
+`channel_post` (Systém) otvorí Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail alebo SMS s pripraveným textom. Stlačíte odoslať sami.

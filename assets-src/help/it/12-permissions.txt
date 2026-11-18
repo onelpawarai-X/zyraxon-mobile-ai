@@ -1,0 +1,27 @@
+Autorizzazioni, una per una
+Impostazioni → Sicurezza e privacy → Autorizzazioni. Ogni riga mostra "Concesso" o un pulsante. Toccando una riga si apre la finestra di dialogo del sistema; basta premere Consenti. L'agente può anche aprire la finestra di dialogo stessa con `request_permission`.
+
+- Microfono: così ZYRAXON può sentirti. Senza di esso non è possibile l'input vocale.
+- Fotocamera: per scattare e guardare foto (`look_camera`, scansione di documenti, "cosa vedi").
+- Posizione: per mappe e informazioni locali.
+- Notifiche: per avvisarti quando termina il lavoro in background.
+- File e contenuti multimediali: per leggere foto, video, audio e documenti.
+- Sovrapposizione (disegna su altre app): necessaria per l'occhio mobile.
+- Accessibilità: consente all'agente di leggere lo schermo e toccare, scorrere e digitare per te. Questo è il cuore dell'automazione telefonica. Puoi attivarlo nelle impostazioni di accessibilità del sistema.
+- Ottimizzazione della batteria: impedisce a Android di mettere ZYRAXON in stato di stop mentre funziona in background.
+
+## Altre autorizzazioni dichiarate dall'app
+- SMS (leggi e ricevi): per la lettura dei codici, del registro fondi e delle regole del pilota automatico SMS.
+- Stato del telefono, risposta alle chiamate, chiamata al telefono, contatti: per gli strumenti di chiamata e l'agente di chiamata.
+- Accesso alle notifiche: consente al pilota automatico di reagire alle notifiche.
+- Amministratore del dispositivo: consente a `device_lock` di bloccare davvero lo schermo.
+- Installa pacchetti: consente agli aggiornamenti e a `build_app` di installare gli APK; Android ti chiede di consentire ZYRAXON come origine di installazione.
+- Servizi in primo piano (microfono, sincronizzazione dati) e wakelock: mantieni viva la voce e i lavori di lunga durata.
+- Internet e stato della rete: il cloud e il web.
+- Shizuku (facoltativo): accesso a livello di sistema per shell e terminale.
+
+## Google Play Protect
+Se Play Protect blocca un lavoro, l'agente può aprire la pagina giusta, guardare lo schermo reale e procedere passo dopo passo attraverso l'ingranaggio e l'interruttore, ma prima te lo chiede, perché disattivare la protezione è una tua decisione. Per farlo da solo: Play Store → immagine del profilo → Play Protect → impostazioni → disattiva "Scansiona app con Play Protect". La pagina ha un pulsante che apre Play Store.
+
+## Perché un permesso è importante
+Se uno strumento fallisce a causa di un'autorizzazione mancante, l'agente ti dice quale e apre la relativa finestra di dialogo. Niente di sensibile funziona senza il tuo consenso esplicito.

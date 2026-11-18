@@ -1,0 +1,27 @@
+Tips og eksempelforespørsler
+## Si hva du vil, ikke hvordan
+- "Lag en landingsside for et treningsstudio, mørk og dristig."
+- "Bygg en full-stack booking-app med en database." (agenten spør de tekniske valgene først)
+- "Åpne YouTube og spill en rolig sang."
+- "Rull ned og åpne det første resultatet."
+- "Hva er batteriet mitt og Wi-Fi?"
+- "Les min nyeste SMS og fortell meg koden."
+- "Ring mamma." / "Svar på anropet."
+- "Lag en CV fra dette bildet." (legg ved)
+- "Gjør dette møteopptaket til notater med handlingspunkter."
+- "Lag en plakat for fredagens arrangement med disse fargene."
+- "Lag en lyddialog mellom to venner, en gutt og en jente."
+- "Husk at søsteren min har bursdag 3. mai."
+- "Hver morgen klokken 8 fortell meg været." (autopilot)
+- "Finn ut hvordan jeg sender husleien min med lommebok-appen, slik at du kan gjøre det igjen." (ferdighet)
+- "Angre det du gjorde i prosjektmappen." (tidslinje)
+- "Hvor er leiekontrakten min?" (hjerne)
+- "Installer python-pakker og kjør dette skriptet." (Linux)
+- "Publiser dette nettstedet slik at jeg kan dele det." (offentlig lenke)
+
+## Vaner som hjelper
+- Korte og klare slag lange. Agenten velger standardinnstillinger og forteller deg hva den valgte.
+- Når den stiller ett spørsmål, svar på det og det fortsetter fra samme sted.
+- Si "forklar" eller "oppsummering" for et detaljert svar; ellers er svarene korte.
+- Du kan snakke om det når som helst. Den stopper og lytter.
+- Bruk byggemodus for å lage ting og agentmodus for å gjøre ting på telefonen.

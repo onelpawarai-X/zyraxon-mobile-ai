@@ -1,0 +1,34 @@
+Công cụ tự động hóa điện thoại
+Tác nhân điều khiển điện thoại của bạn thông qua các công cụ. Bạn không bao giờ tự mình gọi chúng; bạn nói những gì bạn muốn và người đại diện sẽ chọn công cụ. Chương này liệt kê mọi công cụ chạm vào điện thoại và cách nó được bảo vệ (xem Các cấp độ phê duyệt: An toàn, Cá nhân, Hệ thống).
+
+## Mở và tìm
+- `open_app` (An toàn): mở mọi ứng dụng đã cài đặt theo tên hoặc gói. `list_apps` (An toàn): liệt kê các ứng dụng đã cài đặt. `open_settings` (An toàn): mở trang cài đặt hệ thống (khả năng truy cập, lớp phủ, thông báo, ứng dụng, Wi-Fi, pin, Play Protect). `launch_url` (An toàn): mở link trên trình duyệt. `youtube_play` (An toàn): mở YouTube tại kết quả tìm kiếm cho nội dung bạn yêu cầu và phát nó.
+
+## Nhìn thấy màn hình
+- `read_screen` (Cá nhân): đọc mọi văn bản và thành phần trên màn hình bằng các vị trí nhấn. `screen_shot` (Cá nhân): ảnh chụp màn hình thật. Những thứ này cần có sự cho phép của Trợ năng.
+- `look_camera` (Cá nhân): chụp một bức ảnh bằng máy ảnh và nhìn vào nó. `read_media` (Cá nhân): đọc hình ảnh, âm thanh hoặc video (từ một đường dẫn hoặc liên kết) để mô hình có thể hiểu được.
+
+## Diễn xuất trên màn hình
+- `tap` (Cá nhân): nhấn vào một điểm. `tap_text` (Cá nhân): chạm vào phần tử có nhãn này, an toàn hơn tọa độ. `swipe` (Cá nhân): cuộn hoặc cử chỉ quay lại. `type_text` (Cá nhân): nhập vào trường tập trung. `press_key` (Cá nhân): quay lại, màn hình chính, gần đây, thông báo, cài đặt nhanh, khóa.
+- Các hành động trên màn hình chạy lần lượt theo thứ tự và sau mỗi hành động, nhân viên sẽ nhìn vào màn hình mới.
+
+## Điện thoại, tin nhắn và clipboard
+- `call_dial` (Cá nhân): thực hiện cuộc gọi theo số hoặc tên liên hệ. `call_state` (Cá nhân): cuộc gọi đang đổ chuông hay đang hoạt động? `call_answer` (Cá nhân): trả lời. `call_hangup` (Cá nhân): cúp máy.
+- `read_sms` (Cá nhân): đọc SMS mới nhất, ví dụ: mã OTP; có thể lọc theo văn bản hoặc người gửi.
+- `clipboard_read` và `clipboard_write` (Cá nhân): đọc hoặc ghi clipboard.
+- `notify` (Cá nhân): đăng thông báo Android thực sự. `share` (Cá nhân): mở bảng chia sẻ bằng văn bản, liên kết hoặc tệp. `channel_post` (Hệ thống): mở Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail hoặc SMS có điền sẵn văn bản của bạn, sẵn sàng gửi.
+
+## Thông tin về trạng thái và hệ thống
+- `network_status` (An toàn): trực tuyến hay không, Wi-Fi hoặc dữ liệu di động, Wi-Fi tên. `sys_info` (An toàn): Android phiên bản, kiểu máy, CPU, RAM, bộ nhớ, ứng dụng hiện tại. `platform_info` (An toàn): nơi tác nhân đang chạy. `process_list` (An toàn): tiến trình đang chạy.
+
+## Quyền và màn hình
+- `request_permission` (An toàn): mở hộp thoại cấp phép hệ thống bằng một lần nhấn khi công cụ bị lỗi do thiếu quyền. `device_lock` (Hệ thống): khóa màn hình thật hoặc thiết lập quyền cho phép. `floating_bubble` (Cá nhân): bật hoặc tắt quả cầu nổi.
+- `voice_change` (Cá nhân): thay đổi tốc độ nói, cao độ hoặc giới tính. `live_voice` (Hệ thống): bật hoặc tắt chế độ chuyển lời nói thành giọng nói trực tiếp.
+
+## Người trợ giúp giao diện
+- `code_box` và `files_panel`: mở hộp mã trực tiếp hoặc trình duyệt tệp để bạn xem tác phẩm. `todo_write`: bảng nhiệm vụ trực tiếp.
+
+## Mẹo
+- Bạn có thể xâu chuỗi: "Mở Cài đặt, tìm Wi-Fi và cho tôi biết tên mạng". Nhân viên đọc màn hình sau mỗi bước và quyết định bước tiếp theo.
+- Nếu một lần nhấn không làm gì, tác nhân sẽ đọc lại màn hình và thử một phần tử khác; nó không bao giờ gõ một cách mù quáng.
+- Nếu Play Protect chặn nội dung nào đó, nhân viên có thể cùng bạn xem qua cài đặt (xem Quyền).

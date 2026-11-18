@@ -1,0 +1,20 @@
+Outomatiese spilpunt
+Instellings → Stelsel → Outomatiseringspil. Elke knoppie vir wat ZYRAXON op sigself kan doen, is op een plek, in ses oortjies. Elke oortjie begin met 'n kort verduideliking van hoe dit werk.
+
+## Vaardighede
+Leer ZYRAXON 'n taak op twee maniere: vertel dit in klets ("leer hierdie taak"), of druk die rekordknoppie en doen die taak self in 'n ander toepassing, kom dan terug en druk Stop. Die Toeganklikheiddiens moet aan wees, anders kan jou krane nie gesien word nie. Wat dit geleer het, verskyn onder "Aangeleerde vaardighede" en kan oorgespeel of uitgevee word.
+
+## Autopilot
+Reëls van die soort "wanneer dit gebeur, doen dit". Wanneer die gebeurtenis gebeur, word ZYRAXON vanself wakker en doen die werk sonder om te vra. Jy kan ook 'n reël skep deur dit in klets te sê. Elke reël wys hoeveel keer dit geloop het.
+
+## Geld
+Lees die SMS van enige bank of beursie in enige land (PayPal, M-Pesa, UPI, Pix, bKash, kaarte …) en hou een grootboek van inkomste, besteding, fooie en balans. Jy kan 'n begroting opstel en 'n waarskuwing kry wanneer jy dit slaag. Dit werk op die telefoon, en niks word nêrens heen gestuur nie.
+
+## Tydlyn
+Alles wat ZYRAXON gedoen het, word hier geskryf. Lêerskryf, wysigings en skraps kan met een knoppie ongedaan gemaak word. 'n Opdrag wat uitgevoer is, kan nie ontdoen word nie.
+
+## Brein
+Soek jou lêers (teks, Word, Excel, PowerPoint, CSV) en, as jy dit toelaat, jou SMS, sonder die internet en in enige taal. Druk eers "Indeks", soek dan.
+
+## Bel agent
+Wanneer jy nie 'n oproep kan beantwoord nie, antwoord ZYRAXON, praat in die beller se eie taal, leer die naam en die rede, en gee jou 'n opsomming wanneer die oproep eindig. Vyftien tale gebruik vinnige ingeboude reëls; elke ander taal word deur die model hanteer, wat in die beller se taal antwoord. Woorde wat totsiens, dringend of strooipos beteken, word in alle tale gelyktydig verstaan. Opsommings van gevang oproepe word in die oortjie gelys.

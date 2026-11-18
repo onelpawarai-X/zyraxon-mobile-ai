@@ -1,0 +1,14 @@
+Modus: Agent og Build
+Det er to moduser, valgt med modusknappen ved siden av meldingsboksen. Valget består til du endrer det. Levende stemme er ikke en tredje modus; det er en talemåte du kan slå på i Innstillinger (se kapittelet Stemme).
+
+## Agent
+"Fullautomatisering av telefonen og systemet." Alt er åpent: lesing og kjøring av telefonens skjerm, åpne apper, anrop, meldinger, kamera, filer, terminalen og Linux, Git, forhåndsvisning, media, sub-agenter, MCP servere, ferdigheter, autopilot og mer. Velg Agent når du vil ha noe gjort på telefonen eller bare vil snakke.
+
+## Bygge
+"Fullstack-apper, nettsteder og automatisering." Agenten er en byggemotor: fra en kort linje lager den hele greia, kjører den, ser på den og viser den til deg. Den har filer, terminal, Git, forhåndsvisning, publisering, media, minne og gjøremålsbrettet. Telefonkontroll, underagenter og enhetslås tilhører agentmodus; Hvis du trenger dem i Build, bytt.
+- Landingsside eller nettsted: si hva det er for. Agenten bygger den med en gang, starter den på telefonen din og åpner den i forhåndsvisningspanelet og forteller deg hva den har laget. Den publiseres ikke med mindre du spør.
+- App: si hva du vil, og den bygger appen som du blir spurt om. En backend, database eller pålogging legges bare til hvis du ber om det.
+- Fullstack: når du ber om en backend eller database, stiller agenten deg først ett kort spørsmål om valgene (språk, database, pålogging, hvor den kjører), med anbefalingen, og bygger etter at du har svart.
+
+## Hva "spør" betyr
+Når agenten virkelig trenger avgjørelsen din, gjør den alt annet først, stiller ett kort spørsmål med sin anbefaling og venter. Svaret ditt fortsetter arbeidet der det stoppet.

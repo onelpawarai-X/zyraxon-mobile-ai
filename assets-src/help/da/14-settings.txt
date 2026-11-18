@@ -1,0 +1,42 @@
+Hver indstillingsskærm, én efter én
+Indstillinger har otte sektioner. Hvert afsnit har piller til sine underskærme. Den sidste sektion, du brugte, genåbnes næste gang.
+
+## 1. Sprog og oversættelse → App- og værktøjssprog
+Vælg sproget for hele appen og for agentens værktøjsmeddelelser. Søg på listen, og tryk på en. Skærmen viser det aktuelle sprog, og om UI-oversættelse og oversættelse af værktøjsmeddelelser er aktiveret. 60 sprog er tilgængelige. Se kapitlet Sprog.
+
+## 2. Stemme & mikrofon
+- Stemmeprofil: vælg kvindelig eller mandlig stemme, hastighed, tonehøjde, "Læs svar højt", Teststemme, tip til download af bengalsk stemme.
+- Mikrofon og sprog: genkendelsessprog, hold mikrofonen tændt, send automatisk, når du holder op med at tale.
+- Live stemme: tale-til-tale til/fra, status, listen over realtidsmodeller.
+
+## 3. Udbydere & API
+- AI-udbydere: dine egne API-nøgler (ZYRAXON, OpenCode gratis kvote, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) og ZYRAXON Apex cloud-agenten. En gemt nøgle verificeres ved at læse udbyderens rigtige katalog og viser modelantal eller den nøjagtige fejl. En knap åbner ZYRAXON-webstedet, hvor du opretter en nøgle.
+- GitHub: dit GitHub adgangstoken (kræver repo-omfang) til udgivelse, Git push- og pull-anmodninger. Gem token eller slet den; status viser, om den er indstillet.
+
+## 4. Opdateringer → App-opdatering
+Viser den aktuelle version, søger efter en nyere udgivelse, downloader den med en statuslinje og installerer den. Dine chats, hukommelse og indstillinger forbliver. Hvis Android har brug for tilladelse til at installere, åbner en knap denne indstilling.
+
+## 5. Model & identitet
+- Identitet: Vælg karakteren (se kapitlet Karakterer).
+- Model: det levende modelkatalog med et søgefelt, "Alle modeller" og "Tilpassede" filtre; hurtige modeller først.
+- På enheden: download, indlæs og aflæs modeller, der kører offline; sorteret små til store; valgfri Hugging Face token; viser indlæst, indlæsning og mislykket tilstand.
+
+## 6. Aura & tema
+- Tema: Horror, Dark eller Light.
+- Aura og baggrund: aurastilen og farven (blod, pink, violet, himmel, grøn, ild) med fin farvetonekontrol; aurastørrelse, glødstyrke, rotationshastighed, panelgennemsigtighed; det svævende øje (til/fra, design, skærmkant, stemmekommandoer/vågne ord, tilføj dine egne); skyggetilstand; tilpasset baggrunds-URL (mp4, gif eller billede); animationshastighed.
+
+## 7. Sikkerhed og privatliv
+- Applås: en adgangskode (4–8 cifre) eller et 3×3 prikmønster; bekræft ved at indtaste det to gange; fjerne låsen.
+- Tilladelser: listen i kapitlet Tilladelser med Play Protect hjælp.
+- Fortrolighed og data: alle data forbliver på telefonen. Knapper: slet al hukommelse, slet chathistorik, slet GitHub token.
+
+## 8. System
+Denne sektion har sin egen række af knapper, der ruller sidelæns, så intet bliver klemt.
+- Automatisering: Kun godkendelsesniveau og på enheden (se Godkendelsesniveauer).
+- Navigation: en liste over områder at springe til - "ingen knapper øverst, alt er her" - inklusive ⌘ ZX-systemskallen, en "Ny session"-knap (sletter chathistorikken for en ren start), beskedantal og mikrofonen.
+- Hukommelse: den lokale SQL hukommelse med de fakta ZYRAXON husker; tilføje en nøgle og værdi; slette alle.
+- Færdighedsguide: en hurtig liste over eksempler på evner (beskedapps, opbygning af websteder, skærmlæser, lommelygte, kamera, Wi-Fi og indstillinger) med eksempler på sætninger.
+- Automation hub: færdigheder, autopilot, penge, tidslinje, hjerne og opkaldsagenten på ét sted (se Automation hub).
+
+## 9. Dokumentation
+Dens egen sektion i Indstillinger, adskilt fra System. Denne vejledning: 21 kapitler, et søgefelt og en række med sprogchips. Hvert sprog i appen er allerede skrevet fuldt ud inde i appen - intet er oversat på din telefon, og der er ikke brug for internet for at læse det.

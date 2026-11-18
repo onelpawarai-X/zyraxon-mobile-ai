@@ -1,0 +1,11 @@
+Gambar, audio, video, dokumen dan desain
+- `generate_image` (jaringan): membuat gambar dari deskripsi (tulis dengan detail; bahasa Inggris paling cocok). Itu muncul di obrolan dengan tombol bagikan. Untuk beberapa, mintalah beberapa.
+- `generate_audio` (jaringan): audio lisan (.mp3) dari teks apa pun. Untuk dialog atau cerita, berikan suaranya masing-masing pada setiap bagian (jenis kelamin, usia, bahasa, nada). Banyak bahasa, termasuk Bengali, Hindi dan Inggris.
+- `generate_video`: video nyata yang diedit (bukan rekaman AI) dari adegan — gambar, klip, teks, warna, narasi, keterangan, musik. `ffmpeg`: pengeditan langsung apa pun — potong, gabung, overlay, subtitle, kecepatan, campuran audio, konversi. Video berdurasi 5–10 menit dapat dibuat, dibuat langkah demi langkah.
+- Kemajuan ditampilkan secara langsung sebagai persentase dalam obrolan; setelah selesai file tiba dengan tombol Putar dan Bagikan.
+- `make_document`: file Word (.docx), Excel (.xlsx) atau PowerPoint (.pptx) asli di ponsel, tidak perlu instalasi, bahasa apa pun. `office_template`: kertas kantor siap pakai yang harus diisi (lamaran cuti, lamaran pekerjaan, faktur, CV, proposal bisnis, kutipan, pemberitahuan, notulensi rapat, kontrak, rekening bulanan, dan banyak lagi).
+- Dokumen dari foto: lampirkan foto (Pemindaian dokumen). Teks disalin persis seperti yang tertulis (kata-kata yang tidak jelas ditandai), tabel menjadi .xlsx, sebaliknya .docx.
+- Catatan rapat: dari audio, transkrip, atau apa pun yang Anda katakan. Dokumen tersebut memiliki ringkasan, keputusan, item tindakan (tugas, pemilik, tanggal jatuh tempo) dan draf email siap pakai.
+- `make_design`: poster, spanduk, logo, kartu, cerita, sampul dalam format PNG dan PDF. `brand_kit`: memberi logo atau warna; semuanya disimpan, tema aplikasi berubah, dan sejak saat itu dokumen, slide, dan situs menggunakan warna merek Anda.
+- `present_slides`: karakter berbicara saat kartu slide ditampilkan; slide berubah dengan sendirinya ketika suara selesai. Mintalah file .pptx jika Anda menginginkan file.
+- `open_file`: membuka apa yang dibuat di aplikasi ponsel yang sebenarnya (Word/Dokumen, Spreadsheet, Slide, PDF, galeri, browser) atau di panel Pratinjau; agen memeriksa layar untuk memastikannya terbuka.

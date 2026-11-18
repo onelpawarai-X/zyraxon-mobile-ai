@@ -1,0 +1,14 @@
+Mod: Ejen dan Bina
+Terdapat dua mod, dipilih dengan butang mod di sebelah kotak mesej. Pilihan kekal sehingga anda mengubahnya. Suara langsung bukan mod ketiga; ia adalah satu cara bercakap yang anda boleh hidupkan dalam Tetapan (lihat bab Suara).
+
+## ejen
+"Automasi penuh telefon dan sistem." Semuanya terbuka: membaca dan memandu skrin telefon, membuka apl, panggilan, mesej, kamera, fail, terminal dan Linux, Git, pratonton, media, sub-ejen, MCP pelayan, kemahiran, autopilot dan banyak lagi. Pilih Ejen apabila anda mahu sesuatu dilakukan pada telefon anda atau mahu bercakap sahaja.
+
+## bina
+"Apl tindanan penuh, tapak web dan automasi." Ejen ialah enjin binaan: daripada garisan pendek ia menjadikan semuanya, menjalankannya, melihatnya dan menunjukkannya kepada anda. Ia mempunyai fail, terminal, Git, pratonton, penerbitan, media, memori dan papan todo. Kawalan telefon, sub-ejen dan kunci peranti tergolong dalam mod Ejen; jika anda memerlukannya dalam Binaan, tukar.
+- Halaman pendaratan atau tapak web: nyatakan untuk kegunaannya. Ejen membinanya sekali gus, memulakannya pada telefon anda dan membukanya dalam panel Pratonton, kemudian memberitahu anda apa yang dibuatnya. Ia tidak diterbitkan melainkan anda bertanya.
+- Apl: sebutkan apa yang anda mahu dan ia membina apl seperti yang diminta. Bahagian belakang, pangkalan data atau log masuk hanya ditambahkan jika anda memintanya.
+- Timbunan penuh: apabila anda meminta bahagian belakang atau pangkalan data, ejen mula-mula bertanya kepada anda satu soalan ringkas tentang pilihan (bahasa, pangkalan data, log masuk, tempat ia dijalankan), dengan cadangannya dan binaan selepas anda menjawab.
+
+## Maksud "bertanya".
+Apabila ejen benar-benar memerlukan keputusan anda, ia melakukan segala-galanya terlebih dahulu, bertanya satu soalan ringkas dengan cadangannya, dan menunggu. Jawapan anda meneruskan kerja dari tempat ia berhenti.

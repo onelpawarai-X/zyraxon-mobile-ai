@@ -1,0 +1,34 @@
+Tālruņa automatizācijas rīki
+Aģents kontrolē jūsu tālruni, izmantojot rīkus. Jūs nekad tos nesaucat pats; jūs sakāt, ko vēlaties, un aģents izvēlas instrumentus. Šajā nodaļā ir uzskaitīti visi rīki, kas pieskaras tālrunim, un tas, kā tas tiek aizsargāts (skatiet Apstiprinājuma līmeņus: drošs, personisks, sistēma).
+
+## Atvēršana un atrašana
+- `open_app` (Drošs): atveriet jebkuru instalēto lietotni pēc nosaukuma vai pakotnes. `list_apps` (Drošs): instalēto lietotņu saraksts. `open_settings` (Drošs): atveriet sistēmas iestatījumu lapu (pieejamība, pārklājums, paziņojumi, lietotnes, Wi-Fi, akumulators, Play Protect). `launch_url` (Drošs): atveriet saiti pārlūkprogrammā. `youtube_play` (Drošs): meklēšanas rezultātos atveriet YouTube un atskaņojiet to.
+
+## Redzot ekrānu
+- `read_screen` (Personiski): nolasa katru tekstu un elementu ekrānā ar pieskārienu pozīcijām. `screen_shot` (Personisks): īsts ekrānuzņēmums. Tiem ir nepieciešama pieejamības atļauja.
+- `look_camera` (Personiski): uzņem vienu fotoattēlu ar kameru un skatās tajā. `read_media` (Personisks): nolasa attēlu, audio vai video (no ceļa vai saites), lai modelis varētu to saprast.
+
+## Darbošanās uz ekrāna
+- `tap` (Personiski): pieskarieties punktam. `tap_text` (Personisks): pieskarieties elementam ar šo etiķeti, kas ir drošāks par koordinātām. `swipe` (Personisks): ritināšanas vai atpakaļgaitas žests. `type_text` (Personisks): ierakstiet fokusētajā laukā. `press_key` (Personiski): atpakaļ, mājas lapa, jaunākie, paziņojumi, ātrie iestatījumi, bloķēšana.
+- Ekrāna darbības tiek izpildītas pa vienai secībā, un pēc katras aģents apskata jauno ekrānu.
+
+## Tālrunis, ziņas un starpliktuves
+- `call_dial` (Personiski): veiciet zvanu pēc numura vai kontaktpersonas vārda. `call_state` (Personiski): vai zvans zvana vai ir aktīvs? `call_answer` (Personiski): atbilde. `call_hangup` (Personiski): nolieciet klausuli.
+- `read_sms` (Personiski): lasiet jaunāko SMS, piem. OTP kods; var filtrēt pēc teksta vai sūtītāja.
+- `clipboard_read` un `clipboard_write` (personiski): lasiet vai rakstiet starpliktuvē.
+- `notify` (Personisks): ievietojiet īstu Android paziņojumu. `share` (Personiski): atveriet koplietošanas lapu ar tekstu, saiti vai failu. `channel_post` (Sistēma): atveriet Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail vai SMS ar iepriekš aizpildītu tekstu, gatavs nosūtīšanai.
+
+## Statusa un sistēmas fakti
+- `network_status` (drošs): tiešsaistē vai nē, Wi-Fi vai mobilie dati, Wi-Fi vārds. `sys_info` (Drošs): Android versija, modelis, centrālais procesors, operatīvā atmiņa, krātuve, pašreizējā lietotne. `platform_info` (Drošs): kur darbojas aģents. `process_list` (Drošs): darbojas procesi.
+
+## Atļaujas un ekrāns
+- `request_permission` (Drošs): atver sistēmas atļauju dialoglodziņu ar vienu pieskārienu, ja rīks neizdodas iegūt atļauju. `device_lock` (Sistēma): reāli bloķējiet ekrānu vai iestatiet atļauju, kas to padara iespējamu. `floating_bubble` (Personiski): ieslēdz vai izslēdz peldošo lodi.
+- `voice_change` (Personiski): mainiet runas ātrumu, augstumu vai dzimumu. `live_voice` (Sistēma): ieslēdz vai izslēdz tiešās runas pārvēršanas runā režīmu.
+
+## Interfeisa palīgi
+- `code_box` un `files_panel`: atveriet tiešā koda lodziņu vai failu pārlūkprogrammu, lai skatītos darbu. `todo_write`: tiešraides uzdevumu panelis.
+
+## Padomi
+- Varat ķēdē: "Atveriet iestatījumus, atrodiet Wi-Fi un pasakiet man tīkla nosaukumu". Aģents nolasa ekrānu pēc katra soļa un izlemj nākamo.
+- Ja pieskāriens neko nedara, aģents vēlreiz nolasa ekrānu un izmēģina citu elementu; tas nekad nepieskaras akli.
+- Ja Play Protect kaut ko bloķē, aģents var kopā ar jums veikt iestatījumus (skatiet sadaļu Atļaujas).
