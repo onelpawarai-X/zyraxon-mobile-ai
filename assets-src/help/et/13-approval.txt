@@ -1,0 +1,23 @@
+Automaatika heakskiitmise tasemed ja ohutus
+Seadistused → Süsteem → Automatiseerimine. See otsustab, kui palju agent võib teha, enne kui see peatub ja küsib teilt. Säte jõustatakse koodis igal tööriistakutsel; mudel ei saa seda laiendada.
+
+## Neli taset
+Muutke taset jaotises Seaded → Süsteem → Automatiseerimine. Iga tase otsustab, millal agent peatub ja küsib, ning ka selle, kui rangelt sisukilp (vt Turvalisus ja privaatsus) käsitleb teksti, mida agent väljastpoolt loeb.
+1. Täielik küsimine (lukustatud): küsib enne kõike, mis muudab telefoni, olgu see siis väike. Kõige turvalisem. Content Shield on range: igasugune kahtlane tekst loetakse vaenulikuks. Kasutage seda jagatud telefonis või millegi uue testimise ajal.
+2. Juhendatud (vaikimisi): küsib enne süsteemseid ja isiklikke toiminguid ning teeb tavatööd (lugemine, avamine, otsimine, ehitamine) ise. Content Shield on standardne: kahtlane tekst on piiratud andmetena ja kui tekst on selgelt vaenulik, küsib iga muutmistööriist teilt ülejäänud pöörde.
+3. Tasakaalustatud: küsib ainult enne süsteemitaseme toiminguid (shell, kustutamine, avaldamine, ajastamine jne). Isiklikud toimingud, nagu sõnumid, puudutused ja tippimine, käivad üksi. Sisukilp on kerge: see toimib ainult selgelt vaenuliku teksti puhul ja siis lõpetavad küsimise ainult süsteemitaseme tööriistad.
+4. Täielik automatiseerimine: ei küsi kunagi ega peatu. Kõik jookseb otse läbi ja Content Shield lülitatakse täielikult välja – midagi ei skannita, ei märgita, eemaldata ega muudeta. See on automatiseerimine selle täies tähenduses: risk on teie enda kanda.
+
+## Kolm tööriistade taset
+- Ohutu (ei küsi kunagi ühelgi tasemel): failide, mälu, dokumentide, kujunduste, oleku, rakenduste ja failide avamine, ootamine, oskused/autopiloot/ajaskaala/kõneloendid, ajuotsing, lugemine ja loetlemine.
+- Isiklik (küsitakse kahel esimesel tasemel): SMS, kõned, kaamera, ekraani lugemine, puudutused ja tippimine, lõikelaud, allalaadimised, märguanded, jagamine, hääle muutmine, oskuste kordus, raharaamat, kõneagent, ajaskaala tagasivõtmine.
+- Süsteem (küsitakse igal tasemel, välja arvatud täielik automatiseerimine): kest, Linux, järgud, avaldamine, kustutamine, seadme lukustus, ajastamine, Git ja GitHub, ffmpeg, seadmesisene mudel, kanalitesse postitamine, autopiloodi reeglid, kustutamisoskused, Shizuku. Kõiki tööriistu, mida rakendus ei tunne – sealhulgas MCP tööriistu – käsitletakse süsteemina.
+
+## Kinnituskaart
+Kui tööriist vajab teie heakskiitu, on kaardil kirjas "Luba on vaja", teatatakse teile, mida agent teha tahab, näitab selle taset (turvaline, isiklik või süsteemne) ja pakub "Jah, käivitage see" või "Ei, hoia see väljas". Kaart tuletab teile ka meelde, et saate muuta, kui sageli seda küsitakse jaotises Seaded → Automatiseerimine.
+
+## Ainult seadmes
+Kui see on sisse lülitatud, ei lahku telefonist midagi: töötavad ainult seadmes olev mudel ja kohalikud tööriistad. Kõigist võrgutööriistadest (otsing, toomine, üleslaadimine, avaldamine, GitHub, meedia genereerimine, MCP, pilvemudelid) keeldutakse koodis.
+
+## Esimene käivitamisteade
+Esimest korda selgitab ZYRAXON, et agent saab teie telefonis tegutseda ja kus lubad sisse lülitada. Vajutage "Selge, alusta".

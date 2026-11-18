@@ -1,0 +1,35 @@
+Rödd: tala, hlusta og lifandi tala
+## Hlustun (hljóðnemi)
+Stillingar → Rödd og hljóðnemi → Hljóðnemi og tungumál.
+- Talgreiningartungumál: tungumálið sem þú talar við hljóðnemann. Breyttu því hvenær sem er.
+- Haltu hljóðnemanum á (alltaf að hlusta): þegar kveikt er á honum er hljóðneminn opinn. Þegar slökkt er á því kveikirðu á því sjálfur.
+- Senda sjálfkrafa þegar þú hættir að tala: eftir um 1,5 sekúndna þögn er setningin þín send af sjálfu sér. Þegar slökkt er á því bíða orðin í reitnum þar til þú ýtir á Senda.
+- Hljóðnemihnappurinn á skilaboðastikunni og borðinn efst gera það sama kveikt og slökkt.
+- Hljóðneminn er alltaf opinn fyrir þig, jafnvel á meðan ZYRAXON talar. Um leið og þú byrjar að tala hættir það og hlustar og svarar þér síðan. Eigin rödd sem kemur aftur í gegnum hljóðnemann er síuð út með því að bera textann saman við síðasta svar hans.
+- Dómur er aðeins send einu sinni. Ef sá sem þekkir síðar endurtekur örlítið aðra útgáfu af sömu setningu, fellur hún niður sem sama beygja.
+
+## Tal (texti í tal)
+Stillingar → Radd og hljóðnemi → Raddsnið.
+- Veldu rödd: kvenkyns (sæt og rómantísk) eða karlkyns (djúp og sjálfsörugg). Eigin raddir vefsíðunnar eru notaðar þegar þær eru tilbúnar; Talvél símans sjálfs er bakhliðin.
+- Hraða og tónhæð renna, og "Próf rödd".
+- „Lestu svör upphátt“ kveikir eða slökkir á tal.
+- Ef síminn er ekki með talvél skaltu setja upp Google talþjónustu. Ef síminn hefur engin bengalsk raddgögn, gerir hnappur þér kleift að hlaða þeim niður.
+- Pikkaðu á talandi borðann til að stöðva röddina. Pikkaðu á Hlusta undir hvaða skilaboðum sem er til að heyra þau.
+- ZYRAXON les aldrei kóða, tengla, JSON eða verkfæranöfn upphátt.
+
+## Raddrannsóknarstofa (raddskipti)
+Veldu úr vörulista þjónsins eftir kyni (allt, stelpa, drengur), aldri (barn, unglingur, fullorðinn, eldri) og tungumál (bengalska, hindí, enska, úrdú, arabíska, tamílska, nepalska, spænska, franska, þýska, japanska, kóreska, kínverska, rússneska, tyrkneska ...). "Hlustaðu" forskoðar rödd; „Aftur í sjálfgefið“ endurheimtir rödd persónunnar. Spurðu umboðsmanninn fyrir hljóð með mörgum röddum: hver hluti samræðunnar fær sína eigin rödd.
+
+## Lifandi rödd (tal í tal)
+Stillingar → Rödd og hljóðnemi → Lifandi rödd. Með rauntímalíkani (Gemini Live, OpenAI Rauntíma og álíka) heyrir líkanið hljóðnemann og svarar með sinni eigin rödd, í einum straumi og þú getur truflað hann í miðju orði. Slökkt er á eigin tali símans í þessari lotu svo þú heyrir aldrei tvær raddir.
+- Notaðu eigin rödd líkansins: on = lifandi tala; slökkt = síminn les textasvör.
+- Staða sýnir: að tengjast, hlusta, tala, bíða.
+- Ef þú velur rauntíma líkan kveikir það af sjálfu sér.
+- Ef ekkert rauntímalíkan er hlaðið skaltu bæta við Gemini eða OpenAI lykli í gervigreindarveitum.
+- Röddin sem þú valdir í raddsniðinu er líka notuð í beinni stillingu.
+
+## Fljótandi auga
+Stillingar → Aura og þema → Aura og bakgrunnur.
+- Lítill fljótandi hnöttur sem situr yfir öðru hverju forriti. Bankaðu til að kveikja eða slökkva á hljóðnemanum; ýttu lengi á til að opna textareit og loka honum aftur.
+- Átta hönnun: auga, ljómahnöttur, neonhringur, vetrarbraut, sporbraut, plasma, pulsar, prisma. Staðsetning á brún skjásins.
+- Raddskipanir (vökuorð): þegar appið er í bakgrunni vekur það að segja nafnið fljótandi augað og ZYRAXON svarar. Sjálfgefið: „zyraxon“, „hey zyraxon“ og algengar stafsetningar á bengalsku og ensku. Bættu við þínum eigin orðum á hvaða tungumáli sem er; fjarlægðu þau hvenær sem er.

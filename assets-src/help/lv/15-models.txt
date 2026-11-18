@@ -1,0 +1,15 @@
+Pakalpojumu sniedzēji, modeļi un atslēgas
+## Pakalpojumu sniedzēji
+ZYRAXON (paša līnija un Apex mākoņa aģents, vienmēr savienots), OpenCode (bezmaksas kvota), Groq (ļoti ātra Lama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek un OpenRouter. Pievienojiet jebkuru atslēgu sadaļā Iestatījumi → Providers & API. Atslēga tiek saglabāta tālrunī, salīdzināta ar pakalpojumu sniedzēja katalogu, un modeļi tiek straumēti atlasītājā, kad katrs pakalpojumu sniedzējs atbild.
+
+## Modeļa izvēle
+Izmantojiet modeļa pogu ziņojumu joslā vai Iestatījumi → Modelis un identitāte → Modelis. Meklējiet pēc nosaukuma, filtrējiet All vai Custom. Jūsu izvēle tiek saglabāta un atjaunota palaišanas laikā; atsvaidzināšana nekad neaizstāj jūsu saglabāto modeli. Modeļi ar atzīmi Tiešraide var runāt savā balsī (skatiet Tiešraides balsi).
+
+## Modeļi ierīcē
+Iestatījumi → Modelis un identitāte → Ierīcē. Modelis darbojas tālrunī, neatstājot datus. Faili ir lieli (no simtiem MB līdz dažiem GB), tāpēc lejupielādējiet to vietnē Wi-Fi. Tie ir uzskaitīti no maziem līdz lieliem; tālrunī ar mazu operatīvo atmiņu izvēlieties vieglāko. Rīku izsaukšanu atbalsta Gemma un FunctionGemma komplekti. Hugging Face marķieris ir paredzēts tikai ierobežotiem failiem. Ielādētie modeļi tiek atcerēti.
+
+## Vietne ZYRAXON
+zyraxonai.lovable.app: izveidojiet kontu (e-pasts vai Google), atveriet Settings, API Key/ Access Token, izveidojiet atslēgu un ielīmējiet to lietotnē. Bez atslēgas joprojām varat izmantot lietotni ar ierīces modeļiem un vietējiem rīkiem.
+
+## Izmaksas un dati
+Mākoņu pakalpojumu sniedzēji maksā jums saskaņā ar saviem noteikumiem. Ja ir ieslēgta opcija “Tikai ierīcē”, nekas netiek nosūtīts nevienam pakalpojumu sniedzējam.

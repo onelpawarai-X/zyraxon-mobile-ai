@@ -1,0 +1,23 @@
+Hyväksyntätasot ja automaation turvallisuus
+Asetukset → Järjestelmä → Automaatio. Tämä päättää, kuinka paljon agentti voi tehdä ennen kuin se pysähtyy ja kysyy sinulta. Asetus pakotetaan koodiin jokaisessa työkalukutsussa; malli ei voi laajentaa sitä.
+
+## Neljä tasoa
+Muuta tasoa kohdassa Asetukset → Järjestelmä → Automaatio. Jokainen taso päättää, milloin agentti pysähtyy ja kysyy, ja myös kuinka tarkasti Content Shield (katso Turvallisuus ja yksityisyys) käsittelee tekstiä, jonka agentti lukee ulkopuolelta.
+1. Täysi kysymys (Lukittu): kysyy ennen kaikkea, mikä muuttaa puhelimen, oli se kuinka pieni tahansa. Turvallisin. Sisältösuoja on tiukka: kaikki epäilyttävät tekstit lasketaan vihamielisiksi. Käytä sitä jaetussa puhelimessa tai kun testaat jotain uutta.
+2. Valvottu (oletus): kysyy ennen järjestelmän ja henkilökohtaisia ​​toimia ja tekee tavalliset työt (lukee, avaa, etsii, rakentaa) itse. Content Shield on vakio: epäilyttävä teksti on suojattu dataksi, ja kun teksti on selvästi vihamielistä, jokainen muuttuva työkalu kysyy sinulta käännöksen loppua.
+3. Tasapainotettu: kysyy vain ennen järjestelmätason toimintoja (kuori, poistaminen, julkaisu, ajoitus…). Henkilökohtaiset toiminnot, kuten viestit, napautukset ja kirjoittaminen, suoritetaan yksin. Content Shield on kevyt: se vaikuttaa vain selvästi vihamieliseen tekstiin, ja sitten vain järjestelmätason työkalut pysähtyvät kysymään.
+4. Täysi automaatio: ei koskaan kysy eikä pysähdy. Kaikki menee suoraan läpi, ja Content Shield -toiminto kytkeytyy kokonaan pois päältä – mitään ei skannata, merkitty, poistettu tai muutettu. Tämä on automatisointia täydessä merkityksessä: sinä omistat riskin.
+
+## Kolme työkalutasoa
+- Turvallinen (ei koskaan kysy millään tasolla): tiedostojen, muistin, asiakirjojen, mallien, tilan, sovellusten ja tiedostojen avaaminen, odottaminen, taidot/autopilotti/aikajana/soittolistat, aivohaku, lukeminen ja luetteloiminen.
+- Henkilökohtainen (kysytään kahdella ensimmäisellä tasolla): tekstiviestit, puhelut, kamera, näytön lukeminen, napautukset ja kirjoittaminen, leikepöytä, lataukset, ilmoitukset, jakaminen, äänen vaihto, taitojen toisto, rahakirjanpito, soittoagentti, aikajanan kumoaminen.
+- Järjestelmä (kysytään kaikilla tasoilla paitsi Täysi automaatio): komentotulkki, Linux, koontiversiot, julkaisu, poistaminen, laitteen lukitus, ajoitus, Git ja GitHub, ffmpeg, laitteessa oleva malli, lähettäminen kanaville, autopilotin säännöt, poistamistaidot, Shizuku. Kaikki työkalut, joita sovellus ei tunnista – mukaan lukien MCP työkalut – käsitellään järjestelmänä.
+
+## Hyväksyntäkortti
+Kun työkalu tarvitsee hyväksynnän, kortissa lukee "Lupa tarvitaan", kertoo, mitä agentti haluaa tehdä, näyttää sen tason (turvallinen, henkilökohtainen tai järjestelmä) ja tarjoaa "Kyllä, suorita" tai "Ei, pidä se pois päältä". Kortti muistuttaa myös, että voit muuttaa sitä, kuinka usein tätä kysytään kohdassa Asetukset → Automaatio.
+
+## Vain laitteella
+Kun virta on päällä, puhelimesta ei poistu mitään: vain laitteessa oleva malli ja paikalliset työkalut toimivat. Kaikki verkkotyökalut (haku, nouto, lataukset, julkaisu, GitHub, median luominen, MCP, pilvimallit) evätään koodissa.
+
+## Ensimmäinen käynnistysilmoitus
+Ensimmäisellä kerralla ZYRAXON selittää, että agentti voi toimia puhelimessasi ja missä oikeudet otetaan käyttöön. Paina "Selvä, aloita".

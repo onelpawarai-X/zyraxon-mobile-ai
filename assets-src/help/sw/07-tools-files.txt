@@ -1,0 +1,27 @@
+Faili, terminal na mfumo
+## Faili
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Salama): soma, orodhesha, tafuta kwa muundo wa majina, na utafute maandishi ndani ya faili.
+- `write_file`, `edit_file`: kuunda au kubadilisha faili. `edit_file` hufanya yote: faili mpya, kuandika upya kamili, au kutafuta-na-kubadilisha haswa; msimbo unaonekana moja kwa moja kwenye gumzo. `delete_file` (Mfumo): futa faili au folda.
+- Folda yoyote inaruhusiwa (/sdcard, Pakua, Hati, kadi ya SD ...). Toa njia kamili na inatumika kama ilivyoandikwa.
+- Wakala hufungua inachotengeneza: `open_file` (Salama) hufungua faili katika programu halisi ya simu, au ndani ya onyesho la kukagua ZYRAXON.
+
+## Vituo (mbili halisi)
+- android: shell ya simu yenyewe (busybox plus `sh`), ndani ya sandbox ya programu. `run_shell` (Mfumo) huendesha amri hapo, bila kuonekana.
+- linux: ZYRAXON mfumo kamili wa Unix, uliojengwa ndani ya programu: bash, apt/pkg, real git, python, nodi, clang. Inafanya kazi nje ya mtandao. `linux_run` (Mfumo) huendesha amri hapo.
+- `terminal_run` (Mfumo): huendesha laini kwenye kichupo cha Kituo unachotazama, ili uweze kuiona ikifanya kazi na kuchukua nafasi. Tumia shell android au linux. `terminal_open` huleta kichupo cha Kituo mbele (unapouliza tu).
+- `system_shell` (Mfumo): amri ya kiwango cha mfumo, juu ya sanduku la mchanga la programu, jinsi shell ya mfumo hufanya; na Shizuku au mzizi inaweza kufikia mbali zaidi.
+- Hakuna kikomo cha muda chaguo-msingi; kubwa `apt upgrade` au ujenzi huendelea hadi mwisho.
+
+## Shizuku (ufikiaji wa mfumo)
+`setup_shizuku` (Mfumo) husanidi Shizuku, zikiwa zimeunganishwa ndani ya ZYRAXON: angalia hali, sakinisha, fungua, omba ruhusa. Ni wewe tu unaweza kugusa Sakinisha na Ruhusu; wakala anakuambia hatua katika mstari mmoja na hufanya mengine.
+
+## Kazi ndefu na muda
+- `background_command` (Mfumo): amri inayoendelea kufanya kazi baada ya kufunga programu (upakuaji mkubwa, linganisha, unda), kwa arifa na kitufe cha Komesha.
+- `schedule_command` (Mfumo): endesha amri kwa wakati halisi ("katika dakika 10", "saa 2 asubuhi"); Android hushikilia kipima muda, kwa hivyo hutumika huku programu ikiwa imefungwa.
+- `wait` (Salama): subiri kwa makusudi (sekunde, hadi mlango ufunguke, faili ionekane, amri ikamilike) badala ya kubahatisha.
+
+## Linux matumizi
+Sakinisha vifurushi (`apt install …`), endesha hati Python au Node, kusanya C, tumia git, endesha seva, zip na unzip, curl, ffmpeg. Mfumo hupakuliwa kwa utulivu wakati programu inapoanza na kubaki kwenye kuwashwa tena.
+
+## Skrini ya terminal
+Kichupo cha terminal ni terminal halisi iliyo na kichupo cha ⌘ ZX. Andika amri zako mwenyewe au tazama za wakala. Skrini ya Kuelekeza kwenye Mipangilio ina njia ya mkato ya ganda la mfumo na kitufe cha "Kipindi kipya" ambacho hufuta historia ya gumzo ili kuanza upya.

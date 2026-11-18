@@ -1,0 +1,7 @@
+Aktualizacje
+Ustawienia → Aktualizacje → Aktualizacja aplikacji lub baner u góry aplikacji.
+- Aplikacja sprawdza dostępność nowych wersji i wyświetla komunikat „Dostępna jest nowa aktualizacja — wersja”.
+- Sprawdź aktualizacje: pyta teraz. Jeśli jesteś na bieżąco, tak jest napisane.
+- Pobierz i zainstaluj: pobieranie z procentem. Po zakończeniu naciśnij Instaluj. Twoje czaty, pamięć i ustawienia pozostają.
+- Jeśli Android blokuje instalację, naciśnij przycisk pozwolenia, zezwól na ZYRAXON jako źródło instalacji, a następnie spróbuj ponownie.
+- Przyciski banera: Pobierz, Zainstaluj, Zezwól i Zamknij.

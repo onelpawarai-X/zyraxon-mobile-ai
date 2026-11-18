@@ -1,0 +1,18 @@
+Personaje (identitate)
+Setări → Model și identitate → Identitate. Personajul pe care îl alegeți decide vocea, căldura și modul de a vorbi. Agentul vorbește ca acea persoană, în limba pe care o vorbești și nu se numește niciodată program.
+
+- Iubita: dulce, caldă și iubitoare, cu nume de animale de companie naturale în limba ta. Voce feminină.
+- Iubit: profund, cald, de încredere și grijuliu. Voce masculină.
+- Prieten: plin de viață, modern și amuzant, mereu de partea ta.
+- Super asistent: profesionist, scurt si exact.
+- Specialist cibernetic: un inginer senior concis și persoană de securitate.
+- Filosof: mentor calm, prevăzător.
+
+## Vocea urmează personajul
+Iubitul vorbeste cu o voce masculina; orice alt personaj vorbește cu o voce feminină. Dacă alegeți singur o voce în Setări → Profil vocal, alegerea dvs. este păstrată până la următoarea schimbare sau lansare a caracterului.
+
+## Ce se schimbă personajul
+Ton, vocabular, apropiere și felul în care îi pasă de tine. Nu schimbă niciodată regulile despre adevăr, siguranță și desfășurarea corectă a muncii.
+
+## Întotdeauna adaptându-se
+Agentul îți citește starea de spirit și ora din zi, își amintește micile lucruri pe care i le-ai spus și răspunde în limba ta, într-un mod scurt și natural.

@@ -1,0 +1,21 @@
+Wolk, netwerk, modelle en helpers
+## Wolk en die internet
+- `web_search` (netwerk): soek die regte web. `read_url` (netwerk): haal 'n bladsy as teks. `http_request` (netwerk): enige HTTP-oproep (GET, POST, PUT, PATCH, DELETE) met opskrifte en liggaam. `verify_url` (netwerk): kyk of 'n skakel werklik bestaan ​​en kry die ware status. `download_file` (Persoonlik, netwerk): laai 'n URL af na 'n lêer.
+- Die agent maak slegs skakels oop wanneer jy dit vra.
+- KI-modelle loop in die wolk deur die verskaffers wat jy bygevoeg het (ZYRAXON, ZYRAXON Apex wolkagent, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Die modellys laai regstreeks en vul soos elke verskaffer antwoord.
+- Bou-, publisering- en trekversoeke loop deur GitHub en Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Skakel "slegs op toestel" (outomatiseringsinstellings) aan en geen wolkoproep word glad gemaak nie: geen verskaffer, geen web, geen oplaai nie.
+
+## MCP bedieners
+MCP laat eksterne dienste die agent ekstra gereedskap gee. Koppel Canva, Cloudflare, Supabase, GitHub of jou eie bediener deur sy adres (opsionele teken). Gekoppelde bedieners se gereedskap sluit by die agent se nutsmiddellys aan as `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (sien wat gekoppel is en watter gereedskap bestaan), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (kyk 'n hulpbron vir veranderinge), `mcp_complete` (outovoltooi-argumente), `mcp_ping`, `mcp_log_level`. Hul oproepe is netwerkoproepe, en onbekende MCP-nutsgoed vra by verstek toestemming.
+- Die MCP-skerm lys elke bediener met Gekoppelde status, sy gereedskap, hulpbronne en spoedsjablone, en Voeg by, Ontkoppel, Verwyder, Laat toe-knoppies.
+
+## Sub-agente
+`sub_agent` (Stelsel): gee dele van 'n groot werk aan helper-agente wat in die agtergrond hardloop. Aksies: spawn, status, lys, resultaat, boodskap, stop, wag. Elkeen kan sy eie model gebruik. Die agent kombineer en kontroleer hul resultate voordat hy sê "klaar".
+
+## Op-toestel model
+`on_device_model` (Stelsel): lys, laai en hardloop 'n taalmodel wat op die telefoon leef, sonder internet. In Instellings → Model en identiteit → Op die toestel laai jy modelle af (klein tot groot: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); 'n Hugging Face-token is opsioneel en slegs nodig vir omheinde lêers. ’n Gelaaide model word onthou en herlaai by bekendstelling.
+
+## Boodskapkanale
+`channel_post` (Stelsel) maak Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail of SMS oop met jou teks gereed. Jy druk self stuur.

@@ -1,0 +1,27 @@
+Tippek és példakérések
+## Azt mondd, amit akarsz, ne hogyan
+- "Készítsen céloldalt egy edzőteremhez, legyen sötét és merész."
+- "Felkészíts egy full-stack foglalási alkalmazást adatbázissal." (az ügynök először a technikai lehetőségeket kérdezi)
+- "Nyissa meg a YouTube-ot, és játsszon le egy nyugodt dalt."
+- "Görgessen le, és nyissa meg az első eredményt."
+- "Mi az akkumulátorom és a Wi-Fi?"
+- "Olvassa el a legújabb SMS-emet, és mondja meg a kódot."
+- – Hívd fel anyát. / "Válassza a hívást."
+- – Készítsen önéletrajzot ebből a fényképből. (csatolja)
+- "A megbeszélésről készült felvételt teendőket tartalmazó jegyzetekké alakítsd."
+- – Ezekkel a színekkel készíts plakátot a pénteki rendezvényre.
+- "Készítsen audio párbeszédet két barát, egy fiú és egy lány között."
+- – Ne feledje, hogy a húgom születésnapja május 3-án van.
+- "Minden reggel 8-kor mondd meg az időjárást." (robotpilóta)
+- "Tudja meg, hogyan küldhetem el a bérleti díjat a Wallet alkalmazáson keresztül, hogy újra megtehesse." (készség)
+- "Visszavonja, amit a projekt mappájában tett." (idővonal)
+- – Hol van a bérleti szerződésem? (agy)
+- "Telepítse a python csomagokat, és futtassa ezt a szkriptet." (Linux)
+- "Tegye közzé ezt az oldalt, hogy megoszthassam." (nyilvános link)
+
+## Szokások, amelyek segítenek
+- Rövid és tiszta ütemű hosszú. Az ügynök kiválasztja az alapértelmezett értékeket, és elmondja, mit választott.
+- Amikor egy kérdést tesz fel, válaszoljon rá, és ugyanonnan folytatódik.
+- Mondja, hogy „magyarázza” vagy „összefoglaló” a részletes válaszért; különben a válaszok rövidek.
+- Bármikor megbeszélheted. Megáll és hallgat.
+- Használja a Build módot a dolgok elkészítéséhez és az Ügynök módot a telefonos tevékenységekhez.

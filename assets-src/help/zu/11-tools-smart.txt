@@ -1,0 +1,45 @@
+Amakhono, i-autopilot, imali, umugqa wesikhathi nokuhlehlisa, ubuchopho, i-ejenti yekholi nenkumbulo
+Usebenzisa konke lokhu ngokukhuluma: isho okufunayo bese i-ejenti ibiza ithuluzi elifanele. Zonke izenzo zibalwe lapha nezinketho zaso.
+
+## Amakhono - fundisa ngokwenza
+Ikhono umsebenzi wefoni umenzeli awufunde ngokukubuka uwenza kanye. Igcina indlela yokuthola i-elementi ngayinye futhi (umazisi wayo, amagama nomakhelwane, hhayi indawo yesikrini sayo), ngakho iyaqhubeka nokusebenza uma isakhiwo sohlelo lokusebenza sishintsha.
+- Engeza ikhono:`skill_record`(Okomuntu siqu). Ithi "funda lokhu njenge <name>".`action: start`(enegama) uqala ukurekhoda; bese wenza umsebenzi - vula uhlelo lokusebenza, thinta, thayipha, cindezela izinkinobho; zonke izinyathelo zilotshiwe.`action: stop`iyayigcina. Esitobhini ungadlula`params`ukushintsha amanani athayiphiwe abe amapharamitha (isibonelo inombolo yocingo iba`number`, inani liba`amount`) kanye a`description`. `action: status`ikutshela ukuthi ukurekhoda kuvuliwe yini.
+- Yenza ikhono:`skill_run`(Okomuntu siqu). Nika`args`ngemingcele yayo, isb. inombolo kanye nenani. Idlala futhi engxenyeni yezinyathelo futhi iziphilise uma uhlelo lokusebenza lushintsha. Uma isinyathelo esisodwa sihluleka, umphumela usho ukuthi yisiphi isinyathelo nokuthi yini esesikrinini, futhi i-ejenti iqeda okunye ngesandla.
+- Uhlu lwamakhono:`skill_list`(Iphephile) ikhombisa igama, amapharamitha, izinyathelo kanye nokuthi ngayinye igijime kangaki. Ngegama kanye nokuthekelisa kuyo kwenza ukwabelana`.zxskill`ifayela.
+- Yabelana futhi ulayishe:`skill_import`(Okomuntu siqu) imithwalo a`.zxskill`ifayela elivela kokulandiwe noma ifayela okwabelwana ngalo njengekhono.
+- Susa ikhono:`skill_delete`(Isistimu).
+- Isibonelo: "Funda ukuthi ngithumela kanjani u-500 ku-Rahim ngohlelo lokusebenza lwe-wallet yami"→ukwenze kanye→"Thumela ama-700 ku-Karim" ngokuzayo.
+
+## I-Autopilot - "uma i-X yenzeka, yenza u-Y"
+Umthetho uvusa i-ejenti ngokwayo futhi yenza umsebenzi ngaphandle kokukubuza.
+- Engeza:`autopilot_add`(Isistimu). Izinhlobo: i-sms, isaziso, ikholi, nsuku zonke, kanye, isikhawu, ibhethri, uhlelo lokusebenza. Gcwalisa kuphela izinkambu umthetho ozidingayo:`from`(igama lomthumeli noma inombolo noma isihloko sohlelo lokusebenza),`any`(okungenani elilodwa lalawa magama),`all`(onke amazwi),`none`(alikho kulawa magama),`time`"HH:MM" (nsuku zonke),`in_minutes` or `at_ms`(kanye),`every_minutes`(isikhawu),`below`(amaphesenti ebhethri),`pkg`(iphakheji yohlelo lokusebenza noma igama, lohlelo lokusebenza nemithetho yezaziso). I-ejenti iphendula umusho wakho ube yilezi zinkundla. Umphumela ubala noma iyiphi imvume esadingeka (i-SMS, ukufinyelela kwesaziso…), futhi umenzeli ukucela ukuthi uyivule.
+- Izibonelo: "Lapho i-SMS yokukhokha ifika ivela kuhlelo lwami lokusebenza lwe-wallet, yengeze ebhukwini lami." "Njalo ekuseni ngo-8, ngitshele isimo sezulu." "Emizuzwini engu-20, ngikhumbuze ukuthi ngikhiphe isinkwa." "Njalo ngemizuzu engama-30, isikhumbuzi samanzi okuphuza." "Uma ibhethri liba ngaphansi kuka-15%, ngitshele." "Uma umuntu engifonela, bhala inombolo." "Lapho ngivula uhlelo lokusebenza lwasebhange, ngikhumbuze ukuthi ngibheke isabelomali."
+- Uhlu:`autopilot_list`(Iphephile) ikhombisa wonke umthetho ngesikhathi sawo esilandelayo sokusebenza nokuthi uqhume kaningi kangakanani.
+- Misa isikhashana noma qalisa kabusha:`autopilot_toggle`(Isistimu). Susa:`autopilot_remove`(Isistimu), nge-id noma isihloko.
+- Uma umthetho uvutha uthola umlayezo osho njalo, futhi i-ejenti yenza umsebenzi.
+
+## Ibhuku lemali (i-CFO yomuntu siqu)
+- `ledger_scan`(Okomuntu siqu): funda isikhwama semali kanye ne-SMS yasebhange encwadini yangasese: imali engenayo, ukusetshenziswa kwemali, izimali ezikhokhwayo, ibhalansi kanye nesigaba.`days`uthi kude kangakanani emuva (okuzenzakalelayo 30). Nge`auto`Kulokhu, yonke i-SMS yemali entsha yengezwa yodwa futhi uyaxwayiswa uma isabelomali siphasiswa. Isebenza kunoma yiliphi izwe iwalethi nemilayezo yasebhange, nganoma yiluphi uhlobo lwemali.
+- `ledger_report`(Okomuntu siqu): isikhathi namuhla, izolo, isonto, inyanga noma konke. Fometha umbhalo (isifinyezo esilungile esikhulunywayo) noma i-xlsx (anExcelifayela elinemisebenzi namathothali esigaba, elivulelwe wena).
+- `ledger_budget`(Okomuntu siqu): setha isabelomali sanyanga zonke sesigaba (ukudla, izikweletu, ezokuthutha, ukuthenga, ukushajwa kabusha kweselula, ukudluliselwa…); umkhawulo ongu-0 uyawususa; ngaphandle kokuphikisana ibala izabelomali kanye nezixwayiso zamanje.
+- I-ejenti ayilokothi isungule izinombolo zemali; iwafunda ebhukwini.
+
+## Umugqa wesikhathi futhi uhlehlise
+- Yonke into eyenziwa yi-ejenti ibhalwa emugqeni wesikhathi (izenzo zokugcina ezingama-400). Izinguquko zefayela zigcina ikhophi yalokho okwakukhona ngaphambilini.
+- `timeline_list`(Kuphephile): lokho okwenziwe yi-ejenti muva nje, nge-id ngayinye, futhi yiziphi izinguquko ezingahle zihlehliswe.
+- `timeline_undo`(Okomuntu siqu):`id`ihlehlisa okukodwa ukubhala, ukuhlela noma ukususa — ifayela libuya njengoba lalinjalo (ifayela elalingekho liyasuswa futhi).`since_id`ihlehlisa yonke into kusukela kuleyo id kuye phambili, okusha kakhulu kuqala. Yisebenzise uma uthi "buyisela lokho" noma "kubuyisele njengakuqala".
+- Hlehlisa ukumboza okubhaliwe kwefayela, ukuhlela nokususa. Umyalo osebenzile (isibonelo ukufaka okuthile noma ukuthumela umlayezo) awukwazi ukuhlehliswa ngale ndlela.
+- Imiyalezo yengxoxo: ukususa yonke ingxoxo sebenzisa ipensela bese uphambana kwimenyu engakwesokunxele, noma Izilungiselelo→Ubumfihlo nedatha→Susa umlando wengxoxo, noma Ukuzulazula→Iseshini entsha.
+
+## Ubuchopho — inkumbulo yesibili yamafayela akho
+- `brain_index`(Kuphephile): yakha noma uvuselele inkomba engaxhunyiwe ku-inthanethi ngamafolda noma amafayela (umbhalo,Markdown, CSV, Word, Excel, PowerPoint) kanye nebhokisi lokungenayo le-SMS (`sms`phezu). Iqalise ngaphambi kokusesha kokuqala nangemva kokuvela kwamafayela amasha. Okuzenzakalelayo indawo yakho yokusebenza.
+- `brain_search`(Kuphephile): buza ngamazwi akho ukuthi, "iphi inkontileka yami yokuqasha?" - isebenza ungaxhunyiwe ku-inthanethi nganoma yiluphi ulimi.`kind`ifayela noma i-sms;`days`imikhawulo ezintweni zakamuva. Vula ifayela elitholiwe nge`open_file`.
+
+## Shayela umenzeli
+- `call_agent`(Okomuntu siqu): isenzo sivuliwe, sivaliwe noma isimo.`owner`igama elishoyo ("Ngingumsizi <umnikazi>").`answer_after_seconds`(okuzenzakalelayo 6) ikuvumela ukuthi uthathe kuqala. Uma kufona ucingo ungaluphenduli, lubingelela ngolimi lwalowo ofonayo, lubuze igama nesizathu, luphendule imibuzo elula, luvale ucingo ngesizotha bese likubikela kafushane.
+- `call_log`(Kuphephile): izifinyezo zezingcingo eziphenduliwe, ezintsha kakhulu kuqala.
+- Idinga ucingo kanye nezimvume zesimo sefoni.
+
+## Inkumbulo
+- `memory_write`, `memory_read`, `memory_delete`(Kuphephile): amaqiniso ahlala njalo ngawe (igama, izintandokazi, abantu, izinsuku, amaphrojekthi) ahlala kusizindalwazi sendawo futhi asinde ekuqaliseni kabusha. Ithi "khumbula lokhu" futhi kulotshiwe ngesikhathi esifanayo; uma kukhona okungalungile, kuyasuswa noma kubhalwe kabusha. Yonke ingxoxo endala nayo iyagcinwa, futhi amajika adlule afana nalokho okushoyo abuye wodwa, ngisho nezinyanga kamuva.
+- Bona futhi ukushintshe konke kokuthi Izilungiselelo→Uhlelo→Imemori (ukhiye, inani, gcina, susa konke).

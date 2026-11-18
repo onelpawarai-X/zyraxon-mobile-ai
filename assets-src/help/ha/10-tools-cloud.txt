@@ -1,0 +1,21 @@
+Cloud, cibiyar sadarwa, samfura da mataimaka
+## Cloud da intanet
+- `web_search` (cibiyar sadarwa): bincika gidan yanar gizo na ainihi. `read_url` (cibiyar sadarwa): debo shafi azaman rubutu. `http_request` (cibiyar sadarwa): kowane kiran HTTP (GET, POST, PUT, PATCH, DELETE) tare da kai da jiki. `verify_url` (cibiyar sadarwa): duba hanyar haɗi da gaske akwai kuma samun matsayi na gaskiya. `download_file` (Na sirri, cibiyar sadarwa): zazzage URL zuwa fayil.
+- Wakilin yana buɗe hanyoyin haɗin gwiwa kawai lokacin da kuka tambaye shi.
+- Samfuran AI suna gudana a cikin gajimare ta hanyar masu samarwa da kuka ƙara (ZYRAXON), ZYRAXON Apex wakilin girgije, Groq, Gemini, OpenAI, Grok, Claude, Grok, Claude, DeepSeek, OpenRouter, OpenCode. Lissafin samfurin yana ɗaukar raye-raye kuma yana cika yayin da kowane mai bayarwa ke amsawa.
+- Gina, bugawa da ja buƙatun suna gudana ta GitHub da Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Kunna "kan-na'urar kawai" (Saitunan Aiki da kai) kuma ba a yin kiran gajimare kwata-kwata: babu mai bayarwa, babu gidan yanar gizo, babu lodawa.
+
+## MCP sabobin
+MCP yana barin sabis na waje ya ba wa wakili ƙarin kayan aiki. Haɗa Canva, Cloudflare, Supabase, GitHub ko uwar garken ku ta adireshinsa (alamar zaɓi). Kayan aikin sabobin da aka haɗa sun shiga jerin kayan aikin wakili kamar `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (duba abin da aka haɗa da waɗanne kayan aikin da suke wanzu), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (duba hanya don canje-canje), `mcp_complete` (cikakkar hujja), `mcp_ping`, `mcp_log_level`. Kiran su kiran cibiyar sadarwa ne, kuma kayan aikin da ba a san su ba MCP suna neman izini ta tsohuwa.
+- Allon MCP yana lissafin kowane uwar garken tare da Matsayin Haɗi, kayan aikin sa, albarkatunsa da samfuran faɗakarwa, da Ƙara, Cire haɗin, Cire, Maɓallan Izinin.
+
+## Sub-wakilai
+`sub_agent` (Tsarin): ɓangarorin babban aiki don taimakawa wakilai masu gudana a bango. Ayyuka: spawn, matsayi, jeri, sakamako, saƙo, tsayawa, jira. Kowa na iya amfani da nasa samfurin. Wakilin ya haɗa ya duba sakamakon su kafin ya ce "an yi".
+
+## Samfurin kan na'urar
+`on_device_model` (Tsarin): jera, loda da gudanar da samfurin harshe wanda ke rayuwa akan wayar, ba tare da intanet ba. A cikin Saituna → Model & ainihi → A kan na'ura kuna zazzage samfura (kanana zuwa babba: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); alamar Hugging Face na zaɓi ne kuma ana buƙata kawai don gated fayiloli. Ana tunawa da samfurin da aka ɗora kuma ana sake loda shi a lokacin ƙaddamarwa.
+
+## Tashoshin saƙo
+`channel_post` (Tsarin) yana buɗewa Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail ko SMS tare da shirye-shiryen rubutun ku. Kuna danna aiko da kanku.

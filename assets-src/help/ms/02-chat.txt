@@ -1,0 +1,51 @@
+Skrin sembang dan setiap butang
+## Bahagian atas skrin
+- Menu: membuka laci kiri dengan sembang anda.
+- Sembang / Terminal / Kod / Pratonton: tukar paparan utama. Sembang adalah perbualan; Terminal ialah terminal sebenar; Kod ialah ruang kerja fail dengan Git; Pratonton ialah penyemak imbas terbina dalam.
+- Aura: menunjukkan skrin watak animasi. Butang sisinya ialah Mic, Sembang (kembali ke perbualan) dan Muat Semula (menyambung semula awan dan memuatkan semula senarai model).
+- Tetapan: membuka lapan bahagian tetapan.
+- Sepanduk menunjukkan keadaan mikrofon: "Mendengar…", "Mic off — ketik", atau "Bercakap… ketik untuk berhenti".
+- Apabila versi baharu sedia, sepanduk kemas kini muncul dengan butang Muat Turun, Pasang dan Benarkan (lihat Kemas Kini).
+
+## Menu kiri (sembang)
+- "+ Sembang baharu": memulakan perbualan baharu.
+- Setiap sembang dalam senarai menunjukkan tanda berjalan semasa ejen sibuk di sana. Pensel itu menamakannya; pangkah itu memadamkannya (selepas pengesahan: semua mesej di dalamnya dipadamkan).
+- Tema: pilih Seram (darah, api dan bayang), Gelap (kaca gelap bersih) atau Cahaya (kaca terang).
+
+## Bar mesej
+- Lampirkan (klip kertas): foto galeri, foto kamera, imbasan dokumen (menukar teks dalam foto menjadi .docx boleh diedit), kongsi skrin supaya ejen boleh melihatnya ("Menonton skrin" hidup atau mati) dan fail audio atau video. Item yang dilampirkan ditunjukkan sebagai cip; salib mengeluarkan satu, "Kosongkan semua" mengeluarkan semua.
+- Butang mod: Ejen atau Bina.
+- Butang mikrofon: menghidupkan atau mematikan mikrofon yang sentiasa mendengar.
+- Butang model: membuka senarai model dengan kotak carian. Model bertanda "Langsung" boleh bercakap dengan suara mereka sendiri.
+- Hantar: menghantar mesej. Semasa ejen bekerja ini menjadi Stop.
+- Input mengatakan "Apakah yang perlu saya lakukan?" dalam mod Ejen dan "Apa yang perlu saya bina? Katakan pendek" dalam mod Bina.
+
+## Mesej
+- Salin, Kongsi dan Dengar (membaca mesej dengan kuat; tekan sekali lagi untuk berhenti) berada di bawah setiap mesej.
+- "Berfikir" menunjukkan alasan model apabila model menyediakannya.
+- Kod yang ditulis ejen muncul secara langsung dalam kotak, baris demi baris, dengan Salin, Muat Turun dan Buka.
+- Fail yang dibuat oleh ejen ditunjukkan sebagai kad dengan Buka (dalam apl sebenar telefon), Main, Kongsi dan "Apl lain…".
+- Gambar, audio dan video menunjukkan peratusan kemajuan secara langsung semasa ia dibuat.
+- Kad alat menunjukkan perkara yang dilakukan ejen: berjalan, selesai, berjaya atau gagal.
+
+## Panel (todo, alatan, fail, sub-agen)
+- Todo board: rancangan yang ditulis ejen untuk kerja besar dan kemajuannya (n/total done). Anda boleh menambah tugas anda sendiri dan memadamkan tugasan.
+- Alat: senarai setiap panggilan alat, dengan status langsung.
+- Fail: setiap fail yang dibuat oleh ejen, dengan Buka, Kongsi, Terbitkan dan Padam (dengan pengesahan) dan kotak carian.
+- Sub-agen: ejen pembantu berjalan di latar belakang, dengan butang Berhenti.
+- Tab terminal: terminal sebenar (lihat bab Fail dan Terminal).
+
+## Panel pratonton
+- Belakang, Hadapan, Berhenti, Muat semula dan bar alamat (taip alamat web, atau cari Google).
+- Buka fail: menunjukkan Word, Excel, PowerPoint, PDF, imej, Markdown, CSV, kod dan tapak betul-betul di dalam apl.
+- Saiz: kecilkan atau besarkan panel.
+- Betulkan: menghantar masalah halaman (ralat konsol, pemuatan gagal) kepada ejen, yang membetulkannya di latar belakang.
+- Pilih bahagian: ketik bahagian halaman, kemudian beritahu ejen perkara yang perlu dilakukan dengan bahagian itu.
+- Butang ejen: tanya sesuatu tentang halaman; ejen menerima gambarnya.
+- Buka pantas: pintasan ke halaman terkini.
+
+## Kod ruang kerja
+- Bahagian kiri: fail anda (fail baharu, buka, simpan).
+- Editor: menunjukkan baris dan aksara; perubahan yang dibuat oleh ejen muncul sekali gus.
+- Git: repo baharu, klon daripada GitHub, imbasan, status, komitmen dengan mesej, tolak, tarik, dahan, token.
+- Permintaan tarik: buat, cantumkan, tutup. Aliran kerja: senarai berjalan, jalankan aliran kerja. Log menunjukkan output arahan.

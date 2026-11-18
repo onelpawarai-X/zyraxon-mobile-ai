@@ -1,0 +1,45 @@
+Fähigkeiten, Autopilot, Geld, Zeitleiste und Rückgängigmachen, Gehirn, Call-Agent und Gedächtnis
+All dies nutzen Sie durch Sprechen: Sagen Sie, was Sie wollen, und der Agent ruft das richtige Tool auf. Hier wird jede Aktion mit ihren Optionen aufgelistet.
+
+## Fähigkeiten – „Teach by Doing“.
+Eine Fertigkeit ist eine Telefonaufgabe, die der Agent gelernt hat, indem er Sie einmal dabei beobachtet hat. Es speichert, wie jedes Element wieder gefunden wird (seine ID, Wörter und Nachbarn, nicht seine Bildschirmposition), sodass es weiterhin funktioniert, wenn sich das Layout der App ändert.
+- Fügen Sie eine Fertigkeit hinzu: `skill_record` (Persönlich). Sagen Sie „Lernen Sie dies als <Name>“. `action: start` (mit einem Namen) beginnt mit der Aufnahme; Erledigen Sie dann die Aufgabe: Öffnen Sie die App, tippen Sie auf, geben Sie etwas ein und drücken Sie die Tasten. Jeder Schritt wird aufgezeichnet. `action: stop` speichert es. Bei Stop können Sie `params` übergeben, um eingegebene Werte in Parameter umzuwandeln (z. B. wird die Telefonnummer zu `number`, der Betrag wird zu `amount`) und ein `description`. `action: status` zeigt an, ob die Aufnahme läuft.
+- Führen Sie einen Skill aus: `skill_run` (Persönlich). Geben Sie `args` für seine Parameter an, z.B. Anzahl und Menge. Es wird in einem Bruchteil der Schritte wiederholt und repariert sich selbst, wenn sich die App ändert. Wenn ein Schritt fehlschlägt, wird im Ergebnis angezeigt, um welchen Schritt es sich handelt und was auf dem Bildschirm angezeigt wird. Den Rest erledigt der Agent manuell.
+- Fähigkeiten auflisten: `skill_list` (Sicher) zeigt Namen, Parameter, Schritte und wie oft jeder ausgeführt wurde. Mit einem Namen und einem Export wird daraus eine gemeinsam nutzbare `.zxskill`-Datei erstellt.
+- Teilen und laden: `skill_import` (Persönlich) lädt eine `.zxskill`-Datei aus einem Download oder einer freigegebenen Datei als Skill.
+- Einen Skill löschen: `skill_delete` (System).
+- Beispiel: „Erfahre, wie ich mit meiner Wallet-App 500 an Rahim sende“ → du machst es einmal → „Sende 700 an Karim“ das nächste Mal.
+
+## Autopilot – „Wenn X passiert, mache Y“
+Eine Regel weckt den Agenten selbst und führt die Aufgabe aus, ohne Sie zu fragen.
+- Hinzufügen: `autopilot_add` (System). Arten: SMS, Benachrichtigung, Anruf, täglich, einmal, Intervall, Akku, App. Füllen Sie nur die Felder aus, die die Regel benötigt: `from` (Name oder Nummer des Absenders oder App-Titel), `any` (mindestens eines dieser Wörter), `all` (jedes Wort), `none` (keines dieser Wörter), `time` „HH:MM“ (täglich), `in_minutes` oder `at_ms` (einmal), `every_minutes` (Intervall), `below` (Batterieprozentsatz), `pkg` (App-Paket oder Name, für App- und Benachrichtigungsregeln). Der Agent wandelt Ihren Satz in diese Felder um. Das Ergebnis listet alle noch benötigten Berechtigungen auf (SMS, Benachrichtigungszugriff usw.) und der Agent fordert Sie auf, diese zu aktivieren.
+- Beispiele: „Wenn eine Zahlungs-SMS von meiner Wallet-App eintrifft, füge sie meinem Hauptbuch hinzu.“ „Erzähl mir jeden Morgen um 8 Uhr das Wetter.“ „Erinnere mich in 20 Minuten daran, das Brot herauszunehmen.“ „Alle 30 Minuten, Trinkwasser-Erinnerung.“ „Wenn der Akkustand unter 15 % sinkt, sagen Sie es mir.“ „Wenn mich jemand anruft, protokollieren Sie die Nummer.“ „Wenn ich die Banking-App öffne, erinnere mich daran, das Budget zu überprüfen.“
+- Liste: `autopilot_list` (Sicher) zeigt jede Regel mit ihrer nächsten Laufzeit und wie oft sie ausgelöst wurde.
+- Anhalten oder fortsetzen: `autopilot_toggle` (System). Löschen: `autopilot_remove` (System), nach ID oder Titel.
+- Wenn eine Regel ausgelöst wird, erhalten Sie eine entsprechende Meldung und der Agent erledigt einfach die Arbeit.
+
+## Geldbuch (persönlicher CFO)
+- `ledger_scan` (Persönlich): Lesen Sie Wallet- und Bank-SMS in ein privates Hauptbuch ein: Einnahmen, Ausgaben, Gebühren, Kontostand und Kategorie. `days` gibt an, wie weit zurück (Standard 30). Wenn `auto` aktiviert ist, wird jede neue Geld-SMS automatisch hinzugefügt und Sie werden gewarnt, wenn ein Budget verabschiedet wird. Funktioniert für Geldbörsen und Banknachrichten jedes Landes und in jeder Währung.
+- `ledger_report` (Persönlich): Zeitraum heute, gestern, Woche, Monat oder alle. Formatieren Sie Text (eine fertig gesprochene Zusammenfassung) oder XLSX (eine Excel-Datei mit Transaktionen und Kategoriesummen, die für Sie geöffnet wird).
+- `ledger_budget` (Persönlich): Legen Sie ein monatliches Budget für eine Kategorie fest (Essen, Rechnungen, Transport, Einkaufen, Handyaufladen, Transfers …); ein Grenzwert von 0 entfernt es; Ohne Argumente listet es Budgets und aktuelle Warnungen auf.
+- Der Agent erfindet niemals Geldzahlen; es liest sie aus dem Hauptbuch.
+
+## Zeitleiste und Rückgängig machen
+- Alles, was der Agent tut, wird in die Zeitleiste geschrieben (die letzten 400 Aktionen). Durch Dateiänderungen bleibt eine Kopie dessen erhalten, was zuvor vorhanden war.
+- `timeline_list` (Sicher): Was der Agent kürzlich getan hat, mit jeweils einer ID und welche Änderungen rückgängig gemacht werden können.
+- `timeline_undo` (Persönlich): `id` macht einen Schreib-, Bearbeitungs- oder Löschvorgang rückgängig – die Datei wird genau so wiederhergestellt, wie sie war (eine nicht vorhandene Datei wird wieder entfernt). `since_id` macht alles ab dieser ID rückgängig, das Neueste zuerst. Verwenden Sie es, wenn Sie sagen: „Nimm das zurück“ oder „Leg es zurück wie zuvor“.
+- „Rückgängig“ umfasst das Schreiben, Bearbeiten und Löschen von Dateien. Ein ausgeführter Befehl (z. B. etwas installieren oder eine Nachricht senden) kann auf diese Weise nicht rückgängig gemacht werden.
+- Chatnachrichten: Um eine ganze Konversation zu entfernen, verwenden Sie den Stift und das Kreuz im linken Menü oder Einstellungen → Datenschutz und Daten → Chatverlauf löschen oder Navigation → Neue Sitzung.
+
+## Gehirn – zweiter Speicher für Ihre Dateien
+- `brain_index` (Sicher): Erstellen oder aktualisieren Sie den Offline-Index für Ordner oder Dateien (Text, Markdown, CSV, Word, Excel, PowerPoint) und optional den SMS-Posteingang (`sms` ein). Führen Sie es vor der ersten Suche und nach dem Erscheinen neuer Dateien aus. Der Standardwert ist Ihr Arbeitsbereich.
+- `brain_search` (Sicher): Fragen Sie mit Ihren eigenen Worten: „Wo ist mein Mietvertrag?“ — Es funktioniert offline in jeder Sprache. `kind` ist eine Datei oder SMS; `days` beschränkt sich auf aktuelle Elemente. Öffnen Sie eine gefundene Datei mit `open_file`.
+
+## Rufen Sie den Agenten an
+- `call_agent` (Persönlich): Aktion ein, aus oder Status. `owner` ist der Name, der dort steht („Ich bin der Assistent von <Besitzer>“). Mit `answer_after_seconds` (Standard 6) können Sie als Erster loslegen. Wenn ein Anruf eingeht und Sie nicht antworten können, begrüßt es ihn in der Sprache des Anrufers, fragt nach Namen und Grund, beantwortet einfache Fragen, legt höflich auf und teilt Ihnen eine Zusammenfassung mit.
+- `call_log` (Sicher): Zusammenfassungen der angenommenen Anrufe, neueste zuerst.
+- Benötigt die Anruf- und Telefonstatusberechtigungen.
+
+## Erinnerung
+- `memory_write`, `memory_read`, `memory_delete` (Sicher): Dauerhafte Informationen über Sie (Name, Vorlieben, Personen, Daten, Projekte) leben in einer lokalen Datenbank und überleben Neustarts. Sagen Sie „merken Sie sich das“ und es wird in der gleichen Reihenfolge geschrieben; Wenn etwas nicht stimmt, wird es entfernt oder neu geschrieben. Auch alle alten Gespräche bleiben erhalten, und vergangene Wendungen, die zu Ihren Aussagen passen, kommen selbst Monate später von selbst wieder zurück.
+- Sehen und ändern Sie alles unter Einstellungen → System → Speicher (Schlüssel, Wert, Speichern, alles löschen).

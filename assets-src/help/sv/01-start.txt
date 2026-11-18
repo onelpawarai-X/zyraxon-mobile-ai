@@ -1,0 +1,20 @@
+Komma igång
+ZYRAXON är en assistent som bor inuti din Android telefon. Den pratar med dig, lyssnar på dig och kan göra riktigt arbete: öppna appar, tryck och skriv på skärmen, ring folk, skriv filer, bygg webbplatser och appar, kör ett Linux-system, gör bilder, ljud, video och kontorsdokument och kom ihåg dig i flera månader. Det fungerar på alla språk du talar.
+
+## De första minuterna
+- Vid första lanseringen visar ZYRAXON ett kort meddelande om att agenten kan agera på din telefon själv. Tryck på "Gott it, start" för att fortsätta.
+- Lägg till en AI-nyckel (Inställningar → Providers & API → AI-leverantörer). Klistra in en nyckel för vilken leverantör du vill (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). När du sparar en nyckel läser appen den leverantörens katalog och kontrollerar den på riktigt, så att du ser en sann "ansluten" och antalet modeller.
+- Ingen nyckel? Du kan fortfarande använda modellerna på enheten (Inställningar → Modell & identitet → På enheten). De kör på telefonen utan internet.
+- Välj en modell med modellknappen i meddelandefältet och ett tecken (Inställningar → Modell & identitet → Identitet).
+- Ge behörigheter när en funktion behöver en (se kapitlet Behörigheter). Agenten kan också öppna behörighetsdialogrutan åt dig med ett tryck.
+- Bara prata eller skriv. "Gör mig en landningssida för mitt bageri", "öppna YouTube och spela en låt", "vad är mitt batteri?", "ring mamma".
+
+## De två sätten att arbeta
+Bredvid meddelanderutan finns en lägesknapp med två lägen: Agent och Build. Se kapitlet Lägen.
+
+## Var saker är
+- Vänstermeny: dina chattar, ny chatt, byt namn på, radera och byta tema.
+- Chattskärm: meddelanden, uppgiftstavlan, verktygslista, filer, terminalen.
+- Förhandsgranska och kodpaneler: se och redigera vad agenten bygger.
+- Inställningar: åtta avsnitt, täckta en efter en i denna dokumentation.
+- Denna dokumentation: Inställningar → Dokumentation (du är här).

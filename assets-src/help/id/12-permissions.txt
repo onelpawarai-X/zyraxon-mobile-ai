@@ -1,0 +1,27 @@
+Izin, satu per satu
+Pengaturan → Keamanan & privasi → Izin. Setiap baris menampilkan "Diberikan" atau sebuah tombol. Mengetuk satu baris akan membuka dialog sistem; cukup tekan Izinkan. Agen juga dapat membuka dialog itu sendiri dengan `request_permission`.
+
+- Mikrofon: agar ZYRAXON dapat mendengar Anda. Tanpanya tidak ada masukan suara.
+- Kamera: untuk mengambil dan melihat foto (`look_camera`, pemindaian dokumen, "apa yang Anda lihat").
+- Lokasi: untuk peta dan informasi lokal.
+- Pemberitahuan: untuk memberi tahu Anda saat pekerjaan latar belakang selesai.
+- File & media: untuk membaca foto, video, audio dan dokumen.
+- Overlay (menarik aplikasi lain): diperlukan untuk mata mengambang.
+- Aksesibilitas: memungkinkan agen membaca layar dan mengetuk, menggeser, dan mengetik untuk Anda. Ini adalah inti dari otomatisasi telepon. Anda mengaktifkannya di pengaturan Aksesibilitas sistem.
+- Pengoptimalan baterai: menghentikan Android dari mengalihkan ZYRAXON ke mode tidur saat sedang bekerja di latar belakang.
+
+## Izin lain yang diumumkan aplikasi
+- SMS (baca dan terima): untuk membaca kode, buku besar uang, dan aturan autopilot SMS.
+- Status telepon, jawab panggilan, telepon panggilan, kontak: untuk alat panggilan dan agen panggilan.
+- Akses notifikasi: memungkinkan autopilot bereaksi terhadap notifikasi.
+- Admin perangkat: memungkinkan `device_lock` benar-benar mengunci layar.
+- Instal paket: memungkinkan pembaruan dan `build_app` menginstal APK; Android meminta Anda untuk mengizinkan ZYRAXON sebagai sumber instalasi.
+- Layanan latar depan (mikrofon, sinkronisasi data) dan penguncian layar saat aktif: menjaga suara dan pekerjaan jangka panjang tetap hidup.
+- Status internet dan jaringan: cloud dan web.
+- Shizuku (opsional): akses tingkat sistem untuk shell dan terminal.
+
+## Google Play Protect
+Jika Play Protect memblokir pekerjaan, agen dapat membuka halaman kanan, melihat layar sebenarnya dan menelusuri roda gigi dan tombol selangkah demi selangkah — namun agen akan menanyakan Anda terlebih dahulu, karena mematikan perlindungan adalah keputusan Anda. Untuk melakukannya sendiri: Play Store → gambar profil → Play Protect → pengaturan → matikan "Pindai aplikasi dengan Play Protect". Halaman tersebut memiliki tombol yang terbuka Play Store.
+
+## Mengapa izin itu penting
+Jika suatu alat gagal karena izin yang hilang, agen akan memberi tahu Anda yang mana dan membuka dialognya. Tidak ada hal sensitif yang berfungsi tanpa Izinkan eksplisit Anda.

@@ -1,0 +1,11 @@
+Sigurnost i privatnost
+- Svi podaci korisnika ZYRAXON žive na vašem telefonu: razgovori, memorija, knjiga, vještine, vremenska traka, indeks mozga. Ništa se ne čuva na ZYRAXON poslužitelju.
+- Cloud modeli primaju samo ono što je potrebno za red koji šaljete. Uz "Samo na uređaju" ništa se ne šalje.
+- Upute i jezične datoteke poslane u aplikaciji šifrirane su unutar APK.
+- Zaključavanje aplikacije: postavite lozinku ili uzorak u Postavkama → Sigurnost i privatnost → Zaključavanje aplikacije. ZYRAXON se zatim zaključava kada ga otvorite ili se vratite iz pozadine. "Ukloni zaključavanje" briše spremljenu lozinku ili uzorak.
+- Razine odobrenja štite svaki poziv alata u kodu (pogledajte Razine odobrenja). Nepoznati alati uvijek pitaju.
+- Možete izbrisati: svu memoriju, povijest razgovora i svoj GitHub token, svaki s jednim gumbom u Privatnosti i podacima.
+- Sigurnost: ako kažete da vam netko prijeti ili vas prati, ili želi vaš telefon ili podatke, agent prvo zaključava telefon (ako je uključeno dopuštenje administratora uređaja) i zatim mirno razgovara s vama.
+- Plaćanja: prije bilo kakvog plaćanja ili prijenosa agent kaže koliko će platiti i traži od vas potvrdu.
+- Iskrenost: agent kaže da je nešto uspjelo tek nakon što je vidio rezultat. Nikada ne izmišlja poveznice, datoteke ili rezultate.
+- Content Shield: sve što agent pročita izvana - zaslon druge aplikacije, web-stranica, poruka, datoteka, povezani poslužitelj - provjerava se u kodu za tekst koji agentu pokušava dati naredbe (na mnogim jezicima, uključujući tekst skriven nevidljivim znakovima). Sumnjivi tekst je ograđen tako da ga model tretira samo kao podatke. Koliko je strog ovisi o vašoj razini odobrenja: Zaključano tretira sve sumnjivo kao neprijateljsko; Nadzirani blokira sumnjivi tekst i, kada je tekst očito neprijateljski, zaključava ostatak tog poteza tako da vas svaki alat za promjenu prvo pita (kartica kaže zašto); Balanced djeluje samo na jasno neprijateljski tekst i samo alati na razini sustava prestaju pitati; Automatski potpuno isključuje štit — ništa se ne skenira, zaustavlja, označava ili mijenja. Nova tvoja poruka to briše.

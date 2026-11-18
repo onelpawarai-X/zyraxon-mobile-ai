@@ -1,0 +1,21 @@
+云、网络、模型和助手
+## 云和互联网
+- `web_search`（网络）：搜索真实网络。 `read_url`（网络）：以文本形式获取页面。 `http_request`（网络）：任何带有标头和正文的 HTTP 调用（GET、POST、PUT、PATCH、DELETE）。 `verify_url`（网络）：检查链接是否确实存在并获取真实状态。 `download_file`（个人、网络）：下载文件的 URL。
+- 代理仅在您要求时才打开链接。
+- AI 模型通过您添加的提供商（ZYRAXON、ZYRAXON Apex 云代理、Groq、Gemini、OpenAI、Grok、Claude、DeepSeek、OpenRouter、OpenCode 在云中运行。模型列表会实时加载并随着每个提供商的回答而填充。
+- 构建、发布和拉取请求通过 GitHub 和 Cloudflare（`publish_*`、`github_actions`、`github_pr`、`git`）运行。
+- 打开“仅限设备上”（自动化设置），根本不会进行云调用：没有提供商、没有网络、没有上传。
+
+## MCP 服务器
+MCP 让外部服务为代理提供额外的工具。通过地址（可选令牌）连接 Canva、Cloudflare、Supabase、GitHub 或您自己的服务器。连接的服务器工具作为 `server__tool` 加入代理的工具列表。
+- `mcp_connect`、`mcp_disconnect`、`mcp_list`（查看连接的内容以及存在哪些工具）、`mcp_resources`、`mcp_read_resource`、`mcp_prompts`、`mcp_prompt`、`mcp_subscribe`（监视资源的更改）、`mcp_complete`（自动完成参数）、`mcp_ping`、`mcp_log_level`。他们的调用是网络调用，未知的MCP工具默认请求许可。
+- MCP 屏幕列出了每台服务器的已连接状态、其工具、资源和提示模板，以及添加、断开连接、删除、允许按钮。
+
+## 分代理
+`sub_agent`（系统）：将一项大工作的一部分交给在后台运行的辅助代理。操作：生成、状态、列表、结果、消息、停止、等待。每个人都可以使用自己的模型。代理在说“完成”之前会合并并检查他们的结果。
+
+## 设备上模型
+`on_device_model`（系统）：列出、加载和运行手机上的语言模型，无需互联网。在设置 → 模型和身份 → 设备上下载模型（从小到大：FunctionGemma 270M、Qwen3 0.6B、Gemma 4 E2B…）； Hugging Face 标记是可选的，仅对于门控文件才需要。加载的模型会被记住并在启动时重新加载。
+
+## 消息传递渠道
+`channel_post`（系统）打开 Telegram、WhatsApp、Facebook、Messenger、YouTube、X、Instagram、Gmail 或 SMS，并准备好文本。你自己按发送。

@@ -1,0 +1,27 @@
+Tipy a příklady žádostí
+## Říkej, co chceš, ne jak
+- "Udělejte vstupní stránku pro tělocvičnu, tmavou a tučnou."
+- "Vytvořte kompletní rezervační aplikaci s databází." (agent se nejprve zeptá na technické možnosti)
+- "Otevři YouTube a zahraj klidnou píseň."
+- "Posuňte se dolů a otevřete první výsledek."
+- "Co je moje baterie a Wi-Fi?"
+- "Přečtěte si moji nejnovější SMS a řekněte mi kód."
+- "Zavolej mámě." / "Přijmout hovor."
+- "Udělejte si životopis z této fotografie." (připojit)
+- "Přeměňte záznam z této schůzky na poznámky pomocí úkolů."
+- "Vyrobte plakát na páteční akci v těchto barvách."
+- "Udělejte zvukový dialog mezi dvěma přáteli, jedním chlapcem a jednou dívkou."
+- "Pamatuj, že moje sestra má narozeniny 3. května."
+- "Každé ráno v 8 mi řekni počasí." (autopilot)
+- "Zjistěte, jak odesílám nájemné prostřednictvím aplikace peněženky, abyste to mohli udělat znovu." (dovednost)
+- "Vraťte zpět to, co jste provedli ve složce projektu." (časová osa)
+- "Kde je moje nájemní smlouva?" (mozek)
+- "Nainstalujte balíčky pythonu a spusťte tento skript." (Linux)
+- "Publikujte tuto stránku, abych ji mohl sdílet." (veřejný odkaz)
+
+## Návyky, které pomáhají
+- Krátké a jasné údery dlouhé. Agent zvolí výchozí nastavení a řekne vám, jaké zvolil.
+- Když položí jednu otázku, odpovězte na ni a pokračuje ze stejného místa.
+- Pro podrobnou odpověď řekněte „vysvětlit“ nebo „shrnout“; jinak jsou odpovědi krátké.
+- Můžete o tom mluvit kdykoli. Zastaví se a poslouchá.
+- Použijte režim Build k vytváření věcí a režim Agent k dělání věcí na telefonu.

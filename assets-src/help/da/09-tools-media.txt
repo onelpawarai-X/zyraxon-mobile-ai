@@ -1,0 +1,11 @@
+Billeder, lyd, video, dokumenter og design
+- `generate_image` (netværk): lav et billede ud fra en beskrivelse (skriv det med detaljer; engelsk fungerer bedst). Det vises i chatten med deleknapper. For flere, spørg om flere.
+- `generate_audio` (netværk): talt lyd (.mp3) fra enhver tekst. Til en dialog eller historie skal du give hver del sin egen stemme (køn, alder, sprog, tone). Mange sprog, herunder bengali, hindi og engelsk.
+- `generate_video`: en rigtig redigeret video (ikke AI-optagelser) fra scener - billeder, klip, tekst, farver, fortælling, billedtekster, musik. `ffmpeg`: enhver direkte redigering — klip, join, overlay, undertekster, hastighed, lydmix, konverter. 5-10 minutters videoer er mulige, bygget trin for trin.
+- Fremskridt viser live som en procentdel i chatten; når du er færdig, ankommer filen med knapperne Afspil og Del.
+- `make_document`: en rigtig Word (.docx), Excel (.xlsx) eller PowerPoint (.pptx) fil på telefonen, ingen installation nødvendig, hvilket som helst sprog. `office_template`: Klare kontorpapirer med tomme felter til at udfylde (send ansøgning, jobansøgning, faktura, CV, forretningsforslag, tilbud, indkaldelse, mødereferater, kontrakt, månedsregnskab og mere).
+- Dokument fra et foto: vedhæft et foto (Dokumentscanning). Teksten kopieres nøjagtigt som skrevet (uklare ord markeres), en tabel bliver til .xlsx, ellers .docx.
+- Mødenotater: fra lyd, en transskription eller hvad du siger. Dokumentet har et resumé, beslutninger, handlingspunkter (opgave, ejer, forfaldsdato) og et klar e-mail-udkast.
+- `make_design`: plakater, bannere, logoer, kort, historier, omslag som PNG og PDF. `brand_kit`: giv et logo eller farver; de gemmes, app-temaet ændres, og fra da af bruger dokumenter, dias og websteder dine brandfarver.
+- `present_slides`: karakteren taler, mens dias-kort vises; dias ændres af sig selv, når stemmen er færdig. Bed om en .pptx-fil, hvis du vil have en fil.
+- `open_file`: åbner det, der blev lavet i telefonens rigtige app (Word/Docs, Sheets, Slides, PDF, galleri, browser) eller i Preview-panelet; agenten tjekker skærmen for at være sikker på, at den er åbnet.

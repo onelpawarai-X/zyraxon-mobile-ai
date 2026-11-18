@@ -1,0 +1,21 @@
+Pilv, võrk, mudelid ja abilised
+## Pilv ja internet
+- `web_search` (võrk): otsige päris veebist. `read_url` (võrk): tooge leht tekstina. `http_request` (võrk): mis tahes HTTP-kõne (GET, POST, PUT, PATCH, DELETE) koos päiste ja kehaga. `verify_url` (võrk): kontrollige, kas link on tõesti olemas, ja hankige tegelik olek. `download_file` (Isiklik, võrk): laadige faili URL alla.
+- Agent avab lingid ainult siis, kui te seda palute.
+- AI mudelid töötavad pilves teie lisatud pakkujate kaudu (ZYRAXON, ZYRAXON Apex pilveagent, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Mudelite loend laaditakse reaalajas ja täitub, kui iga pakkuja vastab.
+- Järgud, avaldamis- ja tõmbamispäringud jooksevad läbi GitHub ja Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Lülitage sisse "ainult seadmes" (automaatikaseaded) ja pilvekõnet ei tehta üldse: pole pakkujat, veebi pole ega üleslaadimist.
+
+## MCP serverid
+MCP laseb välistel teenustel anda agendile lisatööriistu. Ühendage Canva, Cloudflare, Supabase, GitHub või oma server selle aadressi järgi (valikuline token). Ühendatud serverite tööriistad liituvad agendi tööriistade loendiga kui `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (vaadake, mis on ühendatud ja millised tööriistad on olemas), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (vaadake muudatuste ressurssi), `mcp_complete` (automaatse täitmise argumendid), `mcp_ping`, `mcp_log_level`. Nende kõned on võrgukõned ja tundmatud MCP tööriistad küsivad vaikimisi luba.
+- Ekraanil MCP on loetletud kõik serverid koos olekuga Ühendatud, selle tööriistad, ressursid ja viipade mallid ning nupud Lisa, Katkesta, Eemalda, Luba.
+
+## Alamagendid
+`sub_agent` (Süsteem): jagage suure töö osad taustal töötavatele abiagentidele. Toimingud: kudemine, olek, loend, tulemus, sõnum, peatus, ootamine. Igaüks saab kasutada oma mudelit. Agent kombineerib ja kontrollib nende tulemusi enne, kui ütleb "tehtud".
+
+## Seadmes olev mudel
+`on_device_model` (Süsteem): loendage, laadige ja käivitage keelemudel, mis töötab telefonis ilma Internetita. Menüüs Seaded → Mudel ja identiteet → Seadmesse laadite alla mudelid (väikest kuni suurteni: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); Hugging Face märk on valikuline ja vajalik ainult väravatega failide jaoks. Laaditud mudel jäetakse meelde ja laaditakse uuesti käivitamisel.
+
+## Sõnumikanalid
+`channel_post` (Süsteem) avab Telegram, WhatsApp, Facebooki, Messenger, YouTube, X, Instagram, Gmail või SMS-i, kui teie tekst on valmis. Vajutad ise saatma.

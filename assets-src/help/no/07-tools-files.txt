@@ -1,0 +1,27 @@
+Filer, terminal og system
+## Filer
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Sikker): les, liste opp, finn etter navnemønster og søk etter tekst i filer.
+- `write_file`, `edit_file`: opprett eller endre filer. `edit_file` gjør alt: ny fil, full omskriving eller nøyaktig finn-og-erstatt; koden vises live i chatten. `delete_file` (System): slett en fil eller mappe.
+- Enhver mappe er tillatt (/sdcard, Last ned, Dokumenter, SD-kort …). Gi en fullstendig bane og den brukes som skrevet.
+- Agenten åpner det den lager: `open_file` (Safe) åpner en fil i telefonens virkelige app, eller inne i ZYRAXONs forhåndsvisning.
+
+## Terminaler (to ekte)
+- android: telefonens eget skall (busybox pluss `sh`), inne i appens sandkasse. `run_shell` (System) kjører en kommando der, ute av syne.
+- linux: ZYRAXON sitt eget fulle Unix-system, innebygd i appen: bash, apt/pkg, real git, python, node, clang. Det fungerer offline. `linux_run` (System) kjører en kommando der.
+- `terminal_run` (System): kjører en linje i Terminal-fanen du ser på, slik at du kan se at den fungerer og tar over. Bruk shell android eller linux. `terminal_open` bringer Terminal-fanen til fronten (bare når du spør).
+- `system_shell` (System): en kommando på systemnivå, over appsandkassen, slik et systemskall gjør; med Shizuku eller root kan den nå langt mer.
+- Det er ingen standard tidsbegrensning; en stor `apt upgrade` eller build går til slutten.
+
+## Shizuku (systemtilgang)
+`setup_shizuku` (System) setter opp Shizuku, samlet i ZYRAXON: sjekk status, installer, åpne, be om tillatelse. Bare du kan trykke på Installer og tillat; agenten forteller deg trinnet på én linje og gjør resten.
+
+## Lange jobber og timing
+- `background_command` (System): en kommando som fortsetter å kjøre etter at du lukker appen (stor nedlasting, kloning, bygg), med et varsel og en Stopp-knapp.
+- `schedule_command` (System): kjør en kommando i sanntid ("om 10 minutter", "kl. 02:00"); Android holder tidtakeren, så den kjører med appen lukket.
+- `wait` (Sikker): vent med vilje (sekunder, til en port åpnes, en fil vises, en kommando fullføres) i stedet for å gjette.
+
+## Linux bruker
+Installer pakker (`apt install …`), kjør Python eller Node skript, kompiler C, bruk git, kjør servere, zip og unzip, curl, ffmpeg. Systemet pakkes stille ut når appen starter og fortsetter å starte på nytt.
+
+## Terminalskjermen
+Terminal-fanen er en ekte terminal med ⌘ ZX-fanen. Skriv inn dine egne kommandoer eller se agentens. Navigasjonsskjermen i Innstillinger har en snarvei til systemskallet og en "Ny økt"-knapp som tømmer chatloggen for å starte på nytt.

@@ -1,0 +1,51 @@
+Spjallskjárinn og hver hnappur
+## Efst á skjánum
+- Valmynd: opnar vinstri skúffu með spjallinu þínu.
+- Spjall / Terminal / Code / Preview: skiptu um aðalskjáinn. Spjall er samtalið; Flugstöðin er hin raunverulega flugstöð; Kóði er skráarvinnusvæðið með Git; Preview er innbyggði vafrinn.
+- Aura: sýnir teiknaða persónuskjáinn. Hliðarhnappar þess eru hljóðnemi, spjall (aftur í samtalið) og endurnýja (tengir skýið aftur og endurhleður módellistann).
+- Stillingar: opnar átta stillingahlutana.
+- Borði sýnir hljóðnemastöðuna: „Hlustar...“, „Slökkt á hljóðnema — pikkaðu á“ eða „Talar... ýttu á til að hætta“.
+- Þegar ný útgáfa er tilbúin birtist uppfærsluborði með hnöppunum Sækja, setja upp og leyfa (sjá Uppfærslur).
+
+## Vinstri valmyndin (spjall)
+- "+ Nýtt spjall": byrjar nýtt samtal.
+- Hvert spjall á listanum sýnir hlaupandi merki á meðan umboðsmaðurinn er upptekinn þar. Blýanturinn endurnefnir hann; krossinn eyðir honum (eftir staðfestingu: öll skilaboð í honum eru eytt).
+- Þema: veldu Hryllingur (blóð, eldur og skuggi), Dökkt (hreint dökkt gler) eða Ljós (björt gler).
+
+## Skilaboðastikan
+- Hengdu við (pappírsklemmu): myndasafnsmynd, myndavélarmynd, skönnun skjala (breytir texta mynd í breytanlegt .docx), deildu skjánum svo umboðsmaðurinn geti séð hann („Kveikt eða slökkt á skjáhorfum“) og hljóð- eða myndskrár. Meðfylgjandi atriði sýna sem franskar; krossinn fjarlægir einn, "Hreinsa allt" fjarlægir alla.
+- Hnappur fyrir ham: Umboðsmaður eða smíði.
+- Hljóðnemi: kveikir eða slökktir á hljóðnemanum sem hlustar alltaf.
+- Gerð hnappur: opnar líkanalistann með leitarreit. Fyrirsætur merktar "Live" geta talað með eigin rödd.
+- Senda: sendir skilaboðin. Á meðan umboðsmaðurinn er að vinna verður þetta Stop.
+- Inntakið segir "Hvað ætti ég að gera?" í Agent mode og "Hvað ætti ég að smíða? Segðu það stutt" í Build mode.
+
+## Skilaboð
+- Afrita, deila og hlusta (les skilaboðin upphátt; ýttu aftur til að hætta) eru undir hverju skeyti.
+- „Hugsun“ sýnir röksemdafærslu líkansins þegar líkanið veitir hana.
+- Kóði sem umboðsmaðurinn skrifar birtist beint í kassa, línu fyrir línu, með Afrita, Sækja og Opna.
+- Skrár sem umboðsmaðurinn gerir birtast sem spil með Open (í raunverulegu forriti símans), Play, Share og „Annað app…“.
+- Myndir, hljóð og myndskeið sýna framfarahlutfall í beinni á meðan þær eru gerðar.
+- Verkfæraspjöld sýna hvað umboðsmaðurinn er að gera: í gangi, lokið, árangur eða mistókst.
+
+## Spjöld (verkefni, verkfæri, skrár, undirumboðsmenn)
+- Verkefnaborð: áætlunin sem umboðsmaðurinn skrifar fyrir stórt verk og framgangur þess (n/alls lokið). Þú getur bætt við þínu eigin verkefni og eytt verkefnum.
+- Verkfæri: listi yfir hvert verkfærasímtal, með lifandi stöðu.
+- Skrár: hverja skrá sem umboðsmaðurinn bjó til, með Opna, Deila, Birta og Eyða (með staðfestingu) og leitarreit.
+- Undir-umboðsmenn: hjálparfulltrúar sem keyra í bakgrunni, með stöðvunarhnappi.
+- Flugstöðvarflipi: raunverulega flugstöðin (sjá kaflann Skrár og flugstöð).
+
+## Forskoðunarspjaldið
+- Til baka, Áfram, Stöðva, Endurhlaða og veffangastiku (sláðu inn veffang eða leitaðu Google).
+- Opna skrá: sýnir Word, Excel, PowerPoint, PDF, myndir, Markdown, CSV, kóða og síður beint inni í appinu.
+- Stærð: minnka eða stækka spjaldið.
+- Lagfæring: sendir vandamál síðunnar (villur í vélinni, misheppnuð hleðsla) til umboðsmannsins sem lagar þau í bakgrunni.
+- Veldu hluta: bankaðu á hluta síðunnar og segðu síðan umboðsmanni hvað hann á að gera við þann hluta.
+- Umboðsmannshnappur: spyrðu eitthvað um síðuna; umboðsmaðurinn fær mynd af því.
+- Hraðopnun: flýtivísar að nýlegum síðum.
+
+## Kóða vinnusvæði
+- Vinstri hlið: skrárnar þínar (ný skrá, opna, vista).
+- Ritstjóri: sýnir línur og stafi; breytingar sem umboðsmaðurinn hefur gert birtast um leið.
+- Git: ný afgreiðsla, klón úr GitHub, skanna, staða, skuldbinda sig með skilaboðum, ýta, draga, greinar, tákn.
+- Draga beiðnir: búa til, sameina, loka. Verkflæði: keyrir lista, keyrðu verkflæði. Log sýnir skipunarúttak.

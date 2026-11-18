@@ -1,0 +1,11 @@
+Securitate și confidențialitate
+- Toate datele lui ZYRAXON se află pe telefonul dvs.: chat-uri, memorie, registru, abilități, cronologie, index al creierului. Nimic nu este păstrat pe un server ZYRAXON.
+- Modelele cloud primesc doar ceea ce este necesar pentru turnul pe care îl trimiteți. Cu „Numai pe dispozitiv” nu se trimite absolut nimic.
+- Solicitările și fișierele de limbă livrate în aplicație sunt criptate în APK.
+- Blocare aplicație: setați o parolă sau un model în Setări → Securitate și confidențialitate → Blocare aplicație. ZYRAXON apoi se blochează când îl deschideți sau reveniți din fundal. „Eliminați blocarea” șterge parola sau modelul salvat.
+- Nivelurile de aprobare protejează fiecare apel de instrument în cod (consultați Nivelurile de aprobare). Instrumentele necunoscute întreabă întotdeauna.
+- Puteți șterge: toată memoria, istoricul chatului și simbolul dvs. GitHub, fiecare cu un buton în Confidențialitate și date.
+- Siguranță: dacă spui că cineva te amenință sau te urmărește sau dorește telefonul sau datele tale, agentul blochează mai întâi telefonul (dacă este activată permisiunea de administrator al dispozitivului) și apoi vorbește cu tine calm.
+- Plăți: înainte de orice plată sau transfer, agentul spune ce va plăti și vă cere să confirmați.
+- Onestitate: agentul spune că ceva a funcționat doar după ce a văzut un rezultat. Nu inventează niciodată link-uri, fișiere sau rezultate.
+- Content Shield: orice citește agentul din exterior - ecranul unei alte aplicații, o pagină web, un mesaj, un fișier, un server conectat - este verificat în cod pentru text care încearcă să dea ordine agentului (în multe limbi, inclusiv text ascuns cu caractere invizibile). Textul suspect este îngrădit, astfel încât modelul îl tratează doar ca date. Cât de strict este respectă nivelul de aprobare: Locked tratează orice suspect ca fiind ostil; Supravegherea îngrădește textul suspect și, atunci când textul este în mod clar ostil, blochează restul acelei ture, astfel încât fiecare instrument care se schimbă să vă întrebe mai întâi (cartea spune de ce); Echilibrat acționează numai pe text în mod clar ostil și numai instrumentele la nivel de sistem se opresc să întrebe; Automat oprește complet scutul - nimic nu este scanat, oprit, marcat sau schimbat. Un mesaj nou de la tine îl șterge.

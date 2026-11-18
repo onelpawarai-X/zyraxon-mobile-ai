@@ -1,0 +1,20 @@
+Iniziare
+ZYRAXON è un assistente che risiede nel tuo telefono Android. Parla con te, ti ascolta e può fare un vero lavoro: apri app, tocca e digita sullo schermo, chiama persone, scrivi file, crea siti Web e app, esegui un sistema Linux, crea immagini, audio, video e documenti di ufficio e ti ricorda per mesi. Funziona in qualsiasi lingua parli.
+
+## I primi minuti
+- Al primo avvio ZYRAXON mostra un breve avviso che informa che l'agente può agire da solo sul telefono. Premi "Capito, inizia" per proseguire.
+- Aggiungi una chiave AI (Impostazioni → Provider e API → Provider AI). Incolla una chiave per qualsiasi provider che preferisci (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Quando salvi una chiave l'app legge il catalogo di quel fornitore e lo controlla davvero, così vedi un vero "connesso" e il numero di modelli.
+- Nessuna chiave? Puoi comunque utilizzare i modelli sul dispositivo (Impostazioni → Modello e identità → Sul dispositivo). Funzionano al telefono senza internet.
+- Scegli un modello con il pulsante del modello nella barra dei messaggi e un personaggio (Impostazioni → Modello e identità → Identità).
+- Concedere autorizzazioni quando una funzionalità ne richiede una (vedere il capitolo Autorizzazioni). L'agente può anche aprire la finestra di dialogo delle autorizzazioni con un solo tocco.
+- Basta parlare o scrivere. "Creami una landing page per la mia panetteria", "apri YouTube e riproduci una canzone", "qual è la mia batteria?", "chiama mamma".
+
+## I due modi di lavorare
+Accanto alla finestra di messaggio è presente un pulsante di modalità con due modalità: Agente e Compila. Vedere il capitolo Modalità.
+
+## Dove sono le cose
+- Menu a sinistra: le tue chat, nuova chat, rinomina, elimina e cambio tema.
+- Schermata chat: messaggi, scheda delle cose da fare, elenco degli strumenti, file, terminale.
+- Pannelli Anteprima e Codice: visualizza e modifica ciò che crea l'agente.
+- Impostazioni: otto sezioni, trattate una per una in questa documentazione.
+- Questa documentazione: Documentazione Impostazioni → (sei qui).

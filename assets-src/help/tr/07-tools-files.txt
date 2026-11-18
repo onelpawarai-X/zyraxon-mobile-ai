@@ -1,0 +1,27 @@
+Dosyalar, terminal ve sistem
+## Dosyalar
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Güvenli): dosyaların içindeki metni okuyun, listeleyin, ada göre bulun ve arayın.
+- `write_file`, `edit_file`: dosyaları oluşturun veya değiştirin. `edit_file` her şeyi yapar: yeni dosya, tam yeniden yazma veya tam bul ve değiştir; kod sohbette canlı olarak görünür. `delete_file` (Sistem): bir dosya veya klasörü silin.
+- Herhangi bir klasöre izin verilir (/sdcard, İndir, Belgeler, SD kart…). Tam bir yol verin ve yazıldığı gibi kullanılır.
+- Aracı yaptığı şeyi açar: `open_file` (Güvenli), telefonun gerçek uygulamasında veya ZYRAXON ön izlemesinde bir dosya açar.
+
+## Terminaller (iki gerçek)
+- android: telefonun kendi kabuğu (busybox artı `sh`), uygulamanın sanal alanının içinde. `run_shell` (Sistem) orada gözden uzakta bir komut çalıştırır.
+- linux: ZYRAXON'un uygulamanın içine yerleştirilmiş tam Unix sistemi: bash, apt/pkg, real git, python, node, clang. Çevrimdışı çalışıyor. `linux_run` (Sistem) orada bir komut çalıştırır.
+- `terminal_run` (Sistem): izlediğiniz Terminal sekmesinde bir çizgi çalıştırır, böylece onun çalıştığını görebilir ve yönetimi devralabilirsiniz. Shell Android veya Linux kullanın. `terminal_open` Terminal sekmesini öne getirir (yalnızca siz istediğinizde).
+- `system_shell` (Sistem): sistem kabuğunun yaptığı gibi, uygulama sanal alanının üzerinde sistem düzeyinde bir komut; Shizuku veya root ile çok daha fazlasına ulaşabilirsiniz.
+- Varsayılan bir zaman sınırı yoktur; büyük bir `apt upgrade` veya yapı sonuna kadar çalışır.
+
+## Shizuku (sistem erişimi)
+`setup_shizuku` (Sistem), ZYRAXON içinde paketlenmiş olan Shizuku'i kurar: durumu kontrol edin, yükleyin, açın, izin isteyin. Yalnızca siz Yükle ve İzin Ver'e dokunabilirsiniz; temsilci size bir satırda adımı söyler ve gerisini halleder.
+
+## Uzun işler ve zamanlama
+- `background_command` (Sistem): Uygulamayı kapattıktan sonra (büyük indirme, klonlama, derleme) bir bildirim ve Durdur düğmesiyle çalışmaya devam eden bir komut.
+- `schedule_command` (Sistem): bir komutu gerçek zamanlı olarak çalıştırın ("10 dakika içinde", "sabah 2'de"); Android zamanlayıcıyı tutar, böylece uygulama kapalıyken çalışır.
+- `wait` (Güvenli): tahmin etmek yerine bilerek bekleyin (bir bağlantı noktası açılıncaya, bir dosya görünene, bir komut bitene kadar saniyeler).
+
+## Linux kullanımları
+Paketleri (`apt install …`) yükleyin, Python veya Node komut dosyalarını çalıştırın, C'yi derleyin, git kullanın, sunucuları çalıştırın, zip ve unzip, curl, ffmpeg kullanın. Uygulama başlatıldığında sistem sessizce açılır ve yeniden başlatmalarda kalır.
+
+## Terminal ekranı
+Terminal sekmesi, ⌘ ZX sekmesine sahip gerçek bir terminaldir. Kendi komutlarınızı yazın veya temsilcinin komutlarını izleyin. Ayarlar'daki Gezinme ekranı, sistem kabuğuna giden bir kısayola ve yeni bir başlangıç ​​yapmak için sohbet geçmişini temizleyen bir "Yeni oturum" düğmesine sahiptir.

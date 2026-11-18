@@ -1,0 +1,11 @@
+Bezpečnosť a súkromie
+- Všetky údaje ZYRAXON sú uložené vo vašom telefóne: čety, pamäť, účtovná kniha, zručnosti, časová os, index mozgu. Na serveri ZYRAXON sa nič neuchováva.
+- Cloudové modely dostávajú len to, čo je potrebné pre ťah, ktorý odošlete. Pri nastavení „Len na zariadení“ sa neodošle vôbec nič.
+- Výzvy a jazykové súbory dodávané v aplikácii sú zašifrované vo vnútri APK.
+- Zámok aplikácie: nastavte heslo alebo vzor v Nastaveniach → Zabezpečenie a súkromie → Zámok aplikácie. ZYRAXON sa potom uzamkne, keď ho otvoríte alebo sa vrátite z pozadia. "Odstrániť zámok" vymaže uložené heslo alebo vzor.
+- Úrovne schválenia chránia každé volanie nástroja v kóde (pozri Úrovne schválenia). Neznáme nástroje sa vždy pýtajú.
+- Môžete vymazať: všetku pamäť, históriu rozhovorov a svoj GitHub token, každé pomocou jedného tlačidla v časti Súkromie a údaje.
+- Bezpečnosť: ak poviete, že sa vám niekto vyhráža alebo vás sleduje, alebo chce váš telefón alebo údaje, agent najskôr telefón uzamkne (ak je zapnuté povolenie správcu zariadenia) a potom sa s vami pokojne porozpráva.
+- Platby: pred akoukoľvek platbou alebo prevodom agent povie, čo zaplatí, a požiada vás o potvrdenie.
+- Úprimnosť: agent hovorí, že niečo fungovalo, až keď videl výsledok. Nikdy nevymýšľa odkazy, súbory ani výsledky.
+- Content Shield: čokoľvek, čo agent číta zvonku – obrazovka inej aplikácie, webová stránka, správa, súbor, pripojený server – je kontrolované v kóde pre text, ktorý sa pokúša dať agentovi príkazy (v mnohých jazykoch vrátane textu skrytého neviditeľnými znakmi). Podozrivý text je chránený, takže model s ním zaobchádza len ako s údajmi. To, aké prísne je, sa riadi úrovňou vášho schválenia: Zamknutý považuje čokoľvek podozrivé za nepriateľské; Kontrolovaný blokuje podozrivý text a keď je text jasne nepriateľský, uzamkne zvyšok tohto ťahu, takže každý nástroj na výmenu sa vás najskôr opýta (karta hovorí prečo); Balanced pôsobí iba na jasne nepriateľský text a iba nástroje na úrovni systému sa prestanú pýtať; Automatika úplne vypne štít – nič sa neskenuje, nezastaví, neoznačí ani nezmení. Nová správa od vás to vymaže.

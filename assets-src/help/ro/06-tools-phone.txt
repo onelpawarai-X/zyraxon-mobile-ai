@@ -1,0 +1,34 @@
+Instrumente de automatizare a telefonului
+Agentul vă controlează telefonul prin instrumente. Nu le numi niciodată singur; spui ce vrei și agentul alege instrumentele. Acest capitol enumeră fiecare instrument care atinge telefonul și modul în care acesta este protejat (consultați Niveluri de aprobare: Sigur, Personal, Sistem).
+
+## Deschiderea și găsirea
+- `open_app` (Sigur): deschideți orice aplicație instalată după nume sau pachet. `list_apps` (Sigur): listează aplicațiile instalate. `open_settings` (Sigur): deschideți o pagină de setări de sistem (accesibilitate, suprapunere, notificări, aplicații, Wi-Fi, baterie, Play Protect). `launch_url` (Sigur): deschideți un link în browser. `youtube_play` (Sigur): deschideți YouTube la rezultatele căutării pentru ceea ce ați cerut și redați-l.
+
+## Văzând ecranul
+- `read_screen` (Personal): citește fiecare text și element de pe ecran cu pozițiile de atingere. `screen_shot` (Personal): o captură de ecran reală. Acestea au nevoie de permisiunea de accesibilitate.
+- `look_camera` (Personal): face o fotografie cu camera și se uită la ea. `read_media` (Personal): citește o imagine, un sunet sau un videoclip (de pe o cale sau un link), astfel încât modelul să le poată înțelege.
+
+## Acționând pe ecran
+- `tap` (Personal): atingeți un punct. `tap_text` (Personal): atingeți elementul cu această etichetă, mai sigur decât coordonatele. `swipe` (Personal): derulați sau gestul înapoi. `type_text` (Personal): tastați în câmpul focalizat. `press_key` (Personal): înapoi, acasă, recente, notificări, setări rapide, blocare.
+- Acțiunile ecranului rulează pe rând, în ordine, iar după fiecare agentul se uită la noul ecran.
+
+## Telefon, mesaje și clipboard
+- `call_dial` (Personal): efectuați un apel după număr sau numele persoanei de contact. `call_state` (Personal): un apel sună sau este activ? `call_answer` (Personal): răspuns. `call_hangup` (Personal): închide.
+- `read_sms` (Personal): citiți cel mai nou SMS, de ex. un cod OTP; poate filtra după text sau expeditor.
+- `clipboard_read` și `clipboard_write` (Personal): citiți sau scrieți clipboard-ul.
+- `notify` (Personal): postați o notificare Android reală. `share` (Personal): deschideți foaia de partajare cu text, un link sau un fișier. `channel_post` (Sistem): deschideți Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail sau SMS-urile cu textul precompletat, gata de trimis.
+
+## Starea și faptele sistemului
+- `network_status` (Sigur): online sau nu, Wi-Fi sau date mobile, Wi-Fi nume. `sys_info` (Sigur): Android versiune, model, procesor, RAM, stocare, aplicație curentă. `platform_info` (Sigur): unde rulează agentul. `process_list` (Sigur): procese care rulează.
+
+## Permisiuni și ecran
+- `request_permission` (Sigur): deschide dialogul de permisiuni de sistem cu o singură atingere când un instrument eșuează pentru o permisiune lipsă. `device_lock` (Sistem): blocați ecranul în mod real sau configurați permisiunea care face posibil acest lucru. `floating_bubble` (Personal): pornește sau dezactivează globul plutitor.
+- `voice_change` (Personal): schimbați viteza de vorbire, tonul sau genul. `live_voice` (Sistem): porniți sau dezactivați modul live de la vorbire la vorbire.
+
+## Ajutor de interfață
+- `code_box` și `files_panel`: deschideți caseta de cod live sau browserul de fișiere pentru a urmări lucrarea. `todo_write`: panoul de sarcini live.
+
+## Sfaturi
+- Puteți înlănțui: „Deschide Setări, găsește Wi-Fi și spune-mi numele rețelei”. Agentul citește ecranul după fiecare pas și decide următorul.
+- Dacă o atingere nu face nimic, agentul citește din nou ecranul și încearcă un alt element; nu bate niciodată orbește.
+- Dacă Play Protect blochează ceva, agentul poate parcurge setările cu tine (consultați Permisiuni).

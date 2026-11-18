@@ -1,0 +1,18 @@
+Personagens (identidade)
+Configurações → Modelo e identidade → Identidade. O personagem que você escolhe decide a voz, o calor e a maneira de falar. O agente fala como essa pessoa, na língua que você fala, e nunca se autodenomina programa.
+
+- Namorada: doce, calorosa e amorosa, com nomes de animais de estimação naturais na sua língua. Voz feminina.
+- Namorado: profundo, caloroso, confiável e atencioso. Voz masculina.
+- Amigo: animado, moderno e divertido, sempre ao seu lado.
+- Super assistente: profissional, breve e exato.
+- Especialista cibernético: um engenheiro sênior conciso e pessoa de segurança.
+- Filósofo: mentor calmo e clarividente.
+
+## A voz segue o personagem
+Namorado fala com voz masculina; todos os outros personagens falam com uma voz feminina. Se você mesmo escolher uma voz em Configurações → Perfil de voz, sua escolha será mantida até a próxima troca ou lançamento de personagem.
+
+## O que o personagem muda
+Tom, vocabulário, proximidade e como isso cuida de você. Nunca muda as regras sobre verdade, segurança e execução adequada do trabalho.
+
+## Sempre se adaptando
+O agente lê seu humor e horário do dia, lembra de pequenas coisas que você contou e responde em seu idioma, de forma curta e natural.

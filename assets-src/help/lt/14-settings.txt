@@ -1,0 +1,42 @@
+Kiekvienas nustatymų ekranas po vieną
+Nustatymuose yra aštuoni skyriai. Kiekviename skyriuje yra tablečių, skirtų antriniams ekranams. Paskutinis jūsų naudojamas skyrius bus atidarytas kitą kartą.
+
+## 1. Kalba ir vertimas → Programos ir įrankio kalba
+Pasirinkite visos programos ir agento įrankio pranešimų kalbą. Ieškokite sąraše ir bakstelėkite vieną. Ekrane rodoma dabartinė kalba ir ar įjungtas vartotojo sąsajos vertimas ir įrankio pranešimų vertimas. Galimos 60 kalbų. Žiūrėkite skyrių Kalba.
+
+## 2. Balsas ir mikrofonas
+- Balso profilis: pasirinkite moterišką arba vyrišką balsą, greitį, aukštį, „Skaityti atsakymus garsiai“, Išbandyti balsą, bengalų balso atsisiuntimo užuomina.
+- Mikrofonas ir kalba: atpažinimo kalba, laikykite mikrofoną įjungtą, automatiškai išsiųs, kai nustojate kalbėti.
+- Tiesioginis balsas: kalbos į kalbą įjungimas / išjungimas, būsena, realiojo laiko modelių sąrašas.
+
+## 3. Teikėjai ir API
+- AI teikėjai: jūsų API raktai (ZYRAXON, OpenCode nemokama kvota, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) ir ZYRAXON Apex debesies agentas. Išsaugotas raktas patikrinamas perskaičius tikrąjį tiekėjo katalogą ir parodomas modelių skaičius arba tiksli klaida. Mygtukas atidaro ZYRAXON svetainę, kurioje sukuriate raktą.
+- GitHub: jūsų GitHub prieigos raktas (reikalingas atkūrimo apimtis), kad būtų galima paskelbti, Git iškelti ir ištraukti užklausas. Išsaugoti žetoną arba ištrinti jį; būsena rodo, ar ji nustatyta.
+
+## 4. Atnaujinimai → Programos naujinys
+Rodo dabartinę versiją, patikrina, ar nėra naujesnės versijos, atsisiunčia ją su eigos juosta ir įdiegia. Jūsų pokalbiai, atmintis ir nustatymai išlieka. Jei Android reikia leidimo įdiegti, mygtukas atidaro tą nustatymą.
+
+## 5. Modelis ir tapatybė
+- Tapatybė: pasirinkite veikėją (žr. skyrių Veikėjai).
+- Modelis: tiesioginis modelių katalogas su paieškos laukeliu, filtrais „Visi modeliai“ ir „Custom“; pirmiausia greiti modeliai.
+- Įrenginyje: atsisiųskite, įkelkite ir iškraukite modelius, kurie veikia neprisijungę; rūšiuojama nuo mažų iki didelių; neprivalomas Hugging Face ženklas; rodo įkeltas, įkeliamas ir nepavykusias būsenas.
+
+## 6. Aura ir tema
+- Tema: Siaubas, tamsa arba šviesa.
+- Aura ir fonas: auros stilius ir spalva (kraujas, rožinė, violetinė, dangus, žalia, ugnis) su puikiu atspalvių valdymu; auros dydis, švytėjimo stiprumas, sukimosi greitis, skydelio skaidrumas; plūduriuojanti akis (įjungta / išjungta, dizainas, ekrano kraštas, balso komandos / pažadinimo žodžiai, pridėkite savo); šešėlių režimas; tinkintas fono URL (mp4, gif arba vaizdas); animacijos greitis.
+
+## 7. Saugumas ir privatumas
+- Programėlės užraktas: slaptažodis (4–8 skaitmenys) arba 3 × 3 taškų raštas; patvirtinkite įvesdami du kartus; nuimti užraktą.
+- Leidimai: leidimų skyriaus sąrašas su Play Protect pagalba.
+- Privatumas ir duomenys: visi duomenys lieka telefone. Mygtukai: ištrinti visą atmintį, ištrinti pokalbių istoriją, ištrinti GitHub prieigos raktą.
+
+## 8. Sistema
+Šioje skiltyje yra atskira mygtukų eilė, kuri slenka į šoną, todėl niekas nėra suspaustas.
+- Automatika: patvirtinimo lygis ir tik įrenginyje (žr. Patvirtinimo lygiai).
+- Navigacija: sričių, į kurias reikia pereiti, sąrašas – „nėra mygtukų viršuje, viskas yra čia“ – įskaitant ⌘ ZX sistemos apvalkalą, mygtuką „Nauja sesija“ (ištrina pokalbių istoriją, kad būtų galima pradėti švariai), pranešimų skaičių ir mikrofono perjungiklį.
+- Atmintis: vietinė SQL atmintis su faktais ZYRAXON prisimena; pridėti raktą ir vertę; ištrinti visus.
+- Įgūdžių vadovas: trumpas pavyzdinių gebėjimų sąrašas (pranešimų programos, svetainės kūrimas, ekrano skaitytuvas, žibintuvėlis, fotoaparatas, Wi-Fi ir nustatymai) su pavyzdinėmis frazėmis.
+- Automatikos centras: įgūdžiai, autopilotas, pinigai, laiko juosta, smegenys ir skambučių agentas vienoje vietoje (žr. Automatikos centrą).
+
+## 9. Dokumentacija
+Atskiras skyrius nustatymuose, atskiras nuo sistemos. Šis vadovas: dvidešimt vienas skyrius, paieškos laukelis ir kalbos lusto eilutė. Kiekviena programėlės kalba jau išrašyta programėlėje – telefone niekas neverčiama ir jai skaityti nereikia interneto.

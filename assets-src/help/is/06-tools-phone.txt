@@ -1,0 +1,34 @@
+Síma sjálfvirkni verkfæri
+Umboðsmaðurinn stjórnar símanum þínum með verkfærum. Þú kallar þá aldrei sjálfur; þú segir það sem þú vilt og umboðsmaðurinn velur verkfærin. Þessi kafli sýnir hvert tæki sem snertir símann og hvernig það er varið (sjá Samþykkisstig: Öruggt, Persónulegt, Kerfi).
+
+## Opnun og að finna
+- `open_app` (Öryggið): opnaðu hvaða uppsett forrit sem er með nafni eða pakka. `list_apps` (Öryggið): listi uppsett forrit. `open_settings` (öruggt): opnaðu kerfisstillingasíðu (aðgengi, yfirborð, tilkynningar, forrit, Wi-Fi, rafhlaða, Play Protect). `launch_url` (Öryggið): opnaðu tengil í vafranum. `youtube_play` (Safe): opnaðu YouTube í leitarniðurstöðum fyrir það sem þú spurðir um og spilaðu það.
+
+## Að sjá skjáinn
+- `read_screen` (Persónulegt): les hvern texta og þátt á skjánum með pikkunarstöðum. `screen_shot` (Persónulegt): alvöru skjáskot. Þetta þarf aðgengisleyfi.
+- `look_camera` (Persónulegt): tekur eina mynd með myndavélinni og horfir á hana. `read_media` (Persónulegt): les mynd, hljóð eða myndband (af slóð eða tengli) svo líkanið geti skilið það.
+
+## Að leika á skjánum
+- `tap` (Persónulegt): bankaðu á punkt. `tap_text` (Persónulegt): bankaðu á þáttinn með þessum merkimiða, öruggari en hnit. `swipe` (Persónulegt): fletta eða afturbending. `type_text` (Persónulegt): sláðu inn í fókusreitinn. `press_key` (Persónulegt): til baka, heima, nýlegar, tilkynningar, flýtistillingar, læsing.
+- Skjáaðgerðir keyra ein í einu, í röð, og eftir hverja þeirra lítur umboðsmaðurinn á nýja skjáinn.
+
+## Sími, skilaboð og klemmuspjald
+- `call_dial` (Persónulegt): hringdu eftir númeri eða nafni tengiliðar. `call_state` (Persónulegt): er símtal að hringja eða virkt? `call_answer` (Persónulegt): svar. `call_hangup` (Persónulegt): leggja á.
+- `read_sms` (Persónulegt): lestu nýjasta SMS, t.d. OTP kóða; getur síað eftir texta eða sendanda.
+- `clipboard_read` og `clipboard_write` (Persónulegt): lestu eða skrifaðu klippiborðið.
+- `notify` (Persónulegt): birtu alvöru Android tilkynningu. `share` (Persónulegt): opnaðu deilingarblaðið með texta, tengli eða skrá. `channel_post` (Kerfi): opnaðu Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail eða SMS með forútfylltum texta, tilbúinn til sendingar.
+
+## Staða og kerfisstaðreyndir
+- `network_status` (öruggt): á netinu eða ekki, Wi-Fi eða farsímagögn, Wi-Fi nafn. `sys_info` (Öryggið): Android útgáfa, gerð, örgjörvi, vinnsluminni, geymsla, núverandi app. `platform_info` (Öryggið): þar sem umboðsmaðurinn er í gangi. `process_list` (Öryggið): ferli í gangi.
+
+## Heimildir og skjár
+- `request_permission` (Öryggið): opnar kerfisheimildagluggann með einni snertingu þegar tól mistekst vegna heimildar sem vantar. `device_lock` (Kerfi): læstu skjánum fyrir alvöru, eða settu upp leyfið sem gerir það mögulegt. `floating_bubble` (Persónulegt): kveiktu eða slökktu á fljótandi kúlu.
+- `voice_change` (Persónulegt): breyta talhraða, tónhæð eða kyni. `live_voice` (Kerfi): kveiktu eða slökktu á beinni ræðu-í-tal ham.
+
+## Viðmótshjálparar
+- `code_box` og `files_panel`: opnaðu lifandi kóðaboxið eða skráarvafrann svo þú horfir á verkið. `todo_write`: verkefnaborðið í beinni.
+
+## Ábendingar
+- Þú getur keðjað: "Opnaðu stillingar, finndu Wi-Fi og segðu mér nafn netsins". Umboðsmaðurinn les skjáinn eftir hvert skref og ákveður næsta.
+- Ef tappa gerir ekkert les umboðsmaðurinn aftur á skjáinn og reynir annan þátt; það slær aldrei í blindni.
+- Ef Play Protect lokar á eitthvað getur umboðsmaðurinn gengið í gegnum stillingarnar með þér (sjá Heimildir).

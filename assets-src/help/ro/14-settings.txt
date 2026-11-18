@@ -1,0 +1,42 @@
+Fiecare ecran de setări, unul câte unul
+Setările au opt secțiuni. Fiecare secțiune are pastile pentru sub-ecranele sale. Ultima secțiune pe care ați folosit-o va fi redeschisă data viitoare.
+
+## 1. Limba și traducerea → Limba aplicației și instrumentului
+Alegeți limba întregii aplicații și a mesajelor instrumentului agentului. Căutați în listă și atingeți unul. Ecranul arată limba curentă și dacă traducerea UI și traducerea mesajului instrumentului sunt activate. Sunt disponibile 60 de limbi. Vezi capitolul Limbă.
+
+## 2. Voce și microfon
+- Profil de voce: alegeți vocea feminină sau masculină, viteza, tonul, „Citiți răspunsurile cu voce tare”, Vocea de testare, sugestia de descărcare a vocii bengalezi.
+- Microfon și limbă: recunoașterea limbii, menține microfonul pornit, trimite automat când nu mai vorbiți.
+- Voce live: pornire/dezactivare vorbire în vorbire, stare, lista modelelor în timp real.
+
+## 3. Furnizori și API
+- Furnizori AI: propriile chei API (ZYRAXON, OpenCode cotă gratuită, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) și agentul cloud ZYRAXON Apex. O cheie salvată este verificată prin citirea catalogului real al furnizorului și arată numărul de modele sau eroarea exactă. Un buton deschide site-ul web ZYRAXON unde creați o cheie.
+- GitHub: GitHub token-ul dvs. de acces (necesită domeniul de aplicare al depozitului) pentru publicare, Git solicitări push și pull. Salvați jetonul sau ștergeți-l; starea arată dacă este setat.
+
+## 4. Actualizări → Actualizare aplicație
+Afișează versiunea curentă, verifică o versiune mai nouă, o descarcă cu o bară de progres și o instalează. Conversațiile dvs., memoria și setările rămân. Dacă Android are nevoie de permisiunea de instalare, un buton deschide setarea respectivă.
+
+## 5. Model și identitate
+- Identitate: alege personajul (vezi capitolul Personaje).
+- Model: catalogul de modele live cu o casetă de căutare, filtre „Toate modelele” și „Personalizat”; mai întâi modelele rapide.
+- Pe dispozitiv: descărcați, încărcați și descărcați modele care rulează offline; sortate de la mic la mare; jeton opțional Hugging Face; afișează stările încărcate, încărcate și eșuate.
+
+## 6. Aura & tema
+- Tema: Groază, Întuneric sau Lumină.
+- Aura și fundalul: stilul și culoarea aurei (sânge, roz, violet, cer, verde, foc) cu control fin al nuanței; dimensiunea aurei, puterea strălucirii, viteza de rotație, transparența panoului; ochiul plutitor (pornit/oprit, design, marginea ecranului, comenzi vocale/cuvinte de trezire, adaugă propriile tale); modul shader; URL de fundal personalizat (mp4, gif sau imagine); viteza de animație.
+
+## 7. Securitate și confidențialitate
+- Blocare aplicație: o parolă (4–8 cifre) sau un model de puncte 3×3; confirmați introducându-l de două ori; scoateți blocarea.
+- Permisiuni: lista din capitolul Permisiuni, cu ajutorul Play Protect.
+- Confidențialitate și date: toate datele rămân pe telefon. Butoane: ștergeți toată memoria, ștergeți istoricul chatului, ștergeți tokenul GitHub.
+
+## 8. Sistem
+Această secțiune are propriul rând de butoane care se derulează în lateral, astfel încât nimic nu este strâns.
+- Automatizare: nivel de aprobare și numai pe dispozitiv (consultați Niveluri de aprobare).
+- Navigare: o listă de zone la care să accesați — „fără butoane deasupra, totul este aici” — inclusiv shell-ul sistemului ⌘ ZX, un buton „Sesiune nouă” (șterge istoricul chatului pentru un început curat), numărul de mesaje și comutatorul microfonului.
+- Memorie: memoria locală SQL cu faptele ZYRAXON amintește; adăugați o cheie și o valoare; șterge toate.
+- Ghid de aptitudini: o listă rapidă de exemple de abilități (aplicații de mesagerie, creare de site-uri web, cititor de ecran, lanternă, cameră foto, Wi-Fi și setări) cu exemple de fraze.
+- Hub de automatizare: abilități, pilot automat, bani, cronologie, creier și agentul de apel într-un singur loc (consultați hub de automatizare).
+
+## 9. Documentare
+Secțiunea proprie în Setări, separată de Sistem. Acest ghid: douăzeci și unu de capitole, o casetă de căutare și un rând de cip de limbă. Fiecare limbă din aplicație este deja scrisă integral în aplicație - nimic nu este tradus pe telefon și nu este nevoie de internet pentru a o citi.

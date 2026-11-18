@@ -1,0 +1,51 @@
+Tērzēšanas ekrāns un katra poga
+## Ekrāna augšdaļa
+- Izvēlne: atver kreiso atvilktni ar jūsu tērzēšanas sarunām.
+- Tērzēšana / Terminālis / Kods / Priekšskatījums: pārslēdziet galveno skatu. Tērzēšana ir saruna; Terminālis ir īstais terminālis; Kods ir faila darbvieta ar Git; Priekšskatījums ir iebūvēta pārlūkprogramma.
+- Aura: parāda animācijas varoņa ekrānu. Tās sānu pogas ir Mic, Chat (atpakaļ uz sarunu) un Refresh (atkārtoti savieno mākoni un atkārtoti ielādē modeļu sarakstu).
+- Iestatījumi: atver astoņas iestatījumu sadaļas.
+- Reklāmkarogs parāda mikrofona stāvokli: "Klausās...", "Mikrofons izslēgts — pieskarieties" vai "Runā... pieskarieties, lai apturētu".
+- Kad jauna versija ir gatava, tiek parādīts atjaunināšanas reklāmkarogs ar pogām Lejupielādēt, Instalēt un Atļaut (skatiet Atjauninājumi).
+
+## Kreisā izvēlne (tērzēšana)
+- "+ Jauna tērzēšana": sāk jaunu sarunu.
+- Kamēr aģents tajā ir aizņemts, katrai saraksta tērzēšanai ir redzama atzīme. Zīmulis to pārdēvē; krusts to izdzēš (pēc apstiprinājuma: visi tajā esošie ziņojumi tiek izdzēsti).
+- Tēma: izvēlieties Šausmas (asinis, uguns un ēna), Dark (tīrs, tumšs stikls) vai Gaišs (gaišs stikls).
+
+## Ziņojumu josla
+- Pievienojiet (saspraudi): galerijas fotoattēlu, kameras fotoattēlu, dokumentu skenēšanu (pārvērš fotoattēlā esošo tekstu rediģējamā .docx formātā), kopīgojiet ekrānu, lai aģents to varētu redzēt (ieslēgts vai izslēgts "Ekrāna skatīšanās") un audio vai video failus. Pievienotās preces tiek rādītas kā mikroshēmas; krusts noņem vienu, "Notīrīt visu" noņem visu.
+- Režīma poga: Agent vai Build.
+- Mikrofona poga: ieslēdz vai izslēdz vienmēr klausošo mikrofonu.
+- Modeļa poga: atver modeļu sarakstu ar meklēšanas lodziņu. Modeļi ar atzīmi "Live" var runāt savā balsī.
+- Sūtīt: nosūta ziņu. Kamēr aģents strādā, tas kļūst par Stop.
+- Ievade saka "Kas man jādara?" aģenta režīmā un "Ko man vajadzētu izveidot? Sakiet īsi" veidošanas režīmā.
+
+## Ziņojumi
+- Kopēt, Koplietot un Klausīties (skaļi nolasa ziņojumu; nospiediet vēlreiz, lai apturētu) atrodas zem katra ziņojuma.
+- "Domāšana" parāda modeļa argumentāciju, kad modelis to nodrošina.
+- Aģenta rakstītais kods tiek rādīts tiešraidē lodziņā, rindiņai pa rindiņai ar opcijām Kopēt, Lejupielādēt un Atvērt.
+- Faili, ko aģents rāda, tiek rādīti kā kartītes ar opcijām Atvērt (tālruņa īstajā lietotnē), Atskaņot, Kopīgot un “Cita lietotne…”.
+- Attēli, audio un video tiešraidē parāda progresa procentuālo daļu, kamēr tie tiek veikti.
+- Rīku kartītes parāda, ko aģents dara: darbojas, paveikts, veiksmīgi vai neveiksmīgi.
+
+## Paneļi (uzdevumi, rīki, faili, apakšaģenti)
+- Todo dēlis: plāns, ko aģents raksta lielam darbam un tā norisei (n/kopā paveikts). Varat pievienot savu uzdevumu un dzēst uzdevumus.
+- Rīki: katra rīka izsaukuma saraksts ar reāllaika statusu.
+- Faili: katrs aģenta izveidotais fails ar Atvērt, Kopīgot, Publicēt un dzēst (ar apstiprinājumu) un meklēšanas lodziņu.
+- Apakšaģenti: palīgaģenti, kas darbojas fonā, ar pogu Apturēt.
+- Cilne Terminālis: īstais terminālis (skatiet nodaļu Faili un terminālis).
+
+## Priekšskatījuma panelis
+- Atpakaļ, Uz priekšu, Apturēt, Ielādēt atkārtoti un adreses joslu (ievadiet tīmekļa adresi vai meklējiet Google).
+- Atvērt failu: parāda Word, Excel, PowerPoint, PDF, attēlus, Markdown, CSV, kodu un vietnes tieši lietotnē.
+- Izmērs: samaziniet vai palieliniet paneli.
+- Labot: nosūta lapas problēmas (konsoles kļūdas, neveiksmīgas ielādes) aģentam, kas tās novērš fonā.
+- Izvēlieties daļu: pieskarieties kādai lapas daļai, pēc tam pastāstiet aģentam, ko darīt ar šo daļu.
+- Aģenta poga: jautājiet kaut ko par lapu; aģents saņem tā attēlu.
+- Ātrā atvēršana: īsceļi uz jaunākajām lapām.
+
+## Koda darbvieta
+- Kreisajā pusē: jūsu faili (jauns fails, atveriet, saglabājiet).
+- Redaktors: parāda līnijas un rakstzīmes; aģenta veiktās izmaiņas tiek parādītas uzreiz.
+- Git: jauns repo, klons no GitHub, skenēšana, statuss, saistības ar ziņojumu, push, pull, filiāles, marķieris.
+- Izvilkšanas pieprasījumi: izveidot, apvienot, aizvērt. Darbplūsmas: saraksts tiek palaists, palaist darbplūsmu. Žurnāls parāda komandas izvadi.

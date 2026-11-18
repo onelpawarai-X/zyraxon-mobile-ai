@@ -1,0 +1,11 @@
+Sekuriteit en privaatheid
+- Al ZYRAXON se data leef op jou foon: kletse, geheue, grootboek, vaardighede, tydlyn, breinindeks. Niks word op 'n ZYRAXON bediener gehou.
+- Wolkmodelle ontvang net wat nodig is vir die beurt wat jy stuur. Met "On-device only" word glad niks gestuur nie.
+- Die aanwysings en taallêers wat in die toepassing gestuur word, word binne die APK geïnkripteer.
+- Toepassingslot: stel 'n wagwoord of patroon in Instellings → Sekuriteit en privaatheid → Toepassingslot. ZYRAXON sluit dan wanneer jy dit oopmaak of van die agtergrond af terugkeer. "Verwyder slot" vee die gestoorde wagwoord of patroon uit.
+- Goedkeuringsvlakke bewaak elke instrumentoproep in kode (sien Goedkeuringsvlakke). Onbekende gereedskap vra altyd.
+- Jy kan uitvee: alle geheue, die kletsgeskiedenis en jou GitHub-teken, elk met een knoppie in Privaatheid en data.
+- Veiligheid: as jy sê iemand dreig of volg jou, of wil jou foon of data hê, sluit die agent eers die foon (as die toestel-admin-toestemming aan is) en praat dan rustig met jou.
+- Betalings: voor enige betaling of oorplasing sê die agent wat hy sal betaal en vra jou om te bevestig.
+- Eerlikheid: die agent sê eers iets het gewerk nadat dit 'n resultaat gesien het. Dit vind nooit skakels, lêers of resultate uit nie.
+- Inhoudskild: wat die agent ook al van buite af lees - die skerm van 'n ander toepassing, 'n webblad, 'n boodskap, 'n lêer, 'n gekoppelde bediener - word gekontroleer in kode vir teks wat probeer om die agent opdragte te gee (in baie tale, insluitend teks wat met onsigbare karakters versteek is). Verdagte teks is omhein sodat die model dit slegs as data hanteer. Hoe streng dit is, volg jou goedkeuringsvlak: Locked behandel enigiets verdag as vyandig; Onder toesig heinings omhein verdagte teks en, wanneer teks duidelik vyandig is, sluit die res van daardie beurt sodat elke veranderende instrument jou eerste vra (die kaart sê hoekom); Gebalanseerde handelinge slegs op duidelik vyandige teks en slegs stelsel-vlak gereedskap stop om te vra; Outomaties skakel die skild heeltemal af - niks word geskandeer, gestop, gemerk of verander nie. 'n Nuwe boodskap van jou maak dit skoon.

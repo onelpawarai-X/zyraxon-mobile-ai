@@ -1,0 +1,35 @@
+Voce: vorbire, ascultare și vorbire în direct
+## Ascultare (microfon)
+Setări → Voce și microfon → Microfon și limbă.
+- Limba de recunoaștere a vorbirii: limba pe care o vorbiți la microfon. Schimbați-l oricând.
+- Ține microfonul pornit (ascultând mereu): când este pornit, microfonul rămâne deschis. Când este oprit, îl porniți singur.
+- Trimiteți automat când încetați să vorbiți: după aproximativ 1,5 secunde de tăcere, propoziția dvs. este trimisă de la sine. Când este oprit, cuvintele așteaptă în casetă să apăsați pe Trimitere.
+- Butonul microfonului din bara de mesaje și bannerul din partea de sus procedează la fel de activare/dezactivare.
+- Microfonul este întotdeauna deschis pentru tine, chiar dacă ZYRAXON vorbește. În momentul în care începi să vorbești, se oprește și ascultă, apoi îți răspunde. Vocea proprie care revine prin microfon este filtrată prin compararea textului cu ultimul său răspuns.
+- O propoziție este trimisă o singură dată. Dacă dispozitivul de recunoaștere repetă mai târziu o versiune ușor diferită a aceleiași propoziții, aceasta este renunțată la aceeași tură.
+
+## Vorbire (text în vorbire)
+Setări → Voce și microfon → Profil vocal.
+- Alegeți o voce: feminină (dulce și romantică) sau masculină (profundă și încrezătoare). Vocile proprii ale site-ului sunt folosite atunci când sunt gata; motorul de vorbire al telefonului este soluția de rezervă.
+- Glisoare de viteză și înălțime și „Testează vocea”.
+- „Citiți răspunsurile cu voce tare” activează sau dezactivează vorbirea.
+- Dacă telefonul nu are motor de vorbire, instalați Google Servicii de vorbire. Dacă telefonul nu are date vocale bengalezi, un buton vă permite să îl descărcați.
+- Atingeți bannerul vorbitor pentru a opri vocea. Atinge Ascultă sub orice mesaj pentru a-l auzi.
+- ZYRAXON nu citește niciodată cod, linkuri, JSON sau nume de instrumente cu voce tare.
+
+## Laborator de voce (schimbător de voce)
+Alegeți din catalogul serverului după sex (toți, fată, băiat), vârstă (copil, adolescent, adult, senior) și limbă (bengali, hindi, engleză, urdu, arabă, tamilă, nepaleză, spaniolă, franceză, germană, japoneză, coreeană, chineză, rusă, turcă...). „Ascultă” previzualizează o voce; „Înapoi la implicit” restabilește vocea personajului. Pentru sunet cu mai multe voci, întrebați agentul: fiecare parte a unui dialog are propria voce.
+
+## Voce live (vorbire la vorbire)
+Setări → Voce și microfon → Voce live. Cu un model în timp real (Gemini Live, OpenAI Realtime și similar), modelul aude microfonul și răspunde cu propria voce, într-un singur flux, iar tu îl poți întrerupe la mijlocul cuvântului. Discursul propriu al telefonului este dezactivat în această sesiune, astfel încât să nu auziți niciodată două voci.
+- Folosește propria voce a modelului: on = live talk; oprit = telefonul citește răspunsuri text.
+- Starea arată: conectare, ascultare, vorbire, așteptare.
+- Alegerea unui model în timp real îl pornește de la sine.
+- Dacă nu este încărcat niciun model în timp real, adăugați o cheie Gemini sau OpenAI în furnizorii de AI.
+- Vocea pe care ați ales-o în profilul de voce este folosită și în modul live.
+
+## Ochi plutitor
+Setări → Aura și temă → Aura și fundal.
+- Un mic glob plutitor care se așează peste orice altă aplicație. Atingeți pentru a porni sau opri microfonul; apăsați lung pentru a deschide o casetă de text și a o închide din nou.
+- Opt modele: ochi, orb strălucitor, inel de neon, galaxie, orbită, plasmă, pulsar, prismă. Plasarea la marginea ecranului.
+- Comenzi vocale (cuvinte de trezire): când aplicația este în fundal, rostirea numelui trezește ochiul plutitor și ZYRAXON răspunde. Implicite: „zyraxon”, „hei zyraxon” și ortografii comune în bengaleză și engleză. Adăugați propriile cuvinte în orice limbă; eliminați-le oricând.

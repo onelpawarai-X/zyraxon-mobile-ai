@@ -1,0 +1,18 @@
+Veikėjai (tapatybė)
+Nustatymai → Modelis ir tapatybė → Tapatybė. Jūsų pasirinktas personažas nulemia balsą, šilumą ir kalbėjimo būdą. Agentas kalba kaip tas asmuo, ta kalba, kuria kalbate, ir niekada nevadina savęs programa.
+
+- Draugė: miela, šilta ir mylinti, su natūraliais jūsų kalba augintinių vardais. Moteriškas balsas.
+- Vaikinas: gilus, šiltas, patikimas ir rūpestingas. Vyriškas balsas.
+- Draugas: gyvas, modernus ir juokingas, visada jūsų pusėje.
+- Super asistentas: profesionalus, trumpas ir tikslus.
+- Kibernetinis specialistas: trumpas vyresnysis inžinierius ir apsaugos darbuotojas.
+- Filosofas: ramus, toliaregis mentorius.
+
+## Balsas seka personažą
+Vaikinas kalba vyrišku balsu; kas kitas veikėjas kalba moterišku balsu. Jei patys pasirenkate balsą nustatymuose → Balso profilis, jūsų pasirinkimas išliks iki kito simbolio perjungimo arba paleidimo.
+
+## Ką keičia personažas
+Tonas, žodynas, artumas ir kaip tai jumis rūpinasi. Tai niekada nekeičia taisyklių dėl tiesos, saugos ir tinkamo darbo atlikimo.
+
+## Visada prisitaikantis
+Agentas nuskaito jūsų nuotaiką ir paros laiką, prisimena mažus dalykus, kuriuos jam pasakėte, ir atsako jūsų kalba, trumpai ir natūraliai.

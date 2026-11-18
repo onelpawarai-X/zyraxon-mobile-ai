@@ -1,0 +1,27 @@
+Këshilla dhe shembuj të kërkesave
+## Thuaj çfarë të duash, jo si
+- "Bëni një faqe uljeje për një palestër, të errët dhe të guximshme."
+- "Ndërtoni një aplikacion rezervimi të plotë me një bazë të dhënash." (agjenti pyet së pari zgjedhjet teknike)
+- "Hap YouTube dhe luaj një këngë të qetë."
+- "Lëvizni poshtë dhe hapni rezultatin e parë."
+- "Çfarë është bateria ime dhe Wi-Fi?"
+- "Lexo SMS-in tim më të ri dhe më trego kodin."
+- "Telefononi mamin." / "Përgjigjuni thirrjes."
+- "Bëni një CV nga kjo foto." (bashkangjisni)
+- "Kthejeni këtë regjistrim të takimit në shënime me artikuj veprimi."
+- "Bëni një poster për ngjarjen e së premtes me këto ngjyra."
+- "Bëni një dialog audio midis dy miqve, një djali dhe një vajze."
+- "Mos harroni se motra ime ka ditëlindjen më 3 maj."
+- "Çdo mëngjes në 8 më tregoni motin." (autopilot)
+- "Mësoni se si e dërgoj qiranë time nga aplikacioni i portofolit tim, në mënyrë që ta bëni përsëri." (aftësi)
+- "Zbëni atë që keni bërë në dosjen e projektit." (afati kohor)
+- "Ku është kontrata ime e qirasë?" (truri)
+- "Instaloni paketat python dhe ekzekutoni këtë skript." (Linux)
+- "Publikoni këtë faqe që unë të mund ta ndaj atë." (lidhje publike)
+
+## Zakonet që ndihmojnë
+- Rrahje të shkurtra dhe të qarta të gjata. Agjenti zgjedh standardet dhe ju tregon se çfarë zgjodhi.
+- Kur bën një pyetje, përgjigjuni dhe vazhdon nga i njëjti vend.
+- Thuaj "shpjego" ose "përmbledhje" për një përgjigje të detajuar; përndryshe përgjigjet janë të shkurtra.
+- Ju mund të flisni për të në çdo kohë. Ndalon dhe dëgjon.
+- Përdorni modalitetin Build për të bërë gjëra dhe modalitetin Agent për të bërë gjëra në telefon.

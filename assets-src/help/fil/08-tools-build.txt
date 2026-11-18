@@ -1,0 +1,21 @@
+Pagbuo: mga site, app, preview at pag-publish
+## Paano magtanong
+- "Gawin mo akong landing page para sa coffee shop ko." Binubuo ito kaagad ng ahente, sisimulan ito sa iyong telepono at bubuksan ito sa Preview. Makakakuha ka ng 2–3 linyang naglalarawan dito. Walang nai-publish maliban kung tatanungin mo.
+- "Bumuo ng isang to-do app." Direktang binuo gamit ang isang makabuluhang stack, tumakbo at ipinapakita. Isang back end, database o login lamang kung tatanungin mo.
+- "Bumuo ng isang full-stack na app." Ang ahente ay unang nagtanong ng isang maikling tanong tungkol sa back-end na wika, database, pag-login at kung saan ito tumatakbo, na may mga inirerekomendang default, pagkatapos ay buuin ang lahat ng ito gamit ang seed data at sumusubok ng isang buong daloy.
+- "Gumawa ng Windows/Linux/macOS/Android program." Ang pinagmulan ay nakasulat, isang build workflow ay idinagdag, ito ay itinulak at binuo sa cloud na may GitHub Mga Aksyon, at makukuha mo ang tunay na link sa pag-download.
+
+## Mga gamit
+- `edit_file` at `write_file`: isulat ang totoong mga file (kumpletong code, hindi kailanman mga stub). `code_box` ay nagpapakita sa kanila ng live.
+- `preview` (Ligtas): ang built-in na tunay na browser. Mga Pagkilos: bukas (isang link, `localhost:PORT` o isang file), i-reload, pabalik, pasulong, screenshot, pag-scroll, pag-click, i-type, basahin ang teksto ng pahina, mga error sa console, eval. Tinitingnan ng ahente ang sarili nitong gawain bago nito sabihin na tapos na ito.
+- `serve_local` (System): magsisimula ng web server sa telepono para sa isang folder at ibinabalik ang LAN address ng iba pang mga device sa iyong Wi-Fi na maaaring mabuksan.
+- `publish_website` (System): naghahatid ng isang site sa isang pampublikong port mula sa telepono. `publish_cloudflare` (System): naglalagay ng site sa internet na walang account sa pamamagitan ng Cloudflare tunnel at nagbabalik ng pampublikong https link. `publish_github` (System): nag-publish ng proyekto sa isang GitHub repository (Mga Pahina) kasama ang iyong token.
+- `git` (System): clone, init, status, add, commit, push, pull, branch, checkout, log, diff gamit ang iyong na-save na token. `github_pr` (System): lumikha, maglista, magsama at magkomento sa mga kahilingan sa paghila. `github_actions` (System): ilista ang mga workflow, patakbuhin ang mga ito, poll run at basahin ang mga log, kaya ang mga build ay tumatakbo sa cloud mula sa telepono.
+- `build_app` (System): binubuo ang proyektong ito gamit ang Gradle sa telepono at ini-install ang resulta.
+- `files_panel`, `todo_write`: file browser at task board.
+
+## Mga tuntunin sa kalidad na sinusunod ng ahente
+Kumpletong layout, tumutugon na disenyo, gumaganang JavaScript, animation, pare-parehong mga kulay at font (madilim at maliwanag kung saan ito magkasya), hindi isang generic na template. Karaniwang 300–900 linya ang landing page; mas malalaking bagay pa.
+
+## Kung may mukhang sira
+Pindutin ang Fix sa Preview, o sabihin sa ahente. Binabasa nito ang console, inaayos ang dahilan, muling binubuksan ang page at muling nagsusuri.

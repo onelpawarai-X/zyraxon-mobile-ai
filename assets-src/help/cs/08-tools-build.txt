@@ -1,0 +1,21 @@
+Vytváření: weby, aplikace, náhled a publikování
+## Jak se zeptat
+- "Udělejte mi vstupní stránku pro mou kavárnu." Agent jej ihned sestaví, spustí na vašem telefonu a otevře v náhledu. Dostanete 2–3 řádky, které to popisují. Nic se nezveřejňuje, pokud se nezeptáte.
+- "Sestavte aplikaci pro úkoly." Postaveno přímo s rozumným zásobníkem, spustit a ukázat. Back-end, databáze nebo přihlášení, pouze pokud se zeptáte.
+- "Vytvořte kompletní aplikaci." Agent nejprve položí jednu krátkou otázku týkající se back-endového jazyka, databáze, přihlášení a toho, kde se spouští, s doporučenými výchozími nastaveními, poté to vše sestaví s počátečními daty a otestuje jeden úplný tok.
+- "Vytvořte Windows/Linux/macOS/Android program." Zdroj je napsán, je přidán pracovní postup sestavení, je odeslán a zabudován v cloudu pomocí akcí GitHub a získáte skutečný odkaz ke stažení.
+
+## Nástroje
+- `edit_file` a `write_file`: zápis skutečných souborů (úplný kód, nikdy útržky). `code_box` je ukazuje živě.
+- `preview` (Safe): vestavěný skutečný prohlížeč. Akce: otevřít (odkaz, `localhost:PORT` nebo soubor), znovu načíst, zpět, vpřed, snímek obrazovky, posouvání, kliknutí, psaní, čtení textu stránky, chyby konzoly, eval. Agent se podívá na svou vlastní práci, než řekne, že je hotová.
+- `serve_local` (Systém): Spustí webový server v telefonu pro složku a vrátí adresu LAN, která mohou otevřít ostatní zařízení na vašem Wi-Fi.
+- `publish_website` (System): obsluhuje web na veřejném portu z telefonu. `publish_cloudflare` (Systém): umístí web na internet bez účtu prostřednictvím tunelu Cloudflare a vrátí veřejný https odkaz. `publish_github` (Systém): publikuje projekt do GitHub úložiště (Stránky) s vaším tokenem.
+- `git` (Systém): klonovat, init, stav, přidat, odevzdat, odeslat, stáhnout, větvit, odhlásit, přihlásit, porovnat s uloženým tokenem. `github_pr` (Systém): vytvářet, vypisovat, slučovat a komentovat žádosti o stažení. `github_actions` (Systém): seznam pracovních postupů, jejich spuštění, spuštění dotazování a čtení protokolů, takže sestavení běží v cloudu z telefonu.
+- `build_app` (System): sestaví tento projekt pomocí Gradle v telefonu a nainstaluje výsledek.
+- `files_panel`, `todo_write`: prohlížeč souborů a panel úloh.
+
+## Pravidla kvality, kterými se agent řídí
+Kompletní rozvržení, responzivní design, fungující JavaScript, animace, konzistentní barvy a fonty (tmavé a světlé tam, kde se hodí), ne generická šablona. Vstupní stránka má obvykle 300–900 řádků; větší věci víc.
+
+## Pokud něco vypadá rozbité
+Stiskněte Opravit v Náhledu nebo to řekněte agentovi. Přečte konzoli, opraví příčinu, znovu otevře stránku a znovu zkontroluje.

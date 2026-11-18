@@ -1,0 +1,35 @@
+Stemme: tale, lytte og tale live
+## Lytning (mikrofon)
+Indstillinger → Stemme og mikrofon → Mikrofon og sprog.
+- Talegenkendelsessprog: det sprog, du taler til mikrofonen. Skift det til enhver tid.
+- Hold mikrofonen tændt (lytter altid): når den er tændt, forbliver mikrofonen åben. Når den er slukket, tænder du den selv.
+- Send automatisk, når du holder op med at tale: Efter ca. 1,5 sekunders stilhed sendes din sætning af sig selv. Når de er slået fra, venter ordene i boksen på, at du trykker på Send.
+- Mikrofonknappen i beskedlinjen og banneret øverst gør det samme til/fra.
+- Mikrofonen er altid åben for dig, også mens ZYRAXON taler. I det øjeblik du begynder at tale, stopper den og lytter og svarer dig derefter. Dens egen stemme, der kommer tilbage gennem mikrofonen, filtreres fra ved at sammenligne teksten med dens sidste svar.
+- En sætning sendes kun én gang. Hvis genkenderen senere gentager en lidt anden version af den samme sætning, droppes den som den samme tur.
+
+## Tale (tekst-til-tale)
+Indstillinger → Stemme og mikrofon → Stemmeprofil.
+- Vælg en stemme: kvindelig (sød og romantisk) eller mandlig (dyb og selvsikker). Hjemmesidens egne stemmer bruges, når de er klar; telefonens egen talemotor er faldet.
+- Skydere til hastighed og tonehøjde og "Test stemme".
+- "Læs svar højt" slår tale til eller fra.
+- Hvis telefonen ikke har nogen talemotor, skal du installere Google taletjenester. Hvis telefonen ikke har nogen bengalsk stemmedata, lader en knap dig downloade dem.
+- Tryk på talebanneret for at stoppe stemmen. Tryk på Lyt under en meddelelse for at høre den.
+- ZYRAXON læser aldrig kode, links, JSON eller værktøjsnavne højt.
+
+## Stemmelaboratorium (stemmeskifter)
+Vælg fra serverens katalog efter køn (alle, pige, dreng), alder (barn, teenager, voksen, senior) og sprog (bengalsk, hindi, engelsk, urdu, arabisk, tamil, nepalesisk, spansk, fransk, tysk, japansk, koreansk, kinesisk, russisk, tyrkisk...). "Lyt" forhåndsviser en stemme; "Tilbage til standard" gendanner karakterens stemme. For lyd med mange stemmer spørg agenten: Hver del af en dialog får sin egen stemme.
+
+## Levende stemme (tale-til-tale)
+Indstillinger → Stemme og mikrofon → Live stemme. Med en realtidsmodel (Gemini Live, OpenAI Realtime og lignende) hører modellen mikrofonen og svarer med sin egen stemme, i én stream, og du kan afbryde den midt i ordet. Telefonens egen tale er slået fra i denne session, så du aldrig hører to stemmer.
+- Brug modellens egen stemme: on = live talk; slukket = telefonen læser tekstsvar.
+- Status viser: forbinder, lytter, taler, venter.
+- At vælge en realtidsmodel tænder den af ​​sig selv.
+- Hvis der ikke er indlæst en realtidsmodel, skal du tilføje en Gemini- eller OpenAI-nøgle i AI-udbydere.
+- Den stemme, du valgte i stemmeprofilen, bruges også i live-tilstand.
+
+## Flydende øje
+Indstillinger → Aura & tema → Aura & baggrund.
+- En lille flydende kugle, der sidder over hver anden app. Tryk for at tænde eller slukke for mikrofonen; tryk længe for at åbne en tekstboks og lukke den igen.
+- Otte designs: øje, glødkugle, neonring, galakse, kredsløb, plasma, pulsar, prisme. Placering på kanten af ​​skærmen.
+- Stemmekommandoer (wake words): Når appen er i baggrunden, vækker man det flydende øje ved at sige navnet, og ZYRAXON svarer. Standarder: "zyraxon", "hey zyraxon" og almindelige stavemåder på bengali og engelsk. Tilføj dine egne ord på ethvert sprog; fjern dem til enhver tid.

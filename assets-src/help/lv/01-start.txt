@@ -1,0 +1,20 @@
+Darba sākšana
+ZYRAXON ir palīgs, kas atrodas jūsu Android tālrunī. Tas sarunājas ar jums, klausās jūs un var veikt reālu darbu: atvērt lietotnes, pieskarieties ekrānam un rakstīt, zvaniet cilvēkiem, rakstiet failus, veidojiet vietnes un lietotnes, darbiniet Linux sistēmu, veidojiet attēlus, audio, video un biroja dokumentus un atcerieties jūs vairākus mēnešus. Tas darbojas jebkurā valodā, kurā runājat.
+
+## Pirmās minūtes
+- Pirmajā palaišanas reizē ZYRAXON parāda īsu paziņojumu, ka aģents var darboties jūsu tālrunī pats. Lai turpinātu, nospiediet "Sapratu, sāciet".
+- Pievienojiet AI atslēgu (Iestatījumi → Providers & API → AI nodrošinātāji). Ielīmējiet atslēgu jebkuram pakalpojumu sniedzējam, kas jums patīk (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Saglabājot atslēgu, lietotne nolasa šī pakalpojumu sniedzēja katalogu un pārbauda, ​​vai tas ir īsts, lai jūs redzētu patiesu “savienojumu” un modeļu skaitu.
+- Nav atslēgas? Joprojām varat izmantot ierīcē esošos modeļus (Iestatījumi → Modelis un identitāte → Ierīcē). Viņi darbojas pa tālruni bez interneta.
+- Izvēlieties modeli ar modeļa pogu ziņojumu joslā un rakstzīmi (Iestatījumi → Modelis un identitāte → Identitāte).
+- Piešķiriet atļaujas, ja objektam tās ir vajadzīgas (skatiet sadaļu Atļaujas). Aģents var arī atvērt atļauju dialoglodziņu ar vienu pieskārienu.
+- Vienkārši runājiet vai rakstiet. "Make me a landing page for my maizes", "atveriet YouTube un atskaņojiet dziesmu", "kas ir mans akumulators?", "piezvaniet mammai".
+
+## Divi darba veidi
+Blakus ziņojumu lodziņam ir režīma poga ar diviem režīmiem: Agent un Build. Skatiet sadaļu Režīmi.
+
+## Kur ir lietas
+- Kreisā izvēlne: jūsu tērzēšana, jauna tērzēšana, pārdēvēšana, dzēšana un motīva slēdzis.
+- Tērzēšanas ekrāns: ziņojumi, uzdevumu panelis, rīku saraksts, faili, terminālis.
+- Priekšskatījuma un koda paneļi: skatiet un rediģējiet aģenta veidoto saturu.
+- Iestatījumi: astoņas sadaļas, kas šajā dokumentācijā apskatītas pa vienai.
+- Šī dokumentācija: Iestatījumi → Dokumentācija (jūs esat šeit).

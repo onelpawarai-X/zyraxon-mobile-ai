@@ -1,0 +1,27 @@
+Tiedostot, pääte ja järjestelmä
+## Tiedostot
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Turvallinen): lue, luettele, etsi nimikuvion mukaan ja etsi tekstiä tiedostoista.
+- `write_file`, `edit_file`: luo tai muuta tiedostoja. `edit_file` tekee kaiken: uusi tiedosto, täydellinen uudelleenkirjoitus tai tarkka etsi ja korvaa; koodi näkyy livenä chatissa. `delete_file` (Järjestelmä): poista tiedosto tai kansio.
+- Kaikki kansiot ovat sallittuja (/sdcard, Download, Documents, SD-kortti…). Anna täydellinen polku ja sitä käytetään kirjoitetulla tavalla.
+- Agentti avaa mitä se tekee: `open_file` (Turvallinen) avaa tiedoston puhelimen oikeassa sovelluksessa tai ZYRAXON:n esikatselussa.
+
+## Terminaalit (kaksi oikeaa)
+- android: puhelimen oma kuori (busybox plus `sh`), sovelluksen hiekkalaatikossa. `run_shell` (Järjestelmä) suorittaa komennon siellä, poissa näkyvistä.
+- linux: ZYRAXON:n oma täysi Unix-järjestelmä, sisäänrakennettu sovellukseen: bash, apt/pkg, real git, python, node, clang. Se toimii offline-tilassa. `linux_run` (Järjestelmä) suorittaa komennon siellä.
+- `terminal_run` (Järjestelmä): suorittaa rivin katsomassasi Pääte-välilehdellä, jotta voit nähdä sen toimivan ja ottaa vallan. Käytä shell androidia tai linuxia. `terminal_open` tuo Pääte-välilehden eteen (vain kysyttäessä).
+- `system_shell` (Järjestelmä): järjestelmätason komento sovelluksen hiekkalaatikon yläpuolella, kuten järjestelmäkuori; Shizuku:lla tai rootilla se voi saavuttaa paljon enemmän.
+- Oletusaikarajaa ei ole; iso `apt upgrade` tai build juoksee loppuun asti.
+
+## Shizuku (järjestelmän käyttöoikeus)
+`setup_shizuku` (Järjestelmä) määrittää Shizuku, mukana ZYRAXON: tarkista tila, asenna, avaa, pyydä lupaa. Vain sinä voit napauttaa Asenna ja salli; agentti kertoo sinulle vaiheen yhdellä rivillä ja tekee loput.
+
+## Pitkät työt ja ajoitus
+- `background_command` (Järjestelmä): komento, joka jatkuu sen jälkeen, kun suljet sovelluksen (iso lataus, kloonaus, koontiversio), ilmoituksella ja Stop-painikkeella.
+- `schedule_command` (Järjestelmä): suorita komento reaaliajassa ("10 minuutin kuluttua", "kello 2."); Android pitää ajastimen, joten se toimii sovelluksen ollessa suljettuna.
+- `wait` (Turvallinen): odota tarkoituksella (sekuntia, kunnes portti avautuu, tiedosto tulee näkyviin, komento päättyy) arvailun sijaan.
+
+## Linux käyttää
+Asenna paketit (`apt install …`), suorita Python tai Node skriptejä, käännä C, käytä gitiä, suorita palvelimia, pakkaa ja pura, curl, ffmpeg. Järjestelmä puretaan hiljaa sovelluksen käynnistyessä ja pysyy uudelleenkäynnistysten ajan.
+
+## Päätteen näyttö
+Pääte-välilehti on todellinen pääte, jossa on ⌘ ZX-välilehti. Kirjoita omat komentosi tai katso agentin komentoja. Asetusten Navigointinäytössä on pikakuvake järjestelmän kuoreen ja Uusi istunto -painike, joka tyhjentää keskusteluhistorian ja aloittaa alusta.

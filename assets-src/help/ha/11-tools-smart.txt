@@ -1,0 +1,45 @@
+Ƙwarewa, autopilot, kuɗi, tsarin lokaci da gyarawa, ƙwaƙwalwa, wakilin kira da ƙwaƙwalwar ajiya
+Kuna amfani da duk waɗannan ta hanyar magana: faɗi abin da kuke so kuma wakili ya kira kayan aiki da ya dace. Ana jera kowane aiki anan tare da zaɓuɓɓukan sa.
+
+## Skills — koyarwa ta yin
+Ƙwarewa aiki ne na waya da wakili ya koya ta hanyar kallon ka yi sau ɗaya. Yana adana yadda ake sake nemo kowane kashi (ID, kalmomi da maƙwabta, ba matsayin allo ba), don haka yana ci gaba da aiki lokacin da shimfidar ƙa'idar ta canza.
+- Ƙara fasaha:`skill_record`(Na sirri). Ka ce "koyi wannan a matsayin <name>".`action: start`(tare da suna) ya fara rikodi; sannan yi aikin - bude app, matsa, buga, danna maɓallan; kowane mataki yana rubuce.`action: stop`ajiye shi. A tsayawa za ku iya wucewa`params`don juya ƙididdiga masu ƙima zuwa sigogi (misali lambar wayar ta zama`number`, adadin ya zama`amount`) kuma a`description`. `action: status`ya gaya muku ko an kunna rikodi.
+- Gudanar da fasaha:`skill_run`(Na sirri). Ba da`args`ga sigoginsa, misali. lamba da adadin. Yana sake kunnawa a cikin ɗan ƙaramin matakai kuma yana warkar da kansa lokacin da ƙa'idar ta canza. Idan mataki daya ya kasa, sakamakon ya ce wane mataki da abin da ke kan allon, kuma wakili ya gama sauran da hannu.
+- Ƙwarewar lissafin:`skill_list`(Lafiya) yana nuna suna, sigogi, matakai da sau nawa kowanne ke gudu. Tare da suna da fitarwa a kai yana yin rabawa`.zxskill`fayil.
+- Raba kuma ɗauka:`skill_import`(Na sirri) lodi a`.zxskill`fayil daga zazzagewa ko fayil ɗin da aka raba azaman gwaninta.
+- Share fasaha:`skill_delete`(Tsarin).
+- Misali: "Koyi yadda zan aika 500 zuwa Rahim ta wallet app"→ka yi sau ɗaya→"Aika 700 zuwa Karim" na gaba.
+
+## Autopilot - "lokacin da X ya faru, yi Y"
+Doka ta tada wakili da kanta kuma yana yin aikin ba tare da tambayar ku ba.
+- Ƙara:`autopilot_add`(Tsarin). Nau'i: sms, sanarwa, kira, kullum, sau ɗaya, tazara, baturi, app. Cika filayen kawai da dokar ke buƙata:`from`(sunan mai aikawa ko lamba ko taken app),`any`(aƙalla ɗaya daga cikin waɗannan kalmomi),`all`(kowace kalma),`none`(babu ɗaya daga cikin waɗannan kalmomi),`time`"HH:MM" (kullum),`in_minutes` or `at_ms`(sau ɗaya),`every_minutes`(tazara),`below`(kashi na baturi),`pkg`(kunshin app ko suna, don ƙa'idodin ƙa'idar da sanarwa). Wakilin yana juya hukuncin ku zuwa waɗannan filayen. Sakamakon ya lissafa duk wani izini da har yanzu ake buƙata (SMS, samun damar sanarwa…), kuma wakilin yana buƙatar ka kunna shi.
+- Misalai: "Lokacin da SMS na biyan kuɗi ya zo daga aikace-aikacen walat ɗina, ƙara shi zuwa littafina." "Kowace safiya a 8, gaya mani yanayin." "A cikin minti 20, tuna da ni fitar da burodin." "Kowane minti 30, tunatarwar ruwan sha." "Lokacin da baturi ya kasa 15%, gaya mani." "Lokacin da wani ya kira ni, shigar da lambar." "Lokacin da na bude aikace-aikacen banki, tunatar da ni in duba kasafin kudin."
+- Jerin:`autopilot_list`(Safe) yana nuna kowane ƙa'ida tare da lokacin gudu na gaba da sau nawa ya yi harbi.
+- Dakata ko ci gaba:`autopilot_toggle`(Tsarin). Share:`autopilot_remove`(Tsarin), ta id ko take.
+- Lokacin da ka'ida ta ƙone za ku sami saƙon da ke cewa haka, kuma wakili kawai ya yi aikin.
+
+## Littafin Kuɗi (CFO na sirri)
+- `ledger_scan`(Na sirri): karanta walat da SMS na banki a cikin littatafai masu zaman kansu: samun kudin shiga, kashewa, kudade, ma'auni da rukuni.`days`ya ce nisa baya (default 30). Tare da`auto`akan, kowane sabon kuɗi SMS ana ƙara shi da kansa kuma ana faɗakar da ku lokacin da aka ƙaddamar da kasafin kuɗi. Yana aiki don walat ɗin kowace ƙasa da saƙon banki, a kowace waje.
+- `ledger_report`(Personal): lokaci yau, jiya, sati, wata ko duka. Tsara rubutu (shirye-shiryen taƙaitaccen magana) ko xlsx (anExcelfayil tare da ma'amaloli da jimlar rukuni, an buɗe muku).
+- `ledger_budget`(Na sirri): saita kasafin kuɗi na wata-wata don nau'in (abinci, takardar kudi, sufuri, siyayya, cajin wayar hannu, canja wuri…); iyakacin 0 yana cire shi; ba tare da gardama ba yana lissafin kasafin kuɗi da gargaɗin yanzu.
+- Wakilin baya ƙirƙira lambobin kuɗi; yana karanta su daga ledar.
+
+## Tsarin lokaci kuma gyara
+- Duk abin da wakili ya yi an rubuta shi zuwa jerin lokaci (ayyukan 400 na ƙarshe). Canje-canjen fayil suna adana kwafin abin da ke can baya.
+- `timeline_list`(Lafiya): abin da wakilin ya yi kwanan nan, tare da id ga kowane, kuma waɗanne canje-canje za a iya soke su.
+- `timeline_undo`(Na sirri):`id`yana gyara rubutu, gyara ko gogewa - fayil ɗin ya dawo daidai yadda yake (an sake cire fayil ɗin da babu shi).`since_id`yana gyara komai daga wannan id zuwa gaba, sabon abu na farko. Yi amfani da shi lokacin da ka ce "dauka waccan baya" ko "sake shi kamar da".
+- Cire rufe fayil yana rubutawa, gyarawa da sharewa. Umarnin da ke gudana (misali shigar da wani abu ko aika saƙo) ba za a iya soke shi ta wannan hanyar ba.
+- Saƙonnin taɗi: don cire gaba ɗaya taɗi yi amfani da fensir da ƙetare a menu na hagu, ko Saituna→Keɓantawa & bayanai→Share tarihin taɗi, ko Kewayawa→Sabon zama.
+
+## Kwakwalwa - ƙwaƙwalwar ajiya na biyu don fayilolinku
+- `brain_index`(Lafiya): gina ko sabunta fihirisar layi ta layi akan manyan fayiloli ko fayiloli (rubutu,Markdown, CSV, Word, Excel, PowerPointda kuma SMS inbox (`sms`ku). Gudanar da shi kafin binciken farko da kuma bayan sabbin fayiloli sun bayyana. Tsohuwar ita ce filin aikin ku.
+- `brain_search`(Lafiya): Ka tambayi a cikin kalmominka, "Ina kwangilar haya ta?" - yana aiki a layi a kowane harshe.`kind`fayil ko sms;`days`iyaka ga abubuwan kwanan nan. Buɗe fayil ɗin da aka samo tare da`open_file`.
+
+## Wakilin kira
+- `call_agent`(Na sirri): aiki akan, kashewa ko matsayi.`owner`shine sunan da yake cewa ("Ni ne mataimakin mai shi").`answer_after_seconds`(default 6) zai baka damar ɗauka da farko. Lokacin da kira ya zo kuma ba za ku iya amsawa ba, yana gaishe da yaren mai kiran, yana tambayar suna da dalili, yana amsa tambayoyi masu sauƙi, a ajiye a cikin ladabi kuma yana ba ku taƙaitaccen bayani.
+- `call_log`(Lafiya): Takaitattun kiran da aka amsa, sabon fara.
+- Yana buƙatar izinin kira da izini-jihar waya.
+
+## Ƙwaƙwalwar ajiya
+- `memory_write`, `memory_read`, `memory_delete`(Lafiya): tabbatattu masu ɗorewa game da ku (suna, abubuwan da aka zaɓa, mutane, ranaku, ayyuka) suna rayuwa a cikin bayanan gida kuma ku tsira da sake farawa. Ka ce "ku tuna da wannan" kuma an rubuta shi a cikin juzu'i guda; idan wani abu ba daidai ba, an cire shi ko a sake rubuta shi. Duk tsohuwar zance kuma ana kiyaye su, kuma juye-juyen da suka gabata sun yi daidai da abin da kuke faɗa su dawo da kansu, ko da bayan watanni.
+- Duba kuma canza shi duka a cikin Saituna→Tsari→Ƙwaƙwalwar ajiya (maɓalli, ƙima, adanawa, share duk).

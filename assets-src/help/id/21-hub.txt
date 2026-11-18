@@ -1,0 +1,20 @@
+Pusat otomatisasi
+Pengaturan → Sistem → Hub otomatisasi. Setiap tombol yang dapat dilakukan ZYRAXON dengan sendirinya ada di satu tempat, dalam enam tab. Setiap tab dimulai dengan penjelasan singkat tentang cara kerjanya.
+
+## Keterampilan
+Ajarkan ZYRAXON suatu tugas dengan dua cara: beritahukan dalam obrolan ("pelajari tugas ini"), atau tekan tombol rekam dan kerjakan tugas itu sendiri di aplikasi lain, lalu kembali dan tekan Berhenti. Layanan Aksesibilitas harus aktif, atau ketukan Anda tidak dapat dilihat. Apa yang dipelajari muncul di bawah "Keterampilan yang dipelajari" dan dapat diputar ulang atau dihapus.
+
+## Pilot otomatis
+Aturan semacam “bila ini terjadi, lakukan itu”. Saat kejadian terjadi ZYRAXON bangun dengan sendirinya dan melakukan pekerjaan tanpa diminta. Anda juga dapat membuat aturan dengan mengatakannya di chat. Setiap aturan menunjukkan berapa kali aturan tersebut dijalankan.
+
+## Uang
+Membaca SMS dari bank atau dompet mana pun di negara mana pun (PayPal, M-Pesa, UPI, Pix, bKash, kartu…) dan menyimpan satu buku besar pendapatan, pengeluaran, biaya, dan saldo. Anda dapat menetapkan anggaran dan mendapatkan peringatan ketika Anda melewatinya. Ini berfungsi di telepon, dan tidak ada yang dikirim ke mana pun.
+
+## Garis waktu
+Segala sesuatu yang ZYRAXON lakukan tertulis di sini. Penulisan, pengeditan, dan penghapusan file dapat dibatalkan dengan satu tombol. Perintah yang dijalankan tidak dapat dibatalkan.
+
+## Otak
+Mencari file Anda (teks, Word, Excel, PowerPoint, CSV) dan, jika Anda mengizinkannya, SMS Anda, tanpa internet dan dalam bahasa apa pun. Tekan "Indeks" terlebih dahulu, lalu cari.
+
+## Agen panggilan
+Bila Anda tidak dapat menerima panggilan, ZYRAXON menjawab, berbicara dalam bahasa penelepon, mempelajari nama dan alasannya, dan memberi Anda ringkasan saat panggilan berakhir. Lima belas bahasa menggunakan aturan bawaan yang cepat; setiap bahasa lainnya ditangani oleh model, yang menjawab dalam bahasa pemanggil. Kata-kata yang berarti selamat tinggal, mendesak, atau spam dipahami dalam semua bahasa sekaligus. Ringkasan panggilan yang tertangkap tercantum di tab.

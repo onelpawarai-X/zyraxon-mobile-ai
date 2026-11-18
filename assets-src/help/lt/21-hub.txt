@@ -1,0 +1,20 @@
+Automatikos mazgas
+Nustatymai → Sistema → Automatikos centras. Kiekvienas mygtukas, kurį ZYRAXON gali padaryti pats, yra vienoje vietoje, šešiuose skirtukuose. Kiekvienas skirtukas prasideda trumpu paaiškinimu, kaip jis veikia.
+
+## Įgūdžiai
+Išmokykite ZYRAXON užduotį dviem būdais: pasakykite ją pokalbyje ("išmok šią užduotį") arba paspauskite įrašymo mygtuką ir atlikite užduotį patys kitoje programėlėje, tada grįžkite ir paspauskite Stop. Pritaikymo neįgaliesiems paslauga turi būti įjungta arba jūsų čiaupo negalima matyti. Tai, ko išmoko, rodoma skiltyje „Išmokti įgūdžiai“ ir gali būti paleisti iš naujo arba ištrinti.
+
+## Autopilotas
+Taisyklės, tokios kaip „kai tai atsitiks, daryk tai“. Įvykiui įvykus ZYRAXON atsibunda savaime ir atlieka darbą neprašydamas. Taip pat galite sukurti taisyklę pasakydami ją pokalbyje. Kiekviena taisyklė rodo, kiek kartų ji buvo paleista.
+
+## Pinigai
+Skaito SMS žinutes iš bet kurio banko ar piniginės bet kurioje šalyje (PayPal, M-Pesa, UPI, Pix, bKash, kortelės...) ir veda vieną pajamų, išlaidų, mokesčių ir likučio knygą. Galite nustatyti biudžetą ir gauti įspėjimą, kai jį išlaikysite. Telefone veikia, nieko niekur nesiunčia.
+
+## Laiko juosta
+Viskas, ką padarė ZYRAXON, parašyta čia. Failų įrašymą, redagavimą ir trynimą galima anuliuoti vienu mygtuku. Vykdomos komandos negalima anuliuoti.
+
+## Smegenys
+Ieško failų (teksto, Word, Excel, PowerPoint, CSV) ir, jei leidžiate, SMS žinutėje, be interneto ir bet kokia kalba. Pirmiausia paspauskite „Indeksas“, tada ieškokite.
+
+## Skambinkite agentui
+Kai negalite atsiliepti, ZYRAXON atsiliepia, kalba skambinančiojo kalba, sužino vardą ir priežastį bei pateikia santrauką, kai skambutis baigiasi. Penkiolikoje kalbų naudojamos sparčios integruotos taisyklės; visas kitas kalbas tvarko modelis, kuris atsako skambinančiojo kalba. Žodžiai, reiškiantys atsisveikinimą, skubų ar šlamštą, suprantami visomis kalbomis vienu metu. Sugautų skambučių suvestinės pateikiamos skirtuke.

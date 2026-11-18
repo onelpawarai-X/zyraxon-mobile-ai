@@ -1,0 +1,51 @@
+Layar obrolan dan setiap tombol
+## Bagian atas layar
+- Menu: membuka laci kiri dengan obrolan Anda.
+- Obrolan / Terminal / Kode / Pratinjau: beralih ke tampilan utama. Obrolan adalah percakapan; Terminal adalah terminal sebenarnya; Kode adalah ruang kerja file dengan Git; Pratinjau adalah browser bawaan.
+- Aura: menampilkan layar karakter animasi. Tombol sampingnya adalah Mikrofon, Obrolan (kembali ke percakapan) dan Refresh (menghubungkan kembali cloud dan memuat ulang daftar model).
+- Pengaturan: membuka delapan bagian pengaturan.
+- Spanduk menunjukkan status mikrofon: "Mendengarkan...", "Mik mati — ketuk", atau "Berbicara... ketuk untuk berhenti".
+- Ketika versi baru sudah siap, spanduk pembaruan muncul dengan tombol Unduh, Instal, dan Izinkan (lihat Pembaruan).
+
+## Menu sebelah kiri (obrolan)
+- "+ Obrolan baru": memulai percakapan baru.
+- Setiap obrolan dalam daftar menunjukkan tanda berjalan saat agen sedang sibuk di sana. Pensil mengganti namanya; tanda silang menghapusnya (setelah konfirmasi: semua pesan di dalamnya terhapus).
+- Tema: pilih Horor (darah, api dan bayangan), Gelap (kaca gelap bersih) atau Terang (kaca terang).
+
+## Bilah pesan
+- Lampirkan (penjepit kertas): foto galeri, foto kamera, pemindaian dokumen (mengubah teks dalam foto menjadi .docx yang dapat diedit), berbagi layar sehingga agen dapat melihatnya ("Menonton layar" aktif atau nonaktif), dan file audio atau video. Item terlampir ditampilkan sebagai chip; tanda silang menghapus satu, "Hapus semua" menghapus semua.
+- Tombol mode: Agen atau Bangun.
+- Tombol mikrofon: menyalakan atau mematikan mikrofon yang selalu mendengarkan.
+- Tombol model: membuka daftar model dengan kotak pencarian. Model bertanda "Live" dapat berbicara dengan suaranya sendiri.
+- Kirim: mengirimkan pesan. Saat agen sedang bekerja, ini menjadi Berhenti.
+- Masukannya mengatakan "Apa yang harus saya lakukan?" dalam mode Agen dan "Apa yang harus saya buat? Singkat saja" dalam mode Bangun.
+
+## Pesan
+- Salin, Bagikan, dan Dengar (bacakan pesan dengan lantang; tekan lagi untuk berhenti) ada di bawah setiap pesan.
+- “Berpikir” menunjukkan alasan model ketika model memberikannya.
+- Kode yang ditulis agen muncul langsung di dalam kotak, baris demi baris, dengan Salin, Unduh, dan Buka.
+- File yang dibuat agen ditampilkan sebagai kartu dengan Buka (di aplikasi ponsel sebenarnya), Putar, Bagikan, dan "Aplikasi lain...".
+- Gambar, audio dan video menunjukkan persentase kemajuan langsung saat dibuat.
+- Kartu alat menunjukkan apa yang dilakukan agen: berjalan, selesai, berhasil, atau gagal.
+
+## Panel (tugas, alat, file, sub-agen)
+- Papan Todo: rencana yang ditulis agen untuk pekerjaan besar dan kemajuannya (n/total selesai). Anda dapat menambahkan tugas Anda sendiri dan menghapus tugas.
+- Alat: daftar setiap panggilan alat, dengan status aktif.
+- File: setiap file yang dibuat agen, dengan Buka, Bagikan, Publikasikan, dan Hapus (dengan konfirmasi) dan kotak pencarian.
+- Sub-agen: agen pembantu yang berjalan di latar belakang, dengan tombol Stop.
+- Tab Terminal: terminal sebenarnya (lihat bab File dan Terminal).
+
+## Panel pratinjau
+- Mundur, Teruskan, Berhenti, Muat Ulang, dan bilah alamat (ketikkan alamat web, atau cari Google).
+- Buka file: menampilkan Word, Excel, PowerPoint, PDF, gambar, Markdown, CSV, kode dan situs langsung di dalam aplikasi.
+- Ukuran: mengecilkan atau memperbesar panel.
+- Perbaiki: mengirimkan masalah halaman (kesalahan konsol, gagal memuat) ke agen, yang memperbaikinya di latar belakang.
+- Pilih bagian: ketuk bagian halaman, lalu beri tahu agen apa yang harus dilakukan dengan bagian tersebut.
+- Tombol Agen: menanyakan sesuatu tentang halaman tersebut; agen menerima fotonya.
+- Buka cepat: pintasan ke halaman terkini.
+
+## Ruang kerja kode
+- Sisi kiri: file Anda (file baru, buka, simpan).
+- Editor: menampilkan garis dan karakter; perubahan yang dilakukan oleh agen muncul sekaligus.
+- Git: repo baru, kloning dari GitHub, pindai, status, komit dengan pesan, dorong, tarik, cabang, token.
+- Permintaan tarik: buat, gabungkan, tutup. Alur kerja: daftar berjalan, menjalankan alur kerja. Log menunjukkan keluaran perintah.

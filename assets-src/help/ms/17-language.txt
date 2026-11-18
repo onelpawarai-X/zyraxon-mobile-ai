@@ -1,0 +1,16 @@
+Bahasa
+## Bahasa apl
+Tetapan → Bahasa & terjemahan. 60 bahasa. Seluruh antara muka dan mesej alat ejen mengikutinya. Setiap bahasa mempunyai fail terjemahan sendiri. Sebarang baris yang belum ada pada fail bahasa ditunjukkan dalam bahasa Inggeris, tidak sekali-kali dibiarkan kosong.
+
+## Apa yang awak cakap
+Ejen sentiasa menjawab dalam bahasa yang anda tuturkan, mana-mana bahasa di dunia. Jika anda bertukar, ia bertukar. Ia menggunakan bentuk "anda" yang mesra dan hormat dalam bahasa anda. Jenama dan nama teknologi kekal seperti sedia ada.
+
+## Bahasa suara
+- Bahasa pengecaman (apa yang anda tuturkan ke dalam mikrofon): Tetapan → Suara & mikrofon → Mikrofon & bahasa.
+- Suara pertuturan: Tetapan → Suara & mikrofon → Profil suara dan makmal Suara untuk bahasa seperti Bengali, Hindi, Inggeris, Urdu, Arab, Tamil, Nepal, Sepanyol, Perancis, Jerman, Jepun, Korea, Cina, Rusia, Turki.
+
+## Dokumentasi ini
+Gunakan cip bahasa di bahagian atas halaman ini. Keseluruhan panduan ditulis dalam setiap bahasa yang disokong oleh aplikasi, dengan tangan, dan dihantar di dalam apl. Tiada apa-apa yang diterjemahkan pada telefon anda: setiap bab dibuka serta-merta, berfungsi di luar talian dan tidak memerlukan model atau kunci.
+
+## Menulis dalam skrip anda sendiri
+Dokumen, poster dan reka bentuk boleh dibuat dalam mana-mana skrip. Untuk reka bentuk Bengali fon yang betul digunakan; untuk skrip lain fon yang sepadan dipilih.

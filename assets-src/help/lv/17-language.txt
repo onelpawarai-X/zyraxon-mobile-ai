@@ -1,0 +1,16 @@
+Valodas
+## Lietotnes valoda
+Iestatījumi → Valoda un tulkojums. 60 valodas. Tam seko visa saskarne un aģenta rīka ziņojumi. Katrai valodai ir savs tulkojuma fails. Jebkura rinda, kuras valodas failā vēl nav, tiek rādīta angļu valodā, un tā nekad netiek atstāta tukša.
+
+## Ko tu runā
+Aģents vienmēr atbild tajā valodā, kurā runājat, jebkurā pasaules valodā. Ja jūs pārslēdzat, tas pārslēdzas. Tas jūsu valodā izmanto draudzīgi-cieņas pilnu "tu" formu. Zīmolu un tehnoloģiju nosaukumi paliek tādi, kādi tie ir.
+
+## Balss valodas
+- Atpazīšanas valoda (ko runājat mikrofonā): iestatījumi → Balss un mikrofons → Mikrofons un valoda.
+- Runājoša balss: iestatījumi → Balss un mikrofons → Balss profils un Balss laboratorija tādām valodām kā bengāļu, hindi, angļu, urdu, arābu, tamilu, nepāliešu, spāņu, franču, vācu, japāņu, korejiešu, ķīniešu, krievu, turku.
+
+## Šī dokumentācija
+Izmantojiet šīs lapas augšpusē esošos valodu mikroshēmas. Visa rokasgrāmata ir uzrakstīta visās valodās, ko atbalsta lietotne, un tiek nosūtīta lietotnē. Jūsu tālrunī nekas netiek tulkots: katra nodaļa tiek atvērta uzreiz, darbojas bezsaistē, un tai nav nepieciešams modelis vai atslēga.
+
+## Rakstīšana pēc sava scenārija
+Dokumentus, plakātus un dizainus var izgatavot jebkurā skriptā. Bengāliešu dizainiem tiek izmantots pareizais fonts; citiem skriptiem tiek izvēlēts atbilstošais fonts.

@@ -1,0 +1,18 @@
+Personāži (identitāte)
+Iestatījumi → Modelis un identitāte → Identitāte. Jūsu izvēlētais raksturs nosaka balsi, siltumu un runas veidu. Aģents runā kā šī persona valodā, kurā runājat jūs, un nekad sevi nesauc par programmu.
+
+- Draudzene: mīļa, sirsnīga un mīļa, ar mājdzīvnieku vārdiem, kas ir dabiski jūsu valodā. Sievišķīga balss.
+- Draugs: dziļš, silts, uzticams un gādīgs. Vīrišķīga balss.
+- Draugs: dzīvīgs, moderns un smieklīgs, vienmēr jūsu pusē.
+- Super palīgs: profesionāls, īss un precīzs.
+- Kiberspeciālists: īss vecākais inženieris un drošības persona.
+- Filozofs: mierīgs, tālredzīgs mentors.
+
+## Balss seko tēlam
+Draugs runā ar vīrieša balsi; katrs otrais tēls runā ar sievietes balsi. Ja pats izvēlaties balsi sadaļā Iestatījumi → Balss profils, jūsu izvēle tiek saglabāta līdz nākamajai rakstzīmes maiņai vai palaišanai.
+
+## Ko maina raksturs
+Tonis, vārdu krājums, tuvums un tas, kā tas jums rūp. Tas nekad nemaina noteikumus par patiesību, drošību un pareizu darba veikšanu.
+
+## Vienmēr pielāgojas
+Aģents nolasa jūsu garastāvokli un diennakts laiku, atceras sīkas lietas, ko jūs tam teicāt, un atbild jūsu valodā īsi un dabiski.

@@ -1,0 +1,27 @@
+Sfaturi și cereri de exemplu
+## Spune ce vrei, nu cum
+- „Fă o pagină de destinație pentru o sală de sport, întunecată și îndrăzneață.”
+- „Construiți o aplicație de rezervare completă cu o bază de date.” (agentul cere mai întâi alegerile tehnice)
+- „Deschide YouTube și redă o melodie calmă.”
+- „Derulați în jos și deschideți primul rezultat”.
+- „Ce este bateria mea și Wi-Fi?”
+- „Citește cel mai nou SMS al meu și spune-mi codul.”
+- — Sună-l pe mama. / „Răspunde la apel”.
+- „Faceți un CV din această fotografie”. (atasa-l)
+- „Transformați această înregistrare a întâlnirii în note cu elemente de acțiune.”
+- „Fă un poster pentru evenimentul de vineri cu aceste culori.”
+- „Faceți un dialog audio între doi prieteni, un băiat și o fată.”
+- "Ține minte că ziua de naștere a surorii mele este 3 mai."
+- „În fiecare dimineață la 8 spune-mi vremea”. (pilot automat)
+- „Aflați cum îmi trimit chiria prin aplicația mea de portofel, astfel încât să o puteți face din nou.” (deprindere)
+- „Anulați ceea ce ați făcut în folderul de proiect”. (cronologie)
+- „Unde este contractul meu de închiriere?” (creier)
+- „Instalați pachetele Python și rulați acest script.” (Linux)
+- „Publică acest site ca să-l pot distribui.” (link public)
+
+## Obiceiuri care ajută
+- Bătăi scurte și clare lungi. Agentul alege valorile implicite și vă spune ce a ales.
+- Când pune o întrebare, răspunde și continuă din același loc.
+- Spuneți „explicați” sau „rezumat” pentru un răspuns detaliat; altfel raspunsurile sunt scurte.
+- Puteți discuta despre asta oricând. Se oprește și ascultă.
+- Utilizați modul Construire pentru a face lucruri și modul Agent pentru a face lucruri pe telefon.

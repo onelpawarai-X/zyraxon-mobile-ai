@@ -1,0 +1,15 @@
+Poskytovatelia, modely a kľúče
+## Poskytovatelia
+ZYRAXON (vlastná linka a cloudový agent Apex, vždy pripojený), OpenCode (bezplatná kvóta), Groq (veľmi rýchla láma), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek a OpenRouter. Pridajte ľubovoľný kľúč do Nastavenia → Poskytovatelia a API. Kľúč sa uloží do telefónu, porovná sa s katalógom poskytovateľa a modely sa prenesú do voliča, keď každý poskytovateľ odpovie.
+
+## Výber modelu
+Použite tlačidlo modelu na paneli správ alebo Nastavenia → Model & identita → Model. Hľadajte podľa názvu, filtrujte Všetky alebo Vlastné. Vaša voľba sa uloží a obnoví pri spustení; obnovenie nikdy nenahradí váš uložený model. Modelky označené Live môžu hovoriť vlastným hlasom (pozri Živý hlas).
+
+## Modely na zariadení
+Nastavenia → Model a identita → Na zariadení. Model beží na telefóne bez toho, aby z neho odchádzali žiadne dáta. Súbory sú veľké (stovky MB až niekoľko GB), preto si ich stiahnite na Wi-Fi. Sú uvedené od malých po veľké; na telefóne s malou RAM vyberte najľahší. Volanie nástroja je podporované balíkmi Gemma a FunctionGemma. Token Hugging Face je len pre uzavreté súbory. Načítané modely sú zapamätané.
+
+## Webová stránka ZYRAXON
+zyraxonai.lovable.app: vytvorte si účet (e-mail alebo Google), otvorte Nastavenia, API kľúč / prístupový token, vytvorte kľúč a vložte ho do aplikácie. Bez kľúča môžete aplikáciu stále používať s modelmi na zariadení a lokálnymi nástrojmi.
+
+## Náklady a údaje
+Poskytovatelia cloudu vám účtujú podľa vlastných pravidiel. Keď je zapnutá možnosť Len na zariadení, žiadnemu poskytovateľovi sa nič neposiela.

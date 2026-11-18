@@ -1,0 +1,11 @@
+Sicurezza e privacy
+- Tutti i dati di ZYRAXON risiedono sul tuo telefono: chat, memoria, registro, competenze, sequenza temporale, indice del cervello. Niente viene conservato su un server ZYRAXON.
+- I modelli cloud ricevono solo ciò che serve per il turno che invii. Con "Solo sul dispositivo" non viene inviato nulla.
+- Le istruzioni e i file di lingua forniti nell'app sono crittografati all'interno di APK.
+- Blocco app: imposta una password o una sequenza in Impostazioni → Sicurezza e privacy → Blocco app. ZYRAXON quindi si blocca quando lo apri o torni dallo sfondo. "Rimuovi blocco" elimina la password o la sequenza salvata.
+- I livelli di approvazione proteggono ogni chiamata dello strumento nel codice (vedi Livelli di approvazione). Gli strumenti sconosciuti chiedono sempre.
+- Puoi cancellare: tutta la memoria, la cronologia chat e il tuo token GitHub, ciascuno con un pulsante in Privacy e dati.
+- Sicurezza: se dici che qualcuno ti sta minacciando o seguendoti, o vuole il tuo telefono o i tuoi dati, l'agente prima blocca il telefono (se l'autorizzazione di amministratore del dispositivo è attiva) e poi ti parla con calma.
+- Pagamenti: prima di qualsiasi pagamento o trasferimento l'agente comunica quanto pagherà e ti chiede di confermare.
+- Onestà: l'agente dice che qualcosa ha funzionato solo dopo aver visto un risultato. Non inventa mai collegamenti, file o risultati.
+- Protezione contenuto: qualunque cosa l'agente legga dall'esterno - lo schermo di un'altra app, una pagina web, un messaggio, un file, un server connesso - viene controllato nel codice per il testo che tenta di dare ordini all'agente (in molte lingue, incluso il testo nascosto con caratteri invisibili). Il testo sospetto viene recintato, quindi il modello lo tratta solo come dati. Quanto è rigoroso dipende dal tuo livello di approvazione: Bloccato tratta qualsiasi cosa sospetta come ostile; La supervisione delimita il testo sospetto e, quando il testo è chiaramente ostile, blocca il resto del turno in modo che ogni strumento di modifica te lo chieda prima (la carta dice perché); Balanced agisce solo su testo chiaramente ostile e solo gli strumenti a livello di sistema smettono di chiedere; La funzione automatica spegne completamente lo scudo: nulla viene scansionato, fermato, contrassegnato o modificato. Un nuovo messaggio da parte tua lo cancella.

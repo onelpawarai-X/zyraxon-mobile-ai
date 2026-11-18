@@ -1,0 +1,35 @@
+Stem: praat, luister en lewendige praat
+## Luister (mikrofoon)
+Instellings → Stem en mikrofoon → Mikrofoon en taal.
+- Spraakherkenningstaal: die taal wat jy met die mikrofoon praat. Verander dit enige tyd.
+- Hou die mikrofoon aan (luister altyd): wanneer dit aan is, bly die mikrofoon oop. Wanneer dit af is, skakel jy dit self aan.
+- Stuur outomaties wanneer jy ophou praat: na ongeveer 1,5 sekondes se stilte word jou sin vanself gestuur. Wanneer dit af is, wag die woorde in die blokkie vir jou om Stuur te druk.
+- Die mikrofoonknoppie in die boodskapbalk en die banier aan die bokant doen dieselfde aan/af.
+- Die mikrofoon is altyd oop vir jou, selfs terwyl ZYRAXON praat. Die oomblik wat jy begin praat stop dit en luister, dan antwoord jy jou. Sy eie stem wat deur die mikrofoon terugkom, word uitgefiltreer deur die teks met sy laaste antwoord te vergelyk.
+- 'n Vonnis word slegs een keer gestuur. As die herkenner later 'n effens ander weergawe van dieselfde sin herhaal, word dit as dieselfde beurt laat vaar.
+
+## Praat (teks-na-spraak)
+Instellings → Stem en mikrofoon → Stemprofiel.
+- Kies 'n stem: vroulik (soet en romanties) of manlik (diep en selfversekerd). Die webwerf se eie stemme word gebruik wanneer dit gereed is; die foon se eie spraakenjin is die terugval.
+- Spoed- en toonhoogte-glyers, en "Toetsstem".
+- "Lees antwoorde hardop" skakel praat aan of af.
+- As die foon geen spraakenjin het nie, installeer Google Spraakdienste. As die foon geen Bengaalse stemdata het nie, kan 'n knoppie jou aflaai.
+- Tik op die praatbanier om die stem te stop. Tik Luister onder enige boodskap om dit te hoor.
+- ZYRAXON lees nooit kode, skakels, JSON of gereedskapname hardop nie.
+
+## Stemlaboratorium (stemwisselaar)
+Kies uit die bediener se katalogus volgens geslag (almal, meisie, seun), ouderdom (kind, tiener, volwassene, senior) en taal (Bengaals, Hindi, Engels, Oerdoe, Arabies, Tamil, Nepalees, Spaans, Frans, Duits, Japannees, Koreaans, Chinees, Russies, Turks ...). "Luister" voorskou 'n stem; "Terug na verstek" herstel die karakter se stem. Vir klank met baie stemme vra die agent: elke deel van 'n dialoog kry sy eie stem.
+
+## Regstreekse stem (spraak-tot-spraak)
+Instellings → Stem en mikrofoon → Regstreekse stem. Met 'n intydse model (Gemini Regstreeks, OpenAI Intyds en soortgelyk) hoor die model die mikrofoon en antwoord in sy eie stem, in een stroom, en jy kan dit middelwoord onderbreek. Die foon se eie spraak word in hierdie sessie afgeskakel sodat jy nooit twee stemme hoor nie.
+- Gebruik die model se eie stem: aan = lewendige praat; af = die foon lees teksantwoorde.
+- Status wys: verbind, luister, praat, wag.
+- As u 'n intydse model kies, word dit vanself aangeskakel.
+- As geen intydse model gelaai is nie, voeg 'n Gemini of OpenAI sleutel by KI-verskaffers.
+- Die stem wat jy in die stemprofiel gekies het, word ook in regstreekse modus gebruik.
+
+## Swaai oog
+Instellings → Aura en tema → Aura en agtergrond.
+- 'n Klein swewende bol wat oor elke ander toepassing sit. Tik om die mikrofoon aan of af te skakel; druk lank om 'n tekskassie oop te maak en dit weer toe te maak.
+- Agt ontwerpe: oog, gloeibol, neonring, sterrestelsel, wentelbaan, plasma, pulsar, prisma. Plasing van die rand van die skerm.
+- Stemopdragte (wakker woorde): wanneer die toepassing in die agtergrond is, word die swewende oog wakker en ZYRAXON antwoord deur die naam te sê. Verstek: "zyraxon", "hey zyraxon" en algemene spellings in Bengaals en Engels. Voeg jou eie woorde in enige taal by; verwyder hulle enige tyd.

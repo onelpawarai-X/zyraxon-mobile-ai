@@ -1,0 +1,21 @@
+Cloud, netwerk, modellen en helpers
+## Cloud en internet
+- `web_search` (netwerk): zoek op het echte internet. `read_url` (netwerk): haal een pagina op als tekst. `http_request` (netwerk): elke HTTP-oproep (GET, POST, PUT, PATCH, DELETE) met headers en body. `verify_url` (netwerk): controleer of een link echt bestaat en verkrijg de ware status. `download_file` (Persoonlijk, netwerk): download een URL naar een bestand.
+- De agent opent links alleen wanneer u daarom vraagt.
+- AI-modellen draaien in de cloud via de providers die u heeft toegevoegd (ZYRAXON, ZYRAXON Apex cloudagent, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). De modellenlijst wordt live geladen en wordt gevuld naarmate elke aanbieder antwoordt.
+- Build-, publicatie- en pull-aanvragen lopen via GitHub en Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Schakel ‘alleen op apparaat’ in (Automatiseringsinstellingen) en er wordt helemaal geen cloudoproep gedaan: geen provider, geen web, geen upload.
+
+## MCP-servers
+Met MCP kunnen externe diensten de agent extra hulpmiddelen geven. Verbind Canva, Cloudflare, Supabase, GitHub of uw eigen server via zijn adres (optioneel token). De tools van verbonden servers worden toegevoegd aan de toollijst van de agent als `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (zie wat er verbonden is en welke tools er bestaan), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (bekijk een bron voor wijzigingen), `mcp_complete` (argumenten automatisch aanvullen), `mcp_ping`, `mcp_log_level`. Hun oproepen zijn netwerkoproepen, en onbekende MCP tools vragen standaard om toestemming.
+- Het scherm MCP vermeldt elke server met de status Verbonden, de tools, bronnen en promptsjablonen, en de knoppen Toevoegen, Verbinding verbreken, Verwijderen en Toestaan.
+
+## Sub-agenten
+`sub_agent` (Systeem): delen van een grote klus overhandigen aan hulpagenten die op de achtergrond draaien. Acties: spawn, status, lijst, resultaat, bericht, stop, wacht. Ieder kan zijn eigen model gebruiken. De agent combineert en controleert hun resultaten voordat hij "klaar" zegt.
+
+## Model op het apparaat
+`on_device_model` (Systeem): lijst, laad en voer een taalmodel uit dat op de telefoon leeft, zonder internet. In Instellingen → Model & identiteit → Op het apparaat download je modellen (van klein naar groot: FunctionGemma 270M, Qwen3 0,6B, Gemma 4 E2B…); een Hugging Face-token is optioneel en alleen nodig voor gated bestanden. Een geladen model wordt onthouden en bij de lancering opnieuw geladen.
+
+## Berichtenkanalen
+`channel_post` (Systeem) opent Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail of sms met uw tekst gereed. Je drukt zelf op verzenden.

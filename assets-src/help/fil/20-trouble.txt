@@ -1,0 +1,14 @@
+Pag-troubleshoot
+- Walang sagot: tingnan ang iyong internet at API key (Mga Setting → Ang mga Provider at API ay nagpapakita ng totoong error). Subukan ang isa pang modelo o isang modelo sa device.
+- Walang ginagawa ang mikropono: payagan ang pahintulot ng mikropono; lagyan ng check ang "Panatilihing naka-on ang mikropono"; suriin ang wika ng pagkilala.
+- Naririnig ng ZYRAXON ang sarili: ito ay sinasala ng teksto; kung mangyari pa rin, babaan ang volume o gumamit ng headphones.
+- Lumilitaw ang isang pangungusap nang dalawang beses: naayos sa mga kasalukuyang bersyon; i-update ang app.
+- Hindi nito ita-tap o babasahin ang screen: i-on ang serbisyo ng Accessibility (Mga Setting → Mga Pahintulot).
+- Ito ay humihinto sa background: payagan ang mga notification at pag-optimize ng baterya exemption; ang overlay para sa lumulutang na mata.
+- Ang isang tool ay patuloy na humihingi ng pahintulot: baguhin ang antas sa Mga Setting → Automation, o sagutin ang card.
+- May hinaharang Play Protect: tingnan ang kabanata ng Mga Pahintulot, o hayaang gabayan ng ahente ang mga hakbang.
+- Hindi magsisimula ang terminal o Linux: hintayin ang unang beses na pag-unpack sa pagsisimula ng app; suriin ang libreng imbakan.
+- Hindi mai-install ang update: payagan ang ZYRAXON bilang source ng pag-install.
+- Hindi mai-publish: idagdag ang GitHub token para sa GitHub; para sa isang pampublikong link ang ahente ay maaaring gumamit ng isang tunnel.
+- Ang isang kabanata ay nagpapakita ng Ingles: ang kabanatang iyon ay walang teksto sa iyong wika sa build na ito; i-update ang app.
+- Isang bagay na kakaiba: gamitin ang Mga Setting → Navigation → Bagong session para magsimulang malinis (kina-clear lang nito ang history ng chat; nananatili ang memorya).

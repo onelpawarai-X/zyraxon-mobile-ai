@@ -1,0 +1,27 @@
+Machtigingen, één voor één
+Instellingen → Beveiliging en privacy → Machtigingen. Elke rij toont "Toegekend" of een knop. Als u op een rij tikt, wordt het systeemdialoogvenster geopend; druk gewoon op Toestaan. De agent kan het dialoogvenster ook zelf openen met `request_permission`.
+
+- Microfoon: zodat ZYRAXON u kan horen. Zonder dit is er geen spraakinvoer.
+- Camera: om foto's te maken en te bekijken (`look_camera`, documentscan, "wat zie je").
+- Locatie: voor kaarten en lokale informatie.
+- Meldingen: om u te vertellen wanneer het achtergrondwerk is voltooid.
+- Bestanden en media: om foto's, video's, audio en documenten te lezen.
+- Overlay (over andere apps heen tekenen): nodig voor het zwevende oog.
+- Toegankelijkheid: laat de agent het scherm lezen en voor u tikken, vegen en typen. Dit is het hart van telefoonautomatisering. U schakelt dit in via de Toegankelijkheidsinstellingen van het systeem.
+- Batterijoptimalisatie: voorkomt dat Android ZYRAXON in de sluimerstand zet terwijl deze op de achtergrond werkt.
+
+## Andere machtigingen die de app declareert
+- SMS (lezen en ontvangen): voor het lezen van codes, het geldboek en de SMS-stuurautomaatregels.
+- Telefoonstatus, oproepen beantwoorden, telefoon bellen, contacten: voor oproeptools en de oproepagent.
+- Toegang tot meldingen: laat de automatische piloot reageren op meldingen.
+- Apparaatbeheer: laat `device_lock` het scherm echt vergrendelen.
+- Pakketten installeren: laat updates en `build_app` APK's installeren; Android vraagt ​​u om ZYRAXON toe te staan ​​als installatiebron.
+- Voorgronddiensten (microfoon, gegevenssynchronisatie) en wake lock: houd spraak en lange taken levend.
+- Internet- en netwerkstatus: de cloud en het web.
+- Shizuku (optioneel): toegang op systeemniveau voor de shell en terminal.
+
+## Google Play Protect
+Als Play Protect een taak blokkeert, kan de agent de juiste pagina openen, naar het echte scherm kijken en stap voor stap door het tandwiel en de schakelaar gaan - maar hij vraagt ​​u dit eerst, omdat het uitschakelen van de beveiliging uw beslissing is. Om het zelf te doen: Play Store → profielfoto → Play Protect → instellingen → schakel "Apps scannen met Play Protect" uit. De pagina heeft een knop die Play Store opent.
+
+## Waarom een ​​toestemming belangrijk is
+Als een tool faalt vanwege een ontbrekende machtiging, vertelt de agent u welke en opent het bijbehorende dialoogvenster. Niets gevoeligs werkt zonder uw expliciete toestemming.

@@ -1,0 +1,27 @@
+Vinkkejä ja esimerkkipyyntöjä
+## Sano mitä haluat, älä miten
+- "Tee aloitussivu kuntosalille, tumma ja rohkea."
+- "Rakenna täyden pinon varaussovellus tietokannan kanssa." (välittäjä kysyy ensin teknisiä valintoja)
+- "Avaa YouTube ja soita rauhallinen kappale."
+- "Vieritä alas ja avaa ensimmäinen tulos."
+- "Mikä on akkuni ja Wi-Fi?"
+- "Lue uusin tekstiviestini ja kerro minulle koodi."
+- "Soita äidille." / "Vastaa puheluun."
+- "Tee CV tästä valokuvasta." (liitä se)
+- "Muuta tämä kokoustallenne muistiinpanoiksi, joissa on toimintokohteita."
+- "Tee juliste perjantain tapahtumaan näillä väreillä."
+- "Tee äänidialogi kahden ystävän, yhden pojan ja yhden tytön välillä."
+- "Muista, että siskoni syntymäpäivä on 3. toukokuuta."
+- "Kerro minulle sää joka aamu kello 8." (autopilotti)
+- "Katso, kuinka lähetän vuokrani lompakkosovelluksellani, jotta voit tehdä sen uudelleen." (taito)
+- "Kumoa mitä teit projektikansiossa." (aikajana)
+- "Missä vuokrasopimukseni on?" (aivot)
+- "Asenna python-paketit ja suorita tämä komentosarja." (Linux)
+- "Julkaise tämä sivusto, jotta voin jakaa sen." (julkinen linkki)
+
+## Tottumukset, jotka auttavat
+- Lyhyet ja selkeät lyönnit pitkiä. Agentti valitsee oletusasetukset ja kertoo, mitä se valitsi.
+- Kun se esittää yhden kysymyksen, vastaa siihen ja se jatkuu samasta kohdasta.
+- Sano "selitä" tai "yhteenveto" saadaksesi yksityiskohtaisen vastauksen; Muuten vastaukset ovat lyhyitä.
+- Voit keskustella siitä milloin tahansa. Se pysähtyy ja kuuntelee.
+- Käytä Build-tilaa asioiden tekemiseen ja agenttitilaa asioiden tekemiseen puhelimessa.

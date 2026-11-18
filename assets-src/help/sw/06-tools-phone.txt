@@ -1,0 +1,34 @@
+Zana za otomatiki za simu
+Wakala hudhibiti simu yako kupitia zana. Huwezi kuwaita wewe mwenyewe; unasema unachotaka na wakala anachagua zana. Sura hii inaorodhesha kila zana inayogusa simu, na jinsi inavyolindwa (tazama Viwango vya Uidhinishaji: Salama, Binafsi, Mfumo).
+
+## Kufungua na kutafuta
+- `open_app` (Salama): fungua programu yoyote iliyosakinishwa kwa jina au kifurushi. `list_apps` (Salama): orodhesha programu zilizosakinishwa. `open_settings` (Salama): fungua ukurasa wa mipangilio ya mfumo (ufikivu, wekeleaji, arifa, programu, Wi-Fi, betri, Play Protect). `launch_url` (Salama): fungua kiungo katika kivinjari. `youtube_play` (Salama): fungua YouTube kwenye matokeo ya utafutaji kwa ulichouliza, na uicheze.
+
+## Kuona skrini
+- `read_screen` (Binafsi): husoma kila maandishi na kipengele kwenye skrini kwa kugusa nafasi. `screen_shot` (Binafsi): picha halisi ya skrini. Hizi zinahitaji ruhusa ya Ufikivu.
+- `look_camera` (Binafsi): anapiga picha moja na kamera na kuitazama. `read_media` (Binafsi): husoma picha, sauti au video (kutoka kwa njia au kiungo) ili mwanamitindo aweze kuielewa.
+
+## Kutenda kwenye skrini
+- `tap` (Binafsi): gusa pointi. `tap_text` (Binafsi): gusa kipengele kilicho na lebo hii, salama zaidi kuliko kuratibu. `swipe` (Binafsi): tembeza au ishara ya nyuma. `type_text` (Binafsi): charaza kwenye sehemu iliyolengwa. `press_key` (Binafsi): nyuma, nyumbani, hivi majuzi, arifa, mipangilio ya haraka, kufuli.
+- Vitendo vya skrini huendesha moja kwa wakati, kwa mpangilio, na baada ya kila moja wakala hutazama skrini mpya.
+
+## Simu, ujumbe na ubao wa kunakili
+- `call_dial` (Binafsi): piga simu kwa nambari au jina la anwani. `call_state` (Binafsi): simu inalia au inatumika? `call_answer` (Binafsi): jibu. `call_hangup` (Binafsi): kata simu.
+- `read_sms` (Binafsi): soma SMS mpya zaidi, k.m. msimbo wa OTP; inaweza kuchuja kwa maandishi au mtumaji.
+- `clipboard_read` na `clipboard_write` (Binafsi): soma au andika ubao wa kunakili.
+- `notify` (Binafsi): chapisha arifa Android halisi. `share` (Binafsi): fungua laha ya kushiriki yenye maandishi, kiungo au faili. `channel_post` (Mfumo): fungua Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail au SMS yenye maandishi yako yakiwa yamejazwa awali, tayari kutumwa.
+
+## Hali na ukweli wa mfumo
+- `network_status` (Salama): mtandaoni au la, Wi-Fi au data ya simu, Wi-Fi jina. `sys_info` (Salama): Android toleo, muundo, CPU, RAM, hifadhi, programu ya sasa. `platform_info` (Salama): ambapo wakala anafanya kazi. `process_list` (Salama): michakato inayoendesha.
+
+## Ruhusa na skrini
+- `request_permission` (Salama): hufungua kidirisha cha ruhusa ya mfumo kwa mguso mmoja wakati zana itashindwa kwa ruhusa inayokosekana. `device_lock` (Mfumo): funga skrini kwa kweli, au weka ruhusa inayowezesha. `floating_bubble` (Binafsi): washa au zima orb inayoelea.
+- `voice_change` (Binafsi): badilisha kasi ya kuzungumza, sauti au jinsia. `live_voice` (Mfumo): washa au zima hali ya moja kwa moja ya usemi-hadi-hotuba.
+
+## Wasaidizi wa kiolesura
+- `code_box` na `files_panel`: fungua kisanduku cha msimbo wa moja kwa moja au kivinjari cha faili ili utazame kazi. `todo_write`: bodi ya kazi ya moja kwa moja.
+
+## Vidokezo
+- Unaweza kuratibu: "Fungua Mipangilio, pata Wi-Fi na uniambie jina la mtandao". Wakala husoma skrini baada ya kila hatua na kuamua inayofuata.
+- Ikiwa bomba haifanyi chochote, wakala husoma skrini tena na kujaribu kipengele tofauti; haigopi kwa upofu.
+- Play Protect akizuia kitu, wakala anaweza kupitia mipangilio nawe (angalia Ruhusa).

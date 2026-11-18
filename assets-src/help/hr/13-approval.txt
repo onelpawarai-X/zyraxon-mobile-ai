@@ -1,0 +1,23 @@
+Razine odobrenja i sigurnost automatizacije
+Postavke → Sustav → Automatizacija. Ovo odlučuje koliko agent može učiniti prije nego što stane i zatraži vas. Postavka se provodi u kodu pri svakom pozivu alata; model ga ne može proširiti.
+
+## Četiri razine
+Promijenite razinu u Postavkama → Sustav → Automatizacija. Svaka razina odlučuje kada će agent stati i pitati, kao i koliko strogo Content Shield (pogledajte Sigurnost i privatnost) tretira tekst koji agent čita izvana.
+1. Potpuni upit (zaključano): pita prije bilo čega što mijenja telefon, koliko god malo. Najsigurniji. Content Shield je strog: svaki sumnjivi tekst smatra se neprijateljskim. Koristite ga na zajedničkom telefonu ili dok testirate nešto novo.
+2. Nadzirano (zadano): pita prije radnji sustava i osobnih radnji i obavlja obične poslove (čitanje, otvaranje, pretraživanje, izgradnja) samostalno. Content Shield je standardan: sumnjivi tekst je ograđen kao podatak, a kada je tekst očito neprijateljski svaki alat za promjenu traži od vas ostatak tog poteza.
+3. Uravnotežen: pita samo prije radnji na razini sustava (ljuska, brisanje, objavljivanje, zakazivanje...). Osobne radnje kao što su poruke, dodiri i tipkanje rade same. Content Shield je lagan: djeluje samo na jasno neprijateljski tekst, a tada samo alati na razini sustava prestaju pitati.
+4. Potpuna automatizacija: nikad ne pita i nikad ne prestaje. Sve prolazi ravnomjerno, a Content Shield je potpuno isključen — ništa se ne skenira, označava, uklanja ili mijenja. Ovo je automatizacija u punom smislu riječi: vi posjedujete rizik.
+
+## Tri razine alata
+- Sigurno (nikad ne pita ni na jednoj razini): čitanje i popis datoteka, memorija, dokumenti, dizajni, status, otvaranje aplikacija i datoteka, čekanje, vještine/autopilot/vremenska linija/popisi poziva, pretraživanje mozga.
+- Osobno (pitano u prve dvije razine): SMS, pozivi, kamera, čitanje zaslona, ​​dodiri i tipkanje, međuspremnik, preuzimanja, obavijesti, dijeljenje, promjena glasa, reproduciranje vještina, knjiga novca, agent poziva, poništavanje vremenske trake.
+- Sustav (traži se na svim razinama osim Potpune automatizacije): ljuska, Linux, izgradnje, objavljivanje, brisanje, zaključavanje uređaja, planiranje, Git i GitHub, ffmpeg, model na uređaju, objavljivanje na kanalima, pravila autopilota, brisanje vještina, Shizuku. Svaki alat koji aplikacija ne prepoznaje — uključujući MCP alata — tretira se kao Sustav.
+
+## Kartica odobrenja
+Kada alat treba vaše odobrenje, kartica kaže "Potrebno dopuštenje", govori vam što agent želi učiniti, prikazuje njegovu razinu (sigurno, osobno ili sustav) i nudi "Da, pokreni ga" ili "Ne, ostavi ga isključenim". Kartica vas također podsjeća da možete promijeniti koliko se često to traži u Postavkama → Automatizacija.
+
+## Samo na uređaju
+Kada je uključen, ništa ne napušta telefon: pokreću se samo model na uređaju i lokalni alati. Svi mrežni alati (pretraživanje, dohvaćanje, prijenosi, objavljivanje, GitHub, generiranje medija, MCP, modeli u oblaku) odbijeni su u kodu.
+
+## Obavijest o prvom lansiranju
+Prvi put ZYRAXON objašnjava da agent može djelovati na vašem telefonu i gdje treba uključiti dopuštenja. Pritisnite "Razumijem, počni".

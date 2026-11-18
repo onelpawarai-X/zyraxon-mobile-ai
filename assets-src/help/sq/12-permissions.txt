@@ -1,0 +1,27 @@
+Lejet, një nga një
+Cilësimet → Siguria dhe privatësia → Lejet. Çdo rresht tregon "Dhënë" ose një buton. Prekja e një rreshti hap dialogun e sistemit; thjesht shtypni Lejo. Agjenti gjithashtu mund të hapë vetë dialogun me `request_permission`.
+
+- Mikrofoni: kështu që ZYRAXON mund t'ju dëgjojë. Pa të nuk ka hyrje zanore.
+- Kamera: për të marrë dhe parë foto (`look_camera`, skanim dokumentesh, "çfarë shihni").
+- Vendndodhja: për hartat dhe informacionin lokal.
+- Njoftimet: për t'ju treguar kur përfundon puna në sfond.
+- Skedarët dhe mediat: për të lexuar foto, video, audio dhe dokumente.
+- Mbivendosja (vizato mbi aplikacione të tjera): nevojitet për syrin lundrues.
+- Aksesueshmëria: lejon agjentin të lexojë ekranin dhe të trokasë, të rrëshqasë dhe të shkruajë për ju. Kjo është zemra e automatizimit të telefonit. Ju e aktivizoni atë në cilësimet e aksesueshmërisë së sistemit.
+- Optimizimi i baterisë: ndalon Android vënien e ZYRAXON në gjumë ndërsa funksionon në sfond.
+
+## Leje të tjera që aplikacioni deklaron
+- SMS (lexo dhe merr): për leximin e kodeve, libri i parave dhe rregullat e autopilotit të SMS-ve.
+- Gjendja e telefonit, përgjigjja e thirrjeve, telefonata, kontaktet: për mjetet e thirrjeve dhe agjentin e thirrjeve.
+- Qasja në njoftim: lejon që piloti automatik të reagojë ndaj njoftimeve.
+- Administratori i pajisjes: lejon që `device_lock` të kyçë vërtet ekranin.
+- Instaloni paketat: lejon përditësimet dhe `build_app` instalimin e APK-ve; Android ju kërkon të lejoni ZYRAXON si një burim instalimi.
+- Shërbimet në plan të parë (mikrofoni, sinkronizimi i të dhënave) dhe wake lock: mbani gjallë zërin dhe punët e gjata.
+- Gjendja e internetit dhe rrjetit: cloud dhe ueb.
+- Shizuku (opsionale): akses në nivel sistemi për shell dhe terminal.
+
+## Google Play Protect
+Nëse Play Protect bllokon një punë, agjenti mund të hapë faqen e duhur, të shikojë ekranin e vërtetë dhe të kalojë hap pas hapi përmes ingranazhit dhe çelësit - por ju pyet së pari, sepse fikja e mbrojtjes është vendimi juaj. Për ta bërë vetë: Play Store → fotografia e profilit → Play Protect → Cilësimet → çaktivizoni "Skano aplikacionet me Play Protect". Faqja ka një buton që hapet Play Store.
+
+## Pse një leje ka rëndësi
+Nëse një mjet dështon për një leje që mungon, agjenti ju tregon se cilin dhe hap dialogun e tij. Asgjë e ndjeshme nuk funksionon pa lejimin tuaj të qartë.

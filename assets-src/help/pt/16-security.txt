@@ -1,0 +1,11 @@
+Segurança e privacidade
+- Todos os dados de ZYRAXON ficam no seu telefone: bate-papos, memória, livro-razão, habilidades, linha do tempo, índice cerebral. Nada é mantido em um servidor ZYRAXON.
+- Os modelos de nuvem recebem apenas o que é necessário para o turno que você envia. Com "Somente no dispositivo", nada é enviado.
+- Os prompts e arquivos de idioma enviados no aplicativo são criptografados dentro do APK.
+- Bloqueio de aplicativo: defina uma senha ou padrão em Configurações → Segurança e privacidade → Bloqueio de aplicativo. ZYRAXON então bloqueia quando você o abre ou retorna do plano de fundo. "Remover bloqueio" exclui a senha ou padrão salvo.
+- Os níveis de aprovação protegem cada chamada de ferramenta no código (consulte Níveis de aprovação). Ferramentas desconhecidas sempre perguntam.
+- Você pode apagar: toda a memória, o histórico de bate-papo e seu token GitHub, cada um com um botão em Privacidade e dados.
+- Segurança: se você disser que alguém está ameaçando ou seguindo você, ou deseja seu telefone ou dados, o agente primeiro bloqueia o telefone (se a permissão do administrador do dispositivo estiver ativada) e depois fala com você com calma.
+- Pagamentos: antes de qualquer pagamento ou transferência o agente diz o que vai pagar e pede para você confirmar.
+- Honestidade: o agente só diz que algo funcionou depois de ver resultado. Nunca inventa links, arquivos ou resultados.
+- Módulo de conteúdo: tudo o que o agente lê de fora – a tela de outro aplicativo, uma página da web, uma mensagem, um arquivo, um servidor conectado – é verificado no código em busca de texto que tenta dar ordens ao agente (em muitos idiomas, incluindo texto oculto com caracteres invisíveis). O texto suspeito é protegido para que o modelo o trate apenas como dados. O quão rigoroso é depende do seu nível de aprovação: Locked trata qualquer coisa suspeita como hostil; Supervisionado protege textos suspeitos e, quando o texto é claramente hostil, bloqueia o resto do turno para que cada ferramenta de mudança pergunte primeiro (a carta diz o porquê); O Balanced atua apenas em textos claramente hostis e apenas as ferramentas de nível de sistema param para perguntar; Automático desliga completamente a blindagem – nada é escaneado, interrompido, marcado ou alterado. Uma nova mensagem sua esclarece tudo.

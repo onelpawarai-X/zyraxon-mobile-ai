@@ -1,0 +1,23 @@
+Az automatizálás jóváhagyási szintjei és biztonsága
+Beállítások → Rendszer → Automatizálás. Ez eldönti, hogy mennyit tehet az ügynök, mielőtt leáll, és megkérdezi Önt. A beállítás kódban érvényesül minden szerszámhívásnál; egy modell nem tudja kiszélesíteni.
+
+## A négy szint
+Módosítsa a szintet a Beállítások → Rendszer → Automatizálás alatt. Minden szint eldönti, hogy az ügynök mikor áll meg és kérdez, és azt is, hogy a Content Shield (lásd: Biztonság és adatvédelem) milyen szigorúan kezeli az ügynök által kívülről olvasott szöveget.
+1. Teljes kérdés (zárolva): minden olyan dolog előtt kérdez rá, ami megváltoztatja a telefont, bármilyen kicsi is. Legbiztonságosabb. A Content Shield szigorú: minden gyanús szöveg ellenségesnek számít. Használja megosztott telefonon, vagy miközben valami újat tesztel.
+2. Felügyelt (alapértelmezett): rendszer- és személyes műveletek előtt kérdez, és a hétköznapi munkát (olvasás, megnyitás, keresés, építés) önállóan végzi. A Content Shield szabványos: a gyanús szövegek adatként vannak elkerítve, és ha a szöveg egyértelműen ellenséges, minden változó eszköz megkérdezi a kör hátralevő részét.
+3. Kiegyensúlyozott: csak rendszerszintű műveletek (shell, törlés, közzététel, ütemezés…) előtt kérdez rá. A személyes műveletek, például az üzenetek, koppintások és gépelés, egyedül futnak. A Content Shield könnyű: csak egyértelműen ellenséges szövegekre hat, és akkor már csak a rendszerszintű eszközök állnak le kérdezni.
+4. Teljes automatizálás: soha nem kérdez és soha nem áll meg. Minden azonnal lefut, és a Content Shield teljesen ki van kapcsolva – semmit sem szkennelnek, jelölnek meg, eltávolítanak vagy módosítanak. Ez a teljes értelemben vett automatizálás: Ön viseli a kockázatot.
+
+## Az eszközök három szintje
+- Biztonságos (soha semmilyen szinten nem kérdez rá): fájlok, memória, dokumentumok, tervek, állapotok, alkalmazások és fájlok megnyitása, várakozás, készségek/autopilot/idővonal/híváslisták, agykeresés.
+- Személyes (az első két szinten kéri): SMS, hívások, kamera, képernyőolvasás, érintések és gépelés, vágólap, letöltések, értesítések, megosztás, hangváltás, készségek visszajátszása, pénzkönyv, hívásügynök, idővonal visszavonása.
+- Rendszer (a teljes automatizálás kivételével minden szinten megkérdezik): shell, Linux, buildek, közzététel, törlés, eszközzár, ütemezés, Git és GitHub, ffmpeg, eszközön lévő modell, csatornákra történő közzététel, robotpilóta szabályok, törlési készségek, Shizuku. Minden olyan eszközt, amelyet az alkalmazás nem ismer fel – beleértve a MCP eszközöket is – a rendszer rendszerként kezeli.
+
+## A jóváhagyó kártya
+Amikor egy eszköz jóváhagyására van szüksége, a kártya azt írja: "Engedély szükséges", megmondja, hogy az ügynök mit akar tenni, megmutatja annak szintjét (Biztonságos, Személyes vagy Rendszer), és felajánlja az "Igen, futtassa" vagy "Nem, ne hagyja ki". A kártya arra is emlékezteti, hogy a Beállítások → Automatizálás alatt módosíthatja, hogy ez milyen gyakran legyen megkérdezve.
+
+## Csak a készüléken
+Bekapcsolt állapotban semmi sem hagyja el a telefont: csak az eszközön lévő modell és a helyi eszközök futnak. Minden hálózati eszköz (keresés, lekérés, feltöltés, közzététel, GitHub, médiagenerálás, MCP, felhőmodellek) kódban elutasításra kerül.
+
+## Első indítási értesítés
+Az első alkalommal ZYRAXON elmagyarázza, hogy az ügynök intézkedhet a telefonján, és hol lehet engedélyezni az engedélyeket. Nyomja meg az "Értem, kezdje" gombot.

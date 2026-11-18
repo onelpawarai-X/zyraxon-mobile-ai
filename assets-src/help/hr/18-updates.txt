@@ -1,0 +1,7 @@
+Ažuriranja
+Postavke → Ažuriranja → Ažuriranje aplikacije ili banner na vrhu aplikacije.
+- Aplikacija provjerava nova izdanja i prikazuje "Dostupno novo ažuriranje — verzija".
+- Provjerite ima li ažuriranja: pita sada. Ako ste aktualni, tako piše.
+- Preuzmi i instaliraj: preuzimanja s postotkom. Kada završite pritisnite Instaliraj. Vaši razgovori, memorija i postavke ostaju.
+- Ako Android blokira instalaciju, pritisnite gumb za dozvolu, dopustite ZYRAXON kao izvor instalacije, zatim pokušajte ponovno.
+- Gumbi natpisa: Preuzmi, Instaliraj, Dopusti i Zatvori.

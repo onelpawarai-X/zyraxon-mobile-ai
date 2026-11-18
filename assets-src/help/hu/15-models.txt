@@ -1,0 +1,15 @@
+Szolgáltatók, modellek és kulcsok
+## Szolgáltatók
+ZYRAXON (saját vonal és a Apex felhőügynök, mindig csatlakoztatva), OpenCode (ingyenes kvóta), Groq (nagyon gyors Llama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek és OpenRouter. Adjon hozzá bármilyen kulcsot a Beállítások → Szolgáltatók és API-ban. A kulcsot a telefon elmenti, összeveti a szolgáltató katalógusával, és a modellek bekerülnek a választóba, ahogy az egyes szolgáltatók válaszolnak.
+
+## Modell kiválasztása
+Használja a modell gombot az üzenetsorban vagy a Beállítások → Model & Identity → Modell. Keresés név szerint, szűrés Összes vagy Egyéni. Választását a rendszer elmenti és visszaállítja az indításkor; a frissítés soha nem helyettesíti a mentett modellt. Az Élő jelzéssel ellátott modellek a saját hangjukon tudnak beszélni (lásd Élő hang).
+
+## Készüléken lévő modellek
+Beállítások → Modell és identitás → Az eszközön. A modell úgy fut a telefonon, hogy nincsenek rajta adatok. A fájlok nagyok (több száz MB-tól néhány GB-ig), ezért töltse le a Wi-Fi webhelyről. Kistől nagyig sorolják őket; egy kis RAM-mal rendelkező telefonon válassza a legkönnyebbet. Az eszközhívást a Gemma és FunctionGemma csomag támogatja. Az Hugging Face token csak kapuzott fájlokhoz használható. A betöltött modellek emlékeznek.
+
+## A ZYRAXON webhely
+zyraxonai.lovable.app: hozzon létre egy fiókot (e-mail vagy Google), nyissa meg a Beállítások menüpontot, API-kulcs/hozzáférési token, hozzon létre egy kulcsot, és illessze be az alkalmazásba. Kulcs nélkül továbbra is használhatja az alkalmazást az eszközön található modellekkel és helyi eszközökkel.
+
+## Költségek és adatok
+A felhőszolgáltatók saját szabályaik szerint számláznak Önnek. Ha a „Csak az eszközön” funkció be van kapcsolva, a rendszer nem küld semmit egyetlen szolgáltatónak sem.

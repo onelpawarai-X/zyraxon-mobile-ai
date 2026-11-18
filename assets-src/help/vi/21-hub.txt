@@ -1,0 +1,20 @@
+Trung tâm tự động hóa
+Cài đặt → Hệ thống → Trung tâm tự động hóa. Mọi nút dành cho chức năng ZYRAXON có thể tự thực hiện đều nằm ở một nơi, trong sáu tab. Mỗi tab bắt đầu bằng một lời giải thích ngắn gọn về cách thức hoạt động của nó.
+
+## Kỹ năng
+Dạy ZYRAXON một nhiệm vụ theo hai cách: nói trong cuộc trò chuyện ("tìm hiểu nhiệm vụ này") hoặc nhấn nút ghi và tự thực hiện nhiệm vụ trong một ứng dụng khác, sau đó quay lại và nhấn Dừng. Dịch vụ Trợ năng phải được bật hoặc không thể nhìn thấy vòi của bạn. Những gì nó học được sẽ xuất hiện trong phần "Kỹ năng đã học" và có thể được phát lại hoặc xóa.
+
+## lái tự động
+Những quy tắc kiểu như “việc này xảy ra thì hãy làm việc kia”. Khi sự kiện xảy ra ZYRAXON sẽ tự thức dậy và thực hiện công việc mà không cần hỏi. Bạn cũng có thể tạo quy tắc bằng cách nói quy tắc đó trong cuộc trò chuyện. Mỗi quy tắc hiển thị số lần nó đã chạy.
+
+## Tiền bạc
+Đọc SMS từ bất kỳ ngân hàng hoặc ví nào ở bất kỳ quốc gia nào (PayPal, M-Pesa, UPI, Pix, bKash, thẻ…) và giữ một sổ cái về thu nhập, chi tiêu, phí và số dư. Bạn có thể đặt ngân sách và nhận được cảnh báo khi bạn vượt qua nó. Nó hoạt động trên điện thoại và không có gì được gửi đi bất cứ đâu.
+
+## Dòng thời gian
+Mọi thứ ZYRAXON đã làm đều được viết ở đây. Việc ghi, chỉnh sửa và xóa tệp có thể được hoàn tác chỉ bằng một nút bấm. Lệnh đã chạy không thể hoàn tác được.
+
+## Não
+Tìm kiếm các tập tin của bạn (văn bản, Word, Excel, PowerPoint, CSV) và, nếu bạn cho phép, SMS của bạn, không cần internet và bằng bất kỳ ngôn ngữ nào. Nhấn "Chỉ mục" trước, sau đó tìm kiếm.
+
+## Đại lý cuộc gọi
+Khi bạn không thể nhận cuộc gọi, ZYRAXON sẽ trả lời, nói bằng ngôn ngữ của người gọi, tìm hiểu tên và lý do cũng như cung cấp cho bạn bản tóm tắt khi cuộc gọi kết thúc. Mười lăm ngôn ngữ sử dụng các quy tắc tích hợp nhanh; mọi ngôn ngữ khác đều được mô hình xử lý và trả lời bằng ngôn ngữ của người gọi. Các từ có nghĩa là tạm biệt, khẩn cấp hoặc thư rác đều được hiểu bằng tất cả các ngôn ngữ cùng một lúc. Tóm tắt các cuộc gọi bị bắt được liệt kê trong tab.

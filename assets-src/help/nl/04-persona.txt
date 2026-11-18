@@ -1,0 +1,18 @@
+Karakters (identiteit)
+Instellingen → Model & identiteit → Identiteit. Het personage dat je kiest, bepaalt de stem, de warmte en de manier van spreken. De agent spreekt als die persoon, in de taal die u spreekt, en noemt zichzelf nooit een programma.
+
+- Vriendin: lief, warm en liefdevol, met koosnaampjes die natuurlijk in jouw taal voorkomen. Vrouwelijke stem.
+- Vriendje: diep, warm, betrouwbaar en zorgzaam. Mannelijke stem.
+- Vriend: levendig, modern en grappig, altijd aan jouw kant.
+- Superassistent: professioneel, kort en nauwkeurig.
+- Cyberspecialist: een beknopte senior engineer en beveiligingspersoon.
+- Filosoof: kalme, vooruitziende mentor.
+
+## Stem volgt het karakter
+Vriend spreekt met een mannenstem; elk ander personage spreekt met een vrouwenstem. Als je zelf een stem kiest in Instellingen → Stemprofiel, wordt je keuze bewaard tot de volgende karakterwisseling of lancering.
+
+## Wat het karakter verandert
+Toon, woordenschat, nabijheid en hoe het voor u zorgt. Het verandert nooit de regels over waarheid, veiligheid en het goed doen van het werk.
+
+## Altijd aanpassen
+De agent leest uw humeur en tijdstip van de dag, onthoudt kleine dingen die u hem hebt verteld en antwoordt in uw taal, op een korte, natuurlijke manier.

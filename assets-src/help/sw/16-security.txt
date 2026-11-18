@@ -1,0 +1,11 @@
+Usalama na faragha
+- Data yote ya ZYRAXON huishi kwenye simu yako: gumzo, kumbukumbu, leja, ujuzi, rekodi ya matukio, faharasa ya ubongo. Hakuna kitu kinachowekwa kwenye seva ya ZYRAXON.
+- Miundo ya wingu hupokea tu kile kinachohitajika kwa zamu unayotuma. Na "Kwenye kifaa pekee" hakuna kitu kinachotumwa hata kidogo.
+- Vidokezo na faili za lugha zinazosafirishwa katika programu zimesimbwa kwa njia fiche ndani ya APK.
+- Kufunga programu: weka nenosiri au mchoro katika Mipangilio → Usalama na faragha → Kufunga programu. ZYRAXON kisha hufunga unapoifungua au kurudi kutoka chinichini. "Ondoa kufuli" hufuta nenosiri au mchoro uliohifadhiwa.
+- Viwango vya uidhinishaji hulinda kila simu ya zana katika msimbo (angalia viwango vya Uidhinishaji). Zana zisizojulikana huuliza kila wakati.
+- Unaweza kufuta: kumbukumbu zote, historia ya gumzo, na tokeni yako ya GitHub, kila moja ikiwa na kitufe kimoja katika Faragha na data.
+- Usalama: ukisema mtu anakutishia au anakufuata, au anataka simu au data yako, wakala hufunga simu kwanza (ikiwa ruhusa ya msimamizi wa kifaa imewashwa) na kisha kuzungumza nawe kwa utulivu.
+- Malipo: kabla ya malipo yoyote au kuhamisha wakala husema italipa na kukuuliza uthibitishe.
+- Uaminifu: wakala husema tu kitu kilifanya kazi baada ya kuona matokeo. Haizuii kamwe viungo, faili au matokeo.
+- Ngao ya Maudhui: chochote ambacho wakala anasoma kutoka nje - skrini ya programu nyingine, ukurasa wa wavuti, ujumbe, faili, seva iliyounganishwa - huchaguliwa kwa msimbo kwa maandishi ambayo yanajaribu kumpa wakala maagizo (katika lugha nyingi, ikiwa ni pamoja na maandishi yaliyofichwa na vibambo visivyoonekana). Maandishi yanayoshukiwa yamefungwa kwa hivyo modeli huichukulia kama data pekee. Jinsi ilivyo kali inafuata kiwango chako cha uidhinishaji: Iliyofungwa huchukulia jambo lolote linalotiliwa shaka kuwa la uadui; Maandishi yanayosimamiwa yanatia shaka na, maandishi yanapochukiza, hufunga sehemu iliyobaki ili kila zana inayobadilisha ikuulize kwanza (kadi husema kwa nini); Vitendo vya kusawazisha tu kwenye maandishi yanayochukiza na ni zana za kiwango cha mfumo pekee zinazosimama kuuliza; Kiotomatiki huzima ngao kabisa - hakuna kinachochanganuliwa, kusimamishwa, kuwekewa alama au kubadilishwa. Ujumbe mpya kutoka kwako unaifuta.

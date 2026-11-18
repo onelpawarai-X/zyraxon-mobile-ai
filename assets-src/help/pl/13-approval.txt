@@ -1,0 +1,23 @@
+Poziomy dopuszczeń i bezpieczeństwo automatyki
+Ustawienia → System → Automatyka. To decyduje, ile agent może zrobić, zanim przestanie i zapyta Cię. Ustawienie jest wymuszane w kodzie przy każdym wywołaniu narzędzia; model nie może go poszerzyć.
+
+## Cztery poziomy
+Zmień poziom w Ustawieniach → System → Automatyka. Każdy poziom decyduje, kiedy agent zatrzymuje się i pyta, a także jak rygorystycznie Tarcza Treści (patrz Bezpieczeństwo i prywatność) traktuje tekst, który agent czyta z zewnątrz.
+1. Pełne zapytanie (zablokowane): pyta przed jakąkolwiek zmianą telefonu, niezależnie od tego, jak mała jest. Najbezpieczniejszy. Tarcza treści jest rygorystyczna: każdy podejrzany tekst liczy się jako wrogi. Używaj go na wspólnym telefonie lub podczas testowania czegoś nowego.
+2. Nadzorowany (domyślnie): pyta przed działaniami systemowymi i osobistymi oraz samodzielnie wykonuje zwykłe prace (czytanie, otwieranie, wyszukiwanie, budowanie). Osłona treści jest standardem: podejrzany tekst jest chroniony jako dane, a gdy tekst jest wyraźnie wrogi, każde zmieniające się narzędzie pyta Cię o resztę tej tury.
+3. Zrównoważony: pyta tylko przed działaniami na poziomie systemu (powłoka, usuwanie, publikowanie, planowanie…). Działania osobiste, takie jak wiadomości, dotknięcia i pisanie, działają samodzielnie. Osłona treści jest lekka: działa tylko na wyraźnie wrogi tekst, a wtedy tylko narzędzia na poziomie systemu przestają zadawać pytania.
+4. Pełna automatyzacja: nigdy nie pyta i nigdy się nie zatrzymuje. Wszystko przebiega bezproblemowo, a Osłona treści jest całkowicie wyłączona — nic nie jest skanowane, zaznaczane, usuwane ani zmieniane. To jest automatyzacja w pełnym tego słowa znaczeniu: ryzyko ponosisz Ty.
+
+## Trzy poziomy narzędzi
+- Bezpieczny (nigdy nie pyta na żadnym poziomie): czytanie i wyświetlanie plików, pamięć, dokumenty, projekty, status, otwieranie aplikacji i plików, oczekiwanie, umiejętności/autopilot/oś czasu/listy połączeń, przeszukiwanie mózgu.
+- Osobiste (zadawane na pierwszych dwóch poziomach): SMS-y, połączenia, kamera, czytanie ekranu, stukanie i pisanie, schowek, pobieranie, powiadomienia, udostępnianie, zmiana głosu, powtarzanie umiejętności, księga pieniędzy, agent połączeń, cofanie osi czasu.
+- System (zadawane na każdym poziomie z wyjątkiem pełnej automatyzacji): powłoka, Linux, kompilacje, publikowanie, usuwanie, blokada urządzenia, planowanie, Git i GitHub, ffmpeg, model na urządzeniu, wysyłanie do kanałów, reguły autopilota, usuwanie umiejętności, Shizuku. Każde narzędzie, którego aplikacja nie rozpoznaje — w tym narzędzia MCP — jest traktowane jako system.
+
+## Karta homologacji
+Gdy narzędzie wymaga Twojej zgody, na karcie znajduje się informacja „Wymagane pozwolenie”, informacja, co agent chce zrobić, pokazany jego poziom (Bezpieczne, Osobiste lub System) i oferta „Tak, uruchom to” lub „Nie, trzymaj się z daleka”. Karta przypomina również, że możesz zmienić częstotliwość pojawiania się tego pytania w Ustawieniach → Automatyzacja.
+
+## Tylko na urządzeniu
+Po włączeniu nic nie opuszcza telefonu: działa tylko model na urządzeniu i narzędzia lokalne. Wszystkie narzędzia sieciowe (wyszukiwanie, pobieranie, przesyłanie, publikowanie, GitHub, generowanie multimediów, MCP, modele w chmurze) są odrzucane w kodzie.
+
+## Powiadomienie o pierwszym uruchomieniu
+Za pierwszym razem ZYRAXON wyjaśnia, że ​​agent może działać na Twoim telefonie i gdzie włączyć uprawnienia. Naciśnij „Rozumiem, zacznij”.

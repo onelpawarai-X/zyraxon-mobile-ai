@@ -1,0 +1,11 @@
+Güvenlik ve gizlilik
+- ZYRAXON'ın tüm verileri telefonunuzda yaşıyor: sohbetler, hafıza, defter, beceriler, zaman çizelgesi, beyin indeksi. ZYRAXON sunucusunda hiçbir şey saklanmaz.
+- Bulut modelleri yalnızca gönderdiğiniz sıra için gerekenleri alır. "Yalnızca cihazda" seçeneğinde hiçbir şey gönderilmez.
+- Uygulamada gönderilen istemler ve dil dosyaları APK içinde şifrelenir.
+- Uygulama kilidi: Ayarlar → Güvenlik ve gizlilik → Uygulama kilidi bölümünden bir şifre veya desen ayarlayın. ZYRAXON daha sonra açtığınızda veya arka plandan geri döndüğünüzde kilitlenir. "Kilidi kaldır" kayıtlı şifreyi veya deseni siler.
+- Onay düzeyleri, koddaki her araç çağrısını korur (bkz. Onay düzeyleri). Bilinmeyen araçlar her zaman sorar.
+- Şunları silebilirsiniz: tüm hafızayı, sohbet geçmişini ve GitHub jetonunuzu, her biri Gizlilik ve verilerde bir düğmeyle.
+- Güvenlik: Birinin sizi tehdit ettiğini veya takip ettiğini veya telefonunuzu veya verilerinizi istediğini söylerseniz, temsilci önce telefonu kilitler (cihaz yöneticisi izni açıksa) ve ardından sizinle sakin bir şekilde konuşur.
+- Ödemeler: Herhangi bir ödeme veya transfer öncesinde acente ne kadar ödeyeceğini söyler ve sizden onaylamanızı ister.
+- Dürüstlük: Temsilci yalnızca bir sonuç gördükten sonra bir şeyin işe yaradığını söyler. Hiçbir zaman bağlantıları, dosyaları veya sonuçları icat etmez.
+- İçerik Kalkanı: Aracının dışarıdan okuduğu her şey (başka bir uygulamanın ekranı, bir web sayfası, bir mesaj, bir dosya, bağlı bir sunucu), aracıya emirler vermeye çalışan metin için kod içinde kontrol edilir (birçok dilde, görünmez karakterlerle gizlenmiş metin dahil). Şüpheli metin çitle çevrilerek modelin onu yalnızca veri olarak ele alması sağlanır. Onay düzeyinize ne kadar sıkı uyulur: Kilitli, şüpheli her şeye düşmanca davranır; Denetimli şüpheli metinleri engeller ve metin açıkça düşmanca olduğunda dönüşün geri kalanını kilitler, böylece her değişen araç ilk önce size sorar (kart nedenini söyler); Dengeli yalnızca açıkça düşmanca metinler üzerinde hareket eder ve yalnızca sistem düzeyindeki araçlar sormayı bırakır; Otomatik, korumayı tamamen kapatır; hiçbir şey taranmaz, durdurulmaz, işaretlenmez veya değiştirilmez. Sizden gelen yeni bir mesaj bunu temizler.

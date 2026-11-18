@@ -1,0 +1,23 @@
+Viwango vya idhini na usalama wa otomatiki
+Mipangilio → Mfumo → Uendeshaji otomatiki. Hii huamua ni kiasi gani wakala anaweza kufanya kabla ya kusimama na kukuuliza. Mpangilio unatekelezwa kwa msimbo kwenye kila simu ya zana; mfano hauwezi kuipanua.
+
+## Ngazi nne
+Badilisha kiwango katika Mipangilio → Mfumo → Uendeshaji otomatiki. Kila ngazi huamua wakati wakala atasimama na kuuliza, na pia jinsi Content Shield (angalia Usalama na faragha) inavyoshughulikia maandishi ambayo wakala anasoma kutoka nje.
+1. Uliza kamili (Imefungwa): huuliza kabla ya kitu chochote kinachobadilisha simu, hata iwe ndogo. Salama zaidi. Ngao ya Maudhui ni kali: maandishi yoyote yanayotiliwa shaka huhesabiwa kuwa ya uhasama. Itumie kwenye simu iliyoshirikiwa au unapojaribu kitu kipya.
+2. Kusimamiwa (chaguo-msingi): huuliza kabla ya mfumo na vitendo vya kibinafsi na hufanya kazi ya kawaida (kusoma, kufungua, kutafuta, kujenga) peke yake. Ngao ya Maudhui ni ya kawaida: maandishi yanayotiliwa shaka huwekwa kama data, na maandishi yanapochukiza kila zana inayobadilika hukuuliza sehemu iliyobaki.
+3. Imesawazishwa: huuliza tu kabla ya vitendo vya kiwango cha mfumo (ganda, kufuta, kuchapisha, kuratibu…). Vitendo vya kibinafsi kama vile ujumbe, kugonga na kuandika huendeshwa peke yake. Ngao ya Maudhui ni nyepesi: inafanya kazi tu kwa maandishi yanayochukiza, na kisha ni zana za kiwango cha mfumo pekee zinazosimama kuuliza.
+4. Uendeshaji kamili: hauulizi kamwe na hauachi. Kila kitu hupitia moja kwa moja, na Ngao ya Maudhui imezimwa kabisa - hakuna kinachochanganuliwa, kuwekewa alama, kuondolewa au kubadilishwa. Hii ni otomatiki kwa maana kamili: unamiliki hatari.
+
+## Ngazi tatu za zana
+- Salama (haiulizi kamwe kwa kiwango chochote): kusoma na kuorodhesha faili, kumbukumbu, hati, miundo, hali, kufungua programu na faili, kusubiri, ujuzi/upimaji kiotomatiki/muda wa muda/orodha za simu, utafutaji wa ubongo.
+- Ya kibinafsi (iliyoulizwa katika viwango viwili vya kwanza): SMS, simu, kamera, usomaji wa skrini, kugonga na kuandika, ubao wa kunakili, vipakuliwa, arifa, kushiriki, kubadilisha sauti, kucheza tena ujuzi, leja ya pesa, wakala wa simu, kutendua rekodi ya matukio.
+- Mfumo (ulioulizwa katika kila ngazi isipokuwa Uendeshaji otomatiki Kamili): shell, Linux, hujenga, uchapishaji, kufuta, kufunga kifaa, kuratibu, GitHub, ffmpeg, muundo wa kifaa, uchapishaji kwenye chaneli, sheria za otomatiki, ujuzi wa kufuta, Shizuku. Zana yoyote ambayo programu haitambui - ikijumuisha MCP zana - inachukuliwa kama Mfumo.
+
+## Kadi ya idhini
+Zana inapohitaji uidhinishaji wako, kadi husema "Ruhusa inahitajika", hukuambia kile wakala anataka kufanya, inaonyesha kiwango chake (Salama, Binafsi au Mfumo), na inatoa "Ndiyo, iendeshe" au "Hapana, isimamishe". Kadi pia inakukumbusha kuwa unaweza kubadilisha ni mara ngapi hii inaulizwa katika Mipangilio → Uendeshaji otomatiki.
+
+## Kwenye kifaa pekee
+Ukiwasha, hakuna kinachoacha simu: ni muundo wa kifaa na zana za ndani pekee zinazoendeshwa. Zana zote za mtandao (kutafuta, kuleta, kupakiwa, uchapishaji, GitHub, kutengeneza midia, MCP, miundo ya wingu) zimekataliwa katika msimbo.
+
+## Ilani ya kwanza ya uzinduzi
+Mara ya kwanza, ZYRAXON inaeleza kuwa wakala anaweza kuchukua hatua kwenye simu yako na mahali pa kuwasha ruhusa. Bonyeza "Nimeipata, anza".

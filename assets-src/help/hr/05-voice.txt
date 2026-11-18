@@ -1,0 +1,35 @@
+Glas: govor, slušanje i razgovor uživo
+## Slušanje (mikrofon)
+Postavke → Glas i mikrofon → Mikrofon i jezik.
+- Jezik prepoznavanja govora: jezik kojim govorite u mikrofon. Promijenite ga bilo kada.
+- Neka mikrofon bude uključen (uvijek sluša): kada je uključen, mikrofon ostaje otvoren. Kada je isključen, sami ga uključujete.
+- Automatsko slanje kada prestanete govoriti: nakon otprilike 1,5 sekunde tišine vaša se rečenica šalje sama. Kada je isključeno, riječi čekaju u okviru da pritisnete Pošalji.
+- Gumb mikrofona na traci s porukama i banner na vrhu čine isto uključivanje/isključivanje.
+- Mikrofon vam je uvijek otvoren, čak i dok ZYRAXON govori. U trenutku kada počnete govoriti, ono prestaje i sluša, a zatim vam odgovara. Vlastiti glas koji se vraća kroz mikrofon filtrira se usporedbom teksta s njegovim posljednjim odgovorom.
+- Rečenica se šalje samo jednom. Ako osoba koja prepoznaje kasnije ponovi nešto drugačiju verziju iste rečenice, ona se ispušta kao isti obrat.
+
+## Govor (pretvaranje teksta u govor)
+Postavke → Glas i mikrofon → Glasovni profil.
+- Odaberite glas: ženski (sladak i romantičan) ili muški (dubok i samouvjeren). Vlastiti glasovi web stranice koriste se kada su spremni; vlastiti govorni mehanizam telefona je zamjena.
+- Klizači za brzinu i visinu te "Testiraj glas".
+- "Pročitaj odgovore naglas" uključuje ili isključuje govor.
+- Ako telefon nema govorni mehanizam, instalirajte Google Govorne usluge. Ako telefon nema glasovne podatke za bengalski, gumb vam omogućuje preuzimanje.
+- Dodirnite traku s govorom da zaustavite glas. Dodirnite Slušaj ispod bilo koje poruke da je čujete.
+- ZYRAXON nikada ne čita naglas kod, veze, JSON ili nazive alata.
+
+## Glasovni laboratorij (mjenjač glasa)
+Odaberite iz kataloga poslužitelja prema spolu (svi, djevojčica, dječak), dobi (dijete, tinejdžer, odrasli, stariji) i jeziku (bengalski, hindi, engleski, urdu, arapski, tamilski, nepalski, španjolski, francuski, njemački, japanski, korejski, kineski, ruski, turski…). "Slušaj" pretpregleda glas; "Povratak na zadano" vraća glas lika. Za audio s mnogo glasova pitajte agenta: svaki dio dijaloga dobiva svoj glas.
+
+## Glas uživo (govor-u-govor)
+Postavke → Glas i mikrofon → Glas uživo. S modelom u stvarnom vremenu (Gemini Uživo, OpenAI Realtime i slično) model čuje mikrofon i odgovara svojim glasom, u jednom streamu, a možete ga prekinuti usred riječi. Vlastiti govor telefona isključen je u ovoj sesiji tako da nikad ne čujete dva glasa.
+- Koristite vlastiti glas modela: uključeno = razgovor uživo; isključen = telefon čita tekstualne odgovore.
+- Status pokazuje: povezivanje, slušanje, govor, čekanje.
+- Odabirom modela u stvarnom vremenu on se sam uključuje.
+- Ako se ne učita model u stvarnom vremenu, dodajte ključ Gemini ili OpenAI u pružatelje AI usluga.
+- Glas koji ste odabrali u glasovnom profilu također se koristi u načinu rada uživo.
+
+## Plutajuće oko
+Postavke → Aura i tema → Aura i pozadina.
+- Mala plutajuća kugla koja se nalazi iznad svake druge aplikacije. Dodirnite za uključivanje ili isključivanje mikrofona; dugo pritisnite za otvaranje tekstualnog okvira i ponovno ga zatvorite.
+- Osam dizajna: oko, sjajna kugla, neonski prsten, galaksija, orbita, plazma, pulsar, prizma. Postavljanje uz rub zaslona.
+- Glasovne naredbe (riječi za buđenje): kada je aplikacija u pozadini, izgovaranje imena budi lebdeće oko i ZYRAXON odgovara. Zadane postavke: "zyraxon", "hey zyraxon" i uobičajeni načini pisanja na bengalskom i engleskom. Dodajte vlastite riječi na bilo kojem jeziku; uklonite ih bilo kada.

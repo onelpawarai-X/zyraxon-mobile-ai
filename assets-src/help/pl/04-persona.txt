@@ -1,0 +1,18 @@
+Postacie (tożsamość)
+Ustawienia → Model i tożsamość → Tożsamość. Wybrana postać decyduje o głosie, cieple i sposobie mówienia. Agent przemawia jako ta osoba, w języku, którym mówisz i nigdy nie nazywa siebie programem.
+
+- Dziewczyna: słodka, ciepła i kochająca, z imionami zwierząt naturalnymi w Twoim języku. Kobiecy głos.
+- Chłopak: głęboki, ciepły, niezawodny i opiekuńczy. Męski głos.
+- Przyjaciel: żywy, nowoczesny i zabawny, zawsze po Twojej stronie.
+- Super asystent: profesjonalny, zwięzły i dokładny.
+- Specjalista ds. cybernetyki: zwięzły starszy inżynier i specjalista ds. bezpieczeństwa.
+- Filozof: spokojny, dalekowzroczny mentor.
+
+## Głos podąża za postacią
+Chłopak mówi męskim głosem; każda inna postać mówi kobiecym głosem. Jeśli sam wybierzesz głos w Ustawieniach → Profil głosowy, Twój wybór zostanie zachowany do następnej zmiany postaci lub uruchomienia.
+
+## Co zmienia postać
+Ton, słownictwo, bliskość i to, jak się o Ciebie troszczy. Nigdy nie zmienia zasad dotyczących prawdy, bezpieczeństwa i prawidłowego wykonywania pracy.
+
+## Zawsze się dostosowuję
+Agent odczytuje Twój nastrój i porę dnia, zapamiętuje drobne rzeczy, które mu powiedziałeś, i odpowiada w Twoim języku w krótki, naturalny sposób.

@@ -1,0 +1,20 @@
+Qendra e automatizimit
+Cilësimet → Sistemi → Qendra e automatizimit. Çdo buton për atë që ZYRAXON mund të bëjë vetë është në një vend, në gjashtë skeda. Çdo skedë fillon me një shpjegim të shkurtër se si funksionon.
+
+## Aftësitë
+Mësojini ZYRAXON një detyrë në dy mënyra: tregojani në chat ("mësojeni këtë detyrë"), ose shtypni butonin e regjistrimit dhe kryeni detyrën vetë në një aplikacion tjetër, më pas kthehuni dhe shtypni Stop. Shërbimi i aksesueshmërisë duhet të jetë aktiv, përndryshe trokitje e lehtë nuk mund të shihen. Ajo që mësoi shfaqet nën "Shkathtësitë e mësuara" dhe mund të riluhet ose fshihet.
+
+## Autopilot
+Rregulla të llojit "kur kjo të ndodhë, bëje atë". Kur ndodh ngjarja, ZYRAXON zgjohet vetë dhe e kryen punën pa pyetur. Ju gjithashtu mund të krijoni një rregull duke e thënë atë në chat. Çdo rregull tregon se sa herë është ekzekutuar.
+
+## Paratë
+Lexon SMS nga çdo bankë ose portofol në çdo vend (PayPal, M-Pesa, UPI, Pix, bKash, karta…) dhe mban një regjistër të të ardhurave, shpenzimeve, tarifave dhe gjendjes. Ju mund të vendosni një buxhet dhe të merrni një paralajmërim kur ta kaloni atë. Punon në telefon dhe asgjë nuk dërgohet askund.
+
+## Afati kohor
+Gjithçka që bëri ZYRAXON është shkruar këtu. Shkrimet, modifikimet dhe fshirjet e skedarëve mund të zhbëhen me një buton. Një komandë që u ekzekutua nuk mund të zhbëhet.
+
+## Truri
+Kërkon skedarët tuaj (tekst, Word, Excel, PowerPoint, CSV) dhe, nëse e lejoni, SMS tuaj, pa internet dhe në asnjë gjuhë. Shtypni fillimisht "Index", më pas kërkoni.
+
+## Thirrni agjentin
+Kur nuk mund të merrni një telefonatë, ZYRAXON përgjigjet, flet në gjuhën e telefonuesit, mëson emrin dhe arsyen dhe ju jep një përmbledhje kur telefonata përfundon. Pesëmbëdhjetë gjuhë përdorin rregulla të shpejta të integruara; çdo gjuhë tjetër trajtohet nga modeli, i cili përgjigjet në gjuhën e telefonuesit. Fjalët që nënkuptojnë lamtumirë, urgjente ose mesazhe të padëshiruara kuptohen në të gjitha gjuhët menjëherë. Përmbledhjet e thirrjeve të kapura janë të listuara në skedën.

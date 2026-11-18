@@ -1,0 +1,16 @@
+Języki
+## Język aplikacji
+Ustawienia → Język i tłumaczenie. 60 języków. Za nim podąża cały interfejs i komunikaty narzędzi agenta. Każdy język ma swój własny plik tłumaczenia. Każda linia, której nie ma jeszcze w pliku językowym, jest wyświetlana w języku angielskim i nigdy nie pozostaje pusta.
+
+## Co mówisz
+Agent zawsze odpowiada w języku, w którym się do niego mówisz, w dowolnym języku na świecie. Jeśli się przełączysz, to się przełączy. W Twoim języku używa przyjaznej i pełnej szacunku formy „ty”. Nazwy marek i technologii pozostają takie, jakie są.
+
+## Języki głosowe
+- Język rozpoznawania (co mówisz do mikrofonu): Ustawienia → Głos i mikrofon → Mikrofon i język.
+- Głos mówiący: Ustawienia → Głos i mikrofon → Profil głosowy i laboratorium głosowe dla języków takich jak bengalski, hindi, angielski, urdu, arabski, tamilski, nepalski, hiszpański, francuski, niemiecki, japoński, koreański, chiński, rosyjski, turecki.
+
+## Ta dokumentacja
+Skorzystaj z elementów językowych znajdujących się na górze tej strony. Cały przewodnik jest napisany ręcznie we wszystkich językach obsługiwanych przez aplikację i dostarczony wewnątrz aplikacji. Na Twoim telefonie nic nie jest tłumaczone: każdy rozdział otwiera się natychmiast, działa w trybie offline i nie wymaga żadnego modelu ani klucza.
+
+## Pisanie własnym scenariuszem
+Dokumenty, plakaty i projekty możemy wykonać dowolnym pismem. W przypadku projektów bengalskich używana jest odpowiednia czcionka; w przypadku innych skryptów wybierana jest pasująca czcionka.

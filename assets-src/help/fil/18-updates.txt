@@ -1,0 +1,7 @@
+Mga update
+Mga Setting → Mga Update → Pag-update ng app, o ang banner sa itaas ng app.
+- Sinusuri ng app ang mga bagong release at ipinapakita ang "Available ang bagong update — bersyon".
+- Tingnan ang mga update: nagtatanong ngayon. Kung ikaw ay kasalukuyang sinasabi nito.
+- I-download at i-install: mga download na may porsyento. Kapag tapos na pindutin ang I-install. Mananatili ang iyong mga chat, memorya at mga setting.
+- Kung haharangin ng Android ang pag-install, pindutin ang pindutan ng pahintulot, payagan ang ZYRAXON bilang pinagmulan ng pag-install, pagkatapos ay subukang muli.
+- Ang mga pindutan ng banner: I-download, I-install, Payagan, at Isara.

@@ -1,0 +1,45 @@
+Ferdigheter, autopilot, penger, tidslinje og angre, hjerne, anropsagent og minne
+Du bruker alle disse ved å snakke: si hva du vil og agenten kaller det riktige verktøyet. Hver handling er oppført her med sine alternativer.
+
+## Ferdigheter – undervise ved å gjøre
+En ferdighet er en telefonoppgave agenten lærte ved å se deg gjøre den en gang. Den lagrer hvordan du finner hvert element igjen (ID, ord og naboer, ikke skjermposisjonen), slik at den fortsetter å fungere når appens layout endres.
+- Legg til en ferdighet:`skill_record`(Personlig). Si "lær dette som <navn>".`action: start`(med et navn) begynner opptaket; gjør deretter oppgaven — åpne appen, trykk, skriv, trykk på tastene; hvert trinn registreres.`action: stop`lagrer den. Ved stopp kan du passere`params`for å gjøre innskrevne verdier til parametere (for eksempel blir telefonnummeret`number`, blir beløpet`amount`) og en`description`. `action: status`forteller deg om opptaket er på.
+- Kjør en ferdighet:`skill_run`(Personlig). Gi`args`for sine parametere, f.eks. antall og beløp. Den spilles av i en brøkdel av trinnene og helbreder seg selv når appen endres. Hvis ett trinn mislykkes, sier resultatet hvilket trinn og hva som er på skjermen, og agenten fullfører resten for hånd.
+- List ferdigheter:`skill_list`(Safe) viser navn, parametere, trinn og hvor ofte hver løp. Med et navn og eksport på gjør den en delbar`.zxskill`fil.
+- Del og last:`skill_import`(Personlig) laster en`.zxskill`fil fra en nedlasting eller en delt fil som en ferdighet.
+- Slett en ferdighet:`skill_delete`(System).
+- Eksempel: «Finn ut hvordan jeg sender 500 til Rahim med lommebok-appen»→du gjør det en gang→«Send 700 til Karim» neste gang.
+
+## Autopilot - "når X skjer, gjør Y"
+En regel vekker agenten av seg selv og den gjør oppgaven uten å spørre deg.
+- Legge til:`autopilot_add`(System). Typer: sms, varsling, anrop, daglig, én gang, intervall, batteri, app. Fyll bare ut feltene regelen trenger:`from`(avsendernavn eller nummer eller apptittel),`any`(minst ett av disse ordene),`all`(hvert ord),`none`(ingen av disse ordene),`time`"TT:MM" (daglig),`in_minutes` or `at_ms`(en gang),`every_minutes`(intervall),`below`(batteriprosent),`pkg`(apppakke eller navn, for app- og varslingsregler). Agenten gjør setningen din om til disse feltene. Resultatet viser alle tillatelser som fortsatt trengs (SMS, varslingstilgang ...), og agenten ber deg slå den på.
+- Eksempler: «Når en betalings-SMS kommer fra lommebok-appen min, legg den til i hovedboken min.» "Hver morgen klokken 8, fortell meg været." "Om 20 minutter, minn meg på å ta ut brødet." "Hvert 30. minutt, drikk-vann-påminnelse." "Når batteriet går under 15 %, fortell meg det." "Når noen ringer meg, logg nummeret." "Når jeg åpner bankappen, minn meg på å sjekke budsjettet."
+- Liste:`autopilot_list`(Sikker) viser hver regel med neste kjøretid og hvor ofte den har utløst.
+- Pause eller gjenoppta:`autopilot_toggle`(System). Slett:`autopilot_remove`(System), etter id eller tittel.
+- Når en regel utløses får du en melding som sier det, og agenten gjør bare jobben.
+
+## Pengebok (personlig finansdirektør)
+- `ledger_scan`(Personlig): les lommebok og bank-SMS i en privat hovedbok: inntekt, utgifter, gebyrer, saldo og kategori.`days`sier hvor langt tilbake (standard 30). Med`auto`på, hver ny penge-SMS legges til av seg selv, og du blir advart når et budsjett passeres. Fungerer for alle lands lommebok og bankmeldinger, i hvilken som helst valuta.
+- `ledger_report`(Personlig): periode i dag, i går, uke, måned eller alle. Formater tekst (en ferdig talt oppsummering) eller xlsx (enExcelfil med transaksjoner og kategoritotaler, åpnet for deg).
+- `ledger_budget`(Personlig): angi et månedlig budsjett for en kategori (mat, regninger, transport, shopping, mobillading, overføringer ...); en grense på 0 fjerner den; uten argumenter viser den budsjetter og gjeldende advarsler.
+- Agenten finner aldri opp pengetall; den leser dem fra hovedboken.
+
+## Tidslinje og angre
+- Alt agenten gjør skrives til tidslinjen (de siste 400 handlingene). Filendringer beholder en kopi av det som var der før.
+- `timeline_list`(Sikker): hva agenten gjorde nylig, med en id for hver, og hvilke endringer som kan angres.
+- `timeline_undo`(Personlig):`id`angrer en skriving, redigering eller sletting - filen kommer tilbake nøyaktig slik den var (en fil som ikke eksisterte fjernes igjen).`since_id`angrer alt fra den ID-en og utover, nyeste først. Bruk det når du sier "ta det tilbake" eller "legg det tilbake som før".
+- Angre dekker filskriving, redigering og sletting. En kommando som kjørte (for eksempel å installere noe eller sende en melding) kan ikke angres på denne måten.
+- Chatmeldinger: for å fjerne en hel samtale, bruk blyanten og kryss i venstremenyen eller Innstillinger→Personvern og data→Slett chathistorikk eller navigering→Ny økt.
+
+## Hjerne – andre minne for filene dine
+- `brain_index`(Sikker): bygg eller oppdater frakoblet indeks over mapper eller filer (tekst,Markdown, CSV, Word, Excel, PowerPoint) og eventuelt SMS-innboksen (`sms`på). Kjør den før det første søket og etter at nye filer vises. Standard er arbeidsområdet ditt.
+- `brain_search`(Sikker): spør med dine egne ord, "hvor er leiekontrakten min?" — det fungerer offline på alle språk.`kind`er fil eller sms;`days`grenser for nyere varer. Åpne en funnet fil med`open_file`.
+
+## Ring agent
+- `call_agent`(Personlig): handling på, av eller status.`owner`er navnet det står ("Jeg er <eierens assistent").`answer_after_seconds`(standard 6) lar deg hente først. Når et anrop kommer og du ikke kan svare, hilser den på den som ringer, spør om navn og årsak, svarer på enkle spørsmål, legger på røret høflig og forteller deg en oppsummering.
+- `call_log`(Sikker): sammendrag av anrop den besvarte, nyeste først.
+- Trenger samtale- og telefontillatelsene.
+
+## Hukommelse
+- `memory_write`, `memory_read`, `memory_delete`(Sikker): varige fakta om deg (navn, preferanser, personer, datoer, prosjekter) bor i en lokal database og overlever omstarter. Si "husk dette" og det skrives i samme sving; hvis noe er galt, fjernes eller skrives det om. Hver gammel samtale blir også holdt, og tidligere svinger som samsvarer med det du sier kommer tilbake av seg selv, selv måneder senere.
+- Se og endre alt i Innstillinger→System→Minne (nøkkel, verdi, lagre, slett alt).

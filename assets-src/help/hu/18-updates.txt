@@ -1,0 +1,7 @@
+Frissítések
+Beállítások → Frissítések → Alkalmazásfrissítés, vagy a szalaghirdetés az alkalmazás tetején.
+- Az alkalmazás ellenőrzi az új kiadásokat, és megjeleníti az „Új frissítés elérhető – verzió” üzenetet.
+- Frissítések keresése: most kérdez. Ha aktuális, azt írja.
+- Letöltés és telepítés: százalékos letöltések. Ha végzett, nyomja meg a Telepítés gombot. A beszélgetések, a memória és a beállítások megmaradnak.
+- Ha a Android blokkolja a telepítést, nyomja meg az engedély gombot, engedélyezze a ZYRAXON telepítési forrást, majd próbálkozzon újra.
+- A szalaghirdetés gombjai: Letöltés, Telepítés, Engedélyezés és Bezárás.

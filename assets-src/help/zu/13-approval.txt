@@ -1,0 +1,23 @@
+Amazinga okuvunyelwa nokuphepha kokuzenzakalela
+Izilungiselelo → Uhlelo → Okuzenzakalelayo. Lokhu kunquma ukuthi i-ejenti ingenza malini ngaphambi kokuthi ime futhi ikubuze. Isilungiselelo siphoqelelwa ngekhodi kukholi ngayinye yamathuluzi; imodeli ayikwazi ukuwenza banzi.
+
+## Amazinga amane
+Shintsha ileveli kokuthi Izilungiselelo → Uhlelo → Okuzenzakalelayo. Izinga ngalinye linquma ukuthi i-ejenti ima nini futhi ibuze, nokuthi i-Content Shield (bona Ukuvikeleka nobumfihlo) iwuphatha ngokuqine kangakanani umbhalo u-ejenti owufunda ngaphandle.
+1. Ukubuza okugcwele (Kukhiyiwe): ibuza ngaphambi kwanoma yini eshintsha ifoni, noma incane kangakanani. Kuphephe kakhulu. I-Content Shield iqinile: noma yimuphi umbhalo osolisayo ubalwa njengonobutha. Yisebenzise ocingweni olwabiwe noma ngenkathi uhlola okuthile okusha.
+2. Igadwa (okuzenzakalelayo): ibuza ngaphambi kwezinhlelo nezenzo zomuntu siqu futhi yenza umsebenzi ojwayelekile (ukufunda, ukuvula, ukusesha, ukwakha) ngokwayo. I-Content Shield ijwayelekile: umbhalo osolisayo ubiyelwe njengedatha, futhi uma umbhalo unobutha ngokusobala wonke amathuluzi ashintshayo akucela ukuthi udlule kulo lonke leli thuba.
+3. Ibhalansile: ibuza kuphela ngaphambi kwezenzo zeleveli yesistimu (igobolondo, ukususa, ukushicilela, ukuhlela…). Izenzo zomuntu siqu njengemilayezo, ukuthepha nokuthayipha zisebenza zodwa. I-Content Shield ilula: isebenza kuphela embhalweni onobutha osobala, bese kuba amathuluzi weleveli yesistimu kuphela ayeke ukubuza.
+4. Okuzenzakalelayo okugcwele: akubuzi futhi akume. Yonke into ihamba iqonde, futhi i-Content Shield icishwe ngokuphelele - akukho okuskenwayo, okumakwayo, okukhishiwe noma okushintshiwe. Lokhu kuzenzakalela ngomqondo ogcwele: umnikazi wengozi.
+
+## Izigaba ezintathu zamathuluzi
+- Iphephile (ayibuzi noma yiliphi izinga): ukufunda nokufaka kuhlu amafayela, inkumbulo, imibhalo, imiklamo, isimo, ukuvulwa kwezinhlelo zokusebenza namafayela, ukulinda, amakhono/i-autopilot/umugqa wesikhathi/uhlu lwezingcingo, ukusesha kwengqondo.
+- Okomuntu siqu (okubuzwa kumaleveli amabili okuqala): I-SMS, amakholi, ikhamera, ukufundwa kwesikrini, ukuthepha nokuthayipha, ibhodi lokunamathisela, okulandiwe, izaziso, ukwabelana, ukuguqulwa kwezwi, ukudlala kabusha kwamakhono, ileja yemali, umenzeli wekholi, ukuhlehlisa umugqa wesikhathi.
+- Isistimu (ebuzwa kuwo wonke amaleveli ngaphandle kokuzenzakalela Okugcwele): igobolondo, Linux, iyakha, ishicilela, isusa, ukukhiya idivayisi, ukuhlela, GitHub, ffmpeg, imodeli ekudivayisi, ukuthunyelwa eziteshini, imithetho yokushayela okuzenzakalelayo, amakhono okusula, Shizuku. Noma yiliphi ithuluzi uhlelo lokusebenza elingalazi — okuhlanganisa MCP amathuluzi — liphathwa NjengeSistimu.
+
+## Ikhadi lokugunyaza
+Uma ithuluzi lidinga imvume yakho ikhadi lithi "Imvume iyadingeka", likutshela ukuthi umenzeli ufuna ukwenzani, libonise isigaba salo (Iphephile, Okomuntu siqu noma Isistimu), futhi linikeze "Yebo, lisebenzise" noma "Cha, ligcine livaliwe". Ikhadi futhi likukhumbuza ukuthi ungashintsha ukuthi lokhu kubuzwa kaningi kangakanani kokuthi Izilungiselelo → Okuzenzakalelayo.
+
+## Kudivayisi kuphela
+Uma ivuliwe, akukho okushiya ifoni: imodeli ekudivayisi kuphela namathuluzi endawo asebenzayo. Wonke amathuluzi enethiwekhi (ukusesha, ukulanda, ukulayisha, ukushicilela, GitHub, ukukhiqizwa kwemidiya, MCP, amamodeli wamafu) enqatshiwe ngekhodi.
+
+## Isaziso sokuqala sokwethulwa
+Okokuqala, ZYRAXON ichaza ukuthi umenzeli angasebenza ocingweni lwakho nokuthi ungazivula kuphi izimvume. Cindezela okuthi "Ngiyitholile, qala".

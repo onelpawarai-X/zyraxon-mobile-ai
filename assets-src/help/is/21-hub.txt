@@ -1,0 +1,20 @@
+Sjálfvirkni miðstöð
+Stillingar → Kerfi → Sjálfvirknimiðstöð. Sérhver hnappur fyrir það sem ZYRAXON getur gert sjálfur er á einum stað, í sex flipa. Hver flipi byrjar á stuttri útskýringu á því hvernig hann virkar.
+
+## Færni
+Kenndu ZYRAXON verkefni á tvo vegu: segðu það í spjalli ("lærðu þetta verkefni"), eða ýttu á upptökuhnappinn og gerðu verkefnið sjálfur í öðru forriti, komdu svo aftur og ýttu á Stop. Aðgengisþjónustan verður að vera á, annars sjást ekki krönurnar þínar. Það sem það lærði birtist undir „Lærð færni“ og hægt er að spila það aftur eða eyða.
+
+## Sjálfstýring
+Reglur af því tagi "þegar þetta gerist, gerðu það". Þegar atburðurinn gerist vaknar ZYRAXON af sjálfu sér og vinnur verkið án þess að spyrja. Þú getur líka búið til reglu með því að segja hana í spjalli. Hver regla sýnir hversu oft hún hefur keyrt.
+
+## Peningar
+Les SMS frá hvaða banka eða veski sem er í hvaða landi sem er (PayPal, M-Pesa, UPI, Pix, bKash, kort…) og heldur einni bókhaldi yfir tekjur, útgjöld, gjöld og jafnvægi. Þú getur stillt fjárhagsáætlun og fengið viðvörun þegar þú stenst það. Það virkar í símanum og ekkert er sent neitt.
+
+## Tímalína
+Allt sem ZYRAXON gerði er skrifað hér. Hægt er að afturkalla skrár, breytingar og eyðingu með einum hnappi. Ekki er hægt að afturkalla skipun sem var keyrð.
+
+## Heili
+Leitar í skránum þínum (texta, Word, Excel, PowerPoint, CSV) og, ef þú leyfir það, SMS þinni, án internets og á hvaða tungumáli sem er. Ýttu fyrst á "Index" og leitaðu síðan.
+
+## Hringdu í umboðsmann
+Þegar þú getur ekki svarað símtali svarar ZYRAXON, talar á eigin tungumáli þess sem hringir, lærir nafnið og ástæðuna og gefur þér yfirlit þegar símtalinu lýkur. Fimmtán tungumál nota hraðvirkar innbyggðar reglur; hvert annað tungumál er meðhöndlað af líkaninu, sem svarar á tungumáli þess sem hringir. Orð sem þýða bless, brýn eða rusl eru skilin á öllum tungumálum í einu. Yfirlit yfir símtöl sem hafa verið tekin eru skráð í flipanum.

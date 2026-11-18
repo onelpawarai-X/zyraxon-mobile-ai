@@ -1,0 +1,11 @@
+Drošība un privātums
+- Visi lietotāja ZYRAXON dati atrodas jūsu tālrunī: tērzēšana, atmiņa, virsgrāmata, prasmes, laika skala, smadzeņu indekss. Nekas netiek glabāts ZYRAXON serverī.
+- Mākoņu modeļi saņem tikai to, kas nepieciešams jūsu nosūtītajam pagriezienam. Izmantojot opciju “Tikai ierīcē”, nekas netiek nosūtīts.
+- Lietotnē piegādātās uzvednes un valodu faili ir šifrēti APK.
+- Lietotņu bloķēšana: iestatiet paroli vai modeli sadaļā Iestatījumi → Drošība un konfidencialitāte → Lietotņu bloķēšana. ZYRAXON tiek bloķēta, kad to atverat vai atgriežaties no fona. "Noņemt bloķēšanu" izdzēš saglabāto paroli vai modeli.
+- Apstiprinājuma līmeņi aizsargā katru instrumenta izsaukumu kodā (skatiet Apstiprinājuma līmeņus). Nezināmi rīki vienmēr jautā.
+- Varat dzēst visu atmiņu, tērzēšanas vēsturi un savu GitHub marķieri, katru ar vienu pogu sadaļā Privātums un dati.
+- Drošība: ja sakāt, ka kāds jums draud vai seko jums vai vēlas jūsu tālruni vai datus, aģents vispirms bloķē tālruni (ja ir ieslēgta ierīces administratora atļauja) un pēc tam mierīgi sarunājas ar jums.
+- Maksājumi: pirms jebkura maksājuma vai pārskaitījuma aģents pasaka, ko tas maksās, un lūdz apstiprināt.
+- Godīgums: aģents saka tikai pēc tam, kad bija redzams rezultāts. Tā nekad neizgudro saites, failus vai rezultātus.
+- Satura vairogs: neatkarīgi no tā, ko aģents lasa no ārpuses — citas lietotnes ekrāns, tīmekļa lapa, ziņojums, fails, savienots serveris, tiek pārbaudīts teksts, kas mēģina dot aģentam rīkojumus (daudzās valodās, tostarp ar neredzamām rakstzīmēm paslēptu tekstu). Aizdomīgs teksts ir norobežots, tāpēc modelis to apstrādā tikai kā datus. Cik stingri tas atbilst jūsu apstiprinājuma līmenim: Bloķēts viss aizdomīgs tiek uzskatīts par naidīgu; Uzraudzīts norobežo aizdomīgu tekstu un, ja teksts ir nepārprotami naidīgs, bloķē pārējo šī pagrieziena daļu, tāpēc katrs maiņas rīks vispirms jautā jums (kartīte norāda, kāpēc); Līdzsvarotas darbības tikai nepārprotami naidīgā tekstā, un tikai sistēmas līmeņa rīki pārtrauc jautāt; Automātiski pilnībā izslēdz vairogu — nekas netiek skenēts, apturēts, atzīmēts vai mainīts. Jauns ziņojums no jums to notīra.

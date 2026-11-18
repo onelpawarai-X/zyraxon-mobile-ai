@@ -1,0 +1,42 @@
+Svaki zaslon postavki, jedan po jedan
+Postavke imaju osam odjeljaka. Svaki odjeljak ima tablete za svoje podzaslone. Posljednji odjeljak koji ste koristili bit će ponovno otvoren sljedeći put.
+
+## 1. Jezik i prijevod → Jezik aplikacije i alata
+Odaberite jezik cijele aplikacije i poruka alata agenta. Pretražite popis i dodirnite jedan. Zaslon prikazuje trenutni jezik i jesu li uključeni prijevod korisničkog sučelja i prijevod poruka alata. Dostupno je 60 jezika. Pogledajte poglavlje Jezik.
+
+## 2. Glas i mikrofon
+- Glasovni profil: odaberite ženski ili muški glas, brzinu, visinu, "Pročitajte odgovore naglas", Testirajte glas, savjet za preuzimanje bengalskog glasa.
+- Mikrofon i jezik: jezik prepoznavanja, ostavite mikrofon uključenim, automatsko slanje kada prestanete govoriti.
+- Glas uživo: uključivanje/isključivanje govora u govor, status, popis modela u stvarnom vremenu.
+
+## 3. Pružatelji & API
+- AI pružatelji usluga: vaši vlastiti API ključevi (ZYRAXON, OpenCode besplatna kvota, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) i ZYRAXON Apex agent u oblaku. Spremljeni ključ se provjerava čitanjem stvarnog kataloga pružatelja i prikazuje broj modela ili točnu pogrešku. Gumb otvara web stranicu ZYRAXON na kojoj kreirate ključ.
+- GitHub: vaš GitHub pristupni token (potreban je repo opseg) za objavljivanje, Git push i pull zahtjeve. Spremite token ili ga izbrišite; status pokazuje ako je postavljen.
+
+## 4. Ažuriranja → Ažuriranje aplikacije
+Prikazuje trenutnu verziju, traži novije izdanje, preuzima ga s trakom napretka i instalira. Vaši razgovori, memorija i postavke ostaju. Ako Android treba dopuštenje za instalaciju, gumb otvara tu postavku.
+
+## 5. Model & identitet
+- 
+- 
+- 
+
+## 
+- 
+- 
+
+## 
+- 
+- 
+- 
+
+## 
+Ovaj odjeljak ima vlastiti niz gumba koji se pomiču bočno, tako da se ništa ne stišće.
+- Automatizacija: razina odobrenja i samo na uređaju (pogledajte Razine odobrenja).
+- Navigacija: popis područja za skok — "bez gumba na vrhu, sve je ovdje" — uključujući ⌘ ljusku sustava ZX, gumb "Nova sesija" (briše povijest razgovora za čisti početak), broj poruka i prekidač mikrofona.
+- Memorija: lokalna SQL memorija s činjenicama ZYRAXON pamti; dodajte ključ i vrijednost; izbrisati sve.
+- Vodič za vještine: brzi popis primjera sposobnosti (aplikacije za slanje poruka, izrada web stranica, čitač zaslona, ​​svjetiljka, kamera, Wi-Fi i postavke) s primjerima fraza.
+- Središte automatizacije: vještine, autopilot, novac, vremenska linija, mozak i agent za pozive na jednom mjestu (pogledajte čvorište automatizacije).
+
+## 9. Dokumentacija
+Vlastiti odjeljak u postavkama, odvojen od sustava. Ovaj vodič: dvadeset i jedno poglavlje, okvir za pretraživanje i red jezičnog čipa. Svaki jezik u aplikaciji već je u cijelosti ispisan unutar aplikacije — ništa se ne prevodi na vašem telefonu i nije potreban internet za čitanje.

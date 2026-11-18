@@ -1,0 +1,27 @@
+Engedélyek egyenként
+Beállítások → Biztonság és adatvédelem → Engedélyek. Minden sorban megjelenik a „Megengedett” vagy egy gomb. Egy sor megérintésével megnyílik a rendszer párbeszédpanel; csak nyomja meg az Engedélyezést. Az ügynök magát a párbeszédpanelt is megnyithatja a `request_permission` segítségével.
+
+- Mikrofon: hogy ZYRAXON halljon. Enélkül nincs hangbemenet.
+- Kamera: fényképek készítéséhez és megtekintéséhez (`look_camera`, dokumentumszkennelés, "mit látsz").
+- Helyszín: térképekhez és helyi információkhoz.
+- Értesítések: jelzi, ha a háttérmunka befejeződik.
+- Fájlok és média: fényképek, videók, hanganyagok és dokumentumok olvasásához.
+- Fedvény (más alkalmazások fölé rajzolás): a lebegő szemhez szükséges.
+- Kisegítő lehetőségek: lehetővé teszi, hogy az ügyintéző elolvassa a képernyőt, koppintson, húzzon és gépeljen. Ez a telefonautomatizálás szíve. A rendszer Kisegítő lehetőségek beállításaiban kapcsolja be.
+- Akkumulátor optimalizálás: megakadályozza, hogy Android alvó állapotba helyezze ZYRAXON-t, miközben a háttérben működik.
+
+## Egyéb engedélyek, amelyeket az alkalmazás deklarál
+- SMS (olvasás és fogadás): a kódok, a pénzkönyvi és az SMS autopilot szabályainak olvasásához.
+- Telefonállapot, hívások fogadása, telefonhívás, névjegyek: a hívóeszközökhöz és a hívóügynökhöz.
+- Értesítési hozzáférés: lehetővé teszi, hogy az autopilot reagáljon az értesítésekre.
+- Eszköz adminisztrátor: `device_lock` valóban lezárja a képernyőt.
+- Csomagok telepítése: lehetővé teszi a frissítések és `build_app` APK-k telepítését; Android kéri, hogy engedélyezze a ZYRAXON telepítési forrást.
+- Előtérbeli szolgáltatások (mikrofon, adatszinkronizálás) és wake lock: életben tarthatja a hangot és a hosszú munkákat.
+- Internet és hálózati állapot: a felhő és a web.
+- Shizuku (opcionális): rendszerszintű hozzáférés a héjhoz és a terminálhoz.
+
+## Google Play Protect
+Ha a Play Protect blokkol egy munkát, az ügynök megnyithatja a megfelelő oldalt, megnézheti a valós képernyőt, és lépésről lépésre végigmegy a fogaskeréken és a kapcsolón – de először Önt kérdezi meg, mert a védelem kikapcsolása az Ön döntése. Saját kezűleg: Play Store → profilkép → Play Protect → beállításai → kapcsolják ki az „Alkalmazások keresése a Play Protect segítségével”. Az oldalon van egy gomb, amely megnyitja Play Store.
+
+## Miért számít az engedély
+Ha egy eszköz meghibásodik egy hiányzó engedély miatt, az ügynök közli, hogy melyik, és megnyitja a párbeszédpanelt. Semmi érzékeny nem működik az Ön kifejezett engedélyezése nélkül.

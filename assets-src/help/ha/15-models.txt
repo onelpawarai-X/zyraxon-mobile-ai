@@ -1,0 +1,15 @@
+Masu bayarwa, samfuri da maɓalli
+## Masu bayarwa
+ZYRAXON (layin kansa da Apex wakilin girgije, koyaushe ana haɗa shi), OpenCode (ƙididdigar kyauta), Groq (Lama mai saurin gaske), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek da OpenRouter. Ƙara kowane maɓalli a cikin Saituna → Masu bayarwa & API. Ana ajiye maɓalli a wayarka, an duba shi akan kasidar mai badawa, kuma samfuran suna shiga cikin mai zaɓi kamar yadda kowane mai bada ke amsawa.
+
+## Zaɓin samfuri
+Yi amfani da maɓallin ƙira a mashigin saƙo ko Saituna → Model & ainihi → Model. Bincika da suna, tace Duk ko Custom. An adana zaɓinku kuma an mayar da shi a lokacin ƙaddamarwa; wartsakewa baya maye gurbin samfurin da aka ajiye. Samfuran da aka yiwa alama Live suna iya magana da muryar su (duba muryar kai tsaye).
+
+## Samfuran kan na'urar
+Saituna → Model & ainihi → Akan na'ura. Samfurin yana gudana akan wayar ba tare da bayanan barin ta ba. Fayilolin suna da girma (daruruwan MB zuwa GB kaɗan), don haka zazzage akan Wi-Fi. An jera su kanana zuwa babba; akan waya mai ƙaramin RAM zaɓe mafi sauƙi. Ana samun goyan bayan kiran kayan aiki ta daure Gemma da FunctionGemma. Alamar Hugging Face na gated fayiloli ne kawai. Ana tunawa da samfuran da aka ɗora.
+
+## Gidan yanar gizon ZYRAXON
+zyraxonai.lovable.app: ƙirƙiri asusu (email ko Google), buɗe Saituna, Maɓallin API / Alamar shiga, ƙirƙiri maɓalli kuma liƙa a cikin ƙa'idar. Ba tare da maɓalli ba har yanzu kuna iya amfani da ƙa'idar tare da samfuran kan na'urori da kayan aikin gida.
+
+## Farashin da bayanai
+Masu samar da girgije suna lissafin ku bisa ga dokokinsu. Tare da "Akan na'urar kawai" kun kunna ba a aika komai zuwa kowane mai bayarwa.

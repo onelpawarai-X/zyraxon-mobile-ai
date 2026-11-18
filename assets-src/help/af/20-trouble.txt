@@ -1,0 +1,14 @@
+Probleemoplossing
+- Geen antwoord nie: gaan jou internet- en API-sleutel na (Instellings → Verskaffers en API wys die werklike fout). Probeer 'n ander model of 'n model op die toestel.
+- Mikrofoon doen niks: laat die mikrofoontoestemming toe; merk "Hou die mikrofoon aan"; kontroleer die herkenningstaal.
+- ZYRAXON hoor homself: dit word deur teks gefiltreer; as dit steeds gebeur, verlaag die volume of gebruik oorfone.
+- 'n Sin verskyn twee keer: vas in huidige weergawes; dateer die toepassing op.
+- Dit sal nie die skerm tik of lees nie: skakel die Toeganklikheiddiens aan (Instellings → Toestemmings).
+- Dit stop in die agtergrond: laat kennisgewings en vrystelling van batteryoptimalisering toe; die oortreksel vir die drywende oog.
+- 'n Gereedskap vra voortdurend toestemming: verander die vlak in Instellings → Outomatisering, of beantwoord die kaart.
+- Play Protect blokkeer iets: sien die Toestemmings-hoofstuk, of laat die agent die stappe lei.
+- Terminaal of Linux begin nie: wag vir die eerste keer uitpak by app begin; kyk na gratis berging.
+- Opdatering sal nie installeer nie: laat ZYRAXON toe as 'n installasiebron.
+- Kan nie publiseer nie: voeg die GitHub-token by vir GitHub; vir 'n publieke skakel kan die agent 'n tonnel gebruik.
+- 'n Hoofstuk wys Engels: daardie hoofstuk het geen teks in jou taal in hierdie gebou nie; dateer die toepassing op.
+- Iets vreemd: gebruik Instellings → Navigasie → Nuwe sessie om skoon te begin (dit maak net kletsgeskiedenis uit; geheue bly).

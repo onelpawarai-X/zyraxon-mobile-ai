@@ -1,0 +1,23 @@
+Godkjenningsnivåer og sikkerhet for automatisering
+Innstillinger → System → Automatisering. Dette bestemmer hvor mye agenten kan gjøre før den stopper og spør deg. Innstillingen håndheves i kode ved hvert verktøykall; en modell kan ikke utvide den.
+
+## De fire nivåene
+Endre nivået i Innstillinger → System → Automatisering. Hvert nivå bestemmer når agenten stopper og spør, og også hvor strengt innholdsskjoldet (se Sikkerhet og personvern) behandler tekst agenten leser utenfra.
+1. Full spørring (låst): spør før alt som endrer telefonen, uansett hvor liten den er. Tryggest. Innholdsskjoldet er strengt: all mistenkelig tekst regnes som fiendtlig. Bruk den på en delt telefon eller mens du tester noe nytt.
+2. Overvåket (standard): spør før systemhandlinger og personlige handlinger og gjør ordinært arbeid (leser, åpner, søker, bygger) selv. Content Shield er standard: mistenkelig tekst er inngjerdet som data, og når teksten er tydelig fiendtlig ber hvert skiftende verktøy deg om resten av den svingen.
+3. Balansert: spør bare før handlinger på systemnivå (shell, sletting, publisering, planlegging...). Personlige handlinger som meldinger, trykk og skriving kjører alene. Innholdsskjoldet er lett: det virker bare på tydelig fiendtlig tekst, og da er det bare verktøy på systemnivå som stopper for å spørre.
+4. Full automatisering: spør aldri og stopper aldri. Alt går rett igjennom, og Content Shield slås helt av - ingenting skannes, merkes, fjernes eller endres. Dette er automatisering i full forstand: du eier risikoen.
+
+## De tre nivåene med verktøy
+- Sikker (spør aldri på noe nivå): lesing og liste over filer, minne, dokumenter, design, status, åpning av apper og filer, venting, ferdigheter/autopilot/tidslinje/anropslister, hjernesøk.
+- Personlig (spurt i de to første nivåene): SMS, samtaler, kamera, skjermlesing, trykk og skriving, utklippstavle, nedlastinger, varsler, deling, stemmeendring, ferdighetsreplay, pengebok, anropsagent, angre tidslinje.
+- System (spørs på alle nivåer unntatt full automatisering): shell, Linux, bygg, publisering, sletting, enhetslås, planlegging, Git og GitHub, ffmpeg, modell på enheten, innlegg til kanaler, autopilotregler, slettingsferdigheter, Shizuku. Ethvert verktøy appen ikke gjenkjenner – inkludert MCP-verktøy – behandles som system.
+
+## Godkjenningskortet
+Når et verktøy trenger din godkjenning, står det "Tillatelse kreves", forteller deg hva agenten vil gjøre, viser nivået (Sikkert, Personlig eller System), og tilbyr "Ja, kjør det" eller "Nei, hold det av". Kortet minner deg også om at du kan endre hvor ofte dette blir spurt i Innstillinger → Automatisering.
+
+## Kun på enheten
+Når den er på, forlater ingenting telefonen: bare modellen på enheten og lokale verktøy kjører. Alle nettverksverktøy (søk, henting, opplastinger, publisering, GitHub, mediegenerering, MCP, skymodeller) nektes i kode.
+
+## Første lanseringsvarsel
+Den første gangen forklarer ZYRAXON at agenten kan handle på telefonen din og hvor du kan slå på tillatelser. Trykk på "God it, start".

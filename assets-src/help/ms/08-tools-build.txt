@@ -1,0 +1,21 @@
+Pembinaan: tapak, apl, pratonton dan penerbitan
+## Bagaimana untuk bertanya
+- "Buat saya halaman arahan untuk kedai kopi saya." Ejen membinanya serta-merta, memulakannya pada telefon anda dan membukanya dalam Pratonton. Anda mendapat 2–3 baris yang menerangkannya. Tiada apa-apa yang diterbitkan melainkan anda bertanya.
+- "Bina apl tugasan." Dibina terus dengan timbunan yang wajar, dijalankan dan ditunjukkan. Bahagian belakang, pangkalan data atau log masuk hanya jika anda bertanya.
+- "Bina apl tindanan penuh." Ejen mula-mula bertanya satu soalan pendek tentang bahasa bahagian belakang, pangkalan data, log masuk dan tempat ia berjalan, dengan lalai yang disyorkan, kemudian membina semua itu dengan data benih dan menguji satu aliran penuh.
+- "Buat program Windows/Linux/macOS/Android." Sumber ditulis, aliran kerja binaan ditambah, ia ditolak dan dibina dalam awan dengan GitHub Tindakan, dan anda mendapat pautan muat turun sebenar.
+
+## Alatan
+- `edit_file` dan `write_file`: tulis fail sebenar (kod lengkap, jangan pernah stub). `code_box` menunjukkan mereka secara langsung.
+- `preview` (Selamat): penyemak imbas sebenar terbina dalam. Tindakan: buka (pautan, `localhost:PORT` atau fail), muat semula, belakang, hadapan, tangkapan skrin, tatal, klik, taip, baca teks halaman, ralat konsol, eval. Ejen melihat kerjanya sendiri sebelum mengatakan ia selesai.
+- `serve_local` (Sistem): memulakan pelayan web pada telefon untuk folder dan mengembalikan alamat LAN peranti lain pada Wi-Fi anda yang boleh dibuka.
+- `publish_website` (Sistem): menyediakan tapak pada port awam dari telefon. `publish_cloudflare` (Sistem): meletakkan tapak di internet tanpa akaun melalui terowong Cloudflare dan mengembalikan pautan https awam. `publish_github` (Sistem): menerbitkan projek ke repositori GitHub (Halaman) dengan token anda.
+- `git` (Sistem): klon, init, status, tambah, komit, tolak, tarik, cawangan, daftar keluar, log, beza dengan token anda yang disimpan. `github_pr` (Sistem): buat, senaraikan, cantumkan dan ulas pada permintaan tarik. `github_actions` (Sistem): senaraikan aliran kerja, jalankannya, tinjauan tinjauan dan baca log, jadi binaan dijalankan dalam awan daripada telefon.
+- `build_app` (Sistem): membina projek ini dengan Gradle pada telefon dan memasang hasilnya.
+- `files_panel`, `todo_write`: penyemak imbas fail dan papan tugas.
+
+## Peraturan kualiti dipatuhi ejen
+Reka letak yang lengkap, reka bentuk responsif, JavaScript yang berfungsi, animasi, warna dan fon yang konsisten (gelap dan terang di tempat yang sesuai), bukan templat generik. Halaman pendaratan biasanya 300–900 baris; perkara yang lebih besar lagi.
+
+## Jika sesuatu kelihatan rosak
+Tekan Betulkan dalam Pratonton, atau beritahu ejen. Ia membaca konsol, membetulkan punca, membuka semula halaman dan menyemak semula.

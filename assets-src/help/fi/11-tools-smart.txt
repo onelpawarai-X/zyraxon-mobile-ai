@@ -1,0 +1,45 @@
+Taidot, autopilotti, raha, aikajana ja kumoaminen, aivot, soittoagentti ja muisti
+Käytät kaikkia näitä puhumalla: sano mitä haluat ja agentti soittaa oikean työkalun. Jokainen toiminto on lueteltu tässä vaihtoehtoineen.
+
+## Taidot – opeta tekemällä
+Taito on puhelintehtävä, jonka agentti oppi katsomalla sinun tekevän sen kerran. Se tallentaa ohjeet kunkin elementin löytämiseen uudelleen (sen tunnus, sanat ja naapurit, ei näytön sijaintia), joten se jatkaa toimintaansa, kun sovelluksen ulkoasu muuttuu.
+- Lisää taito:`skill_record`(Henkilökohtainen). Sano "opeta tämä nimellä <nimi>".`action: start`(nimellä) aloittaa tallennuksen; tee sitten tehtävä – avaa sovellus, napauta, kirjoita, paina näppäimiä; jokainen askel tallennetaan.`action: stop`säästää sen. Pysäkillä voi ohittaa`params`muuttaaksesi kirjoitetut arvot parametreiksi (esimerkiksi puhelinnumerosta tulee`number`, määrästä tulee`amount`) ja a`description`. `action: status`kertoo, onko tallennus päällä.
+- Suorita taito:`skill_run`(Henkilökohtainen). Antaa`args`sen parametreille, esim. numero ja määrä. Se toistetaan murto-osassa vaiheita ja paranee itsestään, kun sovellus muuttuu. Jos yksi vaihe epäonnistuu, tulos kertoo, mikä vaihe ja mitä on näytöllä, ja agentti viimeistelee loput käsin.
+- Listaa taidot:`skill_list`(Turvallinen) näyttää nimen, parametrit, vaiheet ja kuinka usein kukin juoksi. Nimi ja vienti tekevät siitä jaettavan`.zxskill`tiedosto.
+- Jaa ja lataa:`skill_import`(Henkilökohtaiset) kuormat a`.zxskill`ladattava tiedosto tai jaettu tiedosto taito.
+- Poista taito:`skill_delete`(Järjestelmä).
+- Esimerkki: "Opi lähettämään 500 Rahimille lompakkosovelluksellani"→teet sen kerran→"Lähetä 700 Karimille" seuraavan kerran.
+
+## Autopilotti - "kun X tapahtuu, tee Y"
+Sääntö herättää agentin itsestään ja se suorittaa tehtävän kysymättä sinua.
+- Lisätä:`autopilot_add`(Järjestelmä). Lajit: tekstiviesti, ilmoitus, puhelu, päivittäin, kerran, intervalli, akku, sovellus. Täytä vain säännön tarvitsemat kentät:`from`(lähettäjän nimi tai numero tai sovelluksen nimi),`any`(ainakin yksi näistä sanoista),`all`(joka sana),`none`(ei mikään näistä sanoista),`time`"HH:MM" (päivittäin),`in_minutes` or `at_ms`(kerran),`every_minutes`(väli),`below`(akkuprosentti),`pkg`(sovelluspaketti tai nimi, sovellus- ja ilmoitussäännöt). Agentti muuttaa lauseesi näihin kenttiin. Tuloksessa luetellaan kaikki vielä tarvittavat luvat (tekstiviestit, ilmoitukset…), ja agentti pyytää sinua ottamaan ne käyttöön.
+- Esimerkkejä: "Kun lompakkosovelluksestani saapuu maksutekstiviesti, lisää se reskontraani." "Kerro minulle sää joka aamu kello 8." "20 minuutin kuluttua muistuta minua ottamaan leipä pois." "30 minuutin välein, juomaveden muistutus." "Kun akku laskee alle 15%, kerro minulle." "Kun joku soittaa minulle, kirjaa numero." "Kun avaan pankkisovelluksen, muistuta minua tarkistamaan budjetti."
+- Lista:`autopilot_list`(Turvallinen) näyttää jokaisen säännön seuraavan suoritusajan kera ja kuinka usein se on käynnistynyt.
+- Keskeytä tai jatka:`autopilot_toggle`(Järjestelmä). Poistaa:`autopilot_remove`(Järjestelmä), tunnuksen tai otsikon mukaan.
+- Kun sääntö käynnistyy, saat viestin, joka sanoo niin, ja agentti vain tekee työn.
+
+## Rahakirja (henkilökohtainen talousjohtaja)
+- `ledger_scan`(Henkilökohtainen): lue lompakko ja pankkitekstiviestit yksityiseen kirjanpitoon: tulot, menot, palkkiot, saldo ja luokka.`days`kertoo kuinka kaukana taaksepäin (oletus 30). Kanssa`auto`päälle, jokainen uusi raha-tekstiviesti lisätään itsestään ja saat varoituksen, kun budjetti on ohitettu. Toimii minkä tahansa maan lompakossa ja pankkiviesteissä missä tahansa valuutassa.
+- `ledger_report`(Henkilökohtainen): jakso tänään, eilen, viikko, kuukausi tai kaikki. Muotoile tekstiä (valmis puhuttu yhteenveto) tai xlsx (anExceltiedosto tapahtumat ja luokkasummat, avattu sinulle).
+- `ledger_budget`(Henkilökohtainen): aseta kuukausibudjetti kategorialle (ruoka, laskut, kuljetus, ostokset, matkapuhelimen lataus, siirrot…); raja 0 poistaa sen; Siinä luetellaan budjetit ja nykyiset varoitukset ilman perusteita.
+- Agentti ei koskaan keksi rahanumeroita; se lukee ne pääkirjasta.
+
+## Aikajana ja kumoa
+- Kaikki agentin tekemät toimet kirjoitetaan aikajanalle (viimeiset 400 toimintoa). Tiedostojen muutokset säilyttävät kopion siitä, mitä siellä oli aiemmin.
+- `timeline_list`(Turvallinen): mitä agentti teki äskettäin, jokaiselle tunnus ja mitkä muutokset voidaan kumota.
+- `timeline_undo`(Henkilökohtainen):`id`kumoaa kirjoituksen, muokkauksen tai poistamisen – tiedosto tulee takaisin täsmälleen sellaisena kuin se oli (tiedosto, jota ei ollut olemassa, poistetaan uudelleen).`since_id`kumoaa kaiken tästä tunnuksesta eteenpäin, uusin ensin. Käytä sitä, kun sanot "ota se takaisin" tai "laita takaisin kuten ennen".
+- Kumoa kattaa tiedostojen kirjoittamisen, muokkaamisen ja poistamisen. Suoritettua komentoa (esimerkiksi jonkin asian asentaminen tai viestin lähettäminen) ei voi kumota tällä tavalla.
+- Chat-viestit: poista koko keskustelu käyttämällä kynää ja rastia vasemmassa valikossa tai Asetukset→Yksityisyys ja tiedot→Poista chat-historia tai Navigointi→Uusi istunto.
+
+## Aivot — toinen muisti tiedostoillesi
+- `brain_index`(Turvallinen): luo tai päivitä offline-hakemisto kansioiden tai tiedostojen päälle (teksti,Markdown, CSV, Word, Excel, PowerPoint) ja valinnaisesti SMS-postilaatikko (`sms`päällä). Suorita se ennen ensimmäistä hakua ja uusien tiedostojen ilmestymisen jälkeen. Oletusasetus on työtilasi.
+- `brain_search`(Turvallinen): kysy omin sanoin: "Missä on vuokrasopimukseni?" - se toimii offline-tilassa millä tahansa kielellä.`kind`on tiedosto tai tekstiviesti;`days`rajoituksia viimeaikaisille kohteille. Avaa löydetty tiedosto sovelluksella`open_file`.
+
+## Soita agentille
+- `call_agent`(Henkilökohtainen): toiminto päällä, pois päältä tai tila.`owner`on nimi, jonka se sanoo ("Olen <omistajan> avustaja").`answer_after_seconds`(oletus 6) antaa sinun noutaa ensin. Kun puhelu tulee etkä pysty vastaamaan, se tervehtii soittajan kielellä, kysyy nimen ja syyn, vastaa yksinkertaisiin kysymyksiin, katkaisee kohteliaasti puhelun ja kertoo yhteenvedon.
+- `call_log`(Turvallinen): yhteenvedot puheluista, joihin se vastasi, uusin ensin.
+- Tarvitsee puhelun ja puhelimen tilan luvat.
+
+## Muisti
+- `memory_write`, `memory_read`, `memory_delete`(Turvallinen): pysyvät faktat sinusta (nimi, mieltymykset, ihmiset, päivämäärät, projektit) elävät paikallisessa tietokannassa ja selviävät uudelleenkäynnistyksistä. Sano "muista tämä" ja se kirjoitetaan samassa vuorossa; jos jokin on vialla, se poistetaan tai kirjoitetaan uudelleen. Myös jokainen vanha keskustelu säilytetään, ja menneet käänteet, jotka vastaavat sanomaasi, palaavat itsestään, jopa kuukausia myöhemmin.
+- Katso ja muuta sitä Asetuksissa→Järjestelmä→Muisti (avain, arvo, tallenna, poista kaikki).

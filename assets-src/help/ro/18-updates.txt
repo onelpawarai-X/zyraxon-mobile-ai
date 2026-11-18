@@ -1,0 +1,7 @@
+Actualizări
+Setări → Actualizări → Actualizare aplicație sau bannerul din partea de sus a aplicației.
+- Aplicația verifică noi versiuni și afișează „Actualizare nouă disponibilă — versiune”.
+- Verificați actualizările: întreabă acum. Daca esti actual asa spune.
+- Descărcare și instalare: descărcări cu un procent. Când ați terminat, apăsați pe Instalare. Conversațiile dvs., memoria și setările rămân.
+- Dacă Android blochează instalarea, apăsați butonul de permisiune, permiteți ZYRAXON ca sursă de instalare, apoi încercați din nou.
+- Butoanele bannerului: Descărcați, Instalați, Permiteți și Închideți.

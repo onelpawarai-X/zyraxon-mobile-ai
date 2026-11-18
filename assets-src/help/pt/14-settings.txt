@@ -1,0 +1,42 @@
+Cada tela de configurações, uma por uma
+As configurações têm oito seções. Cada seção possui comprimidos para suas subtelas. A última seção que você usou será reaberta na próxima vez.
+
+## 1. Idioma e tradução → Idioma do aplicativo e da ferramenta
+Escolha o idioma de todo o aplicativo e das mensagens da ferramenta do agente. Pesquise na lista e toque em um. A tela mostra o idioma atual e se a tradução da UI e a tradução de mensagens da ferramenta estão ativadas. 60 idiomas estão disponíveis. Consulte o capítulo Idioma.
+
+## 2. Voz e microfone
+- Perfil de voz: escolha voz feminina ou masculina, velocidade, tom, "Ler as respostas em voz alta", Teste de voz, dica de download de voz bengali.
+- Microfone e idioma: idioma de reconhecimento, mantenha o microfone ligado, envie automaticamente quando você parar de falar.
+- Voz ao vivo: ativação/desativação de fala para fala, status, lista de modelos em tempo real.
+
+## 3. Provedores e API
+- Provedores de IA: suas próprias chaves de API (ZYRAXON, OpenCode cota gratuita, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) e o agente de nuvem ZYRAXON Apex. Uma chave salva é verificada lendo o catálogo real do provedor e mostra a contagem do modelo ou o erro exato. Um botão abre o site ZYRAXON onde você cria uma chave.
+- GitHub: seu token de acesso GitHub (precisa de escopo de repositório) para publicação, Git solicitações push e pull. Salve o token ou exclua-o; o status mostra se estiver definido.
+
+## 4. Atualizações → Atualização do aplicativo
+Mostra a versão atual, verifica se há uma versão mais recente, baixa-a com uma barra de progresso e instala-a. Seus bate-papos, memória e configurações permanecem. Se Android precisar de permissão para instalar, um botão abre essa configuração.
+
+## 5. Modelo e identidade
+- Identidade: escolha o personagem (veja o capítulo Personagens).
+- Modelo: o catálogo de modelos ao vivo com caixa de pesquisa, filtros "Todos os modelos" e "Personalizados"; modelos rápidos primeiro.
+- No dispositivo: baixe, carregue e descarregue modelos que funcionam offline; classificados de pequeno a grande porte; token opcional Hugging Face; mostra estados carregados, carregando e com falha.
+
+## 6. Aura e tema
+- Tema: Terror, Escuro ou Claro.
+- Aura e fundo: o estilo e a cor da aura (sangue, rosa, violeta, céu, verde, fogo) com controle fino de matiz; tamanho da aura, intensidade do brilho, velocidade de rotação, transparência do painel; o olho flutuante (ligar/desligar, design, borda da tela, comandos de voz/palavras de ativação, adicione suas próprias); modo sombreador; URL de fundo personalizado (mp4, gif ou imagem); velocidade de animação.
+
+## 7. Segurança e privacidade
+- Bloqueio de aplicativo: uma senha (4–8 dígitos) ou um padrão de 3×3 pontos; confirme inserindo-o duas vezes; remova o bloqueio.
+- Permissões: a lista no capítulo Permissões, com ajuda de Play Protect.
+- Privacidade e dados: todos os dados permanecem no telefone. Botões: excluir toda a memória, excluir histórico de bate-papo, excluir token GitHub.
+
+## 8. Sistema
+Esta seção possui sua própria linha de botões que rolam lateralmente, para que nada seja pressionado.
+- Automação: nível de aprovação e somente no dispositivo (consulte Níveis de aprovação).
+- Navegação: uma lista de áreas para onde ir - "sem botões na parte superior, está tudo aqui" - incluindo o shell do sistema ⌘ ZX, um botão "Nova sessão" (apaga o histórico de bate-papo para um início limpo), contagem de mensagens e alternância de microfone.
+- Memória: a memória local SQL com os fatos ZYRAXON lembra; adicione uma chave e um valor; exclua tudo.
+- Guia de habilidades: uma lista rápida de exemplos de habilidades (aplicativos de mensagens, criação de sites, leitor de tela, tocha, câmera, Wi-Fi e configurações) com frases de exemplo.
+- Hub de automação: habilidades, piloto automático, dinheiro, linha do tempo, cérebro e agente de chamada em um só lugar (consulte Hub de automação).
+
+## 9. Documentação
+Sua própria seção em Configurações, separada de Sistema. Este guia: vinte e um capítulos, uma caixa de pesquisa e uma linha de chips de idioma. Todos os idiomas do aplicativo já estão escritos por extenso dentro do aplicativo - nada é traduzido no seu telefone e não é necessária internet para lê-lo.

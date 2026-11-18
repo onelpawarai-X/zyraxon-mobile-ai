@@ -1,0 +1,11 @@
+Keselamatan dan privasi
+- Semua data ZYRAXON hidup pada telefon anda: sembang, ingatan, lejar, kemahiran, garis masa, indeks otak. Tiada apa-apa disimpan pada pelayan ZYRAXON.
+- Model awan hanya menerima apa yang diperlukan untuk giliran yang anda hantar. Dengan "Pada peranti sahaja" tiada apa-apa dihantar sama sekali.
+- Fail gesaan dan bahasa yang dihantar dalam apl disulitkan di dalam APK.
+- Kunci apl: tetapkan kata laluan atau corak dalam Tetapan → Keselamatan & privasi → Kunci apl. ZYRAXON kemudian dikunci apabila anda membukanya atau kembali dari latar belakang. "Alih keluar kunci" memadamkan kata laluan atau corak yang disimpan.
+- Tahap kelulusan menjaga setiap panggilan alat dalam kod (lihat Tahap kelulusan). Alat yang tidak diketahui selalu bertanya.
+- Anda boleh memadamkan: semua memori, sejarah sembang dan token GitHub anda, setiap satu dengan satu butang dalam Privasi & data.
+- Keselamatan: jika anda mengatakan seseorang mengancam atau mengikuti anda, atau mahu telefon atau data anda, ejen mengunci telefon terlebih dahulu (jika kebenaran pentadbir peranti dihidupkan) dan kemudian bercakap dengan anda dengan tenang.
+- Pembayaran: sebelum sebarang pembayaran atau pemindahan, ejen menyatakan apa yang akan dibayar dan meminta anda mengesahkan.
+- Kejujuran: ejen hanya mengatakan sesuatu berfungsi selepas ia melihat hasilnya. Ia tidak pernah mencipta pautan, fail atau hasil carian.
+- Perisai Kandungan: apa sahaja yang dibaca oleh ejen dari luar — skrin aplikasi lain, halaman web, mesej, fail, pelayan yang disambungkan — ditandakan dalam kod untuk teks yang cuba memberi pesanan ejen (dalam banyak bahasa, termasuk teks yang disembunyikan dengan aksara yang tidak kelihatan). Teks yang mencurigakan dipagar supaya model menganggapnya sebagai data sahaja. Betapa ketatnya mengikut tahap kelulusan anda: Dikunci menganggap apa-apa yang mencurigakan sebagai bermusuhan; Teks yang mencurigakan diawasi dan, apabila teks jelas bermusuhan, kunci selebihnya supaya setiap alat yang menukar bertanya kepada anda terlebih dahulu (kad itu menyatakan mengapa); Tindakan seimbang hanya pada teks yang jelas bermusuhan dan hanya alat peringkat sistem berhenti untuk bertanya; Automatik mematikan perisai sepenuhnya — tiada yang diimbas, dihentikan, ditanda atau diubah. Mesej baharu daripada anda memadamkannya.

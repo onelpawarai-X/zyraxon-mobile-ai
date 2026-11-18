@@ -1,0 +1,20 @@
+Automatizálási központ
+Beállítások → Rendszer → Automation hub. A ZYRAXON minden gombja egy helyen, hat lapon található. Minden lap a működésének rövid ismertetésével kezdődik.
+
+## Készségek
+Tanítson meg ZYRAXON egy feladatot kétféleképpen: mondja el a csevegésben ("tanulja meg ezt a feladatot"), vagy nyomja meg a rögzítés gombot, és végezze el a feladatot egy másik alkalmazásban, majd térjen vissza, és nyomja meg a Stop gombot. A Kisegítő lehetőségek szolgáltatásnak be kell kapcsolnia, különben a csapok nem láthatók. A tanultak a „Tanult készségek” alatt jelennek meg, és újrajátszhatók vagy törölhetők.
+
+## Robotpilóta
+Olyan szabályok, mint "ha ez történik, tedd azt". Amikor az esemény megtörténik, ZYRAXON magától felébred, és kérés nélkül elvégzi a munkát. Szabályt úgy is létrehozhat, hogy kimondja a chatben. Minden szabály megmutatja, hogy hányszor futott le.
+
+## Pénz
+Bármely ország bármely bankjából vagy pénztárcájából beolvassa az SMS-eket (PayPal, M-Pesa, UPI, Pix, bKash, kártyák…), és egy főkönyvet vezet a bevételekről, kiadásokról, díjakról és egyenlegről. Beállíthat egy költségkeretet, és figyelmeztetést kaphat, ha elfogadja azt. Telefonon működik, semmit nem küldenek sehova.
+
+## Idővonal
+Itt van minden, amit ZYRAXON tett. A fájlok írása, szerkesztése és törlése egyetlen gombbal visszavonható. A futtatott parancs nem vonható vissza.
+
+## Agy
+Internet nélkül és bármilyen nyelven keres a fájljai között (szöveges, Word, Excel, PowerPoint, CSV), és ha engedélyezi, az SMS-eiben is. Először nyomja meg az "Index" gombot, majd keressen.
+
+## Hívja fel az ügynököt
+Ha nem tud hívást fogadni, a ZYRAXON felveszi, a hívó fél saját nyelvén beszél, megtanulja a nevet és az okot, és összegzést ad a hívás végén. Tizenöt nyelv gyors beépített szabályokat használ; minden más nyelvet a modell kezel, amely a hívó nyelvén válaszol. A búcsút, sürgős vagy spamet jelentő szavakat minden nyelven egyszerre értjük. Az elkapott hívások összefoglalói a lapon láthatók.

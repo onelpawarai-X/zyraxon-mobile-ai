@@ -1,0 +1,16 @@
+Lingue
+## Lingua dell'app
+Impostazioni → Lingua e traduzione. 60 lingue. L'intera interfaccia e i messaggi dello strumento dell'agente lo seguono. Ogni lingua ha il proprio file di traduzione. Qualsiasi riga che un file di lingua non ha ancora viene mostrata in inglese, mai lasciata vuota.
+
+## Di cosa parli
+L'agente risponde sempre nella lingua che gli parli, qualsiasi lingua del mondo. Se cambi, cambia. Utilizza la forma amichevole e rispettosa di "tu" nella tua lingua. I nomi dei marchi e delle tecnologie rimangono invariati.
+
+## Lingue vocali
+- Lingua di riconoscimento (ciò che si dice al microfono): Impostazioni → Voce e microfono → Microfono e lingua.
+- Voce parlante: Impostazioni → Voce e microfono → Profilo vocale e Laboratorio vocale per lingue come bengalese, hindi, inglese, urdu, arabo, tamil, nepalese, spagnolo, francese, tedesco, giapponese, coreano, cinese, russo, turco.
+
+## Questa documentazione
+Utilizza i chip linguistici in cima a questa pagina. L'intera guida è scritta a mano in tutte le lingue supportate dall'app e spedita all'interno dell'app. Niente viene tradotto sul tuo telefono: ogni capitolo si apre istantaneamente, funziona offline e non necessita di modello o chiave.
+
+## Scrivere nella tua sceneggiatura
+Documenti, poster e disegni possono essere realizzati in qualsiasi script. Per i disegni bengalesi viene utilizzato il carattere corretto; per gli altri script viene scelto il carattere corrispondente.

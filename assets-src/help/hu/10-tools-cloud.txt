@@ -1,0 +1,21 @@
+Felhő, hálózat, modellek és segítők
+## Felhő és internet
+- `web_search` (hálózat): keresés a valódi weben. `read_url` (hálózat): oldal lekérése szövegként. `http_request` (hálózat): bármilyen HTTP-hívás (GET, POST, PUT, PATCH, DELETE) fejlécekkel és törzstel. `verify_url` (hálózat): ellenőrizze, hogy a hivatkozás valóban létezik-e, és kapja meg a valódi állapotot. `download_file` (Személyes, hálózati): URL letöltése egy fájlba.
+- Az ügynök csak akkor nyitja meg a hivatkozásokat, ha Ön kéri.
+- Az AI modellek a felhőben futnak az Ön által hozzáadott szolgáltatókon keresztül (ZYRAXON, ZYRAXON Apex felhőügynök, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). A modelllista élőben töltődik be, és az egyes szolgáltatók válaszaival töltődik.
+- Az építési, közzétételi és lekérési kérések GitHub és Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`) keresztül futnak.
+- Kapcsolja be a „csak az eszközön” (automatizálási beállítások) funkciót, és egyáltalán nem történik felhőhívás: nincs szolgáltató, nincs web, nincs feltöltés.
+
+## MCP szerverek
+MCP lehetővé teszi, hogy külső szolgáltatások extra eszközöket adjanak az ügynöknek. Csatlakoztassa a következőt: Canva, Cloudflare, Supabase, GitHub vagy saját szervere címe alapján (opcionális token). A csatlakoztatott szerverek eszközei `server__tool` néven csatlakoznak az ügynök eszközlistájához.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (nézze meg, mi kapcsolódik, és milyen eszközök léteznek), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (figyeljen egy erőforrást a változásokért), `mcp_complete` (autocomplete arguments), `mcp_ping`, `mcp_log_level`. Hívásaik hálózati hívások, és az ismeretlen MCP eszközök alapértelmezés szerint engedélyt kérnek.
+- A MCP képernyő felsorolja az egyes kiszolgálókat a Connected állapottal, az eszközöket, az erőforrásokat és a prompt sablonokat, valamint a Hozzáadás, Leválasztás, Eltávolítás és Engedélyezés gombokat.
+
+## Alügynökök
+`sub_agent` (Rendszer): egy nagy munka részeit átadja a háttérben futó segédügynököknek. Műveletek: spawn, állapot, lista, eredmény, üzenet, leállítás, várakozás. Mindegyik használhatja a saját modelljét. Az ügynök egyesíti és ellenőrzi az eredményeket, mielőtt azt mondaná, hogy „kész”.
+
+## Az eszközön lévő modell
+`on_device_model` (Rendszer): listázzon, töltsön be és futtasson egy olyan nyelvi modellt, amely a telefonon él, internet nélkül. A Beállításokban → Modell és identitás → Az eszközről modelleket tölthet le (kicsitől nagyig: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); a Hugging Face token nem kötelező, és csak kapuzott fájlokhoz szükséges. A betöltött modell megjegyzi és újratöltéskor indul.
+
+## Üzenetküldő csatornák
+A `channel_post` (Rendszer) megnyitja a következőt: Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail vagy SMS-ben készen áll a szöveg. Megnyomod, hogy küldd el magad.

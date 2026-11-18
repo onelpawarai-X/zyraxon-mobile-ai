@@ -1,0 +1,34 @@
+Puhelimen automaatiotyökalut
+Agentti hallitsee puhelintasi työkalujen avulla. Et koskaan kutsu niitä itse; sanot mitä haluat ja agentti valitsee työkalut. Tässä luvussa luetellaan kaikki työkalut, jotka koskettavat puhelinta, ja miten se on suojattu (katso Hyväksyntätasot: Turvallinen, Henkilökohtainen, Järjestelmä).
+
+## Avaaminen ja löytäminen
+- `open_app` (Turvallinen): avaa mikä tahansa asennettu sovellus nimen tai paketin mukaan. `list_apps` (Turvallinen): luettele asennetut sovellukset. `open_settings` (Turvallinen): avaa järjestelmäasetussivu (esteettömyys, peittokuva, ilmoitukset, sovellukset, Wi-Fi, akku, Play Protect). `launch_url` (Turvallinen): avaa linkki selaimessa. `youtube_play` (Turvallinen): avaa YouTube etsimäsi hakutuloksissa ja toista se.
+
+## Näytön näkeminen
+- `read_screen` (Henkilökohtainen): lukee jokaisen tekstin ja elementin näytöllä napautusasennossa. `screen_shot` (Henkilökohtainen): todellinen kuvakaappaus. Nämä tarvitsevat esteettömyysluvan.
+- `look_camera` (Henkilökohtainen): ottaa yhden valokuvan kameralla ja katsoo sitä. `read_media` (Henkilökohtainen): lukee kuvan, äänen tai videon (polulta tai linkistä), jotta malli ymmärtää sen.
+
+## Toimiminen näytöllä
+- `tap` (Henkilökohtainen): napauta pistettä. `tap_text` (Henkilökohtainen): napauta elementtiä tällä tunnisteella, turvallisempi kuin koordinaatit. `swipe` (Henkilökohtainen): vieritys tai taaksepäin-ele. `type_text` (Henkilökohtainen): kirjoita tarkennettuun kenttään. `press_key` (Henkilökohtainen): takaisin, koti, viimeisimmät, ilmoitukset, pika-asetukset, lukitus.
+- Näyttötoiminnot suoritetaan yksi kerrallaan, järjestyksessä, ja jokaisen jälkeen agentti katsoo uutta näyttöä.
+
+## Puhelin, viestit ja leikepöytä
+- `call_dial` (Henkilökohtainen): soita numerolla tai yhteyshenkilön nimellä. `call_state` (Henkilökohtainen): soi puhelu vai onko puhelu käynnissä? `call_answer` (Henkilökohtainen): vastaus. `call_hangup` (Henkilökohtainen): katkaise puhelu.
+- `read_sms` (Henkilökohtainen): lue uusin tekstiviesti, esim. OTP-koodi; voi suodattaa tekstin tai lähettäjän mukaan.
+- `clipboard_read` ja `clipboard_write` (henkilökohtainen): lue tai kirjoita leikepöydälle.
+- `notify` (Henkilökohtainen): lähetä todellinen Android ilmoitus. `share` (Henkilökohtainen): avaa jakosivu, jossa on tekstiä, linkki tai tiedosto. `channel_post` (Järjestelmä): avaa Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail tai tekstiviesti, jossa tekstisi on esitäytetty, valmiina lähetettäväksi.
+
+## Tila- ja järjestelmätiedot
+- `network_status` (Turvallinen): verkossa tai ei, Wi-Fi tai mobiilidata, Wi-Fi nimi. `sys_info` (Turvallinen): Android versio, malli, prosessori, RAM, tallennustila, nykyinen sovellus. `platform_info` (Turvallinen): missä agentti on käynnissä. `process_list` (Turvallinen): käynnissä olevat prosessit.
+
+## Käyttöoikeudet ja näyttö
+- `request_permission` (Turvallinen): avaa järjestelmän käyttöoikeusikkunan yhdellä napautuksella, kun työkalu epäonnistuu puuttuvan luvan vuoksi. `device_lock` (Järjestelmä): lukitse näyttö todella tai määritä lupa, joka mahdollistaa sen. `floating_bubble` (Henkilökohtainen): kytke kelluva pallo päälle tai pois päältä.
+- `voice_change` (Henkilökohtainen): muuta puhenopeutta, äänenkorkeutta tai sukupuolta. `live_voice` (Järjestelmä): ota puheesta puheeksi -tila käyttöön tai poista se käytöstä.
+
+## Käyttöliittymäapulaiset
+- `code_box` ja `files_panel`: avaa live-koodilaatikko tai tiedostoselain, jotta voit katsoa työtä. `todo_write`: live-tehtävätaulu.
+
+## Vinkkejä
+- Voit ketjuttaa: "Avaa Asetukset, etsi Wi-Fi ja kerro minulle verkon nimi". Agentti lukee näytön jokaisen vaiheen jälkeen ja päättää seuraavan.
+- Jos napautus ei tee mitään, agentti lukee näytön uudelleen ja yrittää toista elementtiä; se ei koskaan naputa sokeasti.
+- Jos Play Protect estää jotain, agentti voi käydä asetukset läpi kanssasi (katso Käyttöoikeudet).

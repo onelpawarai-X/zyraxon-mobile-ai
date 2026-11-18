@@ -1,0 +1,42 @@
+Elk instellingenscherm, één voor één
+Instellingen heeft acht secties. Elke sectie heeft pillen voor de subschermen. De laatst gebruikte sectie wordt de volgende keer opnieuw geopend.
+
+## 1. Taal en vertaling → Taal van app en tool
+Kies de taal van de hele app en van de toolberichten van de agent. Zoek in de lijst en tik op één. Het scherm toont de huidige taal en of UI-vertaling en vertaling van toolberichten zijn ingeschakeld. Er zijn 60 talen beschikbaar. Zie het hoofdstuk Taal.
+
+## 2. Stem en microfoon
+- Stemprofiel: kies vrouwen- of mannenstem, snelheid, toonhoogte, "Antwoorden voorlezen", teststem, de Bengaalse stemdownloadhint.
+- Microfoon en taal: herkenningstaal, houd de microfoon ingeschakeld, automatisch verzenden wanneer u stopt met praten.
+- Live stem: spraak-naar-spraak aan/uit, status, de lijst met realtime modellen.
+
+## 3. Aanbieders en API
+- AI-providers: uw eigen API-sleutels (ZYRAXON, OpenCode gratis quotum, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) en de ZYRAXON Apex cloudagent. Een opgeslagen sleutel wordt geverifieerd door de echte catalogus van de aanbieder te lezen en toont het aantal modellen of de exacte fout. Een knop opent de website ZYRAXON waar u een sleutel aanmaakt.
+- GitHub: uw GitHub toegangstoken (repo-scope nodig) voor publicatie, Git push- en pull-verzoeken. Token opslaan of verwijderen; de status laat zien of deze is ingesteld.
+
+## 4. Updates → App-update
+Toont de huidige versie, controleert op een nieuwere release, downloadt deze met een voortgangsbalk en installeert deze. Je chats, geheugen en instellingen blijven behouden. Als Android toestemming nodig heeft om te installeren, opent een knop die instelling.
+
+## 5. Model & identiteit
+- Identiteit: kies het personage (zie het hoofdstuk Personages).
+- Model: de live-modellencatalogus met een zoekvak, filters "Alle modellen" en "Aangepast"; snelle modellen eerst.
+- Op het apparaat: modellen downloaden, laden en verwijderen die offline werken; gesorteerd van klein naar groot; optioneel Hugging Face-token; toont geladen, ladende en mislukte statussen.
+
+## 6. Aura & thema
+- Thema: Horror, donker of licht.
+- Aura & achtergrond: de aurastijl en kleur (bloed, roze, violet, lucht, groen, vuur) met fijne tintcontrole; auragrootte, gloeisterkte, rotatiesnelheid, paneeltransparantie; het zwevende oog (aan/uit, ontwerp, schermrand, spraakopdrachten/wekwoorden, voeg je eigen woorden toe); arceringsmodus; aangepaste achtergrond-URL (mp4, gif of afbeelding); animatie snelheid.
+
+## 7. Beveiliging en privacy
+- App-vergrendeling: een wachtwoord (4-8 cijfers) of een patroon van 3×3 stippen; bevestig door het tweemaal in te voeren; slot verwijderen.
+- Machtigingen: de lijst in het hoofdstuk Machtigingen, met Play Protect hulp.
+- Privacy & data: alle data blijft op de telefoon. Knoppen: verwijder al het geheugen, verwijder chatgeschiedenis, verwijder GitHub token.
+
+## 8. Systeem
+Dit gedeelte heeft een eigen rij knoppen die zijwaarts scrollen, zodat er niets wordt samengedrukt.
+- Automatisering: goedkeuringsniveau en alleen op het apparaat (zie Goedkeuringsniveaus).
+- Navigatie: een lijst met gebieden waar je naartoe kunt springen – ‘geen knoppen bovenaan, alles is hier’ – inclusief de ⌘ ZX-systeemshell, een knop ‘Nieuwe sessie’ (wist de chatgeschiedenis voor een schone start), het aantal berichten en de microfoonschakelaar.
+- Geheugen: het lokale SQL geheugen met de feiten die ZYRAXON onthoudt; een sleutel en waarde toevoegen; verwijder alles.
+- Vaardigheidsgids: een korte lijst met voorbeeldmogelijkheden (berichtenapps, website bouwen, schermlezer, zaklamp, camera, Wi-Fi en instellingen) met voorbeeldzinnen.
+- Automatiseringshub: vaardigheden, automatische piloot, geld, tijdlijn, brein en de call-agent op één plek (zie Automatiseringshub).
+
+## 9. Documentatie
+Een eigen sectie in Instellingen, los van Systeem. Deze gids: eenentwintig hoofdstukken, een zoekvak en een rij met taalchips. Elke taal in de app is al volledig uitgeschreven in de app; er wordt niets vertaald op je telefoon en er is geen internet nodig om het te lezen.

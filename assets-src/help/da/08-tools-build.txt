@@ -1,0 +1,21 @@
+Bygning: websteder, apps, forhåndsvisning og udgivelse
+## Hvordan spørger man
+- "Lav mig en destinationsside for min kaffebar." Agenten bygger det med det samme, starter det på din telefon og åbner det i Preview. Du får 2-3 linjer, der beskriver det. Intet offentliggøres, medmindre du spørger.
+- "Byg en to-do-app." Bygget direkte med en fornuftig stak, kørt og vist. En backend, database eller login kun hvis du spørger.
+- "Byg en app i fuld stack." Agenten stiller først et kort spørgsmål om back-end-sproget, databasen, login og hvor det kører, med anbefalede standardindstillinger, bygger derefter det hele med basisdata og tester et fuldt flow.
+- "Lav et Windows/Linux/macOS/Android program." Kilden skrives, en build-workflow tilføjes, den skubbes og bygges i skyen med GitHub Actions, og du får det rigtige downloadlink.
+
+## Værktøjer
+- `edit_file` og `write_file`: skriv de rigtige filer (komplet kode, aldrig stubber). `code_box` viser dem live.
+- `preview` (Sikker): den indbyggede rigtige browser. Handlinger: Åbn (et link, `localhost:PORT` eller en fil), genindlæs, tilbage, frem, skærmbillede, rul, klik, skriv, læs sidetekst, konsolfejl, eval. Agenten ser på sit eget arbejde, før det siger, at det er færdigt.
+- `serve_local` (System): starter en webserver på telefonen til en mappe og returnerer den LAN adresse, andre enheder på din Wi-Fi kan åbne.
+- `publish_website` (System): betjener et websted på en offentlig port fra telefonen. `publish_cloudflare` (System): sætter et websted på internettet uden konto gennem en Cloudflare-tunnel og returnerer et offentligt https-link. `publish_github` (System): udgiver et projekt til et GitHub lager (Sider) med dit token.
+- `git` (System): klon, init, status, add, commit, push, pull, branch, checkout, log, diff med dit gemte token. `github_pr` (System): oprette, liste, flette og kommentere pull-anmodninger. `github_actions` (System): liste arbejdsgange, kør dem, afstemningskørsel og læs logs, så builds kører i skyen fra telefonen.
+- `build_app` (System): bygger dette projekt med Gradle på telefonen og installerer resultatet.
+- `files_panel`, `todo_write`: filbrowser og opgavebræt.
+
+## Kvalitetsregler agenten følger
+Komplet layout, responsivt design, fungerende JavaScript, animation, ensartede farver og skrifttyper (mørke og lyse, hvor det passer), ikke en generisk skabelon. En landingsside er normalt 300–900 linjer; større ting mere.
+
+## Hvis noget ser ødelagt ud
+Tryk på Fix i Preview, eller fortæl agenten. Den læser konsollen, løser årsagen, genåbner siden og tjekker igen.

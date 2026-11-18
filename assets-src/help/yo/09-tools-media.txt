@@ -1,0 +1,11 @@
+Awọn aworan, ohun, fidio, awọn iwe aṣẹ ati apẹrẹ
+- `generate_image` (nẹtiwọọki): ṣe aworan lati apejuwe kan (kọ pẹlu alaye; Gẹẹsi ṣiṣẹ dara julọ). O han ninu iwiregbe pẹlu awọn bọtini ipin. Fun pupọ, beere fun pupọ.
+- `generate_audio` (nẹtiwọki): ohun ti a sọ (.mp3) lati eyikeyi ọrọ. Fun ibaraẹnisọrọ tabi itan, fun apakan kọọkan ni ohun tirẹ (abo, ọjọ ori, ede, ohun orin). Ọpọlọpọ awọn ede, pẹlu Ede Bengali, Hindi ati Gẹẹsi.
+- `generate_video`: fidio gidi ti a ṣatunkọ (kii ṣe aworan AI) lati awọn iwoye - awọn aworan, awọn agekuru, ọrọ, awọ, alaye, awọn akọle, orin. `ffmpeg`: eyikeyi satunkọ taara - ge, darapọ, agbekọja, awọn atunkọ, iyara, idapọ ohun, iyipada. Awọn fidio iṣẹju 5-10 ṣee ṣe, ti a ṣe ni igbese nipasẹ igbese.
+- Ilọsiwaju fihan laaye bi ipin ninu iwiregbe; nigba ti pari faili naa de pẹlu awọn bọtini Play ati Pin.
+- `make_document`: gidi Word (.docx), Excel (.xlsx) tabi PowerPoint (.pptx) faili lori foonu, ko si fi sori ẹrọ nilo, eyikeyi ede. `office_template`: awọn iwe ọfiisi ti o ṣetan pẹlu awọn ofo lati kun (fi ohun elo silẹ, ohun elo iṣẹ, risiti, CV, imọran iṣowo, asọye, akiyesi, awọn iṣẹju ipade, adehun, awọn akọọlẹ oṣooṣu ati diẹ sii).
+- Iwe aṣẹ lati fọto kan: so fọto kan (Sọka Doc). Awọn ọrọ ti wa ni daakọ gangan bi a ti kọ (awọn ọrọ ti ko ni iyasọtọ ti samisi), tabili kan di .xlsx, bibẹẹkọ .docx.
+- Awọn akọsilẹ ipade: lati inu ohun, iwe afọwọkọ tabi ohun ti o sọ. Iwe-ipamọ naa ni akopọ, awọn ipinnu, awọn ohun iṣe (iṣẹ-ṣiṣe, oniwun, ọjọ ti o yẹ) ati iwe imeeli ti o ṣetan.
+- `make_design`: posita, asia, awọn apejuwe, awọn kaadi, itan, awọn ideri bi PNG ati PDF. `brand_kit`: fun aami tabi awọn awọ; Wọn ti wa ni fipamọ, akori app naa yipada, ati lati lẹhinna lori awọn iwe aṣẹ, awọn ifaworanhan ati awọn aaye lo awọn awọ ami iyasọtọ rẹ.
+- `present_slides`: kikọ sọrọ nigba ti ifaworanhan awọn kaadi han; awọn ifaworanhan yipada funrararẹ nigbati ohun ba pari. Beere fun faili .pptx ti o ba fẹ faili kan.
+- `open_file`: ṣii ohun ti a ṣe ninu ohun elo gidi ti foonu naa (Word/Awọn iwe aṣẹ, Awọn iwe, Awọn ifaworanhan, PDF, gallery, aṣawakiri) tabi ni Awotẹlẹ nronu; aṣoju naa ṣayẹwo iboju lati rii daju pe o ṣii.

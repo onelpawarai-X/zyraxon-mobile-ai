@@ -1,0 +1,23 @@
+Patvirtinimo lygiai ir automatikos sauga
+Nustatymai → Sistema → Automatika. Tai nusprendžia, kiek agentas gali padaryti prieš sustodamas ir jūsų paklaus. Nustatymas įvedamas kode kiekvieno įrankio iškvietimo metu; modelis negali jo išplėsti.
+
+## Keturi lygiai
+Pakeiskite lygį nustatymuose → Sistema → Automatika. Kiekvienas lygis nusprendžia, kada agentas sustoja ir klausia, taip pat kaip griežtai turinio skydas (žr. Sauga ir privatumas) traktuoja tekstą, kurį agentas skaito iš išorės.
+1. Visas paklausimas (užrakintas): klausia prieš viską, kas pakeičia telefoną, kad ir koks mažas. Saugiausia. Turinio skydas yra griežtas: bet koks įtartinas tekstas laikomas priešišku. Naudokite jį bendrame telefone arba bandydami ką nors naujo.
+2. Prižiūrimas (numatytasis): klausia prieš sisteminius ir asmeninius veiksmus ir pats atlieka įprastą darbą (skaito, atidaro, ieško, stato). Turinio skydas yra standartinis: įtartinas tekstas atitvertas kaip duomenys, o kai tekstas yra aiškiai priešiškas, kiekvienas besikeičiantis įrankis prašo jūsų likusios tos eilės dalies.
+3. Subalansuotas: klausia tik prieš sistemos lygio veiksmus (apvalkalą, trynimą, publikavimą, planavimą...). Asmeniniai veiksmai, tokie kaip pranešimai, bakstelėjimai ir spausdinimas, atliekami atskirai. „Content Shield“ yra lengvas: jis veikia tik aiškiai priešišką tekstą, o tada klausti nustoja tik sistemos lygio įrankiai.
+4. Pilna automatika: niekada neklausia ir nesustoja. Viskas vyksta tiesiai, o „Content Shield“ yra visiškai išjungtas – niekas nėra nuskaitomas, pažymėtas, pašalintas ar pakeistas. Tai yra automatizavimas visa prasme: jūs prisiimate riziką.
+
+## Trys įrankių pakopos
+- Saugus (niekada neklausia jokiu lygiu): failų, atminties, dokumentų, dizaino, būsenos, programų ir failų atidarymo, laukimo, įgūdžių / autopiloto / laiko juostos / skambučių sąrašų skaitymas ir įtraukimas į sąrašą, smegenų paieška.
+- Asmeniniai (klausiama pirmuose dviejuose lygiuose): SMS, skambučiai, fotoaparatas, ekrano skaitymas, bakstelėjimai ir teksto įvedimas, mainų sritis, atsisiuntimai, pranešimai, bendrinimas, balso keitimas, įgūdžių atkūrimas, pinigų knyga, skambučių agentas, laiko juostos anuliavimas.
+- Sistema (klausiama kiekviename lygyje, išskyrus visišką automatizavimą): apvalkalas, Linux, kūrimo, paskelbimo, trynimo, įrenginio užrakto, planavimo, Git ir GitHub, ffmpeg, modelio įrenginyje, paskelbimo kanaluose, autopiloto taisyklės, trynimo įgūdžių, Shizuku. Bet koks įrankis, kurio programa neatpažįsta, įskaitant MCP įrankius, yra traktuojama kaip sistema.
+
+## Patvirtinimo kortelė
+Kai įrankiui reikia jūsų patvirtinimo, kortelėje parašyta „Reikalingas leidimas“, nurodoma, ką agentas nori daryti, parodomas jo lygis (saugus, asmeninis arba sistema) ir siūloma „Taip, paleisti“ arba „Ne, išjungti“. Kortelė taip pat primena, kad galite pakeisti, kaip dažnai to klausiama, nustatymuose → Automatika.
+
+## Tik įrenginyje
+Įjungus telefoną nieko nepalieka: veikia tik įrenginyje esantis modelis ir vietiniai įrankiai. Visi tinklo įrankiai (paieška, gavimas, įkėlimai, publikavimas, GitHub, medijos generavimas, MCP, debesų modeliai) yra atmesti kodu.
+
+## Pirmasis paleidimo pranešimas
+Pirmą kartą ZYRAXON paaiškina, kad agentas gali veikti jūsų telefone ir kur įjungti leidimus. Paspauskite "Supratau, pradėkite".

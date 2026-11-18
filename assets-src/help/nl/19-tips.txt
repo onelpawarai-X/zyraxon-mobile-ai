@@ -1,0 +1,27 @@
+Tips en voorbeeldverzoeken
+## Zeg wat je wilt, niet hoe
+- "Maak een landingspagina voor een sportschool, donker en krachtig."
+- "Bouw een full-stack boekingsapp met een database." (de agent vraagt ​​eerst de technische keuzes)
+- "Open YouTube en speel een rustig nummer."
+- "Scroll naar beneden en open het eerste resultaat."
+- "Wat is mijn batterij en Wi-Fi?"
+- "Lees mijn nieuwste sms en vertel me de code."
+- "Bel mama." / "Beantwoord de oproep."
+- "Maak een CV van deze foto." (bevestig het)
+- "Verander deze vergaderingsopname in notities met actiepunten."
+- "Maak een poster voor het evenement van vrijdag met deze kleuren."
+- "Maak een audiodialoog tussen twee vrienden, een jongen en een meisje."
+- "Vergeet niet dat de verjaardag van mijn zus op 3 mei is."
+- "Vertel me elke ochtend om 8 uur het weer." (automatische piloot)
+- "Lees hoe ik mijn huur verstuur via mijn portemonnee-app, zodat u het opnieuw kunt doen." (vaardigheid)
+- "Ongedaan maken wat u in de projectmap hebt gedaan." (tijdlijn)
+- "Waar is mijn huurcontract?" (brein)
+- "Installeer Python-pakketten en voer dit script uit." (Linux)
+- "Publiceer deze site zodat ik hem kan delen." (openbare link)
+
+## Gewoonten die helpen
+- Korte en duidelijke beats lang. De agent kiest de standaardinstellingen en vertelt u wat hij heeft gekozen.
+- Als er één vraag wordt gesteld, beantwoord je deze en de vraag gaat verder vanaf dezelfde plek.
+- Zeg 'uitleg' of 'samenvatting' voor een gedetailleerd antwoord; anders zijn de antwoorden kort.
+- Je kunt er op elk moment over praten. Het stopt en luistert.
+- Gebruik de Build-modus om dingen te maken en de Agent-modus om dingen via de telefoon te doen.

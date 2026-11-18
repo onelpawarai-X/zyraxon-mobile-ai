@@ -1,0 +1,51 @@
+Chatskærmen og hver knap
+## Øverst på skærmen
+- Menu: åbner den venstre skuffe med dine chats.
+- Chat / Terminal / Kode / Forhåndsvisning: Skift hovedvisningen. Chat er samtalen; Terminal er den rigtige terminal; Kode er filarbejdsområdet med Git; Preview er den indbyggede browser.
+- Aura: viser den animerede karakterskærm. Dens sideknapper er Mic, Chat (tilbage til samtalen) og Refresh (genopretter forbindelse til skyen og genindlæser modellisten).
+- Indstillinger: åbner de otte indstillingssektioner.
+- Et banner viser mikrofontilstanden: "Lytter...", "Mic off - tap" eller "Taler... tryk for at stoppe".
+- Når en ny version er klar, vises et opdateringsbanner med knapperne Download, Installer og Tillad (se Opdateringer).
+
+## Den venstre menu (chat)
+- "+ Ny chat": starter en ny samtale.
+- Hver chat på listen viser et kørende mærke, mens agenten er optaget der. Blyanten omdøber den; krydset sletter det (efter en bekræftelse: alle beskeder i det slettes).
+- Tema: vælg Horror (blod, ild og skygge), Mørk (rent mørkt glas) eller Lys (lyst glas).
+
+## Beskedlinjen
+- Vedhæft (papirklip): galleribillede, kamerafoto, dokumentscanning (gør teksten i et billede til en redigerbar .docx), del skærmen, så agenten kan se den ("Skærmvisning" til eller fra) og lyd- eller videofiler. Vedhæftede elementer vises som chips; krydset fjerner én, "Ryd alle" fjerner alle.
+- Tilstandsknap: Agent eller Byg.
+- Mikrofonknap: tænder eller slukker for den altid lyttende mikrofon.
+- Modelknap: åbner modellisten med et søgefelt. Modeller mærket "Live" kan tale med deres egen stemme.
+- Send: sender beskeden. Mens agenten arbejder, bliver dette Stop.
+- Indtastningen siger "Hvad skal jeg gøre?" i agenttilstand og "Hvad skal jeg bygge? Sig det kort" i byggetilstand.
+
+## Beskeder
+- Kopier, del og lyt (læser beskeden højt; tryk igen for at stoppe) er under hver besked.
+- "Tænkning" viser modellens ræsonnement, når modellen giver det.
+- Kode agenten skriver vises live i en boks, linje for linje, med Kopier, Download og Åbn.
+- Filer, agenten laver, vises som kort med Åbn (i telefonens rigtige app), Spil, Del og "Anden app...".
+- Billeder, lyd og video viser en live fremskridtsprocent, mens de laves.
+- Værktøjskort viser, hvad agenten laver: kører, færdig, succes eller mislykket.
+
+## Paneler (todo, værktøjer, filer, underagenter)
+- Todo-tavle: planen agenten skriver for et stort arbejde og dets fremskridt (n/total udført). Du kan tilføje din egen opgave og slette opgaver.
+- Værktøjer: listen over hvert værktøjsopkald med livestatus.
+- Filer: hver fil, agenten har oprettet, med Åbn, Del, Udgiv og Slet (med bekræftelse) og et søgefelt.
+- Underagenter: hjælpeagenter, der kører i baggrunden, med en Stop-knap.
+- Terminal-fanen: den rigtige terminal (se kapitlet Filer og Terminal).
+
+## Eksempelpanel
+- Tilbage, Frem, Stop, Genindlæs og en adresselinje (indtast en webadresse, eller søg Google).
+- Åbn fil: viser Word, Excel, PowerPoint, PDF, billeder, Markdown, CSV, kode og websteder lige inde i appen.
+- Størrelse: formindsk eller forstørre panelet.
+- Fix: sender sidens problemer (konsolfejl, mislykkede indlæsninger) til agenten, som løser dem i baggrunden.
+- Vælg del: Tryk på en del af siden, og fortæl derefter agenten, hvad han skal gøre med den del.
+- Agent-knap: spørg noget om siden; agenten modtager et billede af det.
+- Hurtig åbning: Genveje til de seneste sider.
+
+## Kode arbejdsområde
+- Venstre side: dine filer (ny fil, åbn, gem).
+- Editor: viser linjer og tegn; ændringer foretaget af agenten dukker op med det samme.
+- Git: ny repo, kloning fra GitHub, scan, status, begå med en besked, push, pull, brancher, token.
+- Træk anmodninger: oprette, flette, luk. Arbejdsgange: listekørsler, kør en arbejdsgang. Log viser kommando output.

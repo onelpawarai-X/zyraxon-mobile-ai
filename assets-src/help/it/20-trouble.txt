@@ -1,0 +1,14 @@
+Risoluzione dei problemi
+- Nessuna risposta: controlla la tua chiave Internet e API (Impostazioni → Provider e API mostra l'errore reale). Prova un altro modello o un modello integrato nel dispositivo.
+- Il microfono non fa nulla: consenti il ​​permesso del microfono; seleziona "Tieni il microfono acceso"; verificare la lingua di riconoscimento.
+- ZYRAXON ascolta se stesso: questo è filtrato per testo; se il problema persiste, abbassa il volume o usa le cuffie.
+- Una frase appare due volte: fissa nelle versioni attuali; aggiornare l'app.
+- Non toccherà né leggerà lo schermo: attiva il servizio di accessibilità (Impostazioni → Autorizzazioni).
+- Si ferma in background: consente l'esenzione delle notifiche e dell'ottimizzazione della batteria; la sovrapposizione per l'occhio mobile.
+- Uno strumento continua a chiedere l'autorizzazione: modifica il livello in Impostazioni → Automazione o rispondi alla carta.
+- Play Protect blocca qualcosa: consulta il capitolo Autorizzazioni o lascia che sia l'agente a guidare i passaggi.
+- Il terminale o Linux non si avvia: attendere il primo spacchettamento all'avvio dell'app; controlla lo spazio di archiviazione gratuito.
+- L'aggiornamento non verrà installato: consenti ZYRAXON come origine di installazione.
+- Impossibile pubblicare: aggiungi il token GitHub per GitHub; per un collegamento pubblico l'agente può utilizzare un tunnel.
+- Un capitolo mostra l'inglese: quel capitolo non ha testo nella tua lingua in questa build; aggiornare l'app.
+- Qualcosa di strano: usa Impostazioni → Navigazione → Nuova sessione per iniziare in modo pulito (cancella solo la cronologia della chat; la memoria rimane).

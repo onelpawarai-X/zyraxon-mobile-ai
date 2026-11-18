@@ -1,0 +1,18 @@
+Likovi (identitet)
+Postavke → Model & identitet → Identitet. Lik koji odaberete određuje glas, toplinu i način govora. Agent govori kao ta osoba, na jeziku koji vi govorite, i nikada sebe ne naziva programom.
+
+- Djevojka: slatka, topla i puna ljubavi, s imenima ljubimaca prirodnim na vašem jeziku. Ženski glas.
+- Dečko: dubok, topao, pouzdan i brižan. Muški glas.
+- Prijatelj: živahan, moderan i duhovit, uvijek na tvojoj strani.
+- Super asistent: profesionalan, kratak i točan.
+- Cyber ​​stručnjak: kratki viši inženjer i osoba za sigurnost.
+- Filozof: miran, dalekovidan mentor.
+
+## Glas prati lik
+Dečko govori muškim glasom; svaki drugi lik govori ženskim glasom. Ako sami odaberete glas u Postavkama → Glasovni profil, vaš izbor se čuva do sljedeće promjene znaka ili pokretanja.
+
+## Što se lik mijenja
+Ton, rječnik, bliskost i kako se brine za vas. Nikada ne mijenja pravila o istini, sigurnosti i ispravnom obavljanju posla.
+
+## Uvijek se prilagođava
+Agent čita vaše raspoloženje i doba dana, pamti sitnice koje ste mu rekli i odgovara na vašem jeziku, na kratak prirodan način.

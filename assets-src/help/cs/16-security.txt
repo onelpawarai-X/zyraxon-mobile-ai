@@ -1,0 +1,11 @@
+Bezpečnost a soukromí
+- Všechna data ZYRAXON žijí ve vašem telefonu: chaty, paměť, účetní kniha, dovednosti, časová osa, index mozku. Na serveru ZYRAXON se nic neuchovává.
+- Cloudové modely obdrží pouze to, co je potřeba pro vámi zaslaný tah. Při nastavení „Pouze na zařízení“ se neodesílá vůbec nic.
+- Výzvy a jazykové soubory dodávané v aplikaci jsou zašifrovány uvnitř APK.
+- Zámek aplikace: nastavte heslo nebo vzor v Nastavení → Zabezpečení a soukromí → Zámek aplikace. ZYRAXON se poté uzamkne, když jej otevřete nebo se vrátíte z pozadí. "Odstranit zámek" odstraní uložené heslo nebo vzor.
+- Úrovně schválení chrání každé volání nástroje v kódu (viz Úrovně schválení). Neznámé nástroje se vždy ptají.
+- Můžete vymazat: veškerou paměť, historii chatu a svůj token GitHub, každé pomocí jednoho tlačítka v Soukromí a data.
+- Bezpečnost: Pokud řeknete, že vás někdo ohrožuje nebo vás sleduje, nebo chce váš telefon nebo data, agent nejprve zamkne telefon (pokud je povoleno oprávnění správce zařízení) a pak s vámi klidně mluví.
+- Platby: před jakoukoli platbou nebo převodem agent řekne, co zaplatí, a požádá vás o potvrzení.
+- Upřímnost: agent říká, že něco fungovalo, až když viděl výsledek. Nikdy nevymýšlí odkazy, soubory nebo výsledky.
+- Content Shield: vše, co agent čte zvenčí – obrazovka jiné aplikace, webová stránka, zpráva, soubor, připojený server – je zkontrolováno v kódu pro text, který se pokouší dávat agentovi příkazy (v mnoha jazycích, včetně textu skrytého s neviditelnými znaky). Podezřelý text je chráněn, takže s ním model zachází pouze jako s daty. Jak přísné to je, se řídí vaší úrovní schválení: Uzamčeno zachází s čímkoli podezřelým jako s nepřátelským; Dohlížený ohrazuje podezřelý text, a když je text jasně nepřátelský, uzamkne zbytek tahu, takže se vás každý měnící nástroj nejprve zeptá (karta říká proč); Balanced působí pouze na jasně nepřátelský text a pouze nástroje na úrovni systému se přestanou ptát; Automaticky štít úplně vypne – nic se neskenuje, nezastaví, neoznačí ani nezmění. Nová zpráva od vás to vymaže.

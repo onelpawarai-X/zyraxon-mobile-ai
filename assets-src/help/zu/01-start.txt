@@ -1,0 +1,20 @@
+Ukuqalisa
+ZYRAXON ungumsizi ohlala ngaphakathi kwefoni Android yakho. Ikhuluma nawe, iyakulalela, futhi ingenza umsebenzi wangempela: vula izinhlelo zokusebenza, thepha futhi uthayiphe esikrinini, ushayele abantu, ubhale amafayela, wakhe amawebhusayithi nezinhlelo zokusebenza, usebenzise isistimu ye-Linux, wenze izithombe, umsindo, ividiyo kanye nemibhalo yasehhovisi, futhi ukukhumbule phakathi nezinyanga. Isebenza nganoma yiluphi ulimi olukhulumayo.
+
+## Imizuzu yokuqala
+- Ekuqalisweni kokuqala ZYRAXON kubonisa isaziso esifushane sokuthi umenzeli angakwazi ukwenza okuthile ocingweni lwakho ngokwalo. Cindezela okuthi "Ngiyezwa, qala" ukuze uqhubeke.
+- Engeza ukhiye we-AI (Izilungiselelo → Abahlinzeki & ne-API → abahlinzeki be-AI). Namathisela ukhiye wanoma yimuphi umhlinzeki omthandayo (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode. Uma ulondoloza ukhiye uhlelo lokusebenza lufunda ikhathalogi yalowo mhlinzeki futhi lusihlole ukuthi awangempela yini, ukuze ubone "okuxhunyiwe" kweqiniso kanye nenani lamamodeli.
+- Awukho ukhiye? Usengasebenzisa amamodeli akudivayisi (Izilungiselelo → Imodeli & nomazisi → Kudivayisi). Bagijima ocingweni abanayo i-inthanethi.
+- Khetha imodeli enenkinobho yemodeli kubha yomlayezo, kanye nohlamvu (Izilungiselelo → Imodeli & nomazisi → Identity).
+- Nikeza izimvume uma isici sidinga eyodwa (bona isahluko Sezimvume). I-ejenti ingaphinda ikuvulele ibhokisi lemvume ngokuthepha okukodwa.
+- Vele ukhulume noma uthayiphe. "Ngenzele ikhasi lokufika lebhikawozi lami", "vula YouTube bese udlala ingoma", "lithini ibhethri lami?", "shayela uMama".
+
+## Izindlela ezimbili zokusebenza
+Eduze kwebhokisi lemiyalezo kunenkinobho yemodi enezinhlobo ezimbili: I-ejenti ne-Yakha. Bheka isahluko esithi Amamodi.
+
+## Lapho izinto zikhona
+- Imenyu engakwesokunxele: izingxoxo zakho, ingxoxo entsha, qamba kabusha, susa, kanye nokushintsha kwetimu.
+- Isikrini sengxoxo: imilayezo, ibhodi le-todo, uhlu lwamathuluzi, amafayela, ukuphela.
+- Buka kuqala kanye namaphaneli eKhodi: bona futhi uhlele ukuthi i-ejenti yakha ini.
+- Izilungiselelo: izigaba eziyisishiyagalombili, ezihlanganiswe ngayinye ngayinye kule mibhalo.
+- Lo mbhalo: Izilungiselelo → Amadokhumenti (ukhona).

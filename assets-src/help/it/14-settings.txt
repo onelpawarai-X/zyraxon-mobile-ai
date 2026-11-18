@@ -1,0 +1,42 @@
+Ogni schermata delle impostazioni, una per una
+Le impostazioni hanno otto sezioni. Ogni sezione ha pillole per le sue schermate secondarie. L'ultima sezione utilizzata verrà riaperta la prossima volta.
+
+## 1. Lingua e traduzione → Lingua dell'app e dello strumento
+Scegli la lingua di tutta l'app e dei messaggi dello strumento dell'agente. Cerca nell'elenco e toccane uno. La schermata mostra la lingua corrente e se la traduzione dell'interfaccia utente e la traduzione dei messaggi dello strumento sono attive. Sono disponibili 60 lingue. Vedi il capitolo Lingua.
+
+## 2. Voce e microfono
+- Profilo vocale: scegli la voce femminile o maschile, la velocità, il tono, "Leggi le risposte ad alta voce", Prova la voce, il suggerimento per il download della voce bengalese.
+- Microfono e lingua: riconoscimento lingua, tieni il microfono acceso, invio automatico quando smetti di parlare.
+- Voce dal vivo: attivazione/disattivazione della sintesi vocale, stato, elenco dei modelli in tempo reale.
+
+## 3. Provider e API
+- Fornitori di IA: le tue chiavi API (ZYRAXON, OpenCode quota gratuita, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) e il ZYRAXON Apex agente cloud. Una chiave salvata viene verificata leggendo il catalogo reale del fornitore e mostra il conteggio del modello o l'errore esatto. Un pulsante apre il sito Web ZYRAXON in cui puoi creare una chiave.
+- GitHub: il tuo GitHub token di accesso (necessita di ambito repository) per la pubblicazione, Git richieste push e pull. Salva il token o eliminalo; lo stato mostra se è impostato.
+
+## 4. Aggiornamenti → Aggiornamento dell'app
+Mostra la versione corrente, verifica la presenza di una versione più recente, la scarica con una barra di avanzamento e la installa. Le tue chat, la memoria e le impostazioni rimangono. Se Android necessita dell'autorizzazione per l'installazione, un pulsante apre l'impostazione.
+
+## 5. Modello e identità
+- Identità: scegli il personaggio (vedi capitolo Personaggi).
+- Modello: il catalogo dei modelli in tempo reale con una casella di ricerca, filtri "Tutti i modelli" e "Personalizzati"; prima i modelli veloci.
+- Sul dispositivo: scarica, carica e scarica modelli che funzionano offline; ordinati dal piccolo al grande; token Hugging Face opzionale; mostra gli stati caricato, in caricamento e non riuscito.
+
+## 6. Aura e tema
+- Tema: Horror, Buio o Luce.
+- Aura e sfondo: stile e colore dell'aura (sangue, rosa, viola, cielo, verde, fuoco) con controllo preciso della tonalità; dimensione dell'aura, intensità della luminosità, velocità di rotazione, trasparenza del pannello; l'occhio mobile (accensione/spegnimento, design, bordo schermo, comandi vocali/parole di attivazione, aggiungi le tue); modalità ombreggiatore; URL di sfondo personalizzato (mp4, gif o immagine); velocità di animazione.
+
+## 7. Sicurezza e privacy
+- Blocco app: una password (4–8 cifre) o uno schema di punti 3×3; confermare inserendolo due volte; rimuovere la serratura.
+- Permessi: l'elenco nel capitolo Permessi, con l'aiuto di Play Protect.
+- Privacy e dati: tutti i dati rimangono sul telefono. Pulsanti: elimina tutta la memoria, elimina la cronologia chat, elimina il token GitHub.
+
+## 8. Sistema
+Questa sezione ha una propria fila di pulsanti che scorre lateralmente, quindi nulla viene schiacciato.
+- Automazione: livello di approvazione e solo sul dispositivo (vedi Livelli di approvazione).
+- Navigazione: un elenco di aree a cui passare — "nessun pulsante in alto, è tutto qui" — inclusa la shell del sistema ⌘ ZX, un pulsante "Nuova sessione" (cancella la cronologia della chat per un avvio pulito), conteggio dei messaggi e interruttore del microfono.
+- Memoria: la memoria locale SQL con i fatti ZYRAXON ricorda; aggiungere una chiave e un valore; cancella tutto.
+- Guida alle abilità: un breve elenco di abilità di esempio (app di messaggistica, creazione di siti Web, lettore di schermo, torcia, fotocamera, Wi-Fi e impostazioni) con frasi di esempio.
+- Hub di automazione: competenze, pilota automatico, denaro, sequenza temporale, cervello e agente di chiamata in un unico posto (vedi Hub di automazione).
+
+## 9. Documentazione
+Una propria sezione in Impostazioni, separata da Sistema. Questa guida: ventuno capitoli, una casella di ricerca e una riga di chip linguistico. Ogni lingua dell'app è già scritta per intero all'interno dell'app: nulla è tradotto sul tuo telefono e non è necessaria alcuna connessione Internet per leggerla.

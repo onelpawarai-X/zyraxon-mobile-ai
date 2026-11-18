@@ -1,0 +1,42 @@
+Zonke izilungiselelo zesikrini, ngasinye ngasinye
+Izilungiselelo zinezigaba eziyisishiyagalombili. Ingxenye ngayinye inamaphilisi ezikrinini zayo ezingaphansi. Isigaba sokugcina osisebenzisile sivulwa kabusha ngokuzayo.
+
+## 1. Ulimi nokuhumusha → Uhlelo lokusebenza nolimi lwethuluzi
+Khetha ulimi lwalo lonke uhlelo lokusebenza kanye nemilayezo yethuluzi lomenzeli. Sesha uhlu bese uthinta okukodwa. Isikrini sibonisa ulimi lwamanje nokuthi ukuhumusha kwe-UI nokuhumusha komlayezo wethuluzi kuvuliwe. Izilimi ezingu-60 ziyatholakala. Bheka isahluko esithi Ulimi.
+
+## 2. Izwi & imakrofoni
+- Iphrofayili yezwi: khetha izwi lowesifazane noma lowesilisa, isivinini, iphimbo, "Funda izimpendulo ngokuzwakalayo", Izwi lokuhlola, iseluleko sokulanda izwi lesiBengali.
+- Imakrofoni nolimi: ulimi lokuqaphela, gcina imakrofoni ivuliwe, thumela ngokuzenzakalelayo uma uyeka ukukhuluma.
+- Izwi elibukhoma: ukukhuluma-kuya-inkulumo kuvuliwe/kuvaliwe, isimo, uhlu lwamamodeli esikhathi sangempela.
+
+## 3. Abahlinzeki & I-API
+- Abahlinzeki be-AI: okhiye bakho be-API (ZYRAXON, OpenCode isabelo samahhala, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter] kanye ZYRAXON Apex ne-ejenti yamafu. Ukhiye olondoloziwe uqinisekiswa ngokufunda ikhathalogi yangempela yomhlinzeki futhi ubonisa inani lamamodeli noma iphutha eliqondile. Inkinobho ivula iwebhusayithi ye-ZYRAXON lapho udala khona ukhiye.
+- GitHub: ithokheni yakho GitHub yokufinyelela (idinga ububanzi be-repo) ukuze ishicilelwe, Git izicelo zokusunduza nokudonsa. Londoloza ithokheni noma uyisuse; isimo sikhombisa uma sisethiwe.
+
+## 4. Izibuyekezo → Isibuyekezo sohlelo lokusebenza
+Ibonisa inguqulo yamanje, ihlolela ukukhishwa okusha, iyilande ngebha yokuqhubeka bese iyayifaka. Izingxoxo zakho, inkumbulo nezilungiselelo kuhlala. Uma i-Android idinga imvume yokufaka, inkinobho ivula leso silungiselelo.
+
+## 5. Imodeli nobuwena
+- Ubunikazi: khetha umlingiswa (bheka Isahluko Sabalingisi).
+- Imodeli: ikhathalogi yemodeli ebukhoma enebhokisi lokusesha, "Wonke amamodeli" nezihlungi "Zezifiso"; amamodeli asheshayo kuqala.
+- Kudivayisi: landa, layisha futhi khipha amamodeli asebenza ungaxhunyiwe ku-inthanethi; ihlungwe ezincane kuya ezinkulu; ithokheni Hugging Face ozikhethela yona; ibonisa izifunda ezilayishiwe, ezilayishwayo nezihlulekile.
+
+## 6. I-Aura netimu
+- Itimu: Okuthusayo, Okumnyama noma Ukukhanya.
+- I-Aura & isizinda: isitayela se-aura nombala (igazi, pink, violet, isibhakabhaka, esiluhlaza, umlilo) ngokulawula umbala omuhle; usayizi we-aura, amandla okukhanya, isivinini sokujikeleza, ukukhanya kwephaneli; iso elintantayo (livuliwe/livaliwe, idizayini, unqenqema lwesikrini, imiyalo yezwi/amagama okuvusa, engeza owakho); imodi ye-shader; i-URL yangemuva yangokwezifiso (i-mp4, i-gif noma isithombe); isivinini sokugqwayiza.
+
+## 7. Ukuphepha nobumfihlo
+- Ukhiye wohlelo lokusebenza: iphasiwedi (amadijithi angu-4–8) noma iphethini yamachashazi angu-3×3; qinisekisa ngokungena kabili; khipha ilokhi.
+- Izimvume: uhlu olusesahluko sezimvume, ngosizo lwe-Play Protect.
+- Ubumfihlo nedatha: yonke idatha ihlala ocingweni. Izinkinobho: susa yonke inkumbulo, susa umlando wengxoxo, susa GitHub ithokheni.
+
+## 8. Uhlelo
+Lesi sigaba sinomugqa waso wezinkinobho eziskrola emaceleni, ngakho-ke akukho okucindezelwayo.
+- Okuzenzakalelayo: ileveli yokugunyaza kanye nedivayisi kuphela (bona amaleveli okugunyaza).
+- Ukuzulazula: uhlu lwezindawo ongagxumela kuzo — "azikho izinkinobho phezulu, yonke into isilapha" — okuhlanganisa igobolondo lesistimu ye-ZX, inkinobho ethi "Iseshini entsha" (isula umlando wengxoxo ukuze iqale kahle), inani lomlayezo kanye nokuguqula imakrofoni.
+- Inkumbulo: inkumbulo yendawo SQL enamaqiniso ZYRAXON iyakhumbula; engeza ukhiye kanye nenani; susa konke.
+- Umhlahlandlela wamakhono: uhlu olusheshayo lwamakhono ayisibonelo (izinhlelo zokusebenza zemiyalezo, isakhiwo sewebhusayithi, isifundi sesikrini, ithoshi, ikhamera, Wi-Fi nezilungiselelo) enemisho eyisibonelo.
+- Ihabhu le-automation: amakhono, ukushayela okuzenzakalelayo, imali, umugqa wesikhathi, ingqondo ne-ejenti yokushaya ucingo endaweni eyodwa (bona ihabhu le-Automation).
+
+## 9. Imibhalo
+Isigaba sayo kokuthi Izilungiselelo, esihlukene neSistimu. Lo mhlahlandlela: izahluko ezingamashumi amabili nanye, ibhokisi lokusesha, kanye nomugqa we-chip wolimi. Lonke ulimi kuhlelo lokusebenza selubhalwe ngokugcwele ngaphakathi kohlelo lokusebenza — akukho okuhunyushwayo ocingweni lwakho futhi akukho inthanethi edingekayo ukuze uyifunde.

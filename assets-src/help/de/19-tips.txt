@@ -1,0 +1,27 @@
+Tipps und Beispielanfragen
+## Sagen Sie, was Sie wollen, nicht wie
+- „Erstellen Sie eine Landingpage für ein Fitnessstudio, dunkel und fett.“
+- „Erstellen Sie eine Full-Stack-Buchungs-App mit einer Datenbank.“ (Der Agent fragt zuerst nach den technischen Entscheidungen)
+- „Öffne YouTube und spiele ein ruhiges Lied.“
+- „Scrollen Sie nach unten und öffnen Sie das erste Ergebnis.“
+- „Was ist mein Akku und Wi-Fi?“
+- „Lesen Sie meine neueste SMS und sagen Sie mir den Code.“
+- „Ruf Mama an.“ / „Anruf annehmen.“
+- „Erstellen Sie einen Lebenslauf aus diesem Foto.“ (hängen Sie es an)
+- „Verwandeln Sie diese Besprechungsaufzeichnung in Notizen mit Aktionspunkten.“
+- „Erstellen Sie mit diesen Farben ein Poster für die Veranstaltung am Freitag.“
+- „Erstellen Sie einen Audiodialog zwischen zwei Freunden, einem Jungen und einem Mädchen.“
+- „Denken Sie daran, dass der Geburtstag meiner Schwester der 3. Mai ist.“
+- „Erzähl mir jeden Morgen um 8 Uhr das Wetter.“ (Autopilot)
+- „Erfahren Sie, wie ich meine Miete über meine Wallet-App versende, damit Sie es wieder tun können.“ (Fähigkeit)
+- „Machen Sie Ihre Aktion im Projektordner rückgängig.“ (Zeitleiste)
+- „Wo ist mein Mietvertrag?“ (Gehirn)
+- „Installieren Sie Python-Pakete und führen Sie dieses Skript aus.“ (Linux)
+- „Veröffentlichen Sie diese Website, damit ich sie teilen kann.“ (öffentlicher Link)
+
+## Gewohnheiten, die helfen
+- Kurze und klare Schläge lang. Der Agent wählt Standardeinstellungen und teilt Ihnen mit, was er ausgewählt hat.
+- Wenn eine Frage gestellt wird, beantworten Sie sie und es geht an derselben Stelle weiter.
+- Sagen Sie „erklären“ oder „Zusammenfassung“, um eine ausführliche Antwort zu erhalten. Ansonsten sind die Antworten kurz.
+- Sie können jederzeit darüber sprechen. Es bleibt stehen und lauscht.
+- Verwenden Sie den Build-Modus, um Dinge zu erstellen, und den Agent-Modus, um Dinge am Telefon zu erledigen.

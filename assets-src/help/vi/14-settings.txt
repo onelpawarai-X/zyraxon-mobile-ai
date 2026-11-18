@@ -1,0 +1,42 @@
+Từng màn hình cài đặt, từng cái một
+Cài đặt có tám phần. Mỗi phần đều có thuốc cho màn hình phụ của nó. Phần cuối cùng bạn sử dụng sẽ được mở lại vào lần sau.
+
+## 1. Ngôn ngữ & dịch thuật → Ngôn ngữ ứng dụng & công cụ
+Chọn ngôn ngữ của toàn bộ ứng dụng và thông báo công cụ của tổng đài viên. Tìm kiếm danh sách và nhấn vào một. Màn hình hiển thị ngôn ngữ hiện tại và liệu dịch giao diện người dùng và dịch thông báo công cụ có bật hay không. 60 ngôn ngữ có sẵn. Xem chương Ngôn ngữ.
+
+## 2. Giọng nói và micrô
+- Cấu hình giọng nói: chọn giọng nữ hoặc nam, tốc độ, cao độ, "Đọc to câu trả lời", Kiểm tra giọng nói, gợi ý tải xuống giọng nói tiếng Bengali.
+- Mic & ngôn ngữ: nhận dạng ngôn ngữ, giữ mic luôn bật, tự động gửi khi ngừng nói.
+- Giọng nói trực tiếp: bật/tắt chuyển giọng nói thành giọng nói, trạng thái, danh sách các mô hình thời gian thực.
+
+## 3. Nhà cung cấp & API
+- Nhà cung cấp AI: khóa API của riêng bạn (ZYRAXON, OpenCode hạn ngạch miễn phí, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) và tác nhân đám mây ZYRAXON Apex. Khóa đã lưu được xác minh bằng cách đọc danh mục thực của nhà cung cấp và hiển thị số lượng mẫu hoặc lỗi chính xác. Một nút mở ra trang web ZYRAXON nơi bạn tạo khóa.
+- GitHub: mã thông báo truy cập GitHub của bạn (cần phạm vi repo) để xuất bản, Git yêu cầu đẩy và kéo. Lưu mã thông báo hoặc xóa nó; trạng thái hiển thị nếu nó được đặt.
+
+## 4. Cập nhật → Cập nhật ứng dụng
+Hiển thị phiên bản hiện tại, kiểm tra bản phát hành mới hơn, tải xuống bằng thanh tiến trình và cài đặt nó. Các cuộc trò chuyện, bộ nhớ và cài đặt của bạn vẫn được giữ nguyên. Nếu Android cần quyền cài đặt, một nút sẽ mở cài đặt đó.
+
+## 5. Mẫu mã & bản sắc
+- Danh tính: chọn nhân vật (xem chương Nhân vật).
+- Mô hình: danh mục mô hình trực tiếp với hộp tìm kiếm, bộ lọc "Tất cả mô hình" và "Tùy chỉnh"; mô hình nhanh đầu tiên.
+- Trên thiết bị: tải xuống, tải và dỡ bỏ các mô hình chạy ngoại tuyến; sắp xếp từ nhỏ đến lớn; mã thông báo Hugging Face tùy chọn; hiển thị trạng thái đã tải, đang tải và không thành công.
+
+## 6. Hào quang & chủ đề
+- Chủ đề: Kinh dị, Bóng tối hoặc Ánh sáng.
+- Hào quang & nền: phong cách và màu sắc hào quang (máu, hồng, tím, bầu trời, xanh lá cây, lửa) với khả năng kiểm soát màu sắc tinh tế; kích thước hào quang, cường độ phát sáng, tốc độ quay, độ trong suốt của bảng điều khiển; mắt nổi (bật/tắt, thiết kế, cạnh màn hình, ra lệnh bằng giọng nói/từ đánh thức, thêm từ của riêng bạn); chế độ đổ bóng; URL nền tùy chỉnh (mp4, gif hoặc hình ảnh); tốc độ hoạt hình.
+
+## 7. Bảo mật và quyền riêng tư
+- Khóa ứng dụng: mật khẩu (4–8 chữ số) hoặc mẫu 3×3 chấm; xác nhận bằng cách nhập nó hai lần; tháo khóa.
+- Quyền: danh sách trong chương Quyền, với trợ giúp Play Protect.
+- Quyền riêng tư và dữ liệu: tất cả dữ liệu vẫn còn trên điện thoại. Các nút: xóa toàn bộ bộ nhớ, xóa lịch sử trò chuyện, xóa mã thông báo GitHub.
+
+## 8. Hệ thống
+Phần này có hàng nút riêng cuộn sang một bên nên không có gì bị ép cả.
+- Tự động hóa: cấp phê duyệt và chỉ trên thiết bị (xem Cấp phê duyệt).
+- Điều hướng: danh sách các khu vực cần chuyển tới — "không có nút nào ở trên cùng, mọi thứ đều ở đây" — bao gồm vỏ hệ thống ⌘ ZX, nút "Phiên mới" (xóa lịch sử trò chuyện để bắt đầu suôn sẻ), số lượng tin nhắn và chuyển đổi micrô.
+- Bộ nhớ: bộ nhớ cục bộ SQL với các sự kiện ZYRAXON ghi nhớ; thêm khóa và giá trị; xóa tất cả.
+- Hướng dẫn kỹ năng: danh sách nhanh các khả năng ví dụ (ứng dụng nhắn tin, xây dựng trang web, trình đọc màn hình, đèn pin, máy ảnh, Wi-Fi và cài đặt) cùng với các cụm từ ví dụ.
+- Trung tâm tự động hóa: kỹ năng, hệ thống lái tự động, tiền bạc, dòng thời gian, bộ não và tổng đài viên cuộc gọi ở cùng một nơi (xem Trung tâm tự động hóa).
+
+## 9. Tài liệu
+Phần riêng của nó trong Cài đặt, tách biệt với Hệ thống. Hướng dẫn này: 21 chương, hộp tìm kiếm và hàng khối ngôn ngữ. Mọi ngôn ngữ trong ứng dụng đều đã được viết đầy đủ bên trong ứng dụng — không có gì được dịch trên điện thoại của bạn và không cần Internet để đọc nó.

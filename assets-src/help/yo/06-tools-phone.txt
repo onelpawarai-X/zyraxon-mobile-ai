@@ -1,0 +1,34 @@
+Awọn irinṣẹ adaṣe foonu
+Aṣoju n ṣakoso foonu rẹ nipasẹ awọn irinṣẹ. Iwọ ko pe wọn funrararẹ; o sọ ohun ti o fẹ ati oluranlowo mu awọn irinṣẹ. Ipin yii ṣe atokọ gbogbo ohun elo ti o kan foonu, ati bii o ṣe tọju rẹ (wo Awọn ipele alakosile: Ailewu, Ti ara ẹni, Eto).
+
+## Nsii ati wiwa
+- `open_app` (Ailewu): ṣii eyikeyi ohun elo ti a fi sori ẹrọ nipasẹ orukọ tabi package. `list_apps` (Ailewu): akojọ awọn ohun elo ti a fi sori ẹrọ. `open_settings` (Ailewu): ṣii oju-iwe eto eto kan (Wiwọle, apọju, awọn iwifunni, awọn ohun elo, Wi-Fi, batiri, Play Protect). `launch_url` (Ailewu): ṣii ọna asopọ kan ninu ẹrọ aṣawakiri. `youtube_play` (Ailewu): ṣii YouTube ni awọn abajade wiwa fun ohun ti o beere, ki o mu ṣiṣẹ.
+
+## Wiwo iboju
+- `read_screen` (Ti ara ẹni): ka gbogbo ọrọ ati eroja loju iboju pẹlu awọn ipo tẹ ni kia kia. `screen_shot` (Ti ara ẹni): ojulowo sikirinifoto. Iwọnyi nilo igbanilaaye Wiwọle.
+- `look_camera` (Ti ara ẹni): Ya fọto kan pẹlu kamẹra ati ki o wo. `read_media` (Ti ara ẹni): ka aworan kan, ohun tabi fidio (lati ọna tabi ọna asopọ) ki awoṣe le loye rẹ.
+
+## Ṣiṣẹ lori iboju
+- `tap` (Ti ara ẹni): tẹ aaye kan ni kia kia. `tap_text` (Ti ara ẹni): fọwọ ba eroja pẹlu aami yii, ailewu ju awọn ipoidojuko lọ. `swipe` (Ti ara ẹni): yi lọ tabi afarajuwe ẹhin. `type_text` (Ti ara ẹni): tẹ sinu aaye idojukọ. `press_key` (Ti ara ẹni): pada, ile, aipẹ, awọn iwifunni, awọn eto iyara, titiipa.
+- Awọn iṣe iboju nṣiṣẹ ọkan ni akoko kan, ni ibere, ati lẹhin ọkọọkan aṣoju n wo iboju tuntun.
+
+## Foonu, awọn ifiranṣẹ ati agekuru agekuru
+- `call_dial` (Ti ara ẹni): gbe ipe nipasẹ nọmba tabi orukọ olubasọrọ. `call_state` (Ti ara ẹni): ṣe ipe kan n dun tabi nṣiṣẹ? `call_answer` (Ti ara ẹni): idahun. `call_hangup` (Ti ara ẹni): gbele.
+- `read_sms` (Ti ara ẹni): ka SMS tuntun, fun apẹẹrẹ. koodu OTP; le ṣe àlẹmọ nipasẹ ọrọ tabi olufiranṣẹ.
+- `clipboard_read` ati `clipboard_write` (Ti ara ẹni): ka tabi kọ agekuru naa.
+- `notify` (Ti ara ẹni): firanṣẹ iwifunni Android gidi kan. `share` (Ti ara ẹni): ṣii iwe ipin pẹlu ọrọ, ọna asopọ tabi faili kan. `channel_post` (Eto): ṣii Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail tabi SMS pẹlu ọrọ rẹ ti kun tẹlẹ, ṣetan lati firanṣẹ.
+
+## Ipo ati eto mon
+- `network_status` (Ailewu): lori ayelujara tabi rara, Wi-Fi tabi data alagbeka, Wi-Fi orukọ. `sys_info` (Ailewu): Android version, awoṣe, Sipiyu, Ramu, ibi ipamọ, lọwọlọwọ app. `platform_info` (Ailewu): nibiti oluranlowo nṣiṣẹ. `process_list` (Ailewu): nṣiṣẹ lakọkọ.
+
+## Awọn igbanilaaye ati iboju
+- `request_permission` (Ailewu): ṣii ọrọ igbanilaaye eto pẹlu titẹ kan nigbati ọpa ba kuna fun igbanilaaye ti o padanu. `device_lock` (Eto): tii iboju fun gidi, tabi ṣeto igbanilaaye ti o jẹ ki o ṣee ṣe. `floating_bubble` (Ti ara ẹni): tan orb lilefoofo tan tabi pa.
+- `voice_change` (Ti ara ẹni): yi iyara sisọ, ipolowo tabi akọ-abo. `live_voice` (Eto): yipada ipo-ọrọ-si-ọrọ laaye si tan tabi pa.
+
+## Awọn oluranlọwọ wiwo
+- `code_box` ati `files_panel`: ṣii apoti koodu laaye tabi ẹrọ aṣawakiri faili ki o wo iṣẹ naa. `todo_write`: igbimọ iṣẹ-ṣiṣe ifiwe.
+
+## Italolobo
+- O le pq: "Ṣi Eto, wa Wi-Fi ki o si sọ fun mi orukọ nẹtiwọki". Aṣoju naa ka iboju lẹhin gbogbo igbesẹ ati pinnu ọkan ti o tẹle.
+- 
+- Ti Play Protect ba di ohun kan dina, aṣoju le rin nipasẹ awọn eto pẹlu rẹ (wo Awọn igbanilaaye).

@@ -1,0 +1,27 @@
+Tip dan contoh permintaan
+## Katakan apa yang Anda inginkan, bukan bagaimana caranya
+- "Buatlah halaman arahan untuk gym, gelap dan berani."
+- "Bangun aplikasi pemesanan full-stack dengan database." (agen menanyakan pilihan teknis terlebih dahulu)
+- "Buka YouTube dan mainkan lagu yang tenang."
+- "Gulir ke bawah dan buka hasil pertama."
+- "Apa baterai saya dan Wi-Fi?"
+- "Baca SMS terbaruku dan beri tahu kodenya."
+- "Telepon Ibu." / "Jawab panggilannya."
+- “Buatlah CV dari foto ini.” (lampirkan)
+- "Ubah rekaman rapat ini menjadi catatan dengan item tindakan."
+- “Buatlah poster acara hari Jumat dengan warna-warna ini.”
+- "Buatlah dialog audio antara dua orang teman, satu laki-laki dan satu perempuan."
+- "Ingat, ulang tahun adikku tanggal 3 Mei."
+- "Setiap pagi jam 8, beri tahu aku cuacanya." (pilot otomatis)
+- "Pelajari cara saya mengirim uang sewa melalui aplikasi dompet saya sehingga Anda dapat melakukannya lagi." (keahlian)
+- "Batalkan apa yang Anda lakukan di folder proyek." (garis waktu)
+- "Di mana kontrak sewaku?" (otak)
+- "Instal paket python dan jalankan skrip ini." (Linux)
+- "Publikasikan situs ini agar saya dapat membagikannya." (tautan publik)
+
+## Kebiasaan yang membantu
+- Ketukan pendek dan jelas panjang. Agen memilih default dan memberi tahu Anda apa yang dipilihnya.
+- Ketika ia menanyakan satu pertanyaan, jawablah dan pertanyaan itu berlanjut dari tempat yang sama.
+- Ucapkan "jelaskan" atau "ringkasan" untuk jawaban terperinci; jika tidak, jawabannya pendek.
+- Anda dapat membicarakannya kapan saja. Ia berhenti dan mendengarkan.
+- Gunakan mode Build untuk membuat sesuatu dan mode Agen untuk melakukan sesuatu di telepon.

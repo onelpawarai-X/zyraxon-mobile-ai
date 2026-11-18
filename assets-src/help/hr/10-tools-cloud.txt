@@ -1,0 +1,21 @@
+Oblak, mreža, modeli i pomagači
+## Cloud i internet
+- `web_search` (mreža): pretražujte pravi web. `read_url` (mreža): dohvati stranicu kao tekst. `http_request` (mreža): bilo koji HTTP poziv (GET, POST, PUT, PATCH, DELETE) sa zaglavljima i tijelom. `verify_url` (mreža): provjerite postoji li poveznica i saznajte pravi status. `download_file` (Osobno, mreža): preuzimanje URL-a u datoteku.
+- Agent otvara linkove samo kada vi to od njega zatražite.
+- AI modeli pokreću se u oblaku putem pružatelja usluga koje ste dodali (ZYRAXON, ZYRAXON Apex agent u oblaku, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Popis modela učitava se uživo i popunjava kako svaki pružatelj odgovara.
+- Zahtjevi za izgradnju, objavljivanje i povlačenje prolaze kroz GitHub i Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Uključite "samo na uređaju" (postavke automatizacije) i poziv u oblaku se uopće ne uspostavlja: nema pružatelja usluga, nema weba, nema prijenosa.
+
+## MCP poslužitelja
+MCP dopušta vanjskim uslugama da agentu daju dodatne alate. Povežite Canva, Cloudflare, Supabase, GitHub ili svoj poslužitelj pomoću njegove adrese (neobavezni token). Alati povezanih poslužitelja pridružuju se popisu alata agenta kao `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (pogledajte što je povezano i koji alati postoje), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (promatrajte izvor za promjene), `mcp_complete` (argumenti za automatsko dovršavanje), `mcp_ping`, `mcp_log_level`. Njihovi pozivi su mrežni pozivi, a nepoznati MCP alati traže dopuštenje prema zadanim postavkama.
+- Zaslon MCP navodi svaki poslužitelj sa statusom Povezano, njegove alate, resurse i predloške upita te gumbe Dodaj, Prekini vezu, Ukloni, Dopusti.
+
+## Podagenti
+`sub_agent` (Sustav): predajte dijelove velikog posla pomoćnim agentima koji rade u pozadini. Akcije: stvaranje, status, lista, rezultat, poruka, zaustavljanje, čekanje. Svaki može koristiti svoj model. Agent kombinira i provjerava njihove rezultate prije nego što kaže "gotovo".
+
+## Model na uređaju
+`on_device_model` (Sustav): popis, učitavanje i pokretanje jezičnog modela koji živi na telefonu, bez interneta. U postavkama → Model & identitet → Na uređaju preuzimate modele (male do velike: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); Hugging Face token nije obavezan i potreban je samo za zatvorene datoteke. Učitani model se pamti i ponovno učitava pri pokretanju.
+
+## Kanali za slanje poruka
+`channel_post` (Sustav) otvara Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail ili SMS sa spremnim tekstom. Sami pritisnete Pošalji.

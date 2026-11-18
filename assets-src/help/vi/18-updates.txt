@@ -1,0 +1,7 @@
+Cập nhật
+Cài đặt → Cập nhật → Cập nhật ứng dụng hoặc biểu ngữ ở đầu ứng dụng.
+- Ứng dụng kiểm tra các bản phát hành mới và hiển thị "Có bản cập nhật mới - phiên bản".
+- Kiểm tra cập nhật: hỏi ngay bây giờ. Nếu bạn hiện tại thì nó nói như vậy.
+- Tải xuống và cài đặt: tải xuống theo tỷ lệ phần trăm. Khi hoàn tất nhấn Cài đặt. Các cuộc trò chuyện, bộ nhớ và cài đặt của bạn vẫn được giữ nguyên.
+- Nếu Android chặn cài đặt, hãy nhấn nút cấp phép, cho phép ZYRAXON làm nguồn cài đặt, sau đó thử lại.
+- Các nút biểu ngữ: Tải xuống, Cài đặt, Cho phép và Đóng.

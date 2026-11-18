@@ -1,0 +1,16 @@
+Sprachen
+## App-Sprache
+Einstellungen → Sprache & Übersetzung. 60 Sprachen. Darauf folgen die gesamte Benutzeroberfläche und die Tool-Meldungen des Agenten. Jede Sprache hat ihre eigene Übersetzungsdatei. Jede Zeile, die in einer Sprachdatei noch nicht vorhanden ist, wird auf Englisch angezeigt und darf nie leer bleiben.
+
+## Was du sprichst
+Der Agent antwortet immer in der Sprache, in der Sie ihn sprechen, in jeder Sprache der Welt. Wenn Sie wechseln, wechselt es. Es verwendet die freundlich-respektvolle Form von „Sie“ in Ihrer Sprache. Marken- und Technologienamen bleiben, wie sie sind.
+
+## Sprachsprachen
+- Erkennungssprache (was Sie in das Mikrofon sprechen): Einstellungen → Stimme und Mikrofon → Mikrofon und Sprache.
+- Sprechstimme: Einstellungen → Stimme und Mikrofon → Sprachprofil und das Sprachlabor für Sprachen wie Bengali, Hindi, Englisch, Urdu, Arabisch, Tamil, Nepali, Spanisch, Französisch, Deutsch, Japanisch, Koreanisch, Chinesisch, Russisch, Türkisch.
+
+## Diese Dokumentation
+Verwenden Sie die Sprachchips oben auf dieser Seite. Der gesamte Leitfaden wird in jeder von der App unterstützten Sprache handschriftlich verfasst und in der App versendet. Auf Ihrem Telefon wird nichts übersetzt: Jedes Kapitel öffnet sich sofort, funktioniert offline und erfordert kein Modell oder Schlüssel.
+
+## Schreiben Sie in Ihrem eigenen Skript
+Dokumente, Poster und Designs können in jeder Schrift erstellt werden. Für bengalische Designs wird die richtige Schriftart verwendet; für andere Schriften wird die passende Schriftart gewählt.

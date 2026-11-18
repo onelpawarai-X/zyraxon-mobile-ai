@@ -1,0 +1,27 @@
+Petua dan permintaan contoh
+## Katakan apa yang anda mahu, bukan bagaimana
+- "Buat halaman pendaratan untuk gim, gelap dan berani."
+- "Bina apl tempahan tindanan penuh dengan pangkalan data." (ejen bertanya pilihan teknikal dahulu)
+- "Buka YouTube dan mainkan lagu yang tenang."
+- "Tatal ke bawah dan buka hasil pertama."
+- "Apakah bateri saya dan Wi-Fi?"
+- "Baca SMS terbaharu saya dan beritahu saya kodnya."
+- "Panggil mama." / "Jawab panggilan."
+- "Buat CV daripada foto ini." (lampirkan)
+- "Tukarkan rakaman mesyuarat ini menjadi nota dengan item tindakan."
+- "Buat poster untuk acara Jumaat dengan warna-warna ini."
+- "Buat dialog audio antara dua rakan, seorang lelaki dan seorang perempuan."
+- "Ingat hari jadi adik saya ialah 3 Mei."
+- "Setiap pagi pukul 8 beritahu saya cuaca." (autopilot)
+- "Ketahui cara saya menghantar sewa saya melalui apl dompet saya supaya anda boleh melakukannya sekali lagi." (kemahiran)
+- "Buat asal apa yang anda lakukan dalam folder projek." (garis masa)
+- "Di mana kontrak sewa saya?" (otak)
+- "Pasang pakej python dan jalankan skrip ini." (Linux)
+- "Terbitkan tapak ini supaya saya boleh berkongsinya." (pautan awam)
+
+## Tabiat yang membantu
+- Pendek dan jelas berdegup panjang. Ejen memilih lalai dan memberitahu anda apa yang ia pilih.
+- Apabila ia bertanya satu soalan, jawabnya dan ia terus dari tempat yang sama.
+- Sebut "terangkan" atau "ringkasan" untuk jawapan terperinci; jika tidak jawapan adalah pendek.
+- Anda boleh bercakap mengenainya pada bila-bila masa. Ia berhenti dan mendengar.
+- Gunakan mod Bina untuk membuat sesuatu dan mod Ejen untuk melakukan sesuatu pada telefon.

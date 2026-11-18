@@ -1,0 +1,27 @@
+Skedarët, terminali dhe sistemi
+## Skedarët
+- `read_file`, `list_dir`, `find_files`, `grep_files` (E sigurt): lexoni, listoni, gjeni modelin sipas emrit dhe kërkoni tekstin brenda skedarëve.
+- `write_file`, `edit_file`: krijoni ose ndryshoni skedarë. `edit_file` i bën të gjitha: skedari i ri, rishkrimi i plotë ose gjetja dhe zëvendësimi i saktë; kodi shfaqet drejtpërdrejt në bisedë. `delete_file` (Sistemi): fshini një skedar ose dosje.
+- Lejohet çdo dosje (/sdcard, Shkarko, Dokumente, kartë SD…). Jepni një shteg të plotë dhe përdoret siç është shkruar.
+- Agjenti hap atë që bën: `open_file` (I sigurt) hap një skedar në aplikacionin real të telefonit ose brenda pamjes paraprake të ZYRAXON.
+
+## Terminalet (dy të vërteta)
+- android: guaska e vetë telefonit (busybox plus `sh`), brenda kutisë së rërës së aplikacionit. `run_shell` (Sistemi) ekzekuton një komandë atje, jashtë syve.
+- linux: sistemi i plotë Unix i ZYRAXON, i integruar në aplikacion: bash, apt/pkg, real git, python, node, clang. Punon jashtë linje. `linux_run` (Sistemi) ekzekuton një komandë atje.
+- `terminal_run` (Sistemi): drejton një linjë në skedën "Terminal" që po shikoni, në mënyrë që të mund ta shihni atë duke funksionuar dhe ta merrni përsipër. Përdorni shell android ose linux. `terminal_open` sjell skedën e Terminalit në pjesën e përparme (vetëm kur pyet).
+- `system_shell` (Sistemi): një komandë e nivelit të sistemit, mbi sandboxin e aplikacionit, siç bën një guaskë sistemi; me Shizuku ose rrënjë mund të arrijë shumë më tepër.
+- Nuk ka asnjë afat kohor të paracaktuar; një `apt upgrade` i madh ose ndërtim shkon deri në fund.
+
+## Shizuku (qasja në sistem)
+`setup_shizuku` (Sistemi) konfiguron Shizuku, të paketuara brenda ZYRAXON: kontrolloni statusin, instaloni, hapni, kërkoni leje. Vetëm ju mund të prekni Instalo dhe Allow; agjenti ju tregon hapin në një rresht dhe bën pjesën tjetër.
+
+## Punë të gjata dhe kohë
+- `background_command` (Sistemi): një komandë që vazhdon të ekzekutohet pasi të mbyllni aplikacionin (shkarkim i madh, klonim, ndërtim), me një njoftim dhe një buton Stop.
+- `schedule_command` (Sistemi): ekzekutoni një komandë në kohë reale ("në 10 minuta", "në 2 të mëngjesit"); Android mban kohëmatësin, kështu që funksionon me aplikacionin të mbyllur.
+- `wait` (E sigurt): prisni me qëllim (sekonda, derisa të hapet një port, të shfaqet një skedar, të përfundojë një komandë) në vend që të hamendësoni.
+
+## Linux përdor
+Instaloni paketat (`apt install …`), ekzekutoni skriptet Python ose Node, përpiloni C, përdorni git, ekzekutoni serverët, zip dhe unzip, curl, ffmpeg. Sistemi shpaketohet në heshtje kur aplikacioni fillon dhe qëndron gjatë rinisjes.
+
+## Ekrani i terminalit
+Skeda "Terminal" është një terminal i vërtetë me skedën ⌘ ZX. Shkruani komandat tuaja ose shikoni ato të agjentit. Ekrani i navigimit te "Cilësimet" ka një shkurtore për në guaskën e sistemit dhe një buton "Sesioni i ri" që pastron historinë e bisedës për të filluar nga e para.

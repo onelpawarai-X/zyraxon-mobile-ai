@@ -1,0 +1,15 @@
+Nhà cung cấp, mô hình và khóa
+## Nhà cung cấp
+ZYRAXON (đường dây riêng và tác nhân đám mây Apex, luôn được kết nối), OpenCode (hạn ngạch miễn phí), Groq (Llama rất nhanh), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek và OpenRouter. Thêm bất kỳ khóa nào trong Cài đặt → Nhà cung cấp & API. Khóa được lưu trên điện thoại của bạn, được kiểm tra dựa trên danh mục của nhà cung cấp và các kiểu máy sẽ được đưa vào bộ chọn khi mỗi nhà cung cấp trả lời.
+
+## Chọn một mô hình
+Sử dụng nút mẫu trên thanh thông báo hoặc Cài đặt → Mẫu & danh tính → Mẫu. Tìm kiếm theo tên, lọc Tất cả hoặc Tùy chỉnh. Lựa chọn của bạn được lưu và khôi phục khi khởi chạy; việc làm mới không bao giờ thay thế mô hình đã lưu của bạn. Những người mẫu được đánh dấu Trực tiếp có thể nói bằng giọng của chính họ (xem Giọng nói trực tiếp).
+
+## Các mẫu trên thiết bị
+Cài đặt → Kiểu máy và danh tính → Trên thiết bị. Mô hình chạy trên điện thoại mà không có dữ liệu nào rời khỏi nó. Tệp có dung lượng lớn (hàng trăm MB đến vài GB), vì vậy hãy tải xuống trên Wi-Fi. Chúng được liệt kê từ nhỏ đến lớn; trên điện thoại có ít RAM hãy chọn loại nhẹ nhất. Việc gọi công cụ được hỗ trợ bởi gói Gemma và FunctionGemma. Mã thông báo Hugging Face chỉ dành cho các tệp được kiểm soát. Các mô hình đã tải được ghi nhớ.
+
+## Trang web ZYRAXON
+zyraxonai.lovable.app: tạo tài khoản (email hoặc Google), mở Cài đặt, Khóa API / Mã thông báo truy cập, tạo khóa và dán vào ứng dụng. Nếu không có khóa, bạn vẫn có thể sử dụng ứng dụng với các mẫu máy trên thiết bị và các công cụ cục bộ.
+
+## Chi phí và dữ liệu
+Các nhà cung cấp dịch vụ đám mây lập hóa đơn cho bạn theo quy tắc riêng của họ. Khi bật "Chỉ trên thiết bị", không có nội dung nào được gửi đến bất kỳ nhà cung cấp nào.
