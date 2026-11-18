@@ -1,0 +1,21 @@
+السحابة والشبكة والنماذج والمساعدات
+## السحابة والإنترنت
+- `web_search` (شبكة): البحث في الويب الحقيقي. `read_url` (شبكة): جلب صفحة كنص. `http_request` (شبكة): أي استدعاء HTTP (GET وPOST وPUT وPATCH وDELETE) مع الترويسات والمتن. `verify_url` (شبكة): التحقق من وجود رابط فعلًا والحصول على حالته الحقيقية. `download_file` (Personal، شبكة): تنزيل URL إلى ملف.
+- لا يفتح الوكيل الروابط إلا عندما تطلب.
+- تعمل نماذج الذكاء الاصطناعي في السحابة عبر المزوّدين الذين أضفتهم (ZYRAXON وZYRAXON Apex cloud agent وGroq وGemini وOpenAI وGrok وClaude وDeepSeek وOpenRouter وOpenCode). تُحمَّل قائمة النماذج مباشرة وتمتلئ كلما ردّ كل مزوّد.
+- تجري عمليات البناء والنشر وpull requests عبر GitHub وCloudflare (`publish_*` و`github_actions` و`github_pr` و`git`).
+- شغّل "on-device only" (إعدادات Automation) فلا يُجرى أي استدعاء سحابي إطلاقًا: لا مزوّد ولا ويب ولا رفع.
+
+## خوادم MCP
+يتيح MCP لخدمات خارجية أن تمنح الوكيل أدوات إضافية. صل Canva أو Cloudflare أو Supabase أو GitHub أو خادمك الخاص بعنوانه (رمز اختياري). تنضم أدوات الخوادم المتصلة إلى قائمة أدوات الوكيل باسم `server__tool`.
+- `mcp_connect` و`mcp_disconnect` و`mcp_list` (رؤية ما هو متصل وما الأدوات الموجودة) و`mcp_resources` و`mcp_read_resource` و`mcp_prompts` و`mcp_prompt` و`mcp_subscribe` (مراقبة مورد لتغيّره) و`mcp_complete` (إكمال الوسائط تلقائيًا) و`mcp_ping` و`mcp_log_level`. استدعاءاتها استدعاءات شبكة، وأدوات MCP غير المعروفة تطلب إذنًا افتراضيًا.
+- تسرد شاشة MCP كل خادم بحالة Connected وأدواته ومصادره وقوالب prompt، مع أزرار Add وDisconnect وRemove وAllow.
+
+## الوكلاء الفرعيون
+`sub_agent` (System): سلّم أجزاء من عمل كبير إلى وكلاء مساعدين يعملون في الخلفية. الإجراءات: spawn وstatus وlist وresult وmessage وstop وwait. يستطيع كل منهم استخدام نموذجه الخاص. يجمع الوكيل نتائجهم ويتحقق منها قبل أن يقول "تم".
+
+## النموذج على الجهاز
+`on_device_model` (System): سرد نموذج لغوي يعيش على الهاتف وتحميله وتشغيله، دون إنترنت. في الإعدادات ← Model & identity ← On-device تنزّل النماذج (من الصغير إلى الكبير: FunctionGemma 270M وQwen3 0.6B وGemma 4 E2B…)؛ رمز Hugging Face اختياري ويلزم فقط للملفات المقيّدة. يُتذكَّر النموذج المحمَّل ويُعاد تحميله عند التشغيل.
+
+## قنوات المراسلة
+`channel_post` (System) يفتح Telegram أو WhatsApp أو Facebook أو Messenger أو YouTube أو X أو Instagram أو Gmail أو SMS بنصك جاهزًا. أنت من يضغط إرسال.
