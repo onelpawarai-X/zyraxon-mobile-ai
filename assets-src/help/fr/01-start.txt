@@ -1,0 +1,20 @@
+Premiers pas
+ZYRAXON est un assistant qui vit à l'intérieur de votre téléphone Android. Il vous parle, vous écoute et peut faire un vrai travail : ouvrir des applications, toucher et taper sur l'écran, appeler des personnes, écrire des fichiers, créer des sites web et des applications, exécuter un système Linux, produire des images, de l'audio, de la vidéo et des documents bureautiques, et se souvenir de vous pendant des mois. Il fonctionne dans toutes les langues que vous parlez.
+
+## Les premières minutes
+- Au premier lancement, ZYRAXON affiche un court avis indiquant que l'agent peut agir seul sur votre téléphone. Appuyez sur « Compris, commencer » pour continuer.
+- Ajoutez une clé d'IA (Réglages → Providers & API → AI providers). Collez la clé du fournisseur de votre choix (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Quand vous enregistrez une clé, l'application lit le catalogue de ce fournisseur et le vérifie réellement : vous voyez un vrai « connecté » et le nombre de modèles.
+- Pas de clé ? Vous pouvez quand même utiliser les modèles sur l'appareil (Réglages → Model & identity → On-device). Ils fonctionnent sur le téléphone sans internet.
+- Choisissez un modèle avec le bouton de modèle dans la barre de message, et un personnage (Réglages → Model & identity → Identity).
+- Accordez les autorisations quand une fonction en a besoin (voir le chapitre Autorisations). L'agent peut aussi ouvrir la boîte de dialogue d'autorisation pour vous d'une seule touche.
+- Parlez ou écrivez simplement. « Fais-moi une page d'accueil pour ma boulangerie », « ouvre YouTube et lance une chanson », « quel est mon niveau de batterie ? », « appelle maman ».
+
+## Les deux façons de travailler
+À côté de la zone de message se trouve un bouton de mode avec deux modes : Agent et Build. Voir le chapitre Modes.
+
+## Où se trouvent les choses
+- Menu de gauche : vos discussions, nouvelle discussion, renommer, supprimer, et le changement de thème.
+- Écran de discussion : messages, tableau de tâches, liste des outils, fichiers, terminal.
+- Panneaux Preview et Code : voir et modifier ce que l'agent construit.
+- Réglages : huit sections, présentées une par une dans cette documentation.
+- Cette documentation : Réglages → Documentation (vous y êtes).

@@ -1,0 +1,20 @@
+Automation hub
+Réglages → System → Automation hub. Tous les boutons de ce que ZYRAXON peut faire seul sont au même endroit, en six onglets. Chaque onglet commence par une courte explication de son fonctionnement.
+
+## Skills
+Apprenez une tâche à ZYRAXON de deux façons : dites-la dans la discussion (« apprends cette tâche »), ou appuyez sur le bouton d'enregistrement et faites la tâche vous-même dans une autre application, puis revenez et appuyez sur Stop. Le service d'accessibilité doit être activé, sinon vos touchers ne peuvent pas être vus. Ce qu'il a appris apparaît sous « Learned skills » et peut être rejoué ou supprimé.
+
+## Autopilot
+Des règles du type « quand ceci arrive, fais cela ». Quand l'événement se produit, ZYRAXON se réveille seul et fait le travail sans demander. Vous pouvez aussi créer une règle en la disant dans la discussion. Chaque règle indique combien de fois elle s'est exécutée.
+
+## Money
+Lit les SMS de n'importe quelle banque ou portefeuille de n'importe quel pays (PayPal, M-Pesa, UPI, Pix, bKash, cartes…) et tient un seul registre des revenus, dépenses, frais et solde. Vous pouvez fixer un budget et être averti quand vous le dépassez. Cela fonctionne sur le téléphone, et rien n'est envoyé nulle part.
+
+## Timeline
+Tout ce que ZYRAXON a fait est écrit ici. Les écritures, modifications et suppressions de fichiers peuvent être annulées d'un bouton. Une commande qui a été exécutée ne peut pas être annulée.
+
+## Brain
+Cherche dans vos fichiers (texte, Word, Excel, PowerPoint, CSV) et, si vous l'autorisez, dans vos SMS, sans internet et dans n'importe quelle langue. Appuyez d'abord sur « Index », puis cherchez.
+
+## Call agent
+Quand vous ne pouvez pas prendre un appel, ZYRAXON décroche, parle dans la propre langue de l'appelant, apprend le nom et le motif, et vous donne un résumé à la fin de l'appel. Quinze langues utilisent des règles intégrées rapides ; toutes les autres sont gérées par le modèle, qui répond dans la langue de l'appelant. Les mots signifiant au revoir, urgent ou spam sont compris dans toutes les langues à la fois. Les résumés des appels pris sont listés dans l'onglet.

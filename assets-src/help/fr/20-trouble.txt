@@ -1,0 +1,14 @@
+Dépannage
+- Pas de réponse : vérifiez votre internet et votre clé API (Réglages → Providers & API montre la vraie erreur). Essayez un autre modèle ou un modèle sur l'appareil.
+- Le microphone ne fait rien : accordez l'autorisation du microphone ; vérifiez « Keep the mic on » ; vérifiez la langue de reconnaissance.
+- ZYRAXON s'entend lui-même : c'est filtré par le texte ; si cela arrive encore, baissez le volume ou utilisez un casque.
+- Une phrase apparaît deux fois : corrigé dans les versions actuelles ; mettez l'application à jour.
+- Il ne touche pas et ne lit pas l'écran : activez le service d'accessibilité (Réglages → Permissions).
+- Il s'arrête en arrière-plan : autorisez les notifications et l'exemption d'optimisation de la batterie ; la superposition pour l'œil flottant.
+- Un outil demande sans cesse l'autorisation : changez le niveau dans Réglages → Automation, ou répondez à la carte.
+- Play Protect bloque quelque chose : voir le chapitre Autorisations, ou laissez l'agent vous guider pas à pas.
+- Le terminal ou Linux ne démarre pas : attendez la première décompression au démarrage de l'application ; vérifiez l'espace libre.
+- La mise à jour ne s'installe pas : autorisez ZYRAXON comme source d'installation.
+- Impossible de publier : ajoutez le jeton GitHub pour GitHub ; pour un lien public l'agent peut utiliser un tunnel.
+- Un chapitre s'affiche en anglais : ce chapitre n'a pas de texte dans votre langue dans cette version ; mettez l'application à jour.
+- Quelque chose d'étrange : utilisez Réglages → Navigation → New session pour repartir proprement (cela n'efface que l'historique des discussions ; la mémoire reste).

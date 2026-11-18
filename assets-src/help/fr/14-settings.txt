@@ -1,0 +1,42 @@
+Chaque écran de réglages, un par un
+Les réglages comptent huit sections. Chaque section a des pastilles pour ses sous-écrans. La dernière section utilisée est rouverte la fois suivante.
+
+## 1. Language & translation → App & tool language
+Choisissez la langue de toute l'application et des messages d'outils de l'agent. Cherchez dans la liste et touchez une langue. L'écran montre la langue actuelle et si la traduction de l'interface et celle des messages d'outils sont activées. 60 langues sont disponibles. Voir le chapitre Langues.
+
+## 2. Voice & mic
+- Voice profile : choisir une voix féminine ou masculine, la vitesse, la hauteur, « Read answers aloud », Test voice, l'indication de téléchargement de la voix bengali.
+- Mic & language : langue de reconnaissance, garder le micro actif, envoi automatique quand vous arrêtez de parler.
+- Live voice : voix à voix activée/désactivée, état, liste des modèles temps réel.
+
+## 3. Providers & API
+- AI providers : vos propres clés API (ZYRAXON, quota gratuit OpenCode, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) et le ZYRAXON Apex cloud agent. Une clé enregistrée est vérifiée en lisant le vrai catalogue du fournisseur et affiche le nombre de modèles ou l'erreur exacte. Un bouton ouvre le site de ZYRAXON où vous créez une clé.
+- GitHub : votre jeton d'accès GitHub (portée repo requise) pour la publication, Git push et les pull requests. Enregistrez ou supprimez le jeton ; l'état indique s'il est défini.
+
+## 4. Updates → App update
+Affiche la version actuelle, vérifie s'il existe une version plus récente, la télécharge avec une barre de progression et l'installe. Vos discussions, votre mémoire et vos réglages restent. Si Android a besoin d'une autorisation pour installer, un bouton ouvre ce réglage.
+
+## 5. Model & identity
+- Identity : choisir le personnage (voir le chapitre Personnages).
+- Model : le catalogue de modèles en direct avec une zone de recherche, des filtres « All models » et « Custom » ; modèles rapides en premier.
+- On-device : télécharger, charger et décharger des modèles qui fonctionnent hors ligne ; triés du petit au grand ; jeton Hugging Face facultatif ; affiche les états chargé, en chargement et échec.
+
+## 6. Aura & theme
+- Theme : Horror, Dark ou Light.
+- Aura & background : le style et la couleur de l'aura (sang, rose, violet, ciel, vert, feu) avec un réglage fin de la teinte ; taille de l'aura, intensité de la lueur, vitesse de rotation, transparence des panneaux ; l'œil flottant (activé/désactivé, dessin, bord de l'écran, commandes vocales/mots d'éveil, ajoutez les vôtres) ; mode shader ; URL de fond personnalisée (mp4, gif ou image) ; vitesse d'animation.
+
+## 7. Security & privacy
+- App lock : un mot de passe (4–8 chiffres) ou un schéma de points 3×3 ; confirmez en le saisissant deux fois ; supprimer le verrou.
+- Permissions : la liste du chapitre Autorisations, avec l'aide pour Play Protect.
+- Privacy & data : toutes les données restent sur le téléphone. Boutons : effacer toute la mémoire, effacer l'historique des discussions, supprimer le jeton GitHub.
+
+## 8. System
+Cette section a sa propre rangée de boutons qui défile latéralement, pour que rien ne soit écrasé.
+- Automation : niveau d'approbation et sur l'appareil uniquement (voir Niveaux d'approbation).
+- Navigation : une liste de zones où aller — « pas de boutons en haut, tout est ici » — dont le shell système ⌘ ZX, un bouton « New session » (efface l'historique des discussions pour repartir proprement), le nombre de messages et l'interrupteur du micro.
+- Memory : la mémoire SQL locale avec les faits dont ZYRAXON se souvient ; ajoutez une clé et une valeur ; tout supprimer.
+- Skill guide : une liste rapide d'exemples de capacités (applications de messagerie, création de sites web, lecteur d'écran, lampe torche, appareil photo, Wi-Fi et réglages) avec des phrases d'exemple.
+- Automation hub : skills, autopilot, argent, chronologie, brain et agent d'appels au même endroit (voir Automation hub).
+
+## 9. Documentation
+Sa propre section dans les Réglages, séparée de System. Ce guide : vingt et un chapitres, une zone de recherche et une rangée de pastilles de langue. Chaque langue de l'application est déjà écrite en entier dans l'application — rien n'est traduit sur votre téléphone et aucun internet n'est nécessaire pour la lire.
