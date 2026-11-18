@@ -2,10 +2,11 @@ Approval levels and safety of automation
 Settings → System → Automation. This decides how much the agent may do before it stops and asks you. The setting is enforced in code on every tool call; a model cannot widen it.
 
 ## The four levels
-1. Full ask (Locked): asks before anything that changes the phone. Safest.
-2. Supervised (default): asks before system and personal actions; does ordinary work by itself.
-3. Balanced: asks only before system-level actions.
-4. Full automation: never asks. Everything runs straight through.
+Change the level in Settings → System → Automation. Each level decides when the agent stops and asks, and also how strictly the Content Shield (see Security and privacy) treats text the agent reads from outside.
+1. Full ask (Locked): asks before anything that changes the phone, however small. Safest. The Content Shield is strict: any suspicious text counts as hostile. Use it on a shared phone or while you are testing something new.
+2. Supervised (default): asks before system and personal actions and does ordinary work (reading, opening, searching, building) by itself. The Content Shield is standard: suspicious text is fenced as data, and when text is clearly hostile every changing tool asks you for the rest of that turn.
+3. Balanced: asks only before system-level actions (shell, deleting, publishing, scheduling…). Personal actions such as messages, taps and typing run alone. The Content Shield is light: it acts only on clearly hostile text, and then only system-level tools stop to ask.
+4. Full automation: never asks and never stops. Everything runs straight through, and the Content Shield is switched off completely — nothing is scanned, marked, removed or changed. This is automation in the full sense: you own the risk.
 
 ## The three tiers of tools
 - Safe (never asks at any level): reading and listing files, memory, documents, designs, status, opening apps and files, waiting, skills/autopilot/timeline/call lists, brain search.

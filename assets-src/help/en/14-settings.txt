@@ -31,8 +31,12 @@ Shows the current version, checks for a newer release, downloads it with a progr
 - Privacy & data: all data stays on the phone. Buttons: delete all memory, delete chat history, delete GitHub token.
 
 ## 8. System
+This section has its own row of buttons that scrolls sideways, so nothing is squeezed.
 - Automation: approval level and on-device only (see Approval levels).
 - Navigation: a list of areas to jump to — "no buttons on top, everything is here" — including the ⌘ ZX system shell, a "New session" button (erases chat history for a clean start), message count and the mic toggle.
 - Memory: the local SQL memory with the facts ZYRAXON remembers; add a key and value; delete all.
 - Skill guide: a quick list of example abilities (messaging apps, website building, screen reader, torch, camera, Wi-Fi and settings) with example phrases.
-- Documentation: this guide.
+- Automation hub: skills, autopilot, money, timeline, brain and the call agent in one place (see Automation hub).
+
+## 9. Documentation
+Its own section in Settings, separate from System. This guide: twenty-one chapters, a search box, and a language chip row. Every language in the app is already written out in full inside the app — nothing is translated on your phone and no internet is needed to read it.

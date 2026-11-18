@@ -10,5 +10,5 @@ Troubleshooting
 - Terminal or Linux does not start: wait for the first-time unpack at app start; check free storage.
 - Update will not install: allow ZYRAXON as an install source.
 - Cannot publish: add the GitHub token for GitHub; for a public link the agent can use a tunnel.
-- Documentation language shows English: the translation needs your model to answer; check your key and internet, then reopen the chapter.
+- A chapter shows English: that chapter has no text in your language in this build; update the app.
 - Something odd: use Settings → Navigation → New session to start clean (it clears chat history only; memory stays).

@@ -35,7 +35,10 @@ object HelpText {
 
     /** The chapter in [lang], or null when it has not been translated yet. */
     fun load(c: Context, lang: String, ch: HelpChapter): HelpDoc? {
-        if (handMade(lang)) return asset(c, lang, ch)?.let(::parse) ?: english(c, ch)
+        // A chapter written out in this language and shipped inside the app always wins; only a
+        // chapter that has no bundled text falls back to a translation kept on the phone.
+        asset(c, lang, ch)?.let { return parse(it) }
+        if (handMade(lang)) return english(c, ch)
         val f = cacheFile(c, lang, ch)
         return if (f.isFile) runCatching { parse(f.readText()) }.getOrNull() else null
     }

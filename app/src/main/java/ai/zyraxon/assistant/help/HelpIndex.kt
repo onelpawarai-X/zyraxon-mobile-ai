@@ -25,6 +25,7 @@ object HelpIndex {
         HelpChapter("language", "🌍", "17-language.txt"),
         HelpChapter("updates", "⬇", "18-updates.txt"),
         HelpChapter("tips", "💡", "19-tips.txt"),
-        HelpChapter("trouble", "🩺", "20-trouble.txt")
+        HelpChapter("trouble", "🩺", "20-trouble.txt"),
+        HelpChapter("hub", "🤖", "21-hub.txt")
     )
 }
