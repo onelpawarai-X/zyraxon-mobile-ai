@@ -1,0 +1,51 @@
+La pantalla de chat y cada botón
+## Parte superior de la pantalla
+- Menu: abre el panel izquierdo con tus chats.
+- Chat / Terminal / Code / Preview: cambian la vista principal. Chat es la conversación; Terminal es el terminal real; Code es el espacio de archivos con Git; Preview es el navegador integrado.
+- Aura: muestra la pantalla del personaje animado. Sus botones laterales son Mic, Chat (volver a la conversación) y Refresh (reconecta la nube y recarga la lista de modelos).
+- Settings: abre las ocho secciones de ajustes.
+- Un banner muestra el estado del micrófono: "Escuchando…", "Mic apagado — toca" o "Hablando… toca para parar".
+- Cuando hay una versión nueva lista aparece un banner de actualización con los botones Download, Install y Allow (consulta Actualizaciones).
+
+## El menú izquierdo (chats)
+- "+ Nuevo chat": inicia una conversación nueva.
+- Cada chat de la lista muestra una marca de ejecución mientras el agente está ocupado allí. El lápiz lo renombra; la cruz lo borra (tras una confirmación: se borran todos sus mensajes).
+- Tema: elige Horror (sangre, fuego y sombra), Dark (cristal oscuro y limpio) o Light (cristal claro).
+
+## La barra de mensajes
+- Attach (clip): foto de la galería, foto de la cámara, escaneo de documento (convierte el texto de una foto en un .docx editable), compartir la pantalla para que el agente la vea ("Screen watching" activado o desactivado), y archivos de audio o vídeo. Los elementos adjuntos aparecen como fichas; la cruz quita uno, "Clear all" quita todos.
+- Botón de modo: Agent o Build.
+- Botón Mic: activa o desactiva el micrófono siempre atento.
+- Botón de modelo: abre la lista de modelos con un cuadro de búsqueda. Los modelos marcados "Live" pueden hablar con su propia voz.
+- Send: envía el mensaje. Mientras el agente trabaja se convierte en Stop.
+- El campo dice "¿Qué debo hacer?" en modo Agent y "¿Qué debo construir? Dilo corto" en modo Build.
+
+## Mensajes
+- Copy, Share y Listen (lee el mensaje en voz alta; púlsalo otra vez para parar) están bajo cada mensaje.
+- "Thinking" muestra el razonamiento del modelo cuando el modelo lo ofrece.
+- El código que escribe el agente aparece en directo en un recuadro, línea a línea, con Copy, Download y Open.
+- Los archivos que crea el agente aparecen como tarjetas con Open (en la app real del teléfono), Play, Share y "Other app…".
+- Las imágenes, el audio y el vídeo muestran un porcentaje de progreso en directo mientras se crean.
+- Las tarjetas de herramienta muestran qué hace el agente: en curso, hecho, correcto o fallido.
+
+## Paneles (tareas, herramientas, archivos, subagentes)
+- Tablero Todo: el plan que escribe el agente para un trabajo grande y su progreso (n/total hechas). Puedes añadir tu propia tarea y borrar tareas.
+- Tools: la lista de cada llamada a herramienta, con estado en directo.
+- Files: cada archivo que creó el agente, con Open, Share, Publish y Delete (con confirmación) y un cuadro de búsqueda.
+- Sub-agents: agentes auxiliares que trabajan en segundo plano, con un botón Stop.
+- Pestaña Terminal: el terminal real (consulta el capítulo Archivos y terminal).
+
+## Panel Preview
+- Back, Forward, Stop, Reload y una barra de direcciones (escribe una dirección web o busca en Google).
+- Open file: muestra Word, Excel, PowerPoint, PDF, imágenes, Markdown, CSV, código y sitios directamente dentro de la app.
+- Size: reduce o amplía el panel.
+- Fix: envía los problemas de la página (errores de consola, cargas fallidas) al agente, que los arregla en segundo plano.
+- Pick part: toca una parte de la página y luego dile al agente qué hacer con esa parte.
+- Botón Agent: pregunta algo sobre la página; el agente recibe una imagen de ella.
+- Quick open: atajos a páginas recientes.
+
+## Espacio de código
+- Lado izquierdo: tus archivos (nuevo archivo, abrir, guardar).
+- Editor: muestra líneas y caracteres; los cambios del agente aparecen al instante.
+- Git: repo nuevo, clonar desde GitHub, escanear, estado, commit con mensaje, push, pull, ramas, token.
+- Pull requests: crear, fusionar, cerrar. Workflows: listar ejecuciones, ejecutar un workflow. Log muestra la salida de los comandos.
