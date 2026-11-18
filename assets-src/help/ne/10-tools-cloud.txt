@@ -1,0 +1,21 @@
+क्लाउड, नेटवर्क, मोडेल र सहायक
+## क्लाउड र इन्टरनेट
+- `web_search` (network): साँचो वेब खोज्छ। `read_url` (network): पृष्ठ पाठको रूपमा ल्याउँछ। `http_request` (network): कुनै पनि HTTP कल (GET, POST, PUT, PATCH, DELETE) header र body सहित। `verify_url` (network): लिंक साँच्चै छ कि छैन जाँच्छ र साँचो अवस्था पाउँछ। `download_file` (Personal, network): URL बाट फाइल डाउनलोड गर्छ।
+- एजेन्टले तपाईंले भनेमा मात्र लिंक खोल्छ।
+- AI मोडेल तपाईंले थपेका प्रदायकमार्फत क्लाउडमा चल्छन् (ZYRAXON, ZYRAXON Apex cloud agent, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode)। मोडेल सूची प्रत्यक्ष लोड हुन्छ र हरेक प्रदायकले जवाफ दिँदा भरिन्छ।
+- बिल्ड, प्रकाशन र pull request GitHub र Cloudflare मार्फत चल्छन् (`publish_*`, `github_actions`, `github_pr`, `git`)।
+- "on-device only" (Automation सेटिङ) अन गर्नुहोस् र कुनै क्लाउड कल हुँदैन: प्रदायक छैन, वेब छैन, अपलोड छैन।
+
+## MCP सर्भर
+MCP ले बाहिरी सेवालाई एजेन्टलाई थप औजार दिन दिन्छ। Canva, Cloudflare, Supabase, GitHub वा आफ्नै सर्भरलाई ठेगानाले जोड्नुहोस् (वैकल्पिक टोकन)। जोडिएका सर्भरका औजार एजेन्टको औजार सूचीमा `server__tool` को रूपमा जोडिन्छन्।
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (के जोडिएको छ र कुन औजार छन् हेर्ने), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (परिवर्तनका लागि स्रोत हेर्ने), `mcp_complete` (तर्क स्वतः पूरा गर्ने), `mcp_ping`, `mcp_log_level`। तिनका कल नेटवर्क कल हुन्, र अज्ञात MCP औजारले पूर्वनिर्धारित रूपमा अनुमति माग्छन्।
+- MCP स्क्रिनले हरेक सर्भर Connected अवस्था, त्यसका औजार, स्रोत र prompt टेम्पलेट, र Add, Disconnect, Remove, Allow बटनसहित सूचीबद्ध गर्छ।
+
+## सह-एजेन्ट
+`sub_agent` (System): ठूलो कामका भाग पृष्ठभूमिमा चलिरहेका सहायक एजेन्टलाई दिन्छ। क्रिया: spawn, status, list, result, message, stop, wait। हरेकले आफ्नै मोडेल प्रयोग गर्न सक्छ। एजेन्टले "भयो" भन्नुअघि तिनका नतिजा जोड्छ र जाँच्छ।
+
+## फोनमै भएको मोडेल
+`on_device_model` (System): फोनमै बस्ने भाषा मोडेल सूचीबद्ध, लोड र चलाउँछ, इन्टरनेटबिना। Settings → Model & identity → On-device मा तपाईंले मोडेल डाउनलोड गर्नुहुन्छ (सानोदेखि ठूलो: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); Hugging Face टोकन वैकल्पिक र gated फाइलका लागि मात्र आवश्यक। लोड गरिएको मोडेल सम्झिन्छ र सुरुमा पुनः लोड हुन्छ।
+
+## सन्देश च्यानल
+`channel_post` (System) ले Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail वा SMS तपाईंको पाठ तयार अवस्थामा खोल्छ। पठाउने तपाईं आफैं थिच्नुहोस्।
