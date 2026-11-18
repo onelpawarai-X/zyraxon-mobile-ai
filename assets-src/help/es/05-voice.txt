@@ -1,0 +1,35 @@
+Voz: hablar, escuchar y conversación en vivo
+## Escuchar (micrófono)
+Ajustes → Voice & mic → Mic & language.
+- Speech recognition language: el idioma en el que hablas al micrófono. Cámbialo cuando quieras.
+- Keep the mic on (siempre escuchando): activado, el micrófono permanece abierto. Desactivado, lo enciendes tú.
+- Auto-send when you stop talking: tras unos 1,5 segundos de silencio tu frase se envía sola. Desactivado, las palabras esperan en el cuadro a que pulses Send.
+- El botón de micrófono de la barra de mensajes y el banner superior hacen el mismo encendido/apagado.
+- El micrófono siempre está abierto para ti, incluso mientras ZYRAXON habla. En cuanto empiezas a hablar, se detiene y escucha, y luego te responde. Su propia voz que vuelve por el micrófono se filtra comparando el texto con su última respuesta.
+- Una frase se envía una sola vez. Si el reconocedor repite después una versión ligeramente distinta de la misma frase, se descarta como el mismo turno.
+
+## Hablar (texto a voz)
+Ajustes → Voice & mic → Voice profile.
+- Elige una voz: femenina (dulce y romántica) o masculina (profunda y segura). Se usan las voces propias del sitio web cuando están listas; el motor de voz del teléfono es la alternativa.
+- Controles de velocidad y tono, y "Test voice".
+- "Read answers aloud" activa o desactiva el habla.
+- Si el teléfono no tiene motor de voz, instala Google Speech Services. Si el teléfono no tiene datos de voz en bengalí, un botón permite descargarlos.
+- Toca el banner de habla para detener la voz. Toca Listen bajo cualquier mensaje para oírlo.
+- ZYRAXON nunca lee en voz alta código, enlaces, JSON ni nombres de herramientas.
+
+## Voice lab (cambiador de voz)
+Elige del catálogo del servidor por género (todos, chica, chico), edad (niño, adolescente, adulto, mayor) e idioma (bengalí, hindi, inglés, urdu, árabe, tamil, nepalí, español, francés, alemán, japonés, coreano, chino, ruso, turco…). "Listen" previsualiza una voz; "Back to default" restaura la voz del personaje. Para audio con muchas voces, pídeselo al agente: cada parte de un diálogo recibe su propia voz.
+
+## Live voice (voz a voz)
+Ajustes → Voice & mic → Live voice. Con un modelo en tiempo real (Gemini Live, OpenAI Realtime y similares) el modelo oye el micrófono y responde con su propia voz, en un solo flujo, y puedes interrumpirlo a mitad de palabra. En esta sesión la voz propia del teléfono se desactiva para que nunca oigas dos voces.
+- Use the model's own voice: activado = conversación en vivo; desactivado = el teléfono lee las respuestas de texto.
+- El estado muestra: conectando, escuchando, hablando, esperando.
+- Al elegir un modelo en tiempo real se activa solo.
+- Si no hay ningún modelo en tiempo real cargado, añade una clave de Gemini o de OpenAI en AI providers.
+- La voz que elegiste en el perfil de voz se usa también en el modo en vivo.
+
+## Ojo flotante
+Ajustes → Aura & theme → Aura & background.
+- Una pequeña esfera flotante que se sitúa sobre todas las demás aplicaciones. Toca para activar o desactivar el micrófono; mantén pulsado para abrir un cuadro de texto y ciérralo de nuevo.
+- Ocho diseños: ojo, esfera luminosa, anillo de neón, galaxia, órbita, plasma, púlsar, prisma. Colocación en el borde de la pantalla.
+- Comandos de voz (palabras de activación): cuando la app está en segundo plano, decir el nombre despierta al ojo flotante y ZYRAXON responde. Por defecto: "zyraxon", "hey zyraxon" y grafías comunes en bengalí e inglés. Añade tus propias palabras en cualquier idioma; quítalas cuando quieras.

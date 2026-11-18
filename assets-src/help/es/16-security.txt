@@ -1,0 +1,11 @@
+Seguridad y privacidad
+- Todos los datos de ZYRAXON viven en tu teléfono: chats, memoria, libro, skills, línea de tiempo, índice de brain. No se guarda nada en un servidor de ZYRAXON.
+- Los modelos en la nube reciben solo lo necesario para el turno que envías. Con "On-device only" no se envía nada.
+- Los prompts y los archivos de idioma incluidos en la app están cifrados dentro del APK.
+- App lock: define una contraseña o patrón en Ajustes → Security & privacy → App lock. ZYRAXON se bloquea entonces al abrirlo o al volver del segundo plano. "Remove lock" borra la contraseña o el patrón guardado.
+- Los niveles de aprobación protegen cada llamada a herramienta en el código (consulta Niveles de aprobación). Las herramientas desconocidas siempre preguntan.
+- Puedes borrar: toda la memoria, el historial de chat y tu token de GitHub, cada uno con un botón en Privacy & data.
+- Seguridad: si dices que alguien te amenaza o te sigue, o quiere tu teléfono o tus datos, el agente bloquea primero el teléfono (si el permiso de administrador de dispositivo está activado) y luego te habla con calma.
+- Pagos: antes de cualquier pago o transferencia, el agente dice qué va a pagar y te pide confirmar.
+- Honestidad: el agente solo dice que algo funcionó después de ver un resultado. Nunca inventa enlaces, archivos ni resultados.
+- Content Shield: todo lo que el agente lee del exterior —la pantalla de otra app, una página web, un mensaje, un archivo, un servidor conectado— se comprueba en el código en busca de texto que intente dar órdenes al agente (en muchos idiomas, incluido texto oculto con caracteres invisibles). El texto sospechoso se acota para que el modelo lo trate solo como datos. Su rigor sigue tu nivel de aprobación: Locked trata todo lo sospechoso como hostil; Supervised acota el texto sospechoso y, cuando el texto es claramente hostil, bloquea el resto de ese turno para que toda herramienta que cambie algo te pregunte primero (la tarjeta dice por qué); Balanced actúa solo con texto claramente hostil y solo se detienen a preguntar las herramientas de nivel de sistema; Automatic desactiva el escudo por completo: no se escanea, detiene, marca ni cambia nada. Un mensaje nuevo tuyo lo despeja.
