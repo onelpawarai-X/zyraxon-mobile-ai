@@ -1,0 +1,14 @@
+Módok: Agent és Build
+Két mód közül választhat, az üzenetablak melletti mód gombbal. A választás addig marad, amíg meg nem változtatja. Az élő hang nem egy harmadik mód; ez egy olyan beszédmód, amelyet a Beállításokban kapcsolhat be (lásd a Hang című fejezetet).
+
+## Ügynök
+"A telefon és a rendszer teljes automatizálása." Minden nyitva áll: a telefon képernyőjének olvasása és vezetése, alkalmazások megnyitása, hívások, üzenetek, kamera, fájlok, terminál és Linux, Git, előnézet, média, segédügynökök, MCP szerverek, készségek, robotpilóta és egyebek. Válassza az Ügynököt, ha valamit szeretne intézni a telefonján, vagy egyszerűen csak beszélni szeretne.
+
+## Épít
+"Full-stack alkalmazások, webhelyek és automatizálás." Az ügynök egy build engine: egy rövid sorból elkészíti az egészet, lefuttatja, megnézi és megmutatja. Fájlokat, terminált, Git-t, előnézetet, közzétételt, médiát, memóriát és a todo táblát tartalmaz. A telefonvezérlés, az alügynökök és az eszközzár az Ügynök módhoz tartoznak; ha szüksége van rájuk a Buildben, váltson.
+- Céloldal vagy webhely: mondja meg, mire való. Az ügynök azonnal összeállítja, elindítja a telefonon, és megnyitja az Előnézet panelen, majd elmondja, mit készített. Nem teszi közzé, hacsak nem kéred.
+- Alkalmazás: mondja ki, amit szeretne, és a kérésnek megfelelően elkészíti az alkalmazást. Háttér, adatbázis vagy bejelentkezés csak akkor kerül hozzáadásra, ha Ön kéri.
+- Full-stack: amikor háttérrendszert vagy adatbázist kér, az ügynök először feltesz egy rövid kérdést a választási lehetőségekről (nyelv, adatbázis, bejelentkezés, hol fut) az ajánlásával, majd a válasz után felépít.
+
+## Mit jelent a "kérdezni".
+Amikor az ügynöknek valóban szüksége van az Ön döntésére, minden mást először megtesz, feltesz egy rövid kérdést az ajánlásával, és vár. A válaszod onnan folytatja a munkát, ahol abbahagyta.

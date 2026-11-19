@@ -1,0 +1,15 @@
+Aanbieders, modellen en sleutels
+## Aanbieders
+ZYRAXON (eigen lijn en de Apex cloudagent, altijd verbonden), OpenCode (gratis quota), Groq (zeer snelle lama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek en OpenRouter. Voeg een willekeurige sleutel toe in Instellingen → Providers & API. De sleutel wordt op uw telefoon opgeslagen, vergeleken met de catalogus van de provider, en de modellen worden naar de selector gestreamd zodra elke provider antwoordt.
+
+## Een model kiezen
+Gebruik de modelknop in de berichtenbalk of Instellingen → Model & identiteit → Model. Zoek op naam, filter Alles of Aangepast. Uw keuze wordt bij de lancering opgeslagen en hersteld; een vernieuwing vervangt nooit uw opgeslagen model. Modellen gemarkeerd met Live kunnen met hun eigen stem spreken (zie Live stem).
+
+## Modellen op het apparaat
+Instellingen → Model en identiteit → Op apparaat. Het model werkt op de telefoon zonder dat er gegevens worden achtergelaten. Bestanden zijn groot (honderden MB tot enkele GB), dus download op Wi-Fi. Ze worden van klein tot groot weergegeven; op een telefoon met weinig RAM kies je de lichtste. Tooloproep wordt ondersteund door de bundels Gemma en FunctionGemma. Een Hugging Face-token is alleen bedoeld voor gated bestanden. Geladen modellen worden onthouden.
+
+## De ZYRAXON-website
+zyraxonai.lovable.app: maak een account aan (e-mail of Google), open Instellingen, API Key / Access Token, maak een sleutel aan en plak deze in de app. Zonder sleutel kunt u de app nog steeds gebruiken met modellen op het apparaat en lokale tools.
+
+## Kosten en gegevens
+Cloudproviders factureren u volgens hun eigen regels. Als 'Alleen op apparaat' is ingeschakeld, wordt er niets naar een provider verzonden.

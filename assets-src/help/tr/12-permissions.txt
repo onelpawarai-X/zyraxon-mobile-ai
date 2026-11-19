@@ -1,0 +1,27 @@
+İzinler tek tek
+Ayarlar → Güvenlik ve gizlilik → İzinler. Her satırda "Verildi" veya bir düğme gösterilir. Bir satıra dokunulduğunda sistem iletişim kutusu açılır; İzin Ver'e basmanız yeterli. Temsilci ayrıca `request_permission` ile diyaloğu kendisi de açabilir.
+
+- Mikrofon: ZYRAXON sizi duyabilsin diye. Bu olmadan ses girişi olmaz.
+- Kamera: fotoğraf çekmek ve bakmak için (`look_camera`, belge tarama, "ne görüyorsun").
+- Konum: haritalar ve yerel bilgiler için.
+- Bildirimler: Arka plan çalışmasının ne zaman biteceğini size bildirmek için.
+- Dosyalar ve medya: fotoğrafları, videoları, sesleri ve belgeleri okumak için.
+- Kaplama (diğer uygulamaların üzerine çizim): kayan göz için gereklidir.
+- Erişilebilirlik: Temsilcinin ekranı okumasına ve sizin için dokunmasına, kaydırmasına ve yazmasına olanak tanır. Bu, telefon otomasyonunun kalbidir. Bunu sistemin Erişilebilirlik ayarlarından açarsınız.
+- Pil optimizasyonu: Android'un, arka planda çalışırken ZYRAXON'i uyku moduna geçirmesini durdurur.
+
+## Uygulamanın beyan ettiği diğer izinler
+- SMS (okuma ve alma): kodları, para defterini ve SMS otomatik pilot kurallarını okumak için.
+- Telefon durumu, çağrıları yanıtlama, telefonu arama, kişiler: çağrı araçları ve çağrı temsilcisi için.
+- Bildirim erişimi: Otomatik pilotun bildirimlere tepki vermesini sağlar.
+- Cihaz yöneticisi: `device_lock` öğesinin ekranı gerçekten kilitlemesine izin verir.
+- Paketleri yükle: APK'ların güncellenmesine ve `build_app` yüklenmesine izin verir; Android, yükleme kaynağı olarak ZYRAXON'ye izin vermenizi istiyor.
+- Ön plan hizmetleri (mikrofon, veri senkronizasyonu) ve uyandırma kilidi: ses ve uzun işleri canlı tutun.
+- İnternet ve ağ durumu: bulut ve web.
+- Shizuku (isteğe bağlı): kabuk ve terminal için sistem düzeyinde erişim.
+
+## Google Play Protect
+Play Protect bir işi engellerse, aracı doğru sayfayı açabilir, gerçek ekrana bakabilir ve vites ve geçiş arasında adım adım ilerleyebilir - ancak önce size sorar çünkü korumayı kapatmak sizin kararınızdır. Bunu kendiniz yapmak için: Play Store → profil resmi → Play Protect → ayarlar → "Uygulamaları Play Protect ile tara" seçeneğini kapatın. Sayfada Play Store'i açan bir düğme var.
+
+## İzin neden önemlidir?
+Bir araç eksik bir izin nedeniyle başarısız olursa, aracı size hangisinin olduğunu söyler ve iletişim kutusunu açar. Açık İzin Vermediğiniz sürece hassas hiçbir şey çalışmaz.

@@ -1,0 +1,15 @@
+Fornitori, modelli e chiavi
+## Fornitori
+ZYRAXON (linea propria e Apex agente cloud, sempre connesso), OpenCode (quota gratuita), Groq (lama molto veloce), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek e OpenRouter. Aggiungi qualsiasi chiave in Impostazioni → Provider e API. La chiave viene salvata sul telefono, confrontata con il catalogo del fornitore e i modelli vengono inseriti nel selettore man mano che ciascun fornitore risponde.
+
+## Scegliere un modello
+Utilizza il pulsante del modello nella barra dei messaggi o Impostazioni → Modello e identità → Modello. Cerca per nome, filtra Tutto o Personalizzato. La tua scelta viene salvata e ripristinata al momento del lancio; un aggiornamento non sostituisce mai il modello salvato. I modelli contrassegnati dal vivo possono parlare con la propria voce (vedi Voce dal vivo).
+
+## Modelli sul dispositivo
+Impostazioni → Modello e identità → Sul dispositivo. Il modello funziona sul telefono senza lasciare dati. I file sono di grandi dimensioni (da centinaia di MB a pochi GB), quindi scaricali su Wi-Fi. Sono elencati da piccoli a grandi; su un telefono con poca RAM scegli il più leggero. La chiamata degli strumenti è supportata dai bundle Gemma e FunctionGemma. Un token Hugging Face è solo per i file con gate. I modelli caricati vengono ricordati.
+
+## Il sito web ZYRAXON.
+zyraxonai.lovable.app: crea un account (e-mail o Google), apri Impostazioni, Chiave API/Token di accesso, crea una chiave e incollala nell'app. Senza una chiave puoi comunque utilizzare l'app con modelli sul dispositivo e strumenti locali.
+
+## Costi e dati
+I fornitori di servizi cloud ti fatturano secondo le proprie regole. Con l'opzione "Solo su dispositivo" attivata non viene inviato nulla a nessun provider.

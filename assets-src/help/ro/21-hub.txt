@@ -1,0 +1,20 @@
+Hub de automatizare
+Setări → Sistem → Hub de automatizare. Fiecare buton pentru ceea ce poate face ZYRAXON singur este într-un singur loc, în șase file. Fiecare filă începe cu o scurtă explicație a modului în care funcționează.
+
+## Abilități
+Învățați ZYRAXON o sarcină în două moduri: spuneți-o în chat („învățați această sarcină”) sau apăsați butonul de înregistrare și efectuați singur sarcina într-o altă aplicație, apoi reveniți și apăsați pe Stop. Serviciul de accesibilitate trebuie să fie activat, altfel atingerile dvs. nu pot fi văzute. Ceea ce a învățat apare sub „Abilități învățate” și poate fi reluat sau șters.
+
+## Pilot automat
+Reguli de genul „când se întâmplă asta, fă asta”. Când se întâmplă evenimentul, ZYRAXON se trezește de la sine și își face treaba fără să întrebe. De asemenea, puteți crea o regulă spunând-o în chat. Fiecare regulă arată de câte ori a rulat.
+
+## Bani
+Citește SMS-urile de la orice bancă sau portofel din orice țară (PayPal, M-Pesa, UPI, Pix, bKash, carduri...) și păstrează un singur registru al veniturilor, cheltuielilor, taxelor și soldului. Puteți stabili un buget și puteți primi un avertisment când îl treceți. Funcționează la telefon și nu se trimite nimic nicăieri.
+
+## Cronologie
+Tot ce a făcut ZYRAXON este scris aici. Scrierile, editările și ștergerile fișierelor pot fi anulate cu un singur buton. O comandă care a fost executată nu poate fi anulată.
+
+## Creier
+Caută fișierele dvs. (text, Word, Excel, PowerPoint, CSV) și, dacă permiteți acest lucru, SMS-ul dvs., fără internet și în orice limbă. Apăsați mai întâi pe „Index”, apoi căutați.
+
+## Apelați agentul
+Când nu puteți prelua un apel, ZYRAXON răspunde, vorbește în propria limbă a apelantului, învață numele și motivul și vă oferă un rezumat când apelul se termină. Cincisprezece limbi folosesc reguli rapide încorporate; orice altă limbă este gestionată de model, care răspunde în limba apelantului. Cuvintele care înseamnă la revedere, urgent sau spam sunt înțelese în toate limbile simultan. Rezumatele apelurilor capturate sunt listate în filă.

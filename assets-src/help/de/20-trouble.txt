@@ -1,0 +1,14 @@
+Fehlerbehebung
+- Keine Antwort: Überprüfen Sie Ihren Internet- und API-Schlüssel (Einstellungen → Providers & API zeigt den tatsächlichen Fehler an). Probieren Sie ein anderes Modell oder ein Modell auf dem Gerät aus.
+- Mikrofon bewirkt nichts: Erlauben Sie die Mikrofonberechtigung; Aktivieren Sie „Mikrofon eingeschaltet lassen“; Überprüfen Sie die Erkennungssprache.
+- ZYRAXON hört sich selbst: Dies wird nach Text gefiltert; Wenn das Problem weiterhin auftritt, verringern Sie die Lautstärke oder verwenden Sie Kopfhörer.
+- Ein Satz erscheint zweimal: in aktuellen Versionen behoben; Aktualisieren Sie die App.
+- Der Bildschirm wird weder angetippt noch gelesen: Schalten Sie den Barrierefreiheitsdienst ein (Einstellungen → Berechtigungen).
+- Es stoppt im Hintergrund: Benachrichtigungen und Ausnahme von der Batterieoptimierung zulassen; das Overlay für das schwebende Auge.
+- Ein Tool fragt ständig um Erlaubnis: Ändern Sie die Stufe in den Einstellungen → Automatisierung oder beantworten Sie die Karte.
+- Play Protect blockiert etwas: Sehen Sie sich das Kapitel „Berechtigungen“ an oder lassen Sie den Agenten durch die Schritte führen.
+- Terminal oder Linux startet nicht: Warten Sie auf das erste Entpacken beim App-Start; Überprüfen Sie den freien Speicherplatz.
+- Das Update lässt sich nicht installieren: ZYRAXON als Installationsquelle zulassen.
+- Veröffentlichung nicht möglich: Fügen Sie das GitHub-Token für GitHub hinzu; Für einen öffentlichen Link kann der Agent einen Tunnel verwenden.
+- Ein Kapitel zeigt Englisch: Dieses Kapitel enthält in diesem Build keinen Text in Ihrer Sprache. Aktualisieren Sie die App.
+- Etwas Seltsames: Verwenden Sie Einstellungen → Navigation → Neue Sitzung, um eine saubere Sitzung zu starten (nur der Chat-Verlauf wird gelöscht; der Speicher bleibt erhalten).

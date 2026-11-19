@@ -1,0 +1,51 @@
+Vestlusekraan ja kõik nupud
+## Ekraani ülaosa
+- Menüü: avab vestluste vasakpoolse sahtli.
+- Vestlus / Terminal / Kood / Eelvaade: lülitage põhivaadet. Vestlus on vestlus; Terminal on tõeline terminal; Kood on faili tööruum, millel on Git; Eelvaade on sisseehitatud brauser.
+- Aura: näitab animeeritud tegelaste ekraani. Selle külgmised nupud on Mikrofon, Vestlus (tagasi vestluse juurde) ja Värskenda (ühendab pilve uuesti ja laadib mudeliloendi uuesti).
+- Seaded: avab kaheksa seadete jaotist.
+- Bänner näitab mikrofoni olekut: "Kuulan…", "Mikrofon väljas – puudutage" või "Räägib... peatamiseks puudutage".
+- Kui uus versioon on valmis, ilmub värskendusbänner nuppudega Laadi alla, Installi ja Luba (vt Värskendused).
+
+## Vasakpoolne menüü (vestlused)
+- "+ Uus vestlus": alustab uut vestlust.
+- Igas loendis olevas vestluses kuvatakse jooksev märk, kui agent on seal hõivatud. Pliiats nimetab selle ümber; rist kustutab selle (pärast kinnitust: kõik selles olevad sõnumid kustutatakse).
+- Teema: valige Horror (veri, tuli ja vari), Dark (puhas tume klaas) või Hele (hele klaas).
+
+## Sõnumiriba
+- Manustage (kirjaklamber): galerii foto, kaamera foto, dokumendi skannimine (muudab fotol oleva teksti redigeeritavaks .docx-iks), jagage ekraani, et agent seda näeks ("Ekraani vaatamine" sisse või välja) ning heli- või videofailid. Lisatud üksused kuvatakse kiipidena; rist eemaldab ühe, "Tühjenda kõik" eemaldab kõik.
+- Režiimi nupp: Agent või Build.
+- Mikrofoni nupp: lülitab alati kuulava mikrofoni sisse või välja.
+- Mudeli nupp: avab mudeliloendi koos otsingukastiga. Modellid, millel on märge "Live", saavad rääkida oma häälega.
+- Saada: saadab sõnumi. Kui agent töötab, muutub see Stop.
+- Sisend ütleb "Mida ma peaksin tegema?" Agendi režiimis ja "Mida ma peaksin ehitama? Öelge lühidalt" ehitusrežiimis.
+
+## Sõnumid
+- Kopeeri, jaga ja kuula (loeb sõnumi ette; peatamiseks vajutage uuesti) on iga sõnumi all.
+- "Mõtlemine" näitab mudeli arutluskäiku, kui mudel seda pakub.
+- Agendi kirjutatud kood kuvatakse reaalajas reaalajas reaalajas koos funktsioonidega Kopeeri, Laadi alla ja Ava.
+- Agendi tehtud failid kuvatakse kaartidena funktsioonidega Ava (telefoni pärisrakenduses), Esita, Jaga ja „Muu rakendus…”.
+- Pildid, heli ja video näitavad reaalajas edenemise protsenti nende tegemise ajal.
+- Tööriistakaardid näitavad, mida agent teeb: töötab, tehtud, õnnestub või ebaõnnestus.
+
+## Paneelid (ülesanne, tööriistad, failid, alamagendid)
+- Todo tahvel: plaan, mille agent suure töö ja selle edenemise kohta kirjutab (n/kokku tehtud). Saate lisada oma ülesande ja kustutada ülesandeid.
+- Tööriistad: kõigi tööriistakutsete loend koos aktiivse olekuga.
+- Failid: kõik failid, mille agent on loonud, avamise, jagamise, avaldamise ja kustutamisega (kinnitusega) ning otsingukastiga.
+- Alamagendid: taustal töötavad abiagendid, millel on stopp-nupp.
+- Vahekaart Terminal: tegelik terminal (vt peatükki Failid ja terminal).
+
+## Eelvaate paneel
+- Tagasi, Edasi, Peata, Laadi uuesti ja aadressiriba (sisestage veebiaadress või otsige Google).
+- Ava fail: kuvab Word, Excel, PowerPoint, PDF, pildid, Markdown, CSV, kood ja saidid otse rakenduses.
+- Suurus: paneeli kahandamine või suurendamine.
+- Paranda: saadab lehe probleemid (konsooli vead, ebaõnnestunud laadimised) agendile, kes parandab need taustal.
+- Valige osa: puudutage lehe osa, seejärel öelge agendile, mida selle osaga teha.
+- Agendi nupp: küsi midagi lehe kohta; agent saab sellest pildi.
+- Kiire avamine: otseteed viimastele lehtedele.
+
+## Koodi tööala
+- Vasak pool: teie failid (uus fail, ava, salvesta).
+- Toimetaja: näitab ridu ja märke; agendi tehtud muudatused kuvatakse korraga.
+- Git: uus repo, kloonimine saidilt GitHub, skannimine, olek, sidumine sõnumiga, lükkamine, tõmbamine, hargnemised, märk.
+- Tõmbetaotlused: looge, ühendage, sulgege. Töövood: loend jookseb, käivitage töövoog. Logi näitab käsu väljundit.

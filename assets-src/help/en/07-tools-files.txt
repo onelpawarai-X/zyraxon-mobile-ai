@@ -1,0 +1,27 @@
+Files, terminal and system
+## Files
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Safe): read, list, find by name pattern, and search text inside files.
+- `write_file`, `edit_file`: create or change files. `edit_file` does it all: new file, full rewrite, or exact find-and-replace; the code appears live in the chat. `delete_file` (System): delete a file or folder.
+- Any folder is allowed (/sdcard, Download, Documents, SD card …). Give a full path and it is used as written.
+- The agent opens what it makes: `open_file` (Safe) opens a file in the phone's real app, or inside ZYRAXON's preview.
+
+## Terminals (two real ones)
+- android: the phone's own shell (busybox plus `sh`), inside the app's sandbox. `run_shell` (System) runs a command there, out of sight.
+- linux: ZYRAXON's own full Unix system, built into the app: bash, apt/pkg, real git, python, node, clang. It works offline. `linux_run` (System) runs a command there.
+- `terminal_run` (System): runs a line in the Terminal tab you are watching, so you can see it work and take over. Use shell android or linux. `terminal_open` brings the Terminal tab to the front (only when you ask).
+- `system_shell` (System): a system-level command, above the app sandbox, the way a system shell does; with Shizuku or root it can reach far more.
+- There is no default time limit; a big `apt upgrade` or build runs to the end.
+
+## Shizuku (system access)
+`setup_shizuku` (System) sets up Shizuku, bundled inside ZYRAXON: check status, install, open, request permission. Only you can tap Install and Allow; the agent tells you the step in one line and does the rest.
+
+## Long jobs and timing
+- `background_command` (System): a command that keeps running after you close the app (big download, clone, build), with a notification and a Stop button.
+- `schedule_command` (System): run a command at a real time ("in 10 minutes", "at 2 a.m."); Android holds the timer, so it runs with the app closed.
+- `wait` (Safe): wait on purpose (seconds, until a port opens, a file appears, a command finishes) instead of guessing.
+
+## Linux uses
+Install packages (`apt install …`), run Python or Node scripts, compile C, use git, run servers, zip and unzip, curl, ffmpeg. The system is unpacked quietly when the app starts and stays across restarts.
+
+## The terminal screen
+The Terminal tab is a real terminal with the ⌘ ZX tab. Type your own commands or watch the agent's. The Navigation screen in Settings has a shortcut to the system shell and a "New session" button that clears the chat history to start fresh.

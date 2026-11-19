@@ -1,0 +1,20 @@
+Darbo pradžia
+ZYRAXON yra asistentas, kuris gyvena jūsų Android telefone. Jis kalba su jumis, klausosi jūsų ir gali atlikti tikrą darbą: atidaryti programas, bakstelėti ir vesti tekstą ekrane, skambinti žmonėms, rašyti failus, kurti svetaines ir programas, valdyti Linux sistemą, kurti nuotraukas, garso, vaizdo ir biuro dokumentus ir prisiminti jus kelis mėnesius. Jis veikia bet kuria kalba, kuria kalbate.
+
+## Pirmosios minutės
+- Pirmą kartą paleidus ZYRAXON rodomas trumpas pranešimas, kad agentas gali veikti jūsų telefone pats. Norėdami tęsti, paspauskite „Supratau, pradėk“.
+- Pridėkite AI raktą (Nustatymai → Teikėjai ir API → AI teikėjai). Įklijuokite bet kurio jums patinkančio teikėjo raktą (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Išsaugojus raktą, programa nuskaito to teikėjo katalogą ir patikrina, ar jis tikras, todėl matote tikrą „sujungtą“ ir modelių skaičių.
+- Nėra rakto? Vis tiek galite naudoti įrenginyje esančius modelius (Nustatymai → Modelis ir tapatybė → Įrenginyje). Jie veikia telefonu be interneto.
+- Pasirinkite modelį naudodami modelio mygtuką pranešimų juostoje ir simbolį (Nustatymai → Modelis ir tapatybė → Tapatybė).
+- Suteikite leidimus, kai funkcijai jų reikia (žr. skyrių Leidimai). Agentas taip pat gali atidaryti jums leidimų dialogo langą vienu bakstelėjimu.
+- Tiesiog kalbėkite arba rašykite. „Padaryti man mano kepyklos nukreipimo puslapį“, „atidaryti YouTube ir paleisti dainą“, „kas mano baterija?“, „skambinti mamai“.
+
+## Du darbo būdai
+Šalia pranešimų laukelio yra režimo mygtukas su dviem režimais: Agent ir Build. Žr. skyrių „Režimai“.
+
+## Kur yra daiktai
+- Kairysis meniu: jūsų pokalbiai, naujas pokalbis, pervardijimas, ištrynimas ir temos jungiklis.
+- Pokalbių ekranas: pranešimai, darbų lenta, įrankių sąrašas, failai, terminalas.
+- Peržiūros ir kodo skydeliai: peržiūrėkite ir redaguokite, ką agentas sukuria.
+- Nustatymai: aštuoni skyriai, po vieną aprašyti šioje dokumentacijoje.
+- Ši dokumentacija: Nustatymai → Dokumentacija (jūs esate čia).

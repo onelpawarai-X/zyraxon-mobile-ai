@@ -1,0 +1,20 @@
+Centrum automatizácie
+Nastavenia → Systém → Centrum automatizácie. Každé tlačidlo na to, čo ZYRAXON dokáže sám o sebe, je na jednom mieste, na šiestich kartách. Každá karta začína krátkym vysvetlením, ako funguje.
+
+## Zručnosti
+Naučte ZYRAXON úlohu dvoma spôsobmi: povedzte to v chate („naučte sa túto úlohu“) alebo stlačte tlačidlo záznamu a vykonajte úlohu sami v inej aplikácii, potom sa vráťte a stlačte Stop. Služba dostupnosti musí byť zapnutá, inak vaše klepnutia nebudú viditeľné. To, čo sa naučil, sa zobrazí v časti „Naučené zručnosti“ a dá sa prehrať alebo odstrániť.
+
+## Autopilot
+Pravidlá typu „keď sa stane toto, urob tamto“. Keď sa udalosť stane, ZYRAXON sa sám prebudí a vykoná prácu bez opýtania. Pravidlo môžete vytvoriť aj tak, že ho vyslovíte v chate. Každé pravidlo ukazuje, koľkokrát sa spustilo.
+
+## Peniaze
+Číta SMS z akejkoľvek banky alebo peňaženky v ktorejkoľvek krajine (PayPal, M-Pesa, UPI, Pix, bKash, karty...) a vedie jednu knihu príjmov, výdavkov, poplatkov a zostatku. Môžete nastaviť rozpočet a dostať upozornenie, keď ho prejdete. Na telefóne to funguje a nikam sa nič neposiela.
+
+## Časová os
+Všetko, čo ZYRAXON urobil, je napísané tu. Zápisy, úpravy a mazanie súborov je možné vrátiť späť jedným tlačidlom. Príkaz, ktorý bol spustený, sa nedá vrátiť späť.
+
+## Mozog
+Prehľadá vaše súbory (text, Word, Excel, PowerPoint, CSV) a ak to povolíte, aj vaše SMS, bez internetu a v akomkoľvek jazyku. Najprv stlačte "Index" a potom hľadajte.
+
+## Zavolajte agentovi
+Keď nemôžete prijať hovor, ZYRAXON odpovie, hovorí vo vlastnom jazyku volajúceho, dozvie sa meno a dôvod a po skončení hovoru vám poskytne súhrn. Pätnásť jazykov používa rýchle vstavané pravidlá; každý iný jazyk je ovládaný modelom, ktorý odpovedá v jazyku volajúceho. Slová, ktoré znamenajú zbohom, súrne alebo spam, sú zrozumiteľné vo všetkých jazykoch naraz. Prehľady zachytených hovorov sú uvedené v záložke.

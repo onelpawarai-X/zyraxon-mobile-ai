@@ -1,0 +1,27 @@
+Toestemmings, een vir een
+Instellings → Sekuriteit en privaatheid → Toestemmings. Elke ry wys "Toegestaan" of 'n knoppie. Deur 'n ry te tik, maak die stelseldialoog oop; druk net Laat toe. Die agent kan ook die dialoog self oopmaak met `request_permission`.
+
+- Mikrofoon: sodat ZYRAXON jou kan hoor. Daarsonder is daar geen steminvoer nie.
+- Kamera: om foto's te neem en te kyk (`look_camera`, dokumentskandering, "wat sien jy").
+- Ligging: vir kaarte en plaaslike inligting.
+- Kennisgewings: om jou te vertel wanneer agtergrondwerk klaar is.
+- Lêers en media: om foto's, video's, oudio en dokumente te lees.
+- Oorlê (teken oor ander toepassings): benodig vir die drywende oog.
+- Toeganklikheid: laat die agent die skerm lees en tik, swiep en tik vir jou. Dit is die hart van telefoonoutomatisering. Jy skakel dit aan in die stelsel se Toeganklikheidinstellings.
+- Batteryoptimalisering: keer dat Android ZYRAXON laat slaap terwyl dit in die agtergrond werk.
+
+## Ander toestemmings wat die toepassing verklaar
+- SMS (lees en ontvang): vir die lees van kodes, die geldgrootboek en SMS autopilot reëls.
+- Telefoonstatus, beantwoord oproepe, belfoon, kontakte: vir oproepinstrumente en die oproepagent.
+- Kennisgewingstoegang: laat die outovlieënier op kennisgewings reageer.
+- Toesteladministrateur: laat `device_lock` die skerm regtig sluit.
+- Installeer pakkette: laat opdaterings en `build_app` APK's installeer; Android vra jou om ZYRAXON as 'n installasiebron toe te laat.
+- Voorgronddienste (mikrofoon, datasinkronisering) en wakkerslot: hou stem en lang werke lewendig.
+- Internet- en netwerktoestand: die wolk en die web.
+- Shizuku (opsioneel): stelselvlaktoegang vir die dop en terminaal.
+
+## Google Play Protect
+As Play Protect 'n werk blokkeer, kan die agent die regte bladsy oopmaak, na die regte skerm kyk en stap vir stap deur die rat en die skakelaar gaan - maar dit vra jou eers, want om beskerming af te skakel is jou besluit. Om dit self te doen: Play Store → profielfoto → Play Protect → instellings → skakel "Skandeer programme met Play Protect af. Die bladsy het 'n knoppie wat Play Store oopmaak.
+
+## Hoekom 'n toestemming saak maak
+As 'n instrument misluk vir 'n ontbrekende toestemming, vertel die agent vir jou watter een en maak sy dialoog oop. Niks sensitief werk sonder jou eksplisiete Toelaat nie.

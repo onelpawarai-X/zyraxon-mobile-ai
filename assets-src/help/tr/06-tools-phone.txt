@@ -1,0 +1,34 @@
+Telefon otomasyon araçları
+Temsilci, telefonunuzu araçlar aracılığıyla kontrol eder. Onları asla kendin çağırmazsın; siz ne istediğinizi söylüyorsunuz ve temsilci araçları seçiyor. Bu bölümde telefona dokunan her araç ve nasıl korunduğu listelenmektedir (bkz. Onay düzeyleri: Güvenli, Kişisel, Sistem).
+
+## Açma ve bulma
+- `open_app` (Güvenli): Yüklü herhangi bir uygulamayı ada veya pakete göre açın. `list_apps` (Güvenli): yüklü uygulamaları listeler. `open_settings` (Güvenli): bir sistem ayarları sayfasını açın (erişilebilirlik, katman, bildirimler, uygulamalar, Wi-Fi, pil, Play Protect). `launch_url` (Güvenli): tarayıcıda bir bağlantı açın. `youtube_play` (Güvenli): Sorduğunuz şey için arama sonuçlarında YouTube'yi açın ve oynatın.
+
+## Ekranı görmek
+- `read_screen` (Kişisel): ekrandaki her metni ve öğeyi dokunma konumlarıyla okur. `screen_shot` (Kişisel): gerçek bir ekran görüntüsü. Bunlar Erişilebilirlik iznine ihtiyaç duyar.
+- `look_camera` (Kişisel): kamerayla bir fotoğraf çeker ve ona bakar. `read_media` (Kişisel): Modelin anlayabilmesi için bir resmi, sesi veya videoyu (bir yoldan veya bağlantıdan) okur.
+
+## Ekranda oyunculuk
+- `tap` (Kişisel): bir noktaya dokunun. `tap_text` (Kişisel): Koordinatlardan daha güvenli olan bu etikete sahip öğeye dokunun. `swipe` (Kişisel): kaydırma veya geri hareketi. `type_text` (Kişisel): odaklanılan alana yazın. `press_key` (Kişisel): geri, ana sayfa, son kullanılanlar, bildirimler, hızlı ayarlar, kilit.
+- Ekran eylemleri sırayla birer birer gerçekleştirilir ve her bir eylemden sonra temsilci yeni ekrana bakar.
+
+## Telefon, mesajlar ve pano
+- `call_dial` (Kişisel): numaraya veya kişi adına göre arama yapın. `call_state` (Kişisel): bir çağrı çalıyor mu veya aktif mi? `call_answer` (Kişisel): cevapla. `call_hangup` (Kişisel): telefonu kapat.
+- `read_sms` (Kişisel): en yeni SMS'i okuyun, ör. bir OTP kodu; metne veya gönderene göre filtreleyebilirsiniz.
+- `clipboard_read` ve `clipboard_write` (Kişisel): panoyu okuyun veya yazın.
+- `notify` (Kişisel): gerçek bir Android bildirimi yayınlayın. `share` (Kişisel): metin, bağlantı veya dosya içeren paylaşım sayfasını açın. `channel_post` (Sistem): Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail veya SMS'i önceden doldurulmuş, gönderilmeye hazır olarak açın.
+
+## Durum ve sistem gerçekleri
+- `network_status` (Güvenli): çevrimiçi olup olmadığı, Wi-Fi veya mobil veri, Wi-Fi adı. `sys_info` (Güvenli): Android sürüm, model, CPU, RAM, depolama, mevcut uygulama. `platform_info` (Güvenli): Aracının çalıştığı yer. `process_list` (Güvenli): çalışan işlemler.
+
+## İzinler ve ekran
+- `request_permission` (Güvenli): Bir araç eksik izin nedeniyle başarısız olduğunda sistem izin iletişim kutusunu tek dokunuşla açar. `device_lock` (Sistem): ekranı gerçekten kilitleyin veya bunu mümkün kılan izni ayarlayın. `floating_bubble` (Kişisel): Yüzen küreyi açar veya kapatır.
+- `voice_change` (Kişisel): Konuşma hızını, perdesini veya cinsiyetini değiştirin. `live_voice` (Sistem): Canlı konuşmadan konuşmaya modunu açın veya kapatın.
+
+## Arayüz yardımcıları
+- `code_box` ve `files_panel`: çalışmayı izlemek için canlı kod kutusunu veya dosya tarayıcısını açın. `todo_write`: canlı görev panosu.
+
+## İpuçları
+- Şunları zincirleyebilirsiniz: "Ayarları açın, Wi-Fi'ı bulun ve bana ağ adını söyleyin". Temsilci her adımdan sonra ekranı okur ve bir sonraki adıma karar verir.
+- Dokunma hiçbir şey yapmazsa temsilci ekranı tekrar okur ve farklı bir öğeyi dener; asla körü körüne dokunmaz.
+- Eğer Play Protect bir şeyi engellerse, temsilci sizinle birlikte ayarların üzerinden geçebilir (bkz. İzinler).

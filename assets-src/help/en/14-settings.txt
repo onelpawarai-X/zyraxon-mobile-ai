@@ -1,0 +1,42 @@
+Every settings screen, one by one
+Settings has eight sections. Each section has pills for its sub-screens. The last section you used is reopened next time.
+
+## 1. Language & translation → App & tool language
+Choose the language of the whole app and of the agent's tool messages. Search the list and tap one. The screen shows the current language and whether UI translation and tool-message translation are on. 60 languages are available. See the Language chapter.
+
+## 2. Voice & mic
+- Voice profile: choose female or male voice, speed, pitch, "Read answers aloud", Test voice, the Bengali voice download hint.
+- Mic & language: recognition language, keep the mic on, auto-send when you stop talking.
+- Live voice: speech-to-speech on/off, status, the list of realtime models.
+
+## 3. Providers & API
+- AI providers: your own API keys (ZYRAXON, OpenCode free quota, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) and the ZYRAXON Apex cloud agent. A saved key is verified by reading the provider's real catalogue and shows the model count or the exact error. A button opens the ZYRAXON website where you create a key.
+- GitHub: your GitHub access token (needs repo scope) for publishing, Git push and pull requests. Save token or delete it; the status shows if it is set.
+
+## 4. Updates → App update
+Shows the current version, checks for a newer release, downloads it with a progress bar and installs it. Your chats, memory and settings stay. If Android needs permission to install, a button opens that setting.
+
+## 5. Model & identity
+- Identity: choose the character (see the Characters chapter).
+- Model: the live model catalogue with a search box, "All models" and "Custom" filters; fast models first.
+- On-device: download, load and unload models that run offline; sorted small to large; optional Hugging Face token; shows loaded, loading and failed states.
+
+## 6. Aura & theme
+- Theme: Horror, Dark or Light.
+- Aura & background: the aura style and colour (blood, pink, violet, sky, green, fire) with fine hue control; aura size, glow strength, rotation speed, panel transparency; the floating eye (on/off, design, screen edge, voice commands/wake words, add your own); shader mode; custom background URL (mp4, gif or image); animation speed.
+
+## 7. Security & privacy
+- App lock: a password (4–8 digits) or a 3×3 dot pattern; confirm by entering it twice; remove lock.
+- Permissions: the list in the Permissions chapter, with Play Protect help.
+- Privacy & data: all data stays on the phone. Buttons: delete all memory, delete chat history, delete GitHub token.
+
+## 8. System
+This section has its own row of buttons that scrolls sideways, so nothing is squeezed.
+- Automation: approval level and on-device only (see Approval levels).
+- Navigation: a list of areas to jump to — "no buttons on top, everything is here" — including the ⌘ ZX system shell, a "New session" button (erases chat history for a clean start), message count and the mic toggle.
+- Memory: the local SQL memory with the facts ZYRAXON remembers; add a key and value; delete all.
+- Skill guide: a quick list of example abilities (messaging apps, website building, screen reader, torch, camera, Wi-Fi and settings) with example phrases.
+- Automation hub: skills, autopilot, money, timeline, brain and the call agent in one place (see Automation hub).
+
+## 9. Documentation
+Its own section in Settings, separate from System. This guide: twenty-one chapters, a search box, and a language chip row. Every language in the app is already written out in full inside the app — nothing is translated on your phone and no internet is needed to read it.

@@ -1,0 +1,7 @@
+Opdaterings
+Instellings → Opdaterings → Programopdatering, of die banier aan die bokant van die toepassing.
+- Die toepassing kyk vir nuwe vrystellings en wys "Nuwe opdatering beskikbaar — weergawe".
+- Kyk vir opdaterings: vra nou. As jy aktueel is, sê dit so.
+- Laai af en installeer: laai af met 'n persentasie. Wanneer jy klaar is, druk Installeer. Jou geselsies, geheue en instellings bly.
+- As Android die installering blokkeer, druk die toestemmingsknoppie, laat ZYRAXON toe as 'n installasiebron, en probeer dan weer.
+- Die banierknoppies: Laai af, installeer, laat toe en maak toe.

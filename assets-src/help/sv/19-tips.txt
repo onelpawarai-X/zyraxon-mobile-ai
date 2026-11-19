@@ -1,0 +1,27 @@
+Tips och exempelförfrågningar
+## Säg vad du vill, inte hur
+- "Gör en målsida för ett gym, mörk och djärv."
+- "Bygg en fullstack-bokningsapp med en databas." (agenten frågar de tekniska valen först)
+- "Öppna YouTube och spela en lugn låt."
+- "Bläddra ner och öppna det första resultatet."
+- "Vad är mitt batteri och Wi-Fi?"
+- "Läs mitt senaste SMS och berätta koden."
+- "Ring mamma." / "Svara på samtalet."
+- "Gör ett CV från det här fotot." (bifoga den)
+- "Vänd den här mötesinspelningen till anteckningar med åtgärder."
+- "Gör en affisch för fredagens event med de här färgerna."
+- "Gör en ljuddialog mellan två vänner, en pojke och en tjej."
+- "Kom ihåg att min systers födelsedag är den 3 maj."
+- "Varje morgon klockan 8 berätta för mig vädret." (autopilot)
+- "Lär dig hur jag skickar min hyra med min plånboksapp så att du kan göra det igen." (skicklighet)
+- "Ångra det du gjorde i projektmappen." (tidslinje)
+- "Var är mitt hyreskontrakt?" (hjärna)
+- "Installera python-paket och kör det här skriptet." (Linux)
+- "Publicera den här webbplatsen så att jag kan dela den." (offentlig länk)
+
+## Vanor som hjälper
+- Korta och tydliga slag långa. Agenten väljer standardinställningar och berättar vad den valde.
+- När den ställer en fråga, svara på den och den fortsätter från samma plats.
+- Säg "förklara" eller "sammanfattning" för ett detaljerat svar; annars är svaren korta.
+- Du kan prata om det när som helst. Den stannar och lyssnar.
+- Använd byggläge för att göra saker och agentläge för att göra saker på telefonen.

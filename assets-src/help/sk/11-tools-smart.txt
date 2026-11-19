@@ -1,0 +1,45 @@
+Zručnosti, autopilot, peniaze, časová os a undo, mozog, volací agent a pamäť
+Toto všetko využijete pri rozhovore: povedzte, čo chcete, a agent zavolá správny nástroj. Každá akcia je tu uvedená s jej možnosťami.
+
+## Zručnosti — učiť robením
+Zručnosť je úloha po telefóne, ktorú sa agent naučil tak, že ju raz sledoval. Ukladá, ako znova nájsť každý prvok (jeho id, slová a susedov, nie polohu na obrazovke), takže funguje aj pri zmene rozloženia aplikácie.
+- Pridajte zručnosť:`skill_record`(Osobné). Povedzte „učte sa to ako <meno>“.`action: start`(s menom) spustí nahrávanie; potom vykonajte úlohu – otvorte aplikáciu, ťuknite, píšte, stlačte klávesy; každý krok je zaznamenaný.`action: stop`zachráni to. Na zastávke môžete prejsť`params`na premenu zadaných hodnôt na parametre (napríklad z telefónneho čísla`number`, suma sa stáva`amount`) a a`description`. `action: status`vám povie, či je zapnuté nahrávanie.
+- Spustite zručnosť:`skill_run`(Osobné). daj`args`pre svoje parametre, napr. počet a množstvo. Prehrá sa v zlomku krokov a sám sa uzdraví, keď sa aplikácia zmení. Ak jeden krok zlyhá, výsledok povie, ktorý krok a čo je na obrazovke, a zvyšok dokončí agent ručne.
+- Zoznam zručností:`skill_list`(Safe) zobrazuje názov, parametre, kroky a ako často každý bežal. S názvom a exportom umožňuje zdieľanie`.zxskill`súbor.
+- Zdieľať a načítať:`skill_import`(Osobné) zaťaženie a`.zxskill`súbor zo stiahnutého alebo zdieľaného súboru ako zručnosť.
+- Odstrániť zručnosť:`skill_delete`(Systém).
+- Príklad: „Ako posielam 500 Rahimovi pomocou aplikácie peňaženky“→spravíš to raz→"Pošlite 700 Karimovi" nabudúce.
+
+## Autopilot – „keď sa stane X, urob Y“
+Pravidlo samo zobudí agenta a vykoná úlohu bez toho, aby sa vás opýtal.
+- Pridať:`autopilot_add`(Systém). Druhy: sms, notifikácia, hovor, denne, raz, interval, batéria, aplikácia. Vyplňte iba polia, ktoré pravidlo potrebuje:`from`(meno alebo číslo odosielateľa alebo názov aplikácie),`any`(aspoň jedno z týchto slov),`all`(každé slovo),`none`(žiadne z týchto slov),`time`"HH:MM" (denne),`in_minutes` or `at_ms`(raz),`every_minutes`(interval),`below`(% batérie),`pkg`(balík alebo názov aplikácie pre pravidlá aplikácie a upozornenia). Agent zmení vašu vetu do týchto polí. Vo výsledku sú uvedené všetky potrebné povolenia (SMS, prístup k upozorneniam…) a agent vás požiada, aby ste ho zapli.
+- Príklady: „Keď príde platobná SMS z aplikácie mojej peňaženky, pridajte ju do mojej účtovnej knihy.“ "Každé ráno o ôsmej mi povedz počasie." "O 20 minút mi pripomeňte, aby som vytiahol chlieb." "Každých 30 minút, pripomienka pitnej vody." "Keď batéria klesne pod 15 %, povedzte mi to." "Keď mi niekto zavolá, zapíšte si číslo." "Keď otvorím bankovú aplikáciu, pripomeňte mi, aby som skontroloval rozpočet."
+- zoznam:`autopilot_list`(Safe) zobrazuje každé pravidlo s časom jeho ďalšieho spustenia a ako často sa spustilo.
+- Pozastaviť alebo obnoviť:`autopilot_toggle`(Systém). Odstrániť:`autopilot_remove`(Systém), podľa ID alebo názvu.
+- Keď sa spustí pravidlo, dostanete správu, ktorá to hovorí, a agent jednoducho vykoná prácu.
+
+## Peňažná kniha (osobný finančný riaditeľ)
+- `ledger_scan`(Osobné): čítanie SMS z peňaženky a banky do súkromnej účtovnej knihy: príjem, výdavky, poplatky, zostatok a kategória.`days`hovorí, ako ďaleko dozadu (predvolené 30). S`auto`na, každá nová SMS s peniazmi sa pridá sama a budete upozornení, keď sa minie rozpočet. Funguje pre peňaženku a bankové správy akejkoľvek krajiny v akejkoľvek mene.
+- `ledger_report`(Osobné): obdobie dnes, včera, týždeň, mesiac alebo celé. Formátovať text (hotové hovorené zhrnutie) alebo xlsx (anExcelsúbor s transakciami a súčtom kategórií, ktorý sa vám otvorí).
+- `ledger_budget`(Osobné): nastavte mesačný rozpočet pre kategóriu (jedlo, účty, doprava, nákupy, dobíjanie mobilu, transfery...); limit 0 ho odstráni; bez argumentov uvádza rozpočty a aktuálne varovania.
+- Agent nikdy nevymýšľa čísla peňazí; číta ich z účtovnej knihy.
+
+## Časová os a vrátiť späť
+- Všetko, čo agent robí, sa zapisuje do časovej osi (posledných 400 akcií). Zmeny súborov uchovávajú kópiu toho, čo tam bolo predtým.
+- `timeline_list`(Bezpečné): čo agent nedávno urobil, s ID pre každého a ktoré zmeny je možné vrátiť späť.
+- `timeline_undo`(Osobné):`id`zruší jeden zápis, úpravu alebo odstránenie — súbor sa vráti presne tak, ako bol (súbor, ktorý neexistoval, sa znova odstráni).`since_id`zruší všetko od tohto ID, najnovšie ako prvé. Použite ho, keď poviete „vezmite to späť“ alebo „vráťte to ako predtým“.
+- Vrátiť späť zápisy, úpravy a mazanie súborov. Príkaz, ktorý sa spustil (napríklad inštalácia niečoho alebo odoslanie správy), sa týmto spôsobom nedá vrátiť späť.
+- Chatové správy: na odstránenie celej konverzácie použite ceruzku a krížik v ľavom menu alebo Nastavenia→Súkromie a údaje→Odstrániť históriu rozhovorov alebo navigáciu→Nová relácia.
+
+## Mozog – druhá pamäť pre vaše súbory
+- `brain_index`(Bezpečné): vytvorte alebo obnovte offline index cez priečinky alebo súbory (text,Markdown, CSV, Word, Excel, PowerPoint) a voliteľne aj schránku SMS (`sms`zapnuté). Spustite ho pred prvým vyhľadávaním a po zobrazení nových súborov. Predvolený je váš pracovný priestor.
+- `brain_search`(Sejf): opýtajte sa vlastnými slovami: "kde je moja nájomná zmluva?" - funguje offline v akomkoľvek jazyku.`kind`je súbor alebo sms;`days`limity na posledné položky. Otvorte nájdený súbor pomocou`open_file`.
+
+## Zavolajte agentovi
+- `call_agent`(Osobné): akcia je zapnutá, vypnutá alebo stav.`owner`je meno, ktoré hovorí („Som asistent <vlastníka>“).`answer_after_seconds`(predvolená hodnota 6) vám umožňuje najprv zdvihnúť. Keď prichádza hovor a vy nemôžete odpovedať, pozdraví sa v jazyku volajúceho, opýta sa na meno a dôvod, odpovie na jednoduché otázky, zdvorilo zavesí a povie vám súhrn.
+- `call_log`(Safe): súhrny hovorov, ktoré prijal, od najnovších.
+- Vyžaduje povolenie na hovor a stav telefónu.
+
+## pamäť
+- `memory_write`, `memory_read`, `memory_delete`(Bezpečné): trvalé fakty o vás (meno, preferencie, ľudia, dátumy, projekty) žijú v lokálnej databáze a prežijú reštarty. Povedzte "zapamätajte si to" a je to napísané v rovnakom poradí; ak niečo nie je v poriadku, odstráni sa alebo prepíše. Každá stará konverzácia sa tiež uchováva a minulé obraty, ktoré sa zhodujú s tým, čo hovoríte, sa vrátia samé od seba, dokonca aj o mesiace neskôr.
+- Pozrite si a zmeňte to všetko v Nastaveniach→Systém→Pamäť (kľúč, hodnota, uložiť, vymazať všetko).

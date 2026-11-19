@@ -1,0 +1,14 @@
+Modalità: Agente e Compilazione
+Sono disponibili due modalità, scelte con il pulsante della modalità accanto alla finestra del messaggio. La scelta rimane finché non la cambi. La voce dal vivo non è una terza modalità; è un modo di parlare che puoi attivare nelle Impostazioni (vedi capitolo Voce).
+
+## Agente
+"Automazione completa del telefono e del sistema." Tutto è aperto: lettura e guida dello schermo del telefono, apertura di app, chiamate, messaggi, fotocamera, file, terminale e Linux, Git, anteprima, media, agenti secondari, MCP server, competenze, pilota automatico e altro ancora. Scegli Agente quando vuoi che venga fatto qualcosa sul tuo telefono o vuoi semplicemente parlare.
+
+## Costruire
+"App full-stack, siti Web e automazione." L'agente è un motore di costruzione: da una breve riga realizza il tutto, lo esegue, lo guarda e te lo mostra. Dispone di file, terminale, Git, anteprima, pubblicazione, media, memoria e scheda delle cose da fare. Il controllo del telefono, i sub-agenti e il blocco del dispositivo appartengono alla modalità Agente; se ne hai bisogno in Build, cambia.
+- Landing page o sito web: spiega a cosa serve. L'agente lo crea immediatamente, lo avvia sul telefono e lo apre nel pannello Anteprima, quindi ti dice cosa ha fatto. Non pubblica a meno che tu non lo chieda.
+- App: dì quello che vuoi e costruirà l'app come richiesto. Un backend, un database o un accesso vengono aggiunti solo se lo richiedi.
+- Stack completo: quando chiedi un backend o un database, l'agente ti pone prima una breve domanda sulle scelte (lingua, database, accesso, dove viene eseguito), con la sua raccomandazione, e costruisce dopo la tua risposta.
+
+## Cosa significa "chiedi".
+Quando l'agente ha davvero bisogno della tua decisione, fa prima tutto il resto, pone una breve domanda con la sua raccomandazione e aspetta. La tua risposta continua il lavoro da dove si era fermato.

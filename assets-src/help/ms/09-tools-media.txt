@@ -1,0 +1,11 @@
+Gambar, audio, video, dokumen dan reka bentuk
+- `generate_image` (rangkaian): buat gambar daripada penerangan (tulis dengan terperinci; Bahasa Inggeris berfungsi dengan baik). Ia muncul dalam sembang dengan butang kongsi. Untuk beberapa, minta beberapa.
+- `generate_audio` (rangkaian): audio pertuturan (.mp3) daripada sebarang teks. Untuk dialog atau cerita, berikan setiap bahagian suaranya sendiri (jantina, umur, bahasa, nada). Banyak bahasa, termasuk Bengali, Hindi dan Inggeris.
+- `generate_video`: video sebenar yang disunting (bukan rakaman AI) daripada adegan — imej, klip, teks, warna, narasi, kapsyen, muzik. `ffmpeg`: sebarang suntingan langsung — potong, cantum, tindanan, sari kata, kelajuan, campuran audio, tukar. Video 5–10 minit boleh dibuat, dibina langkah demi langkah.
+- Kemajuan menunjukkan secara langsung sebagai peratusan dalam sembang; apabila selesai, fail tiba dengan butang Main dan Kongsi.
+- `make_document`: fail Word (.docx), Excel (.xlsx) atau PowerPoint (.pptx) sebenar pada telefon, tiada pemasangan diperlukan, sebarang bahasa. `office_template`: kertas pejabat sedia dengan tempat kosong untuk diisi (permohonan cuti, permohonan kerja, invois, CV, cadangan perniagaan, sebut harga, notis, minit mesyuarat, kontrak, akaun bulanan dan banyak lagi).
+- Dokumen daripada foto: lampirkan foto (Imbasan dokumen). Teks disalin tepat seperti yang ditulis (perkataan yang tidak jelas ditanda), jadual menjadi .xlsx, sebaliknya .docx.
+- Nota mesyuarat: daripada audio, transkrip atau perkara yang anda katakan. Dokumen itu mempunyai ringkasan, keputusan, item tindakan (tugas, pemilik, tarikh akhir) dan draf e-mel sedia.
+- `make_design`: poster, sepanduk, logo, kad, cerita, muka depan sebagai PNG dan PDF. `brand_kit`: berikan logo atau warna; ia disimpan, tema apl berubah dan sejak itu dokumen, slaid dan tapak menggunakan warna jenama anda.
+- `present_slides`: watak bercakap semasa kad slaid ditunjukkan; slaid berubah dengan sendirinya apabila suara selesai. Minta fail .pptx jika anda mahukan fail.
+- `open_file`: membuka perkara yang dibuat dalam apl sebenar telefon (Word/Dokumen, Helaian, Slaid, PDF, galeri, penyemak imbas) atau dalam panel Pratonton; ejen menyemak skrin untuk memastikan ia dibuka.

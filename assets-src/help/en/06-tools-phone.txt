@@ -1,0 +1,34 @@
+Phone automation tools
+The agent controls your phone through tools. You never call them yourself; you say what you want and the agent picks the tools. This chapter lists every tool that touches the phone, and how it is guarded (see Approval levels: Safe, Personal, System).
+
+## Opening and finding
+- `open_app` (Safe): open any installed app by name or package. `list_apps` (Safe): list installed apps. `open_settings` (Safe): open a system settings page (accessibility, overlay, notifications, apps, Wi-Fi, battery, Play Protect). `launch_url` (Safe): open a link in the browser. `youtube_play` (Safe): open YouTube at the search results for what you asked, and play it.
+
+## Seeing the screen
+- `read_screen` (Personal): reads every text and element on the screen with tap positions. `screen_shot` (Personal): a real screenshot. These need the Accessibility permission.
+- `look_camera` (Personal): takes one photo with the camera and looks at it. `read_media` (Personal): reads a picture, audio or video (from a path or link) so the model can understand it.
+
+## Acting on the screen
+- `tap` (Personal): tap a point. `tap_text` (Personal): tap the element with this label, safer than coordinates. `swipe` (Personal): scroll or the back gesture. `type_text` (Personal): type into the focused field. `press_key` (Personal): back, home, recents, notifications, quick settings, lock.
+- Screen actions run one at a time, in order, and after each one the agent looks at the new screen.
+
+## Phone, messages and clipboard
+- `call_dial` (Personal): place a call by number or contact name. `call_state` (Personal): is a call ringing or active? `call_answer` (Personal): answer. `call_hangup` (Personal): hang up.
+- `read_sms` (Personal): read the newest SMS, e.g. an OTP code; can filter by text or sender.
+- `clipboard_read` and `clipboard_write` (Personal): read or write the clipboard.
+- `notify` (Personal): post a real Android notification. `share` (Personal): open the share sheet with text, a link or a file. `channel_post` (System): open Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail or SMS with your text pre-filled, ready to send.
+
+## Status and system facts
+- `network_status` (Safe): online or not, Wi-Fi or mobile data, Wi-Fi name. `sys_info` (Safe): Android version, model, CPU, RAM, storage, current app. `platform_info` (Safe): where the agent is running. `process_list` (Safe): running processes.
+
+## Permissions and screen
+- `request_permission` (Safe): opens the system permission dialog with one tap when a tool fails for a missing permission. `device_lock` (System): lock the screen for real, or set up the permission that makes it possible. `floating_bubble` (Personal): turn the floating orb on or off.
+- `voice_change` (Personal): change speaking speed, pitch or gender. `live_voice` (System): switch the live speech-to-speech mode on or off.
+
+## Interface helpers
+- `code_box` and `files_panel`: open the live code box or the file browser so you watch the work. `todo_write`: the live task board.
+
+## Tips
+- You can chain: "Open Settings, find Wi-Fi and tell me the network name". The agent reads the screen after every step and decides the next one.
+- If a tap does nothing, the agent reads the screen again and tries a different element; it never taps blindly.
+- If Play Protect blocks something, the agent can walk through the settings with you (see Permissions).

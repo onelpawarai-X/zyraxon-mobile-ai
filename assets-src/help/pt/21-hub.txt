@@ -1,0 +1,20 @@
+Centro de automação
+Configurações → Sistema → Hub de automação. Cada botão para o que ZYRAXON pode fazer sozinho está em um só lugar, em seis guias. Cada guia começa com uma breve explicação de como funciona.
+
+## Habilidades
+Ensine ZYRAXON uma tarefa de duas maneiras: diga no chat ("aprender esta tarefa") ou pressione o botão de gravação e faça a tarefa você mesmo em outro aplicativo, depois volte e pressione Parar. O serviço de acessibilidade deve estar ativado ou seus toques não poderão ser vistos. O que aprendeu aparece em "Habilidades aprendidas" e pode ser reproduzido ou excluído.
+
+## Piloto automático
+Regras do tipo “quando isso acontecer, faça aquilo”. Quando o evento acontece ZYRAXON acorda sozinho e faz o trabalho sem pedir. Você também pode criar uma regra dizendo-a no chat. Cada regra mostra quantas vezes ela foi executada.
+
+## Dinheiro
+Lê SMS de qualquer banco ou carteira em qualquer país (PayPal, M-Pesa, UPI, Pix, bKash, cartões…) e mantém um registro de receitas, despesas, taxas e saldo. Você pode definir um orçamento e receber um aviso quando for aprovado. Funciona no telefone e nada é enviado para lugar nenhum.
+
+## Linha do tempo
+Tudo que ZYRAXON fez está escrito aqui. Gravações, edições e exclusões de arquivos podem ser desfeitas com um botão. Um comando que foi executado não pode ser desfeito.
+
+## Cérebro
+Pesquisa seus arquivos (texto, Word, Excel, PowerPoint, CSV) e, se você permitir, seu SMS, sem internet e em qualquer idioma. Pressione "Index" primeiro e depois pesquise.
+
+## Chamar agente
+Quando você não pode atender uma chamada, ZYRAXON atende, fala no idioma do chamador, aprende o nome e o motivo e fornece um resumo quando a chamada termina. Quinze idiomas usam regras integradas rápidas; todos os outros idiomas são tratados pelo modelo, que responde no idioma do chamador. Palavras que significam adeus, urgente ou spam são entendidas em todos os idiomas ao mesmo tempo. Os resumos das chamadas capturadas estão listados na guia.

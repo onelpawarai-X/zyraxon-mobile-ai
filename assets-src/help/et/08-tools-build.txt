@@ -1,0 +1,21 @@
+Loomine: saidid, rakendused, eelvaade ja avaldamine
+## Kuidas küsida
+- "Tee mulle oma kohviku sihtleht." Agent koostab selle kohe, käivitab selle teie telefonis ja avab eelvaates. Saate 2–3 rida, mis seda kirjeldavad. Midagi ei avaldata, kui te ei küsi.
+- "Ehitage ülesannete rakendus." Ehitatud otse mõistliku virnaga, jookse ja näidatakse. Tagaots, andmebaas või sisselogimine ainult siis, kui küsite.
+- "Ehitage täispakk rakendus." Agent esitab esmalt ühe lühikese küsimuse taustakeele, andmebaasi, sisselogimise ja selle käitamise kohta soovitatud vaikeväärtustega, seejärel koostab selle kõik algandmetega ja testib üht täisvoogu.
+- "Tehke Windows/Linux/macOS/Android programm." Allikas kirjutatakse, lisatakse koostamise töövoog, see lükatakse ja ehitatakse pilve koos GitHub Toimingutega ning saate tõelise allalaadimislingi.
+
+## Tööriistad
+- `edit_file` ja `write_file`: kirjutage päris failid (täielik kood, mitte kunagi stubs). `code_box` näitab neid otseülekandes.
+- `preview` (Turvaline): sisseehitatud pärisbrauser. Toimingud: avage (link, `localhost:PORT` või fail), laadige uuesti, tagasi, edasi, ekraanipilt, kerige, klõpsake, tippige, lugege lehe teksti, konsooli vead, eval. Agent vaatab oma tööd enne, kui ütleb, et see on tehtud.
+- `serve_local` (Süsteem): käivitab telefonis veebiserveri kausta jaoks ja tagastab aadressi LAN, mida teised teie Wi-Fi seadmed saavad avada.
+- `publish_website` (Süsteem): teenindab saiti telefonist avalikus pordis. `publish_cloudflare` (Süsteem): paneb saidi ilma kontota Internetti läbi Cloudflare tunneli ja tagastab avaliku https-lingi. `publish_github` (Süsteem): avaldab projekti teie märgiga GitHub hoidlas (Pages).
+- `git` (Süsteem): kloonimine, init, olek, lisamine, sidumine, lükkamine, tõmbamine, haru, kassa, logi, diff teie salvestatud märgiga. `github_pr` (Süsteem): looge, loetlege, ühendage ja kommenteerige tõmbetaotlusi. `github_actions` (Süsteem): loetlege töövood, käitage neid, küsitletakse ja loetakse logisid, nii et järgud jooksevad telefonist pilves.
+- `build_app` (Süsteem): koostab selle projekti telefoni Gradle'iga ja installib tulemuse.
+- `files_panel`, `todo_write`: failibrauser ja tegumilaud.
+
+## Kvaliteedireeglid, mida agent järgib
+Täielik paigutus, tundlik disain, töötav JavaScript, animatsioon, ühtsed värvid ja fondid (tumedad ja heledad, kus see sobib), mitte üldine mall. Sihtlehel on tavaliselt 300–900 rida; suuremaid asju rohkem.
+
+## Kui miski tundub katki
+Vajutage eelvaates nuppu Paranda või öelge agendile. See loeb konsooli, parandab põhjuse, avab lehe uuesti ja kontrollib uuesti.

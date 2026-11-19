@@ -1,0 +1,27 @@
+Leidimai, po vieną
+Nustatymai → Sauga ir privatumas → Leidimai. Kiekvienoje eilutėje rodoma „Suteikta“ arba mygtukas. Bakstelėjus eilutę atidaromas sistemos dialogo langas; tiesiog paspauskite Leisti. Agentas taip pat gali atidaryti dialogo langą su `request_permission`.
+
+- Mikrofonas: kad ZYRAXON jus girdėtų. Be jo nėra balso įvesties.
+- Fotoaparatas: fotografuoti ir žiūrėti nuotraukas (`look_camera`, dokumentų nuskaitymas, „ką matai“).
+- Vieta: žemėlapiams ir vietinei informacijai.
+- Pranešimai: praneša, kai baigsis foninis darbas.
+- Failai ir medija: norėdami skaityti nuotraukas, vaizdo įrašus, garso įrašus ir dokumentus.
+- Perdanga (piešti ant kitų programų): reikalinga plaukiojančiai akiai.
+- Prieinamumas: leidžia agentui skaityti ekraną ir bakstelėti, perbraukti ir įvesti tekstą už jus. Tai yra telefono automatizavimo širdis. Jį įjungiate sistemos pritaikymo neįgaliesiems nustatymuose.
+- Akumuliatoriaus optimizavimas: neleidžia Android užmigdyti ZYRAXON, kai jis veikia fone.
+
+## Kiti programos deklaruojami leidimai
+- SMS (skaityti ir gauti): kodų skaitymui, pinigų knygelei ir SMS autopiloto taisyklėms.
+- Telefono būsena, atsiliepti į skambučius, skambinti telefonu, kontaktai: skambučių įrankiams ir skambučių agentui.
+- Prieiga prie pranešimų: leidžia autopilotui reaguoti į pranešimus.
+- Įrenginio administratorius: leidžia `device_lock` tikrai užrakinti ekraną.
+- Įdiegti paketus: leidžia atnaujinti ir `build_app` įdiegti APK; Android prašo leisti ZYRAXON kaip diegimo šaltinį.
+- Pirmojo plano paslaugos (mikrofonas, duomenų sinchronizavimas) ir pažadinimo užraktas: išsaugokite balso ir ilgų darbų atlikimą.
+- Interneto ir tinklo būsena: debesis ir žiniatinklis.
+- Shizuku (neprivaloma): sistemos lygio prieiga prie apvalkalo ir terminalo.
+
+## Google Play Protect
+Jei Play Protect blokuoja užduotį, agentas gali atidaryti reikiamą puslapį, pažvelgti į tikrąjį ekraną ir žingsnis po žingsnio pereiti prie pavaros ir perjungimo jungiklio, bet pirmiausia jūsų paklaus, nes apsaugos išjungimas yra jūsų sprendimas. Norėdami tai padaryti patys: Play Store → profilio nuotrauka → Play Protect → nustatymai → išjunkite "Nuskaityti programas su Play Protect". Puslapyje yra mygtukas, kuris atidaromas Play Store.
+
+## Kodėl leidimas yra svarbus
+Jei įrankiui nepavyksta gauti trūkstamo leidimo, agentas nurodo, kuris iš jų, ir atidaro dialogo langą. Niekas jautraus neveikia be aiškaus leidimo.

@@ -1,0 +1,11 @@
+Siguria dhe privatësia
+- Të gjitha të dhënat e ZYRAXON jetojnë në telefonin tuaj: bisedat, kujtesa, libri, aftësitë, afati kohor, indeksi i trurit. Asgjë nuk mbahet në një server ZYRAXON.
+- Modelet e resë kompjuterike marrin vetëm atë që nevojitet për kthesën që dërgoni. Me "Vetëm në pajisje" asgjë nuk dërgohet fare.
+- Kërkesat dhe skedarët e gjuhës të dërguara në aplikacion janë të koduara brenda APK.
+- Kyçja e aplikacionit: vendosni një fjalëkalim ose model te "Cilësimet" → Siguria dhe privatësia → Kyçja e aplikacionit. ZYRAXON më pas kyçet kur e hapni ose kur ktheheni nga sfondi. "Hiq bllokimin" fshin fjalëkalimin ose modelin e ruajtur.
+- Nivelet e miratimit ruajnë çdo thirrje mjeti në kod (shihni Nivelet e miratimit). Mjetet e panjohura pyesin gjithmonë.
+- Mund të fshini: të gjithë kujtesën, historikun e bisedës dhe tokenin tuaj GitHub, secili me një buton në Privatësia dhe të dhënat.
+- Siguria: nëse thoni se dikush po ju kërcënon ose ju ndjek, ose kërkon telefonin ose të dhënat tuaja, agjenti fillimisht e kyç telefonin (nëse leja e administratorit të pajisjes është e ndezur) dhe më pas flet me ju me qetësi.
+- Pagesat: përpara çdo pagese ose transferimi agjenti thotë se çfarë do të paguajë dhe ju kërkon të konfirmoni.
+- Sinqeriteti: agjenti thotë se diçka funksionoi vetëm pasi pa një rezultat. Nuk shpik kurrë lidhje, skedarë apo rezultate.
+- Mburoja e përmbajtjes: çdo gjë që agjenti lexon nga jashtë - ekrani i një aplikacioni tjetër, një faqe interneti, një mesazh, një skedar, një server i lidhur - kontrollohet në kod për tekstin që përpiqet t'i japë agjentit urdhra (në shumë gjuhë, duke përfshirë tekstin e fshehur me karaktere të padukshme). Teksti i dyshimtë është i rrethuar, kështu që modeli e trajton atë vetëm si të dhëna. Sa i rreptë është ai ndjek nivelin tuaj të miratimit: Locked trajton çdo gjë të dyshimtë si armiqësore; Mbikëqyrja rrethon tekstin e dyshimtë dhe, kur teksti është qartësisht armiqësor, bllokon pjesën tjetër të asaj kthese, kështu që çdo mjet që ndryshon ju pyet së pari (karta thotë pse); Veprimet e balancuara vetëm në tekst qartësisht armiqësor dhe vetëm mjetet e nivelit të sistemit ndalojnë të pyesin; Automatikisht fik mburojën plotësisht - asgjë nuk skanohet, ndalet, shënohet ose ndryshohet. Një mesazh i ri nga ju e pastron atë.

@@ -1,0 +1,14 @@
+Shirya matsala
+- Babu amsa: duba intanet ɗinku da maɓallin API (Saituna → Masu bayarwa & API yana nuna ainihin kuskuren). Gwada wani samfurin ko samfurin kan na'urar.
+- Makirufo ba ya yin komai: ba da izinin makirufo; duba "Ci gaba da microrin"; duba harshen ganewa.
+- ZYRAXON yana jin kanta: an tace wannan ta hanyar rubutu; idan har yanzu yana faruwa, rage ƙarar ko amfani da belun kunne.
+- Jumla ta bayyana sau biyu: ƙayyadaddun a sigogin yanzu; sabunta app.
+- Ba zai taɓa ko karanta allon ba: kunna sabis ɗin Samun damar (Saituna → Izini).
+- Yana tsayawa a bango: ba da izinin sanarwa da keɓantawar baturi; mai rufi don ido mai iyo.
+- Kayan aiki yana ci gaba da neman izini: canza matakin a cikin Saituna → Automation, ko amsa katin.
+- Play Protect yana toshe wani abu: duba babin Izini, ko barin wakili ya jagoranci matakan.
+- Terminal ko Linux baya farawa: jira na farko da za a cire kaya a farkon app; duba ajiya kyauta.
+- Sabuntawa ba zai shigar ba: ba da izini ZYRAXON azaman tushen shigarwa.
+- Ba za a iya bugawa ba: ƙara alamar GitHub don GitHub; don hanyar haɗin jama'a wakilin zai iya amfani da rami.
+- Wani babi yana nuna Turanci: wannan babin ba shi da rubutu a cikin yarenku a cikin wannan ginin; sabunta app.
+- Wani abu mara kyau: yi amfani da Saituna → Kewayawa → Sabon zama don fara tsabta (yana share tarihin hira kawai; ƙwaƙwalwar ajiya tana tsayawa).

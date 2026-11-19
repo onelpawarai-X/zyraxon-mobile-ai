@@ -1,0 +1,16 @@
+Limbi
+## Limba aplicației
+Setări → Limbă și traducere. 60 de limbi. Întreaga interfață și mesajele instrumentului agentului îl urmează. Fiecare limbă are propriul fișier de traducere. Orice linie pe care un fișier de limbă nu o are încă este afișată în limba engleză, nu lăsată niciodată necompletată.
+
+## Ce spui tu
+Agentul răspunde întotdeauna în limba în care îi vorbiți, în orice limbă din lume. Dacă schimbi, se schimbă. Folosește forma prietenoasă-respectuoasă a lui „tu” în limba ta. Numele de mărci și tehnologii rămân așa cum sunt.
+
+## Limbi vocale
+- Limba de recunoaștere (ceea ce vorbiți în microfon): Setări → Voce și microfon → Microfon și limbă.
+- Voce vorbită: Setări → Voce și microfon → Profil vocal și laboratorul de voce pentru limbi precum bengaleză, hindi, engleză, urdu, arabă, tamilă, nepaleză, spaniolă, franceză, germană, japoneză, coreeană, chineză, rusă, turcă.
+
+## Această documentație
+Utilizați cipurile de limbă din partea de sus a acestei pagini. Întregul ghid este scris în fiecare limbă pe care o acceptă aplicația, manual și livrat în interiorul aplicației. Nimic nu este tradus pe telefonul tău: fiecare capitol se deschide instantaneu, funcționează offline și nu are nevoie de model sau cheie.
+
+## Scriind în propriul tău scenariu
+Documentele, afișele și desenele pot fi realizate în orice scenariu. Pentru modelele bengalezi se folosește fontul potrivit; pentru alte scripturi se alege fontul potrivit.

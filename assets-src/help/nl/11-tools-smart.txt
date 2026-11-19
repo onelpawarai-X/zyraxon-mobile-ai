@@ -1,0 +1,45 @@
+Vaardigheden, automatische piloot, geld, tijdlijn en ongedaan maken, hersenen, oproepagent en geheugen
+Dit alles gebruik je door te praten: zeg wat je wilt en de agent belt de juiste tool. Elke actie wordt hier vermeld met zijn opties.
+
+## Vaardigheden: leer door te doen
+Een vaardigheid is een telefoontaak die de agent heeft geleerd door u deze één keer te zien doen. Het slaat op hoe je elk element opnieuw kunt vinden (de id, woorden en buren, niet de schermpositie), zodat het blijft werken als de lay-out van de app verandert.
+- Voeg een vaardigheid toe: `skill_record` (Persoonlijk). Zeg "leer dit als <naam>". `action: start` (met een naam) begint met opnemen; voer vervolgens de taak uit: open de app, tik, typ, druk op de toetsen; elke stap wordt geregistreerd. `action: stop` slaat het op. Bij stop kunt u `params` doorgeven om getypte waarden in parameters om te zetten (het telefoonnummer wordt bijvoorbeeld `number`, het bedrag wordt `amount`) en een `description`. `action: status` vertelt u of de opname aan staat.
+- Voer een vaardigheid uit: `skill_run` (persoonlijk). Geef `args` voor zijn parameters, b.v. aantal en bedrag. Het wordt in een fractie van de stappen opnieuw afgespeeld en geneest zichzelf wanneer de app verandert. Als één stap mislukt, staat in het resultaat welke stap en wat er op het scherm staat, en de agent rondt de rest met de hand af.
+- Lijst met vaardigheden: `skill_list` (Veilig) toont de naam, parameters, stappen en hoe vaak ze zijn uitgevoerd. Met een naam en export erop wordt een deelbaar `.zxskill`-bestand gemaakt.
+- Delen en laden: `skill_import` (Persoonlijk) laadt een `.zxskill`-bestand uit een download of een gedeeld bestand als vaardigheid.
+- Verwijder een vaardigheid: `skill_delete` (Systeem).
+- Voorbeeld: "Leer hoe ik 500 naar Rahim stuur via mijn portemonnee-app" → je doet het een keer → "Stuur de volgende keer 700 naar Karim".
+
+## Automatische piloot - "als X gebeurt, doe dan Y"
+Een regel wekt de agent vanzelf en voert de taak uit zonder u dit te vragen.
+- Voeg toe: `autopilot_add` (Systeem). Soorten: sms, melding, oproep, dagelijks, eenmalig, interval, batterij, app. Vul alleen de velden in die de regel nodig heeft: `from` (afzendernaam of nummer of app-titel), `any` (ten minste één van deze woorden), `all` (elk woord), `none` (geen van deze woorden), `time` "HH:MM" (dagelijks), `in_minutes` of `at_ms` (eenmalig), `every_minutes` (interval), `below` (batterijpercentage), `pkg` (app pakket of naam, voor app- en meldingsregels). De agent zet uw zin om in deze velden. Het resultaat geeft een overzicht van de nog benodigde toestemming (SMS, toegang tot meldingen…) en de agent vraagt ​​u om deze in te schakelen.
+- Voorbeelden: "Als er een betalings-sms binnenkomt vanuit mijn portemonnee-app, voeg deze dan toe aan mijn grootboek." "Vertel me elke ochtend om 8 uur het weer." 'Herinner me er over twintig minuten aan dat ik het brood eruit moet halen.' "Elke 30 minuten een herinnering om water te drinken." "Als de batterij onder de 15% komt, vertel het me dan." "Als iemand mij belt, noteer dan het nummer." "Als ik de bankapp open, herinner me er dan aan dat ik het budget moet controleren."
+- Lijst: `autopilot_list` (Veilig) toont elke regel met de volgende looptijd en hoe vaak deze is afgevuurd.
+- Pauzeren of hervatten: `autopilot_toggle` (Systeem). Verwijderen: `autopilot_remove` (Systeem), op id of titel.
+- Wanneer een regel wordt geactiveerd, krijgt u een bericht waarin dit wordt vermeld, en de agent doet gewoon zijn werk.
+
+## Geldgrootboek (persoonlijke CFO)
+- `ledger_scan` (Persoonlijk): lees portemonnee- en bank-SMS in een privégrootboek: inkomsten, uitgaven, kosten, saldo en categorie. `days` geeft aan hoe ver terug (standaard 30). Als `auto` is ingeschakeld, wordt elke nieuwe geld-sms automatisch toegevoegd en wordt u gewaarschuwd wanneer een budget wordt overschreden. Werkt voor de portemonnee en bankberichten van elk land, in elke valuta.
+- `ledger_report` (Persoonlijk): periode vandaag, gisteren, week, maand of allemaal. Formaat tekst (een kant en klare gesproken samenvatting) of xlsx (een Excel bestand met transacties en categorietotalen, voor u geopend).
+- `ledger_budget` (Persoonlijk): stel een maandelijks budget in voor een categorie (voedsel, rekeningen, transport, winkelen, mobiel opladen, transfers…); een limiet van 0 verwijdert deze; zonder argumenten worden budgetten en huidige waarschuwingen vermeld.
+- De agent bedenkt nooit geldnummers; het leest ze uit het grootboek.
+
+## Tijdlijn en ongedaan maken
+- Alles wat de agent doet, wordt naar de tijdlijn geschreven (de laatste 400 acties). Bestandswijzigingen houden een kopie bij van wat er eerder was.
+- `timeline_list` (Veilig): wat de agent onlangs heeft gedaan, met een ID voor elke agent, en welke wijzigingen ongedaan kunnen worden gemaakt.
+- `timeline_undo` (Persoonlijk): `id` maakt het schrijven, bewerken of verwijderen ongedaan - het bestand komt precies terug zoals het was (een bestand dat niet bestond, wordt opnieuw verwijderd). `since_id` maakt alles ongedaan vanaf die id, de nieuwste eerst. Gebruik het als je zegt "neem dat terug" of "plaats het terug zoals voorheen".
+- Ongedaan maken omvat het schrijven, bewerken en verwijderen van bestanden. Een uitgevoerd commando (bijvoorbeeld iets installeren of een bericht versturen) kan op deze manier niet ongedaan worden gemaakt.
+- Chatberichten: om een ​​heel gesprek te verwijderen gebruik je het potlood en het kruisje in het linkermenu, of Instellingen → Privacy & gegevens → Chatgeschiedenis verwijderen, of Navigatie → Nieuwe sessie.
+
+## Hersenen — tweede geheugen voor uw bestanden
+- `brain_index` (Veilig): bouw of ververs de offline index over mappen of bestanden (tekst, Markdown, CSV, Word, Excel, PowerPoint) en optioneel de SMS-inbox (`sms` aan). Voer het uit vóór de eerste zoekopdracht en nadat er nieuwe bestanden zijn verschenen. De standaardinstelling is uw werkruimte.
+- `brain_search` (Veilig): vraag in je eigen woorden: "Waar is mijn huurcontract?" — het werkt offline in elke taal. `kind` is bestand of sms; `days` limieten voor recente items. Open een gevonden bestand met `open_file`.
+
+## Bel agent
+- `call_agent` (Persoonlijk): actie aan, uit of status. `owner` is de naam die erop staat ("Ik ben de assistent van <eigenaar>"). Met `answer_after_seconds` (standaard 6) kunt u eerst oppakken. Als er een oproep binnenkomt en u kunt niet opnemen, wordt u begroet in de taal van de beller, wordt de naam en de reden gevraagd, worden eenvoudige vragen beantwoord, wordt beleefd ophangen en wordt een samenvatting gegeven.
+- `call_log` (Veilig): samenvattingen van beantwoorde oproepen, nieuwste eerst.
+- Heeft de machtigingen voor bellen en telefoonstatus nodig.
+
+## Geheugen
+- `memory_write`, `memory_read`, `memory_delete` (Veilig): blijvende feiten over jou (naam, voorkeuren, mensen, data, projecten) leven in een lokale database en overleven opnieuw opstarten. Zeg "onthoud dit" en het wordt in dezelfde beurt geschreven; als er iets mis is, wordt het verwijderd of herschreven. Elk oud gesprek wordt ook bewaard, en wendingen uit het verleden die overeenkomen met wat u zegt komen vanzelf terug, zelfs maanden later.
+- Bekijk en wijzig het allemaal in Instellingen → Systeem → Geheugen (sleutel, waarde, opslaan, alles verwijderen).

@@ -1,0 +1,35 @@
+Murya: magana, sauraro da magana kai tsaye
+## Sauraro (Microphone)
+Saituna → Murya & mic → Mic & harshe.
+- Harshen gane magana: harshen da kuke magana da makirufo. Canza shi kowane lokaci.
+- Ci gaba da microrin (a koyaushe yana saurare): idan kun kunna, makirufo yana buɗewa. Idan an kashe, kun kunna kan kanku.
+- Aika kai tsaye lokacin da kuka daina magana: bayan kusan daƙiƙa 1.5 na shiru ana aika jumlar ku da kanta. Idan an kashe, kalmomin suna jira a cikin akwatin don danna Aika.
+- Maɓallin microrin da ke cikin sandar saƙo da banner a saman suna kunna/kashe iri ɗaya.
+- Makirifo koyaushe yana buɗe muku, koda lokacin ZYRAXON yana magana. Da zarar ka fara magana sai ya tsaya ya saurare shi, sannan ya amsa maka. Muryarsa da ke dawowa ta mic ɗin tace tana kwatanta rubutu da amsa ta ƙarshe.
+- Ana aika jumla sau ɗaya kawai. Idan mai ganowa daga baya ya sake maimaita juzu'i daban-daban na jimla ɗaya, an jefar dashi azaman juzu'i iri ɗaya.
+
+## Yin magana (rubutu-zuwa-magana)
+Saituna → Murya & mic → Bayanan martaba.
+- Zabi murya: mace (mai dadi da soyayya) ko namiji (mai zurfi da karfin gwiwa). Ana amfani da muryoyin gidan yanar gizon idan an shirya; Inji injin magana da wayar ke yi.
+- Gudun gudu da silidu, da "Gwajin murya".
+- "Karanta amsoshi da ƙarfi" yana kunna ko kashewa.
+- Idan wayar ba ta da injin magana, shigar Google Sabis na Magana. Idan wayar ba ta da bayanan muryar Bengali, maɓalli zai baka damar sauke ta.
+- Matsa banner ɗin magana don dakatar da muryar. Matsa Saurari ƙarƙashin kowane saƙo don jin sa.
+- ZYRAXON baya karanta lamba, hanyoyin haɗin gwiwa, JSON ko sunayen kayan aiki da ƙarfi.
+
+## Lab din murya (mai canza murya)
+Zaɓi daga kundin sabar ta jinsi (duk, yarinya, yaro), shekaru (yaro, matashi, babba, babba), da harshe (Bengali, Hindi, English, Urdu, Arabic, Tamil, Nepali, Spanish, French, German, Japan, Korean, Chinese, Russian, Turkish…). "Saurara" yana duban murya; "Komawa zuwa tsoho" yana maido da muryar halin. Don sauti mai sauti da yawa tambayi wakilin: kowane bangare na tattaunawa yana samun muryarsa.
+
+## Muryar kai tsaye (magana-zuwa-magana)
+Saituna → Murya & mic → Muryar kai tsaye. Tare da samfurin ainihin lokaci (Gemini) Live, OpenAI Realtime da makamantansu) samfurin yana jin makirufo kuma yana amsa muryarsa, a cikin rafi ɗaya, kuma kuna iya katse shi a tsakiyar kalma. Maganar wayar tana kashe a wannan zaman don haka ba za ku taɓa jin muryoyin biyu ba.
+- Yi amfani da muryar samfurin: a kan = magana kai tsaye; kashe = wayar tana karanta amsoshi rubutu.
+- Matsayi yana nuna: haɗi, sauraro, magana, jira.
+- Zaɓan samfurin ainihin lokacin yana kunna shi da kansa.
+- Idan ba a ɗora samfurin ainihin lokaci ba, ƙara maɓallin Gemini ko OpenAI a cikin masu samar da AI.
+- Muryar da kuka zaɓa a cikin bayanin martabar muryar ana amfani da ita a yanayin rayuwa kuma.
+
+## Ido mai iyo
+Saituna → Aura & jigo → Aura & bango.
+- Ƙaramin orb mai iyo wanda ke zaune akan kowane app. Matsa don kunna ko kashe mic; dogon danna don buɗe akwatin rubutu kuma sake rufe shi.
+- Zane guda takwas: ido, haske orb, zoben neon, galaxy, orbit, plasma, pulsar, priism. Wuri na gefen allo.
+- Umarnin murya (kalmomin farkawa): lokacin da app ɗin ke bango, faɗin sunan yana farkar da ido mai iyo da ZYRAXON amsoshi. Defaults: "zyraxon", "hey zyraxon" da rubutun kalmomin gama gari a cikin Bengali da Ingilishi. Ƙara kalmomin ku a cikin kowane harshe; cire su kowane lokaci.

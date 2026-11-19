@@ -1,0 +1,7 @@
+Atjauninājumi
+Iestatījumi → Atjauninājumi → Lietotnes atjauninājums vai reklāmkarogs lietotnes augšdaļā.
+- Lietotne pārbauda jaunus laidienus un parāda "Pieejams jauns atjauninājums — versija".
+- Pārbaudīt atjauninājumus: jautā tūlīt. Ja esat aktuāls, tas tā saka.
+- Lejupielādēt un instalēt: lejupielādes ar procentiem. Kad esat pabeidzis, nospiediet Instalēt. Jūsu tērzēšana, atmiņa un iestatījumi paliek.
+- Ja Android bloķē instalēšanu, nospiediet atļaujas pogu, atļaujiet ZYRAXON kā instalēšanas avotu un pēc tam mēģiniet vēlreiz.
+- Reklāmkaroga pogas: Lejupielādēt, Instalēt, Atļaut un Aizvērt.

@@ -1,0 +1,21 @@
+Bygging: síður, forrit, forskoðun og birting
+## Hvernig á að spyrja
+- „Gerðu mér að áfangasíðu fyrir kaffihúsið mitt.“ Umboðsmaðurinn byggir það strax, ræsir það í símanum þínum og opnar það í Preview. Þú færð 2–3 línur sem lýsa því. Ekkert er birt nema þú spyrð.
+- "Búgðu til verkefnaapp." Byggt beint með skynsamlegum stafla, keyrt og sýnt. Bakendi, gagnagrunnur eða innskráning aðeins ef þú spyrð.
+- "Bygðu til app í fullri stafla." Umboðsmaðurinn spyr fyrst einnar stuttrar spurningar um bakendamálið, gagnagrunninn, innskráninguna og hvar það keyrir, með ráðlögðum sjálfgefnum stillingum, byggir það síðan allt með frumgögnum og prófar eitt fullt flæði.
+- "Búðu til Windows/Linux/macOS/Android forrit. Heimild er skrifuð, byggingarverkflæði er bætt við, því er ýtt og byggt í skýinu með GitHub aðgerðum og þú færð raunverulegan niðurhalstengil.
+
+## Verkfæri
+- `edit_file` og `write_file`: skrifaðu raunverulegu skrárnar (heill kóða, aldrei stubbar). `code_box` sýnir þá í beinni.
+- `preview` (öruggur): innbyggði raunverulegi vafrinn. Aðgerðir: opna (tengill, `localhost:PORT` eða skrá), endurhlaða, til baka, áfram, skjámynd, fletta, smella, slá inn, lesa síðutexta, stjórnborðsvillur, meta. Umboðsmaðurinn skoðar eigin verk áður en hann segir að það sé búið.
+- `serve_local` (Kerfi): ræsir vefþjón í símanum fyrir möppu og skilar LAN heimilisfanginu sem önnur tæki á Wi-Fi þínum geta opnað.
+- `publish_website` (Kerfi): þjónar síðu á opinberri höfn úr símanum. `publish_cloudflare` (Kerfi): setur síðu á internetið án reiknings í gegnum Cloudflare göng og skilar opinberum https hlekk. `publish_github` (Kerfi): birtir verkefni í GitHub geymslu (síður) með tákninu þínu.
+- `git` (Kerfi): klóna, hefja, staða, bæta við, skuldbinda, ýta, draga, útibú, afrita, skrá þig inn, breyta með vistuðu tákninu þínu. `github_pr` (Kerfi): búa til, skrá, sameina og gera athugasemdir við dráttarbeiðnir. `github_actions` (Kerfi): listaðu verkflæði, keyrðu þau, könnunarkeyrslur og lestu annála, svo byggir keyra í skýinu úr símanum.
+- `build_app` (Kerfi): byggir þetta verkefni með Gradle í símanum og setur upp niðurstöðuna.
+- `files_panel`, `todo_write`: skráarvafri og verkefnaborð.
+
+## Gæðareglur sem umboðsmaðurinn fer eftir
+Fullkomið skipulag, móttækileg hönnun, vinnandi JavaScript, hreyfimyndir, samræmdir litir og leturgerðir (dökkt og ljóst þar sem það passar), ekki almennt sniðmát. Áfangasíða er venjulega 300–900 línur; stærri hluti meira.
+
+## Ef eitthvað virðist bilað
+Ýttu á Fixa í Preview eða láttu umboðsmanninn vita. Það les stjórnborðið, lagar orsökina, opnar síðuna aftur og athugar aftur.

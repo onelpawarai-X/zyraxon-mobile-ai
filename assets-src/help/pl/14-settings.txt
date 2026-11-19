@@ -1,0 +1,42 @@
+Każdy ekran ustawień, jeden po drugim
+Ustawienia mają osiem sekcji. Każda sekcja ma pigułki dla swoich podekranów. Ostatnia używana sekcja zostanie ponownie otwarta następnym razem.
+
+## 1. Język i tłumaczenie → Język aplikacji i narzędzi
+Wybierz język całej aplikacji i komunikatów narzędzi agenta. Przeszukaj listę i dotknij jednego. Na ekranie widoczny jest bieżący język oraz to, czy włączone jest tłumaczenie interfejsu użytkownika i tłumaczenie komunikatów narzędzi. Dostępnych jest 60 języków. Zobacz rozdział Język.
+
+## 2. Głos i mikrofon
+- Profil głosowy: wybierz głos żeński lub męski, szybkość, tonację, „Czytaj odpowiedzi na głos”, głos testowy, wskazówkę dotyczącą pobierania głosu bengalskiego.
+- Mikrofon i język: rozpoznawanie języka, nie wyłączaj mikrofonu, wysyłaj automatycznie, gdy przestaniesz mówić.
+- Głos na żywo: włączanie/wyłączanie mowy na mowę, status, lista modeli czasu rzeczywistego.
+
+## 3. Dostawcy i API
+- Dostawcy AI: własne klucze API (ZYRAXON, OpenCode bezpłatny limit, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) i ZYRAXON Apex agent w chmurze. Zapisany klucz jest weryfikowany poprzez odczytanie prawdziwego katalogu dostawcy i pokazuje liczbę modeli lub dokładny błąd. Przycisk otwiera stronę internetową ZYRAXON, na której tworzysz klucz.
+- GitHub: Twój GitHub token dostępu (wymaga zakresu repo) do publikowania, Git żądań push i pull. Zapisz token lub usuń go; status pokazuje, czy jest ustawiony.
+
+## 4. Aktualizacje → Aktualizacja aplikacji
+Pokazuje aktualną wersję, sprawdza dostępność nowszej wersji, pobiera ją z paskiem postępu i instaluje. Twoje czaty, pamięć i ustawienia pozostają. Jeśli Android potrzebuje pozwolenia na instalację, przycisk otwiera to ustawienie.
+
+## 5. Model i tożsamość
+- Tożsamość: wybierz postać (patrz rozdział Postacie).
+- Model: katalog modeli na żywo z polem wyszukiwania, filtrami „Wszystkie modele” i „Własne”; najpierw szybkie modele.
+- Na urządzeniu: pobieraj, ładuj i rozładowuj modele działające w trybie offline; posortowane od małych do dużych; opcjonalny token Hugging Face; pokazuje stany załadowania, ładowania i awarii.
+
+## 6. Aura i motyw
+- Temat: Horror, Ciemność lub Światło.
+- Aura i tło: styl i kolor aury (krew, róż, fiolet, niebo, zieleń, ogień) z precyzyjną kontrolą odcienia; rozmiar aury, siła blasku, prędkość obrotu, przezroczystość panelu; pływające oko (włączanie/wyłączanie, wygląd, krawędź ekranu, polecenia głosowe/słowa budzenia, dodawanie własnych); tryb cieniowania; niestandardowy adres URL tła (mp4, gif lub obraz); prędkość animacji.
+
+## 7. Bezpieczeństwo i prywatność
+- Blokada aplikacji: hasło (4–8 cyfr) lub wzór 3×3 kropki; potwierdź wpisując dwukrotnie; usuń blokadę.
+- Uprawnienia: lista w rozdziale Uprawnienia, z pomocą Play Protect.
+- Prywatność i dane: wszystkie dane pozostają w telefonie. Przyciski: usuń całą pamięć, usuń historię czatów, usuń token GitHub.
+
+## 8. System
+Ta sekcja ma własny rząd przycisków, które przewijają się na boki, więc nic nie jest ściskane.
+- Automatyzacja: poziom zatwierdzenia i tylko na urządzeniu (patrz Poziomy zatwierdzenia).
+- Nawigacja: lista obszarów, do których można przejść — „żadnych przycisków na górze, wszystko jest tutaj” — w tym powłoka systemowa ⌘ ZX, przycisk „Nowa sesja” (kasuje historię czatów w celu czystego rozpoczęcia), liczba wiadomości i przełącznik mikrofonu.
+- Pamięć: pamięć lokalna SQL z faktami ZYRAXON pamięta; dodaj klucz i wartość; usuń wszystko.
+- Przewodnik po umiejętnościach: krótka lista przykładowych umiejętności (aplikacje do przesyłania wiadomości, tworzenie stron internetowych, czytnik ekranu, latarka, aparat, Wi-Fi i ustawienia) z przykładowymi zwrotami.
+- Hub automatyzacji: umiejętności, autopilot, pieniądze, oś czasu, mózg i agent telefoniczny w jednym miejscu (patrz Hub automatyzacji).
+
+## 9. Dokumentacja
+Własna sekcja w Ustawieniach, oddzielna od Systemu. Ten przewodnik: dwadzieścia jeden rozdziałów, pole wyszukiwania i wiersz elementów językowych. Każdy język w aplikacji jest już w całości zapisany w aplikacji — nic nie jest tłumaczone na Twoim telefonie i do jej przeczytania nie jest potrzebny internet.

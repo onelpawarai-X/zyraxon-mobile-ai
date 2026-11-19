@@ -1,0 +1,51 @@
+Die kletsskerm en elke knoppie
+## Boaan die skerm
+- Kieslys: maak die linkerlaai oop met jou geselsies.
+- Klets / Terminale / Kode / Voorskou: verander die hoofaansig. Chat is die gesprek; Terminal is die regte terminale; Kode is die lêerwerkspasie met Git; Preview is die ingeboude blaaier.
+- Aura: wys die geanimeerde karakterskerm. Sy syknoppies is Mic, Chat (terug na die gesprek) en Refresh (herkoppel die wolk en herlaai die modellys).
+- Instellings: maak die agt instellingsafdelings oop.
+- 'n Banier wys die mikrofoontoestand: "Luister ...", "Mikrofoon af — tik", of "Praat ... tik om te stop".
+- Wanneer 'n nuwe weergawe gereed is, verskyn 'n opdateringbanier met Aflaai-, Installeer- en Laat-knoppies (sien Opdaterings).
+
+## Die linkerkieslys (kletse)
+- "+ Nuwe klets": begin 'n nuwe gesprek.
+- Elke klets in die lys wys 'n lopende merk terwyl die agent daar besig is. Die potlood hernoem dit; die kruis vee dit uit (na 'n bevestiging: alle boodskappe daarin word uitgevee).
+- Tema: kies Gruwel (bloed, vuur en skaduwee), Donker (skoon donker glas) of Lig (helder glas).
+
+## Die boodskapbalk
+- Heg aan (skuifspeld): galeryfoto, kamerafoto, dokumentskandering (verander die teks in 'n foto in 'n bewerkbare .docx), deel die skerm sodat die agent dit kan sien ("Skermkyk" aan of af), en oudio- of videolêers. Aangehegte items wys as skyfies; die kruis verwyder een, "Vee alles uit" verwyder almal.
+- Modusknoppie: Agent of Bou.
+- Mikrofoonknoppie: skakel die mikrofoon wat altyd luister aan of af.
+- Model-knoppie: maak die modellys oop met 'n soekkassie. Modelle gemerk "Live" kan in hul eie stem praat.
+- Stuur: stuur die boodskap. Terwyl die agent werk, word dit Stop.
+- Die invoer sê "Wat moet ek doen?" in Agent-modus en "Wat moet ek bou? Sê dit kort" in Bou-modus.
+
+## Boodskappe
+- Kopieer, Deel en Luister (lees die boodskap hardop; druk weer om te stop) is onder elke boodskap.
+- "Denk" wys die model se redenasie wanneer die model dit verskaf.
+- Kode wat die agent skryf, verskyn regstreeks in 'n boks, reël vir reël, met Kopieer, Laai af en Maak oop.
+- Lêers wat die agent maak, wys as kaarte met Open (in die foon se regte toepassing), Speel, Deel en "Ander toepassing...".
+- Prente, oudio en video wys 'n regstreekse vorderingspersentasie terwyl dit gemaak word.
+- Gereedskapkaarte wys wat die agent doen: hardloop, klaar, sukses of misluk.
+
+## Panele (taak, gereedskap, lêers, sub-agente)
+- Todo-bord: die plan wat die agent vir 'n groot werk skryf en die vordering daarvan (n/totaal gedoen). Jy kan jou eie taak byvoeg en take uitvee.
+- Gereedskap: die lys van elke gereedskapoproep, met lewendige status.
+- Lêers: elke lêer wat die agent geskep het, met oop, deel, publiseer en verwyder (met bevestiging) en 'n soekkassie.
+- Sub-agente: helper-agente wat in die agtergrond loop, met 'n Stop-knoppie.
+- Terminal-oortjie: die regte terminale (sien die Lêers en Terminale hoofstuk).
+
+## Voorskou paneel
+- Terug, Vorentoe, Stop, Herlaai en 'n adresbalk (tik 'n webadres, of soek Google).
+- Maak lêer oop: wys Word, Excel, PowerPoint, PDF, beelde, Markdown, CSV, kode en werwe direk binne die toepassing.
+- Grootte: verklein of vergroot die paneel.
+- Fix: stuur die bladsy se probleme (konsolefoute, mislukte ladings) na die agent, wat dit op die agtergrond regstel.
+- Kies deel: tik op 'n deel van die bladsy, vertel dan die agent wat om met daardie deel te doen.
+- Agent-knoppie: vra iets oor die bladsy; die agent ontvang 'n foto daarvan.
+- Vinnig oop: kortpaaie na onlangse bladsye.
+
+## Kode werkspasie
+- Linkerkant: jou lêers (nuwe lêer, maak oop, stoor).
+- Redigeerder: wys reëls en karakters; veranderinge wat deur die agent gemaak is, verskyn dadelik.
+- Git: nuwe repo, kloon van GitHub, skandeer, status, pleeg met 'n boodskap, druk, trek, takke, teken.
+- Trek versoeke: skep, voeg saam, maak toe. Werkstrome: lys lopies, voer 'n werkvloei uit. Log wys opdrag uitvoer.

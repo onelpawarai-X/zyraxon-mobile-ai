@@ -1,0 +1,20 @@
+Alustamine
+ZYRAXON on assistent, mis elab teie Android telefoni sees. See räägib teiega, kuulab teid ja saab teha tõelist tööd: avada rakendusi, puudutada ja sisestada ekraani, helistada inimestele, kirjutada faile, luua veebisaite ja rakendusi, käitada Linux süsteemi, luua pilte, heli-, video- ja kontoridokumente ning mäletada teid kuude jooksul. See töötab mis tahes keeles, mida räägite.
+
+## Esimesed minutid
+- Esmakordsel käivitamisel näitab ZYRAXON lühikest teadet, et agent võib teie telefoniga ise toimida. Jätkamiseks vajutage "Selge, alusta".
+- Lisage AI-võti (Seaded → Pakkujad ja API → AI pakkujad). Kleepige mis tahes teile meeldiva teenusepakkuja võti (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Võtme salvestamisel loeb rakendus selle teenusepakkuja kataloogi ja kontrollib selle tõesust, nii et näete tõelist "ühendatud" ja mudelite arvu.
+- Võti puudub? Saate endiselt kasutada seadmes olevaid mudeleid (Seaded → Mudel ja identiteet → Seadmesisene). Nad töötavad telefonis ilma Internetita.
+- Valige sõnumiribal mudelinupu abil mudel ja märk (Seaded → Mudel ja identiteet → Identiteet).
+- Andke õigused, kui funktsioon seda vajab (vt peatükki Õigused). Samuti saab agent avada teie jaoks lubade dialoogi ühe puudutusega.
+- Lihtsalt räägi või kirjuta. "Tee mulle oma pagariäri maandumisleht", "ava YouTube ja esita lugu", "mis on minu aku?", "helista emale".
+
+## Kaks tööviisi
+Teatekasti kõrval on režiiminupp kahe režiimiga: Agent ja Build. Vaadake peatükki Režiimid.
+
+## Kus asjad on
+- Vasakpoolne menüü: teie vestlused, uus vestlus, ümbernimetamine, kustutamine ja teema lüliti.
+- Vestlusekraan: sõnumid, ülesannete paneel, tööriistade loend, failid, terminal.
+- Eelvaate ja koodi paneelid: vaadake ja redigeerige, mida agent koostab.
+- Seaded: kaheksa sektsiooni, mis on käesolevas dokumentatsioonis ükshaaval käsitletud.
+- See dokumentatsioon: Seaded → Dokumentatsioon (olete siin).

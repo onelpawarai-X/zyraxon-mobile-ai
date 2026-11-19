@@ -1,0 +1,45 @@
+Awọn ogbon, autopilot, owo, aago ati tunṣe, ọpọlọ, aṣoju ipe ati iranti
+O lo gbogbo awọn wọnyi nipa sisọ: sọ ohun ti o fẹ ati pe oluranlowo pe ọpa ti o tọ. Gbogbo igbese ti wa ni akojọ nibi pẹlu awọn aṣayan rẹ.
+
+## Ogbon - kọ nipa ṣiṣe
+Imọgbọngbọn jẹ iṣẹ foonu kan ti aṣoju kọ nipa wiwo ti o ṣe lẹẹkan. O tọju bii o ṣe le rii nkan kọọkan lẹẹkansi (id rẹ, awọn ọrọ ati awọn aladugbo, kii ṣe ipo iboju rẹ), nitorinaa o tẹsiwaju ṣiṣẹ nigbati ifilelẹ app ba yipada.
+- Ṣafikun ọgbọn kan:`skill_record`(Ti ara ẹni). Sọ "kọ eyi bi <orukọ>".`action: start`(pẹlu orukọ) bẹrẹ gbigbasilẹ; lẹhinna ṣe iṣẹ-ṣiṣe naa - ṣii app, tẹ ni kia kia, tẹ, tẹ awọn bọtini; gbogbo igbese ti wa ni gba silẹ.`action: stop`gbà á là. Ni idaduro o le kọja`params`lati yi awọn iye ti a tẹ sinu awọn paramita (fun apẹẹrẹ nọmba foonu naa di`number`, iye di`amount`) ati a`description`. `action: status`sọ fun ọ boya gbigbasilẹ wa ni titan.
+- Ṣiṣe ọgbọn kan:`skill_run`(Ti ara ẹni). Fun`args`fun awọn oniwe-sile, f.eks. nọmba ati iye. O tun ṣe ni ida kan ti awọn igbesẹ ati mu ararẹ larada nigbati app ba yipada. Ti igbesẹ kan ba kuna, abajade yoo sọ igbesẹ wo ati ohun ti o wa loju iboju, ati pe oluranlowo naa pari iyokù pẹlu ọwọ.
+- Awọn ọgbọn atokọ:`skill_list`(Ailewu) fihan orukọ, awọn paramita, awọn igbesẹ ati iye igba kọọkan ti nṣiṣẹ. Pẹlu orukọ kan ati okeere lori rẹ ṣe pinpin`.zxskill`faili.
+- Pin ati fifuye:`skill_import`(Ti ara ẹni) awọn ẹru a`.zxskill`faili lati igbasilẹ tabi faili ti o pin gẹgẹbi ọgbọn.
+- Pa ọgbọn kan rẹ:`skill_delete`(Eto).
+- Apeere: "Kẹkọ bi mo ṣe fi 500 ranṣẹ si Rahim nipasẹ ohun elo apamọwọ mi"→o ṣe lẹẹkan→"Fi 700 ranṣẹ si Karim" nigbamii ti akoko.
+
+## Autopilot - "nigbati X ba ṣẹlẹ, ṣe Y"
+Ofin kan ji oluranlowo funrararẹ ati pe o ṣe iṣẹ naa laisi beere lọwọ rẹ.
+- Fi kun:`autopilot_add`(Eto). Awọn oriṣi: sms, iwifunni, ipe, lojoojumọ, lẹẹkan, aarin, batiri, app. Fọwọsi awọn aaye nikan ti ofin nilo:`from`(orukọ olufiranṣẹ tabi nọmba tabi akọle app),`any`(o kere ju ọkan ninu awọn ọrọ wọnyi),`all`(gbogbo ọrọ),`none`(ko si ọkan ninu awọn ọrọ wọnyi),`time`"HH:MM" (ojoojumọ),`in_minutes` or `at_ms`(lẹẹkan),`every_minutes`(aarin),`below`( ogorun batiri),`pkg`(app package tabi orukọ, fun app ati awọn ofin iwifunni). Aṣoju yi ọrọ rẹ pada si awọn aaye wọnyi. Abajade ṣe atokọ eyikeyi igbanilaaye ti o tun nilo (SMS, iraye si iwifunni…), ati pe aṣoju naa beere lọwọ rẹ lati tan-an.
+- Awọn apẹẹrẹ: "Nigbati SMS isanwo ba de lati inu ohun elo apamọwọ mi, fi kun si iwe akọọlẹ mi." "Ni gbogbo owurọ ni 8, sọ fun mi oju ojo." "Ni iṣẹju 20, leti mi lati mu akara naa jade." "Ni gbogbo ọgbọn iṣẹju, olurannileti omi mimu." "Nigbati batiri ba lọ ni isalẹ 15%, sọ fun mi." "Nigbati ẹnikan ba pe mi, wọle nọmba naa." "Nigbati mo ṣii ohun elo ile-ifowopamọ, leti mi lati ṣayẹwo isuna."
+- Akojọ:`autopilot_list`(Ailewu) fihan gbogbo ofin pẹlu akoko ṣiṣe atẹle rẹ ati iye igba ti o ti ṣiṣẹ.
+- Duro tabi tun bẹrẹ:`autopilot_toggle`(Eto). Paarẹ:`autopilot_remove`(Eto), nipasẹ id tabi akọle.
+- Nigbati ofin kan ba tan, o gba ifiranṣẹ ti o sọ bẹ, ati pe aṣoju kan ṣe iṣẹ naa.
+
+## Iwe akọọlẹ owo (CFO ti ara ẹni)
+- `ledger_scan`(Ti ara ẹni): ka apamọwọ ati SMS banki sinu akọọlẹ ikọkọ: owo oya, inawo, awọn idiyele, iwọntunwọnsi ati ẹka.`days`wi bi o jina pada (aiyipada 30). Pẹlu`auto`lori, gbogbo titun owo SMS ti wa ni afikun nipa ara ati awọn ti o ti wa ni kilo nigbati a isuna ti wa ni koja. Ṣiṣẹ fun eyikeyi apamọwọ orilẹ-ede ati awọn ifiranṣẹ banki, ni eyikeyi owo.
+- `ledger_report`(Ti ara ẹni): akoko loni, lana, ọsẹ, oṣu tabi gbogbo. Ṣe ọna kika ọrọ (akopọ sisọ ti o ti ṣetan) tabi xlsx (anExcelfaili pẹlu awọn iṣowo ati apapọ ẹka, ṣii fun ọ).
+- `ledger_budget`(Ti ara ẹni): ṣeto isuna oṣooṣu kan fun ẹka kan (ounjẹ, awọn owo-owo, gbigbe, riraja, gbigba agbara alagbeka, awọn gbigbe…); iye to 0 yọ kuro; laisi awọn ariyanjiyan o ṣe atokọ awọn isunawo ati awọn ikilọ lọwọlọwọ.
+- Aṣoju kò invents owo awọn nọmba; o ka wọn lati awọn leta.
+
+## Ago ati yi pada
+- Ohun gbogbo ti oluranlowo ṣe ni a kọ si akoko aago (awọn iṣe 400 ti o kẹhin). Awọn iyipada faili tọju ẹda ohun ti o wa tẹlẹ.
+- `timeline_list`(Ailewu): kini aṣoju ṣe laipẹ, pẹlu id kan fun ọkọọkan, ati awọn ayipada wo ni o le mu pada.
+- `timeline_undo`(Ti ara ẹni):`id`ṣe atunṣe kikọ, ṣatunkọ tabi paarẹ - faili naa yoo pada wa ni deede bi o ti jẹ (faili ti ko si tẹlẹ ti yọkuro lẹẹkansi).`since_id`ṣe atunṣe ohun gbogbo lati id yẹn siwaju, tuntun akọkọ. Lo nigba ti o sọ pe "mu pada" tabi "fi sii pada bi ti iṣaaju".
+- Mu awọn ideri faili kọ, ṣatunkọ ati paarẹ. Aṣẹ ti o ṣiṣẹ (fun apẹẹrẹ fifi ohunkan sori ẹrọ tabi fifiranṣẹ ifiranṣẹ) ko le ṣe atunṣe ni ọna yii.
+- Awọn ifiranṣẹ iwiregbe: lati yọ gbogbo ibaraẹnisọrọ kan kuro lo pencil ati agbelebu ni akojọ osi, tabi Eto→Ìpamọ & data→Pa itan iwiregbe rẹ, tabi Lilọ kiri→Igba tuntun.
+
+## Ọpọlọ — iranti keji fun awọn faili rẹ
+- `brain_index`(Ailewu): kọ tabi sọ itọka aisinipo sori awọn folda tabi awọn faili (ọrọ,Markdown, CSV, Word, Excel, PowerPointati bi o ṣe fẹ, apo-iwọle SMS (`sms`lori). Ṣiṣe ṣaaju wiwa akọkọ ati lẹhin awọn faili titun han. Aiyipada ni aaye iṣẹ rẹ.
+- `brain_search`(Ailewu): beere ninu awọn ọrọ tirẹ, "Nibo ni adehun iyalo mi wa?" — o ṣiṣẹ offline ni eyikeyi ede.`kind`jẹ faili tabi sms;`days`ifilelẹ lọ to šẹšẹ awọn ohun. Ṣii faili ri pẹlu`open_file`.
+
+## Oluranlowo ipe
+- `call_agent`(Ti ara ẹni): igbese lori, pipa tabi ipo.`owner`ni orukọ ti o sọ ("Emi ni oluranlọwọ <eni>").`answer_after_seconds`(aiyipada 6) jẹ ki o gbe soke akọkọ. Nigbati ipe ba de ti o ko ba le dahun, o kí ni ede olupe naa, o beere orukọ ati idi rẹ, o dahun awọn ibeere ti o rọrun, gbe kọkọ silẹ pẹlu ọwọ ati sọ apejọ kan fun ọ.
+- `call_log`(Ailewu): awọn akojọpọ awọn ipe ti o dahun, tuntun lakọkọ.
+- Nilo ipe ati awọn igbanilaaye ipinle-foonu.
+
+## Iranti
+- `memory_write`, `memory_read`, `memory_delete`(Ailewu): awọn otitọ pipe nipa rẹ (orukọ, awọn ayanfẹ, eniyan, awọn ọjọ, awọn iṣẹ akanṣe) gbe ni ibi data data agbegbe ati ye awọn atunbere. Sọ "ranti eyi" ati pe a kọ ọ ni titan kanna; ti nkan ba jẹ aṣiṣe, a yọ kuro tabi tun kọ. Gbogbo ibaraẹnisọrọ atijọ ni a tọju paapaa, ati awọn iyipada ti o kọja ti o baamu ohun ti o sọ funrarẹ pada wa, paapaa awọn oṣu nigbamii.
+- Wo ki o si yi gbogbo rẹ pada ni Eto→Eto→Iranti (bọtini, iye, fipamọ, pa gbogbo rẹ rẹ).

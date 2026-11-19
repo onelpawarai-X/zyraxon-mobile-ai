@@ -1,0 +1,20 @@
+Bíbẹ̀rẹ̀
+ZYRAXON jẹ́ olùrànlọ́wọ́ tí ó ń gbé inú fóònù Android rẹ. Ó ń bá ọ sọ̀rọ̀, ó ń gbọ́ ọ, ó sì lè ṣe iṣẹ́ gidi: ṣí àwọn app, tẹ̀ kí o sì tẹ̀wé lórí ìkànnì, pe àwọn èèyàn, kọ àwọn fáìlì, kọ́ àwọn ojú-òpó wẹẹ̀bù àti àwọn app, ṣiṣẹ́ ẹ̀rọ Linux, ṣe àwòrán, ohùn, fídíò àti àwọn ìwé ọ́fíìsì, kí ó sì rántí rẹ fún oṣù púpọ̀. Ó ń ṣiṣẹ́ ní èdè èyíkéyìí tí o bá ń sọ.
+
+## Ìṣẹ́jú àkọ́kọ́
+- Nígbà àkọ́kọ́ tí o bá ṣí i, ZYRAXON máa fi ìkìlọ̀ kúkúrú hàn pé aṣojú náà lè ṣe iṣẹ́ lórí fóònù rẹ fúnra rẹ̀. Tẹ "Got it, start" láti tẹ̀síwájú.
+- Fi kọ́kọ́rọ́ AI kún un (Eto → Providers & API → AI providers). Lẹ̀ kọ́kọ́rọ́ èyíkéyìí tí o fẹ́ (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Nígbà tí o bá fi kọ́kọ́rọ́ pamọ́, app náà máa ka àkójọ olùpèsè yẹn, á sì ṣàyẹ̀wò rẹ̀ ní ti gidi, kí o lè rí "connected" tòótọ́ àti iye àwọn àwòṣe.
+- Kò sí kọ́kọ́rọ́? O ṣì lè lo àwọn àwòṣe orí-ẹ̀rọ (Eto → Model & identity → On-device). Wọ́n ń ṣiṣẹ́ lórí fóònù láìsí íńtánẹ́ẹ̀tì.
+- Yan àwòṣe pẹ̀lú bọ́tìnì àwòṣe nínú ọ̀pá ìfiránṣẹ́, àti ìwà kan (Eto → Model & identity → Identity).
+- Fún ní àwọn ìyọ̀ǹda nígbà tí ẹ̀yà kan bá nílò wọn (wo orí Permissions). Aṣojú náà tún lè ṣí àpótí ìyọ̀ǹda fún ọ pẹ̀lú ìfọwọ́kan kan.
+- Kàn sọ̀rọ̀ tàbí kọ̀wé. "Ṣe ojú-ìwé ibalẹ̀ fún ilé búrẹ́dì mi", "ṣí YouTube kí o sì ta orin kan", "kí ni batiri mi?", "pe Ìyá".
+
+## Ọ̀nà méjì láti ṣiṣẹ́
+Lẹ́gbẹ̀ ibi ìfiránṣẹ́ bọ́tìnì ipò kan wà pẹ̀lú ipò méjì: Agent àti Build. Wo orí Modes.
+
+## Ibi tí àwọn nǹkan wà
+- Àtòkọ òsì: àwọn ìjíròrò rẹ, ìjíròrò tuntun, yí orúkọ padà, pa rẹ́, àti ìyípadà àwòrán.
+- Ojú-ìwé ìjíròrò: àwọn ifiranṣẹ́, pátákó iṣẹ́-ṣíṣe, àtòkọ irinṣẹ́, àwọn fáìlì, tẹ́mínà.
+- Àwọn pánẹ́lì Preview àti Code: wo kí o sì ṣàtúnṣe ohun tí aṣojú náà kọ́.
+- Eto: àwọn abala mẹ́jọ, tí a ṣàlàyé ọ̀kọ̀ọ̀kan nínú ìwé yìí.
+- Ìwé yìí: Eto → Documentation (o wà níbí).

@@ -1,0 +1,27 @@
+Soubory, terminál a systém
+## Soubory
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Bezpečné): čtení, seznam, vyhledávání podle vzoru názvu a hledání textu v souborech.
+- `write_file`, `edit_file`: vytvoření nebo změna souborů. `edit_file` dělá vše: nový soubor, úplné přepsání nebo přesné vyhledání a nahrazení; kód se objeví živě v chatu. `delete_file` (Systém): odstranění souboru nebo složky.
+- Je povolena jakákoli složka (/sdcard, Download, Documents, SD card …). Zadejte úplnou cestu a použije se tak, jak je napsáno.
+- Agent otevře to, co vytvoří: `open_file` (Safe) otevře soubor ve skutečné aplikaci telefonu nebo v náhledu ZYRAXON.
+
+## Terminály (dva skutečné)
+- android: vlastní prostředí telefonu (busybox plus `sh`), uvnitř karantény aplikace. `run_shell` (Systém) tam spustí příkaz, mimo dohled.
+- linux: vlastní úplný unixový systém ZYRAXON zabudovaný do aplikace: bash, apt/pkg, real git, python, node, clang. Funguje offline. `linux_run` (Systém) tam spustí příkaz.
+- `terminal_run` (Systém): spustí řádek na záložce Terminál, kterou sledujete, takže můžete vidět, jak funguje a převzít kontrolu. Použijte shell android nebo linux. `terminal_open` přenese záložku Terminál do popředí (pouze když se zeptáte).
+- `system_shell` (Systém): příkaz na úrovni systému nad karanténou aplikace, jako to dělá systémový shell; s Shizuku nebo root může dosáhnout mnohem více.
+- Neexistuje žádný výchozí časový limit; velké `apt upgrade` nebo sestavení běží až do konce.
+
+## Shizuku (systémový přístup)
+`setup_shizuku` (Systém) nastaví Shizuku, sdružený v ZYRAXON: kontrola stavu, instalace, otevření, žádost o povolení. Pouze vy můžete klepnout na Instalovat a Povolit; agent vám řekne krok v jednom řádku a udělá zbytek.
+
+## Dlouhá práce a načasování
+- `background_command` (Systém): příkaz, který běží i po zavření aplikace (velké stahování, klonování, sestavení), s upozorněním a tlačítkem Stop.
+- `schedule_command` (Systém): spuštění příkazu v reálném čase ("za 10 minut", "ve 2:00."); Android drží časovač, takže běží se zavřenou aplikací.
+- `wait` (Safe): schválně počkejte (sekundy, dokud se neotevře port, objeví se soubor, skončí příkaz) místo hádání.
+
+## Linux používá
+Instalovat balíčky (`apt install …`), spouštět Python nebo Node skripty, kompilovat C, používat git, spouštět servery, zip a rozbalit, curl, ffmpeg. Systém se tiše rozbalí při spuštění aplikace a zůstane po restartování.
+
+## Obrazovka terminálu
+Záložka Terminal je skutečný terminál s kartou ⌘ ZX. Zadejte své vlastní příkazy nebo sledujte příkazy agenta. Obrazovka Navigace v Nastavení má zkratku do systémového prostředí a tlačítko „Nová relace“, které vymaže historii chatu, aby bylo možné začít znovu.

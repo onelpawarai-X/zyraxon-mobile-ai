@@ -1,0 +1,20 @@
+Automatiseringshub
+Innstillinger → System → Automatiseringshub. Hver knapp for hva ZYRAXON kan gjøre av seg selv er på ett sted, i seks faner. Hver fane starter med en kort forklaring på hvordan den fungerer.
+
+## Ferdigheter
+Lær ZYRAXON en oppgave på to måter: fortell den i chat ("lær denne oppgaven"), eller trykk på opptaksknappen og gjør oppgaven selv i en annen app, kom så tilbake og trykk Stopp. Tilgjengelighetstjenesten må være på, ellers kan ikke kranene dine sees. Det den lærte vises under "Lærte ferdigheter" og kan spilles av eller slettes.
+
+## Autopilot
+Regler av typen "når dette skjer, gjør det". Når hendelsen skjer våkner ZYRAXON av seg selv og gjør jobben uten å spørre. Du kan også opprette en regel ved å si den i chatten. Hver regel viser hvor mange ganger den har kjørt.
+
+## Penger
+Leser SMS fra hvilken som helst bank eller lommebok i hvilket som helst land (PayPal, M-Pesa, UPI, Pix, bKash, kort …) og fører én hovedbok over inntekt, utgifter, gebyrer og balanse. Du kan sette et budsjett og få en advarsel når du passerer det. Det fungerer på telefonen, og ingenting sendes noe sted.
+
+## Tidslinje
+Alt ZYRAXON gjorde er skrevet her. Filskriving, redigering og sletting kan angres med én knapp. En kommando som ble kjørt kan ikke angres.
+
+## Hjerne
+Søker i filene dine (tekst, Word, Excel, PowerPoint, CSV) og, hvis du tillater det, SMS-en din, uten internett og på et hvilket som helst språk. Trykk på "Indeks" først, og søk deretter.
+
+## Ring agent
+Når du ikke kan ta en samtale, svarer ZYRAXON, snakker på den som ringer sitt eget språk, lærer navnet og årsaken, og gir deg en oppsummering når samtalen avsluttes. Femten språk bruker raske innebygde regler; annethvert språk håndteres av modellen, som svarer på den som ringer. Ord som betyr farvel, haster eller spam forstås på alle språk samtidig. Sammendrag av fangede anrop er oppført i fanen.

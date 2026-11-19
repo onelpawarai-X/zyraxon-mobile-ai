@@ -1,0 +1,21 @@
+Bouwen: sites, apps, preview en publicatie
+## Hoe te vragen
+- "Maak een landingspagina voor mijn koffieshop." De agent bouwt het meteen, start het op je telefoon en opent het in Preview. Je krijgt 2-3 regels die het beschrijven. Er wordt niets gepubliceerd tenzij u erom vraagt.
+- "Bouw een taken-app." Direct gebouwd met een verstandige stapel, uitgevoerd en getoond. Een backend, database of login alleen als u daarom vraagt.
+- "Bouw een full-stack-app." De agent stelt eerst één korte vraag over de back-endtaal, de database, de login en waar deze wordt uitgevoerd, met aanbevolen standaardwaarden, en bouwt vervolgens alles op met zaadgegevens en test één volledige stroom.
+- "Maak een Windows/Linux/macOS/Android programma." De broncode is geschreven, een build-workflow is toegevoegd, deze is gepusht en in de cloud gebouwd met GitHub Actions, en je krijgt de echte downloadlink.
+
+## Hulpmiddelen
+- `edit_file` en `write_file`: schrijf de echte bestanden (volledige code, nooit stubs). `code_box` laat ze live zien.
+- `preview` (Veilig): de ingebouwde echte browser. Acties: openen (een link, `localhost:PORT` of een bestand), herladen, terug, vooruit, screenshot, scrollen, klikken, typen, paginatekst lezen, consolefouten, eval. De agent kijkt naar zijn eigen werk voordat hij zegt dat het klaar is.
+- `serve_local` (Systeem): start een webserver op de telefoon voor een map en retourneert het LAN-adres dat andere apparaten op uw Wi-Fi kunnen openen.
+- `publish_website` (Systeem): bedient een site op een openbare poort vanaf de telefoon. `publish_cloudflare` (Systeem): zet een site zonder account op internet via een Cloudflare-tunnel en retourneert een openbare https-link. `publish_github` (Systeem): publiceert een project naar een GitHub repository (Pagina's) met uw token.
+- `git` (Systeem): klonen, init, status, toevoegen, commit, push, pull, branch, checkout, log, diff met je opgeslagen token. `github_pr` (Systeem): pull-aanvragen maken, vermelden, samenvoegen en becommentariëren. `github_actions` (Systeem): maak een lijst van workflows, voer ze uit, peilingen en lees logs, zodat builds vanaf de telefoon in de cloud worden uitgevoerd.
+- `build_app` (Systeem): bouwt dit project met Gradle op de telefoon en installeert het resultaat.
+- `files_panel`, `todo_write`: bestandsbrowser en taakbord.
+
+## Kwaliteitsregels die de agent volgt
+Volledige lay-out, responsief ontwerp, werkend JavaScript, animatie, consistente kleuren en lettertypen (donker en licht waar het past), geen generieke sjabloon. Een landingspagina bestaat doorgaans uit 300 tot 900 regels; grotere dingen meer.
+
+## Als iets kapot lijkt
+Druk op Fix in Preview of vertel het aan de agent. Het leest de console, verhelpt de oorzaak, opent de pagina opnieuw en controleert opnieuw.

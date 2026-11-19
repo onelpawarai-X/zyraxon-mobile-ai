@@ -1,0 +1,16 @@
+jezici
+## Jezik aplikacije
+Postavke → Jezik i prijevod. 60 jezika. Cijelo sučelje i poruke agentovog alata prate ga. Svaki jezik ima svoju datoteku prijevoda. Svaki redak koji jezična datoteka još nema prikazan je na engleskom, nikad prazan.
+
+## Što govoriš
+Agent uvijek odgovara na jeziku na kojem govorite, bilo kojem jeziku na svijetu. Ako promijeniš, promijeni se. Koristi prijateljski-poštovanje oblik "vi" u vašem jeziku. Nazivi robnih marki i tehnologija ostaju takvi kakvi jesu.
+
+## Glasovni jezici
+- Jezik prepoznavanja (ono što govorite u mikrofon): Postavke → Glas i mikrofon → Mikrofon i jezik.
+- Glasovni govor: Postavke → Glas i mikrofon → Glasovni profil i Glasovni laboratorij za jezike kao što su bengalski, hindi, engleski, urdu, arapski, tamilski, nepalski, španjolski, francuski, njemački, japanski, korejski, kineski, ruski, turski.
+
+## Ova dokumentacija
+Koristite jezične čipove na vrhu ove stranice. Cijeli vodič napisan je ručno na svim jezicima koje aplikacija podržava i isporučuje se unutar aplikacije. Ništa nije prevedeno na vašem telefonu: svako se poglavlje otvara odmah, radi izvanmrežno i ne treba model ili ključ.
+
+## Pisanje vlastitim pismom
+Dokumenti, plakati i nacrti mogu se izraditi u bilo kojem pismu. Za bengalski dizajn koristi se pravi font; za ostale skripte odabire se odgovarajući font.

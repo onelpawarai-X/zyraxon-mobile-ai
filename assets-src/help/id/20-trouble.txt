@@ -1,0 +1,14 @@
+Pemecahan masalah
+- Tidak ada jawaban: periksa internet dan kunci API Anda (Pengaturan → Penyedia & API menunjukkan kesalahan sebenarnya). Coba model lain atau model pada perangkat.
+- Mikrofon tidak melakukan apa pun: izinkan mikrofon; centang "Tetap nyalakan mikrofon"; periksa bahasa pengenalan.
+- ZYRAXON mendengar sendiri: ini difilter berdasarkan teks; jika masih terjadi, kecilkan volume atau gunakan headphone.
+- Sebuah kalimat muncul dua kali: diperbaiki di versi saat ini; perbarui aplikasi.
+- Itu tidak akan mengetuk atau membaca layar: aktifkan layanan Aksesibilitas (Pengaturan → Izin).
+- Berhenti di latar belakang: izinkan notifikasi dan pengecualian pengoptimalan baterai; overlay untuk mata mengambang.
+- Sebuah alat terus meminta izin: ubah level di Pengaturan → Otomatisasi, atau jawab kartunya.
+- Play Protect memblokir sesuatu: lihat bab Izin, atau biarkan agen memandu langkah-langkahnya.
+- Terminal atau Linux tidak dimulai: tunggu pembongkaran pertama kali saat aplikasi dimulai; periksa penyimpanan gratis.
+- Pembaruan tidak akan dipasang: izinkan ZYRAXON sebagai sumber pemasangan.
+- Tidak dapat mempublikasikan: tambahkan token GitHub untuk GitHub; untuk tautan publik agen dapat menggunakan terowongan.
+- Sebuah bab menunjukkan bahasa Inggris: bab tersebut tidak memiliki teks dalam bahasa Anda di build ini; perbarui aplikasi.
+- Sesuatu yang aneh: gunakan Pengaturan → Navigasi → Sesi baru untuk memulai bersih (ini hanya menghapus riwayat obrolan; memori tetap ada).

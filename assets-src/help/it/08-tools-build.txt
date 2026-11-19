@@ -1,0 +1,21 @@
+Costruzione: siti, app, anteprima e pubblicazione
+## Come chiedere
+- "Creami una landing page per il mio bar." L'agente lo crea subito, lo avvia sul telefono e lo apre in Anteprima. Ottieni 2-3 righe che lo descrivono. Niente viene pubblicato a meno che tu non lo chieda.
+- "Crea un'app per fare cose da fare." Costruito direttamente con uno stack ragionevole, eseguito e mostrato. Un backend, un database o un accesso solo se lo chiedi.
+- "Crea un'app full-stack." L'agente pone innanzitutto una breve domanda sulla lingua del back-end, sul database, sull'accesso e su dove viene eseguito, con le impostazioni predefinite consigliate, quindi crea il tutto con i dati seed e testa un flusso completo.
+- "Crea un programma Windows/Linux/macOS/Android." Viene scritto il codice sorgente, viene aggiunto un flusso di lavoro di compilazione, viene inviato e creato nel cloud con GitHub Azioni e si ottiene il collegamento per il download reale.
+
+## Utensili
+- `edit_file` e `write_file`: scrivono i file reali (codice completo, mai stub). `code_box` li mostra dal vivo.
+- `preview` (Sicuro): il vero browser integrato. Azioni: apri (un collegamento, `localhost:PORT` o un file), ricarica, indietro, avanti, screenshot, scorri, fai clic, digita, leggi il testo della pagina, errori della console, eval. L'agente esamina il proprio lavoro prima di dire che è finito.
+- `serve_local` (Sistema): avvia un server Web sul telefono per una cartella e restituisce l'indirizzo LAN che altri dispositivi sul tuo Wi-Fi possono aprire.
+- `publish_website` (Sistema): serve un sito su una porta pubblica dal telefono. `publish_cloudflare` (Sistema): mette un sito su Internet senza account attraverso un tunnel Cloudflare e restituisce un collegamento https pubblico. `publish_github` (Sistema): pubblica un progetto in un repository GitHub (Pagine) con il tuo token.
+- `git` (Sistema): clone, init, status, add, commit, push, pull, branch, checkout, log, diff con il token salvato. `github_pr` (Sistema): crea, elenca, unisci e commenta le richieste pull. `github_actions` (Sistema): elenca i flussi di lavoro, li esegue, esegue il polling e legge i registri, in modo che le build vengano eseguite nel cloud dal telefono.
+- `build_app` (Sistema): crea questo progetto con Gradle sul telefono e installa il risultato.
+- `files_panel`, `todo_write`: browser di file e bacheca delle attività.
+
+## Regole di qualità che l'agente segue
+Layout completo, design reattivo, JavaScript funzionante, animazione, colori e caratteri coerenti (scuri e chiari dove si adattano), non un modello generico. Una pagina di destinazione è solitamente composta da 300-900 righe; cose più grandi.
+
+## Se qualcosa sembra rotto
+Premi Correggi in Anteprima o informa l'agente. Legge la console, risolve la causa, riapre la pagina e ricontrolla.

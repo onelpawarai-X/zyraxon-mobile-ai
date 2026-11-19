@@ -1,0 +1,20 @@
+Automation hub
+Ajustes → System → Automation hub. Todos los botones de lo que ZYRAXON puede hacer por sí mismo están en un solo lugar, en seis pestañas. Cada pestaña empieza con una breve explicación de cómo funciona.
+
+## Skills
+Enseña una tarea a ZYRAXON de dos maneras: dísela en el chat ("aprende esta tarea"), o pulsa el botón de grabar y haz la tarea tú mismo en otra app, luego vuelve y pulsa Stop. El servicio de Accesibilidad debe estar activado, o no se verán tus toques. Lo que aprendió aparece en "Learned skills" y se puede reproducir o borrar.
+
+## Autopilot
+Reglas del tipo "cuando pase esto, haz aquello". Cuando ocurre el evento, ZYRAXON se despierta solo y hace el trabajo sin preguntar. También puedes crear una regla diciéndola en el chat. Cada regla muestra cuántas veces se ha ejecutado.
+
+## Money
+Lee los SMS de cualquier banco o monedero de cualquier país (PayPal, M-Pesa, UPI, Pix, bKash, tarjetas…) y mantiene un solo libro de ingresos, gastos, comisiones y saldo. Puedes fijar un presupuesto y recibir una advertencia cuando lo superes. Funciona en el teléfono y no se envía nada a ninguna parte.
+
+## Timeline
+Todo lo que hizo ZYRAXON se escribe aquí. Las escrituras, ediciones y borrados de archivos se pueden deshacer con un botón. Un comando que ya se ejecutó no se puede deshacer.
+
+## Brain
+Busca en tus archivos (texto, Word, Excel, PowerPoint, CSV) y, si lo permites, en tus SMS, sin internet y en cualquier idioma. Pulsa primero "Index" y luego busca.
+
+## Call agent
+Cuando no puedes atender una llamada, ZYRAXON contesta, habla en el idioma de quien llama, averigua el nombre y el motivo, y te da un resumen cuando termina la llamada. Quince idiomas usan reglas integradas rápidas; todos los demás los maneja el modelo, que responde en el idioma de quien llama. Las palabras que significan adiós, urgente o spam se entienden en todos los idiomas a la vez. Los resúmenes de las llamadas atendidas aparecen en la pestaña.

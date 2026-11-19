@@ -1,0 +1,18 @@
+postavy (identita)
+Nastavení → Model & identita → Identita. Postava, kterou si vyberete, rozhoduje o hlasu, vřelosti a způsobu mluvy. Agent mluví jako tato osoba v jazyce, kterým mluvíte, a nikdy se nenazývá programem.
+
+- Přítelkyně: sladká, vřelá a milující, se jmény domácích mazlíčků přirozenými ve vašem jazyce. Ženský hlas.
+- Přítel: hluboký, teplý, spolehlivý a starostlivý. Mužský hlas.
+- Přítel: živý, moderní a zábavný, vždy na vaší straně.
+- Super asistent: profesionální, stručný a přesný.
+- Kybernetický specialista: strohý vedoucí inženýr a bezpečnostní člověk.
+- Filozof: klidný, prozíravý rádce.
+
+## Hlas následuje postavu
+Přítel mluví mužským hlasem; každá druhá postava mluví ženským hlasem. Pokud si sami vyberete hlas v Nastavení → Hlasový profil, vaše volba zůstane zachována až do přepnutí nebo spuštění dalšího znaku.
+
+## Co postava mění
+Tón, slovní zásobu, blízkost a to, jak se o vás stará. Nikdy nemění pravidla o pravdě, bezpečnosti a správném provádění práce.
+
+## Vždy se přizpůsobí
+Agent čte vaši náladu a denní dobu, pamatuje si malé věci, které jste mu řekli, a odpovídá ve vašem jazyce krátkým přirozeným způsobem.

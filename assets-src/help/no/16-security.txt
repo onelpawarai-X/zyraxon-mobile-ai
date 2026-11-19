@@ -1,0 +1,11 @@
+Sikkerhet og personvern
+- Alle ZYRAXONs data lever på telefonen din: chatter, minne, hovedbok, ferdigheter, tidslinje, hjerneindeks. Ingenting holdes på en ZYRAXON server.
+- Skymodeller mottar kun det som er nødvendig for turen du sender. Med "On-device only" sendes ingenting i det hele tatt.
+- Spørsmålene og språkfilene som sendes i appen er kryptert inne i APK.
+- Applås: angi et passord eller et mønster i Innstillinger → Sikkerhet og personvern → Applås. ZYRAXON låses deretter når du åpner den eller kommer tilbake fra bakgrunnen. "Fjern lås" sletter det lagrede passordet eller mønsteret.
+- Godkjenningsnivåer beskytter hvert verktøykall i kode (se Godkjenningsnivåer). Ukjente verktøy spør alltid.
+- Du kan slette: alt minne, chatteloggen og GitHub-tokenet ditt, hver med én knapp i Personvern og data.
+- Sikkerhet: Hvis du sier at noen truer eller følger deg, eller vil ha telefonen eller dataene dine, låser agenten telefonen først (hvis enhetsadministratortillatelsen er på) og snakker deretter rolig til deg.
+- Betalinger: før enhver betaling eller overføring sier agenten hva den vil betale og ber deg bekrefte.
+- Ærlighet: Agenten sier at noe fungerte først etter at det så et resultat. Den finner aldri opp lenker, filer eller resultater.
+- Content Shield: uansett hva agenten leser fra utsiden – skjermen til en annen app, en nettside, en melding, en fil, en tilkoblet server – sjekkes inn i kode for tekst som prøver å gi agenten ordre (på mange språk, inkludert tekst skjult med usynlige tegn). Mistenkelig tekst er inngjerdet, slik at modellen kun behandler den som data. Hvor strengt det er følger ditt godkjenningsnivå: Låst behandler alt mistenkelig som fiendtlig; Overvåket gjerder mistenkelig tekst og låser, når teksten er tydelig fiendtlig, resten av svingen slik at hvert skiftende verktøy spør deg først (kortet sier hvorfor); Balanserte handlinger bare på tydelig fiendtlig tekst og bare verktøy på systemnivå stopper for å spørre; Automatisk slår av skjermen helt – ingenting skannes, stoppes, merkes eller endres. En ny melding fra deg fjerner den.

@@ -1,0 +1,7 @@
+Pembaruan
+Pengaturan → Pembaruan → Pembaruan aplikasi, atau spanduk di bagian atas aplikasi.
+- Aplikasi memeriksa rilis baru dan menampilkan "Pembaruan baru tersedia — versi".
+- Periksa pembaruan: tanyakan sekarang. Jika Anda saat ini dikatakan demikian.
+- Unduh & pasang: unduh dengan persentase. Jika sudah selesai tekan Instal. Obrolan, memori, dan pengaturan Anda tetap ada.
+- Jika Android memblokir penginstalan, tekan tombol izin, izinkan ZYRAXON sebagai sumber penginstalan, lalu coba lagi.
+- Tombol spanduk: Unduh, Instal, Izinkan, dan Tutup.

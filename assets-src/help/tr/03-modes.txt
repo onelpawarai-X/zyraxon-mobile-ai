@@ -1,0 +1,14 @@
+Modlar: Ajan ve Derleme
+Mesaj kutusunun yanındaki mod butonu ile seçilen iki mod bulunmaktadır. Seçim siz değiştirene kadar kalır. Canlı ses üçüncü bir mod değildir; bu, Ayarlar'dan açabileceğiniz bir konuşma şeklidir (bkz. Ses bölümü).
+
+## Ajan
+"Telefon ve sistemin tam otomasyonu." Her şey açık: telefonun ekranını okumak ve kullanmak, uygulamaları, çağrıları, mesajları, kamerayı, dosyaları açmak, terminal ve Linux, Git, önizleme, medya, alt aracılar, MCP sunucular, beceriler, otomatik pilot ve daha fazlası. Telefonunuzda bir şeyin yapılmasını istediğinizde veya yalnızca konuşmak istediğinizde Temsilci'yi seçin.
+
+## İnşa etmek
+"Tam yığın uygulamalar, web siteleri ve otomasyon." Aracı bir yapı motorudur: kısa bir çizgiden her şeyi yapar, çalıştırır, ona bakar ve size gösterir. Dosyalar, terminal, Git, önizleme, yayınlama, medya, bellek ve yapılacaklar panosu içerir. Telefon kontrolü, alt aracılar ve cihaz kilidi Temsilci moduna aittir; Build'te bunlara ihtiyacınız varsa geçiş yapın.
+- Açılış sayfası veya web sitesi: ne için olduğunu söyleyin. Temsilci bunu hemen oluşturur, telefonunuzda başlatır ve Önizleme panelinde açar, ardından size ne yaptığını anlatır. Siz sormadıkça yayınlamıyor.
+- Uygulama: ne istediğinizi söyleyin, uygulama istendiği gibi oluşturulur. Bir arka uç, veritabanı veya oturum açma işlemi yalnızca siz talep ettiğiniz takdirde eklenir.
+- Tam yığın: Bir arka uç veya veritabanı istediğinizde, aracı ilk önce size seçimler (dil, veritabanı, oturum açma, nerede çalıştığı) hakkında önerisiyle birlikte kısa bir soru sorar ve siz yanıtladıktan sonra oluşturur.
+
+## "sormak" ne demek
+Temsilci gerçekten kararınıza ihtiyaç duyduğunda, önce diğer her şeyi yapar, tavsiyesiyle birlikte kısa bir soru sorar ve bekler. Cevabınız çalışmaya kaldığı yerden devam ediyor.

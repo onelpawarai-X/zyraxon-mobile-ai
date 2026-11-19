@@ -1,0 +1,16 @@
+Kielet
+## Sovelluksen kieli
+Asetukset → Kieli ja käännös. 60 kieltä. Koko käyttöliittymä ja agentin työkaluviestit seuraavat sitä. Jokaisella kielellä on oma käännöstiedostonsa. Kaikki rivit, joita kielitiedostossa ei vielä ole, näytetään englanniksi, eikä niitä koskaan jätetä tyhjäksi.
+
+## Mitä puhut
+Agentti vastaa aina sillä kielellä, jolla puhut sille, millä tahansa kielellä maailmassa. Jos vaihdat, se vaihtaa. Se käyttää ystävällisesti kunnioittavaa muotoa "sinä" kielelläsi. Brändien ja teknologian nimet pysyvät ennallaan.
+
+## Äänikielet
+- Tunnistuskieli (mikrofoniin puhumasi): Asetukset → Ääni ja mikrofoni → Mikrofoni ja kieli.
+- Puhuva ääni: Asetukset → Ääni ja mikrofoni → Ääniprofiili ja äänilaboratorio kielille, kuten bengali, hindi, englanti, urdu, arabia, tamili, nepali, espanja, ranska, saksa, japani, korea, kiina, venäjä ja turkki.
+
+## Tämä dokumentaatio
+Käytä tämän sivun yläosassa olevia kielimerkkejä. Koko opas on kirjoitettu kaikilla sovelluksen tukemilla kielillä käsin ja toimitetaan sovelluksen sisällä. Mitään ei käännetä puhelimellasi: jokainen luku avautuu välittömästi, toimii offline-tilassa eikä tarvitse mallia tai avainta.
+
+## Kirjoittaminen omalla käsikirjoituksellasi
+Asiakirjoja, julisteita ja malleja voidaan tehdä millä tahansa käsikirjoituksella. Bengali-malleissa käytetään oikeaa fonttia; muille skripteille valitaan vastaava fontti.

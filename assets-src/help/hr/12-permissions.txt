@@ -1,0 +1,27 @@
+Dopuštenja, jedno po jedno
+Postavke → Sigurnost i privatnost → Dozvole. Svaki red prikazuje "Odobreno" ili gumb. Dodirom retka otvara se dijaloški okvir sustava; samo pritisnite Dopusti. Agent također može otvoriti sam dijalog pomoću `request_permission`.
+
+- Mikrofon: tako da vas ZYRAXON može čuti. Bez njega nema glasovnog unosa.
+- Kamera: za snimanje i gledanje fotografija (`look_camera`, skeniranje dokumenata, "što vidite").
+- Lokacija: za karte i lokalne informacije.
+- Obavijesti: da vas obavijeste kada završi rad u pozadini.
+- Datoteke i mediji: za čitanje fotografija, videa, zvuka i dokumenata.
+- Prekrivanje (crtanje preko drugih aplikacija): potrebno za plutajuće oko.
+- Pristupačnost: omogućuje agentu da čita zaslon i dodiruje, prelazi i tipka umjesto vas. Ovo je srce telefonske automatizacije. Uključite ga u postavkama pristupačnosti sustava.
+- Optimizacija baterije: sprječava Android da stavi ZYRAXON u stanje mirovanja dok radi u pozadini.
+
+## Ostala dopuštenja koje aplikacija deklarira
+- SMS (čitanje i primanje): za čitanje kodova, pravila knjige novca i SMS autopilota.
+- Stanje telefona, odgovaranje na pozive, telefonski poziv, kontakti: za alate za pozive i agenta za pozive.
+- Pristup obavijestima: omogućuje autopilotu da reagira na obavijesti.
+- Administrator uređaja: omogućuje `device_lock` da stvarno zaključa zaslon.
+- Instaliraj pakete: omogućuje ažuriranja i `build_app` instaliranje APK-ova; Android traži da dopustite ZYRAXON kao izvor instalacije.
+- Usluge u prvom planu (mikrofon, sinkronizacija podataka) i wake lock: održavajte glas i duge poslove.
+- Internet i stanje mreže: oblak i web.
+- Shizuku (neobavezno): pristup na razini sustava za ljusku i terminal.
+
+## Google Play Protect
+Ako Play Protect blokira posao, agent može otvoriti pravu stranicu, pogledati pravi zaslon i ići korak po korak kroz zupčanik i prekidač — ali vas prvo pita, jer je isključivanje zaštite vaša odluka. Da biste to učinili sami: Play Store → profilna slika → Play Protect → postavke → isključite "Skeniraj aplikacije pomoću Play Protect". Stranica ima gumb koji otvara Play Store.
+
+## Zašto je dozvola važna
+Ako alat ne uspije zbog dopuštenja koje nedostaje, agent vam govori koje i otvara svoj dijaloški okvir. Ništa osjetljivo ne funkcionira bez vašeg izričitog Dopuštanja.

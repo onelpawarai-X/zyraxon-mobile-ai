@@ -1,0 +1,14 @@
+Depanare
+- Niciun răspuns: verificați-vă internetul și cheia API (Setări → Furnizori și API arată eroarea reală). Încercați alt model sau un model pe dispozitiv.
+- Microfonul nu face nimic: permiteți permisiunea microfonului; bifați „Păstrați microfonul pornit”; verificați limba de recunoaștere.
+- ZYRAXON se aude singur: aceasta este filtrată după text; dacă tot se întâmplă, reduceți volumul sau folosiți căști.
+- O propoziție apare de două ori: fix în versiunile curente; actualizați aplicația.
+- Nu va atinge sau nu va citi ecranul: porniți serviciul Accesibilitate (Setări → Permisiuni).
+- Se oprește în fundal: permite notificări și scutire de optimizare a bateriei; suprapunerea pentru ochiul plutitor.
+- Un instrument continuă să solicite permisiunea: schimbați nivelul în Setări → Automatizare sau răspundeți la card.
+- Play Protect blochează ceva: vezi capitolul Permisiuni sau lasă agentul să ghideze pașii.
+- Terminalul sau Linux nu pornește: așteptați prima despachetare la pornirea aplicației; verificați spațiul de stocare gratuit.
+- Actualizarea nu se va instala: permiteți ZYRAXON ca sursă de instalare.
+- Nu se poate publica: adăugați simbolul GitHub pentru GitHub; pentru o legătură publică, agentul poate folosi un tunel.
+- Un capitol arată limba engleză: acel capitol nu are text în limba dvs. în această versiune; actualizați aplicația.
+- Ceva ciudat: utilizați Setări → Navigare → Sesiune nouă pentru a începe curățarea (se șterge numai istoricul chatului; memoria rămâne).

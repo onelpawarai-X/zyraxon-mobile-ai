@@ -1,0 +1,51 @@
+Allon hira da kowane maɓalli
+## saman allon
+- Menu: yana buɗe aljihunan hagu tare da hirarku.
+- Taɗi / Terminal / Code / Preview: canza babban ra'ayi. Hira ita ce zance; Terminal shine ainihin tashar; Lambar ita ce filin aiki na fayil tare da Git; Preview shine ginannen mai bincike.
+- Aura: yana nuna allon hali mai rai. Maɓallan gefensa sune Mic, Chat (komawa ga tattaunawar) da Refresh (sake haɗa gajimare kuma yana sake loda lissafin ƙirar).
+- Saituna: yana buɗe sassan saituna takwas.
+- Banner yana nuna yanayin makirufo: "Saurara..."", "Mic off — tap", ko "Magana… matsa don tsayawa".
+- Lokacin da sabon sigar ya shirya wani banner na ɗaukaka yana bayyana tare da Zazzagewa, Shigarwa da Ba da izini maɓallan (duba Sabuntawa).
+
+## Menu na hagu (tattaunawa)
+- "+ Sabuwar hira": fara sabon tattaunawa.
+- Kowace taɗi a cikin jeri yana nuna alamar gudu yayin da wakilin ke aiki a wurin. fensir ya sake suna; giciye yana goge shi (bayan tabbatarwa: an goge duk saƙonnin da ke cikinsa).
+- Jigo: zaɓi Horror (jini, wuta da inuwa), Duhu (glassin duhu mai tsafta) ko Haske (gilashin haske).
+
+## Bar sakon
+- Haɗa (takarda): Hoton gallery, Hoton kyamara, Binciken daftarin aiki (yana juya rubutun a cikin hoto zuwa .docx mai gyara), raba allon don wakili ya gan shi ("Kallon allo" a kunne ko kashe), da fayilolin mai jiwuwa ko bidiyo. Abubuwan da aka makala suna nunawa azaman guntu; giciye yana cire daya, "Clear all" yana kawar da duka.
+- Maɓallin yanayi: Wakili ko Gina.
+- Maɓallin mic: yana kunna ko kashe makirufo mai saurare.
+- Maɓallin ƙira: yana buɗe lissafin ƙirar tare da akwatin nema. Samfuran da aka yiwa alama "Live" suna iya magana da muryar su.
+- Aika: aika sako. Yayin da wakilin ke aiki wannan ya zama Tsayawa.
+- Shigarwar ta ce "Me zan yi?" a Yanayin Agent da "Me zan gina? Faɗa shi gajere" a cikin Yanayin Gina.
+
+## Saƙonni
+- Kwafi, Raba da Ji (yana karanta saƙon da ƙarfi; sake danna don tsayawa) suna ƙarƙashin kowane saƙo.
+- "Tunani" yana nuna dalilin samfurin lokacin da samfurin ya ba da shi.
+- Lambar da wakilin ya rubuta yana bayyana kai tsaye a cikin akwati, layi ta layi, tare da Kwafi, Zazzagewa da Buɗe.
+- Fayilolin da wakilin ke nunawa azaman katunan tare da Buɗe (a cikin ainihin ƙa'idar wayar), Kunna, Raba da "Sauran app…".
+- Hotuna, sauti da bidiyo suna nuna adadin ci gaba kai tsaye yayin da ake yin su.
+- Katunan kayan aiki suna nuna abin da wakili ke yi: Gudu, aikata, nasara ko kasawa.
+
+## Panel (todo, kayan aiki, fayiloli, ƙananan wakilai)
+- Todo board: shirin da wakilin ya rubuta don babban aiki da ci gabansa (n/ jimlar aikata). Kuna iya ƙara aikin ku kuma share ayyuka.
+- Kayan aiki: jerin kowane kiran kayan aiki, tare da matsayi mai rai.
+- Fayiloli: kowane fayil da wakilin ya ƙirƙira, tare da Buɗe, Raba, Bugawa da Share (tare da tabbatarwa) da akwatin bincike.
+- Sub-wakilai: wakilai masu taimako suna gudana a bango, tare da maɓallin Tsaya.
+- Tasha tab: ainihin tashar tashar (duba Fayilolin Fayiloli da Babin Tasha).
+
+## Kwamitin samfoti
+- Baya, Gaba, Tsayawa, Sake lodi da sandar adireshin (buga adireshin gidan yanar gizo, ko bincika Google).
+- Buɗe fayil: yana nuna Word, Excel, PowerPoint, PDF, hotuna, Markdown, CSV, lamba da rukunoni a cikin app.
+- Girman: raguwa ko ƙara girman panel.
+- Gyara: yana aika matsalolin shafin (kurakurai na na'ura, gazawar lodi) zuwa wakili, wanda ke gyara su a bango.
+- Zaɓi sashi: matsa wani ɓangaren shafin, sannan gaya wa wakilin abin da zai yi da wannan ɓangaren.
+- Maɓallin wakili: tambayi wani abu game da shafin; wakilin ya karbi hotonsa.
+- Buɗewa da sauri: gajerun hanyoyi zuwa shafuka na baya-bayan nan.
+
+## Wurin aiki Code
+- Hagu: fayilolinku (sabon fayil, buɗe, adana).
+- Edita: yana nuna layi da haruffa; canje-canjen da wakili ya yi ya bayyana a lokaci ɗaya.
+- Git: sabon repo, clone daga GitHub, duba, matsayi, aikata tare da saƙo, tura, ja, rassan, alama.
+- Ja buƙatun: ƙirƙira, haɗa, rufe. Ayyukan aiki: lissafin yana gudana, gudanar da aikin aiki. Log yana nuna fitarwar umarni.

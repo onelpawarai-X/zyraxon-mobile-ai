@@ -1,0 +1,42 @@
+Iga seadete ekraan ükshaaval
+Seadistustes on kaheksa jaotist. Igas jaotises on oma alamekraanide jaoks pillid. Viimane kasutatud jaotis avatakse järgmisel korral uuesti.
+
+## 1. Keel ja tõlge → Rakenduste ja tööriistade keel
+Valige kogu rakenduse ja agendi tööriistateadete keel. Otsige loendist ja puudutage ühte. Ekraanil kuvatakse praegune keel ja kas kasutajaliidese tõlge ja tööriistasõnumi tõlkimine on sisse lülitatud. Saadaval on 60 keelt. Vaadake peatükki Keel.
+
+## 2. Hääl ja mikrofon
+- Hääleprofiil: valige nais- või meeshääl, kiirus, helikõrgus, "Lugege vastused ette", Testi hääl, bengali hääle allalaadimise vihje.
+- Mikrofon ja keel: tuvastuskeel, mikrofoni hoidmine sisse lülitatud, automaatne saatmine, kui lõpetate rääkimise.
+- Reaalajas hääl: kõne kõneks muutmine sisse/välja, olek, reaalajas mudelite loend.
+
+## 3. Pakkujad ja API
+- AI pakkujad: teie enda API võtmed (ZYRAXON, OpenCode tasuta kvoot, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) ja ZYRAXON Apex pilveagent. Salvestatud võtit kontrollitakse pakkuja tegeliku kataloogi lugemisega ja see näitab mudelite arvu või täpset viga. Nupp avab veebisaidi ZYRAXON, kus loote võtme.
+- GitHub: teie GitHub juurdepääsuluba (vajab repo ulatust) avaldamiseks, Git tõuke- ja tõmbamistaotluste jaoks. Salvestage märk või kustutage see; olek näitab, kas see on seatud.
+
+## 4. Värskendused → Rakenduse värskendus
+Näitab praegust versiooni, otsib uuemat versiooni, laadib selle edenemisribaga alla ja installib. Teie vestlused, mälu ja seaded jäävad alles. Kui Android vajab installimiseks luba, avab nupp selle sätte.
+
+## 5. Mudel ja identiteet
+- Identiteet: vali tegelane (vt peatükki Tegelased).
+- Mudel: reaalajas mudelikataloog koos otsingukasti, filtritega "Kõik mudelid" ja "Kohandatud"; esiteks kiired mudelid.
+- Seadmes: võrguühenduseta töötavate mudelite allalaadimine, laadimine ja mahalaadimine; sorteeritud väikesest suureks; valikuline Hugging Face märk; kuvab laaditud, laadimise ja ebaõnnestunud olekud.
+
+## 6. Aura & teema
+- Teema: õudus, tume või hele.
+- Aura ja taust: aura stiil ja värv (veri, roosa, violetne, taevas, roheline, tuli) koos peene toonikontrolliga; aura suurus, kuma tugevus, pöörlemiskiirus, paneeli läbipaistvus; hõljuv silm (sisse/välja, kujundus, ekraani serv, häälkäsklused/äratussõnad, lisage oma); varjutusrežiim; kohandatud tausta URL (mp4, gif või pilt); animatsiooni kiirus.
+
+## 7. Turvalisus ja privaatsus
+- Rakenduse lukk: parool (4–8 numbrit) või 3 × 3 punkti muster; kinnitage, sisestades selle kaks korda; eemaldada lukk.
+- Load: loend peatükis Õigused koos Play Protect abiga.
+- Privaatsus ja andmed: kõik andmed jäävad telefoni. Nupud: kogu mälu kustutamine, vestlusajaloo kustutamine, märgi GitHub kustutamine.
+
+## 8. Süsteem
+Sellel jaotisel on oma nuppude rida, mis kerib külili, nii et midagi ei pigistata.
+- Automatiseerimine: kinnitustase ja ainult seadmesisene (vt Kinnitustasemed).
+- Navigeerimine: piirkondade loend, kuhu hüpata – "Üleval pole nuppe, kõik on siin" - sealhulgas ⌘ ZX süsteemi kest, nupp "Uus seanss" (kustutab vestluse ajaloo puhta alguse jaoks), sõnumite arv ja mikrofoni lüliti.
+- Mälu: kohalik SQL mälu koos faktidega ZYRAXON mäletab; lisage võti ja väärtus; kustuta kõik.
+- Oskuste juhend: lühiloend näidisoskustest (sõnumsiderakendused, veebisaidi loomine, ekraanilugeja, taskulamp, kaamera, Wi-Fi ja seaded) koos näidisfraasidega.
+- Automatiseerimiskeskus: oskused, autopiloot, raha, ajaskaala, aju ja kõneagent ühes kohas (vt Automatiseerimiskeskus).
+
+## 9. Dokumentatsioon
+Oma jaotises Seaded, eraldi jaotisest Süsteem. See juhend: kakskümmend üks peatükki, otsingukast ja keelekiibi rida. Kõik rakenduses olevad keeled on rakenduses juba täielikult välja kirjutatud – teie telefonis ei tõlgita midagi ja selle lugemiseks pole vaja Internetti.

@@ -1,0 +1,16 @@
+Idiomas
+## Idioma do aplicativo
+Configurações → Idioma e tradução. 60 idiomas. Toda a interface e as mensagens da ferramenta do agente o acompanham. Cada idioma possui seu próprio arquivo de tradução. Qualquer linha que um arquivo de idioma ainda não possua é mostrada em inglês, nunca deixada em branco.
+
+## O que você fala
+O agente sempre atende no idioma que você fala, em qualquer idioma do mundo. Se você mudar, ele muda. Ele usa a forma amigável e respeitosa de "você" em seu idioma. Os nomes das marcas e da tecnologia permanecem como estão.
+
+## Idiomas de voz
+- Idioma de reconhecimento (o que você fala no microfone): Configurações → Voz e microfone → Microfone e idioma.
+- Voz falada: Configurações → Voz e microfone → Perfil de voz e laboratório de voz para idiomas como bengali, hindi, inglês, urdu, árabe, tâmil, nepalês, espanhol, francês, alemão, japonês, coreano, chinês, russo, turco.
+
+## Esta documentação
+Use os chips de idioma no topo desta página. Todo o guia é escrito em todos os idiomas suportados pelo aplicativo, à mão, e enviado dentro do aplicativo. Nada é traduzido no seu telefone: cada capítulo abre instantaneamente, funciona offline e não precisa de modelo ou chave.
+
+## Escrevendo em seu próprio roteiro
+Documentos, cartazes e designs podem ser feitos em qualquer roteiro. Para designs bengalis, a fonte correta é usada; para outros scripts, a fonte correspondente é escolhida.

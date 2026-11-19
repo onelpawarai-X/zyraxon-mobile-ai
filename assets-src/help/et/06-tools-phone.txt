@@ -1,0 +1,34 @@
+Telefoni automatiseerimise tööriistad
+Agent juhib teie telefoni tööriistade kaudu. Sa ei kutsu neid kunagi ise; ütled, mida tahad ja agent valib tööriistad. Selles peatükis on loetletud kõik telefoni puudutavad tööriistad ja selle kaitsmine (vt Kinnitustasemed: ohutu, isiklik, süsteem).
+
+## Avamine ja leidmine
+- `open_app` (Turvaline): avage mis tahes installitud rakendus nime või paketi järgi. `list_apps` (Turvaline): loetlege installitud rakendused. `open_settings` (Turvaline): avage süsteemiseadete leht (juurdepääsetavus, ülekate, märguanded, rakendused, Wi-Fi, aku, Play Protect). `launch_url` (Turvaline): avage brauseris link. `youtube_play` (Turvaline): avage YouTube, mida küsisite, otsingutulemustes ja esitage see.
+
+## Ekraani nägemine
+- `read_screen` (Isiklik): loeb ekraanil iga teksti ja elemendi puudutusasenditega. `screen_shot` (Isiklik): tõeline ekraanipilt. Need vajavad juurdepääsetavuse luba.
+- `look_camera` (Isiklik): teeb kaameraga ühe foto ja vaatab seda. `read_media` (Isiklik): loeb pilti, heli või videot (teelt või lingilt), et modell sellest aru saaks.
+
+## Ekraanil tegutsemine
+- `tap` (Isiklik): puudutage punkti. `tap_text` (Isiklik): puudutage selle sildiga elementi, mis on koordinaatidest turvalisem. `swipe` (Isiklik): kerimine või tagasiliikumine. `type_text` (Isiklik): tippige teravustatud väljale. `press_key` (Isiklik): tagasi, kodu, hiljutised, märguanded, kiirseaded, lukk.
+- Ekraanitoimingud käitatakse ükshaaval järjekorras ja pärast igat vaatab agent uut ekraani.
+
+## Telefon, sõnumid ja lõikelaud
+- `call_dial` (Isiklik): helistage numbri või kontakti nime järgi. `call_state` (Isiklik): kas kõne heliseb või aktiivne? `call_answer` (Isiklik): vastus. `call_hangup` (Isiklik): katkestage toru.
+- `read_sms` (Isiklik): lugege uusimat SMS-i, nt. OTP-kood; saab filtreerida teksti või saatja järgi.
+- `clipboard_read` ja `clipboard_write` (isiklik): lõikepuhvrisse lugemine või kirjutamine.
+- `notify` (Isiklik): postitage tõeline Android teatis. `share` (Isiklik): avage jagamisleht teksti, lingi või failiga. `channel_post` (Süsteem): avage Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail või SMS, mille tekst on eeltäidetud ja valmis saatmiseks.
+
+## Oleku ja süsteemi faktid
+- `network_status` (Turvaline): võrgus või mitte, Wi-Fi või mobiilne andmeside, Wi-Fi nimi. `sys_info` (Turvaline): Android versioon, mudel, protsessor, RAM, salvestusruum, praegune rakendus. `platform_info` (Turvaline): kus agent töötab. `process_list` (Ohutu): protsesside käitamine.
+
+## Load ja ekraan
+- `request_permission` (Turvaline): avab ühe puudutusega süsteemilubade dialoogi, kui tööriist ebaõnnestub loa puudumise tõttu. `device_lock` (Süsteem): lukustage ekraan päriselt või seadistage luba, mis seda võimaldab. `floating_bubble` (Isiklik): lülitage ujuv orb sisse või välja.
+- `voice_change` (Isiklik): muutke kõne kiirust, helikõrgust või sugu. `live_voice` (Süsteem): lülitage kõne kõneks muutmise režiim sisse või välja.
+
+## Liidese abilised
+- `code_box` ja `files_panel`: avage reaalajas koodikast või failibrauser, et tööd vaadata. `todo_write`: reaalajas tegumilaud.
+
+## Näpunäiteid
+- Saate aheldada: "Ava Seaded, leidke Wi-Fi ja ütle mulle võrgu nimi". Agent loeb pärast iga sammu ekraani ja otsustab järgmise.
+- Kui puudutus ei tee midagi, loeb agent ekraani uuesti ja proovib teist elementi; see ei koputa kunagi pimesi.
+- Kui Play Protect midagi blokeerib, saab agent teiega seaded läbi käia (vt Load).

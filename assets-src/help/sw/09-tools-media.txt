@@ -1,0 +1,11 @@
+Picha, sauti, video, hati na muundo
+- `generate_image` (mtandao): tengeneza picha kutoka kwa maelezo (iandike kwa undani; Kiingereza hufanya kazi vizuri zaidi). Inaonekana kwenye gumzo na vifungo vya kushiriki. Kwa kadhaa, uliza kadhaa.
+- `generate_audio` (mtandao): sauti inayotamkwa (.mp3) kutoka kwa maandishi yoyote. Kwa mazungumzo au hadithi, ipe kila sehemu sauti yake (jinsia, umri, lugha, toni). Lugha nyingi, ikiwa ni pamoja na Kibengali, Kihindi na Kiingereza.
+- `generate_video`: video halisi iliyohaririwa (sio picha za AI) kutoka kwa matukio — picha, klipu, maandishi, rangi, simulizi, maelezo mafupi, muziki. `ffmpeg`: hariri yoyote ya moja kwa moja — kata, unganisha, weka juu, manukuu, kasi, mchanganyiko wa sauti, badilisha. Video za dakika 5-10 zinawezekana, zilizoundwa hatua kwa hatua.
+- Maendeleo yanaonyesha moja kwa moja kama asilimia kwenye gumzo; inapokamilika faili hufika na vitufe vya Cheza na Shiriki.
+- `make_document`: faili halisi Word (.docx), Excel (.xlsx) au PowerPoint (.pptx) faili kwenye simu, hakuna usakinishaji unaohitajika, lugha yoyote. `office_template`: karatasi tayari za ofisi zilizo na nafasi za kujaza (acha ombi, ombi la kazi, ankara, CV, pendekezo la biashara, nukuu, ilani, dakika za mkutano, mkataba, akaunti za kila mwezi na zaidi).
+- Hati kutoka kwa picha: ambatisha picha (Scan ya Hati). Maandishi yanakiliwa jinsi yalivyoandikwa (maneno yasiyo wazi yana alama), jedwali linakuwa .xlsx, vinginevyo .docx.
+- Vidokezo vya mkutano: kutoka kwa sauti, nakala au kile unachosema. Hati ina muhtasari, maamuzi, vipengee vya kushughulikia (kazi, mmiliki, tarehe ya kukamilisha) na rasimu iliyo tayari ya barua pepe.
+- `make_design`: mabango, mabango, nembo, kadi, hadithi, vifuniko kama PNG na PDF. `brand_kit`: toa nembo au rangi; zimehifadhiwa, mandhari ya programu hubadilika, na kuanzia hapo hati, slaidi na tovuti hutumia rangi za chapa yako.
+- `present_slides`: mhusika anazungumza huku kadi za slaidi zikionyesha; slaidi hubadilika zenyewe wakati sauti inapoisha. Uliza faili ya .pptx ikiwa unataka faili.
+- `open_file`: hufungua kilichoundwa katika programu halisi ya simu (Word/Hati, Majedwali ya Google, Slaidi, PDF, matunzio, kivinjari) au katika paneli ya Onyesho la Kuchungulia; wakala hukagua skrini ili kuhakikisha kuwa imefunguliwa.

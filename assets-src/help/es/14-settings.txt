@@ -1,0 +1,42 @@
+Cada pantalla de ajustes, una por una
+Los ajustes tienen ocho secciones. Cada sección tiene píldoras para sus subpantallas. La última sección que usaste se reabre la próxima vez.
+
+## 1. Language & translation → App & tool language
+Elige el idioma de toda la app y de los mensajes de herramientas del agente. Busca en la lista y toca uno. La pantalla muestra el idioma actual y si la traducción de la interfaz y la de los mensajes de herramientas están activadas. Hay 60 idiomas disponibles. Consulta el capítulo Idiomas.
+
+## 2. Voice & mic
+- Voice profile: elige voz femenina o masculina, velocidad, tono, "Read answers aloud", Test voice, la indicación de descarga de la voz en bengalí.
+- Mic & language: idioma de reconocimiento, mantener el micrófono encendido, enviar automáticamente cuando dejas de hablar.
+- Live voice: voz a voz activado/desactivado, estado, la lista de modelos en tiempo real.
+
+## 3. Providers & API
+- AI providers: tus propias claves API (ZYRAXON, cuota gratuita de OpenCode, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) y el ZYRAXON Apex cloud agent. Una clave guardada se verifica leyendo el catálogo real del proveedor y muestra el número de modelos o el error exacto. Un botón abre el sitio web de ZYRAXON donde creas una clave.
+- GitHub: tu token de acceso de GitHub (necesita el alcance repo) para publicar, hacer push de Git y pull requests. Guarda o borra el token; el estado muestra si está configurado.
+
+## 4. Updates → App update
+Muestra la versión actual, busca una versión más nueva, la descarga con una barra de progreso y la instala. Tus chats, memoria y ajustes se conservan. Si Android necesita permiso para instalar, un botón abre ese ajuste.
+
+## 5. Model & identity
+- Identity: elige el personaje (consulta el capítulo Personajes).
+- Model: el catálogo de modelos en vivo con un cuadro de búsqueda, filtros "All models" y "Custom"; los modelos rápidos primero.
+- On-device: descarga, carga y descarga de memoria modelos que se ejecutan sin conexión; ordenados de pequeños a grandes; token opcional de Hugging Face; muestra los estados cargado, cargando y fallido.
+
+## 6. Aura & theme
+- Theme: Horror, Dark o Light.
+- Aura & background: el estilo y color del aura (sangre, rosa, violeta, cielo, verde, fuego) con control fino del matiz; tamaño del aura, intensidad del brillo, velocidad de rotación, transparencia de los paneles; el ojo flotante (activado/desactivado, diseño, borde de pantalla, comandos de voz/palabras de activación, añade las tuyas); modo shader; URL de fondo personalizado (mp4, gif o imagen); velocidad de animación.
+
+## 7. Security & privacy
+- App lock: una contraseña (4–8 dígitos) o un patrón de puntos 3×3; confirma introduciéndolo dos veces; quitar el bloqueo.
+- Permissions: la lista del capítulo Permisos, con ayuda para Play Protect.
+- Privacy & data: todos los datos se quedan en el teléfono. Botones: borrar toda la memoria, borrar el historial de chat, borrar el token de GitHub.
+
+## 8. System
+Esta sección tiene su propia fila de botones que se desplaza hacia los lados, para que nada quede apretado.
+- Automation: nivel de aprobación y solo en el dispositivo (consulta Niveles de aprobación).
+- Navigation: una lista de áreas a las que saltar: "sin botones arriba, todo está aquí", incluido el shell del sistema ⌘ ZX, un botón "New session" (borra el historial del chat para empezar limpio), el número de mensajes y el interruptor del micrófono.
+- Memory: la memoria SQL local con los datos que ZYRAXON recuerda; añade una clave y un valor; borra todo.
+- Skill guide: una lista rápida de habilidades de ejemplo (apps de mensajería, creación de sitios web, lector de pantalla, linterna, cámara, Wi-Fi y ajustes) con frases de ejemplo.
+- Automation hub: skills, autopilot, dinero, línea de tiempo, brain y el agente de llamadas en un solo lugar (consulta Automation hub).
+
+## 9. Documentation
+Su propia sección en Ajustes, separada de System. Esta guía: veintiún capítulos, un cuadro de búsqueda y una fila de fichas de idioma. Todos los idiomas de la app ya están escritos completos dentro de la app: no se traduce nada en tu teléfono y no hace falta internet para leerla.

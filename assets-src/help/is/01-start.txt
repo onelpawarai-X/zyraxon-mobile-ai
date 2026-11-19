@@ -1,0 +1,20 @@
+Að byrja
+ZYRAXON er aðstoðarmaður sem býr inni í Android símanum þínum. Það talar við þig, hlustar á þig og getur unnið alvöru verk: opna öpp, banka og slá á skjáinn, hringja í fólk, skrifa skrár, búa til vefsíður og öpp, keyra Linux kerfi, búa til myndir, hljóð, myndbönd og skrifstofuskjöl og muna eftir þér í marga mánuði. Það virkar á hvaða tungumáli sem þú talar.
+
+## Fyrstu mínúturnar
+- Við fyrstu ræsingu sýnir ZYRAXON stuttan fyrirvara um að umboðsmaðurinn geti aðhafst í símanum þínum sjálfur. Ýttu á „Got it, start“ til að halda áfram.
+- Bættu við gervigreindarlykli (Stillingar → veitendur og API → gervigreindarveitur). Límdu lykil fyrir hvaða þjónustuaðila sem þú vilt (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Þegar þú vistar lykil les appið vörulista þjónustuveitunnar og athugar hann fyrir alvöru, þannig að þú sérð sannan „tengd“ og fjölda gerða.
+- Enginn lykill? Þú getur samt notað gerðir tækisins (Stillingar → Gerð og auðkenni → Í tæki). Þeir keyra í síma án nettengingar.
+- Veldu líkan með módelhnappnum á skilaboðastikunni og staf (Stillingar → Líkan og auðkenni → Auðkenni).
+- Veittu heimildir þegar eiginleiki þarfnast þess (sjá kaflann um heimildir). Umboðsmaðurinn getur einnig opnað leyfisgluggann fyrir þig með einum smelli.
+- Bara tala eða skrifa. "Búðu til áfangasíðu fyrir bakaríið mitt", "opnaðu YouTube og spilaðu lag", "hvað er rafhlaðan mín?", "hringdu í mömmu".
+
+## Tvær vinnuaðferðir
+Við hliðina á skilaboðareitnum er hamhnappur með tveimur stillingum: Agent og Build. Sjá kaflann Stillingar.
+
+## Þar sem hlutirnir eru
+- Vinstri valmynd: spjallin þín, nýtt spjall, endurnefna, eyða og þemarofinn.
+- Spjallskjár: skilaboð, verkefnaborðið, verkfæralisti, skrár, flugstöðin.
+- Forskoðunar- og kóðaspjöld: sjáðu og breyttu því sem umboðsmaðurinn smíðar.
+- Stillingar: átta hlutar, fjallað um einn í einu í þessum skjölum.
+- Þessi skjöl: Stillingar → Skjöl (þú ert hér).

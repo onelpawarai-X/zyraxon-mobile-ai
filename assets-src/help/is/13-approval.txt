@@ -1,0 +1,23 @@
+Viðurkenningarstig og öryggi sjálfvirkni
+Stillingar → Kerfi → Sjálfvirkni. Þetta ákveður hversu mikið umboðsmaðurinn má gera áður en hann hættir og spyr þig. Stillingunni er framfylgt í kóða í hverju verkfærakalli; líkan getur ekki stækkað það.
+
+## Stigin fjögur
+Breyttu stigi í Stillingar → Kerfi → Sjálfvirkni. Hvert stig ákveður hvenær umboðsmaðurinn stoppar og spyr, og einnig hversu strangt efnisskjöldur (sjá Öryggi og næði) meðhöndlar texta sem umboðsmaðurinn les utan frá.
+1. Fullt spurt (læst): spyr á undan öllu sem breytir símanum, hversu lítið sem er. Öruggast. Innihaldsskjöldurinn er strangur: allir grunsamlegir textar teljast fjandsamlegir. Notaðu það í sameiginlegum síma eða á meðan þú ert að prófa eitthvað nýtt.
+2. Með eftirliti (sjálfgefið): spyr áður en kerfi og persónulegar aðgerðir og vinnur venjulegt verk (les, opnar, leitar, smíðar) sjálfur. Innihaldsskjöldurinn er staðalbúnaður: grunsamlegur texti er girtur sem gögn og þegar texti er greinilega fjandsamlegur biður hvert breytilegt tól þig um það sem eftir er af þeirri beygju.
+3. Jafnvægi: spyr aðeins fyrir aðgerðir á kerfisstigi (skel, eyðing, birting, tímasetning...). Persónulegar aðgerðir eins og skilaboð, tappa og innsláttur keyra einar. Innihaldsskjöldurinn er léttur: hann virkar aðeins á greinilega fjandsamlegan texta og þá stoppa aðeins verkfæri á kerfisstigi til að spyrja.
+4. Full sjálfvirkni: Spyr aldrei og hættir aldrei. Allt rennur beint í gegn og slökkt er alveg á Content Shield - ekkert er skannað, merkt, fjarlægt eða breytt. Þetta er sjálfvirkni í fullum skilningi: þú átt áhættuna.
+
+## Þrjú stig verkfæra
+- Öruggt (spyr aldrei á neinu stigi): lestur og skráning skrár, minni, skjöl, hönnun, stöðu, opnun forrita og skráa, bið, færni/sjálfstýring/tímalína/símtalalistar, heilaleit.
+- Persónulegt (spurð á fyrstu tveimur stigunum): SMS, símtöl, myndavél, skjálestur, snertingar og innsláttur, klemmuspjald, niðurhal, tilkynningar, samnýting, raddbreyting, endurspilun færni, peningabók, hringja umboðsmaður, afturkalla tímalínu.
+- Kerfi (spurt á öllum stigum nema full sjálfvirkni): skel, Linux, smíði, birting, eyðing, tækjalás, tímasetning, Git og GitHub, ffmpeg, líkan í tækinu, færslur á rásir, sjálfstýringarreglur, eyðingarfærni, Shizuku. Öll verkfæri sem appið kannast ekki við - þar á meðal MCP verkfæri - er meðhöndlað sem kerfi.
+
+## Samþykkiskortið
+Þegar tæki þarf samþykki þitt segir kortið „Leyfi þarf“, segir þér hvað umboðsmaðurinn vill gera, sýnir stig þess (öruggt, persónulegt eða kerfi) og býður upp á „Já, keyrðu það“ eða „Nei, haltu því burt“. Kortið minnir þig líka á að þú getur breytt hversu oft þetta er spurt í Stillingar → Sjálfvirkni.
+
+## Aðeins í tækinu
+Þegar kveikt er á því fer ekkert úr símanum: aðeins gerð tækisins og staðbundin verkfæri keyra. Öllum netverkfærum (leit, niðurhal, upphleðsla, birting, GitHub, fjölmiðlaframleiðsla, MCP, skýjalíkön) er hafnað í kóða.
+
+## Fyrsta kynningartilkynning
+Í fyrsta skiptið útskýrir ZYRAXON að umboðsmaðurinn geti brugðist við símanum þínum og hvar á að kveikja á heimildum. Ýttu á "Átt það, byrja".

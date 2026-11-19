@@ -1,0 +1,49 @@
+# NOTICE
+
+## Ownership
+
+**ZYRAXON AI is the original work of onelpawarai.**
+
+Copyright (c) 2026 onelpawarai. All rights reserved.
+Trademark: ZYRAXON, MEKRA, MYRA — registered marks of onelpawarai.
+
+The application — its name, interface, design, architecture, source code,
+build system, agent and licensing systems, documentation and branding — is
+owned by onelpawarai and is distributed under the ZYRAXON Sovereign License,
+X Edition (ZSL-X). See [LICENSE](LICENSE).
+
+Everything a user sees, types, or taps is ZYRAXON: the launcher entry, the
+welcome screen, the terminal prompt, the command set, the environment, the
+filesystem paths and the bundled Linux banner.
+
+## Third-party components
+
+Some parts are built on the work of others, and each of those parts stays
+under its own license. That license governs that part, and it requires that
+its own copyright notice and license text are kept as the author wrote them.
+Keeping them is what makes ZYRAXON compliant; removing them would not.
+
+| Component | License |
+| --- | --- |
+| AndroidX (Core, Activity, Fragment, Lifecycle, Room, WebKit) | Apache-2.0 |
+| Jetpack Compose (UI, Material 3, Material Icons) | Apache-2.0 |
+| Kotlin and kotlinx.coroutines | Apache-2.0 |
+| OkHttp, Retrofit, Moshi, logging-interceptor | Apache-2.0 |
+| Coil | Apache-2.0 |
+| JGit | EDL-1.0 and BSD-3-Clause |
+| SLF4J (nop binding) | MIT |
+| Shizuku API and provider | Apache-2.0 |
+| ML Kit text recognition (Latin, Devanagari) | Google APIs Terms of Service |
+| MediaPipe Tasks GenAI | Apache-2.0 |
+| LiteRT-LM | Apache-2.0 |
+| Bundled userland packages for the Linux path | per-package licenses |
+
+The Linux environment the app can run ships third-party binaries. Their
+licenses travel with them, inside the app bundle, unchanged — every copyright
+and license file the packages ship is kept exactly as its authors wrote it.
+ZYRAXON adds its own systems, interface and branding on top; it does not
+claim authorship of those binaries.
+
+## Reporting a security issue
+
+See [SECURITY.md](SECURITY.md).

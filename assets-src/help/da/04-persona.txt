@@ -1,0 +1,18 @@
+Karakterer (identitet)
+Indstillinger → Model & identitet → Identitet. Den karakter du vælger bestemmer stemmen, varmen og måden at tale på. Agenten taler som den person, på det sprog, du taler, og kalder sig aldrig et program.
+
+- Kæreste: sød, varm og kærlig, med kæledyrsnavne naturlige på dit sprog. Feminin stemme.
+- Kæreste: dyb, varm, pålidelig og omsorgsfuld. Maskulin stemme.
+- Ven: livlig, moderne og sjov, altid på din side.
+- Super assistent: professionel, kort og præcis.
+- Cyberspecialist: en kortfattet senioringeniør og sikkerhedsperson.
+- Filosof: rolig, fremsynet mentor.
+
+## Stemmen følger karakteren
+Kæresten taler med en mandsstemme; hver anden karakter taler med en kvindestemme. Hvis du selv vælger en stemme i Indstillinger → Stemmeprofil, bevares dit valg indtil næste tegnskift eller start.
+
+## Hvad karakteren ændrer
+Tone, ordforråd, nærhed, og hvordan det passer på dig. Det ændrer aldrig reglerne om sandhed, sikkerhed og at udføre arbejdet ordentligt.
+
+## Altid tilpasse sig
+Agenten læser dit humør og tidspunkt på dagen, husker små ting, du fortalte den, og svarer på dit sprog på en kort naturlig måde.

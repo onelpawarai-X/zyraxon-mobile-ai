@@ -1,0 +1,34 @@
+Tools zur Telefonautomatisierung
+Der Agent steuert Ihr Telefon über Tools. Du rufst sie nie selbst an; Sie sagen, was Sie wollen, und der Agent wählt die Werkzeuge aus. In diesem Kapitel werden alle Werkzeuge aufgeführt, die das Telefon berühren, und wie es geschützt wird (siehe Genehmigungsstufen: Sicher, Persönlich, System).
+
+## Öffnen und Finden
+- `open_app` (Sicher): Öffnen Sie jede installierte App nach Name oder Paket. `list_apps` (Sicher): Installierte Apps auflisten. `open_settings` (Sicher): Öffnen Sie eine Seite mit Systemeinstellungen (Barrierefreiheit, Overlay, Benachrichtigungen, Apps, Wi-Fi, Akku, Play Protect). `launch_url` (Sicher): Öffnen Sie einen Link im Browser. `youtube_play` (Sicher): Öffnen Sie YouTube in den Suchergebnissen für das, was Sie gefragt haben, und spielen Sie es ab.
+
+## Den Bildschirm sehen
+- `read_screen` (Persönlich): Liest jeden Text und jedes Element auf dem Bildschirm mit Tipppositionen. `screen_shot` (Persönlich): ein echter Screenshot. Diese benötigen die Berechtigung Barrierefreiheit.
+- `look_camera` (Persönlich): Nimmt ein Foto mit der Kamera auf und betrachtet es. `read_media` (Persönlich): Liest ein Bild, Audio oder Video (von einem Pfad oder Link), damit das Modell es verstehen kann.
+
+## Auf der Leinwand agieren
+- `tap` (Persönlich): Tippen Sie auf einen Punkt. `tap_text` (Persönlich): Tippen Sie auf das Element mit dieser Bezeichnung, sicherer als Koordinaten. `swipe` (Persönlich): Scrollen oder die Zurück-Geste. `type_text` (Persönlich): Geben Sie in das fokussierte Feld ein. `press_key` (Persönlich): Zurück, Startseite, Aktuelles, Benachrichtigungen, Schnelleinstellungen, Sperre.
+- Bildschirmaktionen werden der Reihe nach nacheinander ausgeführt, und nach jeder Aktion schaut sich der Agent den neuen Bildschirm an.
+
+## Telefon, Nachrichten und Zwischenablage
+- `call_dial` (Persönlich): Einen Anruf über die Nummer oder den Namen des Kontakts tätigen. `call_state` (Persönlich): Klingelt ein Anruf oder ist ein Anruf aktiv? `call_answer` (Persönlich): Antwort. `call_hangup` (Persönlich): auflegen.
+- `read_sms` (Persönlich): Neueste SMS lesen, z.B. ein OTP-Code; kann nach Text oder Absender filtern.
+- `clipboard_read` und `clipboard_write` (Persönlich): Zwischenablage lesen oder schreiben.
+- `notify` (persönlich): Veröffentlichen Sie eine echte Android-Benachrichtigung. `share` (Persönlich): Öffnen Sie das Freigabeblatt mit Text, einem Link oder einer Datei. `channel_post` (System): Öffnen Sie Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail oder senden Sie eine SMS mit Ihrem vorab ausgefüllten Text, bereit zum Senden.
+
+## Status- und Systemfakten
+- `network_status` (Sicher): online oder nicht, Wi-Fi oder mobile Daten, Wi-Fi Name. `sys_info` (Sicher): Android Version, Modell, CPU, RAM, Speicher, aktuelle App. `platform_info` (Sicher): Wo der Agent ausgeführt wird. `process_list` (Sicher): laufende Prozesse.
+
+## Berechtigungen und Bildschirm
+- `request_permission` (Sicher): Öffnet den Systemberechtigungsdialog mit einem Fingertipp, wenn ein Tool aufgrund einer fehlenden Berechtigung fehlschlägt. `device_lock` (System): Sperren Sie den Bildschirm tatsächlich oder richten Sie die Berechtigung ein, die dies ermöglicht. `floating_bubble` (Persönlich): Schalten Sie die schwebende Kugel ein oder aus.
+- `voice_change` (Persönlich): Sprechgeschwindigkeit, Tonhöhe oder Geschlecht ändern. `live_voice` (System): Schalten Sie den Live-Speech-to-Speech-Modus ein oder aus.
+
+## Schnittstellenhelfer
+- `code_box` und `files_panel`: Öffnen Sie die Live-Code-Box oder den Dateibrowser, damit Sie sich die Arbeit ansehen können. `todo_write`: das Live-Taskboard.
+
+## Tipps
+- Sie können Folgendes verketten: „Öffnen Sie die Einstellungen, suchen Sie Wi-Fi und teilen Sie mir den Netzwerknamen mit“. Der Agent liest nach jedem Schritt den Bildschirm und entscheidet über den nächsten.
+- Wenn ein Antippen nichts bewirkt, liest der Agent den Bildschirm erneut und versucht es mit einem anderen Element; es klopft nie blind.
+- Wenn Play Protect etwas blockiert, kann der Agent mit Ihnen durch die Einstellungen gehen (siehe Berechtigungen).

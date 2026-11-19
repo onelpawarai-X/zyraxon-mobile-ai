@@ -1,0 +1,21 @@
+Ský, net, líkön og aðstoðarmenn
+## Ský og internetið
+- `web_search` (net): leitaðu á alvöru vefnum. `read_url` (net): sækja síðu sem texta. `http_request` (net): hvaða HTTP símtal sem er (GET, POST, PUT, PATCH, DELETE) með hausum og meginmáli. `verify_url` (net): athugaðu að tengill sé raunverulega til og fáðu sanna stöðu. `download_file` (Persónulegt, netkerfi): hlaðið niður slóð á skrá.
+- Umboðsmaðurinn opnar aðeins tengla þegar þú biður um það.
+- Gervigreind módel keyra í skýinu í gegnum veiturnar sem þú bættir við (ZYRAXON, ZYRAXON Apex skýjamiðlari, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Líkanalistinn hleðst inn í beinni og fyllist þegar hver veitandi svarar.
+- Smíða-, útgáfu- og dráttarbeiðnir ganga í gegnum GitHub og Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Kveiktu á „on-device only“ (sjálfvirknistillingar) og alls ekki hringt í skýjasímtali: engin veitandi, enginn vefur, engin upphleðsla.
+
+## MCP netþjóna
+MCP gerir utanaðkomandi þjónustum kleift að veita umboðsmanni aukaverkfæri. Tengdu Canva, Cloudflare, Supabase, GitHub eða þinn eigin netþjón með heimilisfangi hans (valfrjálst tákn). Verkfæri tengdra netþjóna bætast við verkfæralista umboðsmannsins sem `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (sjá hvað er tengt og hvaða verkfæri eru til), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (horfa á tilföng fyrir breytingar), `mcp_complete` (sjálfvirk útfyllingarrök), `mcp_ping`, `mcp_log_level`. Símtöl þeirra eru netsímtöl og óþekkt MCP verkfæri biðja sjálfgefið um leyfi.
+- MCP skjárinn listar hvern netþjón með Tengdur stöðu, verkfæri hans, tilföng og hvetja sniðmát, og Bæta við, Aftengja, Fjarlægja, Leyfa hnappa.
+
+## Undirumboðsmenn
+`sub_agent` (Kerfi): afhenda hluta af stóru starfi til aðstoðarmanna sem keyra í bakgrunni. Aðgerðir: hrogn, staða, listi, niðurstaða, skilaboð, stöðva, bíða. Hver getur notað sitt eigið líkan. Umboðsmaðurinn sameinar og athugar niðurstöður sínar áður en hann segir „lokið“.
+
+## Gerð á tæki
+`on_device_model` (Kerfi): skrá, hlaða og keyra tungumálalíkan sem býr í símanum, án nettengingar. Í stillingum → Gerð og auðkenni → Á tækinu hleður þú niður gerðum (lítil til stór: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); Hugging Face tákn er valfrjálst og þarf aðeins fyrir hliðarskrár. Hlaðinn líkan er minnst og endurhlaðinn við sjósetningu.
+
+## Skilaboðarásir
+`channel_post` (Kerfi) opnar Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail eða SMS með textann þinn tilbúinn. Þú ýtir sjálfur á senda.

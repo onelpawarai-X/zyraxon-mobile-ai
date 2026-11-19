@@ -1,0 +1,27 @@
+Mga pahintulot, isa-isa
+Mga Setting → Seguridad at privacy → Mga Pahintulot. Ang bawat row ay nagpapakita ng "Granted" o isang button. Ang pag-tap sa isang row ay magbubukas sa dialog ng system; pindutin lamang ang Payagan. Maaari ring buksan ng ahente ang mismong diyalogo gamit ang `request_permission`.
+
+- Mikropono: para marinig ka ni ZYRAXON. Kung wala ito walang voice input.
+- Camera: para kumuha at tumingin ng mga larawan (`look_camera`, document scan, "ano ang nakikita mo").
+- Lokasyon: para sa mga mapa at lokal na impormasyon.
+- Mga Notification: para sabihin sa iyo kapag natapos na ang background work.
+- Mga file at media: para magbasa ng mga larawan, video, audio at mga dokumento.
+- Overlay (gumuhit sa iba pang apps): kailangan para sa lumulutang na mata.
+- Accessibility: hinahayaan ang ahente na basahin ang screen at mag-tap, mag-swipe at mag-type para sa iyo. Ito ang puso ng automation ng telepono. I-on mo ito sa mga setting ng Accessibility ng system.
+- Pag-optimize ng baterya: pinipigilan ang Android sa pagpapatulog sa ZYRAXON habang gumagana ito sa background.
+
+## Iba pang mga pahintulot na ipinapahayag ng app
+- SMS (basahin at tumanggap): para sa pagbabasa ng mga code, ang money ledger at SMS autopilot rules.
+- Katayuan ng telepono, sagutin ang mga tawag, tawagan ang telepono, mga contact: para sa mga tool sa pagtawag at ahente sa pagtawag.
+- Access sa notification: hinahayaan ang autopilot na tumugon sa mga notification.
+- Admin ng device: hinahayaan `device_lock` na talagang i-lock ang screen.
+- Mag-install ng mga package: hinahayaan ang mga update at `build_app` mag-install ng mga APK; Hinihiling sa iyo ng Android na payagan ang ZYRAXON bilang pinagmulan ng pag-install.
+- Mga serbisyo sa foreground (mikropono, pag-sync ng data) at wake lock: panatilihing buhay ang boses at mahabang trabaho.
+- Internet at network state: ang cloud at ang web.
+- Shizuku (opsyonal): access sa antas ng system para sa shell at terminal.
+
+## Google Play Protect
+Kung haharangin ng Play Protect ang isang trabaho, maaaring buksan ng ahente ang tamang page, tingnan ang totoong screen at hakbang-hakbang sa gear at toggle — ngunit tatanungin ka muna nito, dahil desisyon mo ang pag-off ng proteksyon. Upang gawin ito sa iyong sarili: Play Store → larawan sa profile → Play Protect → mga setting → i-off ang "I-scan ang mga app gamit ang Play Protect". Ang pahina ay may button na nagbubukas Play Store.
+
+## Bakit mahalaga ang isang pahintulot
+Kung nabigo ang isang tool para sa isang nawawalang pahintulot, sasabihin sa iyo ng ahente kung alin ang isa at bubuksan ang dialog nito. Walang bagay na sensitibong gumagana nang wala ang iyong tahasang Payagan.

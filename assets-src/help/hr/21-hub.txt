@@ -1,0 +1,20 @@
+Središte automatizacije
+Postavke → Sustav → Središte automatizacije. Svaki gumb za ono što ZYRAXON može učiniti sam je na jednom mjestu, u šest kartica. Svaka kartica počinje kratkim objašnjenjem kako radi.
+
+## Vještine
+Podučite ZYRAXON zadatak na dva načina: recite ga u chatu ("naučite ovaj zadatak") ili pritisnite tipku za snimanje i sami obavite zadatak u drugoj aplikaciji, zatim se vratite i pritisnite Stop. Usluga pristupačnosti mora biti uključena ili se vaši dodiri ne mogu vidjeti. Ono što je naučio pojavljuje se pod "Naučene vještine" i može se reproducirati ili izbrisati.
+
+## Autopilot
+Pravila tipa "kad se ovo dogodi, učini ono". Kada se događaj dogodi, ZYRAXON se sam budi i obavlja posao bez pitanja. Također možete stvoriti pravilo tako da ga izgovorite u chatu. Svako pravilo pokazuje koliko je puta pokrenuto.
+
+## Novac
+Čita SMS iz bilo koje banke ili novčanika u bilo kojoj zemlji (PayPal, M-Pesa, UPI, Pix, bKash, kartice…) i vodi jednu knjigu prihoda, potrošnje, naknada i stanja. Možete postaviti proračun i dobiti upozorenje kada ga prijeđete. Na telefonu radi, i nigdje se ništa ne šalje.
+
+## Vremenska crta
+Ovdje je napisano sve što je ZYRAXON napravio. Pisanje, uređivanje i brisanje datoteka može se poništiti jednim gumbom. Naredba koja je pokrenuta ne može se poništiti.
+
+## Mozak
+Pretražuje vaše datoteke (tekst, Word, Excel, PowerPoint, CSV) i, ako to dopustite, vaš SMS, bez interneta i na bilo kojem jeziku. Prvo pritisnite "Indeks", a zatim pretražite.
+
+## Nazovi agenta
+Kada ne možete odgovoriti na poziv, ZYRAXON se javlja, govori na jeziku pozivatelja, uči ime i razlog i daje vam sažetak kada poziv završi. Petnaest jezika koristi brza ugrađena pravila; svakim drugim jezikom upravlja model, koji odgovara na jeziku pozivatelja. Riječi koje znače zbogom, hitno ili spam razumiju se na svim jezicima odjednom. Sažeci uhvaćenih poziva navedeni su u kartici.

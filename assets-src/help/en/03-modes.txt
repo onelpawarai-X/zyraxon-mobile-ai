@@ -1,0 +1,14 @@
+Modes: Agent and Build
+There are two modes, chosen with the mode button next to the message box. The choice stays until you change it. Live voice is not a third mode; it is a way of speaking you can switch on in Settings (see the Voice chapter).
+
+## Agent
+"Full automation of the phone and the system." Everything is open: reading and driving the phone's screen, opening apps, calls, messages, camera, files, the terminal and Linux, Git, preview, media, sub-agents, MCP servers, skills, autopilot and more. Choose Agent when you want something done on your phone or want to simply talk.
+
+## Build
+"Full-stack apps, websites and automation." The agent is a build engine: from a short line it makes the whole thing, runs it, looks at it and shows it to you. It has files, terminal, Git, preview, publishing, media, memory and the todo board. Phone control, sub-agents and device lock belong to Agent mode; if you need them in Build, switch.
+- Landing page or website: say what it is for. The agent builds it at once, starts it on your phone and opens it in the Preview panel, then tells you what it made. It does not publish unless you ask.
+- App: say what you want and it builds the app as asked. A back end, database or login is added only if you ask for it.
+- Full-stack: when you ask for a back end or database, the agent first asks you one short question about the choices (language, database, login, where it runs), with its recommendation, and builds after you answer.
+
+## What "ask" means
+When the agent really needs your decision it does everything else first, asks one short question with its recommendation, and waits. Your answer continues the work from where it stopped.

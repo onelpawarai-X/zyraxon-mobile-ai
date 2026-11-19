@@ -1,0 +1,20 @@
+Pierwsze kroki
+ZYRAXON to asystent, który znajduje się w Twoim Android telefonie. Rozmawia z Tobą, słucha Cię i może wykonywać prawdziwą pracę: otwierać aplikacje, dotykać i pisać na ekranie, dzwonić do ludzi, pisać pliki, tworzyć strony internetowe i aplikacje, uruchamiać system Linux, tworzyć zdjęcia, dokumenty audio, wideo i biurowe oraz zapamiętywać Cię przez miesiące. Działa w każdym języku, którym mówisz.
+
+## Pierwsze minuty
+- Przy pierwszym uruchomieniu ZYRAXON wyświetla krótką informację, że agent może samodzielnie podjąć działania na Twoim telefonie. Naciśnij „Rozumiem, zacznij”, aby kontynuować.
+- Dodaj klucz AI (Ustawienia → Dostawcy i API → Dostawcy AI). Wklej klucz dowolnego dostawcy, którego lubisz (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Po zapisaniu klucza aplikacja odczytuje katalog tego dostawcy i sprawdza, czy jest prawdziwy, dzięki czemu widzisz prawdziwe „połączenie” i liczbę modeli.
+- Nie masz klucza? Nadal możesz korzystać z modeli na urządzeniu (Ustawienia → Model i tożsamość → Na urządzeniu). Działają na telefonie bez internetu.
+- Wybierz model za pomocą przycisku modelu na pasku komunikatów i znaku (Ustawienia → Model i tożsamość → Tożsamość).
+- Przyznaj uprawnienia, gdy funkcja ich potrzebuje (zobacz rozdział Uprawnienia). Agent może także jednym dotknięciem otworzyć okno dialogowe uprawnień.
+- Po prostu porozmawiaj lub napisz. „Utwórz dla mnie stronę docelową mojej piekarni”, „otwórz YouTube i odtwórz piosenkę”, „jaka jest moja bateria?”, „zadzwoń do mamy”.
+
+## Dwa sposoby pracy
+Obok okna komunikatu znajduje się przycisk trybu z dwoma trybami: Agent i Kompilacja. Zobacz rozdział Tryby.
+
+## Gdzie są rzeczy
+- Menu po lewej stronie: Twoje czaty, nowy czat, zmiana nazwy, usuwanie i przełączanie motywu.
+- Ekran czatu: wiadomości, tablica zadań, lista narzędzi, pliki, terminal.
+- Panele podglądu i kodu: przeglądaj i edytuj to, co tworzy agent.
+- Ustawienia: osiem sekcji, omówionych jedna po drugiej w tej dokumentacji.
+- Ta dokumentacja: Ustawienia → Dokumentacja (tutaj jesteś).

@@ -1,0 +1,51 @@
+Chattskärmen och varje knapp
+## Överst på skärmen
+- Meny: öppnar den vänstra lådan med dina chattar.
+- Chatt / Terminal / Kod / Förhandsgranskning: växla huvudvyn. Chatten är konversationen; Terminal är den verkliga terminalen; Koden är filens arbetsyta med Git; Preview är den inbyggda webbläsaren.
+- Aura: visar den animerade karaktärsskärmen. Dess sidoknappar är Mic, Chat (tillbaka till konversationen) och Refresh (återansluter molnet och laddar om modelllistan).
+- Inställningar: öppnar de åtta inställningssektionerna.
+- En banderoll visar mikrofonens tillstånd: "Lyssnar...", "Mik av - tryck" eller "Talar... tryck för att stoppa".
+- När en ny version är klar visas en uppdateringsbanner med knapparna Ladda ner, Installera och Tillåt (se Uppdateringar).
+
+## Den vänstra menyn (chattar)
+- "+ Ny chatt": startar en ny konversation.
+- Varje chatt i listan visar ett löpmärke medan agenten är upptagen där. Pennan döper om den; krysset raderar det (efter en bekräftelse: alla meddelanden i det raderas).
+- Tema: välj Skräck (blod, eld och skugga), Mörk (rent mörkt glas) eller Ljus (ljust glas).
+
+## Meddelandefältet
+- Bifoga (gem): gallerifoto, kamerafoto, dokumentskanning (förvandlar texten i ett foto till en redigerbar .docx), dela skärmen så att agenten kan se den ("Skärmvisning" på eller av) och ljud- eller videofiler. Bifogade föremål visas som marker; krysset tar bort en, "Rensa alla" tar bort alla.
+- Lägesknapp: Agent eller Build.
+- Mikrofonknapp: slår på eller av mikrofonen som alltid lyssnar.
+- Modellknapp: öppnar modelllistan med en sökruta. Modeller märkta "Live" kan tala med sin egen röst.
+- Skicka: skickar meddelandet. Medan agenten arbetar blir detta Stop.
+- Inmatningen säger "Vad ska jag göra?" i agentläge och "Vad ska jag bygga? Säg det kort" i byggläge.
+
+## Meddelanden
+- Kopiera, dela och lyssna (läser meddelandet högt; tryck igen för att stoppa) finns under varje meddelande.
+- "Tänka" visar modellens resonemang när modellen ger det.
+- Koden som agenten skriver visas live i en ruta, rad för rad, med Kopiera, Ladda ner och Öppna.
+- Filer som agenten gör visas som kort med Öppna (i telefonens riktiga app), Spela, Dela och "Annan app...".
+- Bilder, ljud och video visar en liveframstegsprocent medan de görs.
+- Verktygskort visar vad agenten gör: kör, klar, framgång eller misslyckad.
+
+## Paneler (att göra, verktyg, filer, underagenter)
+- Att göra-tavla: planen agenten skriver för ett stort jobb och dess framsteg (n/totalt gjort). Du kan lägga till din egen uppgift och ta bort uppgifter.
+- Verktyg: listan över varje verktygsanrop, med livestatus.
+- Filer: varje fil som agenten skapade, med Öppna, Dela, Publicera och Ta bort (med bekräftelse) och en sökruta.
+- Underagenter: hjälpagenter som körs i bakgrunden, med en stoppknapp.
+- Terminalfliken: den riktiga terminalen (se kapitlet Filer och terminal).
+
+## Förhandsgranskningspanel
+- Bakåt, Framåt, Stopp, Ladda om och ett adressfält (skriv en webbadress eller sök Google).
+- Öppna fil: visar Word, Excel, PowerPoint, PDF, bilder, Markdown, CSV, kod och webbplatser direkt i appen.
+- Storlek: krympa eller förstora panelen.
+- Fix: skickar sidans problem (konsolfel, misslyckade laddningar) till agenten som fixar dem i bakgrunden.
+- Välj del: tryck på en del av sidan och tala om för agenten vad den ska göra med den delen.
+- Agentknapp: fråga något om sidan; agenten får en bild på det.
+- Snabböppning: genvägar till de senaste sidorna.
+
+## Kod arbetsyta
+- Vänster sida: dina filer (ny fil, öppna, spara).
+- Redaktör: visar rader och tecken; ändringar gjorda av agenten dyker upp på en gång.
+- Git: nytt repo, klon från GitHub, skanna, status, commit med ett meddelande, push, pull, grenar, token.
+- Dra förfrågningar: skapa, slå samman, stäng. Arbetsflöden: lista körningar, kör ett arbetsflöde. Loggen visar kommandoutdata.

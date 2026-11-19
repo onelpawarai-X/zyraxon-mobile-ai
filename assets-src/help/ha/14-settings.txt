@@ -1,0 +1,42 @@
+Kowane allon saiti, daya bayan daya
+Saituna suna da sassa takwas. Kowane sashe yana da kwaya don ƙananan allo. Sashe na ƙarshe da kuka yi amfani da shi yana sake buɗewa lokaci na gaba.
+
+## 1. Harshe & Fassara → App & Harshen kayan aiki
+Zaɓi harshen gabaɗayan ƙa'idar da saƙon kayan aikin wakili. Bincika lissafin kuma matsa ɗaya. Allon yana nuna yaren na yanzu da ko ana kunna fassarar UI da fassarar saƙon kayan aiki. Akwai harsuna 60. Duba babin Harshe.
+
+## 2. Murya & mic
+- Bayanan martaba na murya: zaɓi muryar mace ko namiji, saurin gudu, sauti, "Karanta amsoshi da ƙarfi", Gwaji muryar, alamar zazzagewar muryar Bengali.
+- Mic & Harshe: Harshen ganewa, ci gaba da kunna mic, aika ta atomatik lokacin da kuka daina magana.
+- Muryar kai tsaye: kunna/kashe magana-zuwa-magana, matsayi, jerin samfuran ainihin lokaci.
+
+## 3. Masu bayarwa & API
+- Masu samar da AI: maɓallan API ɗin ku (ZYRAXON, OpenCode keɓaɓɓen keɓaɓɓen kyauta, Groq, Gemini), OpenAI, Grok, Claude, DeepSeek, OpenRouter) da ZYRAXON Apex wakilin girgije. Ana tabbatar da maɓalli da aka ajiye ta hanyar karanta ainihin kasida na mai badawa kuma yana nuna ƙidayar ƙirar ko daidai kuskure. Maɓalli yana buɗe gidan yanar gizon ZYRAXON inda kuka ƙirƙiri maɓalli.
+- GitHub: alamar shiga GitHub (yana buƙatar reposcope) don bugawa, Git turawa da ja buƙatun. Ajiye alamar ko share shi; matsayin yana nuna idan an saita shi.
+
+## 4. Sabuntawa → Sabunta App
+Yana nuna sigar yanzu, bincika sabon saki, zazzage shi tare da sandar ci gaba kuma ya shigar da shi. Hirarku, ƙwaƙwalwar ajiya da saitunanku suna tsayawa. Idan Android yana buƙatar izini don shigarwa, maɓalli yana buɗe wannan saitin.
+
+## 5. Model & ainihi
+- Identity: zaɓi hali (duba babin Haruffa).
+- Model: kundin tsarin rayuwa mai rai tare da akwatin bincike, "Duk samfuri" da masu tace "Custom"; samfurori masu sauri na farko.
+- Kan-na'ura: zazzagewa, ɗauka da sauke samfuran da ke aiki a layi; an jera ƙananan zuwa babba; na zaɓi Hugging Face alama; yana nuna jahohin da aka ɗora, lodi da kasa.
+
+## 6. Aura & jigo
+- Jigo: Tsoro, Duhu ko Haske.
+- Aura & bango: salon aura da launi (jini, ruwan hoda, violet, sama, kore, wuta) tare da sarrafa launi mai kyau; Girman aura, ƙarfin haske, saurin juyawa, bayyananniyar panel; ido mai iyo (kunna/kashe, ƙira, gefen allo, umarnin murya / kalmomin farkawa, ƙara naka); yanayin shader; URL na al'ada (mp4, gif ko hoto); gudun tashin hankali.
+
+## 7. Tsaro & sirri
+- Kulle aikace-aikacen: kalmar sirri (lambobi 4-8) ko ƙirar dige 3 × 3; tabbatar da shigar da shi sau biyu; cire kulle.
+- Izini: jeri a cikin babin Izini, tare da Play Protect taimako.
+- Keɓantawa & bayanai: duk bayanai suna tsayawa akan wayar. Maɓallai: share duk ƙwaƙwalwar ajiya, share tarihin taɗi, share alamar GitHub.
+
+## 8. Tsari
+Wannan sashe yana da nasa jere na maɓallan da ke gungurawa gefe, don haka babu abin da ya matse.
+- Automation: matakin yarda da kan na'ura kawai (duba matakan Amincewa).
+- Kewayawa: jerin wuraren da za a yi tsalle zuwa - "babu maɓallai a saman, komai yana nan" - gami da harsashi na tsarin ⌘ ZX, maɓallin "Sabon zama" (yana share tarihin taɗi don farawa mai tsabta), ƙidayar saƙo da jujjuyawar mic.
+- Ƙwaƙwalwar ajiya: ƙwaƙwalwar gida SQL tare da gaskiyar ZYRAXON yana tunawa; ƙara maɓalli da ƙima; share duka.
+- Jagorar gwaninta: jerin saurin misali iyawar (ka'idodin aika saƙo, ginin gidan yanar gizo, mai karanta allo, tocila, kamara, Wi-Fi da saituna) tare da misalin jumla.
+- Wurin sarrafa kansa: ƙwarewa, matukin jirgi, kuɗi, tsarin lokaci, ƙwaƙwalwa da wakilin kira a wuri ɗaya (duba Cibiyar Automation).
+
+## 9. Takardu
+Sashensa a cikin Saituna, dabam da System. Wannan jagorar: babi ashirin da ɗaya, akwatin bincike, da jerin guntun harshe. Kowane harshe a cikin ƙa'idar an riga an rubuta shi cikakke a cikin ƙa'idar - babu abin da aka fassara a wayarka kuma ba a buƙatar intanet don karanta shi.

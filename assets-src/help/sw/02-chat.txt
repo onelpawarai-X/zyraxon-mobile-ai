@@ -1,0 +1,51 @@
+Skrini ya gumzo na kila kitufe
+## Juu ya skrini
+- Menyu: inafungua droo ya kushoto na soga zako.
+- Gumzo / Terminal / Kanuni / Hakiki: badilisha mwonekano mkuu. Gumzo ni mazungumzo; Terminal ni terminal halisi; Msimbo ni nafasi ya kazi ya faili iliyo na Git; Onyesho la kukagua ni kivinjari kilichojumuishwa.
+- Aura: inaonyesha skrini ya mhusika iliyohuishwa. Vitufe vyake vya kando ni Maikrofoni, Gumzo (kurudi kwenye mazungumzo) na Onyesha upya (huunganisha tena wingu na kupakia upya orodha ya muundo).
+- Mipangilio: inafungua sehemu nane za mipangilio.
+- Bango linaonyesha hali ya maikrofoni: "Inasikiliza..." "Mic imezimwa - gonga", au "Inazungumza... gusa ili usimamishe".
+- Toleo jipya likiwa tayari bango la sasisho huonekana na vibonye vya Kupakua, Sakinisha na Ruhusu (angalia Masasisho).
+
+## Menyu ya kushoto (mazungumzo)
+- "+ Gumzo jipya": huanzisha mazungumzo mapya.
+- Kila soga kwenye orodha huonyesha alama ya kukimbia huku wakala akiwa na shughuli nyingi hapo. Penseli inaipa jina; msalaba huifuta (baada ya uthibitisho: ujumbe wote ndani yake unafutwa).
+- Mandhari: chagua Hofu (damu, moto na kivuli), Giza (kioo safi cheusi) au Mwanga (glasi angavu).
+
+## Upau wa ujumbe
+- Ambatanisha (paperclip): picha ya ghala, picha ya kamera, kuchanganua hati (hubadilisha maandishi kwenye picha kuwa .docx inayoweza kuhaririwa), shiriki skrini ili wakala aweze kuiona ("Kutazama skrini" kuwasha au kuzima), na faili za sauti au video. Vipengee vilivyoambatishwa vinaonyesha kama chipsi; msalaba huondoa moja, "Futa yote" huondoa yote.
+- Kitufe cha hali: Wakala au Muundo.
+- Kitufe cha maikrofoni: huwasha au kuzima maikrofoni inayosikika kila wakati.
+- Kitufe cha mfano: hufungua orodha ya mfano na kisanduku cha kutafutia. Wanamitindo walio na alama ya "Live" wanaweza kuzungumza kwa sauti zao wenyewe.
+- Tuma: hutuma ujumbe. Wakati wakala anafanya kazi hii inakuwa Acha.
+- Ingizo linasema "Nifanye nini?" katika hali ya Wakala na "Nijenge nini? Sema kifupi" katika hali ya Kujenga.
+
+## Ujumbe
+- Nakili, Shiriki na Usikilize (husoma ujumbe kwa sauti; bonyeza tena ili kuacha) ziko chini ya kila ujumbe.
+- "Kufikiri" inaonyesha hoja ya mfano wakati mtindo hutoa.
+- Msimbo anaoandika wakala unaonekana moja kwa moja kwenye kisanduku, mstari kwa mstari, na Nakili, Pakua na Fungua.
+- Faili ambazo wakala hutengeneza huonyeshwa kama kadi zilizo na Open (katika programu halisi ya simu), Cheza, Shiriki na "Programu Nyingine…".
+- Picha, sauti na video zinaonyesha asilimia ya maendeleo ya moja kwa moja wakati zinatengenezwa.
+- Kadi za zana zinaonyesha kile wakala anafanya: kukimbia, kumaliza, kufaulu au kushindwa.
+
+## Paneli (todo, zana, faili, mawakala ndogo)
+- Ubao wa Todo: mpango ambao wakala anaandika kwa kazi kubwa na maendeleo yake (n/jumla imekamilika). Unaweza kuongeza kazi yako mwenyewe na kufuta kazi.
+- Zana: orodha ya kila simu ya zana, yenye hali ya moja kwa moja.
+- Faili: kila faili iliyoundwa na wakala, kwa Fungua, Shiriki, Chapisha na Futa (kwa uthibitisho) na kisanduku cha kutafutia.
+- Mawakala wadogo: mawakala wasaidizi wanaoendesha chinichini, wakiwa na kitufe cha Kuacha.
+- Kichupo cha terminal: terminal halisi (tazama Faili na sura ya terminal).
+
+## Paneli ya onyesho la kukagua
+- Nyuma, Sambaza, Acha, Pakia Upya na upau wa anwani (andika anwani ya wavuti, au utafute Google).
+- Fungua faili: inaonyesha Word, Excel, PowerPoint, PDF, picha, Markdown, CSV, msimbo na tovuti moja kwa moja ndani ya programu.
+- Ukubwa: punguza au kupanua jopo.
+- Rekebisha: hutuma matatizo ya ukurasa (hitilafu za console, mizigo iliyoshindwa) kwa wakala, ambayo hurekebisha nyuma.
+- Chagua sehemu: gusa sehemu ya ukurasa, kisha mwambie wakala cha kufanya na sehemu hiyo.
+- Kitufe cha wakala: uliza kitu kuhusu ukurasa; wakala hupokea picha yake.
+- Fungua haraka: njia za mkato za kurasa za hivi majuzi.
+
+## Kanuni nafasi ya kazi
+- Upande wa kushoto: faili zako (faili mpya, fungua, hifadhi).
+- Mhariri: inaonyesha mistari na wahusika; mabadiliko yaliyofanywa na wakala yanaonekana mara moja.
+- Git: repo mpya, linganisha kutoka GitHub, changanua, hali, tuma ujumbe, sukuma, vuta, matawi, tokeni.
+- Vuta maombi: kuunda, kuunganisha, kufunga. Mtiririko wa kazi: orodha inaendesha, endesha mtiririko wa kazi. Logi inaonyesha pato la amri.

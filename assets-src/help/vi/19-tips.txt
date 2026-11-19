@@ -1,0 +1,27 @@
+Lời khuyên và yêu cầu ví dụ
+## Nói những gì bạn muốn, không phải như thế nào
+- "Tạo trang đích cho phòng tập thể dục, tối màu và đậm nét."
+- "Xây dựng một ứng dụng đặt phòng đầy đủ với cơ sở dữ liệu." (đại lý hỏi lựa chọn kỹ thuật trước)
+- "Mở YouTube và chơi một bài hát êm dịu."
+- "Cuộn xuống và mở kết quả đầu tiên."
+- "Pin của tôi và Wi-Fi là gì?"
+- "Đọc tin nhắn SMS mới nhất của tôi và cho tôi biết mã."
+- "Gọi cho mẹ." / "Trả lời cuộc gọi."
+- "Tạo CV từ bức ảnh này." (đính kèm nó)
+- "Biến bản ghi cuộc họp này thành ghi chú với các mục hành động."
+- "Tạo một tấm áp phích cho sự kiện thứ Sáu với những màu sắc này."
+- "Thực hiện một cuộc đối thoại âm thanh giữa hai người bạn, một chàng trai và một cô gái."
+- "Hãy nhớ rằng sinh nhật của em gái tôi là ngày 3 tháng 5."
+- "Mỗi buổi sáng lúc 8 giờ hãy cho tôi biết thời tiết." (lái tự động)
+- "Tìm hiểu cách tôi gửi tiền thuê nhà bằng ứng dụng ví của mình để bạn có thể thực hiện lại." (kỹ năng)
+- "Hoàn tác những gì bạn đã làm trong thư mục dự án." (dòng thời gian)
+- “Hợp đồng thuê nhà của tôi đâu?” (não)
+- "Cài đặt gói python và chạy tập lệnh này." (Linux)
+- "Xuất bản trang web này để tôi có thể chia sẻ nó." (liên kết công khai)
+
+## Những thói quen giúp ích
+- Nhịp đập ngắn và rõ ràng dài. Tác nhân chọn giá trị mặc định và cho bạn biết nó đã chọn gì.
+- Khi nó hỏi một câu hỏi, hãy trả lời nó và nó tiếp tục ở chỗ cũ.
+- Nói "giải thích" hoặc "tóm tắt" để có câu trả lời chi tiết; nếu không thì câu trả lời sẽ ngắn gọn.
+- Bạn có thể nói chuyện về nó bất cứ lúc nào. Nó dừng lại và lắng nghe.
+- Sử dụng chế độ Xây dựng để tạo mọi thứ và chế độ Tác nhân để thực hiện mọi việc trên điện thoại.

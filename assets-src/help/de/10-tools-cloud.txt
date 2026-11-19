@@ -1,0 +1,21 @@
+Cloud, Netzwerk, Modelle und Helfer
+## Cloud und Internet
+- `web_search` (Netzwerk): Durchsuchen Sie das echte Web. `read_url` (Netzwerk): Ruft eine Seite als Text ab. `http_request` (Netzwerk): jeder HTTP-Aufruf (GET, POST, PUT, PATCH, DELETE) mit Headern und Text. `verify_url` (Netzwerk): Überprüfen Sie, ob ein Link tatsächlich existiert, und ermitteln Sie den tatsächlichen Status. `download_file` (Persönlich, Netzwerk): Laden Sie eine URL in eine Datei herunter.
+- Der Agent öffnet Links nur, wenn Sie ihn dazu auffordern.
+- KI-Modelle werden in der Cloud über die von Ihnen hinzugefügten Anbieter ausgeführt (ZYRAXON, ZYRAXON Apex Cloud-Agent, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Die Modellliste wird live geladen und füllt sich, wenn jeder Anbieter antwortet.
+- Builds, Veröffentlichungen und Pull-Anfragen laufen über GitHub und Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Schalten Sie „Nur auf dem Gerät“ ein (Automatisierungseinstellungen) und es erfolgt überhaupt kein Cloud-Aufruf: kein Anbieter, kein Web, kein Upload.
+
+## MCP Server
+MCP ermöglicht externen Diensten, dem Agenten zusätzliche Tools zur Verfügung zu stellen. Verbinden Sie Canva, Cloudflare, Supabase, GitHub oder Ihren eigenen Server über seine Adresse (optionales Token). Die Tools verbundener Server werden der Toolliste des Agenten als `server__tool` hinzugefügt.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (sehen Sie, was verbunden ist und welche Tools vorhanden sind), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (Überwachen Sie eine Ressource auf Änderungen), `mcp_complete` (Autovervollständigungsargumente), `mcp_ping`, `mcp_log_level`. Ihre Anrufe sind Netzwerkanrufe und unbekannte MCP Tools fragen standardmäßig um Erlaubnis.
+- Der Bildschirm MCP listet jeden Server mit dem Status „Verbunden“, seinen Tools, Ressourcen und Eingabeaufforderungsvorlagen sowie den Schaltflächen „Hinzufügen“, „Trennen“, „Entfernen“ und „Zulassen“ auf.
+
+## Unteragenten
+`sub_agent` (System): Übergeben Sie Teile eines großen Auftrags an Hilfsagenten, die im Hintergrund laufen. Aktionen: Spawn, Status, Liste, Ergebnis, Nachricht, Stopp, Warten. Jeder kann sein eigenes Modell verwenden. Der Agent kombiniert und prüft die Ergebnisse, bevor er „Fertig“ sagt.
+
+## On-Device-Modell
+`on_device_model` (System): Auflisten, Laden und Ausführen eines Sprachmodells, das auf dem Telefon ohne Internet läuft. In den Einstellungen → Modell & Identität → Auf dem Gerät laden Sie Modelle herunter (klein bis groß: FunctionGemma 270M, Qwen3 0,6B, Gemma 4 E2B…); Ein Hugging Face-Token ist optional und wird nur für geschützte Dateien benötigt. Ein geladenes Modell wird gespeichert und beim Start neu geladen.
+
+## Messaging-Kanäle
+`channel_post` (System) öffnet Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail oder SMS mit Ihrem Text. Sie drücken selbst auf Senden.

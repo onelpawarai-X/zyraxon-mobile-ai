@@ -1,0 +1,21 @@
+Cloud, network, mga modelo at mga katulong
+## Cloud at ang internet
+- `web_search` (network): maghanap sa totoong web. `read_url` (network): kumuha ng page bilang text. `http_request` (network): anumang HTTP na tawag (GET, POST, PUT, PATCH, DELETE) na may mga header at body. `verify_url` (network): tingnan kung talagang umiiral ang isang link at makuha ang totoong katayuan. `download_file` (Personal, network): mag-download ng URL sa isang file.
+- Ang ahente ay nagbubukas lamang ng mga link kapag hiniling mo ito.
+- Ang mga modelo ng AI ay tumatakbo sa cloud sa pamamagitan ng mga provider na iyong idinagdag (ZYRAXON, ZYRAXON Apex cloud agent, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Ang listahan ng modelo ay naglo-load nang live at napupuno habang sumasagot ang bawat provider.
+- Ang mga Build, publishing at pull request ay tumatakbo sa GitHub at Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- I-on ang "on-device lang" (Mga setting ng automation) at walang cloud call na ginawa: walang provider, walang web, walang upload.
+
+## MCP mga server
+Hinahayaan ng MCP ang mga panlabas na serbisyo na magbigay sa ahente ng mga karagdagang tool. Ikonekta ang Canva, Cloudflare, Supabase, GitHub o ang iyong sariling server sa pamamagitan ng address nito (opsyonal na token). Ang mga tool ng konektadong server ay sumali sa listahan ng tool ng ahente bilang `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (tingnan kung ano ang konektado at kung aling mga tool ang umiiral), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (manood ng mapagkukunan para sa mga pagbabago), `mcp_complete` (autocomplete na mga argumento), `mcp_ping`, `mcp_log_level`. Ang kanilang mga tawag ay mga tawag sa network, at ang hindi kilalang MCP na mga tool ay humihingi ng pahintulot bilang default.
+- Inililista ng screen ng MCP ang bawat server na may status na Nakakonekta, mga tool, mapagkukunan at mga prompt na template nito, at Add, Disconnect, Remove, Allow buttons.
+
+## Mga sub-ahente
+`sub_agent` (System): ibigay ang mga bahagi ng isang malaking trabaho sa mga katulong na ahente na tumatakbo sa background. Mga aksyon: spawn, status, listahan, resulta, mensahe, huminto, maghintay. Ang bawat isa ay maaaring gumamit ng sarili nitong modelo. Pinagsasama at sinusuri ng ahente ang kanilang mga resulta bago sabihin ang "tapos na".
+
+## Modelo sa device
+`on_device_model` (System): maglista, mag-load at magpatakbo ng modelo ng wika na nabubuhay sa telepono, na walang internet. Sa Mga Setting → Modelo at pagkakakilanlan → Sa device, nagda-download ka ng mga modelo (maliit hanggang malaki: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B...); ang isang Hugging Face token ay opsyonal at kailangan lamang para sa mga naka-gate na file. Ang isang na-load na modelo ay naaalala at nire-reload sa paglulunsad.
+
+## Mga channel ng pagmemensahe
+Ang `channel_post` (System) ay bubukas Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail o SMS nang handa na ang iyong text. Pindutin mo ang ipadala ang iyong sarili.

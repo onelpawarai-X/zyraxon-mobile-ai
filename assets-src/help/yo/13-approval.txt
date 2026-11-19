@@ -1,0 +1,23 @@
+Awọn ipele ifọwọsi ati ailewu ti adaṣe
+Eto → Eto → adaṣiṣẹ. Eyi pinnu iye ti oluranlowo le ṣe ṣaaju ki o duro ati beere lọwọ rẹ. Eto naa ti fi agbara mu ni koodu lori gbogbo ipe irinṣẹ; awoṣe ko le faagun rẹ.
+
+## Awọn ipele mẹrin
+Yi ipele pada ni Eto → Eto → Adaṣiṣẹ. Ipele kọọkan pinnu nigbati aṣoju ba duro ati beere, ati bi o ṣe muna Aabo akoonu (wo Aabo ati asiri) ṣe itọju ọrọ ti oluranlowo ka lati ita.
+1. Bere ni kikun (Titiipa): beere ṣaaju ohunkohun ti o yi foonu pada, botilẹjẹpe o kere. Ailewu julọ. Aabo akoonu jẹ ti o muna: ọrọ ifura eyikeyi ka bi ọta. Lo lori foonu ti o pin tabi nigba ti o n danwo nkan titun.
+2. Abojuto (aiyipada): beere ṣaaju eto ati awọn iṣe ti ara ẹni ati ṣe iṣẹ lasan (kika, ṣiṣi, wiwa, ile) funrararẹ. Aabo Akoonu jẹ boṣewa: ọrọ ifura ti wa ni odi bi data, ati nigbati ọrọ ba han gbangba ọta gbogbo ohun elo iyipada n beere lọwọ rẹ fun iyoku akoko yẹn.
+3. Iwontunwonsi: beere nikan ṣaaju awọn iṣe ipele eto (ikarahun, piparẹ, titẹjade, ṣiṣe eto…). Awọn iṣe ti ara ẹni gẹgẹbi awọn ifiranṣẹ, tẹ ni kia kia ati titẹ ṣiṣe nikan. Shield Akoonu jẹ ina: o ṣiṣẹ nikan lori ọrọ ọta ti o han gbangba, ati lẹhinna awọn irinṣẹ ipele eto nikan da duro lati beere.
+4. Ni kikun adaṣiṣẹ: ko beere ati ki o ko duro. Ohun gbogbo gbalaye taara, ati Akoonu Shield ti wa ni pipa patapata - ko si ohun ti a ṣayẹwo, samisi, yọ kuro tabi yipada. Eyi jẹ adaṣe ni oye kikun: o ni eewu naa.
+
+## Awọn ipele mẹta ti awọn irinṣẹ
+- Ailewu (ma ṣe beere ni eyikeyi ipele): kika ati kikojọ awọn faili, iranti, awọn iwe aṣẹ, awọn apẹrẹ, ipo, ṣiṣi awọn ohun elo ati awọn faili, nduro, awọn ọgbọn / autopilot/akoko/awọn atokọ ipe, wiwa ọpọlọ.
+- Ti ara ẹni (beere ni awọn ipele meji akọkọ): SMS, awọn ipe, kamẹra, kika iboju, tẹ ni kia kia ati titẹ, agekuru, awọn igbasilẹ, awọn iwifunni, pinpin, iyipada ohun, ṣiṣiṣẹsẹhin awọn ọgbọn, iwe akọọlẹ owo, aṣoju ipe, atunṣe akoko.
+- Eto (beere ni gbogbo ipele ayafi adaṣe kikun): ikarahun, Linux, kọ, titẹjade, piparẹ, titiipa ẹrọ, ṣiṣe eto, Git ati GitHub, ffmpeg, awoṣe ẹrọ, fifiranṣẹ si awọn ikanni, awọn ofin autopilot, awọn ọgbọn piparẹ, Shizuku. Ohun elo eyikeyi ti ohun elo naa ko ṣe idanimọ - pẹlu awọn irinṣẹ MCP - ni a tọju bi Eto.
+
+## Awọn alakosile kaadi
+Nigbati ọpa kan ba nilo ifọwọsi rẹ kaadi kan sọ pe “A nilo igbanilaaye”, sọ fun ọ ohun ti aṣoju fẹ lati ṣe, ṣafihan ipele rẹ (Ailewu, Ti ara ẹni tabi Eto), ati pe o funni “Bẹẹni, ṣiṣe rẹ” tabi “Bẹẹkọ, pa a mọ”. Kaadi naa tun leti pe o le yipada iye igba ti a beere eyi ni Eto → Adaaṣe.
+
+## Lori ẹrọ nikan
+Nigbati o ba wa ni titan, ko si ohun ti o jade kuro ni foonu: awoṣe ẹrọ nikan ati awọn irinṣẹ agbegbe nṣiṣẹ. Gbogbo awọn irinṣẹ nẹtiwọọki (wawa, mu, awọn igbejade, titẹjade, GitHub, iran media, MCP, awọn awoṣe awọsanma) jẹ kọ ni koodu.
+
+## Akiyesi ifilọlẹ akọkọ
+Ni igba akọkọ, ZYRAXON ṣe alaye pe aṣoju le ṣiṣẹ lori foonu rẹ ati ibiti o le yi awọn igbanilaaye pada. Tẹ "Gbe, bẹrẹ".

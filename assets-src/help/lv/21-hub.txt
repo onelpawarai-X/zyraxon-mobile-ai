@@ -1,0 +1,20 @@
+Automatizācijas centrs
+Iestatījumi → Sistēma → Automatizācijas centrmezgls. Katra poga, ko ZYRAXON var paveikt pati par sevi, atrodas vienuviet, sešās cilnēs. Katra cilne sākas ar īsu skaidrojumu par to, kā tā darbojas.
+
+## Prasmes
+Māciet ZYRAXON uzdevumu divos veidos: pastāstiet to tērzēšanā (“apgūt šo uzdevumu”) vai nospiediet ierakstīšanas pogu un veiciet uzdevumu pats citā lietotnē, pēc tam atgriezieties un nospiediet Apturēt. Pieejamības pakalpojumam ir jābūt ieslēgtam, pretējā gadījumā jūsu pieskārienus nevar redzēt. Iemācītais ir redzams sadaļā “Apgūtās prasmes”, un to var atskaņot atkārtoti vai dzēst.
+
+## Autopilots
+Noteikumi "kad tas notiek, dariet to". Kad notikums notiek, ZYRAXON pamostas pats un veic darbu, neprasot. Varat arī izveidot kārtulu, pasakot to tērzēšanā. Katrs noteikums parāda, cik reižu tas ir izpildīts.
+
+## Nauda
+Nolasa īsziņas no jebkuras bankas vai maka jebkurā valstī (PayPal, M-Pesa, UPI, Pix, bKash, kartes…) un uztur vienu ienākumu, izdevumu, maksu un atlikumu virsgrāmatu. Varat iestatīt budžetu un saņemt brīdinājumu, kad to nokārtosit. Tā darbojas telefonā, un nekas nekur netiek sūtīts.
+
+## Laika skala
+Šeit ir rakstīts viss, ko darīja ZYRAXON. Failu ierakstīšanu, rediģēšanu un dzēšanu var atsaukt ar vienu pogu. Izpildīto komandu nevar atsaukt.
+
+## Smadzenes
+Meklē jūsu failus (tekstu, Word, Excel, PowerPoint, CSV) un, ja atļaujat, īsziņās, bez interneta un jebkurā valodā. Vispirms nospiediet "Index", pēc tam meklējiet.
+
+## Zvanīt aģentam
+Ja nevarat pieņemt zvanu, ZYRAXON atbild, runā zvanītāja valodā, uzzina vārdu un iemeslu, kā arī sniedz kopsavilkumu, kad zvans beidzas. Piecpadsmit valodās tiek izmantoti ātri iebūvēti noteikumi; visas citas valodas apstrādā modelis, kas atbild zvanītāja valodā. Vārdi, kas nozīmē ardievas, steidzami vai surogātpasts, tiek saprasti visās valodās vienlaikus. Noķerto zvanu kopsavilkumi ir norādīti cilnē.

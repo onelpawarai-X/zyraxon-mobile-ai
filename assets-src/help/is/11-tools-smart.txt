@@ -1,0 +1,45 @@
+Færni, sjálfstýring, peningar, tímalína og afturkalla, heili, hringja umboðsmaður og minni
+Þú notar allt þetta með því að tala: segðu það sem þú vilt og umboðsmaðurinn kallar á rétta tólið. Sérhver aðgerð er skráð hér með valkostum sínum.
+
+## Færni - kenna með því að gera
+Færni er símaverkefni sem umboðsmaðurinn lærði með því að horfa á þig gera það einu sinni. Það geymir hvernig á að finna hvern þátt aftur (auðkenni þess, orð og nágranna, ekki skjástöðu), svo það heldur áfram að virka þegar útlit appsins breytist.
+- Bættu við færni:`skill_record`(Persónulegt). Segðu "lærðu þetta sem <nafn>".`action: start`(með nafni) byrjar upptöku; gerðu síðan verkefnið — opnaðu forritið, pikkaðu á, skrifaðu, ýttu á takka; hvert skref er skráð.`action: stop`bjargar því. Við stopp geturðu farið framhjá`params`til að breyta slegnum gildum í færibreytur (til dæmis verður símanúmerið`number`, upphæðin verður`amount`) og a`description`. `action: status`segir þér hvort kveikt sé á upptöku.
+- Keyra hæfileika:`skill_run`(Persónulegt). Gefðu`args`fyrir færibreytur þess, t.d. fjölda og upphæð. Það endurspilar í broti af skrefum og læknar sjálft þegar appið breytist. Ef eitt skref mistekst segir niðurstaðan hvaða skref og hvað er á skjánum og umboðsmaðurinn klárar restina í höndunum.
+- Lista færni:`skill_list`(Safe) sýnir nafn, breytur, skref og hversu oft hver hljóp. Með nafni og útflutningi á það gerir það deilanlegt`.zxskill`skrá.
+- Deila og hlaða:`skill_import`(Persónulegt) hleðslur a`.zxskill`skrá frá niðurhali eða samnýttri skrá sem færni.
+- Eyða færni:`skill_delete`(Kerfi).
+- Dæmi: "Lærðu hvernig ég sendi 500 til Rahim með veskisappinu mínu"→þú gerir það einu sinni→„Sendu 700 til Karim“ næst.
+
+## Sjálfstýring - "þegar X gerist, gerðu Y"
+Regla vekur umboðsmanninn af sjálfu sér og hann gerir verkefnið án þess að spyrja þig.
+- Bæta við:`autopilot_add`(Kerfi). Tegundir: SMS, tilkynning, símtal, daglega, einu sinni, bil, rafhlaða, app. Fylltu aðeins út reitina sem reglan þarf:`from`(nafn sendanda eða númer eða heiti forrits),`any`(að minnsta kosti eitt af þessum orðum),`all`(hvert orð),`none`(ekkert af þessum orðum),`time`"HH:MM" (daglega),`in_minutes` or `at_ms`(einu sinni),`every_minutes`(bil),`below`(rafhlaða prósent),`pkg`(apppakki eða nafn, fyrir app- og tilkynningareglur). Umboðsmaðurinn breytir setningunni þinni í þessa reiti. Niðurstaðan sýnir allar heimildir sem enn er þörf (SMS, tilkynningaaðgangur ...) og umboðsmaðurinn biður þig um að kveikja á því.
+- Dæmi: "Þegar greiðslu-SMS berst frá veskisappinu mínu skaltu bæta því við höfuðbókina mína." „Segðu mér veðrið á hverjum morgni klukkan 8.“ "Eftir 20 mínútur, minntu mig á að taka brauðið út." „Á 30 mínútna fresti, áminning um að drekka vatn. "Þegar rafhlaðan fer undir 15%, segðu mér það." "Þegar einhver hringir í mig skaltu skrá númerið." "Þegar ég opna bankaappið, minntu mig á að athuga fjárhagsáætlunina."
+- Listi:`autopilot_list`(Safe) sýnir hverja reglu með næsta keyrslutíma hennar og hversu oft hún hefur ræst.
+- Gera hlé eða halda áfram:`autopilot_toggle`(Kerfi). Eyða:`autopilot_remove`(Kerfi), eftir auðkenni eða titli.
+- Þegar regla fer af stað færðu skilaboð sem segja það og umboðsmaðurinn vinnur bara verkið.
+
+## Fjárhagsbók (persónulegur fjármálastjóri)
+- `ledger_scan`(Persónulegt): lestu veski og banka SMS í einkabók: tekjur, eyðsla, gjöld, stöðu og flokkur.`days`segir hversu langt aftur (sjálfgefið 30). Með`auto`á, hvert nýtt peninga-SMS bætist við af sjálfu sér og þú færð viðvörun þegar fjárhagsáætlun er samþykkt. Virkar fyrir veski og bankaskilaboð hvers lands, í hvaða gjaldmiðli sem er.
+- `ledger_report`(Persónulegt): tímabil í dag, í gær, viku, mánuð eða allt. Snið texta (tilbúið talað samantekt) eða xlsx (anExcelskrá með færslum og flokkatölum, opnuð fyrir þig).
+- `ledger_budget`(Persónulegt): stilltu mánaðarlega fjárhagsáætlun fyrir flokk (matur, reikningar, flutningar, innkaup, farsímahleðsla, millifærslur ...); takmörk 0 fjarlægir það; án rökstuðnings er listi yfir fjárveitingar og núverandi viðvaranir.
+- Umboðsmaðurinn finnur aldrei upp peninganúmer; það les þær úr bókhaldinu.
+
+## Tímalína og afturkalla
+- Allt sem umboðsmaðurinn gerir er skrifað á tímalínuna (síðustu 400 aðgerðir). Skráarbreytingar geyma afrit af því sem var þar áður.
+- `timeline_list`(Safe): hvað umboðsmaðurinn gerði nýlega, með auðkenni fyrir hvern og hvaða breytingar er hægt að afturkalla.
+- `timeline_undo`(Persónulegt):`id`afturkallar skrif, breytt eða eyði — skráin kemur aftur nákvæmlega eins og hún var (skrá sem var ekki til er fjarlægð aftur).`since_id`afturkallar allt frá því auðkenni og áfram, nýjasta fyrst. Notaðu það þegar þú segir "taktu það til baka" eða "settu það aftur eins og áður".
+- Afturkalla nær yfir skrár, breytingar og eyðingar. Skipun sem keyrði (til dæmis að setja upp eitthvað eða senda skilaboð) er ekki hægt að afturkalla með þessum hætti.
+- Spjallskilaboð: til að fjarlægja heilt samtal notaðu blýantinn og krossaðu í vinstri valmyndinni eða Stillingar→Persónuvernd og gögn→Eyða spjallferli, eða Navigation→Ný fundur.
+
+## Heili - annað minni fyrir skrárnar þínar
+- `brain_index`(Öryggið): smíðaðu eða endurnýjaðu vísitöluna án nettengingar yfir möppur eða skrár (texti,Markdown, CSV, Word, Excel, PowerPoint) og mögulega SMS pósthólfið (`sms`á). Keyrðu það fyrir fyrstu leitina og eftir að nýjar skrár birtast. Sjálfgefið er vinnusvæðið þitt.
+- `brain_search`(Öryggið): spyrðu með þínum eigin orðum, "hvar er leigusamningurinn minn?" — það virkar án nettengingar á hvaða tungumáli sem er.`kind`er skrá eða sms;`days`takmarkanir á nýlegum hlutum. Opnaðu fundna skrá með`open_file`.
+
+## Hringdu í umboðsmann
+- `call_agent`(Persónulegt): aðgerð á, slökkt eða staða.`owner`er nafnið sem það segir ("Ég er aðstoðarmaður <eiganda>").`answer_after_seconds`(sjálfgefið 6) gerir þér kleift að taka upp fyrst. Þegar símtal kemur og þú getur ekki svarað heilsar það á tungumáli þess sem hringir, spyr að nafni og ástæðu, svarar einföldum spurningum, leggur á kurteislega og segir þér samantekt.
+- `call_log`(Öryggið): yfirlit yfir símtöl sem það svaraði, nýjasta fyrst.
+- Þarf símtals- og símaleyfisheimildir.
+
+## Minni
+- `memory_write`, `memory_read`, `memory_delete`(Öryggið): varanlegar staðreyndir um þig (nafn, óskir, fólk, dagsetningar, verkefni) búa í staðbundnum gagnagrunni og lifa af endurræsingar. Segðu "mundu þetta" og það er skrifað í sömu beygju; ef eitthvað er að er það fjarlægt eða endurskrifað. Hvert gamalt samtal er líka haldið og fyrri beygjur sem passa við það sem þú segir koma aftur af sjálfu sér, jafnvel mánuðum síðar.
+- Sjáðu og breyttu þessu öllu í stillingum→Kerfi→Minni (lykill, gildi, vista, eyða öllu).

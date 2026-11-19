@@ -1,0 +1,14 @@
+Felsökning
+- Inget svar: kontrollera din internet- och API-nyckel (Inställningar → Providers & API visar det verkliga felet). Prova en annan modell eller en modell på enheten.
+- Mikrofonen gör ingenting: tillåt mikrofonbehörighet; markera "Behåll mikrofonen på"; kontrollera igenkänningsspråket.
+- ZYRAXON hör sig själv: detta filtreras av text; om det fortfarande händer, sänk volymen eller använd hörlurar.
+- En mening dyker upp två gånger: fast i nuvarande versioner; uppdatera appen.
+- Den kommer inte att trycka på eller läsa skärmen: slå på tillgänglighetstjänsten (inställningar → Behörigheter).
+- Det stannar i bakgrunden: tillåt meddelanden och undantag för batterioptimering; överlägget för det flytande ögat.
+- Ett verktyg fortsätter att fråga om tillåtelse: ändra nivån i Inställningar → Automation, eller svara på kortet.
+- Play Protect blockerar något: se kapitlet Behörigheter, eller låt agenten styra stegen.
+- Terminal eller Linux startar inte: vänta på första uppackningen vid appstart; kolla gratis lagringsutrymme.
+- Uppdateringen kommer inte att installeras: tillåt ZYRAXON som en installationskälla.
+- Kan inte publicera: lägg till GitHub token för GitHub; för en offentlig länk kan agenten använda en tunnel.
+- Ett kapitel visar engelska: det kapitlet har ingen text på ditt språk i den här versionen; uppdatera appen.
+- Något konstigt: använd Inställningar → Navigering → Ny session för att börja rensa (det rensar bara chatthistoriken, minnet stannar kvar).

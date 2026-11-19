@@ -1,0 +1,14 @@
+Mga Mode: Ahente at Build
+Mayroong dalawang mga mode, pinili gamit ang pindutan ng mode sa tabi ng kahon ng mensahe. Ang pagpipilian ay mananatili hanggang sa baguhin mo ito. Ang live na boses ay hindi pangatlong mode; ito ay isang paraan ng pagsasalita na maaari mong i-on sa Mga Setting (tingnan ang Voice chapter).
+
+## Ahente
+"Buong automation ng telepono at ng system." Bukas ang lahat: pagbabasa at pagmamaneho sa screen ng telepono, pagbubukas ng mga app, tawag, mensahe, camera, file, terminal at Linux, Git, preview, media, sub-agents, MCP server, kasanayan, autopilot at higit pa. Pumili ng Ahente kapag may gusto kang gawin sa iyong telepono o gustong makipag-usap.
+
+## Bumuo
+"Mga full-stack na app, website at automation." Ang ahente ay isang build engine: mula sa isang maikling linya ginagawa nito ang kabuuan, pinapatakbo ito, tinitingnan ito at ipinapakita ito sa iyo. Mayroon itong mga file, terminal, Git, preview, publishing, media, memory at ang todo board. Ang kontrol ng telepono, mga sub-agents at lock ng device ay nabibilang sa Agent mode; kung kailangan mo ang mga ito sa Build, lumipat.
+- Landing page o website: sabihin kung para saan ito. Binubuo ito ng ahente nang sabay-sabay, sisimulan ito sa iyong telepono at bubuksan ito sa panel ng Preview, pagkatapos ay sasabihin sa iyo kung ano ang ginawa nito. Hindi ito naglalathala maliban kung tatanungin mo.
+- App: sabihin kung ano ang gusto mo at bubuo ito ng app gaya ng hiniling. Ang back end, database o login ay idaragdag lamang kung hihilingin mo ito.
+- Full-stack: kapag humingi ka ng back end o database, tatanungin ka muna ng ahente ng isang maikling tanong tungkol sa mga pagpipilian (wika, database, login, kung saan ito tumatakbo), kasama ang rekomendasyon nito, at bubuo pagkatapos mong sagutin.
+
+## Ano ang ibig sabihin ng "magtanong".
+Kapag talagang kailangan ng ahente ang iyong desisyon, gagawin muna nito ang lahat, magtatanong ng isang maikling tanong kasama ang rekomendasyon nito, at maghihintay. Ang iyong sagot ay nagpatuloy sa trabaho mula sa kung saan ito huminto.

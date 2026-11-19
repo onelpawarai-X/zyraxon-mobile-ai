@@ -1,0 +1,45 @@
+Prasmes, autopilots, nauda, ​​laika skala un atsaukšana, smadzenes, zvanu aģents un atmiņa
+Jūs to visu izmantojat, runājot: sakiet, ko vēlaties, un aģents izsauc pareizo rīku. Šeit ir norādīta katra darbība ar tās iespējām.
+
+## Prasmes — māciet darot
+Prasme ir tālruņa uzdevums, ko aģents iemācījās, skatoties, kā jūs to darāt vienu reizi. Tajā tiek saglabāts, kā vēlreiz atrast katru elementu (tā ID, vārdus un kaimiņus, nevis ekrāna pozīciju), tāpēc tas turpina darboties, kad mainās lietotnes izkārtojums.
+- Pievienojiet prasmi:`skill_record`(Personiski). Sakiet “learn this as <name>”.`action: start`(ar vārdu) sāk ierakstīšanu; pēc tam veiciet uzdevumu — atveriet lietotni, pieskarieties, ierakstiet, nospiediet taustiņus; katrs solis tiek ierakstīts.`action: stop`to saglabā. Pieturā var pabraukt garām`params`lai pārvērstu ievadītās vērtības par parametriem (piemēram, tālruņa numurs kļūst`number`, summa kļūst`amount`) un a`description`. `action: status`norāda, vai ierakstīšana ir ieslēgta.
+- Veiciet prasmi:`skill_run`(Personiski). Dodiet`args`tā parametriem, piem. skaits un summa. Tas tiek atskaņots dažos soļus un izdziedinās pats, kad lietotne mainās. Ja viens solis neizdodas, rezultāts parāda, kurš solis un kas ir redzams ekrānā, un aģents pabeidz pārējo ar roku.
+- Saraksta prasmes:`skill_list`(Drošs) parāda nosaukumu, parametrus, darbības un to, cik bieži katrs skrēja. Ar nosaukumu un eksportēšanu padara koplietojamu`.zxskill`failu.
+- Kopīgojiet un ielādējiet:`skill_import`(Personīgās) kravas a`.zxskill`failu no lejupielādes vai koplietota faila kā prasmi.
+- Dzēst prasmi:`skill_delete`(Sistēma).
+- Piemērs: "Uzziniet, kā es varu nosūtīt 500 Rahim, izmantojot savu maka lietotni"→tu to dari vienreiz→"Sūtīt 700 Karimam" nākamreiz.
+
+## Autopilots — "kad notiek X, dariet Y"
+Noteikums pamodina aģentu pats, un tas veic uzdevumu, jums neprasot.
+- Pievienot:`autopilot_add`(Sistēma). Veidi: sms, paziņojums, zvans, katru dienu, vienreiz, intervāls, akumulators, lietotne. Aizpildiet tikai kārtulai nepieciešamos laukus:`from`(sūtītāja vārds vai numurs vai lietotnes nosaukums),`any`(vismaz viens no šiem vārdiem),`all`(katrs vārds),`none`(neviens no šiem vārdiem),`time`"HH:MM" (katru dienu),`in_minutes` or `at_ms`(vienreiz),`every_minutes`(intervāls),`below`(akumulatora procenti),`pkg`(lietotnes pakotne vai nosaukums lietotnes un paziņojumu noteikumiem). Aģents pārvērš jūsu teikumu šajos laukos. Rezultātā ir norādītas visas vēl nepieciešamās atļaujas (SMS, piekļuve paziņojumiem…), un aģents lūdz to ieslēgt.
+- Piemēri: "Kad no mana maka lietotnes tiek saņemta maksājuma īsziņa, pievienojiet to manai virsgrāmatai." "Katru rītu pulksten 8, pastāstiet man par laikapstākļiem." "Pēc 20 minūtēm atgādiniet man, lai izņemu maizi." "Ik pēc 30 minūtēm, atgādinājums par ūdens dzeršanu." "Kad akumulatora uzlādes līmenis ir zem 15%, pastāstiet man." "Kad man kāds zvana, reģistrējiet numuru." "Kad es atveru bankas lietotni, atgādiniet man pārbaudīt budžetu."
+- Saraksts:`autopilot_list`(Drošs) parāda katru kārtulu ar nākamo izpildes laiku un to, cik bieži tā ir aktivizēta.
+- Pauzēt vai atsākt:`autopilot_toggle`(Sistēma). Dzēst:`autopilot_remove`(Sistēma), pēc ID vai nosaukuma.
+- Kad noteikums tiek aktivizēts, jūs saņemat ziņojumu, kurā teikts, ka aģents vienkārši veic darbu.
+
+## Naudas virsgrāmata (personīgais finanšu direktors)
+- `ledger_scan`(Personiskais): lasiet maku un bankas SMS privātajā virsgrāmatā: ienākumi, izdevumi, maksas, atlikums un kategorija.`days`norāda, cik tālu atpakaļ (noklusējuma 30). Ar`auto`ieslēdzot, katra jauna naudas īsziņa tiek pievienota pati, un jūs tiekat brīdināts, kad budžets ir pieņemts. Darbojas ar jebkuras valsts maku un bankas ziņojumiem jebkurā valūtā.
+- `ledger_report`(Personisks): periods šodien, vakar, nedēļa, mēnesis vai viss. Formatējiet tekstu (gatavu kopsavilkumu) vai xlsx (anExcelfailu ar transakciju un kategoriju kopsummu, kas atvērta jums).
+- `ledger_budget`(Personiskais): iestatiet ikmēneša budžetu kategorijai (pārtika, rēķini, transports, iepirkšanās, mobilā uzlāde, pārskaitījumi...); ierobežojums 0 to noņem; bez argumentiem tajā ir uzskaitīti budžeti un pašreizējie brīdinājumi.
+- Aģents nekad neizgudro naudas skaitļus; tas nolasa tos no virsgrāmatas.
+
+## Laika skala un atsaukt
+- Viss, ko aģents dara, tiek ierakstīts laika skalā (pēdējās 400 darbības). Failu izmaiņas saglabā iepriekš esošā satura kopiju.
+- `timeline_list`(Drošs): ko aģents darīja nesen, katram norādot ID un kuras izmaiņas var atsaukt.
+- `timeline_undo`(Personiski):`id`tiek atsaukta rakstīšana, rediģēšana vai dzēšana — fails tiek atgriezts tieši tāds, kāds tas bija (fails, kas neeksistēja, tiek noņemts vēlreiz).`since_id`atceļ visu, sākot no šī id, jaunākie vispirms. Izmantojiet to, kad sakāt "ņem atpakaļ" vai "atpakaļ kā iepriekš".
+- Atsaukt attiecas uz failu rakstīšanu, rediģēšanu un dzēšanu. Palaista komandu (piemēram, kaut ko instalējot vai nosūtot ziņojumu) šādā veidā nevar atsaukt.
+- Tērzēšanas ziņojumi: lai noņemtu visu sarunu, izmantojiet zīmuli un krustiņu kreisajā izvēlnē vai Iestatījumos→Privātums un dati→Dzēst tērzēšanas vēsturi vai navigāciju→Jauna sesija.
+
+## Smadzenes — otrā atmiņa jūsu failiem
+- `brain_index`(Drošs): izveidojiet vai atsvaidziniet bezsaistes indeksu virs mapēm vai failiem (teksta,Markdown, CSV, Word, Excel, PowerPoint) un pēc izvēles SMS iesūtni (`sms`ieslēgts). Palaidiet to pirms pirmās meklēšanas un pēc jaunu failu parādīšanās. Noklusējums ir jūsu darbvieta.
+- `brain_search`(Drošs): jautājiet saviem vārdiem: "Kur ir mans īres līgums?" — tas darbojas bezsaistē jebkurā valodā.`kind`ir fails vai sms;`days`jaunāko vienumu ierobežojumi. Atveriet atrasto failu ar`open_file`.
+
+## Zvanīt aģentam
+- `call_agent`(Personiski): darbība ieslēgta, izslēgta vai statuss.`owner`ir vārds, ko tas saka ("Es esmu <īpašnieka> palīgs").`answer_after_seconds`(noklusējuma 6) ļauj vispirms paņemt. Kad pienāk zvans un jūs nevarat atbildēt, tas sveicina zvanītāja valodā, jautā vārdu un iemeslu, atbild uz vienkāršiem jautājumiem, pieklājīgi noliek klausuli un pastāsta kopsavilkumu.
+- `call_log`(Drošs): to zvanu kopsavilkumi, uz kuriem tas atbildēja, jaunākie vispirms.
+- Nepieciešamas zvana un tālruņa stāvokļa atļaujas.
+
+## Atmiņa
+- `memory_write`, `memory_read`, `memory_delete`(Drošs): pastāvīgi fakti par jums (vārds, preferences, cilvēki, datumi, projekti) atrodas vietējā datu bāzē un izdzīvo restartēšanu. Sakiet "atceries to", un tas tiek rakstīts tajā pašā kārtā; ja kaut kas nav kārtībā, tas tiek noņemts vai pārrakstīts. Arī katra vecā saruna tiek saglabāta, un pagātnes pagriezieni, kas atbilst jūsu teiktajam, atgriežas paši, pat pēc mēnešiem.
+- Skatiet un mainiet to visu sadaļā Iestatījumi→Sistēma→Atmiņa (atslēga, vērtība, saglabāšana, dzēšana visu).

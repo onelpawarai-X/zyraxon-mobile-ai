@@ -1,0 +1,21 @@
+Cloud, rete, modelli e aiutanti
+## La nuvola e Internet
+- `web_search` (rete): cerca nel web reale. `read_url` (rete): recupera una pagina come testo. `http_request` (rete): qualsiasi chiamata HTTP (GET, POST, PUT, PATCH, DELETE) con intestazioni e corpo. `verify_url` (rete): verifica che un collegamento esista realmente e ottieni il vero stato. `download_file` (Personale, rete): scarica un URL in un file.
+- L'agente apre i collegamenti solo quando glielo chiedi.
+- I modelli IA vengono eseguiti nel cloud tramite i provider aggiunti (ZYRAXON, ZYRAXON Apex agente cloud, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). L'elenco dei modelli viene caricato in tempo reale e si riempie man mano che ciascun fornitore risponde.
+- Le richieste di build, pubblicazione e pull vengono eseguite tramite GitHub e Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Attiva "Solo sul dispositivo" (Impostazioni di automazione) e non verrà effettuata alcuna chiamata cloud: nessun provider, nessun web, nessun caricamento.
+
+## MCP server
+MCP consente ai servizi esterni di fornire all'agente strumenti aggiuntivi. Connetti Canva, Cloudflare, Supabase, GitHub o il tuo server tramite il suo indirizzo (token opzionale). Gli strumenti dei server connessi si uniscono all'elenco degli strumenti dell'agente come `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (vedi cosa è connesso e quali strumenti esistono), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (guarda una risorsa per le modifiche), `mcp_complete` (argomenti di completamento automatico), `mcp_ping`, `mcp_log_level`. Le loro chiamate sono chiamate di rete e strumenti MCP sconosciuti richiedono l'autorizzazione per impostazione predefinita.
+- La schermata MCP elenca ciascun server con lo stato Connesso, i relativi strumenti, risorse e modelli di prompt e i pulsanti Aggiungi, Disconnetti, Rimuovi, Consenti.
+
+## Subagenti
+`sub_agent` (Sistema): consegna parti di un grosso lavoro agli agenti di supporto in esecuzione in background. Azioni: spawn, stato, elenco, risultato, messaggio, stop, attesa. Ognuno può utilizzare il proprio modello. L'agente combina e controlla i risultati prima di dire "fatto".
+
+## Modello sul dispositivo
+`on_device_model` (Sistema): elenca, carica ed esegue un modello linguistico che vive sul telefono, senza Internet. In Impostazioni → Modello e identità → Sul dispositivo puoi scaricare i modelli (da piccolo a grande: FunctionGemma 270M, Qwen3 0,6B, Gemma 4 E2B…); un token Hugging Face è facoltativo e necessario solo per i file con gate. Un modello caricato viene ricordato e ricaricato al momento del lancio.
+
+## Canali di messaggistica
+`channel_post` (Sistema) apre Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail o SMS con il testo pronto. Premi Invia te stesso.

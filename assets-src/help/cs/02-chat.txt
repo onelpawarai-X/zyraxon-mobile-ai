@@ -1,0 +1,51 @@
+Obrazovka chatu a každé tlačítko
+## Horní část obrazovky
+- Nabídka: otevře levou zásuvku s vašimi chaty.
+- Chat / Terminál / Kód / Náhled: přepnutí hlavního zobrazení. Chat je konverzace; Terminál je skutečný terminál; Kód je pracovní prostor souboru s Git; Náhled je vestavěný prohlížeč.
+- Aura: zobrazuje obrazovku animované postavy. Jeho boční tlačítka jsou Mic, Chat (zpět do konverzace) a Refresh (znovu připojí cloud a znovu načte seznam modelů).
+- Nastavení: otevře osm sekcí nastavení.
+- Proužek zobrazuje stav mikrofonu: „Poslouchám…“, „Mikrofon je vypnutý – klepněte“ nebo „Hovořím… klepnutím zastavíte“.
+- Když je připravena nová verze, objeví se aktualizační banner s tlačítky Stáhnout, Instalovat a Povolit (viz Aktualizace).
+
+## Levé menu (chaty)
+- „+ Nový chat“: zahájí novou konverzaci.
+- Každý chat v seznamu zobrazuje běžící značku, když je tam agent zaneprázdněn. Tužka to přejmenuje; křížek jej smaže (po potvrzení: všechny zprávy v něm jsou vymazány).
+- Téma: zvolte Hrůza (krev, oheň a stín), Tmavá (čisté tmavé sklo) nebo Světlá (světlé sklo).
+
+## Lišta zpráv
+- Připojit (sponku): fotografii galerie, fotografii z fotoaparátu, sken dokumentu (přemění text na fotografii na upravitelný .docx), sdílejte obrazovku, aby ji agent viděl (zapnuto nebo vypnuto „Sledování obrazovky“) a zvukové nebo video soubory. Připojené položky se zobrazují jako žetony; křížek odstraní jeden, "Vymazat vše" odstraní všechny.
+- Tlačítko režimu: Agent nebo Build.
+- Tlačítko Mic: zapíná nebo vypíná vždy poslouchající mikrofon.
+- Tlačítko Model: otevře seznam modelů s vyhledávacím polem. Modelky označené „Live“ mohou mluvit svým vlastním hlasem.
+- Odeslat: odešle zprávu. Zatímco agent pracuje, změní se na Stop.
+- Vstup říká "Co mám dělat?" v režimu Agent a "Co mám sestavit? Řekni to krátce" v režimu Build.
+
+## Zprávy
+- Kopírovat, sdílet a poslouchat (přečte zprávu nahlas; dalším stisknutím zastavíte) jsou pod každou zprávou.
+- „Myšlení“ ukazuje uvažování modelu, když je model poskytuje.
+- Kód, který agent napíše, se objeví v krabici, řádek po řádku, s funkcemi Copy, Download a Open.
+- Soubory, které agent zobrazí jako karty s funkcemi Otevřít (ve skutečné aplikaci telefonu), Přehrát, Sdílet a „Jiná aplikace…“.
+- Obrázky, zvuk a video ukazují v reálném čase procento pokroku při jejich vytváření.
+- Karty nástrojů ukazují, co agent dělá: běží, hotovo, úspěch nebo selhání.
+
+## Panely (úkoly, nástroje, soubory, dílčí agenti)
+- Tabule úkolů: plán, který agent píše pro velkou zakázku a její postup (n/celkem hotovo). Můžete přidat svůj vlastní úkol a úkoly odstranit.
+- Nástroje: seznam každého volání nástroje s aktuálním stavem.
+- Soubory: každý soubor, který agent vytvořil, s možnostmi Otevřít, Sdílet, Publikovat a Smazat (s potvrzením) a vyhledávacím polem.
+- Sub-agents: pomocní agenti běžící na pozadí s tlačítkem Stop.
+- Záložka Terminál: skutečný terminál (viz kapitola Soubory a terminál).
+
+## Panel náhledu
+- Zpět, Vpřed, Zastavit, Znovu načíst a adresní řádek (zadejte webovou adresu nebo vyhledejte Google).
+- Otevřít soubor: zobrazuje Word, Excel, PowerPoint, PDF, obrázky, Markdown, CSV, kód a weby přímo v aplikaci.
+- Velikost: zmenšit nebo zvětšit panel.
+- Oprava: odesílá problémy stránky (chyby konzoly, neúspěšné načítání) agentovi, který je na pozadí opraví.
+- Vybrat část: klepněte na část stránky a poté řekněte agentovi, co má s touto částí udělat.
+- Tlačítko agenta: zeptat se na něco o stránce; agent obdrží jeho obrázek.
+- Rychlé otevření: zkratky na poslední stránky.
+
+## Pracovní prostor kódu
+- Levá strana: vaše soubory (nový soubor, otevřít, uložit).
+- Editor: zobrazuje řádky a znaky; změny provedené agentem se projeví okamžitě.
+- Git: nové repo, klon z GitHub, skenování, stav, odevzdání se zprávou, push, pull, větvení, token.
+- Pull požadavky: vytvořit, sloučit, zavřít. Pracovní postupy: spuštění seznamu, spuštění pracovního postupu. Log zobrazuje výstup příkazu.

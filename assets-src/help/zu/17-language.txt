@@ -1,0 +1,16 @@
+Izilimi
+## Ulimi lohlelo lokusebenza
+Izilungiselelo → Ulimi nokuhumusha. Izilimi ezingama-60. Yonke i-interface nemilayezo yethuluzi le-ejenti iyayilandela. Ulimi ngalunye lunefayela lalo lokuhumusha. Noma yimuphi umugqa ifayela lolimi elingakabi nawo uboniswa ngesiNgisi, awulokothi ushiywe ungenalutho.
+
+## Okukhulumayo
+I-ejenti ihlale iphendula ngolimi okhuluma nayo, noma yiluphi ulimi emhlabeni. Uma ushintsha, iyashintsha. Isebenzisa indlela yokuhlonipha nenhlonipho ethi "wena" ngolimi lwakho. Amagama ebhrendi nobuchwepheshe ahlala enjengoba enjalo.
+
+## Izilimi zezwi
+- Ulimi lokubonwayo (okushoyo kumakrofoni): Izilungiselelo → Izwi nemakrofoni → Imakrofoni nolimi.
+- Izwi lokukhuluma: Izilungiselelo → Izwi nemakrofoni → Iphrofayela yezwi, kanye nelebhu Yezwi yezilimi ezifana nesi-Bengali, isi-Hindi, isiNgisi, isi-Urdu, isi-Arabhu, isi-Tamil, isi-Nepali, isi-Spanish, isi-French, isiJalimane, isi-Japanese, isi-Korean, isiShayina, isi-Russian, isi-Turkish.
+
+## Le mibhalo
+Sebenzisa ama-chips olimi ngaphezulu kwaleli khasi. Umhlahlandlela wonke ubhalwe ngazo zonke izilimi ezisekelwa uhlelo lokusebenza, ngesandla, futhi zithunyelwe ngaphakathi kohlelo lokusebenza. Akukho okuhunyushwa ocingweni lwakho: sonke isahluko sivuleka khona manjalo, sisebenza ungaxhunyiwe ku-inthanethi, futhi ayidingi modeli noma ukhiye.
+
+## Ubhala ngesakho iskripthi
+Amadokhumenti, amaphosta nemiklamo kungenziwa kunoma yisiphi isikripthi. Kumiklamo yaseBengali kusetshenziswa ifonti efanele; kwezinye izikripthi ifonti efanayo iyakhethwa.

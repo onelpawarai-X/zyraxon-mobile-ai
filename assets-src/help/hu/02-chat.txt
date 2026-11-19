@@ -1,0 +1,51 @@
+A chat képernyő és minden gomb
+## A képernyő tetején
+- Menü: megnyitja a bal oldali fiókot a chatekkel.
+- Csevegés / Terminál / Kód / Előnézet: a fő nézet váltása. A chat a beszélgetés; A terminál az igazi terminál; A kód a Git fájl munkaterülete; Az előnézet a beépített böngésző.
+- Aura: az animált karakter képernyőjét mutatja. Oldalsó gombjai a mikrofon, a csevegés (vissza a beszélgetéshez) és a Refresh (újracsatlakoztatja a felhőt és újratölti a modelllistát).
+- Beállítások: megnyitja a nyolc beállítási részt.
+- Egy szalaghirdetés mutatja a mikrofon állapotát: „Hallgat…”, „Mic off – koppintson” vagy „Beszél… koppintson a leállításhoz”.
+- Amikor egy új verzió elkészült, megjelenik egy frissítési szalag a Letöltés, Telepítés és Engedélyezés gombokkal (lásd Frissítések).
+
+## A bal oldali menü (csevegések)
+- "+ Új csevegés": új beszélgetést indít.
+- A listában minden csevegés egy futójelet mutat, amíg az ügynök ott van elfoglalva. A ceruza átnevezi; a kereszt törli (megerősítés után: minden benne lévő üzenet törlődik).
+- Téma: válassza a Horror (vér, tűz és árnyék), a Sötét (tiszta, sötét üveg) vagy a Világos (világos üveg) lehetőséget.
+
+## Az üzenetsáv
+- Csatolás (gemkapocs): galériafotó, kamerafotó, dokumentum szkennelés (szerkeszthető .docx formátumba alakítja a fotó szövegét), megoszthatja a képernyőt, hogy az ügyintéző láthassa ("Képernyőnézés" be- vagy kikapcsolása), valamint audio- vagy videofájlok. A csatolt elemek chipként jelennek meg; a kereszt eltávolít egyet, a "Clear all" eltávolít mindent.
+- Mód gomb: Agent vagy Build.
+- Mikrofon gomb: be- vagy kikapcsolja a mindig hallgató mikrofont.
+- Modell gomb: megnyitja a modelllistát egy keresőmezővel. Az „Élő” jelzéssel ellátott modellek a saját hangjukon beszélhetnek.
+- Küldés: elküldi az üzenetet. Amíg az ügynök dolgozik, ez Stop lesz.
+- A bemenet a "Mit tegyek?" Ügynök módban és "Mit építsek? Mondja röviden" Build módban.
+
+## Üzenetek
+- A Másolás, Megosztás és Hallgatás (hangosan felolvassa az üzenetet; leállításhoz nyomja meg újra) minden üzenet alatt található.
+- A „Gondolkodás” a modell érvelését mutatja, amikor a modell biztosítja azt.
+- Az ügynök által írt kód élőben jelenik meg egy mezőben, soronként, a Másolás, Letöltés és Megnyitás funkcióval.
+- Az ügynök által készített fájlok kártyaként jelennek meg a Megnyitás (a telefon valódi alkalmazásában), a Lejátszás, a Megosztás és az „Egyéb alkalmazás…” funkcióval.
+- A képek, hangok és videók élő haladás százalékos arányát mutatják, miközben készülnek.
+- Az eszközkártyák azt mutatják, hogy mit csinál az ügynök: fut, kész, sikeres vagy sikertelen.
+
+## Panelek (teendő, eszközök, fájlok, segédügynökök)
+- Todo tábla: az ügynök által írt terv egy nagy munkához és annak előrehaladása (n/összesen kész). Hozzáadhat saját feladatot és törölhet feladatokat.
+- Eszközök: minden eszközhívás listája élő állapottal.
+- Fájlok: minden fájl, amelyet az ügynök hozott létre, megnyitással, megosztással, közzététellel és törléssel (megerősítéssel), valamint keresőmezővel.
+- Al-ügynökök: a háttérben futó segédügynökök, Stop gombbal.
+- Terminál fül: a valódi terminál (lásd a Fájlok és terminál fejezetet).
+
+## Előnézet panel
+- Vissza, Előre, Leállítás, Újratöltés és egy címsor (írjon be egy webcímet, vagy keressen Google).
+- Fájl megnyitása: a Word, Excel, PowerPoint, PDF, képek, Markdown, CSV, kód és webhelyek megjelenítése közvetlenül az alkalmazáson belül.
+- Méret: a panel kicsinyítése vagy nagyítása.
+- Javítás: elküldi az oldal problémáit (konzolhibák, sikertelen betöltések) az ügynöknek, aki a háttérben kijavítja azokat.
+- Rész kiválasztása: koppintson az oldal egy részére, majd mondja meg az ügynöknek, hogy mit tegyen az adott résszel.
+- Ügynök gomb: kérdezzen valamit az oldalról; az ügynök képet kap róla.
+- Gyors megnyitás: parancsikonok a legutóbbi oldalakra.
+
+## Kód munkaterület
+- Bal oldal: a fájlok (új fájl, megnyitás, mentés).
+- Szerkesztő: vonalakat és karaktereket jelenít meg; Az ügynök által végrehajtott változtatások azonnal megjelennek.
+- Git: új repo, klónozás innen: GitHub, vizsgálat, állapot, véglegesítés üzenettel, push, pull, elágazások, token.
+- Lehívási kérések: létrehozás, egyesítés, bezárás. Munkafolyamatok: lista fut, munkafolyamat futtatása. A napló a parancs kimenetét mutatja.

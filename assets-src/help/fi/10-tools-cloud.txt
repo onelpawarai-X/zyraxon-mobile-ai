@@ -1,0 +1,21 @@
+Pilvi, verkko, mallit ja avustajat
+## Pilvi ja internet
+- `web_search` (verkko): etsi oikeasta verkosta. `read_url` (verkko): hae sivu tekstinä. `http_request` (verkko): mikä tahansa HTTP-kutsu (GET, POST, PUT, PATCH, DELETE), jossa on otsikot ja teksti. `verify_url` (verkko): tarkista, että linkki todella on olemassa ja tarkista todellinen tila. `download_file` (Henkilökohtainen, verkko): lataa URL-osoite tiedostoon.
+- Välittäjä avaa linkit vain pyydettäessä.
+- Tekoälymallit toimivat pilvessä lisäämiesi palveluntarjoajien kautta (ZYRAXON, ZYRAXON Apex pilviagentti, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Malliluettelo latautuu livenä ja täyttyy, kun kukin toimittaja vastaa.
+- Koontiversiot, julkaisu- ja vetopyynnöt suoritetaan GitHub:n ja Cloudflare:n kautta (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Ota käyttöön "vain laitteella" (automaatioasetukset), niin pilvipuheluita ei soiteta ollenkaan: ei palveluntarjoajaa, ei verkkoa, ei latausta.
+
+## MCP palvelimia
+MCP antaa ulkopuolisten palvelujen antaa agentille lisätyökaluja. Yhdistä Canva, Cloudflare, Supabase, GitHub tai oma palvelimesi osoitteen perusteella (valinnainen tunnus). Yhdistettyjen palvelimien työkalut liittyvät agentin työkaluluetteloon nimellä `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (katso, mikä on kytketty ja mitkä työkalut ovat olemassa), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (katso muutokset resurssista), `mcp_complete` (automaattisen täydennyksen argumentit), `mcp_ping`, `mcp_log_level`. Heidän puhelunsa ovat verkkopuheluita, ja tuntemattomat MCP työkalut pyytävät oletusarvoisesti lupaa.
+- MCP-näytössä on luettelo jokaisesta palvelimesta, jossa on yhdistetty tila, sen työkalut, resurssit ja kehotemallit sekä Lisää-, Katkaise-, Poista- ja Salli-painikkeet.
+
+## Aliagentit
+`sub_agent` (Järjestelmä): luovuta osia suuresta työstä taustalla toimiville avustajille. Toiminnot: spawn, status, luettelo, tulos, viesti, lopeta, odota. Jokainen voi käyttää omaa malliaan. Agentti yhdistää ja tarkistaa tulokset ennen kuin sanoo "valmis".
+
+## Laitteessa oleva malli
+`on_device_model` (Järjestelmä): luettele, lataa ja suorita kielimalli, joka elää puhelimessa ilman Internetiä. Asetuksissa → Malli ja identiteetti → Lataat laitteelle malleja (pienistä suuriin: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); Hugging Face-tunnus on valinnainen ja sitä tarvitaan vain porteilla oleville tiedostoille. Ladattu malli muistetaan ja ladataan uudelleen käynnistyksen yhteydessä.
+
+## Viestikanavat
+`channel_post` (Järjestelmä) avaa Telegram, WhatsApp, Facebookin, Messenger, YouTube, X, Instagram, Gmail tai tekstiviestin tekstin ollessa valmiina. Painat lähetä itse.

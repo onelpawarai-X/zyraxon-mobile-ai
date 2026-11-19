@@ -1,0 +1,20 @@
+Bắt đầu
+ZYRAXON là một trợ lý nằm bên trong điện thoại Android của bạn. Nó nói chuyện với bạn, lắng nghe bạn và có thể thực hiện công việc thực tế: mở ứng dụng, chạm và gõ trên màn hình, gọi điện cho mọi người, viết tệp, xây dựng trang web và ứng dụng, chạy hệ thống Linux, tạo hình ảnh, âm thanh, video và tài liệu văn phòng, đồng thời ghi nhớ bạn qua nhiều tháng. Nó hoạt động trong bất kỳ ngôn ngữ nào bạn nói.
+
+## Những phút đầu tiên
+- Trong lần khởi chạy đầu tiên ZYRAXON hiển thị một thông báo ngắn rằng đại lý có thể tự hành động trên điện thoại của bạn. Nhấn "Đã hiểu, bắt đầu" để tiếp tục.
+- Thêm khóa AI (Cài đặt → Nhà cung cấp & nhà cung cấp API → AI). Dán khóa cho bất kỳ nhà cung cấp nào bạn thích (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Khi bạn lưu một khóa, ứng dụng sẽ đọc danh mục của nhà cung cấp đó và kiểm tra tính xác thực của nó, do đó bạn sẽ thấy số lượng kiểu máy và "được kết nối" thực sự.
+- Không có chìa khóa? Bạn vẫn có thể sử dụng các kiểu máy trên thiết bị (Cài đặt → Kiểu máy & danh tính → Trên thiết bị). Họ chạy trên điện thoại không có internet.
+- Chọn một mẫu có nút mẫu trên thanh thông báo và một ký tự (Cài đặt → Mẫu & danh tính → Danh tính).
+- Cấp quyền khi một tính năng cần (xem chương Quyền). Nhân viên cũng có thể mở hộp thoại cấp phép cho bạn chỉ bằng một lần nhấn.
+- Chỉ cần nói chuyện hoặc gõ. "Tạo cho tôi một trang đích cho tiệm bánh của tôi", "mở YouTube và phát một bài hát", "pin của tôi là bao nhiêu?", "gọi cho mẹ".
+
+## Hai cách làm việc
+Bên cạnh hộp thông báo có nút chế độ với hai chế độ: Agent và Build. Xem chương Chế độ.
+
+## Mọi thứ ở đâu
+- Menu bên trái: cuộc trò chuyện của bạn, cuộc trò chuyện mới, đổi tên, xóa và chuyển đổi chủ đề.
+- Màn hình trò chuyện: tin nhắn, bảng việc cần làm, danh sách công cụ, tập tin, thiết bị đầu cuối.
+- Bảng xem trước và mã: xem và chỉnh sửa những gì tác nhân xây dựng.
+- Cài đặt: tám phần, được trình bày từng phần một trong tài liệu này.
+- Tài liệu này: Cài đặt → Tài liệu (bạn đang ở đây).

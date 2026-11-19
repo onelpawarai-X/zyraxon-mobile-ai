@@ -1,0 +1,27 @@
+Atļaujas, pa vienai
+Iestatījumi → Drošība un konfidencialitāte → Atļaujas. Katrā rindā ir redzams “Piešķirts” vai poga. Pieskaroties rindai, tiek atvērts sistēmas dialoglodziņš; vienkārši nospiediet Atļaut. Aģents var arī atvērt dialogu ar `request_permission`.
+
+- Mikrofons: lai ZYRAXON varētu jūs dzirdēt. Bez tā nav balss ievades.
+- Kamera: lai uzņemtu un skatītu fotoattēlus (`look_camera`, dokumentu skenēšana, "ko jūs redzat").
+- Atrašanās vieta: kartēm un vietējai informācijai.
+- Paziņojumi: lai paziņotu, kad fona darbs ir pabeigts.
+- Faili un multivide: lai lasītu fotoattēlus, video, audio un dokumentus.
+- Pārklājums (zīmēt pāri citām lietotnēm): nepieciešams peldošajai acij.
+- Pieejamība: ļauj aģentam lasīt ekrānu un pieskarties, vilkt un rakstīt jūsu vietā. Tā ir tālruņa automatizācijas sirds. Jūs to ieslēdzat sistēmas pieejamības iestatījumos.
+- Akumulatora optimizācija: neļauj Android iemigt ZYRAXON, kamēr tas darbojas fonā.
+
+## Citas lietotnes deklarētās atļaujas
+- SMS (lasīt un saņemt): kodu, naudas virsgrāmatas un SMS autopilota noteikumu nolasīšanai.
+- Tālruņa stāvoklis, atbildēšana uz zvaniem, zvanīšana uz tālruni, kontakti: zvanu rīkiem un zvanu aģentam.
+- Piekļuve paziņojumiem: ļauj autopilotam reaģēt uz paziņojumiem.
+- Ierīces administrators: ļauj `device_lock` patiešām bloķēt ekrānu.
+- Instalēt pakotnes: ļauj atjaunināt un `build_app` instalēt APK; Android lūdz atļaut ZYRAXON kā instalēšanas avotu.
+- Priekšplāna pakalpojumi (mikrofons, datu sinhronizācija) un modināšanas bloķēšana: saglabājiet balsi un ilgus darbus.
+- Interneta un tīkla stāvoklis: mākonis un tīmeklis.
+- Shizuku (pēc izvēles): sistēmas līmeņa piekļuve apvalkam un terminālim.
+
+## Google Play Protect
+Ja Play Protect bloķē darbu, aģents var atvērt īsto lapu, apskatīt reālo ekrānu un soli pa solim pārvietoties cauri pārnesumam un pārslēgšanai, taču tas vispirms jautā jums, jo aizsardzības izslēgšana ir jūsu lēmums. Lai to izdarītu pats: Play Store → profila attēls → Play Protect → iestatījumi → izslēdziet "Skenēt lietotnes, izmantojot Play Protect". Lapā ir poga, kas atver Play Store.
+
+## Kāpēc atļauja ir svarīga
+Ja rīkam neizdodas iegūt trūkstošo atļauju, aģents norāda, kura no tām ir, un atver tā dialoglodziņu. Nekas sensitīvs nedarbojas bez jūsu atļaujas.

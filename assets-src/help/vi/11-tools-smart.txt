@@ -1,0 +1,45 @@
+Kỹ năng, lái tự động, tiền bạc, dòng thời gian và hoàn tác, bộ não, tác nhân cuộc gọi và trí nhớ
+Bạn sử dụng tất cả những điều này bằng cách nói chuyện: nói những gì bạn muốn và nhân viên sẽ gọi đúng công cụ. Mọi hành động đều được liệt kê ở đây cùng với các tùy chọn của nó.
+
+## Kỹ năng - dạy bằng cách làm
+Kỹ năng là một nhiệm vụ qua điện thoại mà nhân viên đã học được bằng cách xem bạn thực hiện nó một lần. It stores how to find each element again (its id, words and neighbours, not its screen position), so it keeps working when the app's layout changes.
+- Thêm một kỹ năng: `skill_record` (Cá nhân). Nói "tìm hiểu điều này với tên <name>". `action: start` (có tên) bắt đầu ghi; sau đó thực hiện tác vụ — mở ứng dụng, chạm, gõ, nhấn phím; mỗi bước đều được ghi lại. `action: stop` lưu nó. At stop you can pass `params` to turn typed values into parameters (for example the phone number becomes `number`, the amount becomes `amount`) and a `description`. `action: status` cho bạn biết liệu tính năng ghi có được bật hay không.
+- Chạy một kỹ năng: `skill_run` (Cá nhân). Cung cấp `args` cho các tham số của nó, ví dụ: số lượng và số lượng. Nó phát lại trong một phần nhỏ các bước và tự phục hồi khi ứng dụng thay đổi. Nếu một bước không thành công, kết quả sẽ cho biết bước nào và nội dung gì trên màn hình, sau đó nhân viên sẽ hoàn thành phần còn lại bằng tay.
+- Danh sách các kỹ năng: `skill_list` (An toàn) hiển thị tên, thông số, các bước và tần suất từng chạy. Với tên và xuất trên đó sẽ tạo thành tệp `.zxskill` có thể chia sẻ.
+- Chia sẻ và tải: `skill_import` (Cá nhân) tải tệp `.zxskill` từ tệp tải xuống hoặc tệp được chia sẻ dưới dạng kỹ năng.
+- Xóa một kỹ năng: `skill_delete` (Hệ thống).
+- Ví dụ: "Tìm hiểu cách tôi gửi 500 cho Rahim bằng ứng dụng ví của tôi" → bạn thực hiện một lần → "Gửi 700 cho Karim" vào lần tới.
+
+## Chế độ lái tự động - "khi X xảy ra, hãy làm Y"
+Một quy tắc sẽ tự đánh thức tác nhân và nó thực hiện nhiệm vụ mà không cần hỏi bạn.
+- Thêm: `autopilot_add` (Hệ thống). Các loại: tin nhắn, thông báo, cuộc gọi, hàng ngày, một lần, khoảng thời gian, pin, ứng dụng. Fill only the fields the rule needs: `from` (sender name or number or app title), `any` (at least one of these words), `all` (every word), `none` (none of these words), `time` "HH:MM" (daily), `in_minutes` or `at_ms` (once), `every_minutes` (interval), `below` (battery percent), `pkg` (app package or name, cho các quy tắc ứng dụng và thông báo). Tác nhân biến câu của bạn thành các trường này. Kết quả liệt kê mọi quyền vẫn cần thiết (SMS, quyền truy cập thông báo…) và nhân viên hỗ trợ sẽ yêu cầu bạn bật quyền đó.
+- Ví dụ: "Khi có SMS thanh toán đến từ ứng dụng ví của tôi, hãy thêm nó vào sổ cái của tôi." "Mỗi buổi sáng lúc 8 giờ, hãy cho tôi biết thời tiết." "20 phút nữa, nhắc tôi lấy bánh mì ra." "Cứ sau 30 phút, nhắc nhở uống nước." "Khi pin xuống dưới 15%, hãy cho tôi biết." "Khi ai đó gọi cho tôi, hãy ghi lại số." "Khi tôi mở ứng dụng ngân hàng, hãy nhắc tôi kiểm tra ngân sách."
+- Danh sách: `autopilot_list` (An toàn) hiển thị mọi quy tắc cùng với thời gian chạy tiếp theo và tần suất kích hoạt.
+- Tạm dừng hoặc tiếp tục: `autopilot_toggle` (Hệ thống). Xóa: `autopilot_remove` (Hệ thống), theo id hoặc tiêu đề.
+- Khi một quy tắc được kích hoạt, bạn sẽ nhận được thông báo cho biết như vậy và nhân viên hỗ trợ sẽ thực hiện công việc đó.
+
+## Sổ cái tiền (CFO cá nhân)
+- `ledger_scan` (Cá nhân): đọc ví và SMS ngân hàng vào sổ cái riêng: thu nhập, chi tiêu, phí, số dư và danh mục. `days` cho biết lùi lại bao xa (mặc định là 30). Khi `auto` bật, mọi SMS tiền mới sẽ tự được thêm vào và bạn sẽ được cảnh báo khi ngân sách được thông qua. Hoạt động với ví và tin nhắn ngân hàng của bất kỳ quốc gia nào, bằng bất kỳ loại tiền tệ nào.
+- `ledger_report` (Cá nhân): khoảng thời gian hôm nay, hôm qua, tuần, tháng hoặc tất cả. Định dạng văn bản (bản tóm tắt bằng giọng nói sẵn sàng) hoặc tệp xlsx (Excel với các giao dịch và tổng danh mục, được mở cho bạn).
+- `ledger_budget` (Cá nhân): đặt ngân sách hàng tháng cho một danh mục (thực phẩm, hóa đơn, vận chuyển, mua sắm, nạp tiền điện thoại di động, chuyển khoản...); giới hạn 0 sẽ loại bỏ nó; không có đối số, nó liệt kê ngân sách và cảnh báo hiện tại.
+- Người đại diện không bao giờ bịa ra những con số về tiền bạc; nó đọc chúng từ sổ cái.
+
+## Dòng thời gian và hoàn tác
+- Mọi thứ mà tác nhân thực hiện đều được ghi vào dòng thời gian (400 hành động cuối cùng). Những thay đổi về tập tin sẽ giữ một bản sao của những gì đã có trước đó.
+- `timeline_list` (An toàn): những gì tác nhân đã làm gần đây, với id cho từng tác nhân và những thay đổi nào có thể được hoàn tác.
+- `timeline_undo` (Cá nhân): `id` hoàn tác một thao tác ghi, chỉnh sửa hoặc xóa - tệp sẽ trở lại chính xác như cũ (tệp không tồn tại sẽ bị xóa lại). `since_id` hoàn tác mọi thứ từ id đó trở đi, mới nhất trước tiên. Sử dụng nó khi bạn nói "lấy lại" hoặc "đặt lại như trước".
+- Hoàn tác bao gồm việc ghi, chỉnh sửa và xóa tập tin. Một lệnh đã chạy (ví dụ: cài đặt thứ gì đó hoặc gửi tin nhắn) không thể hoàn tác theo cách này.
+- Tin nhắn trò chuyện: để xóa toàn bộ cuộc trò chuyện, hãy sử dụng bút chì và gạch chéo trong menu bên trái hoặc Cài đặt → Quyền riêng tư & dữ liệu → Xóa lịch sử trò chuyện hoặc Điều hướng → Phiên mới.
+
+## Brain — bộ nhớ thứ hai cho các tập tin của bạn
+- `brain_index` (An toàn): xây dựng hoặc làm mới chỉ mục ngoại tuyến trên các thư mục hoặc tệp (văn bản, Markdown, CSV, Word, Excel, PowerPoint) và tùy chọn hộp thư đến SMS (bật `sms`). Chạy nó trước lần tìm kiếm đầu tiên và sau khi các tệp mới xuất hiện. Mặc định là không gian làm việc của bạn.
+- `brain_search` (An toàn): hãy hỏi bằng chính lời của bạn, "hợp đồng thuê nhà của tôi ở đâu?" - nó hoạt động ngoại tuyến bằng bất kỳ ngôn ngữ nào. `kind` là tập tin hoặc tin nhắn; `days` giới hạn đối với các mục gần đây. Mở tệp tìm thấy bằng `open_file`.
+
+## Đại lý cuộc gọi
+- `call_agent` (Cá nhân): bật, tắt hoặc trạng thái. `owner` là tên nó nói ("Tôi là trợ lý của <chủ sở hữu>"). `answer_after_seconds` (mặc định 6) cho phép bạn nhặt trước. Khi có cuộc gọi đến và bạn không thể trả lời, nó sẽ chào bằng ngôn ngữ của người gọi, hỏi tên và lý do, trả lời những câu hỏi đơn giản, cúp máy một cách lịch sự và kể cho bạn một bản tóm tắt.
+- `call_log` (An toàn): tóm tắt các cuộc gọi đã trả lời, mới nhất trước.
+- Cần quyền gọi và trạng thái điện thoại.
+
+## Ký ức
+- `memory_write`, `memory_read`, `memory_delete` (An toàn): thông tin lâu dài về bạn (tên, sở thích, con người, ngày tháng, dự án) tồn tại trong cơ sở dữ liệu cục bộ và tồn tại khi khởi động lại. Nói “hãy nhớ điều này” và nó được viết lần lượt; nếu có gì sai sót thì sẽ bị xóa hoặc viết lại. Mọi cuộc trò chuyện cũ cũng được lưu giữ và những đoạn hội thoại trong quá khứ khớp với những gì bạn nói sẽ tự quay trở lại, thậm chí nhiều tháng sau đó.
+- Xem và thay đổi tất cả trong Cài đặt → Hệ thống → Bộ nhớ (khóa, giá trị, lưu, xóa tất cả).

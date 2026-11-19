@@ -1,0 +1,45 @@
+Keterampilan, autopilot, uang, garis waktu dan pembatalan, otak, agen panggilan, dan memori
+Anda menggunakan semua ini dengan berbicara: katakan apa yang Anda inginkan dan agen memanggil alat yang tepat. Setiap tindakan tercantum di sini beserta opsinya.
+
+## Keterampilan — mengajar sambil melakukan
+Keterampilan adalah tugas telepon yang dipelajari agen dengan melihat Anda melakukannya satu kali. Ini menyimpan cara menemukan setiap elemen lagi (id, kata-kata dan tetangganya, bukan posisi layarnya), sehingga tetap berfungsi ketika tata letak aplikasi berubah.
+- Tambahkan keterampilan: `skill_record` (Pribadi). Ucapkan "pelajari ini sebagai <nama>". `action: start` (dengan nama) mulai merekam; lalu lakukan tugas — buka aplikasi, ketuk, ketik, tekan tombol; setiap langkah dicatat. `action: stop` menyimpannya. Saat berhenti, Anda dapat meneruskan `params` untuk mengubah nilai yang diketik menjadi parameter (misalnya nomor telepon menjadi `number`, jumlahnya menjadi `amount`) dan `description`. `action: status` memberi tahu Anda apakah perekaman aktif.
+- Jalankan keterampilan: `skill_run` (Pribadi). Berikan `args` untuk parameternya, mis. nomor dan jumlah. Ini memutar ulang sebagian kecil dari langkah-langkahnya dan memulihkan dirinya sendiri ketika aplikasi berubah. Jika satu langkah gagal, hasilnya menunjukkan langkah mana dan apa yang ada di layar, dan agen menyelesaikan sisanya dengan tangan.
+- Daftar keterampilan: `skill_list` (Aman) menunjukkan nama, parameter, langkah, dan seberapa sering masing-masing dijalankan. Dengan nama dan ekspor di atasnya membuat file `.zxskill` dapat dibagikan.
+- Bagikan dan muat: `skill_import` (Pribadi) memuat file `.zxskill` dari unduhan atau file bersama sebagai keterampilan.
+- Hapus keterampilan: `skill_delete` (Sistem).
+- Contoh: "Pelajari cara mengirim 500 ke Rahim melalui aplikasi dompet saya" → Anda melakukannya sekali → "Kirim 700 ke Karim" lain kali.
+
+## Autopilot — "ketika X terjadi, lakukan Y"
+Aturan membangunkan agen dengan sendirinya dan melakukan tugas tanpa meminta Anda.
+- Tambahkan: `autopilot_add` (Sistem). Jenis: sms, notifikasi, panggilan, harian, sekali, interval, baterai, aplikasi. Isi hanya kolom yang diperlukan aturan: `from` (nama atau nomor pengirim atau judul aplikasi), `any` (setidaknya satu dari kata-kata ini), `all` (setiap kata), `none` (tidak satu pun dari kata-kata ini), `time` "HH:MM" (setiap hari), `in_minutes` atau `at_ms` (sekali), `every_minutes` (interval), `below` (persen baterai), `pkg` (paket aplikasi atau nama, untuk aplikasi dan aturan notifikasi). Agen mengubah kalimat Anda menjadi bidang ini. Hasilnya mencantumkan izin apa pun yang masih diperlukan (SMS, akses notifikasi…), dan agen meminta Anda untuk mengaktifkannya.
+- Contoh: "Saat SMS pembayaran masuk dari aplikasi dompet saya, tambahkan ke buku besar saya." "Setiap pagi jam 8, beri tahu aku cuacanya." "Dalam 20 menit, ingatkan aku untuk mengeluarkan rotinya." "Setiap 30 menit, pengingat minum air." "Saat daya baterai turun di bawah 15%, beri tahu saya." "Ketika seseorang menelepon saya, catat nomornya." “Saat saya membuka aplikasi perbankan, ingatkan saya untuk memeriksa anggaran.”
+- Daftar: `autopilot_list` (Aman) menunjukkan setiap aturan dengan waktu berjalan berikutnya dan seberapa sering aturan tersebut diaktifkan.
+- Jeda atau lanjutkan: `autopilot_toggle` (Sistem). Hapus: `autopilot_remove` (Sistem), berdasarkan id atau judul.
+- Saat aturan diaktifkan, Anda mendapat pesan yang menyatakan demikian, dan agen langsung melakukan pekerjaannya.
+
+## Buku besar uang (CFO pribadi)
+- `ledger_scan` (Pribadi): membaca dompet dan SMS bank ke dalam buku besar pribadi: pendapatan, pengeluaran, biaya, saldo, dan kategori. `days` menyatakan seberapa jauh ke belakang (default 30). Dengan `auto` aktif, setiap SMS uang baru akan ditambahkan dengan sendirinya dan Anda akan diperingatkan ketika anggaran telah terlampaui. Berfungsi untuk dompet dan pesan bank negara mana pun, dalam mata uang apa pun.
+- `ledger_report` (Pribadi): periode hari ini, kemarin, minggu, bulan, atau semuanya. Format teks (ringkasan siap diucapkan) atau xlsx (file Excel dengan total transaksi dan kategori, dibuka untuk Anda).
+- `ledger_budget` (Pribadi): menetapkan anggaran bulanan untuk suatu kategori (makanan, tagihan, transportasi, belanja, isi ulang ponsel, transfer…); batas 0 menghapusnya; tanpa argumen, ia mencantumkan anggaran dan peringatan terkini.
+- Agen tidak pernah menciptakan angka-angka uang; itu membacanya dari buku besar.
+
+## Garis waktu dan batalkan
+- Segala sesuatu yang dilakukan agen ditulis ke timeline (400 tindakan terakhir). Perubahan file menyimpan salinan dari apa yang ada sebelumnya.
+- `timeline_list` (Aman): apa yang dilakukan agen baru-baru ini, dengan id untuk masing-masingnya, dan perubahan mana yang dapat dibatalkan.
+- `timeline_undo` (Pribadi): `id` membatalkan satu kali penulisan, pengeditan, atau penghapusan — file kembali persis seperti semula (file yang tidak ada dihapus lagi). `since_id` membatalkan semuanya mulai dari id itu dan seterusnya, yang terbaru terlebih dahulu. Gunakan saat Anda mengatakan "ambil kembali" atau "kembalikan seperti sebelumnya".
+- Membatalkan penulisan, pengeditan, dan penghapusan file yang mencakup. Perintah yang dijalankan (misalnya memasang sesuatu atau mengirim pesan) tidak dapat dibatalkan dengan cara ini.
+- Pesan obrolan: untuk menghapus seluruh percakapan gunakan pensil dan tanda silang di menu sebelah kiri, atau Pengaturan → Privasi & data → Hapus riwayat obrolan, atau Navigasi → Sesi baru.
+
+## Otak — memori kedua untuk file Anda
+- `brain_index` (Aman): membuat atau menyegarkan indeks offline pada folder atau file (teks, Markdown, CSV, Word, Excel, PowerPoint) dan secara opsional kotak masuk SMS (`sms` aktif). Jalankan sebelum pencarian pertama dan setelah file baru muncul. Defaultnya adalah ruang kerja Anda.
+- `brain_search` (Aman): tanyakan dengan kata-kata Anda sendiri, "di mana kontrak sewa saya?" — ini berfungsi offline dalam bahasa apa pun. `kind` adalah file atau sms; `days` batas item terbaru. Buka file yang ditemukan dengan `open_file`.
+
+## Agen panggilan
+- `call_agent` (Pribadi): tindakan aktif, nonaktif, atau status. `owner` adalah nama yang tertulis ("Saya asisten <pemilik>"). `answer_after_seconds` (default 6) memungkinkan Anda mengambil terlebih dahulu. Ketika ada panggilan masuk dan Anda tidak dapat menjawabnya, ia akan menyapa dalam bahasa penelepon, menanyakan nama dan alasannya, menjawab pertanyaan sederhana, menutup telepon dengan sopan, dan memberi tahu Anda ringkasannya.
+- `call_log` (Aman): ringkasan panggilan yang dijawab, yang terbaru terlebih dahulu.
+- Membutuhkan izin panggilan dan negara telepon.
+
+## Ingatan
+- `memory_write`, `memory_read`, `memory_delete` (Aman): fakta abadi tentang Anda (nama, preferensi, orang, tanggal, proyek) ada di database lokal dan bertahan jika dimulai ulang. Ucapkan "ingat ini" dan itu ditulis secara bergantian; jika ada yang salah, itu dihapus atau ditulis ulang. Setiap percakapan lama juga disimpan, dan percakapan masa lalu yang sesuai dengan apa yang Anda katakan akan muncul kembali dengan sendirinya, bahkan berbulan-bulan kemudian.
+- Lihat dan ubah semuanya di Pengaturan → Sistem → Memori (kunci, nilai, simpan, hapus semua).

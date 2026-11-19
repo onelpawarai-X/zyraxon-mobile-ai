@@ -1,0 +1,27 @@
+Mga tip at halimbawang kahilingan
+## Sabihin kung ano ang gusto mo, hindi kung paano
+- "Gumawa ng landing page para sa isang gym, madilim at bold."
+- "Bumuo ng full-stack booking app na may database." (tinanong muna ng ahente ang mga teknikal na pagpipilian)
+- "Buksan YouTube at magpatugtog ng mahinahong kanta."
+- "Mag-scroll pababa at buksan ang unang resulta."
+- "Ano ang aking baterya at Wi-Fi?"
+- "Basahin ang aking pinakabagong SMS at sabihin sa akin ang code."
+- "Tawagan mo si Mama." / "Sagutin ang tawag."
+- "Gumawa ng CV mula sa larawang ito." (kabit ito)
+- "Gawing mga tala ang pag-record ng pulong na ito na may mga item ng pagkilos."
+- "Gumawa ng poster para sa kaganapan ng Biyernes na may ganitong mga kulay."
+- "Gumawa ng audio dialogue sa pagitan ng dalawang magkaibigan, isang lalaki at isang babae."
+- "Tandaan mo na ang kaarawan ng kapatid ko ay 3 Mayo."
+- "Tuwing umaga sa 8 sabihin sa akin ang panahon." (autopilot)
+- "Alamin kung paano ko ipapadala ang aking upa sa pamamagitan ng aking wallet app para magawa mo itong muli." (kasanayan)
+- "I-undo ang ginawa mo sa folder ng proyekto." (timeline)
+- "Nasaan ang aking kontrata sa pag-upa?" (utak)
+- "Mag-install ng mga pakete ng python at patakbuhin ang script na ito." (Linux)
+- "I-publish ang site na ito para maibahagi ko ito." (pampublikong link)
+
+## Mga gawi na nakakatulong
+- Mahaba ang maikli at malinaw na beats. Pinipili ng ahente ang mga default at sasabihin sa iyo kung ano ang pinili nito.
+- Kapag nagtanong ito ng isang tanong, sagutin ito at magpapatuloy ito mula sa parehong lugar.
+- Sabihin ang "ipaliwanag" o "buod" para sa isang detalyadong sagot; kung hindi ay maikli ang mga sagot.
+- Maaari mong pag-usapan ito anumang oras. Huminto ito at nakinig.
+- Gamitin ang Build mode para sa paggawa ng mga bagay at Agent mode para sa paggawa ng mga bagay sa telepono.

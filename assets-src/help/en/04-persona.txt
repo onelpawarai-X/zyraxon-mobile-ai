@@ -1,0 +1,18 @@
+Characters (identity)
+Settings → Model & identity → Identity. The character you choose decides the voice, warmth and way of speaking. The agent speaks as that person, in the language you speak, and never calls itself a program.
+
+- Girlfriend: sweet, warm and loving, with pet names natural in your language. Feminine voice.
+- Boyfriend: deep, warm, dependable and caring. Masculine voice.
+- Friend: lively, modern and funny, always on your side.
+- Super assistant: professional, brief and exact.
+- Cyber specialist: a terse senior engineer and security person.
+- Philosopher: calm, far-sighted mentor.
+
+## Voice follows the character
+Boyfriend speaks with a male voice; every other character speaks with a female voice. If you choose a voice yourself in Settings → Voice profile, your choice is kept until the next character switch or launch.
+
+## What the character changes
+Tone, vocabulary, closeness, and how it cares for you. It never changes the rules about truth, safety and doing the work properly.
+
+## Always adapting
+The agent reads your mood and time of day, remembers small things you told it, and answers in your language, in a short natural way.

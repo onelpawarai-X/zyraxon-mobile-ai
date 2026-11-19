@@ -1,0 +1,35 @@
+Sauti: kuzungumza, kusikiliza na mazungumzo ya moja kwa moja
+## Kusikiliza (kipaza sauti)
+Mipangilio → Sauti na maikrofoni → Maikrofoni na lugha.
+- Lugha ya utambuzi wa usemi: lugha unayozungumza kwenye maikrofoni. Badilisha wakati wowote.
+- Washa maikrofoni (usikilize kila wakati): ikiwa imewashwa, maikrofoni hubaki wazi. Ukizima, unaiwasha mwenyewe.
+- Tuma kiotomatiki unapoacha kuzungumza: baada ya takriban sekunde 1.5 za ukimya sentensi yako inatumwa yenyewe. Wakati imezimwa, maneno hungoja kwenye kisanduku ili ubonyeze Tuma.
+- Kitufe cha maikrofoni katika upau wa ujumbe na bango lililo juu hufanya vivyo hivyo kuwasha/kuzima.
+- Maikrofoni iko wazi kwako kila wakati, hata wakati ZYRAXON anazungumza. Mara tu unapoanza kuzungumza, huacha na kusikiliza, kisha kukujibu. Sauti yake yenyewe inayorudi kupitia maikrofoni inachujwa kwa kulinganisha maandishi na jibu lake la mwisho.
+- Sentensi inatumwa mara moja tu. Ikiwa kitambuaji baadaye kinarudia toleo tofauti kidogo la sentensi ile ile, hutupwa kama zamu sawa.
+
+## Kuzungumza (maandishi-kwa-hotuba)
+Mipangilio → Sauti na maikrofoni → Wasifu wa sauti.
+- Chagua sauti: kike (tamu na kimapenzi) au kiume (kina na ujasiri). Sauti za tovuti hutumika zikiwa tayari; injini ya usemi ya simu ndiyo njia mbadala.
+- Vitelezi vya kasi na lami, na "Sauti ya majaribio".
+- "Soma majibu kwa sauti" swichi zinazoongea au kuzima.
+- Ikiwa simu haina injini ya kutamka, sakinisha Google Huduma za Matamshi. Ikiwa simu haina data ya sauti ya Kibengali, kitufe hukuwezesha kuipakua.
+- Gusa bango la kuongea ili kusimamisha sauti. Gusa Sikiliza chini ya ujumbe wowote ili kuusikia.
+- ZYRAXON kamwe hasomi msimbo, viungo, JSON au majina ya zana kwa sauti.
+
+## Maabara ya sauti (kibadilisha sauti)
+Chagua kutoka kwenye orodha ya seva kulingana na jinsia (wote, msichana, mvulana), umri (mtoto, kijana, mtu mzima, mwandamizi), na lugha (Kibengali, Kihindi, Kiingereza, Kiurdu, Kiarabu, Kitamil, Kinepali, Kihispania, Kifaransa, Kijerumani, Kijapani, Kikorea, Kichina, Kirusi, Kituruki…). "Sikiliza" hakiki sauti; "Rudi kwa chaguo-msingi" hurejesha sauti ya mhusika. Kwa sauti yenye sauti nyingi muulize wakala: kila sehemu ya mazungumzo inapata sauti yake.
+
+## Sauti ya moja kwa moja (hotuba-kwa-hotuba)
+Mipangilio → Sauti na maikrofoni → Sauti ya moja kwa moja. Ukiwa na muundo wa wakati halisi (Gemini Moja kwa Moja, OpenAI Wakati halisi na sawia) mtindo huu husikia maikrofoni na kujibu kwa sauti yake yenyewe, katika mtiririko mmoja, na unaweza kuikatiza katikati ya neno. Hotuba ya simu yenyewe imezimwa katika kipindi hiki ili usiwahi kusikia sauti mbili.
+- Tumia sauti ya mfano mwenyewe: on = mazungumzo ya moja kwa moja; off = simu inasoma majibu ya maandishi.
+- Hali inaonyesha: kuunganisha, kusikiliza, kuzungumza, kusubiri.
+- Kuchukua muundo wa wakati halisi huwasha peke yake.
+- Ikiwa hakuna muundo wa wakati halisi uliopakiwa, ongeza kitufe cha Gemini au OpenAI katika watoa huduma wa AI.
+- Sauti uliyochagua kwenye wasifu wa sauti inatumika pia katika hali ya moja kwa moja.
+
+## Jicho linaloelea
+Mipangilio → Aura na mandhari → Aura na mandharinyuma.
+- Obi ndogo inayoelea ambayo hukaa juu ya kila programu nyingine. Gusa ili kuwasha au kuzima maikrofoni; bonyeza kwa muda mrefu ili kufungua kisanduku cha maandishi na kuifunga tena.
+- Miundo minane: jicho, orb ya mwanga, pete ya neon, galaksi, obiti, plasma, pulsar, prism. Uwekaji wa ukingo wa skrini.
+- Amri za sauti (wake maneno): wakati programu iko chinichini, kusema jina huamsha jicho linaloelea na majibu ZYRAXON. Chaguomsingi: "zyraxon", "hey zyraxon" na tahajia za kawaida katika Kibengali na Kiingereza. Ongeza maneno yako mwenyewe katika lugha yoyote; waondoe wakati wowote.

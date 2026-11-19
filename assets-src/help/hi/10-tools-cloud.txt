@@ -1,0 +1,21 @@
+क्लाउड, नेटवर्क, मॉडल और सहायक
+## क्लाउड और इंटरनेट
+- `web_search` (नेटवर्क): असली वेब खोजें। `read_url` (नेटवर्क): पेज को पाठ के रूप में लाएँ। `http_request` (नेटवर्क): हेडर और बॉडी के साथ कोई भी HTTP कॉल (GET, POST, PUT, PATCH, DELETE)। `verify_url` (नेटवर्क): जाँचें कि लिंक सचमुच मौजूद है और असली स्थिति पाएँ। `download_file` (Personal, नेटवर्क): URL को फ़ाइल में डाउनलोड करें।
+- एजेंट लिंक तभी खोलता है जब आप कहें।
+- AI मॉडल आपके जोड़े प्रदाताओं के ज़रिए क्लाउड में चलते हैं (ZYRAXON, ZYRAXON Apex क्लाउड एजेंट, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode)। मॉडल सूची लाइव लोड होती है और हर प्रदाता के जवाब देते ही भरती जाती है।
+- बिल्ड, पब्लिशिंग और pull request GitHub और Cloudflare के ज़रिए चलते हैं (`publish_*`, `github_actions`, `github_pr`, `git`)।
+- "on-device only" (Automation सेटिंग्स) चालू करें तो कोई क्लाउड कॉल नहीं होती: कोई प्रदाता नहीं, कोई वेब नहीं, कोई अपलोड नहीं।
+
+## MCP सर्वर
+MCP बाहरी सेवाओं को एजेंट को अतिरिक्त टूल देने देता है। Canva, Cloudflare, Supabase, GitHub या अपना सर्वर उसके पते (वैकल्पिक टोकन) से जोड़ें। जुड़े सर्वरों के टूल `server__tool` के रूप में एजेंट की टूल सूची में जुड़ जाते हैं।
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (देखें क्या जुड़ा है और कौन से टूल हैं), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (किसी संसाधन में बदलाव पर नज़र), `mcp_complete` (तर्कों का ऑटोकम्प्लीट), `mcp_ping`, `mcp_log_level`। इनकी कॉल नेटवर्क कॉल हैं, और अज्ञात MCP टूल डिफ़ॉल्ट रूप से अनुमति माँगते हैं।
+- MCP स्क्रीन हर सर्वर को Connected स्थिति, उसके टूल, संसाधन और प्रॉम्प्ट टेम्पलेट के साथ, और Add, Disconnect, Remove, Allow बटनों के साथ सूचीबद्ध करती है।
+
+## सब-एजेंट
+`sub_agent` (System): बड़े काम के हिस्से पृष्ठभूमि में चल रहे सहायक एजेंटों को सौंपें। क्रियाएँ: spawn, status, list, result, message, stop, wait। हर एक अपना मॉडल इस्तेमाल कर सकता है। "हो गया" कहने से पहले एजेंट उनके नतीजे जोड़ता और जाँचता है।
+
+## ऑन-डिवाइस मॉडल
+`on_device_model` (System): फ़ोन पर रहने वाला भाषा मॉडल सूचीबद्ध करें, लोड करें और चलाएँ, बिना इंटरनेट के। सेटिंग्स → Model & identity → On-device में आप मॉडल डाउनलोड करते हैं (छोटे से बड़े: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); Hugging Face टोकन वैकल्पिक है और केवल प्रतिबंधित फ़ाइलों के लिए चाहिए। लोड किया मॉडल याद रखा जाता है और ऐप खुलने पर फिर लोड होता है।
+
+## मैसेजिंग चैनल
+`channel_post` (System) आपका पाठ तैयार रखकर Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail या SMS खोलता है। भेजना आप खुद दबाते हैं।

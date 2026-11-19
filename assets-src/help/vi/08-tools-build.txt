@@ -1,0 +1,21 @@
+Xây dựng: trang web, ứng dụng, xem trước và xuất bản
+## Cách hỏi
+- "Làm cho tôi một trang đích cho quán cà phê của tôi." Tác nhân xây dựng nó ngay lập tức, khởi động nó trên điện thoại của bạn và mở nó trong Bản xem trước. Bạn nhận được 2-3 dòng mô tả nó. Không có gì được công bố trừ khi bạn yêu cầu.
+- "Xây dựng ứng dụng việc cần làm." Được xây dựng trực tiếp với ngăn xếp hợp lý, chạy và hiển thị. Phần cuối, cơ sở dữ liệu hoặc chỉ đăng nhập nếu bạn yêu cầu.
+- "Xây dựng một ứng dụng đầy đủ." Trước tiên, nhân viên sẽ hỏi một câu hỏi ngắn về ngôn ngữ back-end, cơ sở dữ liệu, thông tin đăng nhập và nơi nó chạy, với các giá trị mặc định được đề xuất, sau đó xây dựng tất cả câu hỏi đó bằng dữ liệu gốc và kiểm tra một luồng đầy đủ.
+- "Tạo một chương trình Windows/Linux/macOS/Android." Nguồn được viết, quy trình xây dựng được thêm vào, nó được đẩy và xây dựng trên đám mây với GitHub Hành động và bạn sẽ nhận được liên kết tải xuống thực sự.
+
+## Công cụ
+- `edit_file` và `write_file`: ghi các tệp thực (mã hoàn chỉnh, không bao giờ sơ khai). `code_box` chiếu trực tiếp chúng.
+- `preview` (An toàn): trình duyệt thực được tích hợp sẵn. Hành động: mở (một liên kết, `localhost:PORT` hoặc một tệp), tải lại, quay lại, chuyển tiếp, ảnh chụp màn hình, cuộn, nhấp chuột, nhập, đọc văn bản trang, lỗi bảng điều khiển, eval. Tác nhân xem xét công việc của chính mình trước khi nói rằng nó đã hoàn thành.
+- `serve_local` (Hệ thống): khởi động máy chủ web trên điện thoại cho một thư mục và trả về địa chỉ LAN mà các thiết bị khác trên Wi-Fi của bạn có thể mở.
+- `publish_website` (Hệ thống): phục vụ một trang web trên cổng công cộng từ điện thoại. `publish_cloudflare` (Hệ thống): đưa một trang web lên internet mà không cần tài khoản thông qua đường hầm Cloudflare và trả về liên kết https công khai. `publish_github` (Hệ thống): xuất bản dự án lên kho lưu trữ GitHub (Trang) bằng mã thông báo của bạn.
+- `git` (Hệ thống): sao chép, init, trạng thái, thêm, cam kết, đẩy, kéo, phân nhánh, kiểm tra, ghi nhật ký, tìm khác biệt với mã thông báo đã lưu của bạn. `github_pr` (Hệ thống): tạo, liệt kê, hợp nhất và nhận xét về các yêu cầu kéo. `github_actions` (Hệ thống): liệt kê các quy trình làm việc, chạy chúng, chạy thăm dò ý kiến ​​và đọc nhật ký, để các bản dựng chạy trên đám mây từ điện thoại.
+- `build_app` (System): xây dựng dự án này bằng Gradle trên điện thoại và cài đặt kết quả.
+- `files_panel`, `todo_write`: trình duyệt file và bảng tác vụ.
+
+## Quy tắc chất lượng mà đại lý tuân theo
+Bố cục hoàn chỉnh, thiết kế đáp ứng, JavaScript hoạt động, hoạt ảnh, màu sắc và phông chữ nhất quán (tối và sáng ở nơi phù hợp), không phải là một mẫu chung. Một trang đích thường dài 300–900 dòng; những điều lớn lao hơn nữa.
+
+## Nếu có thứ gì đó trông như bị hỏng
+Nhấn Fix trong Preview hoặc thông báo cho nhân viên hỗ trợ. Nó đọc bảng điều khiển, khắc phục nguyên nhân, mở lại trang và kiểm tra lại.

@@ -1,0 +1,42 @@
+Bawat screen ng mga setting, isa-isa
+Ang mga setting ay may walong seksyon. Ang bawat seksyon ay may mga tabletas para sa mga sub-screen nito. Ang huling seksyong ginamit mo ay muling bubuksan sa susunod.
+
+## 1. Wika at pagsasalin → Wika ng app at tool
+Piliin ang wika ng buong app at ng mga tool message ng ahente. Hanapin ang listahan at i-tap ang isa. Ipinapakita ng screen ang kasalukuyang wika at kung naka-on ang pagsasalin sa UI at tool-message. 60 wika ang magagamit. Tingnan ang kabanata ng Wika.
+
+## 2. Boses at mikropono
+- Profile ng boses: pumili ng boses na babae o lalaki, bilis, pitch, "Basahin ang mga sagot nang malakas", Subukan ang boses, ang hint sa pag-download ng boses ng Bengali.
+- Mic at wika: wika ng pagkilala, panatilihing naka-on ang mikropono, awtomatikong ipadala kapag huminto ka sa pagsasalita.
+- Live na boses: speech-to-speech on/off, status, ang listahan ng mga realtime na modelo.
+
+## 3. Mga Provider at API
+- Mga tagapagbigay ng AI: ang iyong sariling mga API key (ZYRAXON, OpenCode libreng quota, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) at ang ZYRAXON Apex cloud agent. Ang isang naka-save na susi ay na-verify sa pamamagitan ng pagbabasa ng tunay na katalogo ng provider at ipinapakita ang bilang ng modelo o ang eksaktong error. Binubuksan ng isang button ang ZYRAXON website kung saan ka gumagawa ng key.
+- GitHub: ang iyong GitHub token sa pag-access (nangangailangan ng saklaw ng repo) para sa pag-publish, Git mga kahilingan sa push at pull. I-save ang token o tanggalin ito; ang katayuan ay nagpapakita kung ito ay nakatakda.
+
+## 4. Mga Update → Pag-update ng app
+Ipinapakita ang kasalukuyang bersyon, tumitingin ng mas bagong release, dina-download ito gamit ang progress bar at i-install ito. Mananatili ang iyong mga chat, memorya at mga setting. Kung kailangan ng Android ng pahintulot na mag-install, magbubukas ang isang button sa setting na iyon.
+
+## 5. Modelo at pagkakakilanlan
+- Pagkakakilanlan: piliin ang karakter (tingnan ang kabanata ng Mga Karakter).
+- Modelo: ang live na katalogo ng modelo na may box para sa paghahanap, "Lahat ng modelo" at "Custom" na mga filter; mabilis na mga modelo muna.
+- On-device: i-download, i-load at i-unload ang mga modelong tumatakbo offline; pinagsunod-sunod mula sa maliit hanggang sa malaki; opsyonal Hugging Face token; nagpapakita ng mga estado na na-load, naglo-load at nabigo.
+
+## 6. Aura at tema
+- Tema: Horror, Dark o Light.
+- Aura at background: ang istilo at kulay ng aura (dugo, pink, violet, langit, berde, apoy) na may kontrol ng pinong kulay; laki ng aura, lakas ng glow, bilis ng pag-ikot, transparency ng panel; ang lumulutang na mata (on/off, disenyo, screen edge, voice command/wake words, idagdag ang sarili mo); shader mode; custom na background URL (mp4, gif o larawan); bilis ng animation.
+
+## 7. Seguridad at privacy
+- Lock ng app: isang password (4–8 digit) o ​​isang pattern na 3×3 tuldok; kumpirmahin sa pamamagitan ng pagpasok nito ng dalawang beses; tanggalin ang lock.
+- Mga Pahintulot: ang listahan sa kabanata ng Mga Pahintulot, sa tulong ng Play Protect.
+- Privacy at data: nananatili ang lahat ng data sa telepono. Mga Pindutan: tanggalin ang lahat ng memorya, tanggalin ang kasaysayan ng chat, tanggalin ang GitHub token.
+
+## 8. Sistema
+Ang seksyong ito ay may sariling hilera ng mga pindutan na nag-ii-scroll patagilid, kaya walang pinipiga.
+- Automation: antas ng pag-apruba at on-device lamang (tingnan ang Mga antas ng pag-apruba).
+- Navigation: isang listahan ng mga lugar na pupuntahan — "walang mga button sa itaas, narito na ang lahat" — kabilang ang ⌘ ZX system shell, isang "Bagong session" na button (binubura ang kasaysayan ng chat para sa malinis na pagsisimula), bilang ng mensahe at ang mic toggle.
+- Memorya: ang lokal na SQL memorya na may mga katotohanan ZYRAXON ay naaalala; magdagdag ng susi at halaga; tanggalin lahat.
+- Gabay sa kasanayan: isang mabilis na listahan ng mga halimbawang kakayahan (mga app sa pagmemensahe, pagbuo ng website, screen reader, tanglaw, camera, Wi-Fi at mga setting) na may mga halimbawang parirala.
+- Automation hub: mga kasanayan, autopilot, pera, timeline, utak at ang call agent sa isang lugar (tingnan ang Automation hub).
+
+## 9. Dokumentasyon
+Ang sarili nitong seksyon sa Mga Setting, hiwalay sa System. Ang gabay na ito: dalawampu't isang kabanata, isang box para sa paghahanap, at isang hilera ng chip ng wika. Ang bawat wika sa app ay nakasulat na nang buo sa loob ng app — walang isinasalin sa iyong telepono at walang internet na kailangan para basahin ito.

@@ -1,0 +1,11 @@
+Prente, oudio, video, dokumente en ontwerp
+- `generate_image` (netwerk): maak 'n prent uit 'n beskrywing (skryf dit met detail; Engels werk die beste). Dit verskyn in die klets met deelknoppies. Vir verskeie, vra vir verskeie.
+- `generate_audio` (netwerk): gesproke oudio (.mp3) van enige teks. Vir 'n dialoog of storie, gee elke deel sy eie stem (geslag, ouderdom, taal, toon). Baie tale, insluitend Bengaals, Hindi en Engels.
+- `generate_video`: 'n regte geredigeerde video (nie KI-materiaal nie) van tonele - beelde, snitte, teks, kleur, vertelling, onderskrifte, musiek. `ffmpeg`: enige direkte wysiging - sny, sluit aan, oorlê, onderskrifte, spoed, klankmengsel, omskep. 5–10 minute video's is moontlik, stap vir stap gebou.
+- Vordering wys regstreeks as 'n persentasie in die klets; wanneer klaar is, kom die lêer met Speel en Deel knoppies.
+- `make_document`: 'n regte Word (.docx), Excel (.xlsx) of PowerPoint (.pptx) lêer op die foon, geen installasie nodig nie, enige taal. `office_template`: gereed kantoorpapiere met spasies om te vul (los aansoek, werksaansoek, faktuur, CV, besigheidsvoorstel, kwotasie, kennisgewing, vergaderingnotule, kontrak, maandelikse rekeninge en meer).
+- Dokument vanaf 'n foto: heg 'n foto aan (Dok.skandering). Die teks word presies gekopieer soos geskryf (onduidelike woorde word gemerk), 'n tabel word .xlsx, anders .docx.
+- Vergaderingsnotas: van oudio, 'n transkripsie of wat jy sê. Die dokument het 'n opsomming, besluite, aksie-items (taak, eienaar, sperdatum) en 'n gereed e-pos konsep.
+- `make_design`: plakkate, baniere, logo's, kaarte, stories, omslae as PNG en PDF. `brand_kit`: gee 'n logo of kleure; hulle word gestoor, die toepassingstema verander, en van toe af gebruik dokumente, skyfies en werwe jou handelsmerkkleure.
+- `present_slides`: die karakter praat terwyl skyfiekaarte wys; skyfies verander vanself wanneer die stem klaar is. Vra vir 'n .pptx-lêer as jy 'n lêer wil hê.
+- `open_file`: maak oop wat gemaak is in die foon se regte toepassing (Word/Dokumente, Blaaie, Skyfies, PDF, gallery, blaaier) of in die Voorskou-paneel; die agent gaan die skerm na om seker te maak dit is oop.

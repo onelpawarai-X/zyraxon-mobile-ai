@@ -1,0 +1,27 @@
+Wenke en voorbeeldversoeke
+## Sê wat jy wil, nie hoe nie
+- "Maak 'n bestemmingsblad vir 'n gimnasium, donker en vet."
+- "Build a full-stack booking app with a database." (die agent vra eers die tegniese keuses)
+- "Maak YouTube oop en speel 'n kalm liedjie."
+- "Blaai af en maak die eerste resultaat oop."
+- "Wat is my battery en Wi-Fi?"
+- "Lees my nuutste SMS en vertel my die kode."
+- "Bel Ma." / "Beantwoord die oproep."
+- "Maak 'n CV van hierdie foto." (heg dit aan)
+- "Verander hierdie vergaderingopname in notas met aksiepunte."
+- "Maak 'n plakkaat vir Vrydag se geleentheid met hierdie kleure."
+- "Maak 'n klankdialoog tussen twee vriende, een seun en een meisie."
+- "Onthou dat my sussie 3 Mei verjaar."
+- "Vertel my elke oggend om 8 die weer." (autopilot)
+- "Learn how I send my rent by my wallet app so you can do it again." (vaardigheid)
+- "Ontdoen wat jy in die projeklêer gedoen het." (tydlyn)
+- "Waar is my huurkontrak?" (brein)
+- "Installeer python-pakkette en voer hierdie skrip uit." (Linux)
+- "Publiseer hierdie webwerf sodat ek dit kan deel." (openbare skakel)
+
+## Gewoontes wat help
+- Kort en duidelike slae lank. The agent chooses defaults and tells you what it chose.
+- Wanneer dit een vraag vra, beantwoord dit en dit gaan voort vanaf dieselfde plek.
+- Say "explain" or "summary" for a detailed answer; anders is antwoorde kort.
+- Jy kan enige tyd daaroor praat. Dit stop en luister.
+- Gebruik Bou-modus om dinge te maak en Agent-modus om dinge op die foon te doen.

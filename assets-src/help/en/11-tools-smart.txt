@@ -1,0 +1,45 @@
+Skills, autopilot, money, timeline and undo, brain, call agent and memory
+You use all of these by talking: say what you want and the agent calls the right tool. Every action is listed here with its options.
+
+## Skills — teach by doing
+A skill is a phone task the agent learned by watching you do it once. It stores how to find each element again (its id, words and neighbours, not its screen position), so it keeps working when the app's layout changes.
+- Add a skill: `skill_record` (Personal). Say "learn this as <name>". `action: start` (with a name) begins recording; then do the task — open the app, tap, type, press keys; every step is recorded. `action: stop` saves it. At stop you can pass `params` to turn typed values into parameters (for example the phone number becomes `number`, the amount becomes `amount`) and a `description`. `action: status` tells you whether recording is on.
+- Run a skill: `skill_run` (Personal). Give `args` for its parameters, e.g. number and amount. It replays in a fraction of the steps and heals itself when the app changes. If one step fails, the result says which step and what is on the screen, and the agent finishes the rest by hand.
+- List skills: `skill_list` (Safe) shows name, parameters, steps and how often each ran. With a name and export on it makes a shareable `.zxskill` file.
+- Share and load: `skill_import` (Personal) loads a `.zxskill` file from a download or a shared file as a skill.
+- Delete a skill: `skill_delete` (System).
+- Example: "Learn how I send 500 to Rahim by my wallet app" → you do it once → "Send 700 to Karim" next time.
+
+## Autopilot — "when X happens, do Y"
+A rule wakes the agent by itself and it does the task without asking you.
+- Add: `autopilot_add` (System). Kinds: sms, notification, call, daily, once, interval, battery, app. Fill only the fields the rule needs: `from` (sender name or number or app title), `any` (at least one of these words), `all` (every word), `none` (none of these words), `time` "HH:MM" (daily), `in_minutes` or `at_ms` (once), `every_minutes` (interval), `below` (battery percent), `pkg` (app package or name, for app and notification rules). The agent turns your sentence into these fields. The result lists any permission still needed (SMS, notification access…), and the agent asks you to switch it on.
+- Examples: "When a payment SMS arrives from my wallet app, add it to my ledger." "Every morning at 8, tell me the weather." "In 20 minutes, remind me to take the bread out." "Every 30 minutes, drink-water reminder." "When battery goes below 15%, tell me." "When someone calls me, log the number." "When I open the banking app, remind me to check the budget."
+- List: `autopilot_list` (Safe) shows every rule with its next run time and how often it has fired.
+- Pause or resume: `autopilot_toggle` (System). Delete: `autopilot_remove` (System), by id or title.
+- When a rule fires you get a message that says so, and the agent just does the job.
+
+## Money ledger (personal CFO)
+- `ledger_scan` (Personal): read wallet and bank SMS into a private ledger: income, spending, fees, balance and category. `days` says how far back (default 30). With `auto` on, every new money SMS is added by itself and you are warned when a budget is passed. Works for any country's wallet and bank messages, in any currency.
+- `ledger_report` (Personal): period today, yesterday, week, month or all. Format text (a ready spoken summary) or xlsx (an Excel file with transactions and category totals, opened for you).
+- `ledger_budget` (Personal): set a monthly budget for a category (food, bills, transport, shopping, mobile recharge, transfers…); a limit of 0 removes it; with no arguments it lists budgets and current warnings.
+- The agent never invents money numbers; it reads them from the ledger.
+
+## Timeline and undo
+- Everything the agent does is written to the timeline (the last 400 actions). File changes keep a copy of what was there before.
+- `timeline_list` (Safe): what the agent did recently, with an id for each, and which changes can be undone.
+- `timeline_undo` (Personal): `id` undoes one write, edit or delete — the file comes back exactly as it was (a file that did not exist is removed again). `since_id` undoes everything from that id onward, newest first. Use it when you say "take that back" or "put it back like before".
+- Undo covers file writes, edits and deletes. A command that ran (for example installing something or sending a message) cannot be undone this way.
+- Chat messages: to remove a whole conversation use the pencil and cross in the left menu, or Settings → Privacy & data → Delete chat history, or Navigation → New session.
+
+## Brain — second memory for your files
+- `brain_index` (Safe): build or refresh the offline index over folders or files (text, Markdown, CSV, Word, Excel, PowerPoint) and optionally the SMS inbox (`sms` on). Run it before the first search and after new files appear. The default is your workspace.
+- `brain_search` (Safe): ask in your own words, "where is my rent contract?" — it works offline in any language. `kind` is file or sms; `days` limits to recent items. Open a found file with `open_file`.
+
+## Call agent
+- `call_agent` (Personal): action on, off or status. `owner` is the name it says ("I am <owner>'s assistant"). `answer_after_seconds` (default 6) lets you pick up first. When a call comes and you cannot answer, it greets in the caller's language, asks the name and the reason, answers simple questions, hangs up politely and tells you a summary.
+- `call_log` (Safe): summaries of calls it answered, newest first.
+- Needs the call and phone-state permissions.
+
+## Memory
+- `memory_write`, `memory_read`, `memory_delete` (Safe): lasting facts about you (name, preferences, people, dates, projects) live in a local database and survive restarts. Say "remember this" and it is written in the same turn; if something is wrong, it is removed or rewritten. Every old conversation is kept too, and past turns that match what you say come back by themselves, even months later.
+- See and change it all in Settings → System → Memory (key, value, save, delete all).

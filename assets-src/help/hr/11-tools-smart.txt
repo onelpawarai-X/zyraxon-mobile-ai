@@ -1,0 +1,45 @@
+Vještine, autopilot, novac, vremenska linija i poništavanje, mozak, pozivni agent i pamćenje
+Sve to koristite razgovorom: recite što želite i agent zove pravi alat. Ovdje je navedena svaka akcija sa svojim opcijama.
+
+## Vještine — podučavajte radeći
+Vještina je telefonski zadatak koji je agent naučio gledajući vas kako ga jednom radite. Pohranjuje kako ponovno pronaći svaki element (njegov ID, riječi i susjede, a ne njegovu poziciju na zaslonu), tako da nastavlja raditi kada se izgled aplikacije promijeni.
+- Dodajte vještinu: `skill_record` (Osobno). Recite "nauči ovo kao <ime>". `action: start` (s imenom) počinje snimanje; zatim izvršite zadatak — otvorite aplikaciju, dodirnite, tipkajte, pritisnite tipke; svaki korak se bilježi. `action: stop` ga sprema. Na zaustavljanju možete proslijediti `params` da pretvorite upisane vrijednosti u parametre (na primjer, telefonski broj postaje `number`, iznos postaje `amount`) i `description`. `action: status` vam govori da li je snimanje uključeno.
+- Pokrenite vještinu: `skill_run` (Osobno). Dajte `args` za njegove parametre, npr. broj i iznos. Ponavlja se u djeliću koraka i sam se iscjeljuje kada se aplikacija promijeni. Ako jedan korak ne uspije, rezultat govori koji korak i što je na ekranu, a agent dovršava ostatak rukom.
+- Popis vještina: `skill_list` (Sigurno) prikazuje naziv, parametre, korake i koliko se često svaki izvodi. S imenom i izvozom čini `.zxskill` datoteku koja se može dijeliti.
+- Dijeli i učitaj: `skill_import` (Osobno) učitava `.zxskill` datoteku iz preuzimanja ili dijeljenu datoteku kao vještinu.
+- Brisanje vještine: `skill_delete` (Sustav).
+- Primjer: "Naučite kako šaljem 500 Rahimu putem svoje aplikacije za novčanik" → učinite to jednom → "Pošaljite 700 Karimu" sljedeći put.
+
+## Autopilot — "kada se dogodi X, učini Y"
+Pravilo samo probudi agenta i on izvrši zadatak bez pitanja.
+- Dodajte: `autopilot_add` (Sustav). Vrste: sms, obavijest, poziv, dnevno, jednom, interval, baterija, aplikacija. Ispunite samo polja koja pravilo treba: `from` (ime ili broj pošiljatelja ili naslov aplikacije), `any` (barem jedna od ovih riječi), `all` (svaka riječ), `none` (nijedna od ovih riječi), `time` "HH:MM" (dnevno), `in_minutes` ili `at_ms` (jednom), `every_minutes` (interval), `below` (postotak baterije), `pkg` (paket ili naziv aplikacije, za pravila aplikacije i obavijesti). Agent pretvara vašu rečenicu u ova polja. Rezultat navodi sva dopuštenja koja su još potrebna (SMS, pristup obavijestima...), a agent od vas traži da ih uključite.
+- Primjeri: "Kada SMS za plaćanje stigne iz moje aplikacije novčanika, dodaj ga u moju knjigu." "Svako jutro u 8, reci mi vrijeme." "Za 20 minuta podsjeti me da izvadim kruh." "Svakih 30 minuta, podsjetnik za piće." "Kada baterija padne ispod 15%, reci mi." "Kad me netko nazove, zabilježi broj." "Kad otvorim bankovnu aplikaciju, podsjeti me da provjerim proračun."
+- Popis: `autopilot_list` (Sigurno) prikazuje svako pravilo sa sljedećim vremenom izvođenja i koliko često se aktiviralo.
+- Pauziraj ili nastavi: `autopilot_toggle` (Sustav). Izbriši: `autopilot_remove` (Sustav), prema ID-u ili naslovu.
+- Kada se aktivira pravilo, dobivate poruku koja to kaže, a agent samo obavlja posao.
+
+## Knjiga novca (osobni financijski direktor)
+- `ledger_scan` (Osobno): čitanje novčanika i bankovnih SMS-ova u privatnoj knjizi: prihod, potrošnja, naknade, stanje i kategorija. `days` govori koliko unatrag (zadano 30). Kada je `auto` uključen, svaki novi novčani SMS dodaje se sam od sebe i dobivate upozorenje kada se proračun usvoji. Radi za novčanik i bankovne poruke bilo koje zemlje, u bilo kojoj valuti.
+- `ledger_report` (Osobno): mjesečnica danas, jučer, tjedan, mjesec ili sve. Formatirajte tekst (gotovi izgovoreni sažetak) ili xlsx (Excel datoteka s ukupnim iznosom transakcija i kategorija, otvorena za vas).
+- `ledger_budget` (Osobno): postavite mjesečni proračun za kategoriju (hrana, računi, prijevoz, kupovina, dopuna mobilnog telefona, transferi…); ograničenje od 0 ga uklanja; bez argumenata navodi proračune i trenutna upozorenja.
+- Agent nikada ne izmišlja novčane brojeve; čita ih iz glavne knjige.
+
+## Vremenska traka i poništavanje
+- Sve što agent radi zapisuje se na vremensku traku (zadnjih 400 akcija). Promjene datoteka čuvaju kopiju onoga što je bilo prije.
+- `timeline_list` (Sigurno): što je agent nedavno učinio, s ID-om za svakog i koje se promjene mogu poništiti.
+- `timeline_undo` (Osobno): `id` poništava jedno pisanje, uređivanje ili brisanje — datoteka se vraća točno kakva je bila (datoteka koja nije postojala ponovno se uklanja). `since_id` poništava sve od tog ID-a nadalje, prvo najnovije. Koristite ga kada kažete "uzmi to natrag" ili "vrati to kao prije".
+- Undo pokriva pisanje, uređivanje i brisanje datoteka. Naredba koja je pokrenuta (na primjer instaliranje nečega ili slanje poruke) ne može se poništiti na ovaj način.
+- Poruke chata: za uklanjanje cijelog razgovora koristite olovku i križić u lijevom izborniku ili Postavke → Privatnost i podaci → Izbriši povijest razgovora ili Navigacija → Nova sesija.
+
+## Mozak — druga memorija za vaše datoteke
+- `brain_index` (Sigurno): izgradite ili osvježite izvanmrežni indeks nad mapama ili datotekama (tekst, Markdown, CSV, Word, Excel, PowerPoint) i po izboru SMS inbox (`sms` uključen). Pokrenite ga prije prve pretrage i nakon pojave novih datoteka. Zadani je vaš radni prostor.
+- `brain_search` (Sigurno): pitajte svojim riječima, "gdje je moj ugovor o najmu?" — radi offline na bilo kojem jeziku. `kind` je datoteka ili sms; `days` ograničenja na nedavne stavke. Otvorite pronađenu datoteku pomoću `open_file`.
+
+## Nazovi agenta
+- `call_agent` (Osobno): radnja uključena, isključena ili status. `owner` je ime koje piše ("Ja sam <vlasnikov> pomoćnik"). `answer_after_seconds` (zadano 6) omogućuje vam da prvi podignete. Kada stigne poziv i ne možete odgovoriti, pozdravlja vas na jeziku pozivatelja, pita za ime i razlog, odgovara na jednostavna pitanja, pristojno prekida i govori vam sažetak.
+- `call_log` (Sigurno): sažeci poziva na koje je odgovoreno, prvo najnoviji.
+- Potrebna su dopuštenja za poziv i stanje telefona.
+
+## Memorija
+- `memory_write`, `memory_read`, `memory_delete` (Sigurno): trajne činjenice o vama (ime, postavke, ljudi, datumi, projekti) žive u lokalnoj bazi podataka i preživljavaju ponovno pokretanje. Recite "zapamti ovo" i to će biti napisano u istom redu; ako nešto nije u redu, to se uklanja ili prepisuje. Svaki stari razgovor također se čuva, a prošli obrati koji odgovaraju onome što kažete vraćaju se sami, čak i mjesecima kasnije.
+- Pogledajte i promijenite sve u Postavkama → Sustav → Memorija (ključ, vrijednost, spremanje, brisanje svega).

@@ -1,0 +1,11 @@
+Obrázky, zvuk, video, dokumenty a design
+- `generate_image` (síť): udělejte obrázek z popisu (napište jej s podrobnostmi; nejlépe funguje angličtina). Zobrazí se v chatu pomocí tlačítek pro sdílení. Pro několik, požádejte o několik.
+- `generate_audio` (síť): mluvený zvuk (.mp3) z libovolného textu. U dialogu nebo příběhu dejte každé části svůj vlastní hlas (pohlaví, věk, jazyk, tón). Mnoho jazyků, včetně bengálštiny, hindštiny a angličtiny.
+- `generate_video`: skutečné upravené video (ne AI záběry) ze scén – obrázky, klipy, text, barva, vyprávění, titulky, hudba. `ffmpeg`: libovolná přímá úprava — vystřihnout, spojit, překrýt, titulky, rychlost, mix zvuku, převést. Jsou možná 5–10minutová videa sestavená krok za krokem.
+- Průběh ukazuje živě v procentech v chatu; po dokončení se soubor zobrazí s tlačítky Přehrát a Sdílet.
+- `make_document`: skutečný soubor Word (.docx), Excel (.xlsx) nebo PowerPoint (.pptx) v telefonu, není potřeba žádná instalace, jakýkoli jazyk. `office_template`: připravené kancelářské papíry s mezerami k vyplnění (žádost o dovolenou, žádost o zaměstnání, faktura, životopis, obchodní návrh, nabídka, oznámení, zápis z jednání, smlouva, měsíční účty a další).
+- Dokument z fotografie: připojte fotografii (skenování dokumentu). Text se zkopíruje přesně tak, jak je napsán (nejasná slova jsou označena), z tabulky se stane .xlsx, jinak .docx.
+- Poznámky ze schůzky: ze zvuku, přepisu nebo toho, co říkáte. Dokument obsahuje shrnutí, rozhodnutí, akční položky (úkol, vlastník, datum splatnosti) a připravený e-mailový koncept.
+- `make_design`: plakáty, bannery, loga, karty, příběhy, obaly jako PNG a PDF. `brand_kit`: uveďte logo nebo barvy; uloží se, změní se motiv aplikace a od té doby dokumenty, snímky a weby používají barvy vaší značky.
+- `present_slides`: postava mluví, zatímco se zobrazují karty; snímky se po skončení hlasu samy změní. Pokud chcete soubor, požádejte o soubor .pptx.
+- `open_file`: otevře to, co bylo vytvořeno ve skutečné aplikaci telefonu (Word/Dokumenty, Tabulky, Prezentace, PDF, galerie, prohlížeč) nebo na panelu Náhled; agent zkontroluje obrazovku, aby se ujistil, že se otevřela.

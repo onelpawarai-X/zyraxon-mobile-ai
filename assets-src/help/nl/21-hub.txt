@@ -1,0 +1,20 @@
+Automatiseringshub
+Instellingen → Systeem → Automatiseringshub. Elke knop voor wat ZYRAXON zelf kan doen, bevindt zich op één plek, in zes tabbladen. Elk tabblad begint met een korte uitleg over hoe het werkt.
+
+## Vaardigheden
+Leer ZYRAXON een taak op twee manieren: vertel het in de chat ("leer deze taak"), of druk op de opnameknop en voer de taak zelf uit in een andere app, kom dan terug en druk op Stop. De dienst Toegankelijkheid moet zijn ingeschakeld, anders zijn uw tikken niet zichtbaar. Wat het heeft geleerd, verschijnt onder 'Aangeleerde vaardigheden' en kan opnieuw worden afgespeeld of verwijderd.
+
+## Automatische piloot
+Regels van het soort ‘als dit gebeurt, doe dat’. Wanneer de gebeurtenis plaatsvindt, wordt ZYRAXON vanzelf wakker en doet het werk zonder te vragen. Je kunt ook een regel maken door deze in de chat te zeggen. Elke regel laat zien hoe vaak deze is uitgevoerd.
+
+## Geld
+Leest de sms van elke bank of portemonnee in elk land (PayPal, M-Pesa, UPI, Pix, bKash, kaarten…) en houdt één grootboek bij van inkomsten, uitgaven, kosten en saldo. U kunt een budget instellen en een waarschuwing krijgen als u dit haalt. Het werkt op de telefoon en er wordt niets verzonden.
+
+## Tijdlijn
+Alles wat ZYRAXON deed, staat hier geschreven. Het schrijven, bewerken en verwijderen van bestanden kan met één knop ongedaan worden gemaakt. Een uitgevoerde opdracht kan niet ongedaan worden gemaakt.
+
+## Brein
+Zoekt uw bestanden (tekst, Word, Excel, PowerPoint, CSV) en, als u dit toestaat, uw sms, zonder internet en in elke taal. Druk eerst op "Index" en zoek vervolgens.
+
+## Bel agent
+Als u de oproep niet kunt beantwoorden, neemt ZYRAXON op, spreekt in de eigen taal van de beller, leert de naam en de reden, en geeft u een samenvatting wanneer de oproep eindigt. Vijftien talen gebruiken snelle ingebouwde regels; elke andere taal wordt afgehandeld door het model, dat antwoordt in de taal van de beller. Woorden die tot ziens, dringend of spam betekenen, worden in alle talen tegelijk begrepen. Op het tabblad vindt u samenvattingen van ontvangen oproepen.

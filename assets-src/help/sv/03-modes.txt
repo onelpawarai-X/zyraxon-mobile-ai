@@ -1,0 +1,14 @@
+Lägen: Agent och Build
+Det finns två lägen, valda med lägesknappen bredvid meddelanderutan. Valet kvarstår tills du ändrar det. Live röst är inte ett tredje läge; det är ett sätt att tala som du kan slå på i Inställningar (se kapitlet Röst).
+
+## Ombud
+"Fullautomatisering av telefonen och systemet." Allt är öppet: läsa och köra telefonens skärm, öppna appar, samtal, meddelanden, kamera, filer, terminalen och Linux, Git, förhandsgranskning, media, underagenter, MCP servrar, färdigheter, autopilot med mera. Välj Agent när du vill ha något gjort på din telefon eller bara vill prata.
+
+## Bygga
+"Appar i full stack, webbplatser och automatisering." Agenten är en byggmotor: från en kort linje gör den det hela, kör det, tittar på det och visar det för dig. Den har filer, terminal, Git, förhandsgranskning, publicering, media, minne och att göra-kortet. Telefonkontroll, underagenter och enhetslås tillhör agentläget; om du behöver dem i Build, byt.
+- Målsida eller webbplats: säg vad den är till för. Agenten bygger den på en gång, startar den på din telefon och öppnar den i förhandsgranskningspanelen och berättar sedan vad den gjorde. Den publiceras inte om du inte frågar.
+- App: säg vad du vill och den bygger appen som du frågar. En backend, databas eller inloggning läggs bara till om du ber om det.
+- Full-stack: när du ber om en backend eller databas, ställer agenten dig först en kort fråga om valen (språk, databas, inloggning, var den körs), med dess rekommendation och bygger efter att du har svarat.
+
+## Vad "fråga" betyder
+När agenten verkligen behöver ditt beslut gör den allt annat först, ställer en kort fråga med sin rekommendation och väntar. Ditt svar fortsätter arbetet där det slutade.

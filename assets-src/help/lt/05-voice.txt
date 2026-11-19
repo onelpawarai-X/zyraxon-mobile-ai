@@ -1,0 +1,35 @@
+Balsas: kalbėjimas, klausymasis ir gyvas pokalbis
+## Klausymas (mikrofonas)
+Nustatymai → Balsas ir mikrofonas → Mikrofonas ir kalba.
+- Kalbos atpažinimo kalba: kalba, kuria kalbate į mikrofoną. Pakeiskite bet kada.
+- Laikykite įjungtą mikrofoną (visada klausykite): kai įjungtas, mikrofonas lieka atidarytas. Kai išjungiate, įjungiate jį patys.
+- Automatinis siuntimas nustojus kalbėti: po maždaug 1,5 sekundės tylos jūsų sakinys išsiunčiamas savaime. Kai išjungta, laukelyje esantys žodžiai laukia, kol paspausite Siųsti.
+- Mikrofono mygtukas pranešimų juostoje ir reklamjuostė viršuje atlieka tą patį įjungimą / išjungimą.
+- Mikrofonas visada atviras jums, net kai ZYRAXON kalba. Kai tik pradedi kalbėti, jis sustoja ir įsiklauso, tada tau atsako. Jo paties balsas, grįžtantis per mikrofoną, išfiltruojamas lyginant tekstą su paskutiniu atsakymu.
+- Sakinys siunčiamas tik vieną kartą. Jei atpažinėjas vėliau pakartoja šiek tiek kitokią to paties sakinio versiją, jis atmetamas kaip tas pats posūkis.
+
+## Kalbėjimas (tekstas į kalbą)
+Nustatymai → Balsas ir mikrofonas → Balso profilis.
+- Pasirinkite balsą: moterišką (mielas ir romantiškas) arba vyrišką (gilus ir pasitikintis savimi). Kai paruošta, naudojami pačios svetainės balsai; paties telefono kalbos variklis yra atsarginis variantas.
+- Greičio ir aukščio slankikliai bei „Bandymo balsas“.
+- „Skaityti atsakymus garsiai“ įjungia arba išjungia kalbėjimą.
+- Jei telefone nėra kalbos variklio, įdiekite Google kalbos paslaugas. Jei telefone nėra bengalų balso duomenų, mygtukas leidžia juos atsisiųsti.
+- Bakstelėkite kalbančią reklamjuostę, kad sustabdytumėte balsą. Bakstelėkite Klausyti po bet kuriuo pranešimu, kad jį išgirstumėte.
+- ZYRAXON niekada garsiai neskaito kodo, nuorodų, JSON ar įrankių pavadinimų.
+
+## Balso laboratorija (balso keitiklis)
+Pasirinkite iš serverio katalogo pagal lytį (visi, mergaitė, berniukas), amžių (vaikas, paauglys, suaugęs, vyresnis) ir kalbą (bengalų, hindi, anglų, urdu, arabų, tamilų, nepaliečių, ispanų, prancūzų, vokiečių, japonų, korėjiečių, kinų, rusų, turkų ir kt.). „Klausyti“ peržiūri balsą; „Atgal į numatytuosius“ atkuria veikėjo balsą. Dėl garso su daugybe balsų paklauskite agento: kiekviena dialogo dalis turi savo balsą.
+
+## Tiesioginis balsas (iš kalbos į kalbą)
+Nustatymai → Balsas ir mikrofonas → Tiesioginis balsas. Naudojant realaus laiko modelį (Gemini Tiesiogiai, OpenAI Realiuoju laiku ir panašiai) modelis girdi mikrofoną ir atsako savo balsu, vienu srautu, o jūs galite jį pertraukti įpusėjus žodį. Šio seanso metu telefono kalba yra išjungta, todėl niekada negirdėsite dviejų balsų.
+- Naudokite modelio balsą: įjungta = tiesioginis pokalbis; išjungta = telefonas skaito tekstinius atsakymus.
+- Būsena rodo: jungiasi, klausosi, kalba, laukia.
+- Pasirinkus realaus laiko modelį, jis įsijungia pats.
+- Jei realaus laiko modelis neįkeltas, AI teikėjuose pridėkite Gemini arba OpenAI raktą.
+- Balsas, kurį pasirinkote balso profilyje, taip pat naudojamas tiesioginiame režime.
+
+## Plaukiojanti akis
+Nustatymai → Aura ir tema → Aura ir fonas.
+- Mažas plaukiojantis rutulys, kuris sėdi virš visų kitų programų. Bakstelėkite, kad įjungtumėte arba išjungtumėte mikrofoną; ilgai paspauskite, kad atidarytumėte teksto laukelį ir vėl jį uždarytumėte.
+- Aštuoni dizainai: akis, švytinti rutulys, neoninis žiedas, galaktika, orbita, plazma, pulsaras, prizmė. Ekrano krašto išdėstymas.
+- Balso komandos (pažadinimo žodžiai): kai programa veikia fone, ištarus pavadinimą pažadinama plūduriuojanti akis ir atsakoma ZYRAXON. Numatytieji nustatymai: „zyraxon“, „hey zyraxon“ ir įprasta rašyba bengalų ir anglų kalbomis. Pridėkite savo žodžius bet kuria kalba; bet kada juos pašalinkite.

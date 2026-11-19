@@ -1,0 +1,15 @@
+Udbydere, modeller og nøgler
+## Udbydere
+ZYRAXON (egen linje og Apex cloud-agenten, altid forbundet), OpenCode (gratis kvote), Groq (meget hurtig Llama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek og OpenRouter. Tilføj enhver nøgle i Indstillinger → Udbydere og API. Nøglen gemmes på din telefon, kontrolleres i forhold til udbyderens katalog, og modellerne strømmer ind i vælgeren, efterhånden som hver udbyder svarer.
+
+## Valg af model
+Brug modelknappen i meddelelseslinjen eller Indstillinger → Model & identitet → Model. Søg efter navn, filtrer Alle eller Brugerdefineret. Dit valg gemmes og gendannes ved lanceringen; en opdatering erstatter aldrig din gemte model. Modeller mærket Live kan tale med deres egen stemme (se Live stemme).
+
+## Modeller på enheden
+Indstillinger → Model og identitet → På enheden. Modellen kører på telefonen uden data, der forlader den. Filerne er store (hundreder af MB til nogle få GB), så download på Wi-Fi. De er anført små til store; på en telefon med lidt RAM skal du vælge den letteste. Værktøjsopkald understøttes af pakkerne Gemma og FunctionGemma. Et Hugging Face token er kun for gatede filer. Ladede modeller huskes.
+
+## ZYRAXON hjemmesiden
+zyraxonai.lovable.app: opret en konto (e-mail eller Google), åbn Indstillinger, API-nøgle / adgangstoken, opret en nøgle og indsæt den i appen. Uden en nøgle kan du stadig bruge appen med modeller på enheden og lokale værktøjer.
+
+## Omkostninger og data
+Cloud-udbydere fakturerer dig efter deres egne regler. Når "Kun på enheden" er slået til, sendes der intet til nogen udbyder.

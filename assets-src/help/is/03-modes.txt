@@ -1,0 +1,14 @@
+Stillingar: Agent og Build
+Það eru tvær stillingar, valdir með hamhnappinum við hliðina á skilaboðareitnum. Valið helst þar til þú breytir því. Lifandi rödd er ekki þriðji háttur; það er talmáti sem þú getur kveikt á í Stillingar (sjá kaflann Rödd).
+
+## Umboðsmaður
+"Full sjálfvirkni símans og kerfisins." Allt er opið: að lesa og keyra skjá símans, opna öpp, símtöl, skilaboð, myndavél, skrár, flugstöðina og Linux, Git, forskoðun, miðlar, undirfulltrúar, MCP netþjónar, færni, sjálfstýring og fleira. Veldu Agent þegar þú vilt að eitthvað sé gert í símanum þínum eða vilt einfaldlega tala.
+
+## Byggja
+„Fullstafla öpp, vefsíður og sjálfvirkni.“ Umboðsmaðurinn er smíðavél: úr stuttri línu gerir hann allt, keyrir það, lítur á það og sýnir þér það. Það hefur skrár, terminal, Git, forskoðun, útgáfu, miðla, minni og verkefnatöflu. Símastýring, undirumboðsmenn og tækjalás tilheyra Agent ham; ef þú þarft þá í Build skaltu skipta.
+- Áfangasíða eða vefsíða: segðu til hvers það er. Umboðsmaðurinn smíðar það í einu, ræsir það í símanum þínum og opnar það á Preview spjaldið og segir þér síðan hvað það gerði. Það er ekki birt nema þú spyrð.
+- App: segðu það sem þú vilt og það byggir appið eins og spurt er. Bakenda, gagnagrunni eða innskráningu er aðeins bætt við ef þú biður um það.
+- Full-stack: þegar þú biður um bakhlið eða gagnagrunn spyr umboðsmaðurinn þig fyrst einnar stuttrar spurningar um valið (tungumál, gagnagrunnur, innskráning, hvar hann keyrir), með tilmælum sínum og smíðar eftir að þú hefur svarað.
+
+## Hvað þýðir "spyrja".
+Þegar umboðsmaðurinn þarf virkilega á ákvörðun þinni að halda gerir hann allt annað fyrst, spyr einnar stuttrar spurningar með tilmælum sínum og bíður. Svar þitt heldur vinnunni áfram þar sem það hætti.

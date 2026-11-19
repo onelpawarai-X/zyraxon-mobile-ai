@@ -1,0 +1,27 @@
+Patarimai ir pavyzdiniai prašymai
+## Sakyk ką nori, o ne kaip
+- „Sukurkite sporto salės nukreipimo puslapį, tamsų ir drąsų“.
+- „Sukurkite pilną rezervavimo programą su duomenų baze“. (agentas pirmiausia klausia techninių pasirinkimų)
+- „Atidarykite YouTube ir paleiskite ramią dainą.
+- "Slinkite žemyn ir atidarykite pirmąjį rezultatą."
+- "What is my battery and Wi-Fi?"
+- "Perskaitykite mano naujausią SMS žinutę ir pasakykite man kodą."
+- „Paskambink mamai“. / "Atsiliepk į skambutį".
+- „Padarykite CV iš šios nuotraukos“. (pridėkite)
+- „Paverskite šį susitikimo įrašą pastabomis su veiksmų elementais“.
+- „Sukurkite plakatą penktadienio renginiui su šiomis spalvomis“.
+- „Sukurkite garso dialogą tarp dviejų draugų, vieno berniuko ir vienos mergaitės“.
+- „Atminkite, kad mano sesers gimtadienis yra gegužės 3 d.
+- „Kiekvieną rytą 8 valandą pasakyk man orą“. (autopilotas)
+- „Sužinokite, kaip išsiųsiu nuomą naudodamas piniginės programą, kad galėtumėte tai padaryti dar kartą“. (įgūdis)
+- „Anuliuoti tai, ką padarėte projekto aplanke“. (laiko juosta)
+- "Kur yra mano nuomos sutartis?" (smegenys)
+- "Įdiekite python paketus ir paleiskite šį scenarijų." (Linux)
+- "Paskelbkite šią svetainę, kad galėčiau ja pasidalinti." (vieša nuoroda)
+
+## Įpročiai, kurie padeda
+- Trumpi ir aiškūs ritmai ilgai. Agentas pasirenka numatytuosius nustatymus ir pasako, ką pasirinko.
+- Kai jis užduoda vieną klausimą, atsakykite į jį ir jis tęsiasi iš tos pačios vietos.
+- Norėdami gauti išsamų atsakymą, pasakykite „paaiškink“ arba „santrauka“; kitaip atsakymai trumpi.
+- Galite bet kada apie tai pasikalbėti. Sustoja ir klausosi.
+- Naudokite kūrimo režimą, kad galėtumėte kurti dalykus, o agento režimą - atlikti veiksmus telefonu.

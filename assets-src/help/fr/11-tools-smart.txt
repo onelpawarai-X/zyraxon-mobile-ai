@@ -1,0 +1,45 @@
+Skills, autopilot, argent, chronologie et annulation, brain, agent d'appels et mémoire
+Vous utilisez tout cela en parlant : dites ce que vous voulez et l'agent appelle le bon outil. Chaque action est listée ici avec ses options.
+
+## Skills — apprendre en faisant
+Un skill est une tâche du téléphone que l'agent a apprise en vous regardant la faire une fois. Il mémorise comment retrouver chaque élément (son id, ses mots et ses voisins, pas sa position à l'écran), donc il continue de fonctionner quand la mise en page de l'application change.
+- Ajouter un skill : `skill_record` (Personal). Dites « apprends ceci sous le nom <nom> ». `action: start` (avec un nom) lance l'enregistrement ; faites ensuite la tâche — ouvrez l'application, touchez, tapez, appuyez sur des touches ; chaque étape est enregistrée. `action: stop` l'enregistre. À l'arrêt vous pouvez passer `params` pour transformer les valeurs saisies en paramètres (par exemple le numéro de téléphone devient `number`, le montant devient `amount`) et une `description`. `action: status` indique si l'enregistrement est actif.
+- Exécuter un skill : `skill_run` (Personal). Donnez `args` pour ses paramètres, par ex. number et amount. Il rejoue en une fraction des étapes et se répare tout seul quand l'application change. Si une étape échoue, le résultat dit laquelle et ce qui est à l'écran, et l'agent termine le reste à la main.
+- Lister les skills : `skill_list` (Safe) montre le nom, les paramètres, les étapes et le nombre d'exécutions de chacun. Avec un nom et export activé, il crée un fichier `.zxskill` partageable.
+- Partager et charger : `skill_import` (Personal) charge comme skill un fichier `.zxskill` issu d'un téléchargement ou d'un fichier partagé.
+- Supprimer un skill : `skill_delete` (System).
+- Exemple : « Apprends comment j'envoie 500 à Rahim avec mon application de portefeuille » → vous le faites une fois → « Envoie 700 à Karim » la fois suivante.
+
+## Autopilot — « quand X arrive, fais Y »
+Une règle réveille l'agent toute seule et il fait la tâche sans vous demander.
+- Ajouter : `autopilot_add` (System). Types : sms, notification, call, daily, once, interval, battery, app. Ne remplissez que les champs dont la règle a besoin : `from` (nom ou numéro de l'expéditeur ou titre de l'application), `any` (au moins un de ces mots), `all` (chaque mot), `none` (aucun de ces mots), `time` « HH:MM » (daily), `in_minutes` ou `at_ms` (once), `every_minutes` (interval), `below` (pourcentage de batterie), `pkg` (paquet ou nom de l'application, pour les règles app et notification). L'agent transforme votre phrase en ces champs. Le résultat liste toute autorisation encore nécessaire (SMS, accès aux notifications…), et l'agent vous demande de l'activer.
+- Exemples : « Quand un SMS de paiement arrive de mon application de portefeuille, ajoute-le à mon registre. » « Chaque matin à 8 h, donne-moi la météo. » « Dans 20 minutes, rappelle-moi de sortir le pain. » « Toutes les 30 minutes, rappel de boire de l'eau. » « Quand la batterie passe sous 15 %, préviens-moi. » « Quand quelqu'un m'appelle, note le numéro. » « Quand j'ouvre l'application de ma banque, rappelle-moi de vérifier le budget. »
+- Lister : `autopilot_list` (Safe) montre chaque règle avec sa prochaine exécution et le nombre de fois où elle s'est déclenchée.
+- Mettre en pause ou reprendre : `autopilot_toggle` (System). Supprimer : `autopilot_remove` (System), par id ou titre.
+- Quand une règle se déclenche, vous recevez un message qui le dit, et l'agent fait simplement le travail.
+
+## Registre d'argent (directeur financier personnel)
+- `ledger_scan` (Personal) : lit les SMS de portefeuille et de banque dans un registre privé : revenus, dépenses, frais, solde et catégorie. `days` indique jusqu'où remonter (30 par défaut). Avec `auto` activé, chaque nouveau SMS d'argent est ajouté tout seul et vous êtes averti quand un budget est dépassé. Fonctionne avec les messages de portefeuilles et de banques de n'importe quel pays, dans n'importe quelle devise.
+- `ledger_report` (Personal) : période today, yesterday, week, month ou all. Format text (un résumé parlé prêt) ou xlsx (un fichier Excel avec les transactions et les totaux par catégorie, ouvert pour vous).
+- `ledger_budget` (Personal) : fixe un budget mensuel pour une catégorie (nourriture, factures, transport, achats, recharge mobile, virements…) ; une limite de 0 le supprime ; sans arguments il liste les budgets et les alertes en cours.
+- L'agent n'invente jamais de chiffres d'argent ; il les lit dans le registre.
+
+## Chronologie et annulation
+- Tout ce que fait l'agent est écrit dans la chronologie (les 400 dernières actions). Les modifications de fichiers conservent une copie de ce qui existait avant.
+- `timeline_list` (Safe) : ce que l'agent a fait récemment, avec un id pour chaque action, et quels changements peuvent être annulés.
+- `timeline_undo` (Personal) : `id` annule une écriture, une modification ou une suppression — le fichier revient exactement tel qu'il était (un fichier qui n'existait pas est de nouveau supprimé). `since_id` annule tout à partir de cet id, du plus récent au plus ancien. Utilisez-le quand vous dites « annule ça » ou « remets comme avant ».
+- L'annulation couvre les écritures, modifications et suppressions de fichiers. Une commande exécutée (par exemple installer quelque chose ou envoyer un message) ne peut pas être annulée ainsi.
+- Messages de discussion : pour supprimer toute une conversation, utilisez le crayon et la croix du menu de gauche, ou Réglages → Privacy & data → Delete chat history, ou Navigation → New session.
+
+## Brain — seconde mémoire pour vos fichiers
+- `brain_index` (Safe) : construit ou actualise l'index hors ligne sur des dossiers ou fichiers (texte, Markdown, CSV, Word, Excel, PowerPoint) et facultativement la boîte SMS (`sms` activé). Lancez-le avant la première recherche et après l'apparition de nouveaux fichiers. Par défaut, c'est votre espace de travail.
+- `brain_search` (Safe) : demandez avec vos propres mots, « où est mon contrat de location ? » — cela fonctionne hors ligne dans n'importe quelle langue. `kind` vaut file ou sms ; `days` limite aux éléments récents. Ouvrez un fichier trouvé avec `open_file`.
+
+## Agent d'appels
+- `call_agent` (Personal) : action on, off ou status. `owner` est le nom qu'il prononce (« Je suis l'assistant de <owner> »). `answer_after_seconds` (6 par défaut) vous laisse décrocher d'abord. Quand un appel arrive et que vous ne pouvez pas répondre, il salue dans la langue de l'appelant, demande le nom et le motif, répond aux questions simples, raccroche poliment et vous donne un résumé.
+- `call_log` (Safe) : résumés des appels qu'il a pris, du plus récent au plus ancien.
+- Nécessite les autorisations d'appel et d'état du téléphone.
+
+## Mémoire
+- `memory_write`, `memory_read`, `memory_delete` (Safe) : des faits durables sur vous (nom, préférences, personnes, dates, projets) vivent dans une base de données locale et survivent aux redémarrages. Dites « retiens ça » et c'est écrit dans le même tour ; si quelque chose est faux, il est supprimé ou réécrit. Chaque ancienne conversation est aussi conservée, et les tours passés qui correspondent à ce que vous dites reviennent d'eux-mêmes, même des mois plus tard.
+- Voyez et modifiez tout dans Réglages → System → Memory (key, value, save, delete all).

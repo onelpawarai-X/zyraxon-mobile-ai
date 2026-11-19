@@ -1,0 +1,6 @@
+{
+  "name": "ZYRAXON",
+  "description": "ভার্সন ৩.০.০ — রিয়েল টাইম SSE, মিডিয়া ভিশন, লাইভ অরা মাইক, টুডু/টুল/ফাইল প্যানেল ও রিয়েল ডিভাইস কন্ট্রোল",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

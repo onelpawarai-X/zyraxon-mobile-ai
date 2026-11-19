@@ -1,0 +1,20 @@
+Automaatiokeskus
+Asetukset → Järjestelmä → Automaatiokeskitin. Jokainen painike, jonka ZYRAXON voi tehdä itse, on yhdessä paikassa, kuudessa välilehdessä. Jokainen välilehti alkaa lyhyellä selityksellä sen toiminnasta.
+
+## Taidot
+Opeta ZYRAXON tehtävä kahdella tavalla: kerro se chatissa ("opeta tämä tehtävä") tai paina tallennuspainiketta ja suorita tehtävä itse toisessa sovelluksessa, palaa sitten takaisin ja paina Stop. Esteettömyyspalvelun on oltava päällä tai hanat eivät näy. Oppitut tiedot näkyvät kohdassa "Oppitut taidot", ja ne voidaan toistaa uudelleen tai poistaa.
+
+## Autopilotti
+Säännöt, kuten "kun näin tapahtuu, tee niin". Tapahtuman tapahtuessa ZYRAXON herää itsestään ja tekee työn kysymättä. Voit myös luoda säännön sanomalla sen chatissa. Jokainen sääntö näyttää, kuinka monta kertaa se on suoritettu.
+
+## Rahaa
+Lukee tekstiviestit mistä tahansa pankista tai lompakosta missä tahansa maassa (PayPal, M-Pesa, UPI, Pix, bKash, kortit…) ja pitää yhtä tulo-, meno-, maksu- ja saldokirjaa. Voit määrittää budjetin ja saada varoituksen, kun ohitat sen. Puhelimessa toimii, eikä mitään lähetetä minnekään.
+
+## Aikajana
+Kaikki, mitä ZYRAXON teki, on kirjoitettu tähän. Tiedostojen kirjoitus, muokkaus ja poisto voidaan kumota yhdellä painikkeella. Ajettua komentoa ei voi kumota.
+
+## Aivot
+Hakee tiedostoistasi (teksti, Word, Excel, PowerPoint, CSV) ja, jos sallit, tekstiviestistäsi ilman Internetiä ja millä tahansa kielellä. Paina ensin "Hakemisto" ja etsi sitten.
+
+## Soita agentille
+Kun et voi vastata puheluun, ZYRAXON vastaa, puhuu soittajan omalla kielellä, oppii nimen ja syyn sekä antaa yhteenvedon puhelun päättyessä. Viisitoista kieltä käyttävät nopeita sisäänrakennettuja sääntöjä; kaikki muut kielet käsittelee malli, joka vastaa soittajan kielellä. Sanat, jotka tarkoittavat hyvästit, kiireellistä tai roskapostia, ymmärretään kaikilla kielillä kerralla. Yhteenvedot kiinni jääneistä puheluista on lueteltu välilehdessä.

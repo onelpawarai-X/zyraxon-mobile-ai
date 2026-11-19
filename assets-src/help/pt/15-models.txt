@@ -1,0 +1,15 @@
+Provedores, modelos e chaves
+## Provedores
+ZYRAXON (linha própria e agente de nuvem Apex, sempre conectado), OpenCode (cota gratuita), Groq (Llama muito rápido), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek e OpenRouter. Adicione qualquer chave em Configurações → Provedores e API. A chave é salva em seu telefone, verificada no catálogo do provedor e os modelos são transmitidos para o seletor conforme cada provedor atende.
+
+## Escolhendo um modelo
+Use o botão de modelo na barra de mensagens ou Configurações → Modelo e identidade → Modelo. Pesquise por nome, filtre Tudo ou Personalizado. Sua escolha é salva e restaurada na inicialização; uma atualização nunca substitui seu modelo salvo. Os modelos marcados como Live podem falar com sua própria voz (consulte Voz ao vivo).
+
+## Modelos no dispositivo
+Configurações → Modelo e identidade → No dispositivo. O modelo funciona no telefone sem deixar dados. Os arquivos são grandes (centenas de MB a alguns GB), então baixe em Wi-Fi. Eles estão listados de pequeno a grande porte; em um telefone com pouca RAM escolha o mais leve. A chamada de ferramenta é suportada pelos pacotes Gemma e FunctionGemma. Um token Hugging Face é apenas para arquivos bloqueados. Os modelos carregados são lembrados.
+
+## O site ZYRAXON
+zyraxonai.lovable.app: crie uma conta (e-mail ou Google), abra Configurações, Chave API / Token de acesso, crie uma chave e cole no aplicativo. Sem uma chave, você ainda pode usar o aplicativo com modelos no dispositivo e ferramentas locais.
+
+## Custos e dados
+Os provedores de nuvem cobram de você de acordo com suas próprias regras. Com "Somente no dispositivo" ativado, nada é enviado a nenhum provedor.

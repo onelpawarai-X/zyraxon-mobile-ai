@@ -1,0 +1,27 @@
+Permissões, uma por uma
+Configurações → Segurança e privacidade → Permissões. Cada linha mostra "Concedido" ou um botão. Tocar em uma linha abre a caixa de diálogo do sistema; basta pressionar Permitir. O agente também pode abrir a caixa de diálogo com `request_permission`.
+
+- Microfone: para que ZYRAXON possa ouvir você. Sem ele não há entrada de voz.
+- Câmera: para tirar e ver fotos (`look_camera`, digitalização de documentos, "o que você vê").
+- Localização: para mapas e informações locais.
+- Notificações: para avisar quando o trabalho em segundo plano terminar.
+- Arquivos e mídia: para ler fotos, vídeos, áudio e documentos.
+- Overlay (desenhar sobre outros aplicativos): necessário para o olho flutuante.
+- Acessibilidade: permite que o agente leia a tela e toque, deslize e digite para você. Este é o coração da automação telefônica. Você o ativa nas configurações de acessibilidade do sistema.
+- Otimização da bateria: impede que Android coloque ZYRAXON em suspensão enquanto funciona em segundo plano.
+
+## Outras permissões que o aplicativo declara
+- SMS (ler e receber): para leitura de códigos, do livro-razão e das regras do piloto automático de SMS.
+- Estado do telefone, atender chamadas, ligar para o telefone, contatos: para ferramentas de chamada e agente de chamada.
+- Acesso a notificações: permite que o piloto automático reaja às notificações.
+- Administrador do dispositivo: permite que `device_lock` realmente bloqueie a tela.
+- Instalar pacotes: permite atualizações e `build_app` instalar APKs; Android pede para você permitir ZYRAXON como fonte de instalação.
+- Serviços em primeiro plano (microfone, sincronização de dados) e wake lock: mantenham vivos os trabalhos de voz e longos.
+- Estado da Internet e da rede: a nuvem e a web.
+- Shizuku (opcional): acesso em nível de sistema para shell e terminal.
+
+## Google Play Protect
+Se Play Protect bloquear um trabalho, o agente pode abrir a página certa, olhar para a tela real e percorrer passo a passo a engrenagem e o botão de alternância - mas ele pergunta primeiro, porque desligar a proteção é sua decisão. Para fazer você mesmo: Play Store → foto do perfil → Play Protect → configurações → desative "Verificar aplicativos com Play Protect". A página possui um botão que abre Play Store.
+
+## Por que uma permissão é importante
+Se uma ferramenta falhar por falta de permissão, o agente informará qual delas e abrirá sua caixa de diálogo. Nada sensível funciona sem o seu Permitir explícito.

@@ -1,0 +1,14 @@
+Rješavanje problema
+- Nema odgovora: provjerite svoj internet i API ključ (Postavke → Providers & API pokazuju stvarnu pogrešku). Pokušajte s drugim modelom ili modelom na uređaju.
+- Mikrofon ne radi ništa: dopustite dozvolu mikrofona; označite "Drži mikrofon uključen"; provjerite jezik prepoznavanja.
+- ZYRAXON čuje sam sebe: ovo je filtrirano prema tekstu; ako se i dalje događa, smanjite glasnoću ili koristite slušalice.
+- Rečenica se pojavljuje dvaput: fiksno u trenutnim verzijama; ažurirati aplikaciju.
+- Neće dodirivati ​​niti čitati zaslon: uključite uslugu pristupačnosti (Postavke → Dopuštenja).
+- Zaustavlja se u pozadini: dopustite obavijesti i izuzeće optimizacije baterije; sloj za plutajuće oko.
+- Alat stalno traži dopuštenje: promijenite razinu u Postavkama → Automatizacija ili odgovorite na karticu.
+- Play Protect nešto blokira: pogledajte poglavlje Dozvole ili prepustite agentu da vodi korake.
+- Terminal ili Linux se ne pokreću: pričekajte prvo raspakiranje pri pokretanju aplikacije; provjerite slobodan prostor za pohranu.
+- Ažuriranje se neće instalirati: dopustite ZYRAXON kao izvor instalacije.
+- Nije moguće objaviti: dodajte GitHub token za GitHub; za javnu vezu agent može koristiti tunel.
+- Poglavlje prikazuje engleski: to poglavlje nema tekst na vašem jeziku u ovoj verziji; ažurirati aplikaciju.
+- Nešto čudno: koristite Postavke → Navigacija → Nova sesija za početak čiste (briše samo povijest razgovora; memorija ostaje).

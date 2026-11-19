@@ -1,0 +1,23 @@
+Mức độ phê duyệt và an toàn của tự động hóa
+Cài đặt → Hệ thống → Tự động hóa. Điều này quyết định số lượng đại lý có thể làm trước khi dừng lại và hỏi bạn. Cài đặt được thực thi bằng mã trên mỗi lệnh gọi công cụ; một mô hình không thể mở rộng nó.
+
+## Bốn cấp độ
+Thay đổi cấp độ trong Cài đặt → Hệ thống → Tự động hóa. Mỗi cấp độ quyết định thời điểm tổng đài viên dừng và hỏi cũng như mức độ nghiêm ngặt của Lá chắn nội dung (xem Bảo mật và quyền riêng tư) xử lý văn bản mà tổng đài viên đọc từ bên ngoài.
+1. Hỏi đầy đủ (Đã khóa): hỏi trước bất cứ điều gì làm thay đổi điện thoại, dù nhỏ. An toàn nhất. Lá chắn nội dung rất nghiêm ngặt: mọi văn bản đáng ngờ đều được coi là thù địch. Sử dụng nó trên điện thoại dùng chung hoặc trong khi bạn đang thử nghiệm một cái gì đó mới.
+2. Được giám sát (mặc định): hỏi trước các hành động của hệ thống và cá nhân và tự thực hiện các công việc thông thường (đọc, mở, tìm kiếm, xây dựng). Lá chắn nội dung là tiêu chuẩn: văn bản đáng ngờ được rào lại dưới dạng dữ liệu và khi văn bản rõ ràng có tính thù địch, mọi công cụ thay đổi sẽ yêu cầu bạn thực hiện phần còn lại của lượt đó.
+3. Cân bằng: chỉ hỏi trước các hành động ở cấp hệ thống (shell, xóa, xuất bản, lên lịch…). Các hành động cá nhân như tin nhắn, nhấn và gõ chỉ chạy một mình. Lá chắn nội dung rất nhẹ: nó chỉ hoạt động trên văn bản thù địch rõ ràng và sau đó chỉ các công cụ cấp hệ thống mới dừng lại để hỏi.
+4. Tự động hóa hoàn toàn: không bao giờ hỏi và không bao giờ dừng lại. Mọi thứ diễn ra xuyên suốt và Tấm chắn nội dung bị tắt hoàn toàn — không có gì được quét, đánh dấu, xóa hoặc thay đổi. Đây là tự động hóa theo đúng nghĩa: bạn phải chịu rủi ro.
+
+## Ba tầng công cụ
+- An toàn (không bao giờ hỏi ở bất kỳ cấp độ nào): đọc và liệt kê các tập tin, bộ nhớ, tài liệu, thiết kế, trạng thái, mở ứng dụng và tập tin, chờ đợi, kỹ năng/lái tự động/dòng thời gian/danh sách cuộc gọi, tìm kiếm não.
+- Cá nhân (được hỏi ở hai cấp độ đầu tiên): SMS, cuộc gọi, máy ảnh, đọc màn hình, chạm và gõ, khay nhớ tạm, tải xuống, thông báo, chia sẻ, thay đổi giọng nói, phát lại kỹ năng, sổ cái tiền, đại lý cuộc gọi, hoàn tác dòng thời gian.
+- Hệ thống (được hỏi ở mọi cấp độ ngoại trừ Tự động hóa hoàn toàn): shell, Linux, xây dựng, xuất bản, xóa, khóa thiết bị, lập lịch, Git và GitHub, ffmpeg, mô hình trên thiết bị, đăng lên kênh, quy tắc lái tự động, kỹ năng xóa, Shizuku. Bất kỳ công cụ nào mà ứng dụng không nhận ra — bao gồm cả công cụ MCP — đều được coi là System.
+
+## Thẻ phê duyệt
+Khi một công cụ cần bạn phê duyệt, thẻ có nội dung "Cần có quyền", cho bạn biết tác nhân muốn làm gì, hiển thị cấp độ của nó (An toàn, Cá nhân hoặc Hệ thống) và đưa ra "Có, chạy nó" hoặc "Không, tắt nó đi". Thẻ cũng nhắc nhở bạn rằng bạn có thể thay đổi tần suất yêu cầu này trong Cài đặt → Tự động hóa.
+
+## Chỉ trên thiết bị
+Khi bật, không có gì rời khỏi điện thoại: chỉ có kiểu máy trên thiết bị và các công cụ cục bộ chạy. Tất cả các công cụ mạng (tìm kiếm, tìm nạp, tải lên, xuất bản, GitHub, tạo phương tiện, MCP, mô hình đám mây) đều bị từ chối trong mã.
+
+## Thông báo ra mắt lần đầu
+Lần đầu tiên, ZYRAXON giải thích rằng nhân viên có thể hành động trên điện thoại của bạn và nơi bật quyền. Nhấn "Đã hiểu, bắt đầu".

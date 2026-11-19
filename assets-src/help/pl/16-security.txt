@@ -1,0 +1,11 @@
+Bezpieczeństwo i prywatność
+- Wszystkie dane ZYRAXON są przechowywane w Twoim telefonie: czaty, pamięć, księga, umiejętności, oś czasu, indeks mózgu. Nic nie jest przechowywane na serwerze ZYRAXON.
+- Modele chmurowe otrzymują tylko to, co jest potrzebne do wysłanej tury. W przypadku opcji „Tylko na urządzeniu” nic nie jest wysyłane.
+- Monity i pliki językowe dostarczane w aplikacji są szyfrowane w pliku APK.
+- Blokada aplikacji: ustaw hasło lub wzór w Ustawieniach → Bezpieczeństwo i prywatność → Blokada aplikacji. ZYRAXON następnie blokuje się po otwarciu lub powrocie z tła. „Usuń blokadę” usuwa zapisane hasło lub wzór.
+- Poziomy zatwierdzenia chronią każde wywołanie narzędzia w kodzie (patrz Poziomy zatwierdzenia). Nieznane narzędzia zawsze pytają.
+- Możesz wymazać: całą pamięć, historię czatów i swój token GitHub, każdy za pomocą jednego przycisku w sekcji Prywatność i dane.
+- Bezpieczeństwo: jeśli powiesz, że ktoś Ci grozi, śledzi Cię lub chce Twojego telefonu lub danych, agent najpierw zablokuje telefon (jeśli włączone są uprawnienia administratora urządzenia), a następnie spokojnie z Tobą porozmawia.
+- Płatności: przed jakąkolwiek płatnością lub przelewem agent mówi, ile zapłaci i prosi o potwierdzenie.
+- Uczciwość: agent mówi, że coś zadziałało, dopiero po zobaczeniu rezultatu. Nigdy nie wymyśla linków, plików ani wyników.
+- Content Shield: wszystko, co agent czyta z zewnątrz – ekran innej aplikacji, strona internetowa, wiadomość, plik, podłączony serwer – jest sprawdzane w kodzie pod kątem tekstu, który próbuje wydać agentowi polecenia (w wielu językach, w tym tekstu ukrytego za pomocą niewidocznych znaków). Podejrzany tekst jest chroniony, więc model traktuje go tylko jako dane. Stopień rygorystyczności zależy od Twojego poziomu akceptacji: Zablokowany traktuje wszystko podejrzane jako wrogie; Nadzorowany odgradza podejrzany tekst, a gdy tekst jest wyraźnie wrogi, blokuje resztę tej tury, więc każde zmieniające się narzędzie najpierw pyta cię (karta mówi dlaczego); Balanced działa tylko na wyraźnie wrogi tekst i tylko narzędzia na poziomie systemu przestają pytać; Automatyka całkowicie wyłącza osłonę – nic nie jest skanowane, zatrzymywane, zaznaczane ani zmieniane. Nowa wiadomość od Ciebie to usuwa.

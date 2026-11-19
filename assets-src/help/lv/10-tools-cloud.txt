@@ -1,0 +1,21 @@
+Mākonis, tīkls, modeļi un palīgi
+## Mākonis un internets
+- `web_search` (tīkls): meklējiet īstā tīmeklī. `read_url` (tīkls): iegūstiet lapu kā tekstu. `http_request` (tīkls): jebkurš HTTP zvans (GET, POST, PUT, PATCH, DELETE) ar galvenēm un pamattekstu. `verify_url` (tīkls): pārbaudiet, vai saite patiešām pastāv, un iegūstiet patieso statusu. `download_file` (Personiskais, tīkls): lejupielādējiet faila URL.
+- Aģents atver saites tikai tad, kad jūs to lūdzat.
+- AI modeļi darbojas mākonī, izmantojot jūsu pievienotos pakalpojumu sniedzējus (ZYRAXON, ZYRAXON Apex mākoņa aģents, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Modeļu saraksts tiek ielādēts tiešraidē un tiek aizpildīts, kad katrs pakalpojumu sniedzējs atbild.
+- Būvēšanas, publicēšanas un izvilkšanas pieprasījumi tiek izpildīti caur GitHub un Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Ieslēdziet "tikai ierīcē" (automatizācijas iestatījumi), un mākoņa zvans netiek veikts vispār: nav pakalpojumu sniedzēja, nav tīmekļa, nav augšupielādes.
+
+## MCP serveri
+MCP ļauj ārējiem pakalpojumiem nodrošināt aģentam papildu rīkus. Pievienojiet Canva, Cloudflare, Supabase, GitHub vai savu serveri pēc tā adreses (pēc izvēles marķiera). Savienoto serveru rīki pievienojas aģenta rīku sarakstam kā `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (skatiet, kas ir savienots un kādi rīki pastāv), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (skatieties resursu izmaiņām), `mcp_complete` (automātiskās pabeigšanas argumenti), `mcp_ping`, `mcp_log_level`. Viņu zvani ir tīkla zvani, un nezināmi MCP rīki pēc noklusējuma pieprasa atļauju.
+- Ekrānā MCP ir norādīts katrs serveris ar savienojuma statusu, tā rīki, resursi un uzvedņu veidnes, kā arī pogas Pievienot, Atvienot, Noņemt, Atļaut.
+
+## Apakšaģenti
+`sub_agent` (Sistēma): liela darba daļas nodod palīgaģentiem, kas darbojas fonā. Darbības: nārstot, statuss, saraksts, rezultāts, ziņojums, apstāšanās, gaidīšana. Katrs var izmantot savu modeli. Aģents apvieno un pārbauda to rezultātus, pirms saka "darīts".
+
+## Ierīces modelis
+`on_device_model` (Sistēma): izveidojiet, ielādējiet un palaidiet valodas modeli, kas darbojas tālrunī bez interneta. Iestatījumos → Modelis un identitāte → Ierīcē tiek lejupielādēti modeļi (no maza līdz lielam: FunctionGemma 270 M, Qwen3 0,6 B, Gemma 4 E2B…); marķieris Hugging Face nav obligāts un nepieciešams tikai ierobežotiem failiem. Ielādēts modelis tiek atcerēts un atkārtoti ielādēts palaišanas brīdī.
+
+## Ziņapmaiņas kanāli
+`channel_post` (Sistēma) atver Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail vai SMS ar gatavu īsziņu. Jūs pats nospiežat sūtīt.

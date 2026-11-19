@@ -1,0 +1,14 @@
+Chế độ: Đại lý và Xây dựng
+Có hai chế độ, được chọn bằng nút chế độ bên cạnh hộp thông báo. Sự lựa chọn vẫn còn cho đến khi bạn thay đổi nó. Giọng nói trực tiếp không phải là chế độ thứ ba; đó là một cách nói mà bạn có thể bật trong Cài đặt (xem chương Giọng nói).
+
+## Đại lý
+"Tự động hóa hoàn toàn điện thoại và hệ thống." Mọi thứ đều mở: đọc và điều khiển màn hình điện thoại, mở ứng dụng, cuộc gọi, tin nhắn, máy ảnh, tệp, thiết bị đầu cuối và Linux, Git, bản xem trước, phương tiện, tác nhân phụ, MCP máy chủ, kỹ năng, chế độ lái tự động, v.v. Chọn Đại lý khi bạn muốn thực hiện công việc nào đó trên điện thoại hoặc chỉ muốn nói chuyện.
+
+## Xây dựng
+"Ứng dụng, trang web và tự động hóa toàn diện." Tác nhân là một công cụ xây dựng: từ một dòng ngắn, nó tạo ra toàn bộ, chạy nó, xem xét nó và hiển thị cho bạn. Nó có các tập tin, thiết bị đầu cuối, Git, xem trước, xuất bản, phương tiện, bộ nhớ và bảng việc cần làm. Điều khiển điện thoại, đại lý phụ và khóa thiết bị thuộc chế độ Đại lý; nếu bạn cần chúng trong Build, hãy chuyển đổi.
+- Trang đích hoặc trang web: cho biết nó dùng để làm gì. Tác nhân xây dựng nó ngay lập tức, khởi động nó trên điện thoại của bạn và mở nó trong bảng Xem trước, sau đó cho bạn biết nó đã tạo ra những gì. Nó không xuất bản trừ khi bạn yêu cầu.
+- Ứng dụng: nói những gì bạn muốn và nó sẽ xây dựng ứng dụng theo yêu cầu. Phần phụ trợ, cơ sở dữ liệu hoặc thông tin đăng nhập chỉ được thêm vào nếu bạn yêu cầu.
+- Full-stack: khi bạn yêu cầu back end hoặc cơ sở dữ liệu, trước tiên nhân viên sẽ hỏi bạn một câu hỏi ngắn về các lựa chọn (ngôn ngữ, cơ sở dữ liệu, thông tin đăng nhập, nơi nó chạy), cùng với đề xuất và bản dựng sau khi bạn trả lời.
+
+## "Hỏi" nghĩa là gì
+Khi nhân viên thực sự cần quyết định của bạn, họ sẽ thực hiện mọi việc khác trước tiên, hỏi một câu hỏi ngắn kèm theo đề xuất và chờ đợi. Câu trả lời của bạn tiếp tục công việc từ nơi nó đã dừng lại.

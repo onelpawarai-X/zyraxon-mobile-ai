@@ -1,0 +1,16 @@
+Mga wika
+## Wika ng app
+Mga Setting → Wika at pagsasalin. 60 wika. Sinusundan ito ng buong interface at mga mensahe ng tool ng ahente. Ang bawat wika ay may sariling file ng pagsasalin. Ang anumang linya na wala pa sa isang file ng wika ay ipinapakita sa Ingles, hindi kailanman iiwanang blangko.
+
+## Kung ano ang sinasabi mo
+Palaging sumasagot ang ahente sa wikang ginagamit mo dito, anumang wika sa mundo. Kung lumipat ka, lilipat ito. Ginagamit nito ang palakaibigan-magalang na anyo ng "ikaw" sa iyong wika. Ang mga pangalan ng tatak at teknolohiya ay nananatili sa dati.
+
+## Mga wika ng boses
+- Wika ng pagkilala (kung ano ang iyong sinasalita sa mikropono): Mga Setting → Boses at mikropono → Mic at wika.
+- Boses sa pagsasalita: Mga Setting → Boses at mikropono → Profile ng boses, at ang Voice lab para sa mga wika tulad ng Bengali, Hindi, English, Urdu, Arabic, Tamil, Nepali, Spanish, French, German, Japanese, Korean, Chinese, Russian, Turkish.
+
+## Ang dokumentasyong ito
+Gamitin ang mga chip ng wika sa itaas ng page na ito. Ang buong gabay ay nakasulat sa bawat wika na sinusuportahan ng app, sa pamamagitan ng kamay, at ipinadala sa loob ng app. Walang naisalin sa iyong telepono: ang bawat kabanata ay agad na bumubukas, gumagana offline, at hindi nangangailangan ng modelo o key.
+
+## Pagsusulat sa sarili mong script
+Ang mga dokumento, poster at disenyo ay maaaring gawin sa anumang script. Para sa mga disenyo ng Bengali ang tamang font ay ginagamit; para sa iba pang mga script ang katugmang font ay pinili.

@@ -1,0 +1,11 @@
+Öryggi og næði
+- Öll gögn ZYRAXON eru í símanum þínum: spjall, minni, höfuðbók, færni, tímalína, heilavísitala. Ekkert er geymt á ZYRAXON netþjóni.
+- Skýjalíkön fá aðeins það sem þarf fyrir beygjuna sem þú sendir. Með „On-device only“ er ekkert sent.
+- Tilkynningar og tungumálaskrár sem sendar eru í appinu eru dulkóðaðar inni í APK.
+- Forritalás: stilltu lykilorð eða mynstur í Stillingar → Öryggi og næði → Forritalás. ZYRAXON læsist síðan þegar þú opnar hann eða kemur aftur úr bakgrunninum. „Fjarlægja lás“ eyðir vistuðu lykilorði eða mynstri.
+- Samþykkisstig standa vörð um hvert verkfærakall í kóða (sjá Samþykkisstig). Óþekkt verkfæri spyrja alltaf.
+- Þú getur eytt: öllu minni, spjallferlinum og GitHub tákninu þínu, hvert með einum hnappi í Privacy & data.
+- Öryggi: ef þú segir að einhver sé að hóta þér eða fylgja þér, eða vilja símann þinn eða gögn, læsir umboðsmaðurinn símanum fyrst (ef stjórnunarheimild tækisins er á) og talar síðan við þig í rólegheitum.
+- Greiðslur: Fyrir greiðslu eða millifærslu segir umboðsmaðurinn hvað hann mun borga og biður þig um að staðfesta.
+- Heiðarleiki: umboðsmaðurinn segir aðeins að eitthvað hafi virkað eftir að það sá árangur. Það finnur aldrei upp tengla, skrár eða niðurstöður.
+- Content Shield: hvað sem umboðsmaðurinn les utan frá - skjár annars forrits, vefsíðu, skilaboð, skrá, tengdur netþjónn - er innskotað í kóða fyrir texta sem reynir að gefa umboðsmanni skipanir (á mörgum tungumálum, þar á meðal texti falinn með ósýnilegum stöfum). Grunsamur texti er girtur þannig að líkanið meðhöndlar hann eingöngu sem gögn. Hversu strangt það er fylgir samþykkisstigi þínu: Læstur kemur fram við allt grunsamlegt sem fjandsamlegt; Eftirlitsgirðingar girða grunsamlegan texta og, þegar textinn er greinilega fjandsamlegur, læsir hann restina af þeirri beygju þannig að hvert skiptiverkfæri spyr þig fyrst (spjaldið segir hvers vegna); Jafnvægi aðgerðir aðeins á greinilega fjandsamlega texta og aðeins kerfisstigi verkfæri hætta að spyrja; Sjálfvirkt slekkur alveg á hlífinni - ekkert er skannað, stöðvað, merkt eða breytt. Ný skilaboð frá þér hreinsa það.

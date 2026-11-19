@@ -1,0 +1,42 @@
+Her ayar ekranı tek tek
+Ayarlar'ın sekiz bölümü vardır. Her bölümün alt ekranları için haplar vardır. Kullandığınız son bölüm bir dahaki sefere yeniden açılır.
+
+## 1. Dil ve çeviri → Uygulama ve araç dili
+Tüm uygulamanın ve aracının araç mesajlarının dilini seçin. Listede arama yapın ve birine dokunun. Ekranda geçerli dil ve kullanıcı arayüzü çevirisi ile araç mesajı çevirisinin açık olup olmadığı gösterilir. 60 dil mevcuttur. Dil bölümüne bakın.
+
+## 2. Ses ve mikrofon
+- Ses profili: Kadın veya erkek sesini, hızı, perdeyi, "Cevapları yüksek sesle oku", Test sesini, Bengalce ses indirme ipucunu seçin.
+- Mikrofon ve dil: tanıma dili, mikrofonu açık tutun, konuşmayı bıraktığınızda otomatik olarak gönderin.
+- Canlı ses: Konuşmadan konuşmaya açık/kapalı, durum, gerçek zamanlı modellerin listesi.
+
+## 3. Sağlayıcılar ve API
+- Yapay zeka sağlayıcıları: kendi API anahtarlarınız (ZYRAXON, OpenCode ücretsiz kota, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) ve ZYRAXON Apex bulut aracısı. Kaydedilen bir anahtar, sağlayıcının gerçek kataloğu okunarak doğrulanır ve model sayısını veya tam hatayı gösterir. Bir düğme, anahtar oluşturduğunuz ZYRAXON web sitesini açar.
+- GitHub: yayınlamak için GitHub erişim jetonunuz (repo kapsamına ihtiyaç duyar), Git push ve pull istekleri. Belirteci kaydedin veya silin; durum, ayarlanıp ayarlanmadığını gösterir.
+
+## 4. Güncellemeler → Uygulama güncellemesi
+Geçerli sürümü gösterir, daha yeni bir sürümü kontrol eder, ilerleme çubuğuyla birlikte indirir ve yükler. Sohbetleriniz, hafızanız ve ayarlarınız kalır. Android'un kurulum için izne ihtiyacı varsa, bir düğme bu ayarı açar.
+
+## 5. Model ve kimlik
+- Kimlik: karakteri seçin (Karakterler bölümüne bakın).
+- Model: Arama kutusu, "Tüm modeller" ve "Özel" filtreler içeren canlı model kataloğu; Önce hızlı modeller.
+- Cihazda: çevrimdışı çalışan modelleri indirin, yükleyin ve kaldırın; küçükten büyüğe sıralanmış; isteğe bağlı Hugging Face belirteci; yüklenen, yüklenen ve başarısız olan durumları gösterir.
+
+## 6. Aura ve tema
+- Tema: Korku, Karanlık veya Aydınlık.
+- Aura ve arka plan: İnce renk tonu kontrolüyle aura stili ve rengi (kan, pembe, mor, gökyüzü, yeşil, ateş); aura boyutu, parlama gücü, dönüş hızı, panel şeffaflığı; kayan göz (açık/kapalı, tasarım, ekran kenarı, sesli komutlar/uyandırma sözcükleri, kendinizinkini ekleyin); gölgelendirici modu; özel arka plan URL'si (mp4, gif veya resim); animasyon hızı.
+
+## 7. Güvenlik ve gizlilik
+- Uygulama kilidi: bir şifre (4–8 haneli) veya 3×3 noktalı desen; iki kez girerek onaylayın; kilidi çıkarın.
+- İzinler: İzinler bölümündeki liste, Play Protect yardımıyla.
+- Gizlilik ve veriler: tüm veriler telefonda kalır. Düğmeler: tüm hafızayı sil, sohbet geçmişini sil, GitHub jetonunu sil.
+
+## 8. Sistem
+Bu bölümün yanlara doğru kayan kendi düğme sırası vardır, bu nedenle hiçbir şey sıkıştırılmaz.
+- Otomasyon: onay düzeyi ve yalnızca cihaz üzerinde (bkz. Onay düzeyleri).
+- Gezinme: atlanacak alanların listesi — "üstte düğme yok, her şey burada" — ⌘ ZX sistem kabuğu, "Yeni oturum" düğmesi (temiz bir başlangıç ​​için sohbet geçmişini siler), mesaj sayısı ve mikrofon değiştirme dahil.
+- Bellek: ZYRAXON'in hatırladığı gerçekleri içeren yerel SQL belleği; bir anahtar ve değer ekleyin; hepsini sil.
+- Beceri kılavuzu: örnek ifadelerle birlikte örnek yeteneklerin (mesajlaşma uygulamaları, web sitesi oluşturma, ekran okuyucu, el feneri, kamera, Wi-Fi ve ayarlar) hızlı bir listesi.
+- Otomasyon merkezi: beceriler, otomatik pilot, para, zaman çizelgesi, beyin ve çağrı temsilcisi tek bir yerde (bkz. Otomasyon merkezi).
+
+## 9. Dokümantasyon
+Ayarlar'da Sistem'den ayrı kendi bölümü. Bu kılavuz: yirmi bir bölüm, bir arama kutusu ve bir dil çipi satırı. Uygulamadaki her dil, uygulamanın içinde zaten tam olarak yazılmıştır; telefonunuzda hiçbir şey çevrilmez ve bunları okumak için internete gerek yoktur.

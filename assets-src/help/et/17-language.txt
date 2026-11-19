@@ -1,0 +1,16 @@
+Keeled
+## Rakenduse keel
+Seaded → Keel ja tõlge. 60 keelt. Sellele järgneb kogu liides ja agendi tööriistateated. Igal keelel on oma tõlkefail. Kõik read, mida keelefailis veel pole, kuvatakse inglise keeles, mitte kunagi tühjaks.
+
+## Mida sa räägid
+Agent vastab alati selles keeles, millega sa räägid, ükskõik millises maailmas. Kui vahetate, siis lülitub. See kasutab teie keeles sõbralikult-austavat vormi "sina". Brändi- ja tehnoloogianimed jäävad samaks.
+
+## Häälekeeled
+- Tuvastamiskeel (mikrofoni räägitav): Seaded → Hääl ja mikrofon → Mikrofon ja keel.
+- Rääkiv hääl: seaded → Hääl ja mikrofon → Hääleprofiil ja häälelabor selliste keelte jaoks nagu bengali, hindi, inglise, urdu, araabia, tamili, nepali, hispaania, prantsuse, saksa, jaapani, korea, hiina, vene ja türgi keel.
+
+## See dokumentatsioon
+Kasutage selle lehe ülaosas olevaid keelekiipe. Kogu juhend on käsitsi välja kirjutatud kõigis keeltes, mida rakendus toetab, ja tarnitakse rakenduse sees. Teie telefonis ei tõlgita midagi: iga peatükk avaneb kohe, töötab võrguühenduseta ega vaja mudelit ega võtit.
+
+## Oma stsenaariumi kirjutamine
+Dokumente, plakateid ja kavandeid saab teha mis tahes skriptis. Bengali kujunduse puhul kasutatakse õiget fonti; muude skriptide jaoks valitakse sobiv font.

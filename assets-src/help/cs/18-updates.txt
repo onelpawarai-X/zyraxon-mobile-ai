@@ -1,0 +1,7 @@
+Aktualizace
+Nastavení → Aktualizace → Aktualizace aplikace nebo banner v horní části aplikace.
+- Aplikace zkontroluje nová vydání a zobrazí „Nová aktualizace k dispozici – verze“.
+- Zkontrolovat aktualizace: ptá se nyní. Pokud jste aktuální, říká to tak.
+- Stáhnout a nainstalovat: stahování s procentem. Po dokončení stiskněte Install. Vaše chaty, paměť a nastavení zůstanou.
+- Pokud Android blokuje instalaci, stiskněte tlačítko oprávnění, povolte ZYRAXON jako zdroj instalace a zkuste to znovu.
+- Tlačítka banneru: Stáhnout, Instalovat, Povolit a Zavřít.

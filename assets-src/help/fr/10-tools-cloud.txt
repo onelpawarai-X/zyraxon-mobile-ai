@@ -1,0 +1,21 @@
+Cloud, réseau, modèles et aides
+## Cloud et internet
+- `web_search` (réseau) : cherche sur le vrai web. `read_url` (réseau) : récupère une page sous forme de texte. `http_request` (réseau) : tout appel HTTP (GET, POST, PUT, PATCH, DELETE) avec en-têtes et corps. `verify_url` (réseau) : vérifie qu'un lien existe vraiment et obtient son vrai statut. `download_file` (Personal, réseau) : télécharge une URL dans un fichier.
+- L'agent n'ouvre des liens que si vous le demandez.
+- Les modèles d'IA s'exécutent dans le cloud via les fournisseurs que vous avez ajoutés (ZYRAXON, ZYRAXON Apex cloud agent, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). La liste des modèles se charge en direct et se remplit à mesure que chaque fournisseur répond.
+- Les compilations, la publication et les pull requests passent par GitHub et Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Activez « on-device only » (réglages Automation) et aucun appel cloud n'est fait : ni fournisseur, ni web, ni envoi.
+
+## Serveurs MCP
+MCP permet à des services externes de donner des outils supplémentaires à l'agent. Connectez Canva, Cloudflare, Supabase, GitHub ou votre propre serveur par son adresse (jeton facultatif). Les outils des serveurs connectés rejoignent la liste d'outils de l'agent sous la forme `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (voir ce qui est connecté et quels outils existent), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (surveiller une ressource), `mcp_complete` (autocomplétion des arguments), `mcp_ping`, `mcp_log_level`. Leurs appels sont des appels réseau, et les outils MCP inconnus demandent l'autorisation par défaut.
+- L'écran MCP liste chaque serveur avec l'état Connected, ses outils, ressources et modèles de prompt, et les boutons Add, Disconnect, Remove, Allow.
+
+## Sous-agents
+`sub_agent` (System) : confiez des parties d'un gros travail à des agents auxiliaires qui travaillent en arrière-plan. Actions : spawn, status, list, result, message, stop, wait. Chacun peut utiliser son propre modèle. L'agent combine et vérifie leurs résultats avant de dire « terminé ».
+
+## Modèle sur l'appareil
+`on_device_model` (System) : lister, charger et exécuter un modèle de langage qui vit sur le téléphone, sans internet. Dans Réglages → Model & identity → On-device, vous téléchargez des modèles (du petit au grand : FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…) ; un jeton Hugging Face est facultatif et seulement nécessaire pour les fichiers à accès restreint. Un modèle chargé est mémorisé et rechargé au lancement.
+
+## Canaux de messagerie
+`channel_post` (System) ouvre Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail ou SMS avec votre texte prêt. Vous appuyez vous-même sur envoyer.

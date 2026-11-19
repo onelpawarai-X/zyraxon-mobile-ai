@@ -1,0 +1,21 @@
+Reja, rrjeti, modelet dhe ndihmësit
+## Cloud dhe interneti
+- `web_search` (rrjet): kërkoni në ueb real. `read_url` (rrjet): merr një faqe si tekst. `http_request` (rrjet): çdo telefonatë HTTP (MERRNI, POST, PUT, PATCH, DELETE) me koka dhe trup. `verify_url` (rrjeti): kontrolloni nëse ekziston vërtet një lidhje dhe merrni statusin e vërtetë. `download_file` (Personal, rrjet): shkarkoni një URL në një skedar.
+- Agjenti hap lidhjet vetëm kur ju i kërkoni.
+- Modelet e AI ekzekutohen në cloud përmes ofruesve që keni shtuar (ZYRAXON, ZYRAXON Apex agjent cloud, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode. Lista e modeleve ngarkohet drejtpërdrejt dhe plotësohet ndërsa çdo ofrues përgjigjet.
+- Ndërtimet, publikimet dhe kërkesat për tërheqje kalojnë përmes GitHub dhe Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Aktivizoni "vetëm në pajisje" (Cilësimet e automatizimit) dhe nuk bëhet fare thirrje në renë kompjuterike: pa ofrues, pa ueb, pa ngarkim.
+
+## MCP serverë
+MCP lejon që shërbimet e jashtme t'i japin agjentit mjete shtesë. Lidhni Canva, Cloudflare, Supabase, GitHub ose serverin tuaj me adresën e tij (token opsional). Mjetet e serverëve të lidhur i bashkohen listës së mjeteve të agjentit si `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (shiko çfarë është e lidhur dhe cilat mjete ekzistojnë), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (shikoni një burim për ndryshime), `mcp_complete` (argumente të plotësuara automatikisht), `mcp_ping`, `mcp_log_level`. Thirrjet e tyre janë thirrje rrjeti dhe mjetet e panjohura MCP kërkojnë leje si parazgjedhje.
+- Ekrani MCP liston çdo server me statusin e lidhur, mjetet e tij, burimet dhe shabllonet e kërkesave, dhe butonat Shto, Shkëput, Hiq, Lejo.
+
+## Nën-agjentët
+`sub_agent` (Sistemi): jepni pjesë të një pune të madhe agjentëve ndihmës që funksionojnë në sfond. Veprimet: pjellje, statusi, lista, rezultati, mesazhi, ndalimi, prit. Secili mund të përdorë modelin e vet. Agjenti kombinon dhe kontrollon rezultatet e tyre përpara se të thotë "mbaroi".
+
+## Modeli në pajisje
+`on_device_model` (Sistemi): listoni, ngarkoni dhe ekzekutoni një model gjuhe që jeton në telefon, pa internet. Te Cilësimet → Modeli dhe identiteti → Në pajisje ju shkarkoni modele (të vogla në të mëdha: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); një shenjë Hugging Face është opsionale dhe nevojitet vetëm për skedarët e mbyllur. Një model i ngarkuar mbahet mend dhe ringarkohet në fillim.
+
+## Kanalet e mesazheve
+`channel_post` (Sistemi) hap Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail ose SMS me tekstin tuaj gati. Ju shtypni dërgoni vetë.

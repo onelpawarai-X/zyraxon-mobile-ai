@@ -1,0 +1,21 @@
+Isakhiwo: amasayithi, izinhlelo zokusebenza, ukubuka kuqala nokushicilela
+## Ukubuza kanjani
+- "Ngenzele ikhasi lokufika lesitolo sami sekhofi." Umenzeli uyakha ngaso leso sikhathi, uyiqale kufoni yakho futhi ayivule kokuthi Ukubuka kuqala. Uthola imigqa emi-2–3 eyichazayo. Akukho okushicilelwe ngaphandle kokuthi ubuze.
+- "Yakha uhlelo lokusebenza lokwenza." Yakhelwe ngokuqondile ngesitaki esinengqondo, igijima futhi ibonisiwe. Isiphetho esingemuva, isizindalwazi noma ukungena ngemvume kuphela uma ubuza.
+- "Yakha uhlelo lokusebenza olugcwele isitaki." Umenzeli uqale abuze umbuzo owodwa omfushane mayelana nolimi lwasemuva, isizindalwazi, ukungena ngemvume nalapho kusebenza khona, ngokuzenzakalelayo okunconyiwe, bese eyakha yonke ngedatha yembewu futhi ahlole ukugeleza okukodwa okugcwele.
+- "Yenza Windows/Linux/macOS/Android uhlelo." Umthombo ubhaliwe, ukugeleza komsebenzi wokwakha kuyengezwa, kuyaphushwa futhi kwakhiwe emafini ngezenzo GitHub, futhi uthola isixhumanisi sangempela sokulanda.
+
+## Amathuluzi
+- `edit_file` kanye nokuthi `write_file`: bhala amafayela angempela (ikhodi ephelele, ungalokothi ubambezele). `code_box` ibakhombisa bukhoma.
+- `preview` (Kuphephile): isiphequluli sangempela esakhelwe ngaphakathi. Izenzo: vula (isixhumanisi, `localhost:PORT` noma ifayela), layisha kabusha, emuva, phambili, isithombe-skrini, skrola, chofoza, thayipha, funda umbhalo wekhasi, amaphutha ekhonsoli, i-eval. I-ejenti ibheka umsebenzi wayo ngaphambi kokuthi ithi yenziwe.
+- `serve_local` (Isistimu): iqala iseva yewebhu ocingweni ukuze ithole ifolda futhi ibuyisele LAN ikheli amanye amadivayisi ku-Wi-Fi yakho engavuleka.
+- `publish_website` (Isistimu): inikeza isayithi embobeni yomphakathi kusukela ocingweni. `publish_cloudflare` (Uhlelo): ibeka isayithi ku-inthanethi engena-akhawunti ngomhubhe Cloudflare futhi ibuyisela isixhumanisi esisesidlangalaleni se-https. `publish_github` (Isistimu): ishicilela iphrojekthi endaweni yokugcina GitHub (Amakhasi) nethokheni yakho.
+- `git` (Uhlelo): fanisa, init, isimo, engeza, bophezela, phusha, donsa, igatsha, khipha, ngena, hlukanisa nethokheni yakho elondoloziwe. `github_pr` (Isistimu): dala, yenza uhlu, hlanganisa futhi ubeke amazwana ngezicelo zokudonsa. `github_actions` (Isistimu): bhala uhlu lokugeleza komsebenzi, ukugijime, inhlolovo iqhuba futhi ufunde izingodo, ngakho ukwakha kugijima emafini kusuka ocingweni.
+- `build_app` (Isistimu): yakha le phrojekthi nge-Gradle ocingweni futhi ifaka umphumela.
+- `files_panel`, `todo_write`: isiphequluli sefayela nebhodi lomsebenzi.
+
+## Imithetho yekhwalithi elandelwa yi-ejenti
+Isakhiwo esiphelele, idizayini esabelayo, i-JavaScript esebenzayo, ukugqwayiza, imibala engaguquki namafonti (okumnyama nokukhanya lapho kungene khona), hhayi isifanekiso esijwayelekile. Ikhasi lokufika livamise ukuba yimigqa engama-300–900; izinto ezinkulu ngaphezulu.
+
+## Uma kukhona okubukeka kuphukile
+Cindezela okuthi Lungisa kokuthi Hlola kuqala, noma tshela umenzeli. Ifunda ikhonsoli, ilungise imbangela, ivule kabusha ikhasi bese ihlola futhi.

@@ -1,0 +1,27 @@
+Tillstånd, en efter en
+Inställningar → Säkerhet och integritet → Behörigheter. Varje rad visar "Granted" eller en knapp. Genom att trycka på en rad öppnas systemdialogrutan; tryck bara på Tillåt. Agenten kan också öppna själva dialogrutan med `request_permission`.
+
+- Mikrofon: så att ZYRAXON kan höra dig. Utan den finns ingen röstinmatning.
+- Kamera: att ta och titta på foton (`look_camera`, dokumentskanning, "vad ser du").
+- Plats: för kartor och lokal information.
+- Aviseringar: för att berätta när bakgrundsarbetet är klart.
+- Filer och media: för att läsa foton, videor, ljud och dokument.
+- Överlägg (rita över andra appar): behövs för det flytande ögat.
+- Tillgänglighet: låter agenten läsa skärmen och trycka, svepa och skriva åt dig. Detta är hjärtat i telefonautomatisering. Du slår på den i systemets tillgänglighetsinställningar.
+- Batterioptimering: stoppar Android från att försätta ZYRAXON i viloläge medan den fungerar i bakgrunden.
+
+## Andra behörigheter som appen deklarerar
+- SMS (läs och ta emot): för att läsa koder, penningboken och SMS-autopilotregler.
+- Telefonstatus, svara på samtal, ring telefon, kontakter: för samtalsverktyg och samtalsagenten.
+- Aviseringsåtkomst: låter autopiloten reagera på aviseringar.
+- Enhetsadministratör: låter `device_lock` verkligen låsa skärmen.
+- Installera paket: låter uppdateringar och `build_app` installera APK-filer; Android ber dig att tillåta ZYRAXON som installationskälla.
+- Förgrundstjänster (mikrofon, datasynkronisering) och wake lock: håll röst och långa jobb vid liv.
+- Internet och nätverkstillstånd: molnet och webben.
+- Shizuku (valfritt): åtkomst på systemnivå för skalet och terminalen.
+
+## Google Play Protect
+Om Play Protect blockerar ett jobb kan agenten öppna rätt sida, titta på den riktiga skärmen och gå steg för steg genom växeln och växeln — men den frågar dig först, eftersom att stänga av skyddet är ditt beslut. För att göra det själv: Play Store → profilbild → Play Protect → inställningar → stäng av "Skanna appar med Play Protect". Sidan har en knapp som öppnar Play Store.
+
+## Varför ett tillstånd är viktigt
+Om ett verktyg misslyckas på grund av en saknad behörighet berättar agenten vilken och öppnar dess dialog. Inget känsligt fungerar utan ditt uttryckliga tillåtelse.
