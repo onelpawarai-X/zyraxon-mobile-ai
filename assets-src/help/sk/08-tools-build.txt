@@ -1,0 +1,21 @@
+Vytváranie: lokality, aplikácie, ukážka a publikovanie
+## Ako sa pýtať
+- "Urob mi vstupnú stránku pre moju kaviareň." Agent ho ihneď zostaví, spustí na vašom telefóne a otvorí v ukážke. Dostanete 2–3 riadky, ktoré to popisujú. Nič sa nezverejňuje, pokiaľ nepožiadate.
+- "Vybudujte si aplikáciu na úlohy." Postavené priamo s rozumným zásobníkom, spustiť a ukázať. Back-end, databáza alebo prihlásenie iba vtedy, ak o to požiadate.
+- "Vybudujte kompletnú aplikáciu." Agent najprv položí jednu krátku otázku o jazyku back-endu, databáze, prihlásení a o tom, kde beží, s odporúčanými predvolenými nastaveniami, potom to všetko vytvorí s počiatočnými údajmi a otestuje jeden úplný tok.
+- "Vytvorte Windows/ZYRAXON OS/macOS/Android program." Zdroj je napísaný, je pridaný pracovný postup zostavenia, je tlačený a zabudovaný v cloude pomocou akcií GitHub a získate skutočný odkaz na stiahnutie.
+
+## Nástroje
+- `edit_file` a `write_file`: zapíšte skutočné súbory (úplný kód, nikdy stub). `code_box` ich ukazuje naživo.
+- `preview` (Safe): vstavaný skutočný prehliadač. Akcie: otvorenie (odkaz, `localhost:PORT` alebo súbor), opätovné načítanie, späť, dopredu, snímka obrazovky, posúvanie, kliknutie, písanie, čítanie textu stránky, chyby konzoly, eval. Agent sa pozrie na svoju vlastnú prácu skôr, ako povie, že je hotová.
+- `serve_local` (Systém): Spustí webový server v telefóne pre priečinok a vráti LAN adresu, ktorú môžu otvoriť iné zariadenia na vašom Wi-Fi.
+- `publish_website` (Systém): obsluhuje stránku na verejnom porte z telefónu. `publish_cloudflare` (Systém): umiestni stránku na internet bez účtu cez tunel Cloudflare a vráti verejný https odkaz. `publish_github` (Systém): publikuje projekt do GitHub úložiska (Stránky) s vaším tokenom.
+- `git` (Systém): klonovanie, inicializácia, stav, pridanie, odovzdanie, odoslanie, stiahnutie, vetvenie, pokladňa, protokol, porovnanie s uloženým tokenom. `github_pr` (Systém): vytváranie, zoznam, zlučovanie a komentovanie žiadostí o stiahnutie. `github_actions` (Systém): zoznam pracovných postupov, ich spustenie, spustenie prieskumov a čítanie denníkov, takže zostavy sa spúšťajú v cloude z telefónu.
+- `build_app` (System): vytvorí tento projekt pomocou Gradle v telefóne a nainštaluje výsledok.
+- `files_panel`, `todo_write`: prehliadač súborov a panel úloh.
+
+## Pravidlá kvality, ktoré agent dodržiava
+Kompletné rozloženie, responzívny dizajn, funkčný JavaScript, animácia, konzistentné farby a fonty (tmavé a svetlé tam, kde sa to hodí), nejde o všeobecnú šablónu. Vstupná stránka má zvyčajne 300 – 900 riadkov; väčšie veci viac.
+
+## Ak niečo vyzerá zlomené
+Stlačte Opraviť v ukážke alebo to povedzte agentovi. Prečíta konzolu, opraví príčinu, znova otvorí stránku a znova skontroluje.

@@ -1,0 +1,27 @@
+Load ükshaaval
+Seaded → Turvalisus ja privaatsus → Load. Igal real on märge "Antud" või nupp. Rea puudutamine avab süsteemi dialoogi; lihtsalt vajutage Luba. Agent saab dialoogi enda avada ka nupuga `request_permission`.
+
+- Mikrofon: et ZYRAXON kuuleks teid. Ilma selleta pole häälsisendit.
+- Kaamera: fotode tegemiseks ja vaatamiseks (`look_camera`, dokumendi skannimine, "mida sa näed").
+- Asukoht: kaartide ja kohaliku teabe jaoks.
+- Märguanded: teavitavad teid, kui taustatöö on lõppenud.
+- Failid ja meedia: fotode, videote, heli ja dokumentide lugemiseks.
+- Ülekate (üle teiste rakenduste joonistamine): vajalik ujuva silma jaoks.
+- Juurdepääsetavus: võimaldab agendil ekraani lugeda ning teie eest puudutada, pühkida ja tippida. See on telefoni automatiseerimise süda. Lülitate selle sisse süsteemi juurdepääsetavuse seadetes.
+- Aku optimeerimine: peatab Android lülitumise ZYRAXON unerežiimile, kui see töötab taustal.
+
+## Muud rakenduse deklareeritud load
+- SMS (lugemine ja vastuvõtmine): koodide, raharaamatu ja SMS-i autopiloodi reeglite lugemiseks.
+- Telefoni olek, kõnedele vastamine, helistamine telefonile, kontaktid: kõnetööriistade ja kõneagendi jaoks.
+- Juurdepääs märguannetele: võimaldab autopiloodil märguannetele reageerida.
+- Seadme administraator: laseb `device_lock` ekraani tõesti lukustada.
+- Installi paketid: võimaldab värskendusi ja `build_app` installida APK-sid; Android palub teil lubada ZYRAXON installiallikana.
+- Esiplaaniteenused (mikrofon, andmete sünkroonimine) ja äratuslukk: hoia hääl ja pikad tööd elus.
+- Interneti ja võrgu olek: pilv ja veeb.
+- Shizuku (valikuline): süsteemitaseme juurdepääs kestale ja terminalile.
+
+## Google Play Protect
+Kui Play Protect blokeerib töö, saab agent avada õige lehe, vaadata tegelikku ekraani ja liikuda samm-sammult läbi käigukasti ja lüliti – kuid see küsib kõigepealt teilt, sest kaitse väljalülitamine on teie otsus. Ise tegemiseks toimige järgmiselt. Play Store → profiilipilt → Play Protect → seaded → lülitage "Skanni rakendusi rakendusega Play Protect". Lehel on nupp, mis avab Play Store.
+
+## Miks luba on oluline
+Kui tööriist ebaõnnestub puuduva loa leidmisel, ütleb agent teile, milline neist on, ja avab selle dialoogi. Miski tundlik ei tööta ilma teie selgesõnalise lubamiseta.

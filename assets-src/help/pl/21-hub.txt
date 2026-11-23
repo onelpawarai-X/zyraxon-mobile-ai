@@ -1,0 +1,20 @@
+Centrum automatyki
+Ustawienia → System → Centrum automatyki. Każdy przycisk umożliwiający samodzielne wykonanie ZYRAXON znajduje się w jednym miejscu, na sześciu zakładkach. Każda zakładka zaczyna się od krótkiego wyjaśnienia, jak to działa.
+
+## Umiejętności
+Naucz ZYRAXON zadania na dwa sposoby: opowiedz je na czacie („naucz się tego zadania”) lub naciśnij przycisk nagrywania i wykonaj zadanie samodzielnie w innej aplikacji, a następnie wróć i naciśnij Stop. Usługa Dostępność musi być włączona, w przeciwnym razie Twoje dotknięcia nie będą widoczne. To, czego się nauczył, pojawia się w sekcji „Nauczone umiejętności” i można je odtworzyć lub usunąć.
+
+## Autopilot
+Zasady w rodzaju „kiedy to się stanie, zrób tamto”. Kiedy zdarzenie ma miejsce, ZYRAXON budzi się sam i wykonuje pracę bez pytania. Możesz także utworzyć regułę, wypowiadając ją na czacie. Każda reguła pokazuje, ile razy została uruchomiona.
+
+## Pieniądze
+Odczytuje SMS-y z dowolnego banku lub portfela w dowolnym kraju (PayPal, M-Pesa, UPI, Pix, bKash, karty…) i prowadzi jedną księgę przychodów, wydatków, opłat i salda. Możesz ustawić budżet i otrzymać ostrzeżenie, gdy go przekroczysz. Na telefonie działa, nic nie jest nigdzie wysyłane.
+
+## Oś czasu
+Wszystko, co zrobił ZYRAXON, jest tutaj zapisane. Zapis, edycję i usunięcie pliku można cofnąć jednym przyciskiem. Uruchomionego polecenia nie można cofnąć.
+
+## Mózg
+Przeszukuje Twoje pliki (tekst, Word, Excel, PowerPoint, CSV) i, jeśli na to pozwolisz, Twoje SMS-y, bez Internetu i w dowolnym języku. Najpierw naciśnij „Indeks”, a następnie wyszukaj.
+
+## Zadzwoń do agenta
+Jeśli nie możesz odebrać połączenia, ZYRAXON odbiera, mówi w języku rozmówcy, uczy się nazwy i przyczyny, a także podaje podsumowanie po zakończeniu połączenia. Piętnaście języków korzysta z szybkich, wbudowanych reguł; każdy inny język jest obsługiwany przez model, który odpowiada w języku dzwoniącego. Słowa oznaczające do widzenia, pilne lub spam są rozumiane we wszystkich językach jednocześnie. W zakładce znajdują się podsumowania odebranych połączeń.

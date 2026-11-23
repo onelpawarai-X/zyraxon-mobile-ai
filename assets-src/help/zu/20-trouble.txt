@@ -1,0 +1,14 @@
+Ukuxazulula inkinga
+- Ayikho impendulo: hlola i-inthanethi yakho kanye nokhiye we-API (Izilungiselelo → Abahlinzeki ne-API ibonisa iphutha langempela). Zama enye imodeli noma imodeli ekudivayisi.
+- Imakrofoni ayenzi lutho: vumela imvume yemakrofoni; hlola "Gcina imakrofoni ivuliwe"; hlola ulimi lokuqashelwa.
+- ZYRAXON izizwa ngokwayo: lokhu kuhlunga ngombhalo; uma kwenzeka, yehlisa ivolumu noma usebenzise ama-headphone.
+- Umusho uvela kabili: fixed ezinguqulweni zamanje; buyekeza uhlelo lokusebenza.
+- Ngeke ithephe noma ifunde isikrini: vula isevisi yokufinyeleleka (Izilungiselelo → Izimvume).
+- Ima ngemuva: vumela izaziso nokukhululwa kokuthuthukisa ibhethri; imbondela yeso elintantayo.
+- Ithuluzi lilokhu licela imvume: shintsha ileveli kokuthi Izilungiselelo → Okuzenzakalelayo, noma phendula ikhadi.
+- Play Protect ivimba okuthile: bona isahluko Sezimvume, noma vumela umenzeli aqondise izinyathelo.
+- Itheminali noma i-ZYRAXON OS ayiqali: linda ukukhishwa kokuqala ekuqaleni kohlelo lokusebenza; hlola isitoreji samahhala.
+- Isibuyekezo ngeke sifake: vumela i-ZYRAXON njengomthombo wokufaka.
+- Ayikwazi ukushicilela: engeza GitHub ithokheni ye-GitHub; ukuze uthole isixhumanisi somphakathi umenzeli angasebenzisa umhubhe.
+- Isahluko sikhombisa isiNgisi: leso sahluko asinawo umbhalo ngolimi lwakho kulesi sakhiwo; buyekeza uhlelo lokusebenza.
+- Okuthile okungajwayelekile: sebenzisa Izilungiselelo → Ukuzulazula → Iseshini entsha ukuze uqale ukuhlanza (isula umlando wengxoxo kuphela; ukuhlala kwenkumbulo).

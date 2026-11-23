@@ -1,0 +1,27 @@
+Näpunäiteid ja näidistaotlusi
+## Ütle, mida tahad, mitte kuidas
+- "Tehke jõusaali maandumisleht, tume ja julge."
+- "Ehitage andmebaasiga täispakk broneerimisrakendus." (agent küsib esmalt tehnilisi valikuid)
+- "Avage YouTube ja esitage rahulik lugu."
+- "Kerige alla ja avage esimene tulemus."
+- "Mis on minu aku ja Wi-Fi?"
+- "Lugege minu uusimat SMS-i ja öelge mulle kood."
+- "Helista emale." / "Vastu kõnele."
+- "Tehke sellest fotost CV." (kinnitage see)
+- "Muutke see koosoleku salvestis tegevusüksustega märkmeteks."
+- "Tehke nende värvidega plakat reedesele üritusele."
+- "Tehke helidialoog kahe sõbra, ühe poisi ja ühe tüdruku vahel."
+- "Pidage meeles, et mu õe sünnipäev on 3. mail."
+- "Räägi mulle igal hommikul kell 8 ilm." (autopiloot)
+- "Vaadake, kuidas ma rahakotirakenduse kaudu üüri saadan, et saaksite seda uuesti teha." (oskus)
+- "Võta tagasi see, mida projekti kaustas tegite." (ajaskaala)
+- "Kus on minu üürileping?" (aju)
+- "Installi pythoni paketid ja käivitage see skript." (ZYRAXON OS)
+- "Avaldage see sait, et saaksin seda jagada." (avalik link)
+
+## Harjumused, mis aitavad
+- Lühikesed ja selged löögid pikad. Agent valib vaikeseaded ja ütleb teile, mida ta valis.
+- Kui see esitab ühe küsimuse, vasta sellele ja see jätkub samast kohast.
+- Üksikasjaliku vastuse saamiseks öelge "selgitage" või "kokkuvõte"; vastasel juhul on vastused lühikesed.
+- Saate sellest igal ajal rääkida. See peatub ja kuulab.
+- Kasutage asjade tegemiseks ehitusrežiimi ja telefonis asjade tegemiseks agendirežiimi.

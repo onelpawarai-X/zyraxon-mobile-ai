@@ -1,0 +1,11 @@
+Obrázky, zvuk, video, dokumenty a dizajn
+- `generate_image` (sieť): vytvorte obrázok z popisu (napíšte ho s podrobnosťami; najlepšie funguje angličtina). Zobrazuje sa v chate pomocou tlačidiel zdieľania. Pri viacerých požiadajte o niekoľko.
+- `generate_audio` (sieť): hovorený zvuk (.mp3) z ľubovoľného textu. V prípade dialógu alebo príbehu dajte každej časti vlastný hlas (pohlavie, vek, jazyk, tón). Mnoho jazykov vrátane bengálčiny, hindčiny a angličtiny.
+- `generate_video`: skutočné upravené video (nie umelá inteligencia) zo scén – obrázky, klipy, text, farba, rozprávanie, titulky, hudba. `ffmpeg`: akákoľvek priama úprava – vystrihnutie, spojenie, prekrytie, titulky, rýchlosť, mix zvuku, konverzia. Možné sú 5–10-minútové videá zostavené krok za krokom.
+- Priebeh ukazuje naživo ako percento v chate; po dokončení sa súbor zobrazí s tlačidlami Play a Share.
+- `make_document`: skutočný súbor Word (.docx), Excel (.xlsx) alebo PowerPoint (.pptx) v telefóne, nie je potrebná žiadna inštalácia, akýkoľvek jazyk. `office_template`: pripravené kancelárske papiere s prázdnymi miestami na vyplnenie (žiadosť o dovolenku, žiadosť o zamestnanie, faktúra, životopis, obchodný návrh, cenová ponuka, oznámenie, zápisnica z rokovania, zmluva, mesačné účty a ďalšie).
+- Dokument z fotografie: pripojte fotografiu (skenovanie dokumentu). Text sa skopíruje presne tak, ako je napísaný (nezrozumiteľné slová sú označené), tabuľka sa zmení na .xlsx, inak .docx.
+- Poznámky zo stretnutí: zo zvuku, prepisu alebo toho, čo hovoríte. Dokument má zhrnutie, rozhodnutia, akčné položky (úloha, vlastník, dátum splatnosti) a pripravený e-mailový koncept.
+- `make_design`: plagáty, bannery, logá, karty, príbehy, obaly ako PNG a PDF. `brand_kit`: uveďte logo alebo farby; uložia sa, zmení sa téma aplikácie a odvtedy dokumenty, snímky a stránky používajú farby vašej značky.
+- `present_slides`: postava hovorí, kým sa zobrazujú karty; snímky sa po skončení hlasu samy zmenia. Ak chcete súbor, požiadajte o súbor .pptx.
+- `open_file`: otvorí to, čo bolo vytvorené v skutočnej aplikácii telefónu (Word/Dokumenty, Tabuľky, Prezentácie, PDF, galéria, prehliadač) alebo na paneli ukážky; agent skontroluje obrazovku, aby sa uistil, že je otvorená.

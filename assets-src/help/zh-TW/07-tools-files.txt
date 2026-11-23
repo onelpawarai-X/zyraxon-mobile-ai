@@ -1,0 +1,27 @@
+文件、終端和系統
+## 文件
+- `read_file`、`list_dir`、`find_files`、`grep_files`（安全）：讀取、列出、依名稱模式尋找、搜尋檔案內的文字。
+- `write_file`、`edit_file`：建立或變更檔案。 `edit_file` 完成這一切：新檔案、完全重寫或精確尋找和替換；該程式碼即時顯示在聊天中。 `delete_file`（系統）：刪除檔案或資料夾。
+- 允許任何資料夾（/sdcard、下載、文件、SD 卡...）。給予完整路徑，並以書面形式使用。
+- 代理打開它所做的內容：`open_file`（安全）在手機的真實應用程式中或ZYRAXON的預覽中開啟檔案。
+
+## 終端（兩個真實的）
+- android：手機自己的 shell（busybox 加 `sh`），位於應用程式的沙箱內。 `run_shell`（系統）在看不見的地方運行命令。
+- ZYRAXON OS: ZYRAXON自己的完整Unix系統，內建在應用程式中：bash、apt/pkg、real git、python、node、clang。它可以離線工作。 `os_run`（系統）在那裡運行命令。
+- `terminal_run`（系統）：在您正在觀看的「終端」標籤中執行一行，以便您可以看到它工作並接管。使用 shell android 或 zyraxon。 `terminal_open` 將「終端」標籤置於前面（僅當您詢問時）。
+- `system_shell`（系統）：系統層級指令，位於應用程式沙箱之上，與系統 shell 的方式相同；使用 Shizuku 或 root 可以達到更多。
+- 沒有預設的時間限制；一個大的 `apt upgrade` 或建置運行到最後。
+
+## Shizuku（系統存取）
+`setup_shizuku`（系統）設定Shizuku，捆綁在ZYRAXON內：檢查狀態、安裝、開啟、請求權限。只有您可以點擊安裝並允許；代理程式會在一行中告訴您步驟並完成其餘的工作。
+
+## 長期工作和時間安排
+- `background_command`（系統）：關閉應用程式（大下載、複製、建置）後繼續執行的命令，帶有通知和停止按鈕。
+- `schedule_command`（系統）：即時運行命令（「10 分鐘後」、「凌晨 2 點」）； Android 保存計時器，因此它會在應用程式關閉時運行。
+- `wait`（安全）：有目的地等待（幾秒鐘，直到連接埠開啟、檔案出現、命令完成）而不是猜測。
+
+## ZYRAXON OS用途
+安裝軟體包 (`apt install …`)、執行 Python 或 Node 腳本、編譯 C、使用 git、執行伺服器、壓縮和解壓縮、curl、ffmpeg。當應用程式啟動時，系統會安靜地解壓縮，並在重新啟動後保持不變。
+
+## 終端機螢幕
+終端選項卡是具有 ⌘ ZX 選項卡的真實終端。輸入您自己的命令或觀看代理的命令。設定中的導航畫面有一個系統 shell 的捷徑和一個「新會話」按鈕，可以清除聊天歷史記錄以重新開始。

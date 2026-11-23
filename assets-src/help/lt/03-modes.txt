@@ -1,0 +1,14 @@
+Režimai: agentas ir statyba
+Yra du režimai, pasirenkami mygtuku režimu šalia pranešimų laukelio. Pasirinkimas išlieka tol, kol jį nepakeisite. Gyvas balsas nėra trečiasis režimas; tai kalbėjimo būdas, kurį galite įjungti nustatymuose (žr. skyrių „Balsas“).
+
+## Agentas
+„Visiškas telefono ir sistemos automatizavimas“. Viskas atvira: telefono ekrano skaitymas ir valdymas, programų atidarymas, skambučiai, žinutės, fotoaparatas, failai, terminalas ir ZYRAXON OS, Git, peržiūra, medija, antriniai agentai, MCP serveriai, įgūdžiai, autopilotas ir kt. Pasirinkite Agentą, kai norite ką nors padaryti telefonu arba norite tiesiog pasikalbėti.
+
+## Sukurti
+„Visos krūvos programos, svetainės ir automatika“. Agentas yra kūrimo variklis: iš trumpos linijos jis sukuria viską, paleidžia jį, žiūri ir parodo jums. Jame yra failai, terminalas, Git, peržiūra, publikavimas, laikmena, atmintis ir darbų lenta. Telefono valdymas, antriniai agentai ir įrenginio užraktas priklauso agento režimui; jei jums jų reikia Build, perjunkite.
+- Nukreipimo puslapis arba svetainė: pasakykite, kam jis skirtas. Agentas sukuria jį iš karto, paleidžia jį jūsų telefone ir atidaro skydelyje Peržiūra, tada pasako, ką jis padarė. Jis neskelbiamas, nebent jūs paprašysite.
+- Programa: pasakykite, ko norite, ir ji sukurs programą, kaip prašoma. Užpakalinė dalis, duomenų bazė arba prisijungimo duomenys pridedami tik tada, kai to prašote.
+- Visas krūvas: kai paprašote užpakalinės dalies arba duomenų bazės, agentas pirmiausia užduoda vieną trumpą klausimą apie pasirinkimus (kalbą, duomenų bazę, prisijungimą, kur jis veikia) su rekomendacija ir sukuria, kai atsakysite.
+
+## Ką reiškia "klausti".
+Kai agentui tikrai reikia jūsų sprendimo, jis pirmiausia padaro visa kita, užduoda vieną trumpą klausimą su rekomendacija ir laukia. Jūsų atsakymas tęsia darbą ten, kur jis buvo sustabdytas.

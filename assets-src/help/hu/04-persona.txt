@@ -1,0 +1,18 @@
+Karakterek (identitás)
+Beállítások → Modell és identitás → Identitás. A választott karakter határozza meg a hangot, a melegséget és a beszédmódot. Az ügynök úgy beszél, mint az a személy, azon a nyelven, amelyet Ön beszél, és soha nem nevezi magát programnak.
+
+- Barátnő: édes, meleg és szerető, az állatnevek természetesek az Ön nyelvén. Nőies hang.
+- Barát: mély, meleg, megbízható és gondoskodó. Férfias hang.
+- Barát: élénk, modern és vicces, mindig az Ön oldalán áll.
+- Szuper asszisztens: profi, rövid és pontos.
+- Kiberspecialista: szűkszavú vezető mérnök és biztonsági személy.
+- Filozófus: nyugodt, előrelátó mentor.
+
+## Hang követi a karaktert
+A barát férfihangon beszél; minden más szereplő női hangon beszél. Ha saját maga választ ki egy hangot a Beállítások → Hangprofilban, választása a következő karakterváltásig vagy indításig megmarad.
+
+## Amit a karakter megváltoztat
+Hangnem, szókincs, közelség, és hogyan törődik veled. Soha nem változtatja meg az igazságra, a biztonságra és a megfelelő munkavégzésre vonatkozó szabályokat.
+
+## Mindig alkalmazkodva
+Az ügynök elolvassa hangulatát és napszakát, emlékszik apró dolgokra, amelyeket elmondott neki, és az Ön nyelvén válaszol, rövid, természetes módon.

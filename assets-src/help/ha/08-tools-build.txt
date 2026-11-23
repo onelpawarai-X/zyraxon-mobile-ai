@@ -1,0 +1,21 @@
+Gina: shafuka, ƙa'idodi, samfoti da bugawa
+## Yadda ake tambaya
+- "Kiyi min saukowa don shagon kofi na." Wakilin ya gina shi nan da nan, ya fara ta a wayarka kuma ya buɗe ta a cikin Preview. Kuna samun layi 2-3 suna kwatanta shi. Babu wani abu da aka buga sai kun tambaya.
+- "Gina aikace-aikacen abin yi." Gina kai tsaye tare da tari mai hankali, gudanar da nunawa. Ƙarshen baya, bayanan bayanai ko shiga kawai idan kun tambaya.
+- "Gina aikace-aikacen cikakkar kaya." Wakilin ya fara yin ɗan gajeren tambaya guda ɗaya game da yaren baya, bayanan bayanai, shiga da kuma inda yake gudana, tare da abubuwan da aka ba da shawarar, sannan ya gina duka tare da bayanan iri kuma ya gwada cikakken kwarara guda ɗaya.
+- "Yi wani shiri Windows/ZYRAXON OS/macOS/Android." An rubuta tushen, ana ƙara aikin ginawa, ana tura shi kuma an gina shi a cikin gajimare tare da GitHub Ayyuka, kuma kuna samun ainihin hanyar zazzagewa.
+
+## Kayan aiki
+- `edit_file` da `write_file`: rubuta ainihin fayilolin (cikakkiyar lambar, ba ta da tushe). `code_box` yana nuna su kai tsaye.
+- `preview` (Lafiya): ginannen mai bincike na gaske. Ayyuka: buɗe (hanyar hanyar haɗi, `localhost:PORT` ko fayil), sake saukewa, baya, gaba, hoton allo, gungura, danna, buga, karanta rubutun shafi, kurakurai na bidiyo, eval. Wakilin ya duba aikinsa kafin ya ce an yi.
+- `serve_local` (System): yana fara uwar garken gidan yanar gizo akan wayar don babban fayil kuma ya mayar da adireshin LAN sauran na'urorin da ke kan Wi-Fi na iya buɗewa.
+- `publish_website` (Tsarin): yana hidimar shafi akan tashar jama'a daga wayar. `publish_cloudflare` (Tsarin): yana sanya rukunin yanar gizo ba tare da asusu ba ta hanyar rami Cloudflare kuma yana dawo da hanyar haɗin yanar gizon jama'a. `publish_github` (Tsarin): yana buga aikin zuwa wurin ajiyar GitHub (Shafuka) tare da alamar ku.
+- `git` (Tsarin): clone, init, matsayi, ƙara, aikata, tura, ja, reshe, wurin biya, log, bambanta tare da alamar da aka adana. `github_pr` (Tsarin): ƙirƙira, jera, haɗawa da sharhi kan buƙatun ja. `github_actions` (Tsarin): jera ayyukan aiki, gudanar da su, gudanar da zabe da karanta rajistan ayyukan, don haka yana ginawa a cikin gajimare daga wayar.
+- `build_app` (System): yana gina wannan aikin tare da Gradle akan wayar kuma yana shigar da sakamakon.
+- `files_panel`, `todo_write`: mai binciken fayil da allon aiki.
+
+## Dokokin inganci da wakili ke bi
+Cikakken shimfidawa, ƙira mai amsawa, JavaScript mai aiki, rayarwa, launuka masu daidaitawa da haruffa (duhu da haske inda suka dace), ba samfuri na gabaɗaya ba. Shafin saukowa yawanci layi 300-900; manyan abubuwa fiye.
+
+## Idan wani abu yayi kama da karye
+Latsa Gyara a cikin Preview, ko gaya wa wakili. Yana karanta na'urar bidiyo, yana gyara sanadin, sake buɗe shafin kuma yana sake dubawa.

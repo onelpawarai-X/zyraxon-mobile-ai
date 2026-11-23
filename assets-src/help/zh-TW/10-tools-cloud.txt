@@ -1,0 +1,21 @@
+雲端、網路、模型和助手
+## 雲端和網路
+- `web_search`（網路）：搜尋真實網路。 `read_url`（網路）：以文字形式取得頁面。 `http_request`（網路）：任何帶有標頭和正文的 HTTP 呼叫（GET、POST、PUT、PATCH、DELETE）。 `verify_url`（網路）：檢查連結是否確實存在並取得真實狀態。 `download_file`（個人、網路）：下載文件的 URL。
+- 代理僅在您要求時才打開連結。
+- AI 模型透過您新增的提供者（ZYRAXON、ZYRAXON Apex 雲端代理、Groq、Gemini、OpenAI、Grok、Claude、DeepSeek、OpenRouter、OpenCode 在雲端中運行。模型清單會即時載入並隨著每個供應商的答案而填充。
+- 建置、發佈和拉取請求透過 GitHub 和 Cloudflare（`publish_*`、`github_actions`、`github_pr`、`git`）運作。
+- 開啟「僅限裝置上」（自動化設定），根本不會進行雲端呼叫：沒有供應商、沒有網路、沒有上傳。
+
+## MCP 伺服器
+MCP 讓外部服務為代理人提供額外的工具。透過位址（可選令牌）連接 Canva、Cloudflare、Supabase、GitHub 或您自己的伺服器。連接的伺服器工具作為 `server__tool` 加入代理的工具清單。
+- `mcp_connect`、`mcp_disconnect`、`mcp_list`（查看連接的內容以及存在哪些工具）、`mcp_resources`、`mcp_read_resource`、`mcp_prompts`、`mcp_prompt`、`mcp_subscribe`（監視資源的變更）、`mcp_complete`（自動完成參數）、`mcp_ping`、`mcp_log_level`。他們的調用是網路調用，未知的MCP工具預設請求許可。
+- MCP 螢幕列出了每台伺服器的已連線狀態、其工具、資源和提示模板，以及新增、中斷連線、刪除、允許按鈕。
+
+## 分代理
+`sub_agent`（系統）：將一項大工作的一部分交給在後台運行的輔助代理。操作：產生、狀態、清單、結果、訊息、停止、等待。每個人都可以使用自己的模型。代理在說“完成”之前會合併並檢查他們的結果。
+
+## 設備上模型
+`on_device_model`（系統）：列出、載入和運行手機上的語言模型，無需網路。在設定 → 模型和身分 → 裝置上下載模型（從小到大：FunctionGemma 270M、Qwen3 0.6B、Gemma 4 E2B…）； Hugging Face 標記是可選的，僅對於門控檔案才需要。載入的模型會被記住並在啟動時重新載入。
+
+## 訊息傳遞管道
+`channel_post`（系統）開啟 Telegram、WhatsApp、Facebook、Messenger、YouTube、X、Instagram、Gmail 或 SMS，並準備好文字。你自己按發送。

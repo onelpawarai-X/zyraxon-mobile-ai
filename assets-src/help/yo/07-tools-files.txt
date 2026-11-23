@@ -1,0 +1,27 @@
+Awọn faili, ebute ati eto
+## Awọn faili
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Ailewu): ka, ṣe akojọ, wa nipasẹ apẹrẹ orukọ, ati ṣawari ọrọ inu awọn faili.
+- `write_file`, `edit_file`: ṣẹda tabi yi awọn faili pada. `edit_file` ṣe gbogbo rẹ: faili titun, atunkọ ni kikun, tabi wiwa-ati-rọpo gangan; koodu han ifiwe ni iwiregbe. `delete_file` (Eto): pa faili tabi folda rẹ.
+- Eyikeyi folda ti gba laaye (/ sdcard, Ṣe igbasilẹ, Awọn iwe aṣẹ, kaadi SD…). Fun kan ni kikun ona ati awọn ti o ti wa ni lo bi kọ.
+- Aṣoju ṣii ohun ti o ṣe: `open_file` (Ailewu) ṣi faili kan ninu ohun elo foonu gidi, tabi inu awotẹlẹ ZYRAXON.
+
+## Awọn ebute (awọn gidi meji)
+- Android: ikarahun foonu ti ara rẹ (busybox pẹlu `sh`), inu apoti iyanrin ti app naa. `run_shell` (System) nṣiṣẹ aṣẹ kan nibẹ, laiwo.
+- ZYRAXON OS: ZYRAXON Eto Unix kikun ti tirẹ, ti a ṣe sinu app: bash, apt/pkg, git gidi, Python, node, clang. O ṣiṣẹ offline. `os_run` (System) nṣiṣẹ aṣẹ nibẹ.
+- `terminal_run` (Eto): nṣiṣẹ laini ninu taabu Terminal ti o nwo, nitorinaa o le rii pe o ṣiṣẹ ati gba. Lo ikarahun Android tabi ZYRAXON OS. `terminal_open` mu taabu Terminal wa si iwaju (nikan nigbati o ba beere).
+- `system_shell` (Eto): aṣẹ-ipele eto, loke apoti iyanrin app, ọna ti ikarahun eto ṣe; pẹlu Shizuku tabi gbongbo o le de ọdọ diẹ sii.
+- Nibẹ ni ko si aiyipada akoko iye; nla kan `apt upgrade` tabi kọ nṣiṣẹ si opin.
+
+## Shizuku (Wiwọle si eto)
+`setup_shizuku` (System) ṣeto Shizuku, ti a ṣajọpọ inu ZYRAXON: ṣayẹwo ipo, fi sori ẹrọ, ṣii, beere fun igbanilaaye. Nikan o le tẹ Fi sori ẹrọ ati Gba laaye; Aṣoju sọ fun ọ igbesẹ ni ila kan ati pe o ṣe iyokù.
+
+## Awọn iṣẹ pipẹ ati akoko
+- `background_command` (Eto): aṣẹ kan ti o tẹsiwaju lẹhin ti o ti pa app naa (igbasilẹ nla, ẹda oniye, kọ), pẹlu iwifunni ati bọtini Duro.
+- `schedule_command` (Eto): ṣiṣe aṣẹ ni akoko gidi ("ni iṣẹju mẹwa 10", "ni 2 owurọ"); Android di aago mu, nitorinaa o ṣiṣẹ pẹlu ohun elo pipade.
+- `wait` (Ailewu): duro lori idi (awọn iṣẹju-aaya, titi ti ibudo kan yoo ṣii, faili kan yoo han, aṣẹ kan pari) dipo lafaimo.
+
+## ZYRAXON OS awọn lilo
+Fi awọn akojọpọ sori ẹrọ (`apt install …`), ṣiṣe Python tabi Node awọn iwe afọwọkọ, ṣajọ C, lo git, ṣiṣe olupin, zip ati unzip, curl, ffmpeg. Eto naa jẹ ṣiṣi silẹ ni idakẹjẹ nigbati app ba bẹrẹ ati duro kọja awọn atunbẹrẹ.
+
+## Iboju ebute
+Taabu Terminal jẹ ebute gidi kan pẹlu taabu ⌘ ZX. Tẹ awọn aṣẹ tirẹ tabi wo ti aṣoju naa. Iboju Lilọ kiri ni Eto ni ọna abuja si ikarahun eto ati bọtini “igba Tuntun” ti o ko itan iwiregbe kuro lati bẹrẹ tuntun.

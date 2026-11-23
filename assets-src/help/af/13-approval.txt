@@ -1,0 +1,23 @@
+Goedkeuringsvlakke en veiligheid van outomatisering
+Instellings → Stelsel → Outomatisering. Dit besluit hoeveel die agent mag doen voordat dit stop en jou vra. Die instelling word afgedwing in kode op elke instrument oproep; 'n model kan dit nie verbreed nie.
+
+## Die vier vlakke
+Verander die vlak in Instellings → Stelsel → Outomatisering. Elke vlak besluit wanneer die agent stop en vra, en ook hoe streng die inhoudskild (sien Sekuriteit en privaatheid) teks hanteer wat die agent van buite lees.
+1. Vol vra (Gesluit): vra voor enigiets wat die foon verander, hoe klein ook al. Veiligste. Die inhoudskild is streng: enige verdagte teks tel as vyandig. Gebruik dit op 'n gedeelde foon of terwyl jy iets nuuts toets.
+2. Toesig gehou (verstek): vra voor sisteem en persoonlike aksies en doen gewone werk (lees, oopmaak, soek, bou) self. Die inhoudskild is standaard: verdagte teks word omhein as data, en wanneer teks duidelik vyandig is, vra elke veranderende instrument jou vir die res van daardie beurt.
+3. Gebalanseerd: vra slegs voor aksies op stelselvlak (dop, uitvee, publisering, skedulering ...). Persoonlike aksies soos boodskappe, tik en tik loop alleen. Die inhoudskild is lig: dit tree slegs op duidelik vyandige teks op, en dan stop net stelselvlaknutsgoed om te vra.
+4. Volle outomatisering: vra nooit en hou nooit op nie. Alles loop reguit deur, en die inhoudskild is heeltemal afgeskakel - niks word geskandeer, gemerk, verwyder of verander nie. Dit is outomatisering in die volle sin: jy besit die risiko.
+
+## Die drie vlakke van gereedskap
+- Veilig (vra nooit op enige vlak nie): lees en lys lêers, geheue, dokumente, ontwerpe, status, oopmaak van toepassings en lêers, wag, vaardighede/autopilot/tydlyn/oproeplyste, breinsoektog.
+- Persoonlik (gevra in die eerste twee vlakke): SMS, oproepe, kamera, skermlees, tik en tik, knipbord, aflaaie, kennisgewings, deel, stemverandering, vaardighede herspeel, geldgrootboek, oproepagent, tydlyn ongedaan maak.
+- Stelsel (gevra op elke vlak behalwe volle outomatisering): dop, ZYRAXON OS, bou, publiseer, uitvee, toestelslot, skedulering, Git en GitHub, ffmpeg, model op die toestel, plasing na kanale, outovlieënierreëls, uitveevaardighede, Shizuku. Enige instrument wat die toepassing nie herken nie – insluitend MCP gereedskap – word as stelsel behandel.
+
+## Die goedkeuringskaart
+Wanneer 'n instrument jou goedkeuring nodig het, sê 'n kaart "Toestemming benodig", vertel jou wat die agent wil doen, wys sy vlak (Veilig, Persoonlik of Stelsel), en bied "Ja, hardloop dit" of "Nee, hou dit af". Die kaart herinner jou ook dat jy kan verander hoe gereeld dit gevra word in Instellings → Outomatisering.
+
+## Slegs op die toestel
+Wanneer dit aan is, verlaat niks die foon nie: slegs die model op die toestel en plaaslike gereedskap loop. Alle netwerknutsgoed (soek, haal, oplaai, publisering, GitHub, mediagenerering, MCP, wolkmodelle) word in kode geweier.
+
+## Eerste bekendstelling kennisgewing
+Die eerste keer verduidelik ZYRAXON dat die agent op jou foon kan optree en waar om toestemmings aan te skakel. Druk "Het dit, begin".

@@ -1,0 +1,20 @@
+Otomasyon merkezi
+Ayarlar → Sistem → Otomasyon merkezi. ZYRAXON'nin kendi başına yapabilecekleri her düğme tek bir yerde, altı sekmede bulunuyor. Her sekme, nasıl çalıştığına dair kısa bir açıklamayla başlar.
+
+## Yetenekler
+Bir görevi ZYRAXON'a iki şekilde öğretin: sohbette anlatın ("bu görevi öğrenin") veya kayıt düğmesine basın ve görevi başka bir uygulamada kendiniz yapın, ardından geri gelip Durdur'a basın. Erişilebilirlik hizmetinin açık olması gerekir, aksi takdirde dokunuşlarınız görülemez. Öğrenilenler "Öğrenilen beceriler" altında görünür ve tekrar oynatılabilir veya silinebilir.
+
+## Otomatik pilot
+"Bu olduğunda şunu yap" türünden kurallar. Olay gerçekleştiğinde ZYRAXON kendiliğinden uyanır ve işi sormadan yapar. Ayrıca sohbette söyleyerek de bir kural oluşturabilirsiniz. Her kural kaç kez çalıştırıldığını gösterir.
+
+## Para
+Herhangi bir ülkedeki herhangi bir banka veya cüzdandan gelen SMS'leri okur (PayPal, M-Pesa, UPI, Pix, bKash, kartlar…) ve gelir, harcama, ücretler ve bakiyeyi gösteren bir defter tutar. Bütçe belirleyip aştığınızda uyarı alabilirsiniz. Telefonda çalışıyor ve hiçbir yere hiçbir şey gönderilmiyor.
+
+## Zaman çizelgesi
+ZYRAXON'un yaptığı her şey burada yazılıdır. Dosya yazma, düzenleme ve silme işlemleri tek tuşla geri alınabilir. Çalıştırılan bir komut geri alınamaz.
+
+## Beyin
+Dosyalarınızı (metin, Word, Excel, PowerPoint, CSV) ve izin verirseniz SMS'lerinizi internet olmadan ve herhangi bir dilde arar. Önce "Dizin"e basın, ardından arayın.
+
+## Temsilciyi arayın
+Bir aramaya cevap veremediğinizde, ZYRAXON cevap verir, arayanın kendi dilinde konuşur, adını ve nedenini öğrenir ve arama bittiğinde size bir özet verir. On beş dil hızlı yerleşik kurallar kullanır; diğer tüm diller, arayanın dilinde yanıt veren model tarafından işlenir. Elveda, acil veya spam anlamına gelen kelimeler tüm dillerde aynı anda anlaşılıyor. Yakalanan aramaların özetleri sekmede listelenir.

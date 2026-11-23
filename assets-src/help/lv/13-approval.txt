@@ -1,0 +1,23 @@
+Apstiprinājuma līmeņi un automatizācijas drošība
+Iestatījumi → Sistēma → Automatizācija. Tas izlemj, cik daudz aģents drīkst darīt, pirms tas apstājas un jautā jums. Iestatījums tiek ieviests kodā katrā rīka izsaukumā; modelis to nevar paplašināt.
+
+## Četri līmeņi
+Mainiet līmeni sadaļā Iestatījumi → Sistēma → Automatizācija. Katrs līmenis nosaka, kad aģents apstājas un jautā, kā arī to, cik stingri satura vairogs (skatiet Drošība un privātums) attiecas uz tekstu, ko aģents nolasa no ārpuses.
+1. Pilnīgs jautājums (bloķēts): jautā pirms jebko, kas maina tālruni, lai arī cik mazs tas būtu. Visdrošākais. Satura vairogs ir stingrs: jebkurš aizdomīgs teksts tiek uzskatīts par naidīgu. Izmantojiet to koplietotā tālrunī vai testējot kaut ko jaunu.
+2. Uzraudzīts (noklusējums): jautā pirms sistēmas un personīgām darbībām un veic parasto darbu (lasa, atver, meklē, veido) pats. Satura vairogs ir standarta: aizdomīgs teksts tiek norobežots kā dati, un, ja teksts ir nepārprotami naidīgs, katrs mainīgais rīks pieprasa atlikušo šī pagrieziena daļu.
+3. Balanced: jautā tikai pirms sistēmas līmeņa darbībām (apvalks, dzēšana, publicēšana, plānošana...). Personiskās darbības, piemēram, ziņas, pieskaršanās un rakstīšana, tiek veiktas atsevišķi. Satura vairogs ir viegls: tas iedarbojas tikai uz nepārprotami naidīgu tekstu, un tad tikai sistēmas līmeņa rīki pārstāj jautāt.
+4. Pilnīga automatizācija: nekad nejautā un neapstājas. Viss darbojas uzreiz, un satura vairogs tiek pilnībā izslēgts — nekas netiek skenēts, atzīmēts, noņemts vai mainīts. Tā ir automatizācija pilnā nozīmē: jūs uzņematies risku.
+
+## Trīs instrumentu līmeņi
+- Drošs (nekad nejautā nevienā līmenī): failu, atmiņas, dokumentu, dizainu, statusa lasīšana un uzskaitīšana, lietotņu un failu atvēršana, gaidīšana, prasmes/autopilots/laika skala/zvanu saraksti, smadzeņu meklēšana.
+- Personiski (tiek prasīts pirmajos divos līmeņos): SMS, zvani, kamera, ekrāna lasīšana, pieskāriens un rakstīšana, starpliktuve, lejupielādes, paziņojumi, kopīgošana, balss maiņa, prasmju atkārtošana, naudas virsgrāmata, zvanu aģents, laika skalas atsaukšana.
+- Sistēma (jautāta visos līmeņos, izņemot pilnu automatizāciju): apvalks, ZYRAXON OS, būves, publicēšana, dzēšana, ierīces bloķēšana, plānošana, Git un GitHub, ffmpeg, ierīces modelis, izlikšana kanālos, autopilota noteikumi, dzēšanas prasmes, Shizuku. Jebkurš rīks, ko lietotne neatpazīst, tostarp MCP rīki, tiek uzskatīts par sistēmu.
+
+## Apstiprinājuma karte
+Kad rīkam ir nepieciešams jūsu apstiprinājums, kartītē ir rakstīts “Nepieciešama atļauja”, tiek norādīts, ko aģents vēlas darīt, tiek parādīts tā līmenis (drošs, personiskais vai sistēma) un tiek piedāvāts “Jā, palaist” vai “Nē, izslēgt to”. Karte arī atgādina, ka varat mainīt to, cik bieži tas tiek prasīts sadaļā Iestatījumi → Automatizācija.
+
+## Tikai ierīcē
+Kad tas ir ieslēgts, tālrunis neatstāj nekas — darbojas tikai ierīces modelis un vietējie rīki. Visi tīkla rīki (meklēšana, ielāde, augšupielāde, publicēšana, GitHub, multivides ģenerēšana, MCP, mākoņa modeļi) tiek atteikti kodā.
+
+## Pirmais paziņojums par palaišanu
+Pirmo reizi ZYRAXON paskaidro, ka aģents var rīkoties jūsu tālrunī un kur ieslēgt atļaujas. Nospiediet "Sapratu, sāciet".

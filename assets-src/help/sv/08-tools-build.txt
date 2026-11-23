@@ -1,0 +1,21 @@
+Byggande: webbplatser, appar, förhandsgranskning och publicering
+## Hur man frågar
+- "Gör mig en målsida för mitt kafé." Agenten bygger den direkt, startar den på din telefon och öppnar den i Förhandsgranskning. Du får 2–3 rader som beskriver det. Inget publiceras om du inte frågar.
+- "Skapa en att göra-app." Byggd direkt med en vettig stack, kör och visad. En backend, databas eller inloggning endast om du frågar.
+- "Bygg en fullstack-app." Agenten ställer först en kort fråga om back-end-språket, databasen, inloggningen och var den körs, med rekommenderade standardinställningar, bygger sedan allt med frödata och testar ett helt flöde.
+- "Gör ett Windows/ZYRAXON OS/macOS/Android program." Källa skrivs, ett byggarbetsflöde läggs till, det pushas och byggs i molnet med GitHub Actions, och du får den riktiga nedladdningslänken.
+
+## Verktyg
+- `edit_file` och `write_file`: skriv de riktiga filerna (komplett kod, aldrig stubbar). `code_box` visar dem live.
+- `preview` (Safe): den inbyggda riktiga webbläsaren. Åtgärder: öppna (en länk, `localhost:PORT` eller en fil), ladda om, bakåt, framåt, skärmdump, rulla, klicka, skriv, läs sidtext, konsolfel, eval. Agenten tittar på sitt eget arbete innan det säger att det är gjort.
+- `serve_local` (System): startar en webbserver på telefonen för en mapp och returnerar LAN-adressen som andra enheter på din Wi-Fi kan öppna.
+- `publish_website` (System): betjänar en webbplats på en offentlig port från telefonen. `publish_cloudflare` (System): lägger en webbplats på internet utan konto genom en Cloudflare-tunnel och returnerar en offentlig https-länk. `publish_github` (System): publicerar ett projekt till ett GitHub arkiv (sidor) med din token.
+- `git` (System): klona, ​​påbörja, status, lägga till, begå, trycka, dra, förgrena, checka ut, logga, diff med din sparade token. `github_pr` (System): skapa, lista, slå samman och kommentera pull-förfrågningar. `github_actions` (System): lista arbetsflöden, kör dem, undersökningskörningar och läs loggar, så bygger körs i molnet från telefonen.
+- `build_app` (System): bygger detta projekt med Gradle på telefonen och installerar resultatet.
+- `files_panel`, `todo_write`: filläsare och aktivitetstavla.
+
+## Kvalitetsregler agenten följer
+Komplett layout, responsiv design, fungerande JavaScript, animering, konsekventa färger och typsnitt (mörkt och ljust där det passar), inte en generisk mall. En målsida är vanligtvis 300–900 rader; större saker mer.
+
+## Om något ser trasigt ut
+Tryck på Fixa i förhandsgranskningen eller berätta för agenten. Den läser konsolen, åtgärdar orsaken, öppnar sidan igen och kontrollerar igen.

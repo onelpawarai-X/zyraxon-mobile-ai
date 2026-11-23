@@ -1,0 +1,35 @@
+Giọng nói: nói, nghe và nói chuyện trực tiếp
+## Nghe (micro)
+Cài đặt → Giọng nói và micrô → Mic và ngôn ngữ.
+- Ngôn ngữ nhận dạng giọng nói: ngôn ngữ bạn nói với micrô. Thay đổi nó bất cứ lúc nào.
+- Luôn bật micrô (luôn nghe): khi bật, micrô vẫn mở. Khi tắt thì bạn tự bật.
+- Tự động gửi khi bạn ngừng nói: sau khoảng 1,5 giây im lặng, câu của bạn sẽ tự được gửi. Khi tắt thì chữ chờ ở ô để bạn nhấn Gửi.
+- Nút mic trên thanh thông báo và biểu ngữ ở trên cùng thực hiện bật/tắt tương tự.
+- Micrô luôn mở cho bạn ngay cả khi ZYRAXON đang nói. Khoảnh khắc bạn bắt đầu nói, nó dừng lại và lắng nghe rồi trả lời bạn. Giọng nói của chính nó phát ra qua micrô sẽ được lọc ra bằng cách so sánh văn bản với câu trả lời cuối cùng.
+- Một câu chỉ được gửi một lần. Nếu sau đó bộ nhận dạng lặp lại một phiên bản hơi khác của cùng một câu, nó sẽ bị loại bỏ trong cùng một lượt.
+
+## Nói (chuyển văn bản thành giọng nói)
+Cài đặt → Giọng nói & mic → Cấu hình giọng nói.
+- Chọn giọng: nữ (ngọt ngào và lãng mạn) hoặc nam (sâu lắng và tự tin). Giọng nói riêng của trang web sẽ được sử dụng khi sẵn sàng; công cụ nói của chính điện thoại là dự phòng.
+- Thanh trượt tốc độ và cường độ cũng như "Kiểm tra giọng nói".
+- "Đọc to câu trả lời" sẽ bật hoặc tắt tính năng nói.
+- Nếu điện thoại không có công cụ giọng nói, hãy cài đặt Google Dịch vụ giọng nói. Nếu điện thoại không có dữ liệu giọng nói tiếng Bengali, bạn có thể tải xuống bằng một nút.
+- Nhấn vào biểu ngữ đang nói để dừng giọng nói. Nhấn Nghe dưới bất kỳ tin nhắn nào để nghe.
+- ZYRAXON không bao giờ đọc to mã, liên kết, JSON hoặc tên công cụ.
+
+## Lab giọng nói (thay đổi giọng nói)
+Chọn từ danh mục của máy chủ theo giới tính (tất cả, bé gái, bé trai), độ tuổi (trẻ em, thanh thiếu niên, người lớn, người cao tuổi) và ngôn ngữ (tiếng Bengali, tiếng Hindi, tiếng Anh, tiếng Urdu, tiếng Ả Rập, tiếng Tamil, tiếng Nepal, tiếng Tây Ban Nha, tiếng Pháp, tiếng Đức, tiếng Nhật, tiếng Hàn, tiếng Trung, tiếng Nga, tiếng Thổ Nhĩ Kỳ…). "Nghe" xem trước giọng nói; "Trở lại mặc định" khôi phục giọng nói của nhân vật. Đối với âm thanh có nhiều giọng nói, hãy hỏi nhân viên hỗ trợ: mỗi phần của đoạn hội thoại sẽ có giọng nói riêng.
+
+## Giọng nói trực tiếp (lời nói thành giọng nói)
+Cài đặt → Giọng nói và mic → Giọng nói trực tiếp. Với mô hình thời gian thực (Gemini Trực tiếp, OpenAI Thời gian thực và tương tự), mô hình sẽ nghe thấy micrô và trả lời bằng giọng nói của chính nó, trong một luồng và bạn có thể ngắt giữa chừng. Giọng nói của điện thoại sẽ bị tắt trong phiên này nên bạn không bao giờ nghe thấy hai giọng nói.
+- Sử dụng giọng nói của chính người mẫu: on = trò chuyện trực tiếp; tắt = điện thoại đọc câu trả lời bằng văn bản.
+- Trạng thái hiển thị: đang kết nối, đang nghe, đang nói, đang chờ.
+- Việc chọn một mô hình thời gian thực sẽ tự bật nó lên.
+- Nếu không có mô hình thời gian thực nào được tải, hãy thêm khóa Gemini hoặc OpenAI trong nhà cung cấp AI.
+- Giọng nói bạn chọn trong cấu hình giọng nói cũng được sử dụng ở chế độ trực tiếp.
+
+## Mắt nổi
+Cài đặt → Hào quang & chủ đề → Hào quang & nền.
+- Một quả cầu nổi nhỏ nằm trên mọi ứng dụng khác. Nhấn để bật hoặc tắt micrô; nhấn và giữ để mở hộp văn bản và đóng lại.
+- Tám thiết kế: mắt, quả cầu phát sáng, vòng neon, thiên hà, quỹ đạo, plasma, sao xung, lăng kính. Vị trí cạnh màn hình.
+- Lệnh thoại (đánh thức từ): khi ứng dụng ở chế độ nền, việc nói tên sẽ đánh thức con mắt nổi và ZYRAXON câu trả lời. Giá trị mặc định: "zyraxon", "hey zyraxon" và các cách viết phổ biến bằng tiếng Bengali và tiếng Anh. Thêm từ của riêng bạn bằng bất kỳ ngôn ngữ nào; loại bỏ chúng bất cứ lúc nào.

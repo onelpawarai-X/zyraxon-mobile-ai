@@ -1,0 +1,27 @@
+Datoteke, terminal i sustav
+## Datoteke
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Sigurno): čitanje, popis, pronalaženje prema uzorku imena i pretraživanje teksta unutar datoteka.
+- `write_file`, `edit_file`: kreirajte ili promijenite datoteke. `edit_file` radi sve: nova datoteka, potpuno ponovno pisanje ili točno pronalaženje i zamjena; kod se pojavljuje uživo u chatu. `delete_file` (Sustav): brisanje datoteke ili mape.
+- Dopuštena je bilo koja mapa (/sdcard, Download, Documents, SD card …). Dajte punu putanju i koristi se kako je napisano.
+- Agent otvara ono što napravi: `open_file` (Sigurno) otvara datoteku u stvarnoj aplikaciji telefona ili unutar ZYRAXON pregleda.
+
+## Terminali (dva prava)
+- android: vlastita ljuska telefona (busybox plus `sh`), unutar sandboxa aplikacije. `run_shell` (Sustav) izvršava naredbu tamo, izvan vidokruga.
+- ZYRAXON OS: ZYRAXON-ov vlastiti puni Unix sustav, ugrađen u aplikaciju: bash, apt/pkg, pravi git, python, node, clang. Radi izvan mreže. `os_run` (Sustav) tamo pokreće naredbu.
+- `terminal_run` (Sustav): pokreće liniju na kartici terminala koju gledate, tako da možete vidjeti kako radi i preuzeti. Koristite shell android ili zyraxon. `terminal_open` stavlja karticu Terminal u prednji dio (samo kada to zatražite).
+- `system_shell` (Sustav): naredba na razini sustava, iznad sandboxa aplikacije, na način na koji to čini ljuska sustava; s Shizuku ili rootom može dosegnuti daleko više.
+- Ne postoji zadano vremensko ograničenje; veliki `apt upgrade` ili build radi do kraja.
+
+## Shizuku (pristup sustavu)
+`setup_shizuku` (Sustav) postavlja Shizuku, u paketu unutar ZYRAXON: provjerite status, instalirajte, otvorite, zatražite dozvolu. Samo vi možete dodirnuti Instaliraj i Dopusti; agent vam kaže korak u jednom retku i učini ostalo.
+
+## Dugi poslovi i tajming
+- `background_command` (Sustav): naredba koja se nastavlja izvoditi nakon što zatvorite aplikaciju (veliko preuzimanje, kloniranje, izrada), s obavijesti i gumbom Stop.
+- `schedule_command` (Sustav): pokrenite naredbu u stvarnom vremenu ("za 10 minuta", "u 2 ujutro"); Android drži mjerač vremena, tako da radi sa zatvorenom aplikacijom.
+- `wait` (Sigurno): namjerno čekanje (sekunde, dok se ne otvori port, pojavi datoteka, završi naredba) umjesto nagađanja.
+
+## ZYRAXON OS koristi
+Instalirajte pakete (`apt install …`), pokrenite Python ili Node skripte, prevedite C, koristite git, pokrenite poslužitelje, zip i raspakirajte, curl, ffmpeg. Sustav se tiho raspakira kada se aplikacija pokrene i ostaje pri ponovnom pokretanju.
+
+## Zaslon terminala
+Kartica Terminal pravi je terminal s karticom ⌘ ZX. Upišite vlastite naredbe ili gledajte agentove. Navigacijski zaslon u Postavkama ima prečac do ljuske sustava i gumb "Nova sesija" koji briše povijest razgovora kako bi počeo iznova.

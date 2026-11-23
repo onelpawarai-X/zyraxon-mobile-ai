@@ -1,0 +1,15 @@
+Sağlayıcılar, modeller ve anahtarlar
+## Sağlayıcılar
+ZYRAXON (kendi hattı ve Apex bulut aracısı, her zaman bağlı), OpenCode (ücretsiz kota), Groq (çok hızlı Lama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek ve OpenRouter. Ayarlar → Sağlayıcılar ve API'ye herhangi bir anahtar ekleyin. Anahtar telefonunuza kaydedilir, sağlayıcının kataloğuyla karşılaştırılır ve her sağlayıcı cevap verdikçe modeller seçiciye aktarılır.
+
+## Bir model seçmek
+Mesaj çubuğundaki model düğmesini veya Ayarlar → Model ve kimlik → Model'i kullanın. Ada göre arayın, Tümünü veya Özel'i filtreleyin. Seçiminiz başlatma sırasında kaydedilir ve geri yüklenir; yenileme hiçbir zaman kayıtlı modelinizin yerini almaz. Canlı işaretli modeller kendi sesleriyle konuşabilir (bkz. Canlı ses).
+
+## Cihaz üstü modeller
+Ayarlar → Model ve kimlik → Cihazda. Model, hiçbir veri bırakmadan telefonda çalışır. Dosyalar büyük (yüzlerce MB ile birkaç GB arası), bu nedenle Wi-Fi adresinden indirin. Küçükten büyüğe sıralanmıştır; RAM'i az olan bir telefonda en hafif olanı seçin. Araç çağırma, Gemma ve FunctionGemma paketleri tarafından desteklenir. Hugging Face belirteci yalnızca geçitli dosyalar içindir. Yüklenen modeller hatırlanır.
+
+## ZYRAXON web sitesi
+zyraxonai.lovable.app: bir hesap oluşturun (e-posta veya Google), Ayarlar'ı, API Anahtarını / Erişim Simgesini açın, bir anahtar oluşturun ve bunu uygulamaya yapıştırın. Anahtar olmadan uygulamayı cihazdaki modeller ve yerel araçlarla kullanmaya devam edebilirsiniz.
+
+## Maliyetler ve veriler
+Bulut sağlayıcıları size kendi kurallarına göre fatura keser. "Yalnızca cihazda" seçeneği açıkken hiçbir sağlayıcıya hiçbir şey gönderilmez.

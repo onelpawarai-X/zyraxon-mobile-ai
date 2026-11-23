@@ -1,0 +1,27 @@
+Wskazówki i przykładowe prośby
+## Powiedz, co chcesz, a nie jak
+- „Zrób stronę docelową siłowni, ciemną i odważną”.
+- „Zbuduj kompleksową aplikację rezerwacyjną z bazą danych.” (agent najpierw pyta o wybór techniczny)
+- „Otwórz YouTube i włącz spokojną piosenkę”.
+- „Przewiń w dół i otwórz pierwszy wynik”.
+- „Jaka jest moja bateria i Wi-Fi?”
+- „Przeczytaj moją najnowszą wiadomość SMS i podaj mi kod”.
+- „Zadzwoń do mamy”. / „Odbierz połączenie”.
+- „Zrób CV z tego zdjęcia”. (dołącz to)
+- „Zamień nagranie spotkania w notatki zawierające elementy działania”.
+- „Zrób plakat na piątkowe wydarzenie w tych kolorach”.
+- „Utwórz dialog audio pomiędzy dwoma przyjaciółmi, jednym chłopcem i jedną dziewczyną”.
+- „Pamiętaj, że moja siostra ma urodziny 3 maja”.
+- „Każdego ranka o 8 mów mi o pogodzie”. (autopilot)
+- „Dowiedz się, jak wysyłam czynsz za pomocą aplikacji Portfel, aby móc to zrobić ponownie”. (umiejętność)
+- „Cofnij to, co zrobiłeś w folderze projektu.” (oś czasu)
+- „Gdzie jest moja umowa najmu?” (mózg)
+- „Zainstaluj pakiety Pythona i uruchom ten skrypt”. (ZYRAXON OS)
+- „Opublikuj tę witrynę, abym mógł ją udostępnić”. (link publiczny)
+
+## Nawyki, które pomagają
+- Krótkie i wyraźne, długie uderzenia. Agent wybiera ustawienia domyślne i informuje Cię, co wybrał.
+- Kiedy zada jedno pytanie, odpowiedz na nie i kontynuuje od tego samego miejsca.
+- Powiedz „wyjaśnij” lub „podsumuj”, aby uzyskać szczegółową odpowiedź; w przeciwnym razie odpowiedzi są krótkie.
+- W każdej chwili możesz o tym porozmawiać. Zatrzymuje się i słucha.
+- Używaj trybu budowania do robienia rzeczy i trybu agenta do robienia rzeczy na telefonie.

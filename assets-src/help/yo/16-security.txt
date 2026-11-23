@@ -1,0 +1,11 @@
+Aabo ati asiri
+- Gbogbo awọn data ZYRAXON ngbe lori foonu rẹ: awọn ibaraẹnisọrọ, iranti, iwe akọọlẹ, awọn ọgbọn, aago, atọka ọpọlọ. Ko si ohun ti o wa ni ipamọ lori olupin ZYRAXON.
+- Awọn awoṣe awọsanma gba ohun ti o nilo nikan fun titan ti o firanṣẹ. Pẹlu "Lori-ẹrọ nikan" ko si ohun ti a firanṣẹ rara.
+- Awọn itọsi ati awọn faili ede ti o firanṣẹ ni app jẹ fifi ẹnọ kọ nkan inu APK.
+- Ohun elo titiipa: ṣeto ọrọ igbaniwọle tabi apẹrẹ ni Eto → Aabo & aṣiri → Titiipa App. ZYRAXON lẹhinna tiipa nigbati o ṣii tabi pada lati ẹhin. "Yọ titiipa kuro" npa ọrọ igbaniwọle ti o fipamọ tabi ilana rẹ.
+- Awọn ipele alakosile ṣe aabo fun gbogbo ipe irinṣẹ ni koodu (wo Awọn ipele alakosile). Awọn irinṣẹ aimọ nigbagbogbo beere.
+- O le nu: gbogbo iranti, itan iwiregbe, ati ami GitHub rẹ, ọkọọkan pẹlu bọtini kan ni Asiri & data.
+- Aabo: ti o ba sọ pe ẹnikan n halẹ tabi tẹle ọ, tabi fẹ foonu rẹ tabi data, aṣoju naa tii foonu titiipa akọkọ (ti igbanilaaye ẹrọ-alabojuto ba wa ni titan) lẹhinna ba ọ sọrọ ni idakẹjẹ.
+- Awọn sisanwo: ṣaaju isanwo eyikeyi tabi gbigbe oluranlowo sọ ohun ti yoo san ati beere lọwọ rẹ lati jẹrisi.
+- Otitọ: aṣoju nikan sọ ohun kan ṣiṣẹ lẹhin ti o rii abajade kan. Ko ṣẹda awọn ọna asopọ, awọn faili tabi awọn abajade rara.
+- Aabo akoonu: ohunkohun ti oluranlowo ba ka lati ita - iboju ti ohun elo miiran, oju-iwe ayelujara kan, ifiranṣẹ, faili kan, olupin ti a ti sopọ - ti ṣayẹwo ni koodu fun ọrọ ti o gbiyanju lati fun awọn aṣẹ aṣoju (ni ọpọlọpọ awọn ede, pẹlu ọrọ ti a fi pamọ pẹlu awọn ohun kikọ ti a ko ri). Ọrọ ifura ti wa ni odi nitori naa awoṣe ṣe itọju rẹ bi data nikan. Bawo ni o muna ti o tẹle ipele ifọwọsi rẹ: Titiipa ṣe itọju ohunkohun ifura bi ọta; Abojuto fences ifura ọrọ ati, nigba ti ọrọ jẹ kedere ṣodi, tilekun awọn iyokù ti awọn titan ki gbogbo iyipada ọpa beere ti o akọkọ (kaadi sọ idi); Awọn iṣe iwọntunwọnsi nikan lori ọrọ ọta ti o han gbangba ati awọn irinṣẹ ipele eto nikan duro lati beere; Laifọwọyi yipada aabo ni pipa patapata - ko si ohun ti a ṣayẹwo, duro, samisi tabi yipada. Ifiranṣẹ titun lati ọdọ rẹ sọ di mimọ.

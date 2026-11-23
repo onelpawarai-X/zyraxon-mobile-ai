@@ -1,0 +1,14 @@
+Fejlfinding
+- Intet svar: Tjek din internet- og API-nøgle (Indstillinger → Udbydere & API viser den rigtige fejl). Prøv en anden model eller en model på enheden.
+- Mikrofonen gør ingenting: tillad mikrofontilladelsen; tjek "Behold mikrofonen tændt"; tjek genkendelsessproget.
+- ZYRAXON hører sig selv: dette er filtreret efter tekst; hvis det stadig sker, sænk lydstyrken eller brug hovedtelefoner.
+- En sætning optræder to gange: fast i aktuelle versioner; opdatere appen.
+- Den vil ikke trykke på eller læse skærmen: Tænd for tilgængelighedstjenesten (Indstillinger → tilladelser).
+- Det stopper i baggrunden: tillad meddelelser og fritagelse for batterioptimering; overlægget til det flydende øje.
+- Et værktøj bliver ved med at spørge om tilladelse: skift niveauet i Indstillinger → Automation, eller besvar kortet.
+- Play Protect blokerer noget: se kapitlet om tilladelser, eller lad agenten guide trinene.
+- Terminal eller ZYRAXON OS starter ikke: vent på første gangs udpakning ved appstart; tjek gratis lagerplads.
+- Opdateringen vil ikke installere: tillad ZYRAXON som en installationskilde.
+- Kan ikke udgive: tilføj GitHub-tokenet for GitHub; til et offentligt link kan agenten bruge en tunnel.
+- Et kapitel viser engelsk: det kapitel har ingen tekst på dit sprog i denne build; opdatere appen.
+- Noget mærkeligt: ​​brug Indstillinger → Navigation → Ny session for at starte ren (det rydder kun chathistorik; hukommelsen forbliver).

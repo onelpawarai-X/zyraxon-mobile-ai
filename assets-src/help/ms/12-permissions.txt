@@ -1,0 +1,27 @@
+Izin, satu persatu
+Tetapan → Keselamatan & privasi → Kebenaran. Setiap baris menunjukkan "Diberikan" atau butang. Mengetik baris membuka dialog sistem; hanya tekan Benarkan. Ejen juga boleh membuka dialog itu sendiri dengan `request_permission`.
+
+- Mikrofon: supaya ZYRAXON boleh mendengar anda. Tanpanya tiada input suara.
+- Kamera: untuk mengambil dan melihat foto (`look_camera`, imbasan dokumen, "apa yang anda lihat").
+- Lokasi: untuk peta dan maklumat tempatan.
+- Pemberitahuan: untuk memberitahu anda apabila kerja latar belakang selesai.
+- Fail & media: untuk membaca foto, video, audio dan dokumen.
+- Tindanan (lukis di atas apl lain): diperlukan untuk mata terapung.
+- Kebolehaksesan: membolehkan ejen membaca skrin dan ketik, leret dan taip untuk anda. Ini adalah nadi automasi telefon. Anda menghidupkannya dalam tetapan Kebolehcapaian sistem.
+- Pengoptimuman bateri: menghentikan Android daripada meletakkan ZYRAXON tidur semasa ia berfungsi di latar belakang.
+
+## Keizinan lain yang diisytiharkan oleh apl
+- SMS (baca dan terima): untuk membaca kod, lejar wang dan peraturan autopilot SMS.
+- Keadaan telefon, jawab panggilan, panggilan telefon, kenalan: untuk alat panggilan dan ejen panggilan.
+- Akses pemberitahuan: membolehkan autopilot bertindak balas terhadap pemberitahuan.
+- Pentadbir peranti: benarkan `device_lock` benar-benar mengunci skrin.
+- Pasang pakej: membolehkan kemas kini dan `build_app` memasang APK; Android meminta anda membenarkan ZYRAXON sebagai sumber pemasangan.
+- Perkhidmatan latar depan (mikrofon, penyegerakan data) dan kunci bangun: kekalkan suara dan kerja yang panjang.
+- Keadaan Internet dan rangkaian: awan dan web.
+- Shizuku (pilihan): akses peringkat sistem untuk shell dan terminal.
+
+## Google Play Protect
+Jika Play Protect menyekat kerja, ejen boleh membuka halaman yang betul, melihat skrin sebenar dan pergi langkah demi langkah melalui gear dan togol — tetapi ia meminta anda terlebih dahulu, kerana mematikan perlindungan adalah keputusan anda. Untuk melakukannya sendiri: Play Store → tetapan gambar profil → Play Protect → → matikan "Imbas apl dengan Play Protect". Halaman ini mempunyai butang yang membuka Play Store.
+
+## Mengapa kebenaran penting
+Jika alat gagal untuk kebenaran yang hilang, ejen memberitahu anda yang mana satu dan membuka dialognya. Tiada apa-apa yang sensitif berfungsi tanpa Allow eksplisit anda.

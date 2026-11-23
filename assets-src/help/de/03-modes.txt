@@ -1,0 +1,14 @@
+Modi: Agent und Build
+Es gibt zwei Modi, die mit der Modustaste neben dem Meldungsfeld ausgewählt werden können. Die Auswahl bleibt bestehen, bis Sie sie ändern. Live-Voice ist kein dritter Modus; Es handelt sich um eine Sprechweise, die Sie in den Einstellungen aktivieren können (siehe Kapitel „Sprache“).
+
+## Agent
+„Vollständige Automatisierung des Telefons und des Systems.“ Alles ist offen: Lesen und Steuern des Telefonbildschirms, Öffnen von Apps, Anrufen, Nachrichten, Kamera, Dateien, Terminal und ZYRAXON OS, Git, Vorschau, Medien, Subagenten, MCP Server, Fähigkeiten, Autopilot und mehr. Wählen Sie „Agent“, wenn Sie etwas auf Ihrem Telefon erledigen oder einfach nur reden möchten.
+
+## Bauen
+„Full-Stack-Apps, Websites und Automatisierung.“ Der Agent ist eine Build-Engine: Aus einer kurzen Zeile erstellt er das Ganze, führt es aus, schaut es sich an und zeigt es Ihnen. Es verfügt über Dateien, Terminal, Git, Vorschau, Veröffentlichung, Medien, Speicher und das Aufgabenboard. Telefonsteuerung, Subagenten und Gerätesperre gehören zum Agentenmodus; Wenn Sie sie in Build benötigen, wechseln Sie.
+- Landingpage oder Website: Sagen Sie, wofür sie gedacht ist. Der Agent erstellt es sofort, startet es auf Ihrem Telefon, öffnet es im Vorschaufenster und teilt Ihnen dann mit, was es erstellt hat. Es wird nicht veröffentlicht, es sei denn, Sie fragen danach.
+- App: Sagen Sie, was Sie wollen, und die App wird wie gewünscht erstellt. Ein Backend, eine Datenbank oder ein Login wird nur hinzugefügt, wenn Sie danach fragen.
+- Full-Stack: Wenn Sie nach einem Back-End oder einer Datenbank fragen, stellt Ihnen der Agent zunächst eine kurze Frage zu den Auswahlmöglichkeiten (Sprache, Datenbank, Login, wo es ausgeführt wird), mit seiner Empfehlung und erstellt nach Ihrer Antwort die Erstellung.
+
+## Was „fragen“ bedeutet
+Wenn der Agent Ihre Entscheidung wirklich braucht, erledigt er zuerst alles andere, stellt mit seiner Empfehlung eine kurze Frage und wartet. Ihre Antwort setzt die Arbeit dort fort, wo sie aufgehört hat.

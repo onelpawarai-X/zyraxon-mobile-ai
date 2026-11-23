@@ -1,0 +1,21 @@
+Đám mây, mạng, mô hình và người trợ giúp
+## Đám mây và Internet
+- `web_search` (mạng): tìm kiếm trên web thực sự. `read_url` (mạng): tìm nạp một trang dưới dạng văn bản. `http_request` (mạng): mọi lệnh gọi HTTP (GET, POST, PUT, PATCH, DELETE) có tiêu đề và nội dung. `verify_url` (mạng): kiểm tra liên kết có thực sự tồn tại và nhận trạng thái thực sự. `download_file` (Cá nhân, mạng): tải URL xuống tệp.
+- Đại lý chỉ mở liên kết khi bạn yêu cầu.
+- Các mô hình AI chạy trên đám mây thông qua các nhà cung cấp mà bạn đã thêm (ZYRAXON, ZYRAXON Apex tác nhân đám mây, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Danh sách mô hình tải trực tiếp và điền vào khi mỗi nhà cung cấp trả lời.
+- Các yêu cầu xây dựng, xuất bản và kéo chạy qua GitHub và Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Bật "Chỉ trên thiết bị" (Cài đặt tự động hóa) và không có cuộc gọi nào trên đám mây được thực hiện: không có nhà cung cấp, không có web, không tải lên.
+
+## MCP máy chủ
+MCP cho phép các dịch vụ bên ngoài cung cấp thêm công cụ cho đại lý. Kết nối Canva, Cloudflare, Supabase, GitHub hoặc máy chủ của riêng bạn theo địa chỉ của nó (mã thông báo tùy chọn). Các công cụ của máy chủ được kết nối tham gia vào danh sách công cụ của tác nhân dưới dạng `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (xem những gì được kết nối và những công cụ nào tồn tại), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (xem tài nguyên để biết các thay đổi), `mcp_complete` (đối số tự động hoàn thành), `mcp_ping`, `mcp_log_level`. Cuộc gọi của họ là cuộc gọi mạng và các công cụ MCP không xác định sẽ yêu cầu quyền theo mặc định.
+- Màn hình MCP liệt kê từng máy chủ với trạng thái Đã kết nối, các công cụ, tài nguyên và mẫu lời nhắc cũng như các nút Thêm, Ngắt kết nối, Xóa, Cho phép.
+
+## Đại lý phụ
+`sub_agent` (Hệ thống): giao các phần công việc lớn cho các tác nhân trợ giúp chạy trong nền. Hành động: sinh ra, trạng thái, danh sách, kết quả, tin nhắn, dừng, chờ. Mỗi người có thể sử dụng mô hình riêng của mình. Tác nhân kết hợp và kiểm tra kết quả của mình trước khi nói "xong".
+
+## Model trên thiết bị
+`on_device_model` (Hệ thống): liệt kê, tải và chạy mô hình ngôn ngữ tồn tại trên điện thoại, không có internet. Trong Cài đặt → Kiểu máy & danh tính → Bạn tải xuống kiểu máy trên thiết bị (nhỏ đến lớn: FunctionGemma 270M, Qwen3 0,6B, Gemma 4 E2B…); mã thông báo Hugging Face là tùy chọn và chỉ cần thiết cho các tệp được kiểm soát. Một mô hình đã tải sẽ được ghi nhớ và tải lại khi khởi chạy.
+
+## Kênh nhắn tin
+`channel_post` (Hệ thống) mở Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail hoặc SMS với văn bản của bạn đã sẵn sàng. Bạn nhấn gửi cho mình.

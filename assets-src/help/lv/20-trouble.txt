@@ -1,0 +1,14 @@
+Problēmu novēršana
+- Nav atbildes: pārbaudiet savu interneta un API atslēgu (Iestatījumi → Providers & API parāda patieso kļūdu). Izmēģiniet citu modeli vai ierīces modeli.
+- Mikrofons neko nedara: atļauj mikrofonam; atzīmējiet "Keep the mic on"; pārbaudiet atpazīšanas valodu.
+- ZYRAXON dzird sevi: tas tiek filtrēts pēc teksta; ja tas joprojām notiek, samaziniet skaļumu vai izmantojiet austiņas.
+- Teikums parādās divreiz: fiksēts pašreizējās versijās; atjaunināt lietotni.
+- Tas nepieskarsies ekrānam un nelasīs to: ieslēdziet pieejamības pakalpojumu (Iestatījumi → Atļaujas).
+- Tas apstājas fonā: atļaut paziņojumus un akumulatora optimizācijas atbrīvojumu; peldošās acs pārklājums.
+- Rīks nepārtraukti prasa atļauju: mainiet līmeni sadaļā Iestatījumi → Automatizācija vai atbildiet uz karti.
+- Play Protect kaut ko bloķē: skatiet sadaļu Atļaujas vai ļaujiet aģentam veikt darbības.
+- Terminālis vai ZYRAXON OS nesākas: gaidiet pirmo izsaiņošanas reizi lietotnes startēšanas laikā; pārbaudiet bezmaksas krātuvi.
+- Atjauninājums netiks instalēts: atļaujiet ZYRAXON kā instalēšanas avotu.
+- Nevar publicēt: pievienojiet GitHub marķieri GitHub; publiskai saitei aģents var izmantot tuneli.
+- Nodaļa parāda angļu valodu: šajā nodaļā nav teksta jūsu valodā šajā būvniecībā; atjaunināt lietotni.
+- Kaut kas dīvains: izmantojiet Iestatījumi → Navigācija → Jauna sesija, lai sāktu tīru (tiek notīrīta tikai tērzēšanas vēsture; atmiņa paliek).

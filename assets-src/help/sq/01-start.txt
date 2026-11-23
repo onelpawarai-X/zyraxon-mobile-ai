@@ -1,0 +1,20 @@
+Duke filluar
+ZYRAXON është një asistent që jeton brenda telefonit tuaj Android. Ai flet me ju, ju dëgjon dhe mund të bëjë punë reale: hap aplikacione, prek dhe shkruani në ekran, telefonon njerëz, shkruan skedarë, ndërton uebsajte dhe aplikacione, drejton një sistem ZYRAXON OS, bën fotografi, audio, video dhe dokumente zyre dhe ju kujton gjatë muajve. Ajo funksionon në çdo gjuhë që ju flisni.
+
+## Minutat e para
+- Në nisjen e parë ZYRAXON tregon një njoftim të shkurtër që agjenti mund të veprojë vetë në telefonin tuaj. Shtypni "E kuptova, fillo" për të vazhduar.
+- Shto një çelës AI (Cilësimet → Ofruesit dhe API → Ofruesit e AI). Ngjitni një çelës për çdo ofrues që ju pëlqen (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Kur ruani një çelës, aplikacioni lexon katalogun e atij ofruesi dhe e kontrollon atë për të vërtetë, kështu që ju shihni një "lidhur" të vërtetë dhe numrin e modeleve.
+- Nuk ka çelës? Mund të përdorni ende modelet në pajisje (Cilësimet → Modeli dhe identiteti → Në pajisje). Ata punojnë në telefon pa internet.
+- Zgjidhni një model me butonin e modelit në shiritin e mesazheve dhe një karakter (Cilësimet → Modeli dhe identiteti → Identiteti).
+- Jepni leje kur një veçori ka nevojë për një të tillë (shih kapitullin Lejet). Agjenti mund të hapë gjithashtu dialogun e lejeve për ju me një trokitje.
+- Thjesht flisni ose shkruani. "Më bëj një faqe fillestare për furrën time", "hap YouTube dhe luaj një këngë", "çfarë është bateria ime?", "Telefono mamin".
+
+## Dy mënyrat e punës
+Pranë kutisë së mesazheve ka një buton modaliteti me dy mënyra: Agent dhe Build. Shihni kapitullin Modes.
+
+## Aty ku janë gjërat
+- Menyja e majtë: bisedat tuaja, biseda e re, riemërtoni, fshini dhe çelësi i temës.
+- Ekrani i bisedës: mesazhet, bordi i detyrave, lista e mjeteve, skedarët, terminali.
+- Panelet e shikimit dhe kodit: shikoni dhe modifikoni atë që ndërton agjenti.
+- Cilësimet: tetë seksione, të mbuluara një nga një në këtë dokumentacion.
+- Ky dokumentacion: Cilësimet → Dokumentacioni (ju jeni këtu).

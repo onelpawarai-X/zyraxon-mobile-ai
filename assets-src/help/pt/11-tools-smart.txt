@@ -1,0 +1,45 @@
+Habilidades, piloto automático, dinheiro, cronograma e desfazer, cérebro, agente de chamada e memória
+Você usa tudo isso conversando: fala o que quer e o agente chama a ferramenta certa. Cada ação está listada aqui com suas opções.
+
+## Habilidades - ensine fazendo
+Uma habilidade é uma tarefa telefônica que o agente aprendeu observando você executá-la uma vez. Ele armazena como encontrar cada elemento novamente (seu id, palavras e vizinhos, não sua posição na tela), para continuar funcionando quando o layout do aplicativo muda.
+- Adicione uma habilidade: `skill_record` (Pessoal). Diga "aprenda isso como <nome>". `action: start` (com um nome) começa a gravar; em seguida, execute a tarefa – abra o aplicativo, toque, digite, pressione as teclas; cada passo é registrado. `action: stop` salva. No stop você pode passar `params` para transformar os valores digitados em parâmetros (por exemplo o número do telefone passa a ser `number`, o valor passa a ser `amount`) e um `description`. `action: status` informa se a gravação está ativada.
+- Execute uma habilidade: `skill_run` (Pessoal). Forneça `args` para seus parâmetros, por ex. número e quantidade. Ele é reproduzido em uma fração das etapas e se recupera quando o aplicativo é alterado. Se uma etapa falhar, o resultado indica qual etapa e o que está na tela, e o agente conclui o restante manualmente.
+- Listar habilidades: `skill_list` (Seguro) mostra nome, parâmetros, etapas e com que frequência cada um foi executado. Com um nome e exportação, ele cria um arquivo `.zxskill` compartilhável.
+- Compartilhar e carregar: `skill_import` (Pessoal) carrega um arquivo `.zxskill` de um download ou arquivo compartilhado como uma habilidade.
+- Excluir uma habilidade: `skill_delete` (Sistema).
+- Exemplo: "Aprenda como envio 500 para Rahim pelo meu aplicativo de carteira" → você faz isso uma vez → "Envia 700 para Karim" da próxima vez.
+
+## Piloto automático - "quando X acontecer, faça Y"
+Uma regra acorda o agente por si só e ele executa a tarefa sem perguntar a você.
+- Adicionar: `autopilot_add` (Sistema). Tipos: sms, notificação, chamada, diariamente, uma vez, intervalo, bateria, aplicativo. Preencha apenas os campos necessários à regra: `from` (nome ou número do remetente ou título do aplicativo), `any` (pelo menos uma destas palavras), `all` (cada palavra), `none` (nenhuma dessas palavras), `time` "HH:MM" (diariamente), `in_minutes` ou `at_ms` (uma vez), `every_minutes` (intervalo), `below` (porcentagem de bateria), `pkg` (pacote de aplicativos ou nome, para regras de aplicativo e notificação). O agente transforma sua frase nesses campos. O resultado lista todas as permissões ainda necessárias (SMS, acesso a notificações…) e o agente solicita que você a ative.
+- Exemplos: "Quando um SMS de pagamento chegar do meu aplicativo de carteira, adicione-o ao meu livro-razão." "Todas as manhãs, às 8, diga-me como está o tempo." "Em 20 minutos, lembre-me de tirar o pão." "A cada 30 minutos, lembrete de beber água." "Quando a bateria ficar abaixo de 15%, me avise." "Quando alguém me ligar, registre o número." “Quando eu abrir o aplicativo do banco, lembre-me de verificar o orçamento.”
+- Lista: `autopilot_list` (Seguro) mostra cada regra com seu próximo tempo de execução e com que frequência ela foi disparada.
+- Pausar ou retomar: `autopilot_toggle` (Sistema). Excluir: `autopilot_remove` (Sistema), por id ou título.
+- Quando uma regra é acionada, você recebe uma mensagem informando isso e o agente apenas faz o trabalho.
+
+## Livro razão de dinheiro (CFO pessoal)
+- `ledger_scan` (Pessoal): leia SMS de carteira e banco em um livro-razão privado: receitas, despesas, taxas, saldo e categoria. `days` diz quanto tempo atrás (padrão 30). Com `auto` ativado, cada novo SMS de dinheiro é adicionado por si só e você é avisado quando um orçamento é aprovado. Funciona para carteiras e mensagens bancárias de qualquer país, em qualquer moeda.
+- `ledger_report` (Pessoal): período hoje, ontem, semana, mês ou todos. Formate texto (um resumo falado pronto) ou xlsx (um arquivo Excel com transações e totais de categorias, aberto para você).
+- `ledger_budget` (Pessoal): definir um orçamento mensal para uma categoria (alimentação, contas, transporte, compras, recarga de celular, transferências…); um limite de 0 o remove; sem argumentos, lista orçamentos e advertências atuais.
+- O agente nunca inventa números monetários; ele os lê no livro-razão.
+
+## Linha do tempo e desfazer
+- Tudo o que o agente faz é gravado na linha do tempo (as últimas 400 ações). As alterações no arquivo mantêm uma cópia do que estava lá antes.
+- `timeline_list` (Seguro): o que o agente fez recentemente, com um id para cada um, e quais alterações podem ser desfeitas.
+- `timeline_undo` (Pessoal): `id` desfaz uma gravação, edição ou exclusão - o arquivo volta exatamente como estava (um arquivo que não existia é removido novamente). `since_id` desfaz tudo daquele id em diante, o mais novo primeiro. Use-o quando disser "retire isso" ou "coloque de volta como antes".
+- Desfazer abrange gravações, edições e exclusões de arquivos. Um comando executado (por exemplo, instalar algo ou enviar uma mensagem) não pode ser desfeito desta forma.
+- Mensagens de bate-papo: para remover uma conversa inteira, use o lápis e a cruz no menu esquerdo ou Configurações → Privacidade e dados → Excluir histórico de bate-papo ou Navegação → Nova sessão.
+
+## Cérebro – segunda memória para seus arquivos
+- `brain_index` (Seguro): crie ou atualize o índice offline em pastas ou arquivos (texto, Markdown, CSV, Word, Excel, PowerPoint) e opcionalmente a caixa de entrada de SMS (`sms` ativada). Execute-o antes da primeira pesquisa e depois que novos arquivos aparecerem. O padrão é seu espaço de trabalho.
+- `brain_search` (Seguro): pergunte com suas próprias palavras, "onde está meu contrato de aluguel?" — funciona offline em qualquer idioma. `kind` é arquivo ou sms; `days` limites para itens recentes. Abra um arquivo encontrado com `open_file`.
+
+## Chamar agente
+- `call_agent` (Pessoal): ação ativada, desativada ou status. `owner` é o nome que diz ("Sou assistente do <proprietário>"). `answer_after_seconds` (padrão 6) permite que você pegue primeiro. Quando chega uma ligação e você não consegue atender, ele cumprimenta no idioma de quem liga, pergunta o nome e o motivo, responde perguntas simples, desliga educadamente e faz um resumo.
+- `call_log` (Seguro): resumos das chamadas atendidas, as mais recentes primeiro.
+- Precisa das permissões de chamada e estado do telefone.
+
+## Memória
+- `memory_write`, `memory_read`, `memory_delete` (Seguro): fatos duradouros sobre você (nome, preferências, pessoas, datas, projetos) residem em um banco de dados local e sobrevivem às reinicializações. Diga "lembre-se disso" e estará escrito na mesma linha; se algo estiver errado, ele será removido ou reescrito. Todas as conversas antigas também são mantidas, e as voltas passadas que correspondem ao que você diz voltam sozinhas, mesmo meses depois.
+- Veja e altere tudo em Configurações → Sistema → Memória (chave, valor, salvar, excluir tudo).

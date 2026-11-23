@@ -1,0 +1,27 @@
+Tips and example requests
+## Say what you want, not how
+- "Make a landing page for a gym, dark and bold."
+- "Build a full-stack booking app with a database." (the agent asks the technical choices first)
+- "Open YouTube and play a calm song."
+- "Scroll down and open the first result."
+- "What is my battery and Wi-Fi?"
+- "Read my newest SMS and tell me the code."
+- "Call Mom." / "Answer the call."
+- "Make a CV from this photo." (attach it)
+- "Turn this meeting recording into notes with action items."
+- "Make a poster for Friday's event with these colours."
+- "Make an audio dialogue between two friends, one boy and one girl."
+- "Remember that my sister's birthday is 3 May."
+- "Every morning at 8 tell me the weather." (autopilot)
+- "Learn how I send my rent by my wallet app so you can do it again." (skill)
+- "Undo what you did in the project folder." (timeline)
+- "Where is my rental contract?" (brain)
+- "Install python packages and run this script." (ZYRAXON OS)
+- "Publish this site so I can share it." (public link)
+
+## Habits that help
+- Short and clear beats long. The agent chooses defaults and tells you what it chose.
+- When it asks one question, answer it and it continues from the same spot.
+- Say "explain" or "summary" for a detailed answer; otherwise answers are short.
+- You can talk over it at any time. It stops and listens.
+- Use Build mode for making things and Agent mode for doing things on the phone.

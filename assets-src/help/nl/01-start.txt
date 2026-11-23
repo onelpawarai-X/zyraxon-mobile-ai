@@ -1,0 +1,20 @@
+Aan de slag
+ZYRAXON is een assistent die in uw Android-telefoon woont. Het praat met je, luistert naar je en kan echt werk doen: apps openen, tikken en typen op het scherm, mensen bellen, bestanden schrijven, websites en apps bouwen, een ZYRAXON OS-systeem uitvoeren, foto's, audio, video en kantoordocumenten maken, en maandenlang aan je denken. Het werkt in elke taal die u spreekt.
+
+## De eerste minuten
+- Bij de eerste keer opstarten toont ZYRAXON een korte melding dat de agent zelf actie op uw telefoon kan ondernemen. Druk op "Begrepen, start" om verder te gaan.
+- Voeg een AI-sleutel toe (Instellingen → Providers & API → AI-providers). Plak een sleutel voor elke gewenste provider (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Wanneer u een sleutel opslaat, leest de app de catalogus van die aanbieder en controleert deze op echtheid, zodat u een echte "verbonden" ziet en het aantal modellen.
+- Geen sleutel? U kunt nog steeds de modellen op het apparaat gebruiken (Instellingen → Model en identiteit → Op het apparaat). Ze werken aan de telefoon zonder internet.
+- Kies een model met de modelknop in de berichtenbalk en een personage (Instellingen → Model & identiteit → Identiteit).
+- Verleen rechten wanneer een functie er een nodig heeft (zie het hoofdstuk Machtigingen). De agent kan het toestemmingsdialoogvenster ook met één tik voor u openen.
+- Gewoon praten of typen. "Maak een landingspagina voor mijn bakkerij", "open YouTube en speel een liedje", "wat is mijn batterij?", "bel mama".
+
+## De twee manieren van werken
+Naast het berichtenvenster bevindt zich een modusknop met twee modi: Agent en Build. Zie het hoofdstuk Modi.
+
+## Waar dingen zijn
+- Linkermenu: uw chats, nieuwe chat, hernoemen, verwijderen en de themawisseling.
+- Chatscherm: berichten, het takenbord, gereedschapslijst, bestanden, de terminal.
+- Voorbeeld- en codepanelen: bekijk en bewerk wat de agent bouwt.
+- Instellingen: acht secties, één voor één behandeld in deze documentatie.
+- Deze documentatie: Instellingen → Documentatie (u bent hier).

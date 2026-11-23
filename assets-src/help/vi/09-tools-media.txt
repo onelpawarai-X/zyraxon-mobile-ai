@@ -1,0 +1,11 @@
+Hình ảnh, âm thanh, video, tài liệu và thiết kế
+- `generate_image` (mạng): tạo hình ảnh từ mô tả (viết chi tiết; tiếng Anh là tốt nhất). Nó xuất hiện trong cuộc trò chuyện với các nút chia sẻ. Đối với một số, yêu cầu một số.
+- `generate_audio` (mạng): âm thanh giọng nói (.mp3) từ bất kỳ văn bản nào. Đối với một đoạn hội thoại hoặc câu chuyện, hãy tạo cho mỗi phần một giọng điệu riêng (giới tính, tuổi tác, ngôn ngữ, giọng điệu). Nhiều ngôn ngữ, bao gồm tiếng Bengali, tiếng Hindi và tiếng Anh.
+- `generate_video`: một video được chỉnh sửa thực sự (không phải cảnh quay AI) từ các cảnh — hình ảnh, clip, văn bản, màu sắc, lời tường thuật, chú thích, âm nhạc. `ffmpeg`: bất kỳ chỉnh sửa trực tiếp nào — cắt, nối, lớp phủ, phụ đề, tốc độ, trộn âm thanh, chuyển đổi. Có thể quay video từ 5–10 phút, được xây dựng từng bước.
+- Tiến trình hiển thị trực tiếp dưới dạng phần trăm trong cuộc trò chuyện; khi hoàn tất, tệp sẽ xuất hiện cùng với các nút Phát và Chia sẻ.
+- `make_document`: tệp Word (.docx), Excel (.xlsx) hoặc PowerPoint (.pptx) thực trên điện thoại, không cần cài đặt, bất kỳ ngôn ngữ nào. `office_template`: giấy tờ văn phòng sẵn sàng có chỗ trống để điền (đơn xin việc, đơn xin việc, hóa đơn, CV, đề xuất kinh doanh, báo giá, thông báo, biên bản cuộc họp, hợp đồng, tài khoản hàng tháng, v.v.).
+- Tài liệu từ ảnh: đính kèm ảnh (Doc scan). Văn bản được sao chép chính xác như được viết (các từ không rõ ràng được đánh dấu), một bảng sẽ trở thành .xlsx, nếu không thì .docx.
+- Ghi chú cuộc họp: từ âm thanh, bản chép lời hoặc những gì bạn nói. Tài liệu có bản tóm tắt, quyết định, mục hành động (nhiệm vụ, chủ sở hữu, ngày đến hạn) và bản nháp email sẵn sàng.
+- `make_design`: áp phích, biểu ngữ, logo, thiệp, câu chuyện, bìa dưới dạng PNG và PDF. `brand_kit`: đưa ra logo hoặc màu sắc; chúng được lưu, chủ đề ứng dụng thay đổi và từ đó trở đi, các tài liệu, trang trình bày và trang web sẽ sử dụng màu sắc thương hiệu của bạn.
+- `present_slides`: nhân vật nói trong khi trình chiếu thẻ; các slide tự thay đổi khi giọng nói kết thúc. Yêu cầu tệp .pptx nếu bạn muốn có tệp.
+- `open_file`: mở nội dung được tạo trong ứng dụng thực của điện thoại (Word/Docs, Sheets, Slides, PDF, thư viện, trình duyệt) hoặc trong bảng Xem trước; nhân viên kiểm tra màn hình để chắc chắn rằng nó đã mở.

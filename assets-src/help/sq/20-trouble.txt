@@ -1,0 +1,14 @@
+Zgjidhja e problemeve
+- Asnjë përgjigje: kontrolloni internetin dhe çelësin API (Cilësimet → Providerët & API tregojnë gabimin e vërtetë). Provoni një model tjetër ose një model në pajisje.
+- Mikrofoni nuk bën asgjë: lejoni lejen e mikrofonit; kontrolloni "Mbajeni mikrofonin aktiv"; kontrolloni gjuhën e njohjes.
+- ZYRAXON dëgjon vetë: kjo filtrohet sipas tekstit; nëse ende ndodh, ulni volumin ose përdorni kufjet.
+- Një fjali shfaqet dy herë: fikse në versionet aktuale; përditësoni aplikacionin.
+- Nuk do të trokasë ose lexojë ekranin: aktivizoni shërbimin e aksesueshmërisë (Cilësimet → Lejet).
+- Ndalon në sfond: lejo njoftimet dhe përjashtimin nga optimizimi i baterisë; mbulesa për syrin lundrues.
+- Një mjet kërkon vazhdimisht leje: ndryshoni nivelin te "Cilësimet" → Automatizimi ose përgjigjuni kartës.
+- Play Protect bllokon diçka: shikoni kapitullin e lejeve ose lëreni agjentin të udhëheqë hapat.
+- Terminali ose ZYRAXON OS nuk fillon: prisni për shpaketimin për herë të parë në fillimin e aplikacionit; kontrolloni ruajtjen falas.
+- Përditësimi nuk do të instalohet: lejo ZYRAXON si burim instalimi.
+- Nuk mund të publikohet: shtoni shenjën GitHub për GitHub; për një lidhje publike agjenti mund të përdorë një tunel.
+- Një kapitull tregon anglishten: ai kapitull nuk ka tekst në gjuhën tuaj në këtë version; përditësoni aplikacionin.
+- Diçka e çuditshme: përdorni Cilësimet → Navigimi → Sesioni i ri për të filluar pastrimin (fshin vetëm historikun e bisedave; kujtesa qëndron).

@@ -1,0 +1,7 @@
+Actualizaciones
+Ajustes → Updates → App update, o el banner de la parte superior de la app.
+- La app busca versiones nuevas y muestra "Nueva actualización disponible — versión".
+- Check for updates: pregunta ahora. Si estás al día, lo dice.
+- Download & install: descarga con un porcentaje. Al terminar pulsa Install. Tus chats, memoria y ajustes se conservan.
+- Si Android bloquea la instalación, pulsa el botón de permiso, permite ZYRAXON como fuente de instalación y vuelve a intentarlo.
+- Los botones del banner: Download, Install, Allow y Close.

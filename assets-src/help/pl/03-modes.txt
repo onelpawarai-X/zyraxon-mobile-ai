@@ -1,0 +1,14 @@
+Tryby: Agent i Budowa
+Dostępne są dwa tryby, wybierane za pomocą przycisku trybu obok okna komunikatu. Wybór pozostaje taki, dopóki go nie zmienisz. Głos na żywo nie jest trzecim trybem; jest to sposób mówienia, który możesz włączyć w Ustawieniach (patrz rozdział Głos).
+
+## Agent
+„Pełna automatyzacja telefonu i systemu.” Wszystko jest otwarte: czytanie i sterowanie ekranem telefonu, otwieranie aplikacji, połączeń, wiadomości, aparatu, plików, terminala i ZYRAXON OS, Git, podglądu, multimediów, subagentów, MCP serwerów, umiejętności, autopilota i nie tylko. Wybierz Agenta, jeśli chcesz coś zrobić na swoim telefonie lub po prostu porozmawiać.
+
+## Zbudować
+„Aplikacje, strony internetowe i automatyzacja z pełnym stosem”. Agent to silnik kompilacji: z krótkiej linii tworzy całość, uruchamia, przegląda i pokazuje. Zawiera pliki, terminal, Git, podgląd, publikację, multimedia, pamięć i tablicę zadań. Sterowanie telefonem, podagenci i blokada urządzenia należą do trybu Agenta; jeśli potrzebujesz ich w kompilacji, przełącz.
+- Strona docelowa lub witryna internetowa: powiedz, do czego służy. Agent buduje go od razu, uruchamia na Twoim telefonie i otwiera w panelu Podglądu, po czym informuje Cię, co stworzył. Nie publikuje, chyba że o to poprosisz.
+- Aplikacja: powiedz, czego chcesz, a aplikacja zbuduje aplikację zgodnie z żądaniem. Zaplecze, baza danych lub login są dodawane tylko wtedy, gdy o to poprosisz.
+- Full-stack: kiedy prosisz o backend lub bazę danych, agent najpierw zadaje ci jedno krótkie pytanie dotyczące wybranych opcji (język, baza danych, login, miejsce działania), wraz z rekomendacjami i buduje po twojej odpowiedzi.
+
+## Co oznacza „zapytać”.
+Kiedy agent naprawdę potrzebuje Twojej decyzji, najpierw robi wszystko inne, zadaje jedno krótkie pytanie ze swoją rekomendacją i czeka. Twoja odpowiedź kontynuuje pracę od miejsca, w którym została zatrzymana.

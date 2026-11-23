@@ -1,0 +1,7 @@
+Aktualizácie
+Nastavenia → Aktualizácie → Aktualizácia aplikácie alebo banner v hornej časti aplikácie.
+- Aplikácia skontroluje nové vydania a zobrazí „K dispozícii je nová aktualizácia – verzia“.
+- Vyhľadať aktualizácie: pýta sa teraz. Ak ste aktuálny, hovorí to tak.
+- Prevziať a nainštalovať: sťahovanie s percentom. Po dokončení stlačte Inštalovať. Vaše rozhovory, pamäť a nastavenia zostanú zachované.
+- Ak Android blokuje inštaláciu, stlačte tlačidlo povolenia, povoľte ZYRAXON ako zdroj inštalácie a skúste to znova.
+- Tlačidlá bannera: Stiahnuť, Inštalovať, Povoliť a Zavrieť.

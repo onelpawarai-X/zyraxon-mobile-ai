@@ -1,0 +1,14 @@
+Kutatua matatizo
+- Hakuna jibu: angalia mtandao wako na ufunguo wa API (Mipangilio → Watoa huduma na API inaonyesha hitilafu halisi). Jaribu muundo mwingine au muundo wa kifaa.
+- Maikrofoni haifanyi chochote: ruhusu ruhusa ya kipaza sauti; angalia "Weka maikrofoni"; angalia lugha ya utambuzi.
+- ZYRAXON husikia yenyewe: hii inachujwa kwa maandishi; ikiwa bado hutokea, punguza sauti au tumia vipokea sauti vya masikioni.
+- Sentensi inaonekana mara mbili: iliyowekwa katika matoleo ya sasa; sasisha programu.
+- Haitagusa au kusoma skrini: washa huduma ya Ufikivu (Mipangilio → Ruhusa).
+- Inasimama chinichini: ruhusu arifa na msamaha wa uboreshaji wa betri; pazia kwa jicho linaloelea.
+- Zana huendelea kuomba ruhusa: badilisha kiwango katika Mipangilio → Uendeshaji otomatiki, au jibu kadi.
+- Play Protect huzuia kitu: tazama sura ya Ruhusa, au umruhusu wakala aongoze hatua.
+- Kituo au ZYRAXON OS hakianzishi: subiri upakiaji wa mara ya kwanza wakati programu inapoanza; angalia hifadhi ya bure.
+- Sasisho halitasakinisha: ruhusu ZYRAXON kama chanzo cha kusakinisha.
+- Haiwezi kuchapisha: ongeza GitHub tokeni ya GitHub; kwa kiungo cha umma wakala anaweza kutumia handaki.
+- Sura inaonyesha Kiingereza: sura hiyo haina maandishi katika lugha yako katika muundo huu; sasisha programu.
+- Jambo lisilo la kawaida: tumia Mipangilio → Uelekezaji → Kipindi kipya ili uanze kufanya usafi (hufuta historia ya gumzo pekee; kumbukumbu hubakia).

@@ -1,0 +1,34 @@
+Telefon automatizálási eszközök
+Az ügynök eszközökkel vezérli telefonját. Soha nem hívod őket magad; azt mondod, amit akarsz, és az ügynök kiválasztja az eszközöket. Ez a fejezet felsorol minden eszközt, amely hozzáér a telefonhoz, és felsorolja a védelem módját (lásd: Jóváhagyási szintek: Biztonságos, Személyes, Rendszer).
+
+## Megnyitás és megtalálás
+- `open_app` (Biztonságos): minden telepített alkalmazás megnyitása név vagy csomag alapján. `list_apps` (Biztonságos): a telepített alkalmazások listája. `open_settings` (Biztonságos): rendszerbeállítási oldal megnyitása (kisegítő lehetőségek, átfedés, értesítések, alkalmazások, Wi-Fi, akkumulátor, Play Protect). `launch_url` (Biztonságos): hivatkozás megnyitása a böngészőben. `youtube_play` (Biztonságos): nyissa meg a YouTube-ot a keresési eredményeknél, amit kért, és játssza le.
+
+## A képernyőt látva
+- `read_screen` (Személyes): minden szöveget és elemet beolvas a képernyőn koppintással. `screen_shot` (Személyes): valódi képernyőkép. Ezekhez kisegítő lehetőségekre van szükség.
+- `look_camera` (Személyes): készít egy fényképet a fényképezőgéppel, és megnézi. `read_media` (Személyes): beolvas egy képet, hangot vagy videót (útvonalról vagy hivatkozásról), hogy a modell megértse azt.
+
+## Fellépés a képernyőn
+- `tap` (Személyes): érintsen meg egy pontot. `tap_text` (Személyes): érintse meg az elemet ezzel a címkével, amely biztonságosabb a koordinátáknál. `swipe` (Személyes): görgetés vagy visszamozdulás. `type_text` (Személyes): írja be a fókuszált mezőbe. `press_key` (Személyes): vissza, otthon, friss hírek, értesítések, gyorsbeállítások, zár.
+- A képernyőműveletek egyenként, sorrendben futnak, és mindegyik után az ügynök az új képernyőt nézi.
+
+## Telefon, üzenetek és vágólap
+- `call_dial` (Személyes): hívás kezdeményezése szám vagy kapcsolattartó név alapján. `call_state` (Személyes): cseng vagy aktív a hívás? `call_answer` (Személyes): válasz. `call_hangup` (Személyes): tedd le.
+- `read_sms` (Személyes): olvassa el a legújabb SMS-t, pl. egy OTP kód; szűrhet szöveg vagy feladó szerint.
+- `clipboard_read` és `clipboard_write` (Személyes): vágólap olvasása vagy írása.
+- `notify` (Személyes): valódi Android értesítés közzététele. `share` (Személyes): nyissa meg a megosztási lapot szöveggel, hivatkozással vagy fájllal. `channel_post` (Rendszer): nyissa meg a következőt: Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail vagy SMS előre kitöltve, küldésre készen.
+
+## Állapot- és rendszertények
+- `network_status` (Biztonságos): online vagy nem, Wi-Fi vagy mobil adatkapcsolat, Wi-Fi név. `sys_info` (Biztonságos): Android verzió, modell, CPU, RAM, tárhely, aktuális alkalmazás. `platform_info` (Biztonságos): ahol az ügynök fut. `process_list` (Biztonságos): folyamatok futtatása.
+
+## Engedélyek és képernyő
+- `request_permission` (Biztonságos): egyetlen érintéssel megnyitja a rendszerengedélyezési párbeszédpanelt, ha egy eszköz meghibásodik egy hiányzó engedély miatt. `device_lock` (Rendszer): zárolja le a képernyőt, vagy állítsa be az engedélyt, amely lehetővé teszi. `floating_bubble` (Személyes): a lebegő gömb be- vagy kikapcsolása.
+- `voice_change` (Személyes): a beszéd sebességének, hangmagasságának vagy nemének módosítása. `live_voice` (Rendszer): az élő beszéd-beszéd mód be- vagy kikapcsolása.
+
+## Interfész segítők
+- `code_box` és `files_panel`: nyissa meg az élő kóddobozt vagy a fájlböngészőt, hogy megnézze a munkát. `todo_write`: az élő feladattábla.
+
+## Tippek
+- Leláncolhatja: "Nyissa meg a Beállításokat, keresse meg a Wi-Fi-t, és mondja meg a hálózat nevét". Az ügynök minden lépés után elolvassa a képernyőt, és eldönti a következőt.
+- Ha egy érintés nem csinál semmit, az ügynök újra beolvassa a képernyőt, és egy másik elemmel próbálkozik; soha nem csap vakon.
+- Ha a Play Protect letilt valamit, az ügynök végigkísérheti Önnel a beállításokat (lásd: Engedélyek).

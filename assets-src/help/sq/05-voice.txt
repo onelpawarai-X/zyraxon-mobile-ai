@@ -1,0 +1,35 @@
+Zëri: të folurit, të dëgjuarit dhe të bisedës live
+## Dëgjimi (mikrofoni)
+Cilësimet → Zëri dhe mikrofoni → Mikrofoni dhe gjuha.
+- Gjuha e njohjes së të folurit: gjuha që flisni me mikrofonin. Ndryshojeni në çdo kohë.
+- Mbajeni mikrofonin të ndezur (duke dëgjuar gjithmonë): kur është i ndezur, mikrofoni qëndron i hapur. Kur fiket, e ndizni vetë.
+- Dërgo automatikisht kur të ndalosh së foluri: pas rreth 1,5 sekondash heshtje fjalia juaj dërgohet vetë. Kur fiket, fjalët presin në kuti që të shtypni Dërgo.
+- Butoni i mikrofonit në shiritin e mesazheve dhe baneri në krye bëjnë të njëjtën gjë ndezur/fikur.
+- Mikrofoni është gjithmonë i hapur për ju, edhe kur ZYRAXON është duke folur. Në momentin që filloni të flisni, ai ndalon dhe dëgjon, pastaj ju përgjigjet. Zëri i tij që kthehet përmes mikrofonit filtrohet duke e krahasuar tekstin me përgjigjen e tij të fundit.
+- Dënimi dërgohet vetëm një herë. Nëse njohësi më vonë përsërit një version paksa të ndryshëm të së njëjtës fjali, ajo hiqet si e njëjta kthesë.
+
+## Të folurit (tekst në fjalim)
+Cilësimet → Zëri dhe mikrofoni → Profili i zërit.
+- Zgjidhni një zë: femër (i ëmbël dhe romantik) ose mashkull (i thellë dhe i sigurt). Zërat e faqes së internetit përdoren kur janë gati; motori i të folurit të vetë telefonit është kthimi.
+- Rrëshqitësit e shpejtësisë dhe lartësisë dhe "Testoni zërin".
+- "Lexo përgjigjet me zë të lartë" aktivizon ose çaktivizon të folurit.
+- Nëse telefoni nuk ka motor të të folurit, instaloni Google Shërbimet e të folurit. Nëse telefoni nuk ka të dhëna zanore nga Bengali, një buton ju lejon ta shkarkoni.
+- Prekni banderolën e të folurit për të ndaluar zërin. Prekni Listen nën çdo mesazh për ta dëgjuar atë.
+- ZYRAXON nuk lexon kurrë kodin, lidhjet, JSON ose emrat e mjeteve me zë të lartë.
+
+## Laboratori i zërit (ndryshuesi i zërit)
+Zgjidhni nga katalogu i serverit sipas gjinisë (të gjitha, vajzë, djalë), moshën (fëmijë, adoleshent, të rritur, të moshuar) dhe gjuhën (Bengali, Hindi, Anglisht, Urdu, Arabisht, Tamilisht, Nepalisht, Spanjisht, Frëngjisht, gjermanisht, japonisht, koreanisht, kinezisht, rusisht, turqisht…). "Dëgjo" parashikon një zë; "Kthehu në parazgjedhje" rikthen zërin e personazhit. Për audio me shumë zëra pyesni agjentin: secila pjesë e një dialogu merr zërin e vet.
+
+## Zëri i drejtpërdrejtë (fjalë në të folur)
+Cilësimet → Zëri dhe mikrofoni → Zëri i drejtpërdrejtë. Me një model në kohë reale (Gemini Live, OpenAI Në kohë reale dhe të ngjashme) modeli dëgjon mikrofonin dhe përgjigjet me zërin e tij, në një transmetim, dhe ju mund ta ndërprisni atë në mes të fjalës. Fjalimi i vetë telefonit është i fikur në këtë seancë, kështu që nuk do të dëgjoni kurrë dy zëra.
+- Përdorni zërin e modelit: aktiv = bisedë drejtpërdrejt; fikur = telefoni lexon përgjigjet me tekst.
+- Statusi tregon: lidhje, dëgjim, të folur, pritje.
+- Zgjedhja e një modeli në kohë reale e aktivizon vetë.
+- Nëse nuk ngarkohet asnjë model në kohë reale, shtoni një çelës Gemini ose OpenAI në ofruesit e AI.
+- Zëri që keni zgjedhur në profilin e zërit përdoret gjithashtu në modalitetin e drejtpërdrejtë.
+
+## Syri lundrues
+Cilësimet → Aura dhe tema → Aura dhe sfondi.
+- Një rruzull i vogël lundrues që qëndron mbi çdo aplikacion tjetër. Prekni për të aktivizuar ose çaktivizuar mikrofonin; shtypni gjatë për të hapur një kuti teksti dhe mbylleni përsëri.
+- Tetë modele: sy, rruzull me shkëlqim, unazë neoni, galaktikë, orbitë, plazma, pulsar, prizëm. Vendosja në skaj të ekranit.
+- Komandat zanore (fjalë zgjimi): kur aplikacioni është në sfond, thënia e emrit zgjon syrin lundrues dhe ZYRAXON përgjigjet. Parazgjedhjet: "zyraxon", "hey zyraxon" dhe drejtshkrime të zakonshme në bengalisht dhe anglisht. Shtoni fjalët tuaja në çdo gjuhë; hiqni ato në çdo kohë.

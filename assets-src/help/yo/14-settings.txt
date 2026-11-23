@@ -1,0 +1,42 @@
+Gbogbo iboju eto, ọkan nipa ọkan
+Awọn eto ni awọn apakan mẹjọ. Abala kọọkan ni awọn oogun fun awọn iboju-ipin rẹ. Abala ti o kẹhin ti o lo ni a tun ṣii ni igba miiran.
+
+## 1. Ede & itumọ → App & ede irinṣẹ
+Yan ede ti gbogbo app ati ti awọn ifiranṣẹ irinṣẹ oluranlowo. Wa atokọ ki o tẹ ọkan ni kia kia. Iboju naa fihan ede ti o wa lọwọlọwọ ati boya itumọ UI ati itumọ ifiranṣẹ irin-iṣẹ wa ni titan. Awọn ede 60 wa. Wo orí Èdè.
+
+## 2. Ohùn & gbohungbohun
+- Profaili ohun: yan obinrin tabi ohùn akọ, iyara, ipolowo, “Ka awọn idahun ni ariwo”, ohun idanwo, itọka igbasilẹ ohun Bengali.
+- Gbohungbo & Èdè: Èdè idanimọ, jẹ ki gbohungbohun tan-an, firanšẹ laifọwọyi nigbati o ba dẹkun sisọ.
+- Ohun laaye: ọrọ-si-ọrọ tan/pa, ipo, atokọ ti awọn awoṣe akoko gidi.
+
+## 3. Awọn olupese & API
+- Awọn olupese AI: awọn bọtini API tirẹ (ZYRAXON, OpenCode ipin ọfẹ, Groq, Gemini, OpenAI, Grok), Claude, DeepSeek, OpenRouter) ati ZYRAXON Apex aṣoju awọsanma. Bọtini ti o fipamọ jẹ ijẹrisi nipasẹ kika iwe kika gidi ti olupese ati ṣafihan kika awoṣe tabi aṣiṣe gangan. Bọtini kan ṣi aaye ayelujara ZYRAXON nibiti o ti ṣẹda bọtini kan.
+- GitHub: rẹ GitHub wiwọle àmi (nilo repo dopin) fun te, Git Titari ati ki o fa ibeere. Fi àmi pamọ tabi paarẹ; ipo fihan ti o ba ti ṣeto.
+
+## 4. Awọn imudojuiwọn → App imudojuiwọn
+Ṣe afihan ẹya ti isiyi, ṣayẹwo fun itusilẹ tuntun, ṣe igbasilẹ rẹ pẹlu ọpa ilọsiwaju ati fi sii. Awọn ibaraẹnisọrọ rẹ, iranti ati awọn eto duro. Ti Android ba nilo igbanilaaye lati fi sori ẹrọ, bọtini kan yoo ṣii eto naa.
+
+## 5. Awoṣe & idanimo
+- Idanimọ: yan ohun kikọ (wo ori Awọn ohun kikọ).
+- Awoṣe: katalogi awoṣe ifiwe pẹlu apoti wiwa, “Gbogbo awọn awoṣe” ati awọn asẹ “Aṣa”; sare awọn awoṣe akọkọ.
+- Lori ẹrọ: ṣe igbasilẹ, fifuye ati gbejade awọn awoṣe ti nṣiṣẹ offline; lẹsẹsẹ kekere to tobi; iyan Hugging Face àmi; fihan kojọpọ, ikojọpọ ati kuna ipinle.
+
+## 6. Aura & akori
+- Akori: Ibanuje, Dudu tabi Imọlẹ.
+- Aura & lẹhin: aṣa aura ati awọ (ẹjẹ, Pink, Awọ aro, ọrun, alawọ ewe, ina) pẹlu iṣakoso hue to dara; aura iwọn, alábá agbara, yiyi iyara, nronu akoyawo; oju lilefoofo (titan / pipa, apẹrẹ, eti iboju, awọn pipaṣẹ ohun / awọn ọrọ ji, ṣafikun tirẹ); ipo shader; URL isale aṣa (mp4, gif tabi aworan); iyara iwara.
+
+## 7. Aabo & asiri
+- Titiipa ohun elo: ọrọ igbaniwọle kan (awọn nọmba 4–8) tabi apẹrẹ aami 3 × 3; jẹrisi nipa titẹ sii lẹẹmeji; yọ titiipa.
+- Awọn igbanilaaye: atokọ ni ipin Awọn igbanilaaye, pẹlu iranlọwọ Play Protect.
+- Asiri & data: gbogbo data duro lori foonu. Awọn bọtini: pa gbogbo iranti rẹ, pa itan iwiregbe rẹ, paarẹ GitHub ami.
+
+## 8. Eto
+Abala yii ni awọn bọtini ti ara rẹ ti o yi lọ si ẹgbẹ, nitorina ko si nkan ti o rọ.
+- Adaaṣe: ipele ifọwọsi ati ẹrọ nikan (wo awọn ipele alakosile).
+- Lilọ kiri: atokọ ti awọn agbegbe lati fo si — “ko si awọn bọtini lori oke, ohun gbogbo wa nibi” - pẹlu ikarahun eto ⌘ ZX, bọtini “igba Tuntun” kan (pa itan iwiregbe rẹ fun ibẹrẹ mimọ), kika ifiranṣẹ ati yiyi gbohungbohun.
+- Iranti: iranti agbegbe SQL pẹlu awọn otitọ ZYRAXON ranti; fi bọtini ati iye kun; pa gbogbo rẹ.
+- Itọsọna ogbon: atokọ iyara ti awọn agbara apẹẹrẹ (awọn ohun elo fifiranṣẹ, kikọ oju opo wẹẹbu, oluka iboju, ògùṣọ, kamẹra, Wi-Fi ati awọn eto) pẹlu awọn gbolohun ọrọ apẹẹrẹ.
+- Ibudo adaṣe: awọn ọgbọn, autopilot, owo, aago, ọpọlọ ati aṣoju ipe ni aye kan (wo ibudo adaṣe).
+
+## 9. Iwe-ipamọ
+Abala tirẹ ni Eto, lọtọ lati Eto. Itọsọna yii: awọn ipin mọkanlelogun, apoti wiwa, ati laini chirún ede kan. Gbogbo ede ti o wa ninu ohun elo naa ti kọ tẹlẹ ni kikun ninu ohun elo — ko si ohun ti a tumọ lori foonu rẹ ko si nilo intanẹẹti lati ka.

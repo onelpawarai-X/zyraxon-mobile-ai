@@ -1,0 +1,35 @@
+Hääl: rääkimine, kuulamine ja otsekõne
+## Kuulamine (mikrofon)
+Seaded → Hääl ja mikrofon → Mikrofon ja keel.
+- Kõnetuvastuskeel: keel, mida mikrofoniga räägite. Muutke seda igal ajal.
+- Hoidke mikrofon sees (alati kuulake): kui see on sisse lülitatud, jääb mikrofon avatuks. Kui see on välja lülitatud, lülitate selle ise sisse.
+- Automaatne saatmine, kui lõpetate rääkimise: pärast umbes 1,5-sekundilist vaikust saadetakse teie lause iseenesest. Kui see on välja lülitatud, ootavad sõnad kastis, kuni vajutate nuppu Saada.
+- Sama sisse/välja lülitavad sõnumiriba mikrofoninupp ja ülaosas olev bänner.
+- Mikrofon on teile alati avatud, isegi kui ZYRAXON räägib. Kui hakkate rääkima, see peatub ja kuulab ning vastab teile. Tema enda hääl, mis tuleb mikrofoni kaudu tagasi, filtreeritakse välja, võrreldes teksti viimase vastusega.
+- Lause saadetakse ainult üks kord. Kui äratundja kordab hiljem samast lausest veidi erinevat versiooni, jäetakse see sama pöördena välja.
+
+## Rääkimine (tekst kõneks)
+Seaded → Hääl ja mikrofon → Hääleprofiil.
+- Valige hääl: naiselik (armas ja romantiline) või meeshääl (sügav ja enesekindel). Kui see on valmis, kasutatakse veebisaidi enda hääli; telefoni enda kõnemootor on tagavaraks.
+- Kiiruse ja helikõrguse liugurid ning "Testi hääl".
+- "Lugege vastuseid ette" lülitab rääkimise sisse või välja.
+- Kui telefonil pole kõnemootorit, installige Google kõneteenused. Kui telefonil pole bengali häälandmeid, võimaldab nupp selle alla laadida.
+- Hääle peatamiseks puudutage kõnelevat bännerit. Selle kuulamiseks puudutage mis tahes sõnumi all valikut Kuula.
+- ZYRAXON ei loe kunagi valjusti koodi, linke, JSON ega tööriistade nimesid.
+
+## Häälelabor (häälevahetaja)
+Valige serveri kataloogist soo (kõik, tüdruk, poiss), vanuse (laps, teismeline, täiskasvanu, vanem) ja keele (bengali, hindi, inglise, urdu, araabia, tamili, nepali, hispaania, prantsuse, saksa, jaapani, korea, hiina, vene, türgi jne) järgi. "Kuula" kuvab hääle eelvaate; "Tagasi vaikeseadetele" taastab tegelase hääle. Mitmehäälse heli puhul küsige agendilt: iga dialoogi osa saab oma hääle.
+
+## Elav hääl (kõnest kõneks)
+Seaded → Hääl ja mikrofon → Otsehääl. Reaalajas mudeliga (Gemini reaalajas, OpenAI reaalajas jms) kuuleb mudel mikrofoni ja vastab oma häälega, ühes voos ning saate selle sõna keskel katkestada. Telefoni enda kõne on sellel seansil välja lülitatud, nii et te ei kuule kunagi kahte häält.
+- Kasutage modelli enda häält: sees = otsekõne; väljas = telefon loeb teksti vastuseid.
+- Olek näitab: ühendab, kuulab, räägib, ootab.
+- Reaalajas mudeli valimine lülitab selle iseenesest sisse.
+- Kui reaalajas mudelit pole laaditud, lisage tehisintellekti pakkujates võti Gemini või OpenAI.
+- Häälprofiilis valitud häält kasutatakse ka reaalajas režiimis.
+
+## Ujuv silm
+Seaded → Aura ja teema → Aura ja taust.
+- Väike hõljuv orb, mis asub kõigi teiste rakenduste kohal. Puudutage mikrofoni sisse- või väljalülitamiseks; vajutage pikalt tekstikasti avamiseks ja uuesti sulgemiseks.
+- Kaheksa kujundust: silm, helendav orb, neoonrõngas, galaktika, orbiit, plasma, pulsar, prisma. Ekraani serva paigutus.
+- Häälkäsklused (äratussõnad): kui rakendus on taustal, äratab nime ütlemine hõljuva silma ja ZYRAXON vastab. Vaikimisi: "zyraxon", "hey zyraxon" ja tavalised kirjapildid bengali ja inglise keeles. Lisage oma sõnu mis tahes keeles; eemaldage need igal ajal.

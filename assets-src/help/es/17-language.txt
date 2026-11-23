@@ -1,0 +1,16 @@
+Idiomas
+## Idioma de la app
+Ajustes → Language & translation. 60 idiomas. Toda la interfaz y los mensajes de herramientas del agente lo siguen. Cada idioma tiene su propio archivo de traducción. Cualquier línea que un archivo de idioma aún no tenga se muestra en inglés, nunca en blanco.
+
+## Lo que hablas
+El agente siempre responde en el idioma en que le hablas, cualquier idioma del mundo. Si cambias, él cambia. Usa la forma amistosa y respetuosa de "tú" en tu idioma. Los nombres de marcas y tecnologías se mantienen tal cual.
+
+## Idiomas de voz
+- Idioma de reconocimiento (lo que dices al micrófono): Ajustes → Voice & mic → Mic & language.
+- Voz de habla: Ajustes → Voice & mic → Voice profile, y el Voice lab para idiomas como bengalí, hindi, inglés, urdu, árabe, tamil, nepalí, español, francés, alemán, japonés, coreano, chino, ruso, turco.
+
+## Esta documentación
+Usa las fichas de idioma de la parte superior de esta página. Toda la guía está escrita completa en todos los idiomas que admite la app, a mano, e incluida dentro de la app. No se traduce nada en tu teléfono: cada capítulo se abre al instante, funciona sin conexión y no necesita modelo ni clave.
+
+## Escribir en tu propia escritura
+Los documentos, pósteres y diseños se pueden hacer en cualquier escritura. Para diseños en bengalí se usa la tipografía adecuada; para otras escrituras se elige la tipografía correspondiente.

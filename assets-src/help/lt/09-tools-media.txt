@@ -1,0 +1,11 @@
+Nuotraukos, garso, vaizdo, dokumentai ir dizainas
+- `generate_image` (tinklas): padarykite paveikslėlį iš aprašymo (parašykite jį išsamiai; geriausiai tinka anglų kalba). Jis rodomas pokalbyje su bendrinimo mygtukais. Dėl kelių, paprašykite kelių.
+- `generate_audio` (tinklas): žodinis garsas (.mp3) iš bet kokio teksto. Dialogui ar istorijai kiekvienai daliai suteikite savo balsą (lytį, amžių, kalbą, toną). Daug kalbų, įskaitant bengalų, hindi ir anglų kalbas.
+- `generate_video`: realiai suredaguotas vaizdo įrašas (ne AI filmuota medžiaga) iš scenų – vaizdų, klipų, teksto, spalvų, pasakojimo, antraščių, muzikos. `ffmpeg`: bet koks tiesioginis redagavimas – iškirpimas, sujungimas, perdanga, subtitrai, greitis, garso derinys, konvertavimas. Galimi 5–10 minučių trukmės vaizdo įrašai, sukurti žingsnis po žingsnio.
+- Pažanga rodoma tiesiogiai procentais pokalbyje; baigus failas atkeliauja su mygtukais Play ir Share.
+- `make_document`: tikras Word (.docx), Excel (.xlsx) arba PowerPoint (.pptx) failas telefone, nereikia įdiegti, jokia kalba. `office_template`: paruošti biuro dokumentai su užpildyti tuščiais laukeliais (atlikti paraišką, darbo paraišką, sąskaita faktūra, CV, verslo pasiūlymas, citata, pranešimas, posėdžio protokolas, sutartis, mėnesinės sąskaitos ir kt.).
+- Dokumentas iš nuotraukos: pridėkite nuotrauką (Doc scan). Tekstas nukopijuojamas tiksliai taip, kaip parašyta (neaiškūs žodžiai pažymėti), lentelė tampa .xlsx, kitu atveju .docx.
+- Susitikimo pastabos: iš garso įrašo, stenogramos arba to, ką sakote. Dokumente yra santrauka, sprendimai, veiksmų elementai (užduotis, savininkas, terminas) ir paruoštas el. pašto juodraštis.
+- `make_design`: plakatai, reklamjuostės, logotipai, atvirutės, istorijos, viršeliai kaip PNG ir PDF. `brand_kit`: nurodyti logotipą arba spalvas; jie išsaugomi, programos tema pasikeičia ir nuo tada dokumentai, skaidrės ir svetainės naudoja jūsų prekės ženklo spalvas.
+- `present_slides`: veikėjas kalba, kai rodomos skaidrių kortelės; skaidrės pasikeičia pačios, kai balsas baigiasi. Jei norite failo, paprašykite .pptx failo.
+- `open_file`: atidaro tai, kas buvo padaryta tikroje telefono programėlėje (Word/Dokumentai, Skaičiuoklės, Skaidrės, PDF, galerija, naršyklė) arba peržiūros skydelyje; agentas patikrina ekraną, kad įsitikintų, jog jis atidarytas.

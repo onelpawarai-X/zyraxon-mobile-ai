@@ -1,0 +1,27 @@
+Failid, terminal ja süsteem
+## Failid
+- `read_file`, `list_dir`, `find_files`, `grep_files` (turvaline): lugege, loendage, otsige nimemustri järgi ja otsige failides teksti.
+- `write_file`, `edit_file`: failide loomine või muutmine. `edit_file` teeb seda kõike: uus fail, täielik ümberkirjutamine või täpne otsimine ja asendamine; kood kuvatakse vestluses otse. `delete_file` (Süsteem): faili või kausta kustutamine.
+- Lubatud on kõik kaustad (/sdcard, allalaadimine, dokumendid, SD-kaart jne). Andke täielik tee ja seda kasutatakse nii, nagu kirjutatud.
+- Agent avab selle, mida ta teeb: `open_file` (turvaline) avab faili telefoni pärisrakenduses või ZYRAXON eelvaate sees.
+
+## Terminalid (kaks päris)
+- android: telefoni enda kest (busybox pluss `sh`), rakenduse liivakasti sees. `run_shell` (Süsteem) käivitab käsu seal, vaateväljast eemal.
+- ZYRAXON OS: ZYRAXON enda täielik Unixi süsteem, mis on rakendusse sisse ehitatud: bash, apt/pkg, real git, python, node, clang. See töötab võrguühenduseta. `os_run` (Süsteem) käivitab seal käsu.
+- `terminal_run` (Süsteem): käivitab rea vahekaardil Terminal, mida te vaatate, et saaksite näha selle töötamist ja üle võtta. Kasutage shell Androidi või ZYRAXON OSi. `terminal_open` toob vahekaardi Terminal ette (ainult küsimisel).
+- `system_shell` (Süsteem): süsteemitaseme käsk rakenduse liivakasti kohal, nagu seda teeb süsteemi kest; Shizuku või juurega võib see ulatuda palju kaugemale.
+- Vaikimisi ajalimiiti ei ole; suur `apt upgrade` või build jookseb lõpuni.
+
+## Shizuku (juurdepääs süsteemile)
+`setup_shizuku` (Süsteem) seadistab Shizuku, komplektis ZYRAXON: kontrollige olekut, installige, avage, taotlege luba. Ainult teie saate puudutada nuppu Installi ja luba; agent ütleb teile sammu ühes reas ja teeb ülejäänu.
+
+## Pikad tööd ja ajastus
+- `background_command` (Süsteem): käsk, mis töötab pärast rakenduse sulgemist (suur allalaadimine, kloonimine, ehitamine) koos märguande ja nupuga Stop.
+- `schedule_command` (Süsteem): käivitage käsk reaalajas ("10 minuti pärast", "kell 2:00"); Android hoiab taimerit, nii et see töötab suletud rakendusega.
+- `wait` (Turvaline): oodake meelega (sekundeid, kuni port avaneb, fail ilmub, käsk lõpeb), selle asemel, et arvata.
+
+## ZYRAXON OS kasutab
+Installige paketid (`apt install …`), käivitage Python või Node skriptid, kompileerige C, kasutage git, käitage servereid, pakkige lahti ja pakkige lahti, curl, ffmpeg. Süsteem pakitakse vaikselt lahti, kui rakendus käivitub, ja jääb püsima kogu taaskäivitamise ajal.
+
+## Terminali ekraan
+Vahekaart Terminal on tõeline terminal, millel on vahekaart ⌘ ZX. Sisestage oma käsud või vaadake agendi käske. Seadete navigeerimiskuval on otsetee süsteemi kestale ja nupp "Uus seanss", mis kustutab vestluse ajaloo, et alustada uuesti.

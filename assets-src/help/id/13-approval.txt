@@ -1,0 +1,23 @@
+Tingkat persetujuan dan keamanan otomatisasi
+Pengaturan → Sistem → Otomatisasi. Ini menentukan seberapa banyak yang dapat dilakukan agen sebelum berhenti dan bertanya kepada Anda. Pengaturan ini diterapkan dalam kode pada setiap panggilan alat; seorang model tidak dapat memperluasnya.
+
+## Empat tingkat
+Ubah level di Pengaturan → Sistem → Otomatisasi. Setiap tingkat menentukan kapan agen berhenti dan bertanya, dan juga seberapa ketat Perlindungan Konten (lihat Keamanan dan privasi) memperlakukan teks yang dibaca agen dari luar.
+1. Tanya Penuh (Terkunci): menanyakan sebelum melakukan apa pun yang mengubah ponsel, betapapun kecilnya. Paling aman. Perlindungan Konten sangat ketat: teks apa pun yang mencurigakan dianggap bermusuhan. Gunakan di ponsel bersama atau saat Anda menguji sesuatu yang baru.
+2. Diawasi (default): menanyakan sebelum tindakan sistem dan pribadi dan melakukan pekerjaan biasa (membaca, membuka, mencari, membangun) dengan sendirinya. Perlindungan Konten bersifat standar: teks yang mencurigakan dipagari sebagai data, dan ketika teks jelas-jelas bermusuhan, setiap alat yang berubah akan meminta Anda untuk melanjutkan sisa giliran tersebut.
+3. Seimbang: hanya menanyakan sebelum tindakan tingkat sistem (shell, penghapusan, penerbitan, penjadwalan…). Tindakan pribadi seperti pesan, ketukan, dan pengetikan dijalankan sendiri. Perlindungan Konten ringan: ia hanya bekerja pada teks yang jelas-jelas bermusuhan, dan kemudian hanya alat tingkat sistem yang berhenti untuk bertanya.
+4. Otomatisasi penuh: tidak pernah bertanya dan tidak pernah berhenti. Semuanya berjalan lancar, dan Content Shield dimatikan sepenuhnya — tidak ada yang dipindai, ditandai, dihapus, atau diubah. Ini adalah otomatisasi dalam arti penuh: Andalah yang menanggung risikonya.
+
+## Tiga tingkatan alat
+- Aman (tidak pernah bertanya di level mana pun): membaca dan membuat daftar file, memori, dokumen, desain, status, membuka aplikasi dan file, menunggu, keterampilan/autopilot/timeline/daftar panggilan, pencarian otak.
+- Pribadi (ditanyakan di dua level pertama): SMS, panggilan, kamera, membaca layar, mengetuk dan mengetik, papan klip, unduhan, notifikasi, berbagi, perubahan suara, pemutaran ulang keterampilan, buku besar uang, agen panggilan, pembatalan garis waktu.
+- Sistem (ditanyakan di setiap level kecuali Otomatisasi penuh): shell, ZYRAXON OS, pembuatan, penerbitan, penghapusan, kunci perangkat, penjadwalan, Git dan GitHub, ffmpeg, model pada perangkat, pengeposan ke saluran, aturan autopilot, keterampilan menghapus, Shizuku. Alat apa pun yang tidak dikenali aplikasi — termasuk alat MCP — diperlakukan sebagai System.
+
+## Kartu persetujuan
+Saat suatu alat memerlukan persetujuan Anda, sebuah kartu bertuliskan "Diperlukan Izin", memberi tahu Anda apa yang ingin dilakukan agen, menunjukkan tingkatannya (Aman, Pribadi, atau Sistem), dan menawarkan "Ya, jalankan" atau "Tidak, nonaktifkan". Kartu ini juga mengingatkan Anda bahwa Anda dapat mengubah seberapa sering hal ini ditanyakan di Pengaturan → Otomatisasi.
+
+## Hanya di perangkat
+Saat aktif, tidak ada yang keluar dari ponsel: hanya model pada perangkat dan alat lokal yang berjalan. Semua alat jaringan (pencarian, pengambilan, unggahan, penerbitan, GitHub, pembuatan media, MCP, model cloud) ditolak dalam kode.
+
+## Pemberitahuan peluncuran pertama
+Pertama kali, ZYRAXON menjelaskan bahwa agen dapat bertindak pada ponsel Anda dan tempat untuk mengaktifkan izin. Tekan "Mengerti, mulai".

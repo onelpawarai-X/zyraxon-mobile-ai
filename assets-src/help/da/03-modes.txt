@@ -1,0 +1,14 @@
+Tilstande: Agent og Build
+Der er to tilstande, valgt med tilstandsknappen ved siden af ​​meddelelsesboksen. Valget forbliver, indtil du ændrer det. Live stemme er ikke en tredje tilstand; det er en talemåde, du kan slå til i Indstillinger (se kapitlet Stemme).
+
+## Agent
+"Fuld automatisering af telefonen og systemet." Alt er åbent: Læsning og kørsel af telefonens skærm, åbning af apps, opkald, beskeder, kamera, filer, terminalen og ZYRAXON OS, Git, forhåndsvisning, medier, sub-agenter, MCP servere, færdigheder, autopilot og mere. Vælg Agent, når du vil have noget gjort på din telefon eller blot vil tale.
+
+## Byg
+"Apps, websteder og automatisering i fuld stack." Agenten er en byggemotor: Fra en kort linje laver den det hele, kører det, ser på det og viser det til dig. Det har filer, terminal, Git, preview, publicering, medier, hukommelse og todo board. Telefonkontrol, underagenter og enhedslås hører til agenttilstand; hvis du har brug for dem i Build, så skift.
+- Landingsside eller websted: sig, hvad det er til. Agenten bygger det på én gang, starter det på din telefon og åbner det i forhåndsvisningspanelet og fortæller dig derefter, hvad det har lavet. Den offentliggøres ikke, medmindre du spørger.
+- App: Sig, hvad du vil, og den bygger appen som du bliver bedt om. En backend, database eller login tilføjes kun, hvis du beder om det.
+- Full-stack: Når du beder om en backend eller database, stiller agenten dig først et kort spørgsmål om valgene (sprog, database, login, hvor den kører), med dens anbefaling og bygger efter du har svaret.
+
+## Hvad "spørg" betyder
+Når agenten virkelig har brug for din beslutning, gør den alt andet først, stiller et kort spørgsmål med sin anbefaling og venter. Dit svar fortsætter arbejdet, hvor det stoppede.

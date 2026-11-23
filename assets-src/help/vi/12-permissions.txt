@@ -1,0 +1,27 @@
+Quyền, từng cái một
+Cài đặt → Bảo mật & quyền riêng tư → Quyền. Mỗi hàng hiển thị "Được cấp" hoặc một nút. Nhấn vào một hàng sẽ mở hộp thoại hệ thống; chỉ cần nhấn Cho phép. Tác nhân cũng có thể tự mở hộp thoại bằng `request_permission`.
+
+- Micrô: để ZYRAXON có thể nghe thấy bạn. Không có nó thì không có đầu vào bằng giọng nói.
+- Máy ảnh: để chụp và xem ảnh (`look_camera`, quét tài liệu, "bạn thấy gì").
+- Vị trí: để xem bản đồ và thông tin địa phương.
+- Thông báo: cho bạn biết khi nào công việc chạy nền kết thúc.
+- Tệp & phương tiện: để đọc ảnh, video, âm thanh và tài liệu.
+- Lớp phủ (vẽ lên các ứng dụng khác): cần thiết cho mắt nổi.
+- Khả năng truy cập: cho phép nhân viên đọc màn hình và chạm, vuốt và nhập cho bạn. Đây là trung tâm của tự động hóa điện thoại. Bạn bật nó trong cài đặt Trợ năng của hệ thống.
+- Tối ưu hóa pin: ngăn Android đưa ZYRAXON vào chế độ ngủ trong khi nó hoạt động ở chế độ nền.
+
+## Các quyền khác mà ứng dụng khai báo
+- SMS (đọc và nhận): để đọc mã, sổ cái tiền và quy tắc lái tự động SMS.
+- Trạng thái điện thoại, trả lời cuộc gọi, gọi điện thoại, danh bạ: dành cho công cụ gọi và tổng đài viên.
+- Truy cập thông báo: cho phép chế độ lái tự động phản ứng với thông báo.
+- Quản trị viên thiết bị: hãy để `device_lock` thực sự khóa màn hình.
+- Cài đặt gói: cho phép cập nhật và `build_app` cài đặt APK; Android yêu cầu bạn cho phép ZYRAXON làm nguồn cài đặt.
+- Các dịch vụ trên nền trước (micrô, đồng bộ hóa dữ liệu) và khóa chế độ thức: duy trì giọng nói và công việc lâu dài.
+- Trạng thái Internet và mạng: đám mây và web.
+- Shizuku (tùy chọn): quyền truy cập cấp hệ thống cho shell và terminal.
+
+## Google Play Protect
+Nếu Play Protect chặn một công việc, nhân viên có thể mở đúng trang, nhìn vào màn hình thực và thực hiện từng bước qua thiết bị và nút chuyển đổi — nhưng nhân viên sẽ hỏi bạn trước vì việc tắt tính năng bảo vệ là quyết định của bạn. Để tự thực hiện: Play Store → ảnh hồ sơ → Play Protect → cài đặt → tắt "Quét ứng dụng bằng Play Protect". Trang này có một nút mở Play Store.
+
+## Tại sao quyền lại quan trọng
+Nếu một công cụ không thành công do thiếu quyền, nhân viên sẽ cho bạn biết quyền nào và mở hộp thoại của nó. Không có gì nhạy cảm hoạt động nếu không có sự Cho phép rõ ràng của bạn.

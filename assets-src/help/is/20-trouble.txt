@@ -1,0 +1,14 @@
+Úrræðaleit
+- Ekkert svar: athugaðu internetið og API lykilinn þinn (Stillingar → Veitendur og API sýna raunverulegu villuna). Prófaðu aðra gerð eða gerð í tækinu.
+- Hljóðnemi gerir ekkert: leyfa hljóðnema leyfi; hakaðu við "Haltu hljóðnemanum á"; athugaðu tungumálið sem þú þekkir.
+- ZYRAXON heyrir sjálfan sig: þetta er síað eftir texta; ef það gerist enn skaltu lækka hljóðstyrkinn eða nota heyrnartól.
+- Setning birtist tvisvar: fast í núverandi útgáfum; uppfærðu appið.
+- Það mun ekki pikka eða lesa á skjáinn: kveiktu á aðgengisþjónustunni (Stillingar → Heimildir).
+- Það stoppar í bakgrunni: leyfa tilkynningar og undanþágu frá rafhlöðuhagræðingu; yfirlagið fyrir fljótandi augað.
+- Tól heldur áfram að biðja um leyfi: breyttu stigi í Stillingar → Sjálfvirkni, eða svaraðu kortinu.
+- Play Protect lokar á eitthvað: sjáðu leyfiskaflan, eða láttu umboðsmanninn leiðbeina skrefunum.
+- Flugstöðin eða ZYRAXON OS byrjar ekki: bíddu eftir að pakka er upp í fyrsta skipti við ræsingu forritsins; athugaðu ókeypis geymslupláss.
+- Uppfærsla mun ekki setja upp: leyfa ZYRAXON sem uppsetningargjafa.
+- Get ekki birt: bættu við GitHub tákninu fyrir GitHub; fyrir opinbera tengingu getur umboðsmaðurinn notað göng.
+- Kafli sýnir ensku: sá kafli hefur engan texta á þínu tungumáli í þessari byggingu; uppfærðu appið.
+- Eitthvað skrítið: notaðu Stillingar → Leiðsögn → Ný lota til að hefja hreinsun (það hreinsar aðeins spjallferil; minni helst).

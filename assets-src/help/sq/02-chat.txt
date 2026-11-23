@@ -1,0 +1,51 @@
+Ekrani i bisedës dhe çdo buton
+## Në krye të ekranit
+- Menyja: hap sirtarin e majtë me bisedat tuaja.
+- Biseda / Terminali / Kodi / Pamja paraprake: ndërroni pamjen kryesore. Biseda është biseda; Terminali është terminali i vërtetë; Kodi është hapësira e punës e skedarit me Git; Preview është shfletuesi i integruar.
+- Aura: tregon ekranin e personazheve të animuar. Butonat e tij anësor janë Mic, Chat (kthehu te biseda) dhe Rifresko (rilidh renë kompjuterike dhe ringarkon listën e modeleve).
+- Cilësimet: hap tetë seksionet e cilësimeve.
+- Një banderolë tregon gjendjen e mikrofonit: "Dëgjimi...", "Mikrofoni i fikur — trokitni lehtë", ose "Të folurit... prekni për të ndaluar".
+- Kur një version i ri është gati, shfaqet një baner përditësimi me butonat Shkarko, Instalo dhe Lejo (shih Përditësimet).
+
+## Menyja e majtë (bisedat)
+- "+ Bisedë e re": fillon një bisedë të re.
+- Çdo bisedë në listë tregon një shenjë vrapimi ndërsa agjenti është i zënë atje. Lapsi e riemërton; kryqi e fshin atë (pas një konfirmimi: të gjitha mesazhet në të fshihen).
+- Tema: zgjidhni Horror (gjak, zjarr dhe hije), Dark (xham i pastër i errët) ose Dritë (xham i ndritshëm).
+
+## Shiriti i mesazheve
+- Bashkangjit (kapëse letre): fotografia e galerisë, fotografia e kamerës, skanimi i dokumentit (e kthen tekstin në një foto në një .docx të modifikueshëm), ndaje ekranin që agjenti ta shohë atë ("Shikimi i ekranit" aktiv ose çaktiv) dhe skedarë audio ose video. Artikujt e bashkangjitur shfaqen si patate të skuqura; kryqi heq një, "Pastro të gjitha" i heq të gjitha.
+- Butoni i modalitetit: Agjenti ose Ndërtimi.
+- Butoni i mikrofonit: aktivizon ose çaktivizon mikrofonin që dëgjon gjithmonë.
+- Butoni i modelit: hap listën e modeleve me një kuti kërkimi. Modelet e shënuara "Live" mund të flasin me zërin e tyre.
+- Dërgo: dërgon mesazhin. Ndërsa agjenti është duke punuar, kjo bëhet Stop.
+- Hyrja thotë "Çfarë duhet të bëj?" në modalitetin e agjentit dhe "Çfarë duhet të ndërtoj? Thuaj shkurt" në modalitetin e ndërtimit.
+
+## Mesazhet
+- Kopjo, Ndaj dhe Dëgjo (lexon mesazhin me zë; shtyp përsëri për të ndaluar) janë nën çdo mesazh.
+- "Të menduarit" tregon arsyetimin e modelit kur modeli e ofron atë.
+- Kodi që shkruan agjenti shfaqet drejtpërdrejt në një kuti, rresht pas rreshti, me Kopjo, Shkarko dhe Hap.
+- Skedarët që agjenti bën shfaqen si karta me Open (në aplikacionin real të telefonit), Luaj, Share dhe "Aplikacion tjetër...".
+- Fotografitë, audio dhe video tregojnë një përqindje progresi të drejtpërdrejtë gjatë krijimit të tyre.
+- Kartat e veglave tregojnë se çfarë po bën agjenti: vrapimi, kryerja, suksesi ose dështimi.
+
+## Panelet (todo, veglat, skedarët, nën-agjentët)
+- Tabela e detyrave: plani që agjenti shkruan për një punë të madhe dhe përparimi i saj (n/gjithsej i kryer). Mund të shtoni detyrën tuaj dhe të fshini detyrat.
+- Mjetet: lista e çdo telefonate mjeti, me status të drejtpërdrejtë.
+- Skedarët: çdo skedar që krijoi agjenti, me Open, Share, Publish and Delete (me konfirmim) dhe një kuti kërkimi.
+- Nën-agjentët: agjentë ndihmës që funksionojnë në sfond, me një buton Stop.
+- Skeda e terminalit: terminali i vërtetë (shih kapitullin Files and Terminal).
+
+## Paneli paraprak
+- Prapa, Përpara, Ndalo, Rifresko dhe një shirit adresash (shkruani një adresë uebi ose kërkoni Google).
+- Skedari i hapur: tregon Word, Excel, PowerPoint, PDF, imazhe, Markdown, CSV, kodin dhe sajtet direkt brenda aplikacionit.
+- Madhësia: zvogëloni ose zmadhoni panelin.
+- Fix: dërgon problemet e faqes (gabimet e konsolës, ngarkesat e dështuara) te agjenti, i cili i rregullon ato në sfond.
+- Zgjidh një pjesë: prekni një pjesë të faqes dhe më pas tregoni agjentit se çfarë të bëjë me atë pjesë.
+- Butoni i agjentit: pyesni diçka për faqen; agjenti merr një foto të tij.
+- Hapje e shpejtë: shkurtore për faqet e fundit.
+
+## Hapësira e punës e kodit
+- Ana e majtë: skedarët tuaj (skedar i ri, hap, ruaj).
+- Redaktori: tregon linja dhe karaktere; ndryshimet e bëra nga agjenti shfaqen menjëherë.
+- Git: depo e re, klonim nga GitHub, skanim, status, përkushtim me një mesazh, shtytje, tërheqje, degëzime, shenjë.
+- Tërhiq kërkesat: krijo, bashko, mbyll. Rrjedhat e punës: ekzekutimi i listës, ekzekutimi i një fluksi pune. Regjistri tregon daljen e komandës.

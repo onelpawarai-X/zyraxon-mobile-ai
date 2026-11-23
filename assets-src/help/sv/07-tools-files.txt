@@ -1,0 +1,27 @@
+Filer, terminal och system
+## Filer
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Säker): läs, lista, sök efter namnmönster och sök text i filer.
+- `write_file`, `edit_file`: skapa eller ändra filer. `edit_file` gör allt: ny fil, fullständig omskrivning eller exakt hitta-och-ersätt; koden visas live i chatten. `delete_file` (System): radera en fil eller mapp.
+- Alla mappar är tillåtna (/sdcard, Download, Documents, SD-kort …). Ge en fullständig sökväg och den används som skriven.
+- Agenten öppnar vad den gör: `open_file` (Safe) öppnar en fil i telefonens riktiga app, eller i ZYRAXONs förhandsvisning.
+
+## Terminaler (två riktiga)
+- android: telefonens eget skal (busybox plus `sh`), inuti appens sandlåda. `run_shell` (System) kör ett kommando där, utom synhåll.
+- ZYRAXON OS: ZYRAXONs eget fullständiga Unix-system, inbyggt i appen: bash, apt/pkg, real git, python, node, clang. Det fungerar offline. `os_run` (System) kör ett kommando där.
+- `terminal_run` (System): kör en rad på Terminal-fliken du tittar på, så att du kan se att det fungerar och tar över. Använd skal android eller zyraxon. `terminal_open` tar Terminal-fliken fram (endast när du frågar).
+- `system_shell` (System): ett kommando på systemnivå, ovanför appens sandlåda, som ett systemskal gör; med Shizuku eller root kan den nå mycket mer.
+- Det finns ingen förinställd tidsgräns; en stor `apt upgrade` eller build löper till slutet.
+
+## Shizuku (systemåtkomst)
+`setup_shizuku` (System) ställer in Shizuku, paketerat inuti ZYRAXON: kontrollera status, installera, öppna, begära tillstånd. Bara du kan trycka på Installera och Tillåt; agenten berättar steget på en rad och gör resten.
+
+## Långa jobb och timing
+- `background_command` (System): ett kommando som fortsätter att köras efter att du stänger appen (stor nedladdning, klona, ​​bygg), med ett meddelande och en stoppknapp.
+- `schedule_command` (System): kör ett kommando i realtid ("om 10 minuter", "kl. 02:00"); Android håller timern, så den körs med appen stängd.
+- `wait` (Säker): vänta med avsikt (sekunder, tills en port öppnas, en fil visas, ett kommando avslutas) istället för att gissa.
+
+## ZYRAXON OS använder
+Installera paket (`apt install …`), kör Python eller Node skript, kompilera C, använd git, kör servrar, zip och unzip, curl, ffmpeg. Systemet packas upp tyst när appen startar och stannar under omstarter.
+
+## Terminalskärmen
+Terminalfliken är en riktig terminal med fliken ⌘ ZX. Skriv dina egna kommandon eller titta på agentens. Navigationsskärmen i Inställningar har en genväg till systemskalet och en "Ny session"-knapp som rensar chatthistoriken för att börja om på nytt.

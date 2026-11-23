@@ -1,0 +1,11 @@
+Sikkerhed og privatliv
+- Alle ZYRAXONs data lever på din telefon: chats, hukommelse, hovedbog, færdigheder, tidslinje, hjerneindeks. Intet opbevares på en ZYRAXON server.
+- Cloud-modeller modtager kun det, der er nødvendigt til den tur, du sender. Med "On-device only" sendes der ikke noget overhovedet.
+- De prompter og sprogfiler, der sendes i appen, er krypteret inde i APK.
+- Applås: Indstil en adgangskode eller et mønster i Indstillinger → Sikkerhed og privatliv → Applås. ZYRAXON låses derefter, når du åbner den eller vender tilbage fra baggrunden. "Fjern lås" sletter den gemte adgangskode eller det gemte mønster.
+- Godkendelsesniveauer beskytter hvert værktøjskald i kode (se Godkendelsesniveauer). Ukendte værktøjer spørger altid.
+- Du kan slette: al hukommelse, chathistorikken og dit GitHub-token, hver med én knap i Privatliv og data.
+- Sikkerhed: Hvis du siger, at nogen truer eller følger dig, eller vil have din telefon eller data, låser agenten først telefonen (hvis enhedsadministratortilladelsen er slået til) og taler derefter roligt til dig.
+- Betalinger: Før enhver betaling eller overførsel siger agenten, hvad den vil betale, og beder dig bekræfte.
+- Ærlighed: Agenten siger først, at noget virkede, efter at det så et resultat. Det opfinder aldrig links, filer eller resultater.
+- Indholdsskjold: hvad end agenten læser udefra - skærmen på en anden app, en webside, en besked, en fil, en tilsluttet server - kontrolleres i kode for tekst, der forsøger at give agenten ordrer (på mange sprog, inklusive tekst skjult med usynlige tegn). Mistænkelig tekst er indhegnet, så modellen kun behandler den som data. Hvor streng den er følger dit godkendelsesniveau: Låst behandler alt mistænkeligt som fjendtligt; Overvåget hegn mistænkelig tekst og, når teksten er tydeligt fjendtlig, låser resten af ​​det sving, så hvert skiftende værktøj spørger dig først (kortet siger hvorfor); Afbalancerede handlinger kun på tydeligt fjendtlig tekst og kun værktøjer på systemniveau stopper med at spørge; Automatisk slukker skjoldet helt - intet scannes, stoppes, markeres eller ændres. En ny besked fra dig rydder den.

@@ -1,0 +1,14 @@
+Àwọn ipò: Agent àti Build
+Ipò méjì ló wà, tí a yàn pẹ̀lú bọ́tìnì ipò lẹ́gbẹ̀ àpótí ifiranṣẹ́. Ìyàn rẹ máa wà títí o fi pa á dà. Live voice kì í ṣe ipò kẹta; ó jẹ́ ọ̀nà ìsọ̀rọ̀ tí o lè tàn nínú Eto (wo orí Voice).
+
+## Agent
+"Adaṣiṣẹ kíkún ti fóònù àti ẹ̀rọ." Ohun gbogbo ṣí sílẹ̀: kíka àti darí ìkànnì fóònù, ṣíṣí àwọn app, ìpè, àwọn ifiranṣẹ́, kámẹ́rà, àwọn fáìlì, tẹ́mínà àti ZYRAXON OS, Git, preview, media, àwọn aṣojú-kéékèèké, àwọn olupin MCP, skills, autopilot àti ìyókù. Yan Agent nígbà tí o bá fẹ́ kí a ṣe nǹkan lórí fóònù rẹ tàbí kí o kàn sọ̀rọ̀.
+
+## Build
+"Àwọn app full-stack, àwọn ojú-òpó wẹẹ̀bù àti adaṣiṣẹ." Aṣojú náà jẹ́ ẹ̀rọ ìkọ́lé: láti ìlà kúkúrú ó ń ṣe gbogbo nǹkan, ń ṣiṣẹ́ rẹ̀, ń wò ó, ó sì ń fi hàn ọ́. Ó ní àwọn fáìlì, tẹ́mínà, Git, preview, títẹ̀jáde, media, ìrántí àti pátákó iṣẹ́-ṣíṣe. Ìdarí fóònù, àwọn aṣojú-kéékèèké àti títìpa ẹ̀rọ jẹ́ ti ipò Agent; tí o bá nílò wọn nínú Build, yí ipò padà.
+- Ojú-ìwé ibalẹ̀ tàbí ojú-òpó wẹẹ̀bù: sọ ohun tí ó wà fún. Aṣojú náà kọ́ ọ lẹ́sẹ̀kẹsẹ̀, bẹ̀rẹ̀ rẹ̀ lórí fóònù rẹ, ó sì ṣí i nínú pánẹ́lì Preview, lẹ́yìn náà ó sọ ohun tí ó ṣe fún ọ. Kò ní tẹ̀ ẹ́ jáde àfi bí o bá béèrè.
+- App: sọ ohun tí o fẹ́ kí ó sì kọ́ app náà bí o ti béèrè. A ó fi back end, ibi ìpamọ́ dátà tàbí wíwọlé kún un nìkan bí o bá béèrè fún un.
+- Full-stack: nígbà tí o bá béèrè fún back end tàbí ibi ìpamọ́ dátà, aṣojú náà kọ́kọ́ bi ọ́ ní ìbéèrè kúkúrú kan nípa àwọn àṣàyàn (èdè, ibi ìpamọ́ dátà, wíwọlé, ibi tí yóò ti ṣiṣẹ́), pẹ̀lú ìmọ̀ràn rẹ̀, ó sì kọ́ lẹ́yìn tí o bá dáhùn.
+
+## Ohun tí "ask" túmọ̀ sí
+Nígbà tí aṣojú bá nílò ìpinnu rẹ ní tòótọ́, ó kọ́kọ́ ṣe gbogbo nǹkan mìíràn, lẹ́yìn náà ó béèrè ìbéèrè kúkúrú kan pẹ̀lú ìmọ̀ràn rẹ̀, ó sì dúró. Ìdáhùn rẹ ń tẹ̀síwájú iṣẹ́ náà láti ibi tí ó dúró sí.

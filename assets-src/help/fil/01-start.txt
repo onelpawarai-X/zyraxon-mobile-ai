@@ -1,0 +1,20 @@
+Pagsisimula
+Si ZYRAXON ay isang katulong na nakatira sa loob ng iyong Android telepono. Nakikipag-usap ito sa iyo, nakikinig sa iyo, at maaaring gumawa ng totoong trabaho: magbukas ng mga app, mag-tap at mag-type sa screen, tumawag sa mga tao, magsulat ng mga file, bumuo ng mga website at app, magpatakbo ng ZYRAXON OS system, gumawa ng mga larawan, audio, video at mga dokumento sa opisina, at alalahanin ka sa paglipas ng mga buwan. Gumagana ito sa anumang wikang sinasalita mo.
+
+## Ang mga unang minuto
+- Sa unang paglunsad ZYRAXON ay nagpapakita ng maikling paunawa na ang ahente ay maaaring kumilos sa iyong telepono nang mag-isa. Pindutin ang "Got it, start" para magpatuloy.
+- Magdagdag ng AI key (Mga Setting → Provider at API → AI provider). Mag-paste ng key para sa sinumang provider na gusto mo (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Kapag nag-save ka ng key, binabasa ng app ang catalog ng provider na iyon at sinusuri ito kung totoo, para makakita ka ng totoong "konektado" at ang bilang ng mga modelo.
+- Walang susi? Magagamit mo pa rin ang mga modelo sa device (Mga Setting → Modelo at pagkakakilanlan → Sa device). Tumatakbo sila sa telepono nang walang internet.
+- Pumili ng modelo na may button ng modelo sa message bar, at isang character (Mga Setting → Modelo at pagkakakilanlan → Pagkakakilanlan).
+- Magbigay ng mga pahintulot kapag kailangan ng isang feature (tingnan ang kabanata ng Mga Pahintulot). Maaari ring buksan ng ahente ang dialog ng pahintulot para sa iyo sa isang pag-tap.
+- Magsalita o magtype lang. "Gawin mo akong landing page para sa aking panaderya", "buksan YouTube at magpatugtog ng kanta", "ano ang baterya ko?", "tawagan si Nanay".
+
+## Ang dalawang paraan ng pagtatrabaho
+Sa tabi ng kahon ng mensahe ay mayroong pindutan ng mode na may dalawang mode: Ahente at Build. Tingnan ang kabanata ng Mga Mode.
+
+## Kung nasaan ang mga bagay
+- Kaliwang menu: ang iyong mga chat, bagong chat, palitan ang pangalan, tanggalin, at ang switch ng tema.
+- Screen ng chat: mga mensahe, ang todo board, listahan ng tool, mga file, ang terminal.
+- Mga panel ng Preview at Code: tingnan at i-edit kung ano ang binuo ng ahente.
+- Mga Setting: walong seksyon, isa-isang sakop sa dokumentasyong ito.
+- Ang dokumentasyong ito: Mga Setting → Dokumentasyon (nandito ka).

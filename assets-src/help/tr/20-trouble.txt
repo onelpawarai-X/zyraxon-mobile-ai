@@ -1,0 +1,14 @@
+Sorun giderme
+- Cevap yok: İnternetinizi ve API anahtarınızı kontrol edin (Ayarlar → Sağlayıcılar ve API gerçek hatayı gösterir). Başka bir modeli veya cihazdaki bir modeli deneyin.
+- Mikrofon hiçbir şey yapmaz: mikrofona izin verin; "Mikrofonu açık tut" seçeneğini işaretleyin; tanıma dilini kontrol edin.
+- ZYRAXON kendini duyar: bu, metne göre filtrelenir; hala devam ediyorsa, ses seviyesini azaltın veya kulaklık kullanın.
+- Bir cümle iki kez görünüyor: mevcut sürümlerde düzeltildi; uygulamayı güncelleyin.
+- Ekrana dokunmuyor veya ekranı okumuyor: Erişilebilirlik hizmetini açın (Ayarlar → İzinler).
+- Arka planda durur: bildirimlere ve pil optimizasyonunun muafiyetine izin verir; yüzen göz için kaplama.
+- Bir araç sürekli izin istiyor: Ayarlar → Otomasyon'da seviyeyi değiştirin veya kartı yanıtlayın.
+- Play Protect bir şeyi engeller: İzinler bölümüne bakın veya temsilcinin adımları yönlendirmesine izin verin.
+- Terminal veya ZYRAXON OS başlamıyor: uygulama başlangıcında paketin ilk kez açılmasını bekleyin; ücretsiz depolama alanını kontrol edin.
+- Güncelleme yüklenmiyor: yükleme kaynağı olarak ZYRAXON'a izin verin.
+- Yayınlanamıyor: GitHub için GitHub jetonunu ekleyin; halka açık bir bağlantı için aracı bir tünel kullanabilir.
+- Bir bölüm İngilizce'yi gösterir: bu yapıda o bölümün sizin dilinizde metni yoktur; uygulamayı güncelleyin.
+- Tuhaf bir şey: Temiz bir başlangıç ​​yapmak için Ayarlar → Gezinme → Yeni oturumu kullanın (yalnızca sohbet geçmişini temizler; hafıza kalır).

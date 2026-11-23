@@ -1,0 +1,27 @@
+Savjeti i primjeri zahtjeva
+## Recite što želite, a ne kako
+- "Napravite odredišnu stranicu za teretanu, tamnu i podebljanu."
+- "Izradite potpunu aplikaciju za rezervaciju s bazom podataka." (agent prvo pita tehničke izbore)
+- "Otvorite YouTube i pustite mirnu pjesmu."
+- "Pomaknite se prema dolje i otvorite prvi rezultat."
+- "Koja je moja baterija i Wi-Fi?"
+- "Pročitaj moj najnoviji SMS i reci mi kod."
+- "Nazovi mamu." / "Odgovori na poziv."
+- "Napravi životopis od ove fotografije." (priložiti)
+- "Pretvorite ovu snimku sastanka u bilješke s radnjama."
+- "Napravite plakat za događaj u petak s ovim bojama."
+- "Napravite audio dijalog između dva prijatelja, jednog dječaka i jedne djevojčice."
+- "Zapamti da je mojoj sestri rođendan 3. svibnja."
+- "Svako jutro u 8 reci mi vrijeme." (autopilot)
+- "Naučite kako šaljem stanarinu putem svoje aplikacije za novčanik kako biste to mogli ponoviti." (vještina)
+- "Poništi ono što si učinio u mapi projekta." (vremenska linija)
+- "Gdje je moj ugovor o najmu?" (mozak)
+- "Instalirajte python pakete i pokrenite ovu skriptu." (ZYRAXON OS)
+- "Objavi ovu stranicu da je mogu podijeliti." (javni link)
+
+## Navike koje pomažu
+- Kratki i jasni otkucaji dugi. Agent odabire zadane postavke i govori vam što je odabrao.
+- Kada postavi jedno pitanje, odgovorite na njega i nastavlja s istog mjesta.
+- Recite "objasni" ili "sažetak" za detaljan odgovor; inače su odgovori kratki.
+- Možete razgovarati o tome bilo kada. Zastaje i osluškuje.
+- Koristite način izrade za izradu stvari i način rada agenta za obavljanje stvari na telefonu.

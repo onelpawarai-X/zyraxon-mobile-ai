@@ -1,0 +1,42 @@
+Sérhver stillingaskjár, einn í einu
+Stillingar hafa átta hluta. Hver hluti hefur pillur fyrir undirskjáina sína. Síðasti hluti sem þú notaðir er opnaður aftur næst.
+
+## 1. Tungumál og þýðing → Tungumál forrita og tóla
+Veldu tungumál appsins í heild sinni og verkfæraskilaboða umboðsmannsins. Leitaðu á listanum og bankaðu á einn. Skjárinn sýnir núverandi tungumál og hvort Kveikt er á þýðingu við HÍ og þýðingu tólaskilaboða. 60 tungumál eru í boði. Sjá kaflann um tungumál.
+
+## 2. Rödd & hljóðnemi
+- Raddsnið: veldu kvenkyns eða karlkyns rödd, hraða, tónhæð, „Lestu svör upphátt“, prófunarrödd, vísbending um niðurhal bengalska raddarinnar.
+- Hljóðnemi og tungumál: auðkenningarmál, haltu hljóðnemanum á, sendu sjálfkrafa þegar þú hættir að tala.
+- Lifandi rödd: kveikt/slökkt á tal-til-tali, staða, listi yfir rauntímalíkön.
+
+## 3. Veitendur og API
+- Gervigreindarveitur: þínar eigin API lyklar (ZYRAXON, OpenCode ókeypis kvóti, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) og ZYRAXON Apex skýjamiðillinn. Vistaður lykill er staðfestur með því að lesa raunverulegan vörulista þjónustuveitunnar og sýnir fjölda líkana eða nákvæma villu. Hnappur opnar ZYRAXON vefsíðuna þar sem þú býrð til lykil.
+- GitHub: GitHub aðgangslykillinn þinn (þarf endursölusvið) til að birta, Git ýta og draga beiðnir. Vista tákn eða eyða því; staðan sýnir hvort hún er stillt.
+
+## 4. Uppfærslur → App uppfærsla
+Sýnir núverandi útgáfu, leitar að nýrri útgáfu, halar henni niður með framvindustiku og setur hana upp. Spjall, minni og stillingar haldast. Ef Android þarf leyfi til að setja upp, opnar hnappur þá stillingu.
+
+## 5. Fyrirmynd & sjálfsmynd
+- Auðkenni: veldu persónuna (sjá kaflann um persónur).
+- Gerð: lifandi módellisti með leitarreit, "Allar gerðir" og "Sérsniðnar" síur; hröð módel fyrst.
+- Á tækinu: hlaðið niður, hlaðið og afhlaðið módel sem keyra án nettengingar; flokkað smátt til stórt; valfrjálst Hugging Face tákn; sýnir hlaðið, hlaðið og mistókst ástand.
+
+## 6. Aura & þema
+- Þema: Hryllingur, Myrkur eða Ljós.
+- Aura & bakgrunnur: Aura stíll og litur (blóð, bleikur, fjólublár, himinn, grænn, eldur) með fínni litastýringu; aura stærð, ljómastyrkur, snúningshraði, gagnsæi spjaldsins; fljótandi augað (kveikja/slökkva, hönnun, skjábrún, raddskipanir/vökva orð, bæta við eigin); Shader háttur; sérsniðin bakgrunnsslóð (mp4, gif eða mynd); hraða hreyfimynda.
+
+## 7. Öryggi og næði
+- Applæsing: lykilorð (4–8 tölustafir) eða 3×3 punktamynstur; staðfesta með því að slá það inn tvisvar; fjarlægja læsingu.
+- Leyfi: listinn í heimildarkaflanum, með Play Protect hjálp.
+- Persónuvernd og gögn: öll gögn verða áfram í símanum. Hnappar: eyða öllu minni, eyða spjallferli, eyða GitHub tákni.
+
+## 8. Kerfi
+Þessi hluti hefur sína eigin röð af hnöppum sem flettir til hliðar, þannig að ekkert er kreist.
+- Sjálfvirkni: samþykkisstig og eingöngu í tæki (sjá Samþykkisstig).
+- Leiðsögn: listi yfir svæði til að hoppa á — „engir hnappar að ofan, allt er hér“ — þar á meðal ⌘ ZX kerfisskel, „Ný lota“ hnappur (eyðir spjallferli fyrir hreina byrjun), skilaboðafjölda og hljóðnemaskipti.
+- Minni: staðbundið SQL minni með staðreyndum sem ZYRAXON man; bæta við lykli og gildi; eyða öllum.
+- Færnihandbók: stuttur listi yfir hæfileikadæmi (skilaboðaforrit, vefsíðugerð, skjálesari, blys, myndavél, Wi-Fi og stillingar) með dæmum.
+- Sjálfvirknimiðstöð: færni, sjálfstýring, peningar, tímalína, heili og símtalsfulltrúi á einum stað (sjá Sjálfvirknimiðstöð).
+
+## 9. Skjöl
+Sín eigin hluti í stillingum, aðskilinn frá kerfinu. Þessi handbók: tuttugu og einn kafli, leitarreitur og tungumálakubbaröð. Öll tungumál í appinu eru nú þegar skrifuð að fullu inni í appinu - ekkert er þýtt í símanum þínum og ekkert internet þarf til að lesa það.

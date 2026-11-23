@@ -1,0 +1,11 @@
+Bildes, audio, video, dokumenti un dizains
+- `generate_image` (tīkls): izveido attēlu no apraksta (uzraksti to detalizēti; vislabāk darbojas angļu valoda). Tas parādās tērzēšanā ar kopīgošanas pogām. Vairākiem prasiet vairākus.
+- `generate_audio` (tīkls): balss audio (.mp3) no jebkura teksta. Dialogam vai stāstam piešķiriet katrai daļai savu balsi (dzimums, vecums, valoda, tonis). Daudzas valodas, tostarp bengāļu, hindi un angļu.
+- `generate_video`: reāli rediģēts video (nevis AI kadri) no ainām — attēli, klipi, teksts, krāsas, stāstījums, paraksti, mūzika. `ffmpeg`: jebkura tiešā rediģēšana — izgriešana, pievienošana, pārklājums, subtitri, ātrums, audio sajaukums, konvertēšana. Ir iespējami 5–10 minūšu video, kas tiek veidoti soli pa solim.
+- Progress tiek rādīts tiešraidē procentos tērzēšanā; kad tas ir izdarīts, fails tiek piegādāts ar pogām Atskaņot un Kopīgot.
+- `make_document`: īsts Word (.docx), Excel (.xlsx) vai PowerPoint (.pptx) fails tālrunī, nav nepieciešama instalēšana, neviena valoda. `office_template`: gatavi biroja papīri ar tukšām aizpildāmām vietām (atvaļinājuma pieteikums, darba pieteikums, rēķins, CV, biznesa piedāvājums, piedāvājums, paziņojums, sanāksmes protokoli, līgums, ikmēneša pārskati un citi).
+- Dokuments no fotoattēla: pievienojiet fotoattēlu (Doc scan). Teksts tiek kopēts tieši tā, kā rakstīts (neskaidri vārdi ir atzīmēti), tabula kļūst par .xlsx, pretējā gadījumā par .docx.
+- Sapulces piezīmes: no audio, stenogrammas vai jūsu teiktā. Dokumentā ir kopsavilkums, lēmumi, darbības vienumi (uzdevums, īpašnieks, izpildes datums) un gatavs e-pasta melnraksts.
+- `make_design`: plakāti, baneri, logotipi, kartītes, stāsti, vāki kā PNG un PDF. `brand_kit`: piešķir logotipu vai krāsas; tie tiek saglabāti, lietotnes motīvs mainās, un turpmāk dokumenti, slaidi un vietnes izmanto jūsu zīmola krāsas.
+- `present_slides`: varonis runā, kamēr tiek rādītas slaidkartes; slaidi mainās paši, kad balss beidzas. Ja vēlaties failu, pieprasiet .pptx failu.
+- `open_file`: atver to, kas tika izveidots tālruņa īstajā lietotnē (Word/Dokumenti, Izklājlapas, Slaidi, PDF, galerija, pārlūkprogramma) vai priekšskatījuma panelī; aģents pārbauda ekrānu, lai pārliecinātos, ka tas ir atvērts.

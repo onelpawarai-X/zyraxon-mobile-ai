@@ -1,0 +1,14 @@
+Trikčių šalinimas
+- Nėra atsakymo: patikrinkite savo interneto ir API raktą (Nustatymai → Teikėjai ir API rodo tikrąją klaidą). Išbandykite kitą modelį arba įrenginyje esantį modelį.
+- Mikrofonas nieko nedaro: suteikia mikrofono leidimą; pažymėkite "Keep the mic on"; patikrinkite atpažinimo kalbą.
+- ZYRAXON girdi save: tai filtruojama pagal tekstą; jei taip nutinka, sumažinkite garsumą arba naudokite ausines.
+- Sakinys pasirodo du kartus: ištaisyta dabartinėse versijose; atnaujinti programėlę.
+- Jis nepalies ir neskaitys ekrano: įjunkite pritaikymo neįgaliesiems paslaugą (Nustatymai → Leidimai).
+- Jis sustoja fone: leisti pranešimus ir akumuliatoriaus optimizavimo išimtį; plūduriuojančios akies perdanga.
+- Įrankis nuolat prašo leidimo: pakeiskite lygį nustatymuose → Automatika arba atsakykite į kortelę.
+- Play Protect ką nors blokuoja: žr. skyrių Leidimai arba leiskite agentui atlikti veiksmus.
+- Terminalas arba ZYRAXON OS nepasileidžia: palaukite, kol pirmą kartą išpakuosite programą paleidžiant; patikrinkite nemokamą saugyklą.
+- Naujinimas nebus įdiegtas: leiskite ZYRAXON kaip diegimo šaltinį.
+- Negalima paskelbti: pridėkite GitHub prieigos raktą GitHub; viešai nuorodai agentas gali naudoti tunelį.
+- Skyriuje rodoma anglų kalba: šiame skyriuje nėra teksto jūsų kalba; atnaujinti programėlę.
+- Kažkas keisto: naudokite Nustatymai → Navigacija → Nauja sesija, kad pradėtumėte švariai (išvalo tik pokalbių istoriją; lieka atmintis).

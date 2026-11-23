@@ -1,0 +1,14 @@
+Menyelesaikan masalah
+- Tiada jawapan: semak internet dan kunci API anda (Tetapan → Pembekal & API menunjukkan ralat sebenar). Cuba model lain atau model pada peranti.
+- Mikrofon tidak melakukan apa-apa: benarkan kebenaran mikrofon; tandakan "Kekalkan mikrofon dihidupkan"; semak bahasa pengecaman.
+- ZYRAXON mendengar sendiri: ini ditapis mengikut teks; jika ia masih berlaku, rendahkan kelantangan atau gunakan fon kepala.
+- Ayat muncul dua kali: tetap dalam versi semasa; kemas kini aplikasi.
+- Ia tidak akan mengetik atau membaca skrin: hidupkan perkhidmatan Kebolehcapaian (Tetapan → Kebenaran).
+- Ia berhenti di latar belakang: benarkan pemberitahuan dan pengecualian pengoptimuman bateri; lapisan untuk mata terapung.
+- Alat sentiasa meminta kebenaran: tukar tahap dalam Tetapan → Automasi, atau jawab kad.
+- Play Protect menyekat sesuatu: lihat bab Kebenaran, atau biarkan ejen membimbing langkah.
+- Terminal atau ZYRAXON OS tidak bermula: tunggu pembongkaran kali pertama pada permulaan apl; semak storan percuma.
+- Kemas kini tidak akan dipasang: benarkan ZYRAXON sebagai sumber pemasangan.
+- Tidak dapat menerbitkan: tambahkan token GitHub untuk GitHub; untuk pautan awam ejen boleh menggunakan terowong.
+- Bab menunjukkan bahasa Inggeris: bab itu tidak mempunyai teks dalam bahasa anda dalam binaan ini; kemas kini aplikasi.
+- Sesuatu yang ganjil: gunakan Tetapan → Navigasi → Sesi baharu untuk memulakan pembersihan (ia mengosongkan sejarah sembang sahaja; memori kekal).

@@ -1,0 +1,51 @@
+L'écran de discussion et chaque bouton
+## Haut de l'écran
+- Menu : ouvre le tiroir de gauche avec vos discussions.
+- Chat / Terminal / Code / Preview : changent la vue principale. Chat est la conversation ; Terminal est le vrai terminal ; Code est l'espace de fichiers avec Git ; Preview est le navigateur intégré.
+- Aura : affiche l'écran du personnage animé. Ses boutons latéraux sont Mic, Chat (retour à la conversation) et Refresh (reconnecte le cloud et recharge la liste des modèles).
+- Settings : ouvre les huit sections de réglages.
+- Une bannière indique l'état du microphone : « J'écoute… », « Micro coupé — touchez » ou « Je parle… touchez pour arrêter ».
+- Quand une nouvelle version est prête, une bannière de mise à jour apparaît avec les boutons Download, Install et Allow (voir Mises à jour).
+
+## Le menu de gauche (discussions)
+- « + Nouvelle discussion » : démarre une nouvelle conversation.
+- Chaque discussion de la liste affiche un repère d'exécution tant que l'agent y travaille. Le crayon la renomme ; la croix la supprime (après confirmation : tous ses messages sont effacés).
+- Thème : choisissez Horror (sang, feu et ombre), Dark (verre sombre et net) ou Light (verre clair).
+
+## La barre de message
+- Attach (trombone) : photo de la galerie, photo de l'appareil, scan de document (transforme le texte d'une photo en .docx modifiable), partage d'écran pour que l'agent le voie (« Screen watching » activé ou désactivé), et fichiers audio ou vidéo. Les éléments joints s'affichent en pastilles ; la croix en retire une, « Clear all » les retire toutes.
+- Bouton de mode : Agent ou Build.
+- Bouton Mic : active ou désactive le microphone toujours à l'écoute.
+- Bouton de modèle : ouvre la liste des modèles avec une zone de recherche. Les modèles marqués « Live » peuvent parler avec leur propre voix.
+- Send : envoie le message. Pendant que l'agent travaille, il devient Stop.
+- Le champ affiche « Que dois-je faire ? » en mode Agent et « Que dois-je construire ? Dites-le court » en mode Build.
+
+## Messages
+- Copy, Share et Listen (lit le message à voix haute ; rappuyez pour arrêter) se trouvent sous chaque message.
+- « Thinking » montre le raisonnement du modèle quand le modèle le fournit.
+- Le code écrit par l'agent apparaît en direct dans un cadre, ligne par ligne, avec Copy, Download et Open.
+- Les fichiers créés par l'agent s'affichent sous forme de cartes avec Open (dans la vraie application du téléphone), Play, Share et « Other app… ».
+- Les images, l'audio et la vidéo affichent un pourcentage de progression en direct pendant leur création.
+- Les cartes d'outils montrent ce que fait l'agent : en cours, terminé, réussi ou échoué.
+
+## Panneaux (tâches, outils, fichiers, sous-agents)
+- Tableau Todo : le plan que l'agent écrit pour un gros travail et sa progression (n/total terminées). Vous pouvez ajouter votre propre tâche et supprimer des tâches.
+- Tools : la liste de chaque appel d'outil, avec son état en direct.
+- Files : chaque fichier créé par l'agent, avec Open, Share, Publish et Delete (avec confirmation) et une zone de recherche.
+- Sub-agents : agents auxiliaires qui travaillent en arrière-plan, avec un bouton Stop.
+- Onglet Terminal : le vrai terminal (voir le chapitre Fichiers et terminal).
+
+## Panneau Preview
+- Back, Forward, Stop, Reload et une barre d'adresse (saisissez une adresse web ou cherchez sur Google).
+- Open file : affiche Word, Excel, PowerPoint, PDF, images, Markdown, CSV, code et sites directement dans l'application.
+- Size : réduit ou agrandit le panneau.
+- Fix : envoie les problèmes de la page (erreurs de console, chargements échoués) à l'agent, qui les corrige en arrière-plan.
+- Pick part : touchez une partie de la page, puis dites à l'agent quoi faire de cette partie.
+- Bouton Agent : posez une question sur la page ; l'agent en reçoit une image.
+- Quick open : raccourcis vers les pages récentes.
+
+## Espace de code
+- Côté gauche : vos fichiers (nouveau fichier, ouvrir, enregistrer).
+- Éditeur : affiche les lignes et les caractères ; les modifications de l'agent apparaissent aussitôt.
+- Git : nouveau dépôt, clone depuis GitHub, scan, statut, commit avec message, push, pull, branches, jeton.
+- Pull requests : créer, fusionner, fermer. Workflows : lister les exécutions, lancer un workflow. Log affiche la sortie des commandes.

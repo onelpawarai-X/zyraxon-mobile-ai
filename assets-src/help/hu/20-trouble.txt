@@ -1,0 +1,14 @@
+Hibaelhárítás
+- Nincs válasz: ellenőrizze internet- és API-kulcsát (beállítások → Szolgáltatók és API mutatja a valódi hibát). Próbáljon ki egy másik modellt vagy az eszközön található modellt.
+- A mikrofon nem csinál semmit: engedélyezi a mikrofon engedélyét; jelölje be a „Keep the mic on” opciót; ellenőrizze a felismerési nyelvet.
+- ZYRAXON önmagát hallja: ezt szöveg szűri; ha továbbra is megtörténik, csökkentse a hangerőt vagy használjon fejhallgatót.
+- Egy mondat kétszer jelenik meg: a jelenlegi verziókban javítva; frissítse az alkalmazást.
+- Nem érinti meg és nem olvassa el a képernyőt: kapcsolja be a Kisegítő lehetőségek szolgáltatást (Beállítások → Engedélyek).
+- Megáll a háttérben: engedélyezze az értesítéseket és az akkumulátoroptimalizálás mentesítését; a lebegő szem fedvénye.
+- Egy eszköz folyamatosan engedélyt kér: ​​módosítsa a szintet a Beállítások → Automatizálás alatt, vagy válaszoljon a kártyára.
+- Play Protect blokkol valamit: lásd az Engedélyek fejezetet, vagy hagyja, hogy az ügyintéző vezesse a lépéseket.
+- A terminál vagy a ZYRAXON OS nem indul el: várja meg az első kicsomagolást az alkalmazás indításakor; ellenőrizze az ingyenes tárhelyet.
+- A frissítés nem települ: a ZYRAXON engedélyezése telepítési forrásként.
+- Nem lehet közzétenni: adja hozzá a GitHub tokent a GitHub számára; nyilvános hivatkozáshoz az ügynök alagutat használhat.
+- Egy fejezet az angol nyelvet mutatja: abban a fejezetben nincs szöveg az Ön nyelvén ebben a buildben; frissítse az alkalmazást.
+- Valami furcsa: használja a Beállítások → Navigációt → Új munkamenet a tiszta indításhoz (csak a csevegési előzményeket törli, a memória megmarad).

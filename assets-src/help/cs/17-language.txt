@@ -1,0 +1,16 @@
+Jazyky
+## Jazyk aplikace
+Nastavení → Jazyk a překlad. 60 jazyků. Na to navazuje celé rozhraní a zprávy nástroje agenta. Každý jazyk má svůj vlastní překladový soubor. Každý řádek, který jazykový soubor ještě nemá, je zobrazen v angličtině a nikdy není ponechán prázdný.
+
+## Co mluvíš
+Agent vždy odpovídá v jazyce, kterým na něj mluvíte, v jakémkoli jazyce na světě. Pokud přepnete, přepne se. Ve vašem jazyce používá přátelskou a respektující formu „vy“. Názvy značek a technologií zůstávají tak, jak jsou.
+
+## Jazyky hlasu
+- Jazyk rozpoznávání (to, co mluvíte do mikrofonu): Nastavení → Hlas a mikrofon → Mikrofon a jazyk.
+- Mluvený hlas: Nastavení → Hlas a mikrofon → Hlasový profil a laboratoř Voice pro jazyky, jako je bengálština, hindština, angličtina, urdština, arabština, tamilština, nepálština, španělština, francouzština, němčina, japonština, korejština, čínština, ruština, turečtina.
+
+## Tato dokumentace
+Použijte jazykové čipy v horní části této stránky. Celá příručka je napsána ručně ve všech jazycích, které aplikace podporuje, a odeslána uvnitř aplikace. Na vašem telefonu není nic přeloženo: každá kapitola se otevře okamžitě, funguje offline a nepotřebuje žádný model ani klíč.
+
+## Psaní vlastním skriptem
+Dokumenty, plakáty a návrhy lze vytvořit v libovolném písmu. Pro bengálské vzory je použito správné písmo; pro ostatní skripty je zvoleno odpovídající písmo.

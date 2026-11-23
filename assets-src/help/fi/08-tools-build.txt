@@ -1,0 +1,21 @@
+Rakentaminen: sivustot, sovellukset, esikatselu ja julkaisu
+## Kuinka kysyä
+- "Tee minulle aloitussivu kahvilalleni." Agentti rakentaa sen heti, käynnistää sen puhelimessasi ja avaa sen esikatselussa. Saat 2–3 riviä, jotka kuvaavat sitä. Mitään ei julkaista, ellet pyydä.
+- "Rakenna tehtäväsovellus." Rakennettu suoraan järkevällä pinolla, juokse ja näytä. Back end, tietokanta tai kirjautuminen vain, jos pyydät.
+- "Rakenna täysi sovellus." Agentti kysyy ensin yhden lyhyen kysymyksen taustakielestä, tietokannasta, sisäänkirjautumisesta ja sen suorituspaikasta suositelluilla oletusasetuksilla, sitten rakentaa sen kaiken alkutiedoilla ja testaa yhtä täyttä kulkua.
+- "Tee Windows/ZYRAXON OS/macOS/Android ohjelma." Lähde kirjoitetaan, koontityönkulku lisätään, se työnnetään ja rakennetaan pilveen GitHub Actionsin avulla, ja saat todellisen latauslinkin.
+
+## Työkalut
+- `edit_file` ja `write_file`: kirjoita oikeat tiedostot (täydellinen koodi, ei koskaan tynkkiä). `code_box` näyttää ne livenä.
+- `preview` (Turvallinen): sisäänrakennettu oikea selain. Toiminnot: avaa (linkki, `localhost:PORT` tai tiedosto), lataa uudelleen, taaksepäin, eteenpäin, kuvakaappaus, vierittäminen, napsautus, kirjoittaminen, sivun tekstin lukeminen, konsolin virheet, eval. Agentti tarkastelee omaa työtään ennen kuin sanoo sen olevan tehty.
+- `serve_local` (Järjestelmä): käynnistää puhelimeen verkkopalvelimen kansiota varten ja palauttaa LAN-osoitteen, jonka muut Wi-Fi-laitteet voivat avata.
+- `publish_website` (Järjestelmä): palvelee puhelimesta julkisessa portissa olevaa sivustoa. `publish_cloudflare` (Järjestelmä): sijoittaa sivuston Internetiin ilman tiliä Cloudflare tunnelin kautta ja palauttaa julkisen https-linkin. `publish_github` (Järjestelmä): julkaisee projektin GitHub-arkistoon (Pages) tunnuksellasi.
+- `git` (Järjestelmä): kloonaa, init, tila, lisää, sitoudu, työnnä, vedä, haara, kassa, kirjaa, erota tallennetulla tunnuksellasi. `github_pr` (Järjestelmä): luo, luettele, yhdistä ja kommentoi vetopyyntöjä. `github_actions` (Järjestelmä): luettele työnkulkuja, suorita ne, kyselyt suoritetaan ja lokit luetaan, joten koontiversiot toimivat pilvessä puhelimesta.
+- `build_app` (Järjestelmä): rakentaa tämän projektin Gradlen avulla puhelimeen ja asentaa tuloksen.
+- `files_panel`, `todo_write`: tiedostoselain ja tehtävätaulu.
+
+## Laatusääntöjä agentti noudattaa
+Täydellinen asettelu, reagoiva suunnittelu, toimiva JavaScript, animaatio, yhtenäiset värit ja fontit (tumma ja vaalea missä se sopii), ei yleinen malli. Aloitussivulla on yleensä 300–900 riviä. suurempia asioita enemmän.
+
+## Jos jokin näyttää rikki
+Paina Esikatselussa Korjaa tai kerro asiasta edustajalle. Se lukee konsolin, korjaa syyn, avaa sivun uudelleen ja tarkistaa uudelleen.

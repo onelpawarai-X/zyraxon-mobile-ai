@@ -1,0 +1,21 @@
+Bangunan: situs, aplikasi, pratinjau, dan penerbitan
+## Bagaimana cara bertanya
+- "Buatkan aku halaman arahan untuk kedai kopiku." Agen segera membuatnya, memulainya di ponsel Anda dan membukanya di Pratinjau. Anda mendapatkan 2–3 baris yang menjelaskannya. Tidak ada yang dipublikasikan kecuali Anda memintanya.
+- "Bangun aplikasi agenda." Dibangun langsung dengan tumpukan yang masuk akal, dijalankan dan ditampilkan. Back end, database, atau login hanya jika Anda bertanya.
+- "Bangun aplikasi full-stack." Agen pertama-tama mengajukan satu pertanyaan singkat tentang bahasa back-end, database, login, dan tempat dijalankannya, dengan default yang direkomendasikan, kemudian membangun semuanya dengan data awal dan menguji satu aliran penuh.
+- "Buatlah program Windows/ZYRAXON OS/macOS/Android." Sumber ditulis, alur kerja pembangunan ditambahkan, didorong dan dibangun di cloud dengan Tindakan GitHub, dan Anda mendapatkan tautan unduhan sebenarnya.
+
+## Peralatan
+- `edit_file` dan `write_file`: tulis file sebenarnya (kode lengkap, tidak pernah bertopik). `code_box` menayangkannya secara langsung.
+- `preview` (Aman): browser asli yang ada di dalamnya. Tindakan: buka (tautan, `localhost:PORT` atau file), muat ulang, mundur, maju, tangkapan layar, gulir, klik, ketik, baca teks halaman, kesalahan konsol, eval. Agen melihat pekerjaannya sendiri sebelum mengatakan sudah selesai.
+- `serve_local` (Sistem): memulai server web di ponsel untuk folder dan mengembalikan alamat LAN yang dapat dibuka perangkat lain di Wi-Fi Anda.
+- `publish_website` (Sistem): melayani situs pada port publik dari telepon. `publish_cloudflare` (Sistem): menempatkan situs di internet tanpa akun melalui terowongan Cloudflare dan mengembalikan tautan https publik. `publish_github` (Sistem): menerbitkan proyek ke repositori GitHub (Halaman) dengan token Anda.
+- `git` (Sistem): clone, init, status, add, commit, push, pull, Branch, checkout, log, diff dengan token yang Anda simpan. `github_pr` (Sistem): membuat, membuat daftar, menggabungkan, dan mengomentari permintaan tarik. `github_actions` (Sistem): membuat daftar alur kerja, menjalankannya, menjalankan polling, dan membaca log, sehingga build dijalankan di cloud dari ponsel.
+- `build_app` (Sistem): membangun proyek ini dengan Gradle di ponsel dan menginstal hasilnya.
+- `files_panel`, `todo_write`: browser file dan papan tugas.
+
+## Aturan kualitas yang diikuti agen
+Tata letak lengkap, desain responsif, JavaScript yang berfungsi, animasi, warna dan font yang konsisten (gelap dan terang jika cocok), bukan template umum. Halaman arahan biasanya terdiri dari 300–900 baris; hal-hal yang lebih besar dan lebih banyak lagi.
+
+## Jika ada sesuatu yang terlihat rusak
+Tekan Perbaiki di Pratinjau, atau beri tahu agen. Ia membaca konsol, memperbaiki penyebabnya, membuka kembali halaman dan memeriksa lagi.

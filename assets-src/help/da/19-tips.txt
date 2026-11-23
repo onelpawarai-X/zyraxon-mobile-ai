@@ -1,0 +1,27 @@
+Tips og eksempler
+## Sig hvad du vil, ikke hvordan
+- "Lav en destinationsside for et fitnesscenter, mørk og fed."
+- "Byg en fuld-stack booking-app med en database." (agenten spørger de tekniske valg først)
+- "Åbn YouTube og spil en rolig sang."
+- "Rul ned og åbn det første resultat."
+- "Hvad er mit batteri og Wi-Fi?"
+- "Læs min nyeste SMS og fortæl mig koden."
+- "Ring til mor." / "Besvar opkaldet."
+- "Lav et CV ud fra dette billede." (vedhæft det)
+- "Gør denne mødeoptagelse til noter med handlingspunkter."
+- "Lav en plakat til fredagens begivenhed med disse farver."
+- "Lav en lyddialog mellem to venner, en dreng og en pige."
+- "Husk, at min søsters fødselsdag er den 3. maj."
+- "Hver morgen kl. 8 fortæl mig vejret." (autopilot)
+- "Lær, hvordan jeg sender min husleje med min tegnebogsapp, så du kan gøre det igen." (dygtighed)
+- "Fortryd det, du gjorde i projektmappen." (tidslinje)
+- "Hvor er min lejekontrakt?" (hjerne)
+- "Installer python-pakker og kør dette script." (ZYRAXON OS)
+- "Udgiv dette websted, så jeg kan dele det." (offentligt link)
+
+## Vaner, der hjælper
+- Korte og klare beats lange. Agenten vælger standardindstillinger og fortæller dig, hvad den har valgt.
+- Når den stiller et spørgsmål, så svar på det, og det fortsætter fra samme sted.
+- Sig "forklar" eller "resumé" for et detaljeret svar; ellers er svarene korte.
+- Du kan til enhver tid tale om det. Den stopper og lytter.
+- Brug Byg-tilstand til at lave ting og Agent-tilstand til at gøre ting på telefonen.

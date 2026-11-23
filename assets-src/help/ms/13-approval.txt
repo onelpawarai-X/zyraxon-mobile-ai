@@ -1,0 +1,23 @@
+Tahap kelulusan dan keselamatan automasi
+Tetapan → Sistem → Automasi. Ini menentukan berapa banyak yang boleh dilakukan ejen sebelum ia berhenti dan bertanya kepada anda. Tetapan dikuatkuasakan dalam kod pada setiap panggilan alat; model tidak boleh melebarkannya.
+
+## Empat peringkat
+Tukar tahap dalam Tetapan → Sistem → Automasi. Setiap peringkat memutuskan bila ejen berhenti dan bertanya, dan juga sejauh mana Perisai Kandungan (lihat Keselamatan dan privasi) memperlakukan teks yang dibaca oleh ejen dari luar.
+1. Tanya penuh (Dikunci): bertanya sebelum apa-apa yang mengubah telefon, walau bagaimanapun kecil. Paling selamat. Perisai Kandungan adalah ketat: sebarang teks yang mencurigakan dikira sebagai bermusuhan. Gunakannya pada telefon kongsi atau semasa anda menguji sesuatu yang baharu.
+2. Diawasi (lalai): bertanya sebelum tindakan sistem dan peribadi dan melakukan kerja biasa (membaca, membuka, mencari, membina) dengan sendirinya. Perisai Kandungan adalah standard: teks yang mencurigakan dipagar sebagai data, dan apabila teks jelas bermusuhan setiap alat yang berubah meminta anda untuk baki giliran itu.
+3. Seimbang: bertanya hanya sebelum tindakan peringkat sistem (shell, pemadaman, penerbitan, penjadualan…). Tindakan peribadi seperti mesej, ketik dan menaip dijalankan secara bersendirian. Perisai Kandungan adalah ringan: ia bertindak hanya pada teks yang jelas bermusuhan, dan kemudian hanya alat peringkat sistem berhenti untuk bertanya.
+4. Automasi penuh: tidak pernah bertanya dan tidak pernah berhenti. Semuanya berjalan terus, dan Perisai Kandungan dimatikan sepenuhnya — tiada apa-apa yang diimbas, ditanda, dialih keluar atau diubah. Ini adalah automasi dalam erti kata penuh: anda memiliki risiko.
+
+## Tiga peringkat alatan
+- Selamat (tidak pernah bertanya pada mana-mana peringkat): membaca dan menyenaraikan fail, memori, dokumen, reka bentuk, status, membuka aplikasi dan fail, menunggu, kemahiran/autopilot/garis masa/senarai panggilan, carian otak.
+- Peribadi (ditanya dalam dua peringkat pertama): SMS, panggilan, kamera, bacaan skrin, ketik dan menaip, papan keratan, muat turun, pemberitahuan, perkongsian, pertukaran suara, main semula kemahiran, lejar wang, ejen panggilan, buat asal garis masa.
+- Sistem (ditanya pada setiap peringkat kecuali Automasi penuh): shell, ZYRAXON OS, binaan, penerbitan, pemadaman, kunci peranti, penjadualan, Git dan GitHub, ffmpeg, model pada peranti, siaran ke saluran, peraturan autopilot, kemahiran memadam, Shizuku. Sebarang alat yang tidak dikenali oleh apl — termasuk MCP alatan — dianggap sebagai Sistem.
+
+## Kad kelulusan
+Apabila alat memerlukan kelulusan anda, kad tertera "Kebenaran diperlukan", memberitahu anda perkara yang ejen mahu lakukan, menunjukkan peringkatnya (Selamat, Peribadi atau Sistem) dan menawarkan "Ya, jalankannya" atau "Tidak, tutupkannya". Kad itu juga mengingatkan anda bahawa anda boleh menukar kekerapan perkara ini ditanya dalam Tetapan → Automasi.
+
+## Pada peranti sahaja
+Apabila dihidupkan, tiada apa yang meninggalkan telefon: hanya model pada peranti dan alatan tempatan yang dijalankan. Semua alatan rangkaian (cari, ambil, muat naik, penerbitan, GitHub, penjanaan media, MCP, model awan) ditolak dalam kod.
+
+## Notis pelancaran pertama
+Kali pertama, ZYRAXON menerangkan bahawa ejen boleh bertindak pada telefon anda dan tempat untuk menghidupkan kebenaran. Tekan "Faham, mulakan".

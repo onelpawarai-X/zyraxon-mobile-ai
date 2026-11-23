@@ -1,0 +1,27 @@
+Filer, terminal og system
+## Filer
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Sikker): læs, liste, find efter navnemønster og søg efter tekst i filer.
+- `write_file`, `edit_file`: Opret eller skift filer. `edit_file` gør det hele: ny fil, fuld omskrivning eller nøjagtig find-og-erstat; koden vises live i chatten. `delete_file` (System): slet en fil eller mappe.
+- Enhver mappe er tilladt (/sdcard, Download, Dokumenter, SD-kort …). Giv en fuld sti, og den bruges som skrevet.
+- Agenten åbner, hvad den laver: `open_file` (Sikker) åbner en fil i telefonens rigtige app eller inde i ZYRAXONs forhåndsvisning.
+
+## Terminaler (to rigtige)
+- android: telefonens egen skal (busybox plus `sh`), inde i appens sandkasse. `run_shell` (System) kører en kommando der, ude af syne.
+- ZYRAXON OS: ZYRAXONs eget fulde Unix-system, indbygget i appen: bash, apt/pkg, real git, python, node, clang. Det virker offline. `os_run` (System) kører en kommando der.
+- `terminal_run` (System): kører en linje i Terminal-fanebladet, du ser, så du kan se det arbejde og tage over. Brug shell android eller zyraxon. `terminal_open` bringer Terminal-fanen frem (kun når du spørger).
+- `system_shell` (System): en kommando på systemniveau, over app-sandkassen, som en systemskal gør; med Shizuku eller root kan den nå langt mere.
+- Der er ingen standardtidsbegrænsning; en stor `apt upgrade` eller build løber til enden.
+
+## Shizuku (systemadgang)
+`setup_shizuku` (System) opsætter Shizuku, bundtet i ZYRAXON: kontroller status, installer, åbner, anmod om tilladelse. Kun du kan trykke på Installer og Tillad; agenten fortæller dig trinnet på én linje og gør resten.
+
+## Lange job og timing
+- `background_command` (System): en kommando, der bliver ved med at køre, efter du har lukket appen (stor download, kloning, build), med en meddelelse og en Stop-knap.
+- `schedule_command` (System): kør en kommando i realtid ("om 10 minutter", "kl. 02:00"); Android holder timeren, så den kører med appen lukket.
+- `wait` (Sikker): vent med vilje (sekunder, indtil en port åbner, en fil vises, en kommando afsluttes) i stedet for at gætte.
+
+## ZYRAXON OS bruger
+Installer pakker (`apt install …`), kør Python eller Node scripts, kompilér C, brug git, kør servere, zip og unzip, curl, ffmpeg. Systemet pakkes stille ud, når appen starter og forbliver på tværs af genstarter.
+
+## Terminalskærmen
+Fanen Terminal er en rigtig terminal med fanen ⌘ ZX. Indtast dine egne kommandoer eller se agentens. Navigationsskærmen i Indstillinger har en genvej til systemskallen og en "Ny session"-knap, der rydder chathistorikken for at starte på en frisk.

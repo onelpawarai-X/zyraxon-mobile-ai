@@ -1,0 +1,14 @@
+Problemen oplossen
+- Geen antwoord: controleer uw internet- en API-sleutel (Instellingen → Providers & API toont de echte fout). Probeer een ander model of een model op het apparaat.
+- Microfoon doet niets: geef de microfoon toestemming; vink "Houd de microfoon aan" aan; controleer de herkenningstaal.
+- ZYRAXON hoort zichzelf: dit wordt gefilterd door tekst; Als dit nog steeds gebeurt, verlaag dan het volume of gebruik een hoofdtelefoon.
+- Een zin verschijnt twee keer: opgelost in huidige versies; update de app.
+- Er wordt niet op het scherm getikt of gelezen: schakel de dienst Toegankelijkheid in (Instellingen → Toestemmingen).
+- Het stopt op de achtergrond: sta meldingen en vrijstelling van batterijoptimalisatie toe; de overlay voor het zwevende oog.
+- Een tool blijft toestemming vragen: wijzig het niveau in Instellingen → Automatisering, of beantwoord de kaart.
+- Play Protect blokkeert iets: zie het hoofdstuk Permissies, of laat de agent de stappen begeleiden.
+- Terminal of ZYRAXON OS start niet: wacht op de eerste keer uitpakken bij het starten van de app; controleer gratis opslag.
+- Update kan niet worden geïnstalleerd: sta ZYRAXON toe als installatiebron.
+- Kan niet publiceren: voeg het token GitHub toe voor GitHub; voor een publieke link kan de agent een tunnel gebruiken.
+- Een hoofdstuk toont Engels: dat hoofdstuk heeft in deze build geen tekst in jouw taal; update de app.
+- Iets vreemds: gebruik Instellingen → Navigatie → Nieuwe sessie om schoon te beginnen (het wist alleen de chatgeschiedenis; het geheugen blijft).

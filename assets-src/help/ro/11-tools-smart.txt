@@ -1,0 +1,45 @@
+Abilități, pilot automat, bani, cronologie și anulare, creier, agent de apel și memorie
+Toate acestea le folosești vorbind: spune ce vrei și agentul apelează la instrumentul potrivit. Fiecare acțiune este listată aici cu opțiunile sale.
+
+## Abilități – predați făcând
+O abilitate este o sarcină telefonică pe care agentul a învățat-o văzându-ți cum o faci o dată. Stochează cum să găsești din nou fiecare element (id-ul, cuvintele și vecinii, nu poziția ecranului), astfel încât continuă să funcționeze atunci când aspectul aplicației se schimbă.
+- Adăugați o abilitate: `skill_record` (Personal). Spuneți „învățați asta ca <nume>”. `action: start` (cu un nume) începe înregistrarea; apoi faceți sarcina — deschideți aplicația, atingeți, tastați, apăsați tastele; fiecare pas este înregistrat. `action: stop` îl salvează. La oprire puteți trece `params` pentru a transforma valorile introduse în parametri (de exemplu, numărul de telefon devine `number`, suma devine `amount`) și un `description`. `action: status` vă spune dacă înregistrarea este activată.
+- Executați o abilitate: `skill_run` (Personal). Dați `args` pentru parametrii săi, de ex. număr și sumă. Se redă într-o fracțiune din pași și se vindecă singur atunci când aplicația se schimbă. Dacă un pas eșuează, rezultatul spune ce pas și ce este pe ecran, iar agentul termină restul manual.
+- Listează abilități: `skill_list` (Sigur) arată numele, parametrii, pașii și cât de des a rulat fiecare. Cu un nume și un export pe el, face un fișier `.zxskill` care poate fi partajat.
+- Partajați și încărcați: `skill_import` (Personal) încarcă un fișier `.zxskill` dintr-o descărcare sau dintr-un fișier partajat ca abilitate.
+- Ștergeți o abilitate: `skill_delete` (Sistem).
+- Exemplu: „Aflați cum trimit 500 lui Rahim prin aplicația mea de portofel” → o faceți o dată → „Trimiteți 700 lui Karim” data viitoare.
+
+## Pilot automat - „când apare X, faceți Y”
+O regulă trezește agentul de la sine și își face sarcina fără să te întrebe.
+- Adăugați: `autopilot_add` (Sistem). Tipuri: sms, notificare, apel, zilnic, o dată, interval, baterie, aplicație. Completați numai câmpurile de care are nevoie regula: `from` (numele expeditorului sau numărul sau titlul aplicației), `any` (cel puțin unul dintre aceste cuvinte), `all` (fiecare cuvânt), `none` (niciunul dintre aceste cuvinte), `time` "HH:MM" (zilnic), `in_minutes` sau `at_ms` (o dată), `every_minutes`] (interval), `every_minutes`] (interval) `pkg` (pachetul sau numele aplicației, pentru regulile de aplicație și de notificare). Agentul vă transformă sentința în aceste câmpuri. Rezultatul afișează toate permisiunile necesare încă (SMS, acces la notificări...), iar agentul vă cere să o porniți.
+- Exemple: „Când sosește un SMS de plată din aplicația pentru portofel, adăugați-l în registrul meu”. „În fiecare dimineață la 8, spune-mi vremea”. „În 20 de minute, amintește-mi să scot pâinea”. „La fiecare 30 de minute, memento de apă de băut.” „Când bateria scade sub 15%, spune-mi.” „Când mă sună cineva, înregistrează numărul”. „Când deschid aplicația bancară, reamintește-mi să verific bugetul.”
+- Listă: `autopilot_list` (Sigur) arată fiecare regulă cu următorul timp de rulare și cât de des s-a declanșat.
+- Întrerupeți sau reluați: `autopilot_toggle` (Sistem). Ștergeți: `autopilot_remove` (Sistem), după id sau titlu.
+- Când se declanșează o regulă, primiți un mesaj care spune acest lucru, iar agentul doar face treaba.
+
+## Registrul de bani (CFO personal)
+- `ledger_scan` (Personal): citiți portofelul și SMS-urile bancare într-un registru privat: venituri, cheltuieli, comisioane, sold și categorie. `days` spune cât de departe (implicit 30). Cu `auto` activat, fiecare SMS de bani nou este adăugat singur și sunteți avertizat când este trecut un buget. Funcționează pentru portofelul și mesajele bancare din orice țară, în orice monedă.
+- `ledger_report` (Personal): perioada de azi, ieri, săptămâna, lună sau toate. Formatați text (un rezumat gata rostit) sau xlsx (un fișier Excel cu tranzacții și totaluri de categorii, deschis pentru dvs.).
+- `ledger_budget` (Personal): setați un buget lunar pentru o categorie (mâncare, facturi, transport, cumpărături, reîncărcare mobilă, transferuri...); o limită de 0 îl elimină; fără argumente, listează bugetele și avertismentele curente.
+- Agentul nu inventează niciodată numere de bani; le citește din registru.
+
+## Cronologie și anulare
+- Tot ceea ce face agentul este scris în cronologie (ultimele 400 de acțiuni). Modificările fișierelor păstrează o copie a ceea ce a fost acolo înainte.
+- `timeline_list` (Sigur): ce a făcut agentul recent, cu un ID pentru fiecare și ce modificări pot fi anulate.
+- `timeline_undo` (Personal): `id` anulează o scriere, editare sau ștergere — fișierul revine exact așa cum a fost (un fișier care nu exista este eliminat din nou). `since_id` anulează totul de la acel id în sus, mai întâi cel mai nou. Folosiți-l când spuneți „du-l înapoi” sau „puneți-l înapoi ca înainte”.
+- Anulare acoperă scrierea, editarea și ștergerea fișierelor. O comandă care a rulat (de exemplu, instalarea ceva sau trimiterea unui mesaj) nu poate fi anulată în acest fel.
+- Mesaje de chat: pentru a elimina o întreagă conversație, utilizați creionul și crucea din meniul din stânga sau Setări → Confidențialitate și date → Ștergeți istoricul conversației sau Navigare → Sesiune nouă.
+
+## Creierul - a doua memorie pentru fișierele dvs
+- `brain_index` (Sigur): creați sau reîmprospătați indexul offline peste dosare sau fișiere (text, Markdown, CSV, Word, Excel, PowerPoint) și opțional căsuța de e-mail SMS (`sms` activată). Rulați-l înainte de prima căutare și după ce apar fișiere noi. Valoarea implicită este spațiul dvs. de lucru.
+- `brain_search` (Sigur): întreabă cu propriile tale cuvinte, „unde este contractul meu de închiriere?” — funcționează offline în orice limbă. `kind` este fișier sau sms; `days` limite la articolele recente. Deschideți un fișier găsit cu `open_file`.
+
+## Apelați agentul
+- `call_agent` (Personal): acțiune activată, dezactivată sau stare. `owner` este numele pe care îl spune („Sunt asistentul <proprietarului>”). `answer_after_seconds` (implicit 6) vă permite să ridicați primul. Când vine un apel și nu poți răspunde, salută în limba apelantului, întreabă numele și motivul, răspunde la întrebări simple, închide politicos și îți spune un rezumat.
+- `call_log` (Sigur): rezumate ale apelurilor la care a răspuns, mai întâi cele mai noi.
+- Are nevoie de permisiuni pentru apel și starea telefonului.
+
+## Memorie
+- `memory_write`, `memory_read`, `memory_delete` (Sigur): fapte durabile despre tine (nume, preferințe, persoane, date, proiecte) trăiesc într-o bază de date locală și supraviețuiesc repornirilor. Spune „amintește-ți asta” și se scrie în același rând; dacă ceva nu este în regulă, este eliminat sau rescris. Fiecare conversație veche este păstrată, iar rândurile trecute care se potrivesc cu ceea ce spui revin de la sine, chiar și luni mai târziu.
+- Vedeți și modificați totul în Setări → Sistem → Memorie (cheie, valoare, salvați, ștergeți tot).

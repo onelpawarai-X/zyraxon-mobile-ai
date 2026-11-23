@@ -1,0 +1,23 @@
+Mga antas ng pag-apruba at kaligtasan ng automation
+Mga Setting → System → Automation. Ito ang magpapasya kung magkano ang maaaring gawin ng ahente bago ito huminto at magtanong sa iyo. Ang setting ay ipinapatupad sa code sa bawat tool call; hindi ito maaaring palawakin ng isang modelo.
+
+## Ang apat na antas
+Baguhin ang antas sa Mga Setting → System → Automation. Ang bawat antas ay nagpapasya kung kailan huminto ang ahente at nagtanong, at gayundin kung gaano kahigpit ang pagtrato ng Content Shield (tingnan ang Seguridad at privacy) sa text na binabasa ng ahente mula sa labas.
+1. Buong tanong (Naka-lock): nagtatanong bago ang anumang bagay na nagpapalit sa telepono, gaano man kaliit. Pinakaligtas. Ang Content Shield ay mahigpit: anumang kahina-hinalang text ay binibilang na pagalit. Gamitin ito sa isang nakabahaging telepono o habang sumusubok ka ng bago.
+2. Pinangangasiwaan (default): nagtatanong bago ang sistema at mga personal na aksyon at gumagawa ng ordinaryong gawain (pagbabasa, pagbubukas, paghahanap, pagtatayo) nang mag-isa. Ang Content Shield ay karaniwan: ang kahina-hinalang text ay nabakuran bilang data, at kapag ang text ay malinaw na pagalit, ang bawat pagbabagong tool ay humihiling sa iyo para sa natitirang bahagi ng pagkakataong iyon.
+3. Balanse: nagtatanong lang bago ang mga aksyon sa antas ng system (shell, pagtanggal, pag-publish, pag-iiskedyul...). Ang mga personal na pagkilos gaya ng mga mensahe, pag-tap at pag-type ay tumatakbo nang mag-isa. Ang Content Shield ay magaan: ito ay kumikilos lamang sa malinaw na pagalit na teksto, at pagkatapos ay ang mga tool sa antas ng system lamang ang humihinto upang magtanong.
+4. Buong automation: hindi nagtatanong at hindi tumitigil. Lahat ay tumatakbo nang diretso, at ang Content Shield ay ganap na naka-off — walang na-scan, minarkahan, inalis o binago. Ito ang automation sa buong kahulugan: pagmamay-ari mo ang panganib.
+
+## Ang tatlong baitang ng mga kasangkapan
+- Ligtas (hindi kailanman nagtatanong sa anumang antas): pagbabasa at paglilista ng mga file, memorya, mga dokumento, disenyo, status, pagbubukas ng mga app at file, paghihintay, mga kasanayan/autopilot/timeline/mga listahan ng tawag, paghahanap sa utak.
+- Personal (tinanong sa unang dalawang antas): SMS, mga tawag, camera, screen reading, mga pag-tap at pagta-type, clipboard, mga pag-download, mga notification, pagbabahagi, pagbabago ng boses, pag-replay ng mga kasanayan, money ledger, call agent, timeline undo.
+- System (tinanong sa bawat antas maliban sa Full automation): shell, ZYRAXON OS, build, publishing, pagtanggal, lock ng device, scheduling, Git at GitHub, ffmpeg, on-device na modelo, pag-post sa mga channel, mga panuntunan sa autopilot, mga kasanayan sa pagtanggal, Shizuku. Anumang tool na hindi nakikilala ng app — kabilang ang MCP na mga tool — ay itinuturing bilang System.
+
+## Ang approval card
+Kapag ang isang tool ay nangangailangan ng iyong pag-apruba, ang isang card ay nagsasabing "Kailangan ng pahintulot", sasabihin sa iyo kung ano ang gustong gawin ng ahente, ipinapakita ang antas nito (Ligtas, Personal o System), at nag-aalok ng "Oo, patakbuhin ito" o "Hindi, itago ito." Ipinapaalala rin sa iyo ng card na maaari mong baguhin kung gaano kadalas ito itatanong sa Mga Setting → Automation.
+
+## Sa device lang
+Kapag naka-on, walang umalis sa telepono: tanging ang on-device na modelo at mga lokal na tool lang ang tumatakbo. Lahat ng tool sa network (paghahanap, pagkuha, pag-upload, pag-publish, GitHub, pagbuo ng media, MCP, mga modelo ng ulap) ay tinanggihan sa code.
+
+## Paunawa sa unang paglulunsad
+Sa unang pagkakataon, ipinaliwanag ni ZYRAXON na maaaring kumilos ang ahente sa iyong telepono at kung saan i-on ang mga pahintulot. Pindutin ang "Nakuha ko, simulan".

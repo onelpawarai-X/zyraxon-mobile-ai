@@ -1,0 +1,35 @@
+Ohùn: sísọ̀rọ̀, gbígbọ́ àti ìbánisọ̀rọ̀ ní tààrà
+## Gbígbọ́ (gbohùngbohùn)
+Eto → Voice & mic → Mic & language.
+- Èdè ìmọ̀ ọ̀rọ̀: èdè tí o ń sọ sí gbohùngbohùn. Yí i padà nígbà kọ̀ọ̀kan.
+- Keep the mic on (ń gbọ́ nígbà gbogbo): nígbà tí a bá tàn án, gbohùngbohùn máa wà ní ṣíṣí. Nígbà tí a bá pa á, ìwọ ni ó ń tàn án fúnra rẹ.
+- Auto-send when you stop talking: lẹ́yìn nǹkan bí ìṣẹ́jú-àáyá 1.5 ti ìdákẹ́, a ó fi gbólóhùn rẹ ránṣẹ́ fúnra rẹ̀. Nígbà tí a bá pa á, àwọn ọ̀rọ̀ náà dúró nínú àpótí fún ọ láti tẹ Send.
+- Bọ́tìnì mic nínú ọ̀pá ifiranṣẹ́ àti àsíá òkè ń ṣe ohun kan náà, tàn/pa.
+- Gbohùngbohùn wà ní ṣíṣí fún ọ nígbà gbogbo, àní nígbà tí ZYRAXON ń sọ̀rọ̀. Ní àkókò tí o bá bẹ̀rẹ̀ sí í sọ̀rọ̀, ó dúró, ó gbọ́, lẹ́yìn náà ó dáhùn rẹ. Ohùn rẹ̀ tí ó padà wá nípasẹ̀ mic ni a ń yọ kúrò nípa fífi ọ̀rọ̀ wé ìdáhùn rẹ̀ tó kẹ́yìn.
+- A fi gbólóhùn ránṣẹ́ lẹ́ẹ̀kan péré. Bí olùmọ̀ ọ̀rọ̀ bá tún sọ ẹ̀dà tó yàtọ̀ díẹ̀ ti gbólóhùn kan náà lẹ́yìn náà, a ó pa á tì gẹ́gẹ́ bí ìgbà kan náà.
+
+## Sísọ̀rọ̀ (ọ̀rọ̀-sí-ohùn)
+Eto → Voice & mic → Voice profile.
+- Yan ohùn kan: obìnrin (dídùn àti onífẹ̀ẹ́) tàbí ọkùnrin (jinlẹ̀ àti onígboyà). A ń lo àwọn ohùn ojú-òpó wẹẹ̀bù nígbà tí wọ́n bá ṣetán; ẹ̀rọ ọ̀rọ̀ fóònù ni ìrànlọ́wọ́ ìkẹyìn.
+- Àwọn ìgbálẹ̀ ìyára àti ìpele ohùn, àti "Test voice".
+- "Read answers aloud" ń tan sísọ̀rọ̀ tàbí kó pa á.
+- Bí fóònù kò bá ní ẹ̀rọ ọ̀rọ̀, fi Google Speech Services sílẹ̀. Bí fóònù kò bá ní dátà ohùn Bengali, bọ́tìnì kan jẹ́ kí o gbà á.
+- Tẹ àsíá ìsọ̀rọ̀ láti dá ohùn dúró. Tẹ Listen nísàlẹ̀ ifiranṣẹ́ èyíkéyìí láti gbọ́ ọ.
+- ZYRAXON kì í ka kóòdù, àwọn ìjápọ̀, JSON tàbí orúkọ irinṣẹ́ sókè láéláé.
+
+## Voice lab (olùyípadà ohùn)
+Yan láti inú àkójọ olupin nípasẹ̀ akọ-tàbí-abo (gbogbo, ọmọbìnrin, ọmọkùnrin), ọjọ́-orí (ọmọdé, ọ̀dọ́langba, àgbàlagbà, àgbà), àti èdè (Bengali, Hindi, English, Urdu, Arabic, Tamil, Nepali, Spanish, French, German, Japanese, Korean, Chinese, Russian, Turkish…). "Listen" ń ṣe àgbéyẹ̀wò ohùn; "Back to default" ń dá ohùn ìwà padà. Fún ohùn tí ó ní ọ̀pọ̀ ohùn, béèrè lọ́wọ́ aṣojú: apá kọ̀ọ̀kan ti ìjíròrò gba ohùn tirẹ̀.
+
+## Live voice (ọ̀rọ̀-sí-ọ̀rọ̀)
+Eto → Voice & mic → Live voice. Pẹ̀lú àwòṣe àkókò-gidi (Gemini Live, OpenAI Realtime àti irú wọn) àwòṣe náà ń gbọ́ gbohùngbohùn ó sì ń dáhùn pẹ̀lú ohùn tirẹ̀, ní ìṣàn kan, o sì lè dá a lẹ́nu ní àárín ọ̀rọ̀. A pa ọ̀rọ̀ fóònù ní ìgbà yìí kí o má bàa gbọ́ ohùn méjì.
+- Use the model's own voice: tàn = ìbánisọ̀rọ̀ ní tààrà; pa = fóònù ń ka àwọn ìdáhùn ọ̀rọ̀.
+- Status fi hàn: ń sopọ̀, ń gbọ́, ń sọ̀rọ̀, ń dúró.
+- Yíyan àwòṣe àkókò-gidi ń tan án fúnra rẹ̀.
+- Bí kò bá sí àwòṣe àkókò-gidi tí a gbé wọlé, fi kọ́kọ́rọ́ Gemini tàbí OpenAI kún AI providers.
+- Ohùn tí o yàn nínú voice profile ni a ń lò ní ipò live pẹ̀lú.
+
+## Ojú tí ń léfòó
+Eto → Aura & theme → Aura & background.
+- Àmì yípo kékeré tí ń léfòó lórí gbogbo app mìíràn. Tẹ̀ láti tan tàbí pa mic; tẹ̀ fún ìgbà pípẹ́ láti ṣí àpótí ọ̀rọ̀ kí o sì tún pa á.
+- Àwọn àwòrán mẹ́jọ: ojú, glow orb, neon ring, galaxy, orbit, plasma, pulsar, prism. Ìgbékalẹ̀ ní etí ìkànnì.
+- Àwọn àṣẹ ohùn (àwọn ọ̀rọ̀ jíjí): nígbà tí app bá wà ní ẹ̀yìn, sísọ orúkọ náà ń jí ojú tí ń léfòó, ZYRAXON sì dáhùn. Àwọn àtilẹ̀wá: "zyraxon", "hey zyraxon" àti àwọn ìkọ̀wé tí ó wọ́pọ̀ ní Bengali àti English. Fi àwọn ọ̀rọ̀ tìrẹ kún un ní èdè èyíkéyìí; yọ wọ́n kúrò nígbàkigbà.

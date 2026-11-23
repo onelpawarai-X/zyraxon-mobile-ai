@@ -1,0 +1,14 @@
+Izindlela: I-ejenti kanye ne-Build
+Kukhona izindlela ezimbili, ezikhethwe ngenkinobho yemodi eduze kwebhokisi lomlayezo. Inketho ihlala uze uyishintshe. Izwi elibukhoma aliyona imodi yesithathu; kuyindlela yokukhuluma ongayivula kokuthi Izilungiselelo (bona isahluko sezwi).
+
+## Umenzeli
+"I-automation egcwele yocingo kanye nesistimu." Yonke into ivuliwe: ukufunda nokushayela isikrini sefoni, ukuvula izinhlelo zokusebenza, amakholi, imilayezo, ikhamera, amafayela, itheminali kanye ne-ZYRAXON OS, Git, ukubuka kuqala, imidiya, ama-ejenti angaphansi, MCP amaseva, amakhono, ukushayela okuzenzakalelayo nokunye. Khetha umenzeli uma ufuna ukuthi okuthile kwenziwe ocingweni lwakho noma ufuna ukumane ukhulume.
+
+## Yakha
+"Izinhlelo zokusebenza ezigcwele isitaki, amawebhusayithi kanye ne-automation." I-ejenti iyinjini yokwakha: kusukela emugqeni omfushane yenza yonke into, iyiqhube, iyibuke futhi ikubonise yona. Inamafayela, itheminali, Git, ukubuka kuqala, ukushicilela, imidiya, inkumbulo kanye nebhodi le-todo. Ukulawulwa kwefoni, ama-sub-ejenti kanye nokukhiya idivayisi kungokwemodi yomenzeli; uma uwadinga kokuthi Yakha, shintsha.
+- Ikhasi lokufika noma iwebhusayithi: yisho ukuthi ngelani. Umenzeli uyakha ngesikhathi esisodwa, uyiqale ocingweni lwakho futhi ayivule kuphaneli yokubuka kuqala, bese ekutshela ukuthi yenziweni. Ayishicileli ngaphandle kokuthi ubuze.
+- Uhlelo lokusebenza: yisho okufunayo futhi lwakha uhlelo lokusebenza njengoba luceliwe. Isiphetho esingemuva, isizindalwazi noma ukungena ngemvume kwengezwa kuphela uma ukucela.
+- Isitaki esigcwele: uma ucela indawo engemuva noma egciniwe, i-ejenti iqala ikubuze umbuzo owodwa omfushane mayelana nokukhetha (ulimi, isizindalwazi, ukungena ngemvume, lapho isebenza khona), ngesincomo sayo, futhi yakha ngemva kokuphendula.
+
+## Kusho ukuthini "buza".
+Lapho umenzeli esidinga ngempela isinqumo sakho wenza konke okunye kuqala, abuze umbuzo owodwa omfushane ngesincomo sawo, bese elinda. Impendulo yakho iqhubeka nomsebenzi kusukela lapho imile khona.

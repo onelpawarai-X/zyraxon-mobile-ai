@@ -1,0 +1,14 @@
+Modusse: Agent en Bou
+Daar is twee modusse, gekies met die modusknoppie langs die boodskapkassie. Die keuse bly totdat jy dit verander. Regstreekse stem is nie 'n derde modus nie; dit is 'n manier van praat wat jy in Instellings kan aanskakel (sien die Stem-hoofstuk).
+
+## Agent
+"Volledige outomatisering van die telefoon en die stelsel." Alles is oop: lees en bestuur die foon se skerm, maak toepassings oop, oproepe, boodskappe, kamera, lêers, die terminaal en ZYRAXON OS, Git, voorskou, media, sub-agente, MCP bedieners, vaardighede, autopilot en meer. Kies Agent wanneer jy iets op jou foon gedoen wil hê of bloot wil praat.
+
+## Bou
+"Volstapel-toepassings, webwerwe en outomatisering." Die agent is 'n bou-enjin: van 'n kort lyn maak dit die hele ding, laat dit hardloop, kyk daarna en wys dit vir jou. Dit het lêers, terminale, Git, voorskou, publisering, media, geheue en die taakbord. Foonbeheer, sub-agente en toestelslot behoort aan Agent-modus; As jy hulle in Build nodig het, skakel oor.
+- Bestemmingsbladsy of webwerf: sê waarvoor dit is. Die agent bou dit dadelik, begin dit op jou foon en maak dit in die Voorskou-paneel oop en vertel jou dan wat dit gemaak het. Dit publiseer nie tensy jy vra nie.
+- Toepassing: sê wat jy wil hê en dit bou die toepassing soos gevra. 'n Agterkant, databasis of login word slegs bygevoeg as jy daarvoor vra.
+- Volstapel: wanneer jy vir 'n agterkant of databasis vra, vra die agent jou eers een kort vraag oor die keuses (taal, databasis, login, waar dit loop), met sy aanbeveling, en bou dit nadat jy antwoord.
+
+## Wat beteken "vra".
+Wanneer die agent jou besluit regtig nodig het, doen hy eers alles anders, vra een kort vraag met sy aanbeveling en wag. Jou antwoord gaan voort met die werk van waar dit opgehou het.

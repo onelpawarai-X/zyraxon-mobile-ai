@@ -1,0 +1,21 @@
+Chmura, sieć, modele i pomocnicy
+## Chmura i internet
+- `web_search` (sieć): przeszukaj prawdziwą sieć. `read_url` (sieć): pobierz stronę jako tekst. `http_request` (sieć): dowolne wywołanie HTTP (GET, POST, PUT, PATCH, DELETE) z nagłówkami i treścią. `verify_url` (sieć): sprawdź, czy łącze naprawdę istnieje i uzyskaj prawdziwy status. `download_file` (Osobiste, sieciowe): pobierz adres URL pliku.
+- Agent otwiera linki tylko wtedy, gdy go o to poprosisz.
+- Modele AI działają w chmurze za pośrednictwem dodanych dostawców (ZYRAXON, ZYRAXON Apex agent w chmurze, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Lista modeli ładuje się na bieżąco i zapełnia po udzieleniu odpowiedzi przez każdego dostawcę.
+- Kompilacje, publikowanie i żądania ściągnięcia są uruchamiane przez GitHub i Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Włącz „tylko na urządzeniu” (ustawienia automatyzacji), a żadne połączenie z chmurą nie zostanie nawiązane: brak dostawcy, brak sieci, brak przesyłania.
+
+## MCP serwery
+MCP pozwala usługom zewnętrznym zapewnić agentowi dodatkowe narzędzia. Połącz Canva, Cloudflare, Supabase, GitHub lub swój własny serwer według jego adresu (opcjonalny token). Narzędzia podłączonych serwerów dołączają do listy narzędzi agenta jako `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (zobacz, co jest połączone i jakie narzędzia istnieją), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (obejrzyj zasób zmian), `mcp_complete` (argumenty autouzupełniania), `mcp_ping`, `mcp_log_level`. Ich połączenia są połączeniami sieciowymi i nieznane MCP narzędzia domyślnie proszą o pozwolenie.
+- Ekran MCP zawiera listę każdego serwera ze statusem Połączony, jego narzędziami, zasobami i szablonami podpowiedzi oraz przyciskami Dodaj, Rozłącz, Usuń i Zezwól.
+
+## Podagenci
+`sub_agent` (System): przekaż część dużego zadania agentom pomocniczym działającym w tle. Akcje: spawn, status, lista, wynik, wiadomość, zatrzymanie, czekanie. Każdy może zastosować swój własny model. Agent łączy i sprawdza ich wyniki, zanim powie „gotowe”.
+
+## Model na urządzeniu
+`on_device_model` (System): wypisz, załaduj i uruchom model językowy działający na telefonie, bez Internetu. W Ustawieniach → Model i tożsamość → Na urządzenie pobierasz modele (od małych do dużych: FunctionGemma 270M, Qwen3 0,6B, Gemma 4 E2B…); token Hugging Face jest opcjonalny i potrzebny tylko w przypadku plików bramkowanych. Załadowany model jest zapamiętywany i ładowany ponownie podczas uruchamiania.
+
+## Kanały wiadomości
+`channel_post` (System) otwiera Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail lub SMS z gotowym tekstem. Naciskasz wyślij siebie.

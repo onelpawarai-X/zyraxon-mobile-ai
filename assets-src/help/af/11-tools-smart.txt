@@ -1,0 +1,45 @@
+Vaardighede, autopilot, geld, tydlyn en ongedaan maak, brein, oproepagent en geheue
+Jy gebruik al hierdie deur te praat: sê wat jy wil en die agent roep die regte instrument. Elke aksie word hier gelys met sy opsies.
+
+## Vaardighede — leer deur te doen
+'n Vaardigheid is 'n telefoontaak wat die agent geleer het deur te kyk hoe jy dit een keer doen. Dit stoor hoe om elke element weer te vind (sy ID, woorde en bure, nie sy skermposisie nie), so dit bly werk wanneer die toepassing se uitleg verander.
+- Voeg 'n vaardigheid by:`skill_record`(Persoonlik). Sê "leer dit as <naam>".`action: start`(met 'n naam) begin opneem; doen dan die taak — maak die toepassing oop, tik, tik, druk sleutels; elke stap word aangeteken.`action: stop`red dit. By stop kan jy verbygaan`params`om getikte waardes in parameters te verander (byvoorbeeld die telefoonnommer word`number`, word die bedrag`amount`) en a`description`. `action: status`vertel jou of opname aan is.
+- Voer 'n vaardigheid uit:`skill_run`(Persoonlik). Gee`args`vir sy parameters, bv. aantal en bedrag. Dit speel weer in 'n fraksie van die stappe en genees homself wanneer die toepassing verander. As een stap misluk, sê die resultaat watter stap en wat op die skerm is, en die agent voltooi die res met die hand.
+- Lys vaardighede:`skill_list`(Veilig) wys naam, parameters, stappe en hoe gereeld elkeen gehardloop het. Met 'n naam en uitvoer op dit maak 'n deelbare`.zxskill`lêer.
+- Deel en laai:`skill_import`(Persoonlike) vragte a`.zxskill`lêer vanaf 'n aflaai of 'n gedeelde lêer as 'n vaardigheid.
+- Vee 'n vaardigheid uit:`skill_delete`(Stelsel).
+- Voorbeeld: "Leer hoe ek 500 na Rahim stuur deur my beursie-toepassing"→jy doen dit een keer→"Stuur 700 na Karim" volgende keer.
+
+## Autopilot - "wanneer X gebeur, doen Y"
+'n Reël maak die agent vanself wakker en dit doen die taak sonder om jou te vra.
+- Voeg by:`autopilot_add`(Stelsel). Soorte: sms, kennisgewing, oproep, daagliks, een keer, interval, battery, app. Vul slegs die velde in wat die reël benodig:`from`(sender naam of nommer of program titel),`any`(ten minste een van hierdie woorde),`all`(elke woord),`none`(nie een van hierdie woorde nie),`time`"UU:MM" (daagliks),`in_minutes` or `at_ms`(een keer),`every_minutes`(interval),`below`(battery persent),`pkg`(toepassingspakket of naam, vir toepassings- en kennisgewingreëls). Die agent verander jou sin in hierdie velde. Die resultaat lys enige toestemming wat nog benodig word (SMS, kennisgewing toegang ...), en die agent vra jou om dit aan te skakel.
+- Voorbeelde: "Wanneer 'n betalings-SMS van my beursie-toepassing af kom, voeg dit by my grootboek." "Vertel my elke oggend om 8 die weer." "Herinner my binne 20 minute om die brood uit te haal." "Elke 30 minute, drink-water herinnering." "Wanneer die battery onder 15% gaan, vertel my." "Wanneer iemand my bel, teken die nommer aan." "Wanneer ek die banktoepassing oopmaak, herinner my om die begroting na te gaan."
+- Lys:`autopilot_list`(Veilig) wys elke reël met sy volgende looptyd en hoe gereeld dit gevuur het.
+- Onderbreek of hervat:`autopilot_toggle`(Stelsel). Vee uit:`autopilot_remove`(Stelsel), volgens ID of titel.
+- Wanneer 'n reël brand, kry jy 'n boodskap wat so sê, en die agent doen net die werk.
+
+## Geldgrootboek (persoonlike finansiële hoof)
+- `ledger_scan`(Persoonlik): lees beursie en bank-SMS in 'n privaat grootboek: inkomste, besteding, fooie, balans en kategorie.`days`sê hoe ver terug (verstek 30). Met`auto`aan, word elke nuwe geld-SMS vanself bygevoeg en jy word gewaarsku wanneer 'n begroting geslaag word. Werk vir enige land se beursie en bankboodskappe, in enige geldeenheid.
+- `ledger_report`(Persoonlik): tydperk vandag, gister, week, maand of almal. Formateer teks ('n klaar gesproke opsomming) of xlsx ('nExcellêer met transaksies en kategorietotale, vir jou oopgemaak).
+- `ledger_budget`(Persoonlik): stel 'n maandelikse begroting vir 'n kategorie (kos, rekeninge, vervoer, inkopies, mobiele herlaai, oordragte...); 'n limiet van 0 verwyder dit; met geen argumente nie, lys dit begrotings en huidige waarskuwings.
+- Die agent bedink nooit geldnommers nie; dit lees hulle uit die grootboek.
+
+## Tydlyn en ontdoen
+- Alles wat die agent doen, word op die tydlyn geskryf (die laaste 400 aksies). Lêerveranderinge hou 'n kopie van wat voorheen daar was.
+- `timeline_list`(Veilig): wat die agent onlangs gedoen het, met 'n ID vir elkeen, en watter veranderinge kan ongedaan gemaak word.
+- `timeline_undo`(Persoonlik):`id`maak een skryf, wysig of skrap ongedaan — die lêer kom presies terug soos dit was ('n lêer wat nie bestaan ​​het nie, word weer verwyder).`since_id`maak alles van daardie ID af ongedaan, nuutste eerste. Gebruik dit wanneer jy sê "neem dit terug" of "sit dit terug soos voorheen".
+- Ontdoen dek lêers skryf, wysig en skrap. 'n Opdrag wat gehardloop het (byvoorbeeld om iets te installeer of 'n boodskap te stuur) kan nie op hierdie manier ongedaan gemaak word nie.
+- Kletsboodskappe: om 'n hele gesprek te verwyder, gebruik die potlood en kruis in die linkerkieslys, of Instellings→Privaatheid en data→Vee kletsgeskiedenis uit, of navigasie→Nuwe sessie.
+
+## Brein — tweede geheue vir jou lêers
+- `brain_index`(Veilig): bou of verfris die vanlyn-indeks oor dopgehou of lêers (teks,Markdown, CSV, Word, Excel, PowerPoint) en opsioneel die SMS-inkassie (`sms`aan). Begin dit voor die eerste soektog en nadat nuwe lêers verskyn het. Die verstek is jou werkspasie.
+- `brain_search`(Veilig): vra in jou eie woorde, "waar is my huurkontrak?" - dit werk vanlyn in enige taal.`kind`is lêer of sms;`days`beperkings op onlangse items. Maak 'n gevind lêer oop met`open_file`.
+
+## Bel agent
+- `call_agent`(Persoonlik): aksie aan, af of status.`owner`is die naam wat dit sê ("Ek is <eienaar> se assistent").`answer_after_seconds`(verstek 6) laat jou eerste optel. Wanneer 'n oproep kom en jy kan nie antwoord nie, groet dit in die beller se taal, vra die naam en die rede, beantwoord eenvoudige vrae, hang beleefd af en vertel jou 'n opsomming.
+- `call_log`(Veilig): opsommings van oproepe wat dit beantwoord het, nuutste eerste.
+- Benodig die oproep- en telefoonstaat-toestemmings.
+
+## Geheue
+- `memory_write`, `memory_read`, `memory_delete`(Veilig): blywende feite oor jou (naam, voorkeure, mense, datums, projekte) woon in 'n plaaslike databasis en oorleef herbegins. Sê "onthou dit" en dit word in dieselfde beurt geskryf; as iets verkeerd is, word dit verwyder of oorgeskryf. Elke ou gesprek word ook gehou, en vorige draaie wat ooreenstem met wat jy sê kom vanself terug, selfs maande later.
+- Sien en verander dit alles in Instellings→Stelsel→Geheue (sleutel, waarde, stoor, vee alles uit).

@@ -1,0 +1,21 @@
+Kūrimas: svetainės, programos, peržiūra ir publikavimas
+## Kaip paklausti
+- „Padarykite man mano kavinės nukreipimo puslapį“. Agentas jį iškart sukuria, paleidžia telefone ir atidaro peržiūroje. Gaunate 2–3 eilutes, kuriose tai aprašoma. Niekas neskelbiamas, nebent jūs paprašysite.
+- „Sukurkite užduočių programą“. Sukurtas tiesiogiai su protingu kaminu, paleistas ir rodomas. Užpakalinė dalis, duomenų bazė arba prisijungimas tik paprašius.
+- „Sukurkite pilną programą“. Agentas pirmiausia užduoda vieną trumpą klausimą apie užpakalinę kalbą, duomenų bazę, prisijungimą ir kur ji veikia su rekomenduojamais numatytais parametrais, tada visa tai sukuria su pradiniais duomenimis ir išbando visą srautą.
+- „Sukurkite Windows/ZYRAXON OS/macOS/Android programą“. Parašytas šaltinis, pridedama kūrimo darbo eiga, ji nustumiama ir įdiegiama debesyje su GitHub veiksmais, ir jūs gaunate tikrą atsisiuntimo nuorodą.
+
+## Įrankiai
+- `edit_file` ir `write_file`: parašykite tikrus failus (visą kodą, niekada stubus). `code_box` rodo juos gyvai.
+- `preview` (Saugus): integruota tikroji naršyklė. Veiksmai: atidaryti (nuoroda, `localhost:PORT` arba failas), įkelti iš naujo, atgal, pirmyn, ekrano kopija, slinkti, spustelėti, įvesti, skaityti puslapio tekstą, konsolės klaidos, eval. Agentas žiūri į savo darbą prieš sakydamas, kad jis atliktas.
+- `serve_local` (Sistema): paleidžia žiniatinklio serverį telefone aplankui ir grąžina LAN adresą, kurį gali atidaryti kiti Wi-Fi įrenginiai.
+- `publish_website` (Sistema): aptarnauja svetainę viešajame prievade iš telefono. `publish_cloudflare` (Sistema): įkelia svetainę į internetą be paskyros per Cloudflare tunelį ir grąžina viešą https nuorodą. `publish_github` (Sistema): paskelbia projektą GitHub saugykloje (puslapiuose) su jūsų prieigos raktu.
+- `git` (Sistema): klonavimas, inicijavimas, būsena, pridėjimas, įsipareigojimas, stumimas, traukimas, šaka, patikra, žurnalas, diferencijavimas naudojant išsaugotą prieigos raktą. `github_pr` (Sistema): kurkite, įtraukite į sąrašą, sujunkite ir komentuokite ištraukimo užklausas. `github_actions` (Sistema): išvardykite darbo eigas, paleiskite jas, vykdomos apklausos ir skaitykite žurnalus, todėl versijos paleidžiamos debesyje iš telefono.
+- `build_app` (Sistema): sukuria šį projektą su Gradle telefone ir įdiegia rezultatą.
+- `files_panel`, `todo_write`: failų naršyklė ir užduočių lenta.
+
+## Kokybės taisyklių laikosi agentas
+Visas išdėstymas, jautrus dizainas, veikiantis JavaScript, animacija, nuoseklios spalvos ir šriftai (tamsūs ir šviesūs ten, kur tinka), o ne bendras šablonas. Nukreipimo puslapis paprastai yra 300–900 eilučių; didesni dalykai daugiau.
+
+## Jei kažkas atrodo sugedęs
+Peržiūroje paspauskite Pataisyti arba pasakykite agentui. Jis nuskaito konsolę, pašalina priežastį, iš naujo atidaro puslapį ir vėl patikrina.

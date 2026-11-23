@@ -1,0 +1,15 @@
+Dostawcy, modele i klucze
+## Dostawcy
+ZYRAXON (własna linia i Apex agent w chmurze, zawsze podłączony), OpenCode (bezpłatny limit), Groq (bardzo szybka lama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek i OpenRouter. Dodaj dowolny klucz w Ustawieniach → Dostawcy i API. Klucz zostanie zapisany w Twoim telefonie, porównany z katalogiem operatora, a modele będą przesyłane do selektora po odebraniu połączenia przez każdego operatora.
+
+## Wybór modelu
+Użyj przycisku modelu na pasku komunikatów lub opcji Ustawienia → Model i tożsamość → Model. Szukaj według nazwy, filtruj Wszystkie lub Niestandardowe. Twój wybór zostanie zapisany i przywrócony po uruchomieniu; odświeżenie nigdy nie zastępuje zapisanego modelu. Modele oznaczone jako Na żywo mogą mówić własnym głosem (patrz Głos na żywo).
+
+## Modele na urządzeniu
+Ustawienia → Model i tożsamość → Na urządzeniu. Model działa na telefonie i nie pozostawiają na nim żadnych danych. Pliki są duże (od setek MB do kilku GB), więc pobierz je na Wi-Fi. Są wymienione od małych do dużych; na telefonie z małą ilością pamięci RAM wybierz najlżejszy. Wywoływanie narzędzi jest obsługiwane przez pakiety Gemma i FunctionGemma. Token Hugging Face jest przeznaczony tylko dla plików bramkowanych. Załadowane modele są zapamiętywane.
+
+## Witryna internetowa ZYRAXON.
+zyraxonai.lovable.app: utwórz konto (e-mail lub Google), otwórz Ustawienia, Klucz API / Token dostępu, utwórz klucz i wklej go w aplikacji. Bez klucza możesz nadal korzystać z aplikacji z modelami na urządzeniu i narzędziami lokalnymi.
+
+## Koszty i dane
+Dostawcy usług w chmurze wystawiają Ci rachunki według własnych zasad. Po włączeniu opcji „Tylko na urządzeniu” nic nie jest wysyłane do żadnego dostawcy.

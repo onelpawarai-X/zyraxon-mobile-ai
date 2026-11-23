@@ -1,0 +1,20 @@
+Memulai
+ZYRAXON adalah asisten yang ada di dalam ponsel Android Anda. Ia berbicara dengan Anda, mendengarkan Anda, dan dapat melakukan pekerjaan nyata: membuka aplikasi, mengetuk dan mengetik di layar, menelepon orang, menulis file, membangun situs web dan aplikasi, menjalankan sistem ZYRAXON OS, membuat gambar, audio, video dan dokumen kantor, dan mengingat Anda selama berbulan-bulan. Ini berfungsi dalam bahasa apa pun yang Anda gunakan.
+
+## Menit-menit pertama
+- Pada peluncuran pertama ZYRAXON menunjukkan pemberitahuan singkat bahwa agen dapat bertindak sendiri pada ponsel Anda. Tekan "Oke, mulai" untuk melanjutkan.
+- Tambahkan kunci AI (Pengaturan → Penyedia & API → penyedia AI). Tempelkan kunci untuk penyedia mana pun yang Anda suka (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Saat Anda menyimpan kunci, aplikasi membaca katalog penyedia tersebut dan memeriksanya secara nyata, sehingga Anda melihat "terhubung" yang sebenarnya dan jumlah modelnya.
+- Tidak ada kunci? Anda masih dapat menggunakan model pada perangkat (Pengaturan → Model & identitas → Pada perangkat). Mereka berjalan di telepon tanpa internet.
+- Pilih model dengan tombol model di bilah pesan, dan karakter (Pengaturan → Model & identitas → Identitas).
+- Berikan izin ketika suatu fitur memerlukannya (lihat bab Izin). Agen juga dapat membuka dialog izin untuk Anda dengan satu ketukan.
+- Cukup bicara atau ketik. "Jadikan saya laman landas untuk toko roti saya", "buka YouTube dan putar lagu", "berapa baterai saya?", "telepon Ibu".
+
+## Dua cara kerja
+Di sebelah kotak pesan terdapat tombol mode dengan dua mode: Agen dan Build. Lihat bab Mode.
+
+## Dimana segala sesuatunya berada
+- Menu sebelah kiri: obrolan Anda, obrolan baru, ganti nama, hapus, dan peralihan tema.
+- Layar obrolan: pesan, papan tugas, daftar alat, file, terminal.
+- Panel Pratinjau dan Kode: lihat dan edit apa yang dibuat agen.
+- Pengaturan: delapan bagian, dibahas satu per satu dalam dokumentasi ini.
+- Dokumentasi ini: Pengaturan → Dokumentasi (Anda di sini).

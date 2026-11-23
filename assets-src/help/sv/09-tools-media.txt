@@ -1,0 +1,11 @@
+Bilder, ljud, video, dokument och design
+- `generate_image` (nätverk): gör en bild från en beskrivning (skriv den med detaljer, engelska fungerar bäst). Det visas i chatten med delningsknappar. För flera, be om flera.
+- `generate_audio` (nätverk): talat ljud (.mp3) från valfri text. För en dialog eller berättelse, ge varje del sin egen röst (kön, ålder, språk, ton). Många språk, inklusive bengali, hindi och engelska.
+- `generate_video`: en riktig redigerad video (inte AI-film) från scener — bilder, klipp, text, färg, berättarröst, bildtexter, musik. `ffmpeg`: valfri direkt redigering — klipp, gå med, överlägg, undertexter, hastighet, ljudmix, konvertera. 5–10 minuters videor är möjliga, byggda steg för steg.
+- Framsteg visas live i procent i chatten; när den är klar kommer filen med knapparna Play och Share.
+- `make_document`: en riktig Word (.docx), Excel (.xlsx) eller PowerPoint (.pptx) fil på telefonen, ingen installation behövs, något språk. `office_template`: färdiga kontorspapper med tomrum att fylla (lämna ansökan, jobbansökan, faktura, CV, affärsförslag, offert, kallelse, mötesprotokoll, kontrakt, månadsbokslut med mera).
+- Dokument från ett foto: bifoga ett foto (Dokumentskanning). Texten kopieras exakt som skriven (otydliga ord markeras), en tabell blir .xlsx, annars .docx.
+- Mötesanteckningar: från ljud, en utskrift eller vad du säger. Dokumentet har en sammanfattning, beslut, åtgärdspunkter (uppgift, ägare, förfallodatum) och ett klart e-postutkast.
+- `make_design`: affischer, banderoller, logotyper, kort, berättelser, omslag som PNG och PDF. `brand_kit`: ge en logotyp eller färger; de sparas, appens tema ändras, och från och med då använder dokument, bilder och webbplatser dina varumärkesfärger.
+- `present_slides`: karaktären talar medan bildkorten visas; bilder ändras av sig själva när rösten är klar. Be om en .pptx-fil om du vill ha en fil.
+- `open_file`: öppnar det som gjordes i telefonens riktiga app (Word/Dokument, Kalkylark, Presentationer, PDF, galleri, webbläsare) eller i förhandsgranskningspanelen; agenten kontrollerar skärmen för att vara säker på att den har öppnats.

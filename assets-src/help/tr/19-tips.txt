@@ -1,0 +1,27 @@
+İpuçları ve örnek istekler
+## Nasıl değil ne istediğini söyle
+- "Bir spor salonu için karanlık ve cesur bir açılış sayfası yapın."
+- "Veritabanıyla tam kapsamlı bir rezervasyon uygulaması oluşturun." (temsilci önce teknik tercihleri ​​sorar)
+- "YouTube'ı aç ve sakin bir şarkı çal."
+- "Aşağı kaydırın ve ilk sonucu açın."
+- "Pilim ve Wi-Fi nedir?"
+- "En yeni SMS'imi oku ve bana kodu söyle."
+- "Annemi ara." / "Aramayı cevapla."
+- "Bu fotoğraftan bir CV oluştur." (ekleyin)
+- "Bu toplantı kaydını eylem öğeleri içeren notlara dönüştürün."
+- "Bu renklerle Cuma günkü etkinlik için bir poster yapın."
+- "Biri erkek, biri kız olmak üzere iki arkadaş arasında sesli bir diyalog kurun."
+- "Kız kardeşimin doğum gününün 3 Mayıs olduğunu unutmayın."
+- "Her sabah saat 8'de bana hava durumunu söyle." (otomatik pilot)
+- "Kiramı cüzdan uygulamamdan nasıl gönderdiğimi öğren, böylece bunu tekrar yapabilirsin." (yetenek)
+- "Proje klasöründe yaptığınız işlemi geri alın." (zaman çizelgesi)
+- "Kira sözleşmem nerede?" (beyin)
+- "Python paketlerini yükleyin ve bu betiği çalıştırın." (ZYRAXON OS)
+- "Bu siteyi yayınlayın ki paylaşabileyim." (genel bağlantı)
+
+## Yardımcı olan alışkanlıklar
+- Kısa ve net, uzun olanı yener. Temsilci varsayılanları seçer ve size ne seçtiğini söyler.
+- Bir soru sorduğunda cevaplayın ve aynı noktadan devam edin.
+- Ayrıntılı bir yanıt için "açıkla" veya "özet" deyin; aksi halde cevaplar kısadır.
+- Bu konuyu istediğiniz zaman konuşabilirsiniz. Duruyor ve dinliyor.
+- Bir şeyler yapmak için Oluşturma modunu ve telefonda bir şeyler yapmak için Aracı modunu kullanın.

@@ -1,0 +1,15 @@
+Furnizori, modele și chei
+## Furnizorii
+ZYRAXON (linie proprie și agentul cloud Apex, întotdeauna conectat), OpenCode (cotă gratuită), Groq (lama foarte rapidă), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek și OpenRouter. Adăugați orice cheie în Setări → Furnizori și API. Cheia este salvată pe telefon, verificată în catalogul furnizorului, iar modelele sunt transmise în selector pe măsură ce fiecare furnizor răspunde.
+
+## Alegerea unui model
+Utilizați butonul model din bara de mesaje sau Setări → Model și identitate → Model. Căutați după nume, filtrați Toate sau Personalizate. Alegerea ta este salvată și restaurată la lansare; o reîmprospătare nu înlocuiește niciodată modelul salvat. Modelele marcate Live pot vorbi cu propria voce (consultați Vocea live).
+
+## Modele pe dispozitiv
+Setări → Model și identitate → Pe dispozitiv. Modelul rulează pe telefon fără date. Fișierele sunt mari (de la sute de MB la câțiva GB), așa că descărcați pe Wi-Fi. Sunt enumerate de la mic la mare; pe un telefon cu puțină memorie RAM alege cel mai ușor. Apelarea instrumentului este acceptată de pachetele Gemma și FunctionGemma. Un token Hugging Face este doar pentru fișierele cu blocare. Modelele încărcate sunt reținute.
+
+## Site-ul web ZYRAXON.
+zyraxonai.lovable.app: creați un cont (e-mail sau Google), deschideți Setări, Cheie API / Token de acces, creați o cheie și inserați-o în aplicație. Fără o cheie, puteți utiliza în continuare aplicația cu modele de pe dispozitiv și instrumente locale.
+
+## Costuri și date
+Furnizorii de cloud vă facturează conform propriilor reguli. Cu „Numai pe dispozitiv” activat, nimic nu este trimis niciunui furnizor.

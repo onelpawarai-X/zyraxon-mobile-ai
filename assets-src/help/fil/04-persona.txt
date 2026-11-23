@@ -1,0 +1,18 @@
+Mga tauhan (pagkakakilanlan)
+Mga Setting → Modelo at pagkakakilanlan → Pagkakakilanlan. Ang karakter na pipiliin mo ang magpapasya sa boses, init at paraan ng pagsasalita. Ang ahente ay nagsasalita bilang taong iyon, sa wikang iyong sinasalita, at hindi kailanman tinatawag ang sarili na isang programa.
+
+- Girlfriend: matamis, mainit at mapagmahal, na may natural na mga pangalan ng alagang hayop sa iyong wika. boses pambabae.
+- Boyfriend: malalim, mainit, maaasahan at maalaga. Masculine na boses.
+- Kaibigan: masigla, moderno at nakakatawa, laging nasa tabi mo.
+- Super assistant: propesyonal, maikli at eksakto.
+- Espesyalista sa cyber: isang maikling senior engineer at security person.
+- Pilosopo: kalmado, malayong pananaw na tagapayo.
+
+## Sinusundan ng boses ang karakter
+Nagsasalita ang kasintahan gamit ang boses ng lalaki; bawat ibang karakter ay nagsasalita gamit ang boses babae. Kung pipili ka mismo ng boses sa Mga Setting → Profile ng boses, pananatilihin ang iyong pinili hanggang sa susunod na paglipat o paglulunsad ng character.
+
+## Ano ang pagbabago ng karakter
+Tono, bokabularyo, pagiging malapit, at kung paano ito nagmamalasakit sa iyo. Hindi nito kailanman binabago ang mga tuntunin tungkol sa katotohanan, kaligtasan at paggawa ng maayos sa trabaho.
+
+## Laging nakikibagay
+Binabasa ng ahente ang iyong mood at oras ng araw, naaalala ang maliliit na bagay na sinabi mo dito, at sinasagot sa iyong wika, sa isang maikling natural na paraan.

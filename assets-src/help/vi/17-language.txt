@@ -1,0 +1,16 @@
+Ngôn ngữ
+## Ngôn ngữ ứng dụng
+Cài đặt → Ngôn ngữ và bản dịch. 60 ngôn ngữ. Toàn bộ giao diện và các thông báo công cụ của tác nhân đều tuân theo nó. Mỗi ngôn ngữ có tập tin dịch riêng. Bất kỳ dòng nào mà file ngôn ngữ chưa có đều được hiển thị bằng tiếng Anh, không bao giờ để trống.
+
+## Những gì bạn nói
+Nhân viên luôn trả lời bằng ngôn ngữ bạn nói với họ, bất kỳ ngôn ngữ nào trên thế giới. Nếu bạn chuyển đổi, nó sẽ chuyển đổi. Nó sử dụng hình thức thân thiện và tôn trọng của "bạn" trong ngôn ngữ của bạn. Tên thương hiệu và công nghệ vẫn giữ nguyên.
+
+## Ngôn ngữ giọng nói
+- Ngôn ngữ nhận dạng (nội dung bạn nói vào micrô): Cài đặt → Giọng nói & micrô → Mic & ngôn ngữ.
+- Giọng nói: Cài đặt → Giọng nói và micrô → Cấu hình giọng nói và lab Giọng nói cho các ngôn ngữ như tiếng Bengali, tiếng Hindi, tiếng Anh, tiếng Urdu, tiếng Ả Rập, tiếng Tamil, tiếng Nepal, tiếng Tây Ban Nha, tiếng Pháp, tiếng Đức, tiếng Nhật, tiếng Hàn, tiếng Trung, tiếng Nga, tiếng Thổ Nhĩ Kỳ.
+
+## Tài liệu này
+Sử dụng chip ngôn ngữ ở đầu trang này. Toàn bộ hướng dẫn được viết bằng mọi ngôn ngữ mà ứng dụng hỗ trợ, bằng tay và được gửi bên trong ứng dụng. Không có gì được dịch trên điện thoại của bạn: mọi chương sẽ mở ngay lập tức, hoạt động ngoại tuyến và không cần kiểu máy hoặc khóa.
+
+## Viết theo kịch bản của riêng bạn
+Tài liệu, áp phích và thiết kế có thể được thực hiện bằng bất kỳ kịch bản nào. Đối với các thiết kế tiếng Bengali, phông chữ phù hợp sẽ được sử dụng; đối với các tập lệnh khác, phông chữ phù hợp sẽ được chọn.

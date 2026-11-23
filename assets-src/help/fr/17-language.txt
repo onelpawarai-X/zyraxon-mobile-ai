@@ -1,0 +1,16 @@
+Langues
+## Langue de l'application
+Réglages → Language & translation. 60 langues. Toute l'interface et les messages d'outils de l'agent la suivent. Chaque langue a son propre fichier de traduction. Toute ligne qu'un fichier de langue n'a pas encore s'affiche en anglais, jamais laissée vide.
+
+## Ce que vous parlez
+L'agent répond toujours dans la langue dans laquelle vous lui parlez, n'importe quelle langue du monde. Si vous changez, il change. Il utilise la forme amicale et respectueuse de « vous » dans votre langue. Les noms de marques et de technologies restent tels quels.
+
+## Langues vocales
+- Langue de reconnaissance (ce que vous dites au microphone) : Réglages → Voice & mic → Mic & language.
+- Voix parlée : Réglages → Voice & mic → Voice profile, et le Voice lab pour des langues comme le bengali, le hindi, l'anglais, l'ourdou, l'arabe, le tamoul, le népalais, l'espagnol, le français, l'allemand, le japonais, le coréen, le chinois, le russe, le turc.
+
+## Cette documentation
+Utilisez les pastilles de langue en haut de cette page. Tout le guide est écrit en entier dans toutes les langues prises en charge par l'application, à la main, et livré dans l'application. Rien n'est traduit sur votre téléphone : chaque chapitre s'ouvre instantanément, fonctionne hors ligne et n'a besoin ni de modèle ni de clé.
+
+## Écrire dans votre propre écriture
+Les documents, affiches et designs peuvent être créés dans n'importe quelle écriture. Pour les designs en bengali, la bonne police est utilisée ; pour les autres écritures, la police correspondante est choisie.

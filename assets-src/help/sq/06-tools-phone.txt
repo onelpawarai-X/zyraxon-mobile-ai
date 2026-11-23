@@ -1,0 +1,34 @@
+Mjetet e automatizimit të telefonit
+Agjenti kontrollon telefonin tuaj nëpërmjet mjeteve. Ju kurrë nuk i quani ato vetë; ju thoni atë që dëshironi dhe agjenti zgjedh mjetet. Ky kapitull liston çdo mjet që prek telefonin dhe mënyrën e mbrojtjes së tij (shihni Nivelet e miratimit: Safe, Personal, System).
+
+## Hapja dhe gjetja
+- `open_app` (I sigurt): hap çdo aplikacion të instaluar me emër ose paketë. `list_apps` (I sigurt): listoni aplikacionet e instaluara. `open_settings` (I sigurt): hapni një faqe cilësimesh të sistemit (qasshmëria, mbivendosja, njoftimet, aplikacionet, Wi-Fi, bateria, Play Protect). `launch_url` (I sigurt): hap një lidhje në shfletues. `youtube_play` (E sigurt): hapni YouTube në rezultatet e kërkimit për atë që keni kërkuar dhe luajeni atë.
+
+## Duke parë ekranin
+- `read_screen` (Personal): lexon çdo tekst dhe element në ekran me pozicionet e prekjes. `screen_shot` (Personale): një pamje e vërtetë e ekranit. Këta kanë nevojë për lejen e aksesueshmërisë.
+- `look_camera` (Personale): bën një foto me kamerën dhe e shikon atë. `read_media` (Personale): lexon një foto, audio ose video (nga një shteg ose lidhje) në mënyrë që modeli ta kuptojë atë.
+
+## Duke vepruar në ekran
+- `tap` (Personale): prekni një pikë. `tap_text` (Personale): prekni elementin me këtë etiketë, më i sigurt se koordinatat. `swipe` (Personale): lëvizni ose gjesti i pasmë. `type_text` (Personal): shkruani në fushën e fokusuar. `press_key` (Personale): prapa, shtëpi, të fundit, njoftime, cilësime të shpejta, kyçje.
+- Veprimet e ekranit kryhen një nga një, sipas renditjes, dhe pas secilit agjenti shikon në ekranin e ri.
+
+## Telefoni, mesazhet dhe clipboard
+- `call_dial` (Personal): kryeni një telefonatë me numrin ose emrin e kontaktit. `call_state` (Personale): një telefonatë bie apo është aktive? `call_answer` (Personale): përgjigje. `call_hangup` (Personale): mbyll.
+- `read_sms` (Personale): lexoni SMS-të më të reja, p.sh. një kod OTP; mund të filtrohet me tekst ose dërgues.
+- `clipboard_read` dhe `clipboard_write` (Personale): lexoni ose shkruani clipboard.
+- `notify` (Personal): posto një njoftim të vërtetë Android. `share` (Personale): hapni fletën e ndarjes me tekst, një lidhje ose një skedar. `channel_post` (Sistemi): hapni Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail ose SMS me tekstin tuaj të mbushur paraprakisht, gati për t'u dërguar.
+
+## Statusi dhe faktet e sistemit
+- `network_status` (I sigurt): në linjë ose jo, Wi-Fi ose të dhëna celulare, Wi-Fi emri. `sys_info` (I sigurt): versioni Android, modeli, CPU, RAM, ruajtja, aplikacioni aktual. `platform_info` (I sigurt): ku agjenti po funksionon. `process_list` (Safe): proceset e ekzekutimit.
+
+## Lejet dhe ekrani
+- `request_permission` (Safe): hap dialogun e lejeve të sistemit me një trokitje kur një mjet nuk arrin të marrë një leje që mungon. `device_lock` (Sistemi): kyçeni ekranin realisht ose konfiguroni lejen që e bën të mundur. `floating_bubble` (Personale): aktivizoni ose çaktivizoni rruzullin lundrues.
+- `voice_change` (Personale): ndryshoni shpejtësinë e të folurit, zërin ose gjininë. `live_voice` (Sistemi): aktivizoni ose çaktivizoni modalitetin e drejtpërdrejtë të të folurit në të folur.
+
+## Ndihmësit e ndërfaqes
+- `code_box` dhe `files_panel`: hapni kutinë e kodit të drejtpërdrejtë ose shfletuesin e skedarëve në mënyrë që të shikoni punën. `todo_write`: bordi i detyrave të drejtpërdrejta.
+
+## Këshilla
+- Mund të lidhni: "Hap Cilësimet, gjej Wi-Fi dhe më thuaj emrin e rrjetit". Agjenti lexon ekranin pas çdo hapi dhe vendos hapin tjetër.
+- Nëse një trokitje nuk bën asgjë, agjenti lexon përsëri ekranin dhe provon një element tjetër; nuk troket kurrë verbërisht.
+- Nëse Play Protect bllokon diçka, agjenti mund të kalojë nëpër cilësimet me ju (shih Lejet).

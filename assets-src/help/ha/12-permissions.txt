@@ -1,0 +1,27 @@
+Izini, daya bayan daya
+Saituna → Tsaro & keɓantawa → Izini. Kowane jere yana nuna "An Ba da" ko maɓalli. Taɓa layi yana buɗe maganganun tsarin; kawai danna Izin. Wakilin kuma yana iya buɗe maganganun kanta da `request_permission`.
+
+- Makirifo: don haka ZYRAXON ya ji ku. Idan ba shi ba babu shigarwar murya.
+- Kyamara: don ɗauka da duba hotuna (`look_camera`, duba daftarin aiki, "me kuke gani").
+- Wuri: don taswira da bayanan gida.
+- Sanarwa: don gaya muku lokacin da aikin bango ya ƙare.
+- Fayiloli & kafofin watsa labarai: don karanta hotuna, bidiyo, sauti da takardu.
+- Mai rufi (zana sama da wasu ƙa'idodi): ana buƙata don ido mai iyo.
+- Samun dama: yana barin wakili ya karanta allon kuma ya taɓa, gogewa da buga maka. Wannan shine zuciyar sarrafa wayar. Kuna kunna shi a cikin saitunan isa ga tsarin.
+- Ingantaccen baturi: yana dakatar da Android daga sanya ZYRAXON zuwa barci yayin da yake aiki a bango.
+
+## Wasu izini da ƙa'idar ta bayyana
+- SMS (karanta da karɓa): don karanta lambobin, lissafin kuɗi da ka'idodin autopilot na SMS.
+- Jihar waya, amsa kira, wayar kira, lambobi: don kayan aikin kira da wakilin kira.
+- Samun sanarwar: bari autopilot yayi martani ga sanarwa.
+- Mai sarrafa na'ura: yana barin `device_lock` da gaske kulle allo.
+- Shigar da fakiti: bari sabuntawa da `build_app` shigar da apks; Android yana tambayarka don ƙyale ZYRAXON azaman tushen shigarwa.
+- Sabis na gaba (microphone, data daidaitawa) da kulle farkawa: kiyaye murya da dogon ayyuka da rai.
+- Intanet da yanayin cibiyar sadarwa: gajimare da yanar gizo.
+- Shizuku (na zaɓi): damar matakin-tsari don harsashi da tasha.
+
+## Google Play Protect
+Idan Play Protect ya toshe aiki, wakilin zai iya buɗe shafin da ya dace, duba ainihin allo kuma ku tafi mataki-mataki ta cikin kayan aiki da jujjuyawar - amma yana tambayar ku da farko, saboda kashe kariya shine shawarar ku. Don yin shi da kanku: Play Store → hoton bayanin martaba → Play Protect → saituna → kashe “Scan apps with Play Protect”. Shafin yana da maɓallin da ke buɗewa Play Store.
+
+## Me yasa izini ke da mahimmanci
+Idan kayan aiki ya gaza don bacewar izini, wakilin ya gaya muku wanne kuma ya buɗe maganganun sa. Babu wani abu mai mahimmanci da ke aiki ba tare da izini ba na zahiri.

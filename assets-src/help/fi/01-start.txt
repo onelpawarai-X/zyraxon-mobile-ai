@@ -1,0 +1,20 @@
+Aloittaminen
+ZYRAXON on avustaja, joka asuu Android puhelimessasi. Se keskustelee kanssasi, kuuntelee sinua ja voi tehdä todellista työtä: avata sovelluksia, napauttaa ja kirjoittaa näyttöä, soittaa ihmisille, kirjoittaa tiedostoja, rakentaa verkkosivustoja ja sovelluksia, käyttää ZYRAXON OS-järjestelmää, luoda kuvia, ääni-, video- ja toimistoasiakirjoja ja muistaa sinut kuukausien ajan. Se toimii millä tahansa puhumallasi kielellä.
+
+## Ensimmäiset minuutit
+- Ensimmäisellä käynnistyksellä ZYRAXON näyttää lyhyen ilmoituksen, että agentti voi toimia puhelimessasi itse. Jatka painamalla "Selvä, aloita".
+- Lisää AI-avain (Asetukset → Palveluntarjoajat ja API → AI-palveluntarjoajat). Liitä haluamasi palveluntarjoajan avain (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Kun tallennat avaimen, sovellus lukee kyseisen palveluntarjoajan luettelon ja tarkistaa sen oikeellisuuden, joten näet todellisen "yhdistetyn" ja mallien lukumäärän.
+- Ei avainta? Voit edelleen käyttää laitteessa olevia malleja (Asetukset → Malli ja tunnus → Laitteessa). Ne toimivat puhelimella ilman Internetiä.
+- Valitse malli viestipalkin mallipainikkeella ja merkki (Asetukset → Malli ja identiteetti → Identiteetti).
+- Myönnä käyttöoikeudet, kun ominaisuus tarvitsee niitä (katso Käyttöoikeudet-luku). Edustaja voi myös avata lupaikkunan sinulle yhdellä napautuksella.
+- Puhu tai kirjoita. "Tee minusta leipomon aloitussivu", "avaa YouTube ja toista kappale", "mikä on akkuni?", "soita äidille".
+
+## Kaksi tapaa toimia
+Viestiruudun vieressä on tilapainike, jossa on kaksi tilaa: Agent ja Build. Katso kohtaa Tilat.
+
+## Missä asiat ovat
+- Vasen valikko: keskustelut, uusi keskustelu, uudelleennimeäminen, poistaminen ja teeman vaihto.
+- Chat-näyttö: viestit, tehtävätaulu, työkaluluettelo, tiedostot, pääte.
+- Esikatselu- ja Koodipaneelit: katso ja muokkaa, mitä agentti rakentaa.
+- Asetukset: kahdeksan osaa, yksitellen tässä dokumentaatiossa.
+- Tämä dokumentaatio: Asetukset → Dokumentaatio (olet täällä).

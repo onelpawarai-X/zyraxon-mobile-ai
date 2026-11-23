@@ -1,0 +1,23 @@
+Nivelurile de aprobare și siguranța automatizării
+Setări → Sistem → Automatizare. Aceasta decide cât de mult poate face agentul înainte să se oprească și să vă întrebe. Setarea este aplicată în cod la fiecare apel de instrument; un model nu o poate lărgi.
+
+## Cele patru niveluri
+Schimbați nivelul în Setări → Sistem → Automatizare. Fiecare nivel decide când se oprește agentul și întreabă și, de asemenea, cât de strict tratează Scutul de conținut (vezi Securitate și confidențialitate) textul pe care agentul îl citește din exterior.
+1. Întrebare completă (Blocată): întreabă înainte de orice schimbă telefonul, oricât de mic este. Cel mai sigur. Scutul de conținut este strict: orice text suspect este considerat ostil. Folosiți-l pe un telefon partajat sau în timp ce testați ceva nou.
+2. Supravegheat (implicit): întreabă înainte de acțiunile de sistem și personale și efectuează singur munca obișnuită (citire, deschidere, căutare, construire). Scutul de conținut este standard: textul suspect este îngrădit ca date, iar atunci când textul este în mod clar ostil, fiecare instrument în schimbare îți cere restul acelei rânduri.
+3. Echilibrat: întreabă numai înaintea acțiunilor la nivel de sistem (shell, ștergere, publicare, programare...). Acțiunile personale, cum ar fi mesajele, atingerile și tastarea, rulează singure. Scutul de conținut este ușor: acționează numai asupra textului în mod clar ostil, iar apoi numai instrumentele la nivel de sistem se opresc să întrebe.
+4. Automatizare completă: nu întreabă niciodată și nu se oprește niciodată. Totul trece direct, iar Content Shield este dezactivat complet - nimic nu este scanat, marcat, eliminat sau modificat. Aceasta este automatizare în sensul deplin: deții riscul.
+
+## Cele trei niveluri de instrumente
+- Sigur (nu se întreabă niciodată la nici un nivel): citirea și listarea fișierelor, memorie, documente, design, stare, deschidere de aplicații și fișiere, așteptare, abilități/pilot automat/cronologie/liste de apeluri, căutarea creierului.
+- Personal (solicitat la primele două niveluri): SMS, apeluri, cameră, citire ecran, atingeri și tastare, clipboard, descărcări, notificări, partajare, schimbare a vocii, reluare abilități, registru de bani, agent de apel, anulare cronologie.
+- Sistem (solicitat la fiecare nivel, cu excepția automatizării complete): shell, ZYRAXON OS, versiuni, publicare, ștergere, blocare dispozitiv, programare, Git și GitHub, ffmpeg, model pe dispozitiv, postare pe canale, reguli pilot automat, ștergere abilități, Shizuku. Orice instrument pe care aplicația nu îl recunoaște, inclusiv instrumentele MCP, este tratat ca sistem.
+
+## Cardul de aprobare
+Când un instrument are nevoie de aprobarea dvs., un card spune „Este necesară permisiunea”, vă spune ce vrea să facă agentul, vă arată nivelul său (Sigur, Personal sau Sistem) și oferă „Da, rulați-l” sau „Nu, păstrați-l oprit”. Cardul vă reamintește, de asemenea, că puteți modifica cât de des este solicitat acest lucru în Setări → Automatizare.
+
+## Numai pe dispozitiv
+Când este pornit, nimic nu părăsește telefonul: rulează doar modelul de pe dispozitiv și instrumentele locale. Toate instrumentele de rețea (căutare, preluare, încărcări, publicare, GitHub, generare media, MCP, modele cloud) sunt refuzate în cod.
+
+## Prima notificare de lansare
+Prima dată, ZYRAXON explică că agentul poate acționa pe telefonul tău și unde să activeze permisiunile. Apăsați „Am înțeles, începe”.

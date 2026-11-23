@@ -1,0 +1,27 @@
+Dicas e exemplos de solicitações
+## Diga o que quiser, não como
+- "Faça uma landing page para uma academia, sombria e ousada."
+- "Construa um aplicativo de reservas completo com um banco de dados." (o agente pergunta primeiro as escolhas técnicas)
+- "Abra YouTube e toque uma música calma."
+- "Role para baixo e abra o primeiro resultado."
+- "Qual é a minha bateria e Wi-Fi?"
+- "Leia meu SMS mais recente e me diga o código."
+- "Ligue para a mamãe." / "Atenda a chamada."
+- "Faça um currículo a partir desta foto." (anexe-o)
+- "Transforme a gravação desta reunião em notas com itens de ação."
+- "Faça um pôster para o evento de sexta-feira com essas cores."
+- "Faça um diálogo de áudio entre dois amigos, um menino e uma menina."
+- "Lembre-se que o aniversário da minha irmã é 3 de maio."
+- "Todas as manhãs, às 8h, diga-me como está o tempo." (piloto automático)
+- "Saiba como envio meu aluguel pelo meu aplicativo de carteira para que você possa fazer isso novamente." (habilidade)
+- "Desfaça o que você fez na pasta do projeto." (linha do tempo)
+- "Onde está meu contrato de aluguel?" (cérebro)
+- "Instale pacotes python e execute este script." (ZYRAXON OS)
+- "Publique este site para que eu possa compartilhá-lo." (link público)
+
+## Hábitos que ajudam
+- Batidas curtas e claras são longas. O agente escolhe os padrões e informa o que escolheu.
+- Quando ele fizer uma pergunta, responda e ela continuará do mesmo ponto.
+- Diga "explicar" ou "resumir" para obter uma resposta detalhada; caso contrário, as respostas serão curtas.
+- Você pode conversar sobre isso a qualquer momento. Ele para e escuta.
+- Use o modo Build para fazer coisas e o modo Agent para fazer coisas no telefone.

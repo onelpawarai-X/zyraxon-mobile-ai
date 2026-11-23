@@ -1,0 +1,23 @@
+Matakan yarda da amincin aiki da kai
+Saituna → Tsari → Automation. Wannan yana yanke shawarar nawa wakilin zai yi kafin ya tsaya ya tambaye ku. Ana aiwatar da saitin a lamba akan kowane kiran kayan aiki; samfurin ba zai iya faɗaɗa shi ba.
+
+## Matakan hudu
+Canja matakin a cikin Saituna → Tsarin → Automation. Kowane matakin yana yanke shawarar lokacin da wakili ya tsaya ya yi tambaya, da kuma yadda Tsananin Garkuwar Abun ciki (duba Tsaro da sirri) ke bi da rubutun da wakili ya karanta daga waje.
+1. Cikakken tambaya (Locked): tambaya kafin duk wani abu da ya canza wayar, komai kankantarsa. Mafi aminci. Garkuwar abun ciki yana da tsauri: kowane rubutu mai tuhuma yana ƙidaya a matsayin maƙiya. Yi amfani da ita akan wayar da aka raba ko yayin da kuke gwada sabon abu.
+2. Mai kulawa (tsoho): tambaya kafin tsarin da ayyuka na sirri kuma yana yin aikin yau da kullun (karantawa, buɗewa, bincike, gini) da kanta. Garkuwar abun ciki daidai yake: rubutu mai tuhuma yana katanga azaman bayanai, kuma lokacin da rubutu yayi gaba da gaba kowane kayan aiki mai canzawa yana tambayar ku ga sauran juzu'in.
+3. Daidaitacce: tambaya ne kawai kafin ayyukan matakin tsarin (harsashi, sharewa, bugu, tsarawa…). Ayyuka na sirri kamar saƙonni, famfo da bugawa suna gudana kaɗai. Garkuwar abun ciki haske ne: yana aiki ne kawai akan rubutu mara kyau, sannan kayan aikin matakin tsarin kawai suna tsayawa don tambaya.
+4. Cikakken aiki da kai: baya tambaya kuma baya tsayawa. Komai yana gudana kai tsaye, kuma Garkuwan abun ciki yana kashe gaba ɗaya - babu abin da aka bincika, alama, cirewa ko canza. Wannan aikin sarrafa kansa ne a cikin cikakkiyar ma'ana: kun mallaki haɗarin.
+
+## Nau'i uku na kayan aiki
+- Amintacce (ba ya taɓa tambaya a kowane matakin): karantawa da jera fayiloli, ƙwaƙwalwar ajiya, takardu, ƙira, matsayi, buɗe aikace-aikace da fayiloli, jira, ƙwarewa / autopilot / jerin lokuta / lissafin kira, binciken ƙwaƙwalwa.
+- Na sirri (an tambaye shi a cikin matakan farko biyu): SMS, kira, kyamara, karatun allo, taps da bugawa, allo, zazzagewa, sanarwa, rabawa, canjin murya, sake kunnawa fasaha, lissafin kuɗi, wakilin kira, gyara tsarin lokaci.
+- Tsarin (an tambaye shi a kowane matakin sai dai Cikakken aiki da kai): harsashi, ZYRAXON OS, ginawa, bugu, sharewa, kulle na'urar, tsarawa, Git da GitHub, ffmpeg, ƙirar na'urar, aikawa zuwa tashoshi, ƙa'idodin autopilot, ƙwarewar gogewa, Shizuku. Duk wani kayan aikin da app ɗin bai gane ba - gami da kayan aikin MCP - ana ɗaukarsa azaman Tsarin.
+
+## Katin amincewa
+Lokacin da kayan aiki yana buƙatar amincewar ku katin yana cewa "An buƙata izini", yana gaya muku abin da wakili yake so ya yi, yana nuna matakinsa (Lafiya, Na sirri ko Tsarin), kuma yana ba da "Ee, gudanar da shi" ko "A'a, kiyaye shi". Katin kuma yana tunatar da ku cewa zaku iya canza sau nawa ake tambayar wannan a cikin Saituna → Automation.
+
+## Kan na'ura kawai
+Lokacin kunnawa, babu abin da ke barin wayar: kawai samfurin kan na'urar da kayan aikin gida suna gudana. Duk kayan aikin cibiyar sadarwa (bincike, debo, lodawa, bugu, GitHub, tsarar watsa labarai, MCP, ƙirar gajimare) an ƙi a cikin lamba.
+
+## Sanarwa na farawa na farko
+A karon farko, ZYRAXON ya bayyana cewa wakili zai iya aiki akan wayarka da kuma inda zaka kunna izini. Danna "Samu shi, fara".

@@ -1,0 +1,14 @@
+Režimy: Agent a Build
+Existují dva režimy, které lze vybrat pomocí tlačítka režimu vedle okna se zprávou. Volba zůstává, dokud ji nezměníte. Živý hlas není třetí režim; je to způsob mluvení, který můžete zapnout v Nastavení (viz kapitola Hlas).
+
+## Činidlo
+"Plná automatizace telefonu a systému." Vše je otevřené: čtení a ovládání obrazovky telefonu, otevírání aplikací, hovory, zprávy, fotoaparát, soubory, terminál a ZYRAXON OS, Git, náhled, média, podagenti, MCP servery, dovednosti, autopilot a další. Vyberte Agent, když chcete něco udělat na svém telefonu nebo si chcete jednoduše promluvit.
+
+## Vytvořit
+"Full-stack aplikací, webových stránek a automatizace." Agent je build engine: z krátké linky to celé vytvoří, spustí, podívá se na to a ukáže vám to. Obsahuje soubory, terminál, Git, náhled, publikování, média, paměť a desku úkolů. Ovládání telefonu, dílčí agenti a zámek zařízení patří do režimu agenta; pokud je potřebujete v Build, přepněte.
+- Vstupní stránka nebo web: řekněte, k čemu slouží. Agent jej okamžitě sestaví, spustí na vašem telefonu a otevře v panelu Náhled a poté vám řekne, co vytvořil. Nezveřejňuje, pokud si to nevyžádáte.
+- Aplikace: řekněte, co chcete, a vytvoří aplikaci podle požadavku. Back-end, databáze nebo přihlašovací údaje jsou přidány, pouze pokud o to požádáte.
+- Full-stack: když požádáte o back-end nebo databázi, agent se vás nejprve zeptá na jednu krátkou otázku o možnostech (jazyk, databáze, přihlášení, kde to běží), s doporučením a poté, co odpovíte, sestaví.
+
+## Co znamená "zeptat se".
+Když agent opravdu potřebuje vaše rozhodnutí, udělá nejprve vše ostatní, položí jednu krátkou otázku se svým doporučením a čeká. Vaše odpověď pokračuje v práci tam, kde skončila.

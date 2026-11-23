@@ -1,0 +1,21 @@
+Izrada: web stranice, aplikacije, pregled i objavljivanje
+## Kako pitati
+- "Napravi mi odredišnu stranicu za moj kafić." Agent ga odmah izrađuje, pokreće na vašem telefonu i otvara u pregledu. Dobivate 2-3 retka koji ga opisuju. Ništa se ne objavljuje osim ako ne zatražite.
+- "Izradite aplikaciju za obveze." Napravljeno izravno s razumnim nizom, pokrenuto i prikazano. Pozadina, baza podataka ili prijava samo ako tražite.
+- "Izradite aplikaciju s punim nizom." Agent prvo postavlja jedno kratko pitanje o pozadinskom jeziku, bazi podataka, prijavi i mjestu na kojem se izvodi, s preporučenim zadanim postavkama, a zatim sve to gradi sa početnim podacima i testira jedan cijeli tijek.
+- "Napravite Windows/ZYRAXON OS/macOS/Android program." Izvorni kôd je napisan, dodan je radni tijek izgradnje, gurnut je i izgrađen u oblaku pomoću GitHub radnji, a vi dobivate pravu vezu za preuzimanje.
+
+## Alati
+- `edit_file` i `write_file`: napišite stvarne datoteke (potpuni kod, nikad zaglavci). `code_box` ih prikazuje uživo.
+- `preview` (Siguran): ugrađeni pravi preglednik. Radnje: otvori (link, `localhost:PORT` ili datoteka), ponovno učitaj, natrag, naprijed, snimka zaslona, ​​pomicanje, klik, tip, čitanje teksta stranice, pogreške konzole, procjena. Agent pogleda svoj posao prije nego što kaže da je gotov.
+- `serve_local` (Sustav): pokreće web poslužitelj na telefonu za mapu i vraća LAN adresu koju drugi uređaji na vašem Wi-Fi mogu otvoriti.
+- `publish_website` (Sustav): poslužuje stranicu na javnom priključku s telefona. `publish_cloudflare` (Sustav): postavlja stranicu na internet bez računa kroz Cloudflare tunel i vraća javnu https vezu. `publish_github` (Sustav): objavljuje projekt u GitHub repozitoriju (Stranice) s vašim tokenom.
+- `git` (Sustav): klon, init, status, dodavanje, predaja, guranje, povlačenje, grananje, odjava, zapisnik, razlika s vašim spremljenim tokenom. `github_pr` (Sustav): kreirajte, popisujte, spajajte i komentirajte zahtjeve za povlačenjem. `github_actions` (Sustav): popis tokova rada, njihovo pokretanje, anketiranje i čitanje zapisa, tako da se nadogradnje izvode u oblaku s telefona.
+- `build_app` (Sustav): gradi ovaj projekt s Gradleom na telefonu i instalira rezultat.
+- `files_panel`, `todo_write`: preglednik datoteka i ploča sa zadacima.
+
+## Pravila kvalitete kojih agent slijedi
+Kompletan izgled, responzivni dizajn, radni JavaScript, animacija, dosljedne boje i fontovi (tamni i svijetli gdje odgovara), a ne generički predložak. Odredišna stranica obično ima 300–900 redaka; veće stvari više.
+
+## Ako nešto izgleda slomljeno
+Pritisnite Popravi u pregledu ili recite agentu. Očitava konzolu, popravlja uzrok, ponovno otvara stranicu i ponovno provjerava.

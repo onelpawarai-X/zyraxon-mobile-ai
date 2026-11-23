@@ -1,0 +1,51 @@
+Isikrini sengxoxo kanye nayo yonke inkinobho
+## Phezulu kwesikrini
+- Imenyu: ivula ikhabethe elingakwesokunxele ngezingxoxo zakho.
+- Ingxoxo / Itheminali / Ikhodi / Buka kuqala: shintsha umbono oyinhloko. Ingxoxo yingxoxo; Itheminali iyitheminali yangempela; Ikhodi iyindawo yokusebenza yefayela ene-Git; Ukubuka kuqala isiphequluli esakhelwe ngaphakathi.
+- I-Aura: ibonisa isikrini sezinhlamvu ezigqwayizayo. Izinkinobho zayo ezisemaceleni uMic, Chat (emuva engxoxweni) kanye nethi Vuselela (ixhuma kabusha ifu futhi ilayishe kabusha uhlu lwamamodeli).
+- Izilungiselelo: ivula izigaba zezilungiselelo eziyisishiyagalombili.
+- Isibhengezo sibonisa isimo semakrofoni: "Ukulalela..." "Imakrofoni ivaliwe — thepha", noma "Iyakhuluma... cindezela ukuze umise".
+- Uma inguqulo entsha isilungile isibhengezo sokubuyekeza siyavela nezinkinobho zokuthi Landa, Faka futhi Vumela (bona Izibuyekezo).
+
+## Imenyu engakwesokunxele (izingxoxo)
+- "+ Ingxoxo entsha": iqala ingxoxo entsha.
+- Ingxoxo ngayinye ohlwini ibonisa uphawu olusebenzayo ngenkathi umenzeli ematasa lapho. Ipensela iqamba kabusha; isiphambano siyayisusa (ngemuva kokuqinisekisa: yonke imilayezo ekuyo isuliwe).
+- Itimu: khetha Okuthusayo (igazi, umlilo nesithunzi), Okumnyama (ingilazi ehlanzekile ehlanzekile) noma Ukukhanya (ingilazi ekhanyayo).
+
+## Ibha yomlayezo
+- Namathisela (i-paperclip): isithombe segalari, isithombe sekhamera, ukuskena kwedokhumenti (ukuguqula umbhalo osesithombeni uwenze i-.docx ehlelekayo), yabelana ngesikrini ukuze umenzeli asibone ("Ukubuka isikrini" sivuliwe noma sivale), kanye namafayela omsindo noma evidiyo. Izinto ezinamathiselwe zikhombisa njengama-chips; isiphambano sisusa eyodwa, "Sula konke" isusa konke.
+- Inkinobho yemodi: Umenzeli noma Yakha.
+- Inkinobho yemakrofoni: ivula noma ivale imakrofoni ehlala ilalele.
+- Inkinobho yemodeli: ivula uhlu lwamamodeli ngebhokisi lokusesha. Amamodeli amakwe ngokuthi "Live" angakhuluma ngamazwi awo.
+- Thumela: ithumela umlayezo. Ngenkathi i-ejenti isebenza lokhu kuba yi-Stop.
+- Okokufaka kuthi "Yini okufanele ngiyenze?" kumodi yomenzeli kanye nokuthi "Yini okufanele ngiyakhe? Isho kafushane" kumodi Yokwakha.
+
+## Imilayezo
+- Kopisha, Yabelana futhi Lalela (ufunda umlayezo ngokuphimisela; cindezela futhi ukuze ume) zingaphansi komlayezo ngamunye.
+- "Ukucabanga" kubonisa ukucabanga kwemodeli lapho imodeli ikunikeza.
+- Ikhodi ebhalwa yi-ejenti ivela bukhoma ebhokisini, umugqa ngomugqa, nethi Kopisha, Landa futhi Vula.
+- Amafayela enziwe umenzeli abonakale njengamakhadi ane-Open (kuhlelo lokusebenza lwangempela lwefoni), Dlala, Yabelana kanye "Nolunye uhlelo lokusebenza…".
+- Izithombe, umsindo nevidiyo zibonisa amaphesenti enqubekelaphambili ebukhoma ngenkathi kwenziwa.
+- Amakhadi amathuluzi akhombisa ukuthi i-ejenti yenzani: ukusebenza, kwenziwe, impumelelo noma yehlulekile.
+
+## Amaphaneli (okwenziwa, amathuluzi, amafayela, ama-sub-ejenti)
+- Ibhodi le-Todo: uhlelo i-ejenti elibhalela umsebenzi omkhulu kanye nenqubekelaphambili yawo (ayikho yonke into eyenziwe). Ungakwazi ukwengeza owakho umsebenzi futhi ususe imisebenzi.
+- Amathuluzi: uhlu lwazo zonke izingcingo zamathuluzi, ezinesimo esibukhoma.
+- Amafayela: wonke amafayela adalwe yi-ejenti, ne-Vula, Yabelana, Shicilela futhi Susa (ngokuqinisekisa) kanye nebhokisi lokusesha.
+- Ama-agent angaphansi: ama-ejenti asizayo asebenza ngemuva, anenkinobho ethi Misa.
+- Ithebhu yetheminali: itheminali yangempela (bheka Amafayela Nesetheminali isahluko).
+
+## Iphaneli yokubuka kuqala
+- Emuva, Phambili, Misa, Layisha kabusha kanye nebha yekheli (thayipha ikheli lewebhu, noma sesha Google).
+- Vula ifayela: ibonisa Word, Excel, PowerPoint, PDF, izithombe, Markdown, CSV, ikhodi namasayithi khona kanye ngaphakathi kohlelo lokusebenza.
+- Usayizi: nciphisa noma ukhulise iphaneli.
+- Lungisa: ithumela izinkinga zekhasi (amaphutha ekhonsoli, imithwalo ehlulekile) kumenzeli, ozilungisa ngemuva.
+- Khetha ingxenye: thepha ingxenye yekhasi, bese utshela umenzeli ukuthi enzeni ngaleyo ngxenye.
+- Inkinobho yomenzeli: buza okuthile ngekhasi; i-ejenti ithola isithombe sayo.
+- Ukuvula ngokushesha: izinqamuleli zamakhasi akamuva.
+
+## Ikhodi yendawo yokusebenza
+- Uhlangothi lwesobunxele: amafayela akho (ifayela elisha, vula, londoloza).
+- Umhleli: ukhombisa imigqa nezinhlamvu; izinguquko ezenziwe umenzeli zibonakala ngesikhathi esisodwa.
+- Git: i-repo entsha, fanisa kusuka ku-GitHub, skena, isimo, zibophezele ngomlayezo, ukusunduza, ukudonsa, amagatsha, ithokheni.
+- Donsa izicelo: dala, hlanganisa, vala. Ukuhamba komsebenzi: uhlu luyasebenza, sebenzisa ukugeleza komsebenzi. Ilogi libonisa ukuphuma komyalo.

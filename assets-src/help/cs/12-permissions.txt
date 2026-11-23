@@ -1,0 +1,27 @@
+Oprávnění, jedno po druhém
+Nastavení → Zabezpečení a soukromí → Oprávnění. Každý řádek zobrazuje „Granted“ nebo tlačítko. Klepnutím na řádek se otevře dialogové okno systému; stačí stisknout Povolit. Agent může také otevřít samotný dialog pomocí `request_permission`.
+
+- Mikrofon: aby vás ZYRAXON slyšel. Bez něj není hlasový vstup.
+- Fotoaparát: pořizování a prohlížení fotografií (`look_camera`, skenování dokumentů, „co vidíš“).
+- Umístění: pro mapy a místní informace.
+- Upozornění: sdělí vám, kdy práce na pozadí skončí.
+- Soubory a média: ke čtení fotografií, videí, zvuku a dokumentů.
+- Překrytí (kreslení přes jiné aplikace): potřebné pro plovoucí oko.
+- Usnadnění: umožňuje agentovi číst obrazovku a klepat, přejíždět a psát za vás. To je srdce automatizace telefonu. Zapnete jej v nastavení přístupnosti systému.
+- Optimalizace baterie: zabrání Android uspat ZYRAXON, když pracuje na pozadí.
+
+## Další oprávnění, která aplikace deklaruje
+- SMS (číst a přijímat): pro čtení kódů, pokladní knihy a pravidel autopilota SMS.
+- Stav telefonu, přijímání hovorů, hovor na telefon, kontakty: pro nástroje pro volání a agenta volání.
+- Přístup k oznámení: umožňuje autopilotovi reagovat na oznámení.
+- Správce zařízení: umožňuje `device_lock` skutečně uzamknout obrazovku.
+- Instalovat balíčky: umožňuje aktualizacím a `build_app` instalaci souborů APK; Android vás požádá, abyste povolili ZYRAXON jako zdroj instalace.
+- Služby na popředí (mikrofon, synchronizace dat) a zámek probuzení: udrží hlas a dlouhé úlohy naživu.
+- Stav internetu a sítě: cloud a web.
+- Shizuku (volitelné): přístup na úrovni systému pro shell a terminál.
+
+## Google Play Protect
+Pokud Play Protect zablokuje úlohu, může agent otevřít správnou stránku, podívat se na skutečnou obrazovku a krok za krokem projít ozubeným kolem a přepínačem – ale nejprve se vás zeptá, protože vypnutí ochrany je vaše rozhodnutí. Udělejte to sami: Play Store → profilový obrázek → Play Protect → nastavení → vypněte „Skenovat aplikace pomocí Play Protect“. Stránka má tlačítko, které otevře Play Store.
+
+## Proč na povolení záleží
+Pokud nástroj selže kvůli chybějícímu oprávnění, agent vám sdělí, které z nich, a otevře svůj dialog. Nic citlivého nefunguje bez vašeho výslovného povolení.

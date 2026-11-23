@@ -1,0 +1,7 @@
+Përditësimet
+Cilësimet → Përditësimet → Përditësimi i aplikacionit ose banneri në krye të aplikacionit.
+- Aplikacioni kontrollon për publikime të reja dhe tregon "Përditësim i ri i disponueshëm — version".
+- Kontrollo për përditësime: pyet tani. Nëse jeni aktual, kështu thotë.
+- Shkarko dhe instalo: shkarkime me përqindje. Kur të përfundojë shtypni Install. Bisedat, memoria dhe cilësimet tuaja qëndrojnë.
+- Nëse Android bllokon instalimin, shtypni butonin e lejes, lejo ZYRAXON si burim instalimi dhe më pas provo sërish.
+- Butonat e banerit: Shkarko, Instalo, Lejo dhe Mbylle.

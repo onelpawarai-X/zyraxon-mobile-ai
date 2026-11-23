@@ -1,0 +1,27 @@
+Pliki, terminal i system
+## Akta
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Bezpieczny): odczyt, lista, wyszukiwanie według wzorca nazwy i wyszukiwanie tekstu w plikach.
+- `write_file`, `edit_file`: utwórz lub zmień pliki. `edit_file` robi wszystko: nowy plik, pełne przepisanie lub dokładne wyszukiwanie i zamiana; kod pojawia się na żywo na czacie. `delete_file` (System): usuń plik lub folder.
+- Dozwolony jest dowolny folder (/sdcard, Download, Documents, SD card…). Podaj pełną ścieżkę i zostanie użyta tak, jak napisano.
+- Agent otwiera to, co robi: `open_file` (Bezpieczny) otwiera plik w prawdziwej aplikacji telefonu lub w podglądzie ZYRAXON.
+
+## Terminale (dwa prawdziwe)
+- Android: własna powłoka telefonu (busybox plus `sh`), wewnątrz piaskownicy aplikacji. `run_shell` (System) uruchamia polecenie tam, poza zasięgiem wzroku.
+- ZYRAXON OS: własny, pełny system uniksowy ZYRAXON, wbudowany w aplikację: bash, apt/pkg, real git, python, węzeł, clang. Działa w trybie offline. `os_run` (System) uruchamia tam polecenie.
+- `terminal_run` (System): uruchamia linię w zakładce Terminal, którą oglądasz, dzięki czemu możesz zobaczyć, jak działa i przejąć kontrolę. Użyj powłoki Android lub ZYRAXON OS. `terminal_open` przenosi zakładkę Terminal na pierwszy plan (tylko gdy o to poprosisz).
+- `system_shell` (System): polecenie na poziomie systemu, nad piaskownicą aplikacji, tak jak robi to powłoka systemowa; z Shizuku lub rootem może osiągnąć znacznie więcej.
+- Nie ma domyślnego limitu czasu; duży `apt upgrade` lub kompilacja kończy się.
+
+## Shizuku (dostęp do systemu)
+`setup_shizuku` (System) konfiguruje Shizuku, zawarte w ZYRAXON: sprawdź status, zainstaluj, otwórz, poproś o pozwolenie. Tylko Ty możesz kliknąć opcję Zainstaluj i zezwól; agent poinformuje Cię o kroku w jednym wierszu i zajmie się resztą.
+
+## Długie prace i czas
+- `background_command` (System): polecenie, które działa po zamknięciu aplikacji (duże pobieranie, klonowanie, kompilacja), z powiadomieniem i przyciskiem Stop.
+- `schedule_command` (System): uruchom polecenie w czasie rzeczywistym („za 10 minut”, „o 2 w nocy”); Android przechowuje licznik czasu, więc działa przy zamkniętej aplikacji.
+- `wait` (Bezpieczny): poczekaj celowo (sekundy, aż port się otworzy, pojawi się plik, zakończy się polecenie) zamiast zgadywać.
+
+## ZYRAXON OS wykorzystuje
+Zainstaluj pakiety (`apt install …`), uruchom skrypty Python lub Node, skompiluj C, użyj gita, uruchom serwery, zip i rozpakuj, zwiń, ffmpeg. System jest rozpakowywany po cichu po uruchomieniu aplikacji i pozostaje uruchamiany ponownie.
+
+## Ekran terminala
+Zakładka Terminal to prawdziwy terminal z zakładką ⌘ ZX. Wpisz własne polecenia lub obejrzyj agenta. Ekran Nawigacji w Ustawieniach zawiera skrót do powłoki systemowej i przycisk „Nowa sesja”, który pozwala wyczyścić historię czatów i rozpocząć od nowa.

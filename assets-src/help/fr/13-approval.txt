@@ -1,0 +1,23 @@
+Niveaux d'approbation et sécurité de l'automatisation
+Réglages → System → Automation. Ceci détermine ce que l'agent peut faire avant de s'arrêter pour vous demander. Le réglage est appliqué dans le code à chaque appel d'outil ; un modèle ne peut pas l'élargir.
+
+## Les quatre niveaux
+Changez le niveau dans Réglages → System → Automation. Chaque niveau décide quand l'agent s'arrête pour demander, ainsi que la rigueur avec laquelle le Content Shield (voir Sécurité et confidentialité) traite le texte que l'agent lit à l'extérieur.
+1. Full ask (Locked) : demande avant tout ce qui modifie le téléphone, même minime. Le plus sûr. Le Content Shield est strict : tout texte suspect compte comme hostile. À utiliser sur un téléphone partagé ou pour tester quelque chose de nouveau.
+2. Supervised (par défaut) : demande avant les actions système et personnelles et fait seul le travail ordinaire (lire, ouvrir, chercher, construire). Le Content Shield est standard : le texte suspect est encadré comme donnée, et quand le texte est clairement hostile, chaque outil qui modifie quelque chose vous demande pour le reste de ce tour.
+3. Balanced : ne demande qu'avant les actions de niveau système (shell, suppression, publication, planification…). Les actions personnelles comme messages, touchers et saisie s'exécutent seules. Le Content Shield est léger : il n'agit que sur un texte clairement hostile, et alors seuls les outils de niveau système s'arrêtent pour demander.
+4. Full automation : ne demande jamais et ne s'arrête jamais. Tout s'exécute d'un trait, et le Content Shield est entièrement désactivé — rien n'est analysé, marqué, retiré ni modifié. C'est de l'automatisation au sens plein : le risque est le vôtre.
+
+## Les trois catégories d'outils
+- Safe (ne demande jamais, à aucun niveau) : lire et lister des fichiers, mémoire, documents, designs, état, ouvrir des applications et fichiers, attente, listes de skills/autopilot/chronologie/appels, recherche brain.
+- Personal (demandés aux deux premiers niveaux) : SMS, appels, appareil photo, lecture d'écran, touchers et saisie, presse-papiers, téléchargements, notifications, partage, changement de voix, relecture de skills, registre d'argent, agent d'appels, annulation de la chronologie.
+- System (demandés à tous les niveaux sauf Full automation) : shell, ZYRAXON OS, compilations, publication, suppression, verrouillage de l'appareil, planification, Git et GitHub, ffmpeg, modèle sur l'appareil, publication sur les canaux, règles autopilot, suppression de skills, Shizuku. Tout outil que l'application ne reconnaît pas — y compris les outils MCP — est traité comme System.
+
+## La carte d'approbation
+Quand un outil a besoin de votre accord, une carte indique « Permission needed », vous dit ce que l'agent veut faire, montre sa catégorie (Safe, Personal ou System) et propose « Yes, run it » ou « No, keep it off ». La carte rappelle aussi que vous pouvez changer la fréquence de cette demande dans Réglages → Automation.
+
+## Sur l'appareil uniquement
+Quand il est activé, rien ne quitte le téléphone : seuls le modèle sur l'appareil et les outils locaux s'exécutent. Tous les outils réseau (recherche, récupération, envois, publication, GitHub, génération de médias, MCP, modèles cloud) sont refusés dans le code.
+
+## Avis du premier lancement
+La première fois, ZYRAXON explique que l'agent peut agir sur votre téléphone et où activer les autorisations. Appuyez sur « Compris, commencer ».

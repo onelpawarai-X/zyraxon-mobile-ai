@@ -1,0 +1,45 @@
+Skills, autopilot, dinero, línea de tiempo y deshacer, brain, agente de llamadas y memoria
+Usas todo esto hablando: di lo que quieres y el agente llama a la herramienta adecuada. Cada acción está listada aquí con sus opciones.
+
+## Skills — enseña haciendo
+Una skill es una tarea del teléfono que el agente aprendió viéndote hacerla una vez. Guarda cómo volver a encontrar cada elemento (su id, palabras y vecinos, no su posición en pantalla), de modo que sigue funcionando cuando cambia el diseño de la app.
+- Añadir una skill: `skill_record` (Personal). Di "aprende esto como <nombre>". `action: start` (con un nombre) empieza a grabar; luego haz la tarea: abre la app, toca, escribe, pulsa teclas; cada paso se graba. `action: stop` la guarda. Al detener puedes pasar `params` para convertir los valores escritos en parámetros (por ejemplo, el número de teléfono pasa a ser `number`, el importe pasa a ser `amount`) y una `description`. `action: status` te dice si la grabación está activada.
+- Ejecutar una skill: `skill_run` (Personal). Da `args` para sus parámetros, p. ej. number y amount. Se reproduce en una fracción de los pasos y se repara sola cuando la app cambia. Si un paso falla, el resultado dice cuál y qué hay en pantalla, y el agente termina el resto a mano.
+- Listar skills: `skill_list` (Safe) muestra nombre, parámetros, pasos y cuántas veces se ejecutó cada una. Con un nombre y export activado crea un archivo `.zxskill` compartible.
+- Compartir y cargar: `skill_import` (Personal) carga como skill un archivo `.zxskill` de una descarga o de un archivo compartido.
+- Borrar una skill: `skill_delete` (System).
+- Ejemplo: "Aprende cómo envío 500 a Rahim con mi app de monedero" → lo haces una vez → "Envía 700 a Karim" la próxima vez.
+
+## Autopilot — "cuando pase X, haz Y"
+Una regla despierta al agente por sí sola y él hace la tarea sin preguntarte.
+- Añadir: `autopilot_add` (System). Tipos: sms, notification, call, daily, once, interval, battery, app. Rellena solo los campos que necesita la regla: `from` (nombre o número del remitente o título de la app), `any` (al menos una de estas palabras), `all` (todas las palabras), `none` (ninguna de estas palabras), `time` "HH:MM" (daily), `in_minutes` o `at_ms` (once), `every_minutes` (interval), `below` (porcentaje de batería), `pkg` (paquete o nombre de la app, para reglas de app y notification). El agente convierte tu frase en estos campos. El resultado lista cualquier permiso que aún haga falta (SMS, acceso a notificaciones…), y el agente te pide activarlo.
+- Ejemplos: "Cuando llegue un SMS de pago de mi app de monedero, anótalo en mi libro de cuentas." "Cada mañana a las 8, dime el tiempo." "En 20 minutos, recuérdame sacar el pan." "Cada 30 minutos, recordatorio de beber agua." "Cuando la batería baje del 15 %, avísame." "Cuando alguien me llame, registra el número." "Cuando abra la app del banco, recuérdame revisar el presupuesto."
+- Listar: `autopilot_list` (Safe) muestra cada regla con su próxima ejecución y cuántas veces se ha disparado.
+- Pausar o reanudar: `autopilot_toggle` (System). Borrar: `autopilot_remove` (System), por id o título.
+- Cuando se dispara una regla recibes un mensaje que lo dice, y el agente simplemente hace el trabajo.
+
+## Libro de dinero (CFO personal)
+- `ledger_scan` (Personal): lee los SMS del monedero y del banco en un libro privado: ingresos, gastos, comisiones, saldo y categoría. `days` dice cuánto hacia atrás (por defecto 30). Con `auto` activado, cada SMS de dinero nuevo se añade solo y se te avisa cuando se supera un presupuesto. Funciona con los mensajes de monederos y bancos de cualquier país, en cualquier moneda.
+- `ledger_report` (Personal): periodo today, yesterday, week, month o all. Formato text (un resumen hablado listo) o xlsx (un archivo de Excel con transacciones y totales por categoría, que se abre por ti).
+- `ledger_budget` (Personal): fija un presupuesto mensual para una categoría (comida, facturas, transporte, compras, recarga móvil, transferencias…); un límite de 0 lo elimina; sin argumentos lista los presupuestos y las advertencias actuales.
+- El agente nunca inventa cifras de dinero; las lee del libro.
+
+## Línea de tiempo y deshacer
+- Todo lo que hace el agente se escribe en la línea de tiempo (las últimas 400 acciones). Los cambios en archivos guardan una copia de lo que había antes.
+- `timeline_list` (Safe): qué hizo el agente recientemente, con un id para cada acción, y qué cambios se pueden deshacer.
+- `timeline_undo` (Personal): `id` deshace una escritura, edición o borrado: el archivo vuelve exactamente como estaba (un archivo que no existía se elimina de nuevo). `since_id` deshace todo desde ese id en adelante, del más reciente al más antiguo. Úsalo cuando digas "deshaz eso" o "déjalo como antes".
+- Deshacer cubre escrituras, ediciones y borrados de archivos. Un comando que ya se ejecutó (por ejemplo instalar algo o enviar un mensaje) no se puede deshacer así.
+- Mensajes del chat: para eliminar una conversación entera usa el lápiz y la cruz del menú izquierdo, o Ajustes → Privacy & data → Delete chat history, o Navigation → New session.
+
+## Brain — segunda memoria para tus archivos
+- `brain_index` (Safe): crea o actualiza el índice sin conexión sobre carpetas o archivos (texto, Markdown, CSV, Word, Excel, PowerPoint) y opcionalmente la bandeja de SMS (`sms` activado). Ejecútalo antes de la primera búsqueda y después de que aparezcan archivos nuevos. Por defecto es tu espacio de trabajo.
+- `brain_search` (Safe): pregunta con tus propias palabras, "¿dónde está mi contrato de alquiler?": funciona sin conexión en cualquier idioma. `kind` es file o sms; `days` limita a elementos recientes. Abre un archivo encontrado con `open_file`.
+
+## Agente de llamadas
+- `call_agent` (Personal): acción on, off o status. `owner` es el nombre que dice ("Soy el asistente de <owner>"). `answer_after_seconds` (por defecto 6) te deja contestar primero. Cuando entra una llamada y no puedes contestar, saluda en el idioma de quien llama, pregunta el nombre y el motivo, responde preguntas sencillas, cuelga con educación y te cuenta un resumen.
+- `call_log` (Safe): resúmenes de las llamadas contestadas, las más recientes primero.
+- Necesita los permisos de llamadas y de estado del teléfono.
+
+## Memoria
+- `memory_write`, `memory_read`, `memory_delete` (Safe): hechos duraderos sobre ti (nombre, preferencias, personas, fechas, proyectos) viven en una base de datos local y sobreviven a los reinicios. Di "recuerda esto" y se escribe en el mismo turno; si algo está mal, se elimina o se reescribe. Cada conversación antigua también se conserva, y los turnos pasados que coinciden con lo que dices vuelven solos, incluso meses después.
+- Míralo y cámbialo todo en Ajustes → System → Memory (key, value, save, delete all).

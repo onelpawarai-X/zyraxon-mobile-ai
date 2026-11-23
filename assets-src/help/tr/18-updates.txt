@@ -1,0 +1,7 @@
+Güncellemeler
+Ayarlar → Güncellemeler → Uygulama güncellemesi veya uygulamanın üst kısmındaki başlık.
+- Uygulama yeni sürümleri kontrol eder ve "Yeni güncelleme mevcut — sürüm" ifadesini gösterir.
+- Güncellemeleri kontrol et: şimdi sorar. Eğer güncel iseniz öyle diyor.
+- İndirme ve yükleme: yüzdeli indirmeler. İşiniz bittiğinde Yükle'ye basın. Sohbetleriniz, hafızanız ve ayarlarınız kalır.
+- Android kurulumu engellerse, izin düğmesine basın, ZYRAXON'in kurulum kaynağı olmasına izin verin ve tekrar deneyin.
+- Başlık düğmeleri: İndir, Yükle, İzin Ver ve Kapat.

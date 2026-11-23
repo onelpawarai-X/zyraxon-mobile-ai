@@ -1,0 +1,34 @@
+Kayan aikin sarrafa waya
+Wakilin yana sarrafa wayarka ta kayan aiki. Ba za ku taɓa kiran su da kanku ba; kun faɗi abin da kuke so kuma wakili ya zaɓi kayan aikin. Wannan babin ya lissafa duk kayan aikin da ya taɓa wayar, da yadda ake kiyaye ta (duba matakan Amincewa: Safe, Personal, System).
+
+## Budewa da ganowa
+- `open_app` (Lafiya): buɗe kowace app da aka shigar ta suna ko fakiti. `list_apps` (Lafiya): jera kayan aikin da aka shigar. `open_settings` (Lafiya): buɗe shafin saitin tsarin (samun dama, mai rufi, sanarwa, ƙa'idodi, Wi-Fi, baturi, Play Protect). `launch_url` (Lafiya): buɗe hanyar haɗin yanar gizo a cikin burauzar. `youtube_play` (Lafiya): buɗe YouTube a sakamakon binciken abin da kuka tambaya, kuma kunna shi.
+
+## Ganin allon
+- `read_screen` (Na sirri): yana karanta kowane rubutu da abubuwan da ke kan allo tare da wuraren taɓawa. `screen_shot` (Na sirri): hoto na ainihi. Waɗannan suna buƙatar izinin isa.
+- `look_camera` (Na sirri): yana ɗaukar hoto ɗaya tare da kyamara kuma ya duba shi. `read_media` (Na sirri): yana karanta hoto, sauti ko bidiyo (daga hanya ko hanyar haɗin gwiwa) don samfurin ya fahimce shi.
+
+## Yin aiki akan allon
+- `tap` (Na sirri): matsa batu. `tap_text` (Na sirri): matsa kashi mai wannan alamar, mafi aminci fiye da daidaitawa. `swipe` (Na sirri): gungura ko motsin baya. `type_text` (Na sirri): rubuta cikin filin da aka mayar da hankali. `press_key` (Na sirri): baya, gida, kwanan nan, sanarwa, saitunan sauri, kulle.
+- Ayyukan allo suna gudana ɗaya bayan ɗaya, cikin tsari, kuma bayan kowane wakili yana duba sabon allon.
+
+## Waya, saƙonni da allo
+- `call_dial` (Na sirri): sanya kira ta lamba ko sunan lamba. `call_state` (Na sirri): ana kiran kira ko yana aiki? `call_answer` (Na sirri): amsa. `call_hangup` (Na sirri): kashe waya.
+- `read_sms` (Na sirri): karanta sabuwar SMS, misali. lambar OTP; iya tace ta hanyar rubutu ko mai aikawa.
+- `clipboard_read` da `clipboard_write` (Na sirri): karanta ko rubuta allo.
+- `notify` (Na sirri): aika sanarwa ta ainihi Android. `share` (Na sirri): buɗe takardar raba tare da rubutu, hanyar haɗi ko fayil. `channel_post` (Tsarin): bude Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail ko SMS tare da cika rubutunku, shirye don aikawa.
+
+## Hali da tsarin gaskiya
+- `network_status` (Lafiya): kan layi ko a'a, Wi-Fi ko bayanan wayar hannu, Wi-Fi suna. `sys_info` (Lafiya): Android sigar, samfuri, CPU, RAM, ajiya, app na yanzu. `platform_info` (Lafiya): inda wakilin ke gudana. `process_list` (Lafiya): tafiyar matakai.
+
+## Izini da allo
+- `request_permission` (Lafiya): yana buɗe maganganun izinin tsarin tare da taɓawa ɗaya lokacin da kayan aiki ya gaza don bacewar izini. `device_lock` (Tsarin): kulle allo don gaske, ko saita izinin da zai iya yiwuwa. `floating_bubble` (Na sirri): kunna ko kashe orb mai iyo.
+- `voice_change` (Na sirri): canza saurin magana, sauti ko jinsi. `live_voice` (Tsarin): kunna ko kashe yanayin magana-zuwa-magana kai tsaye.
+
+## Mataimakan sadarwa
+- `code_box` da `files_panel`: bude akwatin lambar live ko mai binciken fayil don kallon aikin. `todo_write`: allon aiki kai tsaye.
+
+## Tips
+- Kuna iya sarka: "Buɗe Saituna, nemo Wi-Fi kuma ku gaya mani sunan cibiyar sadarwa". Wakilin yana karanta allon bayan kowane mataki kuma ya yanke shawara na gaba.
+- Idan famfo bai yi kome ba, wakilin ya sake karanta allon kuma ya gwada wani abu na daban; ba ta taɓa bugawa a makance.
+- Idan Play Protect ya toshe wani abu, wakilin zai iya tafiya cikin saitunan tare da ku (duba Izini).

@@ -1,0 +1,42 @@
+Setiap skrin tetapan, satu demi satu
+Tetapan mempunyai lapan bahagian. Setiap bahagian mempunyai pil untuk sub-skrinnya. Bahagian terakhir yang anda gunakan dibuka semula pada masa akan datang.
+
+## 1. Bahasa & terjemahan → Bahasa apl & alat
+Pilih bahasa bagi keseluruhan apl dan mesej alat ejen. Cari senarai dan ketik satu. Skrin menunjukkan bahasa semasa dan sama ada terjemahan UI dan terjemahan mesej alat dihidupkan. 60 bahasa tersedia. Lihat bab Bahasa.
+
+## 2. Suara & mikrofon
+- Profil suara: pilih suara perempuan atau lelaki, kelajuan, nada, "Baca jawapan dengan kuat", Uji suara, pembayang muat turun suara Bengali.
+- Mikrofon & bahasa: bahasa pengecaman, pastikan mikrofon dihidupkan, hantar automatik apabila anda berhenti bercakap.
+- Suara langsung: hidup/mati pertuturan ke pertuturan, status, senarai model masa nyata.
+
+## 3. Pembekal & API
+- Pembekal AI: kunci API anda sendiri (ZYRAXON, OpenCode kuota percuma, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) dan ejen awan ZYRAXON Apex. Kunci yang disimpan disahkan dengan membaca katalog sebenar pembekal dan menunjukkan kiraan model atau ralat yang tepat. Butang membuka tapak web ZYRAXON tempat anda membuat kunci.
+- GitHub: token akses GitHub anda (memerlukan skop repo) untuk penerbitan, Git permintaan tolak dan tarik. Simpan token atau padamkannya; status menunjukkan jika ia ditetapkan.
+
+## 4. Kemas kini → Kemas kini apl
+Menunjukkan versi semasa, menyemak keluaran yang lebih baharu, memuat turunnya dengan bar kemajuan dan memasangnya. Sembang, memori dan tetapan anda kekal. Jika Android memerlukan kebenaran untuk memasang, butang membuka tetapan itu.
+
+## 5. Model & identiti
+- Identiti: pilih watak (lihat bab Watak).
+- Model: katalog model langsung dengan kotak carian, penapis "Semua model" dan "Tersuai"; model cepat dahulu.
+- Pada peranti: muat turun, muat dan bongkar model yang dijalankan di luar talian; disusun kecil kepada besar; token pilihan Hugging Face; menunjukkan keadaan dimuatkan, dimuatkan dan gagal.
+
+## 6. Aura & tema
+- Tema: Seram, Gelap atau Terang.
+- Aura & latar belakang: gaya dan warna aura (darah, merah jambu, ungu, langit, hijau, api) dengan kawalan rona halus; saiz aura, kekuatan cahaya, kelajuan putaran, ketelusan panel; mata terapung (hidup/mati, reka bentuk, tepi skrin, arahan suara/perkataan bangun, tambah sendiri); mod shader; URL latar belakang tersuai (mp4, gif atau imej); kelajuan animasi.
+
+## 7. Keselamatan & privasi
+- Kunci apl: kata laluan (4–8 digit) atau corak 3×3 titik; sahkan dengan memasukkannya dua kali; keluarkan kunci.
+- Kebenaran: senarai dalam bab Kebenaran, dengan bantuan Play Protect.
+- Privasi & data: semua data kekal pada telefon. Butang: padam semua memori, padam sejarah sembang, padam token GitHub.
+
+## 8. Sistem
+Bahagian ini mempunyai deretan butang sendiri yang menatal ke sisi, jadi tiada apa-apa yang dipicit.
+- Automasi: tahap kelulusan dan pada peranti sahaja (lihat Tahap kelulusan).
+- Navigasi: senarai kawasan untuk dilawati — "tiada butang di atas, semuanya ada di sini" — termasuk cangkang sistem ⌘ ZX, butang "Sesi baharu" (memadamkan sejarah sembang untuk permulaan yang bersih), kiraan mesej dan togol mikrofon.
+- Ingatan: ingatan SQL tempatan dengan fakta ZYRAXON ingat; tambah kunci dan nilai; padam semua.
+- Panduan kemahiran: senarai pantas contoh kebolehan (apl pemesejan, pembinaan tapak web, pembaca skrin, obor, kamera, Wi-Fi dan tetapan) dengan contoh frasa.
+- Hab automasi: kemahiran, autopilot, wang, garis masa, otak dan ejen panggilan di satu tempat (lihat hab Automasi).
+
+## 9. Dokumentasi
+Bahagiannya sendiri dalam Tetapan, berasingan daripada Sistem. Panduan ini: dua puluh satu bab, kotak carian dan baris cip bahasa. Setiap bahasa dalam apl sudah ditulis sepenuhnya di dalam apl — tiada apa yang diterjemahkan pada telefon anda dan tiada internet diperlukan untuk membacanya.

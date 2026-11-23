@@ -1,0 +1,27 @@
+Fichiers, terminal et système
+## Fichiers
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Safe) : lire, lister, chercher par motif de nom et chercher du texte dans les fichiers.
+- `write_file`, `edit_file` : créer ou modifier des fichiers. `edit_file` fait tout : nouveau fichier, réécriture complète ou recherche-remplacement exact ; le code apparaît en direct dans la discussion. `delete_file` (System) : supprime un fichier ou un dossier.
+- Tout dossier est autorisé (/sdcard, Download, Documents, carte SD …). Donnez un chemin complet et il est utilisé tel qu'écrit.
+- L'agent ouvre ce qu'il crée : `open_file` (Safe) ouvre un fichier dans la vraie application du téléphone, ou dans l'aperçu de ZYRAXON.
+
+## Terminaux (deux vrais)
+- android : le shell propre du téléphone (busybox plus `sh`), dans le bac à sable de l'application. `run_shell` (System) y exécute une commande, hors de vue.
+- ZYRAXON OS: le système Unix complet de ZYRAXON, intégré à l'application : bash, apt/pkg, vrai git, python, node, clang. Il fonctionne hors ligne. `os_run` (System) y exécute une commande.
+- `terminal_run` (System) : exécute une ligne dans l'onglet Terminal que vous regardez, pour que vous la voyiez travailler et puissiez reprendre la main. Utilisez le shell android ou zyraxon. `terminal_open` amène l'onglet Terminal au premier plan (seulement quand vous le demandez).
+- `system_shell` (System) : une commande de niveau système, au-dessus du bac à sable de l'application, comme le fait un shell système ; avec Shizuku ou root, il peut aller bien plus loin.
+- Il n'y a pas de limite de temps par défaut ; un gros `apt upgrade` ou une compilation va jusqu'au bout.
+
+## Shizuku (accès système)
+`setup_shizuku` (System) configure Shizuku, inclus dans ZYRAXON : vérifier l'état, installer, ouvrir, demander l'autorisation. Seul vous pouvez toucher Install et Allow ; l'agent vous dit l'étape en une ligne et fait le reste.
+
+## Longs travaux et minutage
+- `background_command` (System) : une commande qui continue après la fermeture de l'application (gros téléchargement, clonage, compilation), avec une notification et un bouton Stop.
+- `schedule_command` (System) : exécute une commande à une heure réelle (« dans 10 minutes », « à 2 h du matin ») ; Android garde la minuterie, donc elle s'exécute application fermée.
+- `wait` (Safe) : attendre volontairement (secondes, jusqu'à l'ouverture d'un port, l'apparition d'un fichier, la fin d'une commande) au lieu de deviner.
+
+## Usages de ZYRAXON OS
+Installer des paquets (`apt install …`), exécuter des scripts Python ou Node, compiler du C, utiliser git, lancer des serveurs, zip et unzip, curl, ffmpeg. Le système est décompressé discrètement au démarrage de l'application et reste entre les redémarrages.
+
+## L'écran du terminal
+L'onglet Terminal est un vrai terminal avec l'onglet ⌘ ZX. Tapez vos propres commandes ou regardez celles de l'agent. L'écran Navigation des Réglages a un raccourci vers le shell système et un bouton « New session » qui efface l'historique de la discussion pour repartir à neuf.

@@ -1,0 +1,21 @@
+Ilé: awọn aaye, awọn ohun elo, awotẹlẹ ati titẹjade
+## Bawo ni lati beere
+- "Ṣe mi ni oju-iwe ibalẹ fun ile itaja kofi mi." Aṣoju naa kọ ọ lẹsẹkẹsẹ, bẹrẹ lori foonu rẹ ati ṣi i ni Awotẹlẹ. O gba awọn ila 2-3 ti n ṣe apejuwe rẹ. Ko si ohun ti wa ni atejade ayafi ti o ba beere.
+- "Kọ ohun elo lati-ṣe." Ti a ṣe taara pẹlu akopọ oye, ṣiṣe ati ṣafihan. A pada opin, database tabi wiwọle nikan ti o ba beere.
+- "Kọ ohun elo akopọ ni kikun." Aṣoju akọkọ beere ibeere kukuru kan nipa ede-ipari, ibi ipamọ data, iwọle ati ibi ti o nṣiṣẹ, pẹlu awọn aṣiṣe ti a ṣe iṣeduro, lẹhinna kọ gbogbo rẹ pẹlu data irugbin ati idanwo sisan kan ni kikun.
+- "Ṣe eto Windows/ZYRAXON OS/macOS/Android kan." A ti kọ orisun, a ti ṣafikun ṣiṣan iṣẹ kan, titari ati kọ sinu awọsanma pẹlu GitHub Awọn iṣe, ati pe o gba ọna asopọ igbasilẹ gidi.
+
+## Awọn irinṣẹ
+- `edit_file` ati `write_file`: kọ awọn gidi awọn faili (pipe koodu, kò stubs). `code_box` fihan wọn laaye.
+- `preview` (Ailewu): aṣawakiri gidi ti a ṣe sinu rẹ. Awọn iṣe: ṣii (ọna asopọ kan, `localhost:PORT` tabi faili kan), tun gbejade, sẹhin, siwaju, sikirinifoto, yi lọ, tẹ, tẹ, iru ọrọ oju-iwe, awọn aṣiṣe console, eval. Aṣoju naa wo iṣẹ tirẹ ṣaaju ki o to sọ pe o ti ṣe.
+- `serve_local` (Eto): bẹrẹ olupin wẹẹbu kan lori foonu fun folda kan ki o da LAN adirẹsi awọn ẹrọ miiran pada lori Wi-Fi rẹ le ṣi.
+- `publish_website` (System): Sin aaye kan lori ibudo ita gbangba lati foonu. `publish_cloudflare` (Eto): fi aaye kan sori intanẹẹti laisi akọọlẹ nipasẹ oju eefin Cloudflare ati da ọna asopọ https ti gbogbo eniyan pada. `publish_github` (Eto): ṣe atẹjade iṣẹ akanṣe kan si ibi ipamọ GitHub kan (Awọn oju-iwe) pẹlu ami-ami rẹ.
+- `git` (Eto): oniye, init, ipo, fikun, ṣẹ, Titari, fa, ẹka, isanwo, wọle, diff pẹlu rẹ ti o ti fipamọ àmi. `github_pr` (Eto): ṣẹda, ṣe atokọ, dapọ ati asọye lori awọn ibeere fa. `github_actions` (Eto): ṣe atokọ awọn ṣiṣan iṣẹ, ṣiṣe wọn, ṣiṣe idibo ati awọn iwe kika, nitorinaa kọ ṣiṣe ninu awọsanma lati inu foonu naa.
+- `build_app` (Eto): kọ iṣẹ akanṣe yii pẹlu Gradle lori foonu ati fi abajade sii.
+- `files_panel`, `todo_write`: aṣàwákiri faili ati igbimọ iṣẹ.
+
+## Awọn ofin didara ti oluranlowo tẹle
+Ifilelẹ pipe, apẹrẹ idahun, JavaScript ṣiṣẹ, iwara, awọn awọ deede ati awọn nkọwe (dudu ati ina nibiti o baamu), kii ṣe awoṣe jeneriki. Oju-iwe ibalẹ nigbagbogbo jẹ awọn laini 300-900; ti o tobi ohun siwaju sii.
+
+## Ti nkan ba dabi fifọ
+Tẹ Fix ni Awotẹlẹ, tabi sọ fun aṣoju. O ka console, ṣe atunṣe idi, tun ṣii oju-iwe naa ati ṣayẹwo lẹẹkansi.

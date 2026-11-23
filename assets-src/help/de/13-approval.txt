@@ -1,0 +1,23 @@
+Zulassungsstufen und Sicherheit der Automatisierung
+Einstellungen → System → Automatisierung. Dadurch wird festgelegt, wie viel der Agent tun darf, bevor er anhält und Sie fragt. Die Einstellung wird bei jedem Toolaufruf im Code erzwungen; ein Modell kann es nicht erweitern.
+
+## Die vier Ebenen
+Ändern Sie die Ebene in den Einstellungen → System → Automatisierung. Jede Ebene entscheidet, wann der Agent anhält und fragt, und auch, wie streng das Content Shield (siehe Sicherheit und Datenschutz) Text behandelt, den der Agent von außen liest.
+1. Vollständig fragen (gesperrt): fragt vor allem, was das Telefon verändert, egal wie klein es ist. Am sichersten. Das Content Shield ist streng: Jeder verdächtige Text gilt als feindselig. Verwenden Sie es auf einem gemeinsam genutzten Telefon oder während Sie etwas Neues testen.
+2. Überwacht (Standard): Fragt vor System- und persönlichen Aktionen ab und erledigt normale Arbeiten (Lesen, Öffnen, Suchen, Erstellen) selbst. Das Content Shield ist Standard: Verdächtiger Text wird als Daten abgeschirmt, und wenn der Text eindeutig feindselig ist, werden Sie von jedem Änderungstool nach dem Rest dieses Zugs gefragt.
+3. Ausgewogen: Fragt nur vor Aktionen auf Systemebene (Shell, Löschen, Veröffentlichen, Planen ...). Persönliche Aktionen wie Nachrichten, Tippen und Tippen laufen alleine ab. Der Content Shield ist leichtgewichtig: Er reagiert nur auf eindeutig feindseligen Text, und dann hören nur Tools auf Systemebene auf, nachzufragen.
+4. Vollständige Automatisierung: fragt nie und hört nie auf. Alles läuft direkt durch und das Content Shield ist komplett ausgeschaltet – es wird nichts gescannt, markiert, entfernt oder verändert. Das ist Automatisierung im wahrsten Sinne des Wortes: Sie tragen das Risiko.
+
+## Die drei Werkzeugebenen
+- Sicher (fragt nie auf irgendeiner Ebene): Lesen und Auflisten von Dateien, Speicher, Dokumenten, Designs, Status, Öffnen von Apps und Dateien, Warten, Fähigkeiten/Autopilot/Zeitleiste/Anruflisten, Gehirnsuche.
+- Persönlich (in den ersten beiden Ebenen abgefragt): SMS, Anrufe, Kamera, Bildschirmlesen, Tippen und Tippen, Zwischenablage, Downloads, Benachrichtigungen, Teilen, Sprachänderung, Wiedergabe von Fähigkeiten, Geldbuch, Anrufagent, Rückgängigmachen der Zeitleiste.
+- System (abgefragt auf jeder Ebene außer vollständiger Automatisierung): Shell, ZYRAXON OS, Builds, Veröffentlichung, Löschen, Gerätesperre, Planung, Git und GitHub, ffmpeg, On-Device-Modell, Posten in Kanälen, Autopilot-Regeln, Löschfähigkeiten, Shizuku. Jedes Tool, das die App nicht erkennt – einschließlich MCP Tools – wird als System behandelt.
+
+## Die Genehmigungskarte
+Wenn für ein Tool Ihre Genehmigung erforderlich ist, wird auf einer Karte „Berechtigung erforderlich“ angezeigt, Sie erfahren, was der Agent tun möchte, es wird seine Stufe (Sicher, Persönlich oder System) angezeigt und angeboten „Ja, ausführen“ oder „Nein, ausgeschaltet lassen“. Die Karte erinnert Sie auch daran, dass Sie in den Einstellungen → Automatisierung ändern können, wie oft dies gefragt wird.
+
+## Nur auf dem Gerät
+Wenn diese Option aktiviert ist, verlässt nichts das Telefon: Es werden nur das Modell auf dem Gerät und die lokalen Tools ausgeführt. Alle Netzwerktools (Suchen, Abrufen, Hochladen, Veröffentlichen, GitHub, Mediengenerierung, MCP, Cloud-Modelle) werden im Code abgelehnt.
+
+## Erste Veröffentlichungsmitteilung
+Beim ersten Mal erklärt ZYRAXON, dass der Agent auf Ihrem Telefon agieren kann und wo Berechtigungen aktiviert werden können. Klicken Sie auf „Verstanden, starten“.

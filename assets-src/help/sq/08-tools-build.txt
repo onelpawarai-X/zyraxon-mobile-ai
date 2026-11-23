@@ -1,0 +1,21 @@
+Ndërtimi: sajte, aplikacione, pamje paraprake dhe publikim
+## Si të pyesni
+- "Më bëj një faqe uljeje për kafenenë time." Agjenti e ndërton atë menjëherë, e nis në telefonin tuaj dhe e hap në Parapamje. Ju merrni 2-3 rreshta që e përshkruajnë atë. Asgjë nuk publikohet nëse nuk pyesni.
+- "Ndërtoni një aplikacion për të bërë." Ndërtuar drejtpërdrejt me një pirg të ndjeshëm, të drejtuar dhe të treguar. Një fund, bazë të dhënash ose hyrje vetëm nëse kërkoni.
+- "Ndërtoni një aplikacion të plotë." Agjenti fillimisht bën një pyetje të shkurtër në lidhje me gjuhën e fundit, bazën e të dhënave, hyrjen dhe vendin ku funksionon, me parazgjedhjet e rekomanduara, më pas i ndërton të gjitha me të dhënat fillestare dhe teston një rrjedhë të plotë.
+- "Bëni një program Windows/ZYRAXON OS/macOS/Android." Shkruhet burimi, shtohet një fluks pune ndërtimi, shtyhet dhe ndërtohet në renë kompjuterike me GitHub Veprimet, dhe ju merrni lidhjen e vërtetë të shkarkimit.
+
+## Mjetet
+- `edit_file` dhe `write_file`: shkruani skedarët e vërtetë (kodi i plotë, kurrë cung). `code_box` i tregon drejtpërdrejt.
+- `preview` (I sigurt): shfletuesi i vërtetë i integruar. Veprimet: hapni (një lidhje, `localhost:PORT` ose një skedar), ringarkoni, mbrapa, përpara, pamje nga ekrani, lëvizni, klikoni, shkruani, lexoni tekstin e faqes, gabimet e konsolës, eval. Agjenti shikon punën e tij përpara se të thotë se ka përfunduar.
+- `serve_local` (Sistemi): nis një server ueb në telefon për një dosje dhe kthen adresën LAN që pajisjet e tjera në Wi-Fi tuaj mund të hapen.
+- `publish_website` (Sistemi): shërben një sajt në një port publik nga telefoni. `publish_cloudflare` (Sistemi): vendos një sajt në internet pa llogari përmes një tuneli Cloudflare dhe kthen një lidhje publike https. `publish_github` (Sistemi): publikon një projekt në një depo GitHub (Faqet) me shenjën tuaj.
+- `git` (Sistemi): klononi, initoni, statusin, shtoni, kryeni, shtyni, tërhiqni, degëzoni, arkëtoni, regjistroni, ndryshoni me tokenin tuaj të ruajtur. `github_pr` (Sistemi): krijoni, listoni, bashkoni dhe komentoni kërkesat për tërheqje. `github_actions` (Sistemi): listoni flukset e punës, ekzekutoni ato, ekzekutimet e sondazheve dhe lexoni regjistrat, kështu që ndërtimet ekzekutohen në renë kompjuterike nga telefoni.
+- `build_app` (Sistemi): ndërton këtë projekt me Gradle në telefon dhe instalon rezultatin.
+- `files_panel`, `todo_write`: shfletuesi i skedarëve dhe bordi i detyrave.
+
+## Rregullat e cilësisë që agjenti ndjek
+Paraqitja e plotë, dizajni i përgjegjshëm, JavaScript që funksionon, animacioni, ngjyrat dhe shkronjat e qëndrueshme (të errëta dhe të lehta aty ku përshtatet), jo një shabllon i përgjithshëm. Një faqe ulje është zakonisht 300–900 rreshta; gjera me te medha me shume.
+
+## Nëse diçka duket e thyer
+Shtypni Fix në Parapamje ose tregojini agjentit. Ai lexon konsolën, rregullon shkakun, rihap faqen dhe kontrollon përsëri.

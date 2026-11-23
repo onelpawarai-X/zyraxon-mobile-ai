@@ -1,0 +1,51 @@
+Ekran czatu i każdy przycisk
+## Góra ekranu
+- Menu: otwiera lewą szufladę z czatami.
+- Czat / Terminal / Kod / Podgląd: przełączanie widoku głównego. Czat to rozmowa; Terminal jest prawdziwym terminalem; Kod to obszar roboczy pliku z Git; Preview to wbudowana przeglądarka.
+- Aura: pokazuje ekran animowanej postaci. Jego boczne przyciski to Mikrofon, Czat (powrót do rozmowy) i Odśwież (ponowne połączenie z chmurą i ponowne załadowanie listy modeli).
+- Ustawienia: otwiera osiem sekcji ustawień.
+- Baner pokazuje stan mikrofonu: „Słucham…”, „Mikrofon wyłączony — dotknij” lub „Mówię… dotknij, aby zatrzymać”.
+- Gdy nowa wersja będzie gotowa, pojawi się baner aktualizacji z przyciskami Pobierz, Zainstaluj i Zezwól (patrz Aktualizacje).
+
+## Lewe menu (czaty)
+- „+ Nowy czat”: rozpoczyna nową rozmowę.
+- Każdy czat na liście jest oznaczony jako aktywny, gdy agent jest zajęty. Ołówek zmienia jego nazwę; krzyżyk go usuwa (po potwierdzeniu: wszystkie zawarte w nim wiadomości zostają usunięte).
+- Motyw: wybierz Horror (krew, ogień i cień), Ciemny (czyste ciemne szkło) lub Światło (jasne szkło).
+
+## Pasek wiadomości
+- Dołącz (spinacz): zdjęcie z galerii, zdjęcie z aparatu, skan dokumentu (zamienia tekst na zdjęciu w edytowalny plik .docx), udostępniaj ekran, aby agent mógł go zobaczyć (włączona lub wyłączona opcja „Oglądanie ekranu”) oraz pliki audio lub wideo. Dołączone elementy są wyświetlane jako żetony; krzyżyk usuwa jedno, „Wyczyść wszystko” usuwa wszystko.
+- Przycisk trybu: Agent lub Kompilacja.
+- Przycisk mikrofonu: włącza lub wyłącza zawsze słuchający mikrofon.
+- Przycisk Model: otwiera listę modeli z polem wyszukiwania. Modele oznaczone jako „Na żywo” mogą mówić własnym głosem.
+- Wyślij: wysyła wiadomość. Gdy agent działa, staje się to Stopem.
+- Na wejściu pojawia się komunikat „Co powinienem zrobić?” w trybie agenta i „Co powinienem zbudować? Powiedz to krótko” w trybie budowania.
+
+## Wiadomości
+- Kopiuj, udostępniaj i słuchaj (czyta wiadomość na głos; naciśnij ponownie, aby zatrzymać) znajdują się pod każdą wiadomością.
+- „Myślenie” pokazuje rozumowanie modelu, gdy model je zapewnia.
+- Kod napisany przez agenta pojawia się na żywo w pudełku, linia po linii, z możliwością kopiowania, pobierania i otwierania.
+- Pliki prezentowane przez agenta są wyświetlane jako karty z opcjami Otwórz (w prawdziwej aplikacji telefonu), Odtwórz, Udostępnij i „Inna aplikacja…”.
+- Zdjęcia, nagrania audio i wideo pokazują na żywo procentowy postęp w trakcie ich tworzenia.
+- Karty narzędzi pokazują, co robi agent: działa, skończyło, zakończyło się sukcesem lub porażką.
+
+## Panele (do zrobienia, narzędzia, pliki, subagenci)
+- Tablica zadań do wykonania: plan, który agent pisze dla dużej pracy i jej postęp (n/całkowite wykonanie). Możesz dodawać własne zadania i usuwać je.
+- Narzędzia: lista wszystkich wywołań narzędzi ze statusem aktywnym.
+- Pliki: każdy plik utworzony przez agenta, z opcjami Otwórz, Udostępnij, Publikuj i Usuń (z potwierdzeniem) oraz polem wyszukiwania.
+- Sub-agenci: agenci pomocnicy działający w tle, z przyciskiem Stop.
+- Zakładka Terminal: prawdziwy terminal (patrz rozdział Pliki i Terminal).
+
+## Panel podglądu
+- Wstecz, Dalej, Zatrzymaj, Załaduj ponownie i pasek adresu (wpisz adres internetowy lub wyszukaj Google).
+- Otwórz plik: wyświetla Word, Excel, PowerPoint, PDF, obrazy, Markdown, CSV, kod i strony bezpośrednio w aplikacji.
+- Rozmiar: zmniejsz lub powiększ panel.
+- Napraw: wysyła problemy strony (błędy konsoli, nieudane ładowanie) do agenta, który naprawia je w tle.
+- Wybierz część: dotknij części strony, a następnie powiedz agentowi, co ma z nią zrobić.
+- Przycisk agenta: zapytaj o stronę; agent otrzymuje jego zdjęcie.
+- Szybkie otwieranie: skróty do ostatnich stron.
+
+## Obszar roboczy kodu
+- Lewa strona: Twoje pliki (nowy plik, otwórz, zapisz).
+- Edytor: pokazuje linie i znaki; zmiany wprowadzone przez agenta pojawiają się od razu.
+- Git: nowe repozytorium, klonowanie z GitHub, skanowanie, status, zatwierdzenie z komunikatem, push, pull, gałęzie, token.
+- Żądania ściągnięcia: utwórz, połącz, zamknij. Przepływy pracy: uruchamianie listy, uruchamianie przepływu pracy. Dziennik pokazuje dane wyjściowe polecenia.

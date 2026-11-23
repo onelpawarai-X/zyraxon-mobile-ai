@@ -1,0 +1,14 @@
+Solução de problemas
+- Sem resposta: verifique sua internet e chave de API (Configurações → Provedores e API mostram o erro real). Experimente outro modelo ou um modelo no dispositivo.
+- O microfone não faz nada: permita a permissão do microfone; marque "Manter o microfone ligado"; verifique o idioma de reconhecimento.
+- ZYRAXON ouve a si mesmo: é filtrado por texto; se ainda acontecer, abaixe o volume ou use fones de ouvido.
+- Uma frase aparece duas vezes: corrigida nas versões atuais; atualize o aplicativo.
+- Ele não tocará nem lerá a tela: ative o serviço de Acessibilidade (Configurações → Permissões).
+- Para em segundo plano: permite notificações e isenção de otimização de bateria; a sobreposição para o olho flutuante.
+- Uma ferramenta continua pedindo permissão: altere o nível em Configurações → Automação ou atenda o cartão.
+- Play Protect bloqueia algo: consulte o capítulo Permissões ou deixe o agente guiar as etapas.
+- Terminal ou ZYRAXON OS não inicia: aguarde a primeira descompactação na inicialização do aplicativo; verifique o armazenamento gratuito.
+- A atualização não será instalada: permita ZYRAXON como fonte de instalação.
+- Não é possível publicar: adicione o token GitHub para GitHub; para um link público, o agente pode usar um túnel.
+- Um capítulo mostra inglês: esse capítulo não possui texto em seu idioma nesta compilação; atualize o aplicativo.
+- Algo estranho: use Configurações → Navegação → Nova sessão para começar a limpar (limpa apenas o histórico de bate-papo; a memória permanece).

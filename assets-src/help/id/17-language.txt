@@ -1,0 +1,16 @@
+Bahasa
+## Bahasa aplikasi
+Pengaturan → Bahasa & terjemahan. 60 bahasa. Seluruh antarmuka dan pesan alat agen mengikutinya. Setiap bahasa memiliki file terjemahannya sendiri. Baris apa pun yang belum dimiliki file bahasa ditampilkan dalam bahasa Inggris, jangan pernah dikosongkan.
+
+## Apa yang kamu bicarakan
+Agen selalu menjawab dalam bahasa yang Anda gunakan, bahasa apa pun di dunia. Jika Anda beralih, itu beralih. Ia menggunakan bentuk "Anda" yang ramah dan penuh hormat dalam bahasa Anda. Nama merek dan teknologi tetap seperti apa adanya.
+
+## Bahasa suara
+- Bahasa pengenalan (apa yang Anda ucapkan ke mikrofon): Pengaturan → Suara & mikrofon → Mikrofon & bahasa.
+- Berbicara suara: Pengaturan → Suara & mikrofon → Profil suara, dan lab Suara untuk bahasa seperti Bengali, Hindi, Inggris, Urdu, Arab, Tamil, Nepal, Spanyol, Prancis, Jerman, Jepang, Korea, China, Rusia, Turki.
+
+## Dokumentasi ini
+Gunakan chip bahasa di bagian atas halaman ini. Seluruh panduan ditulis dalam setiap bahasa yang didukung aplikasi, dengan tangan, dan dikirimkan di dalam aplikasi. Tidak ada yang diterjemahkan di ponsel Anda: setiap bab terbuka secara instan, bekerja secara offline, dan tidak memerlukan model atau kunci.
+
+## Menulis dalam naskah Anda sendiri
+Dokumen, poster, dan desain dapat dibuat dalam skrip apa pun. Untuk desain Bengali, font yang tepat digunakan; untuk skrip lain font yang cocok dipilih.

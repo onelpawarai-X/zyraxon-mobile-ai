@@ -1,0 +1,11 @@
+Képek, hang, videó, dokumentumok és design
+- `generate_image` (hálózat): leírásból készítsen képet (írja le részletesen; angolul működik a legjobban). Megosztás gombokkal jelenik meg a chatben. Többnek kérj többet.
+- `generate_audio` (hálózat): beszédhang (.mp3) bármilyen szövegből. Egy párbeszédhez vagy történethez adjon minden résznek saját hangját (nem, életkor, nyelv, hangnem). Sok nyelv, köztük a bengáli, hindi és az angol.
+- `generate_video`: valódi szerkesztett videó (nem mesterséges intelligencia felvétel) jelenetekből – képek, klipek, szöveg, színek, narráció, feliratok, zene. `ffmpeg`: bármilyen közvetlen szerkesztés – kivágás, összeillesztés, átfedés, feliratok, sebesség, hangkeverés, konvertálás. 5-10 perces videók készíthetők lépésről lépésre.
+- A haladás élőben, százalékban jelenik meg a chatben; ha kész a fájl megérkezik a Play és Share gombokkal.
+- `make_document`: valódi Word (.docx), Excel (.xlsx) vagy PowerPoint (.pptx) fájl a telefonon, nincs szükség telepítésre, bármilyen nyelv. `office_template`: kész irodai papírok kitöltendő üres helyekkel (szabadsági jelentkezés, álláspályázat, számla, önéletrajz, üzleti ajánlat, árajánlat, értesítés, ülés jegyzőkönyve, szerződés, havi elszámolások stb.).
+- Dokumentum fényképről: csatoljon fényképet (Doc scan). A szöveg pontosan úgy kerül másolásra, ahogy írva van (a nem egyértelmű szavakat megjelöljük), a táblázatból .xlsx lesz, egyébként .docx.
+- Megbeszélési jegyzetek: hanganyagból, átiratból vagy abból, amit mond. A dokumentum tartalmaz egy összefoglalót, döntéseket, műveleti elemeket (feladat, tulajdonos, határidő) és egy kész e-mail piszkozatot.
+- `make_design`: poszterek, bannerek, logók, kártyák, történetek, borítók PNG és PDF formátumban. `brand_kit`: logó vagy színek megadása; mentésre kerülnek, az alkalmazás témája megváltozik, és onnantól kezdve a dokumentumok, diák és webhelyek a márkaszíneket használják.
+- `present_slides`: a karakter beszél, miközben diakártyákat vetítenek; a diák maguktól változnak, amikor a hang véget ér. Kérjen .pptx fájlt, ha fájlt szeretne.
+- `open_file`: megnyitja, hogy mi készült a telefon valódi alkalmazásában (Word/Dokumentumok, Táblázatok, Diák, PDF, galéria, böngésző) vagy az Előnézet panelen; az ügynök ellenőrzi a képernyőt, hogy megbizonyosodjon arról, hogy megnyílt.

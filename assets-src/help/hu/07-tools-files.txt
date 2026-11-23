@@ -1,0 +1,27 @@
+Fájlok, terminál és rendszer
+## Fájlok
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Biztonságos): olvasás, listázás, keresés névminta alapján és szöveg keresése fájlokon belül.
+- `write_file`, `edit_file`: fájlok létrehozása vagy módosítása. `edit_file` mindent megtesz: új fájl, teljes újraírás vagy pontos keresés és csere; a kód élőben jelenik meg a chatben. `delete_file` (Rendszer): fájl vagy mappa törlése.
+- Bármely mappa engedélyezett (/sdcard, Letöltés, Dokumentumok, SD-kártya…). Adjon meg egy teljes elérési utat, és a rendszer a leírtak szerint használja.
+- Az ügynök megnyitja, amit csinál: `open_file` (Biztonságos) megnyit egy fájlt a telefon valódi alkalmazásában vagy ZYRAXON előnézetében.
+
+## Terminálok (két valódi)
+- android: a telefon saját shellje (busybox plusz `sh`), az alkalmazás homokozójában. `run_shell` (Rendszer) parancsot futtat ott, látótávolságon kívül.
+- ZYRAXON OS: ZYRAXON saját teljes Unix rendszere, beépítve az alkalmazásba: bash, apt/pkg, real git, python, node, clang. Offline módban működik. `os_run` (Rendszer) futtat egy parancsot ott.
+- `terminal_run` (Rendszer): futtat egy sort a Terminál lapon, amelyet éppen néz, így láthatja, hogy működik, és átveheti az irányítást. Használjon shell androidot vagy zyraxonot. `terminal_open` előrébb hozza a Terminál lapot (csak akkor, ha Ön kéri).
+- `system_shell` (Rendszer): rendszerszintű parancs, az alkalmazás sandboxa felett, ahogyan a rendszerhéj teszi; Shizuku-vel vagy gyökérrel sokkal többet érhet el.
+- Nincs alapértelmezett időkorlát; egy nagy `apt upgrade` vagy build a végéig fut.
+
+## Shizuku (rendszer hozzáférés)
+`setup_shizuku` (Rendszer) beállítja az Shizuku-et, a ZYRAXON-on belül van csomagolva: állapot ellenőrzése, telepítés, megnyitás, engedélykérés. Csak te koppinthatsz a Telepítés és engedélyezés lehetőségre; az ügynök egy sorban elmondja a lépést, a többit pedig elvégzi.
+
+## Hosszú munkák és időzítés
+- `background_command` (Rendszer): parancs, amely az alkalmazás bezárása után is fut (nagy letöltés, klónozás, build), értesítéssel és egy Stop gombbal.
+- `schedule_command` (Rendszer): parancs futtatása valós időben ("10 perc múlva", "hajnali 2-kor"); Android tartja az időzítőt, így az alkalmazás zárt állapotában fut.
+- `wait` (Biztonságos): szándékos várakozás (másodpercek, amíg megnyílik egy port, megjelenik egy fájl, a parancs befejeződik) a találgatások helyett.
+
+## ZYRAXON OS használ
+Csomagok telepítése (`apt install …`), Python vagy Node szkriptek futtatása, C fordítás, git használata, szerverek futtatása, tömörítés és kicsomagolás, curl, ffmpeg. A rendszer csendesen kicsomagolásra kerül, amikor az alkalmazás elindul, és az újraindításkor is megmarad.
+
+## A terminál képernyője
+A Terminál lap egy valódi terminál a ⌘ ZX lappal. Írja be saját parancsait, vagy figyelje az ügynökét. A Beállítások menü Navigációs képernyőjén van egy parancsikon a rendszerhéjhoz, valamint egy „Új munkamenet” gomb, amely törli a csevegési előzményeket, és újrakezdheti.

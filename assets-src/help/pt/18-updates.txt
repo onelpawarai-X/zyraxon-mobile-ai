@@ -1,0 +1,7 @@
+Atualizações
+Configurações → Atualizações → Atualização do aplicativo ou o banner na parte superior do aplicativo.
+- O aplicativo verifica se há novos lançamentos e mostra “Nova atualização disponível – versão”.
+- Verifique se há atualizações: pergunta agora. Se você está atualizado, isso diz.
+- Baixe e instale: downloads com porcentagem. Quando terminar, pressione Instalar. Seus bate-papos, memória e configurações permanecem.
+- Se Android bloquear a instalação, pressione o botão de permissão, permita ZYRAXON como fonte de instalação e tente novamente.
+- Os botões do banner: Baixar, Instalar, Permitir e Fechar.

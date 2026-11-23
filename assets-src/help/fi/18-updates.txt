@@ -1,0 +1,7 @@
+Päivitykset
+Asetukset → Päivitykset → Sovelluspäivitys tai banneri sovelluksen yläosassa.
+- Sovellus tarkistaa uudet julkaisut ja näyttää "Uusi päivitys saatavilla — versio".
+- Tarkista päivitykset: kysyy nyt. Jos olet ajan tasalla, niin se sanoo.
+- Lataa ja asenna: lataukset prosentteina. Kun olet valmis, paina Asenna. Keskustelusi, muistisi ja asetuksesi säilyvät.
+- Jos Android estää asennuksen, paina lupapainiketta, salli ZYRAXON asennuslähteeksi ja yritä sitten uudelleen.
+- Banneripainikkeet: Lataa, Asenna, Salli ja Sulje.

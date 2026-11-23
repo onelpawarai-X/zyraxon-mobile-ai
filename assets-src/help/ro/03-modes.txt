@@ -1,0 +1,14 @@
+Moduri: Agent și Construire
+Există două moduri, alese cu butonul de mod de lângă caseta de mesaje. Alegerea rămâne până când o schimbi. Vocea live nu este un al treilea mod; este un mod de a vorbi pe care îl puteți activa în Setări (vezi capitolul Voce).
+
+## Agent
+„Automatizarea completă a telefonului și a sistemului.” Totul este deschis: citirea și conducerea ecranului telefonului, deschiderea de aplicații, apeluri, mesaje, cameră, fișiere, terminal și ZYRAXON OS, Git, previzualizare, media, sub-agenți, MCP servere, abilități, pilot automat și multe altele. Alegeți Agent atunci când doriți să faceți ceva pe telefon sau doriți pur și simplu să vorbiți.
+
+## Construi
+„Aplicații, site-uri web și automatizare full-stack.” Agentul este un motor de construcție: dintr-o linie scurtă face totul, îl rulează, îl privește și ți-l arată. Are fișiere, terminal, Git, previzualizare, publicare, media, memorie și tot panoul. Controlul telefonului, sub-agenții și blocarea dispozitivului aparțin modului Agent; dacă aveți nevoie de ele în Build, comutați.
+- Pagina de destinație sau site-ul web: spuneți pentru ce este. Agentul îl construiește imediat, îl pornește pe telefon și îl deschide în panoul de previzualizare, apoi vă spune ce a făcut. Nu se publică decât dacă întrebați.
+- Aplicație: spuneți ce doriți și va crea aplicația așa cum vi se cere. Se adaugă un back-end, o bază de date sau un autentificare numai dacă îl solicitați.
+- Full-stack: atunci când solicitați un back-end sau o bază de date, agentul vă pune mai întâi o scurtă întrebare despre opțiuni (limbă, bază de date, autentificare, unde rulează), cu recomandarea sa și se construiește după ce răspundeți.
+
+## Ce înseamnă „întreaba”.
+Când agentul are nevoie într-adevăr de decizia dvs., face totul mai întâi, pune o întrebare scurtă cu recomandarea sa și așteaptă. Răspunsul tău continuă munca de unde s-a oprit.

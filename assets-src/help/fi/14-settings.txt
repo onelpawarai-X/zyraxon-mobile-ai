@@ -1,0 +1,42 @@
+Jokainen asetusruutu yksitellen
+Asetuksissa on kahdeksan osaa. Jokaisessa osiossa on pillereitä alinäytöilleen. Viimeksi käyttämäsi osio avataan uudelleen seuraavan kerran.
+
+## 1. Kieli ja käännös → Sovelluksen ja työkalun kieli
+Valitse koko sovelluksen ja agentin työkaluviestien kieli. Hae luettelosta ja napauta yhtä. Näyttö näyttää nykyisen kielen ja onko käyttöliittymän käännös ja työkaluviestin käännös käytössä. Saatavilla on 60 kieltä. Katso luku Kieli.
+
+## 2. Ääni ja mikrofoni
+- Ääniprofiili: valitse nais- tai miesääni, nopeus, äänenkorkeus, "Lue vastaukset ääneen", Testiääni, bengali-äänen latausvinkki.
+- Mikrofoni ja kieli: tunnistuskieli, pidä mikrofoni päällä, lähettää automaattisesti, kun lopetat puhumisen.
+- Live-ääni: puhe puheeksi päälle/pois, tila, luettelo reaaliaikaisista malleista.
+
+## 3. Palveluntarjoajat ja API
+- AI-palveluntarjoajat: omat API-avaimet (ZYRAXON, OpenCode ilmainen kiintiö, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) ja ZYRAXON Apex pilviagentti. Tallennettu avain varmistetaan lukemalla toimittajan todellinen luettelo ja näyttää mallien lukumäärän tai tarkan virheen. Painike avaa ZYRAXON-sivuston, jossa luot avaimen.
+- GitHub: käyttöoikeustunnuksesi GitHub (vaatii repo-alueen) julkaisua, Git push- ja pull-pyyntöjä varten. Tallenna tunnus tai poista se; tila näyttää, onko se asetettu.
+
+## 4. Päivitykset → Sovelluspäivitys
+Näyttää nykyisen version, tarkistaa uudemman version, lataa sen edistymispalkin avulla ja asentaa sen. Keskustelusi, muistisi ja asetuksesi säilyvät. Jos Android tarvitsee luvan asentaakseen, painike avaa kyseisen asetuksen.
+
+## 5. Malli ja identiteetti
+- Identiteetti: valitse hahmo (katso Hahmot-luku).
+- Malli: elävä malliluettelo, jossa on hakukenttä, "Kaikki mallit" ja "Mukautettu" suodattimet; nopeat mallit ensin.
+- Laitteessa: lataa, lataa ja pura malleja, jotka toimivat offline-tilassa; lajiteltu pienistä suuriin; valinnainen Hugging Face-tunnus; näyttää ladatun, latauksen ja epäonnistuneen tilan.
+
+## 6. Aura & teema
+- Teema: Kauhu, tumma tai vaalea.
+- Aura & tausta: auran tyyli ja väri (veri, vaaleanpunainen, violetti, taivas, vihreä, tuli) hienolla sävynsäädöllä; auran koko, hehkun voimakkuus, pyörimisnopeus, paneelin läpinäkyvyys; kelluva silmä (päällä/pois päältä, suunnittelu, näytön reuna, äänikomennot/herätyssanat, lisää omasi); Shader-tila; mukautettu tausta-URL-osoite (mp4, gif tai kuva); animaation nopeus.
+
+## 7. Turvallisuus ja yksityisyys
+- Sovelluksen lukitus: salasana (4–8 numeroa) tai 3 × 3 pistekuvio; vahvista syöttämällä se kahdesti; poista lukko.
+- Käyttöoikeudet: Luettelo Luvat-luvussa Play Protect-ohjeen kanssa.
+- Yksityisyys ja tiedot: kaikki tiedot pysyvät puhelimessa. Painikkeet: poista koko muisti, poista chat-historia, poista GitHub-tunnus.
+
+## 8. Järjestelmä
+Tässä osiossa on oma painikerivi, joka rullaa sivuttain, joten mitään ei puristu.
+- Automaatio: hyväksyntätaso ja vain laitteessa (katso Hyväksyntätasot).
+- Navigointi: luettelo alueista, joihin voit hypätä – "ei painikkeita päällä, kaikki on täällä" - mukaan lukien ⌘ ZX -järjestelmän kuori, "Uusi istunto" -painike (tyhjentää keskusteluhistorian, jotta aloitus on puhdas), viestien määrä ja mikrofonin vaihtokytkin.
+- Muisti: paikallinen SQL muisti tosiasioiden kanssa ZYRAXON muistaa; lisää avain ja arvo; poista kaikki.
+- Taitoopas: nopea luettelo esimerkkiominaisuuksista (viestisovellukset, verkkosivustojen luominen, näytönlukija, taskulamppu, kamera, Wi-Fi ja asetukset) esimerkkilauseineen.
+- Automaatiokeskus: taidot, autopilotti, raha, aikajana, aivot ja soittoagentti yhdessä paikassa (katso Automaatiokeskus).
+
+## 9. Dokumentaatio
+Oma osio Asetuksissa, erillään järjestelmästä. Tämä opas: kaksikymmentäyksi lukua, hakukenttä ja kielirivi. Jokainen sovelluksen kieli on jo kirjoitettu kokonaan sovelluksen sisällä – puhelimellasi ei käännetä mitään, eikä sen lukemiseen tarvita Internetiä.

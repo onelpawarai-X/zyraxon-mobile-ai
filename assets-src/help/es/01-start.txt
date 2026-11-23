@@ -1,0 +1,20 @@
+Primeros pasos
+ZYRAXON es un asistente que vive dentro de tu teléfono Android. Habla contigo, te escucha y puede hacer trabajo real: abrir aplicaciones, tocar y escribir en la pantalla, llamar a personas, escribir archivos, crear sitios web y aplicaciones, ejecutar un sistema ZYRAXON OS, hacer imágenes, audio, vídeo y documentos de oficina, y recordarte durante meses. Funciona en cualquier idioma que hables.
+
+## Los primeros minutos
+- La primera vez que lo abres, ZYRAXON muestra un breve aviso de que el agente puede actuar en tu teléfono por sí mismo. Pulsa "Entendido, empezar" para continuar.
+- Añade una clave de IA (Ajustes → Providers & API → AI providers). Pega la clave de cualquier proveedor que quieras (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Al guardar una clave, la app lee el catálogo de ese proveedor y lo comprueba de verdad, así que ves un "conectado" real y el número de modelos.
+- ¿Sin clave? Aun así puedes usar los modelos del dispositivo (Ajustes → Model & identity → On-device). Se ejecutan en el teléfono sin internet.
+- Elige un modelo con el botón de modelo de la barra de mensajes, y un personaje (Ajustes → Model & identity → Identity).
+- Concede los permisos cuando una función lo necesite (consulta el capítulo Permisos). El agente también puede abrirte el diálogo de permisos con un toque.
+- Simplemente habla o escribe. "Hazme una página de aterrizaje para mi panadería", "abre YouTube y pon una canción", "¿cuánta batería tengo?", "llama a mamá".
+
+## Las dos formas de trabajar
+Junto al cuadro de mensaje hay un botón de modo con dos modos: Agent y Build. Consulta el capítulo Modos.
+
+## Dónde está cada cosa
+- Menú izquierdo: tus chats, nuevo chat, renombrar, borrar y el cambio de tema.
+- Pantalla de chat: mensajes, el tablero de tareas, la lista de herramientas, archivos, el terminal.
+- Paneles Preview y Code: ver y editar lo que construye el agente.
+- Ajustes: ocho secciones, explicadas una por una en esta documentación.
+- Esta documentación: Ajustes → Documentation (estás aquí).

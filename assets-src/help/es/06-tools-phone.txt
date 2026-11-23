@@ -1,0 +1,34 @@
+Herramientas de automatización del teléfono
+El agente controla tu teléfono mediante herramientas. Tú nunca las llamas; dices lo que quieres y el agente elige las herramientas. Este capítulo enumera cada herramienta que toca el teléfono y cómo está protegida (consulta Niveles de aprobación: Safe, Personal, System).
+
+## Abrir y encontrar
+- `open_app` (Safe): abre cualquier app instalada por nombre o paquete. `list_apps` (Safe): lista las apps instaladas. `open_settings` (Safe): abre una página de ajustes del sistema (accesibilidad, superposición, notificaciones, apps, Wi-Fi, batería, Play Protect). `launch_url` (Safe): abre un enlace en el navegador. `youtube_play` (Safe): abre YouTube en los resultados de búsqueda de lo que pediste y lo reproduce.
+
+## Ver la pantalla
+- `read_screen` (Personal): lee cada texto y elemento de la pantalla con las posiciones de toque. `screen_shot` (Personal): una captura de pantalla real. Requieren el permiso de Accesibilidad.
+- `look_camera` (Personal): hace una foto con la cámara y la mira. `read_media` (Personal): lee una imagen, audio o vídeo (desde una ruta o enlace) para que el modelo lo entienda.
+
+## Actuar en la pantalla
+- `tap` (Personal): toca un punto. `tap_text` (Personal): toca el elemento con esta etiqueta, más seguro que las coordenadas. `swipe` (Personal): desplazar o el gesto de volver. `type_text` (Personal): escribe en el campo enfocado. `press_key` (Personal): atrás, inicio, recientes, notificaciones, ajustes rápidos, bloqueo.
+- Las acciones de pantalla se ejecutan una a una, en orden, y tras cada una el agente mira la nueva pantalla.
+
+## Teléfono, mensajes y portapapeles
+- `call_dial` (Personal): hace una llamada por número o nombre de contacto. `call_state` (Personal): ¿una llamada está sonando o activa? `call_answer` (Personal): contestar. `call_hangup` (Personal): colgar.
+- `read_sms` (Personal): lee el SMS más reciente, p. ej. un código OTP; puede filtrar por texto o remitente.
+- `clipboard_read` y `clipboard_write` (Personal): leer o escribir el portapapeles.
+- `notify` (Personal): publica una notificación real de Android. `share` (Personal): abre la hoja de compartir con texto, un enlace o un archivo. `channel_post` (System): abre Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail o SMS con tu texto ya escrito, listo para enviar.
+
+## Estado y datos del sistema
+- `network_status` (Safe): conectado o no, Wi-Fi o datos móviles, nombre del Wi-Fi. `sys_info` (Safe): versión de Android, modelo, CPU, RAM, almacenamiento, app actual. `platform_info` (Safe): dónde se está ejecutando el agente. `process_list` (Safe): procesos en ejecución.
+
+## Permisos y pantalla
+- `request_permission` (Safe): abre el diálogo de permisos del sistema con un toque cuando una herramienta falla por falta de permiso. `device_lock` (System): bloquea la pantalla de verdad, o configura el permiso que lo hace posible. `floating_bubble` (Personal): activa o desactiva la esfera flotante.
+- `voice_change` (Personal): cambia la velocidad, el tono o el género de la voz. `live_voice` (System): activa o desactiva el modo de voz a voz en vivo.
+
+## Ayudantes de interfaz
+- `code_box` y `files_panel`: abren el recuadro de código en vivo o el explorador de archivos para que veas el trabajo. `todo_write`: el tablero de tareas en vivo.
+
+## Consejos
+- Puedes encadenar: "Abre Ajustes, busca Wi-Fi y dime el nombre de la red". El agente lee la pantalla tras cada paso y decide el siguiente.
+- Si un toque no hace nada, el agente vuelve a leer la pantalla y prueba otro elemento; nunca toca a ciegas.
+- Si Play Protect bloquea algo, el agente puede recorrer los ajustes contigo (consulta Permisos).

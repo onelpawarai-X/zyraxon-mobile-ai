@@ -1,0 +1,15 @@
+Verskaffers, modelle en sleutels
+## Verskaffers
+ZYRAXON (eie lyn en die Apex wolkagent, altyd gekoppel), OpenCode (gratis kwota), Groq (baie vinnige Lama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek en OpenRouter. Voeg enige sleutel by Instellings → Verskaffers en API. Die sleutel word op jou foon gestoor, nagegaan teen die verskaffer se katalogus, en die modelle stroom in die kieser soos elke verskaffer antwoord.
+
+## Die keuse van 'n model
+Gebruik die modelknoppie in die boodskapbalk of Instellings → Model en identiteit → Model. Soek volgens naam, filter Alles of Pasgemaak. Jou keuse word by bekendstelling gestoor en herstel; 'n verversing vervang nooit jou gestoorde model nie. Modelle gemerk Regstreeks kan in hul eie stem praat (sien Regstreekse stem).
+
+## Modelle op toestel
+Instellings → Model en identiteit → Op die toestel. Die model loop op die foon sonder dat data dit verlaat. Lêers is groot (honderde MB tot 'n paar GB), so laai af op Wi-Fi. Hulle word klein tot groot gelys; op 'n foon met min RAM kies die ligste. Gereedskapoproepe word ondersteun deur die Gemma- en FunctionGemma-bundels. 'n Hugging Face teken is slegs vir omheinde lêers. Gelaaide modelle word onthou.
+
+## Die ZYRAXON webwerf
+zyraxonai.lovable.app: skep 'n rekening (e-pos of Google), maak Instellings, API-sleutel / Toegangstoken oop, skep 'n sleutel en plak dit in die toepassing. Sonder 'n sleutel kan jy steeds die toepassing met op-toestelmodelle en plaaslike nutsgoed gebruik.
+
+## Koste en data
+Wolkverskaffers faktureer jou volgens hul eie reëls. Met "Slegs op toestel" aangeskakel word niks na enige verskaffer gestuur nie.

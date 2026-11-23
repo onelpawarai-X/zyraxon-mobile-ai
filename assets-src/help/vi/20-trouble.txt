@@ -1,0 +1,14 @@
+Khắc phục sự cố
+- Không có câu trả lời: hãy kiểm tra khóa Internet và API của bạn (Cài đặt → Nhà cung cấp & API hiển thị lỗi thực sự). Hãy thử một mẫu máy khác hoặc một mẫu máy trên thiết bị.
+- Micrô không làm gì cả: cho phép sử dụng micrô; chọn "Bật mic"; kiểm tra ngôn ngữ nhận dạng.
+- ZYRAXON tự nghe thấy: phần này được lọc theo văn bản; nếu vẫn xảy ra, hãy giảm âm lượng hoặc sử dụng tai nghe.
+- Một câu xuất hiện hai lần: cố định ở phiên bản hiện tại; cập nhật ứng dụng.
+- Nó sẽ không chạm hoặc đọc màn hình: hãy bật dịch vụ Trợ năng (Cài đặt → Quyền).
+- Nó dừng ở chế độ nền: cho phép thông báo và miễn tối ưu hóa pin; lớp phủ cho con mắt nổi.
+- Một công cụ liên tục xin phép: thay đổi cấp độ trong Cài đặt → Tự động hóa hoặc trả lời thẻ.
+- Play Protect chặn nội dung nào đó: xem chương Quyền hoặc để người đại diện hướng dẫn các bước.
+- Terminal hoặc ZYRAXON OS không khởi động: đợi giải nén lần đầu khi khởi động ứng dụng; kiểm tra dung lượng lưu trữ miễn phí.
+- Bản cập nhật sẽ không cài đặt: cho phép ZYRAXON làm nguồn cài đặt.
+- Không thể xuất bản: thêm mã thông báo GitHub cho GitHub; đối với một liên kết công khai, tác nhân có thể sử dụng một đường hầm.
+- Một chương hiển thị tiếng Anh: chương đó không có văn bản bằng ngôn ngữ của bạn trong bản dựng này; cập nhật ứng dụng.
+- Có điều gì đó kỳ lạ: sử dụng Cài đặt → Điều hướng → Phiên mới để bắt đầu sạch (nó chỉ xóa lịch sử trò chuyện; bộ nhớ vẫn còn).

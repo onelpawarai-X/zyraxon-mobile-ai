@@ -1,0 +1,21 @@
+Erstellen: Websites, Apps, Vorschau und Veröffentlichung
+## Wie man fragt
+- „Erstelle mir eine Landingpage für mein Café.“ Der Agent erstellt es sofort, startet es auf Ihrem Telefon und öffnet es in der Vorschau. Sie erhalten 2–3 Zeilen, die es beschreiben. Ohne Ihre Anfrage wird nichts veröffentlicht.
+- „Erstellen Sie eine To-Do-App.“ Direkt mit einem sinnvollen Stack aufgebaut, ausgeführt und gezeigt. Ein Backend, eine Datenbank oder ein Login nur, wenn Sie danach fragen.
+- „Erstellen Sie eine Full-Stack-App.“ Der Agent stellt zunächst eine kurze Frage zur Back-End-Sprache, Datenbank, Anmeldung und dem Ausführungsort mit empfohlenen Standardeinstellungen, erstellt dann alles mit Startdaten und testet einen vollständigen Ablauf.
+- „Erstellen Sie ein Windows/ZYRAXON OS/macOS/Android-Programm.“ Die Quelle wird geschrieben, ein Build-Workflow hinzugefügt, mit GitHub Aktionen in der Cloud gepusht und erstellt, und Sie erhalten den echten Download-Link.
+
+## Werkzeuge
+- `edit_file` und `write_file`: Schreiben Sie die echten Dateien (vollständiger Code, niemals Stubs). `code_box` zeigt sie live.
+- `preview` (Sicher): der eingebaute echte Browser. Aktionen: Öffnen (einen Link, `localhost:PORT` oder eine Datei), neu laden, zurück, vorwärts, Screenshot, scrollen, klicken, eingeben, Seitentext lesen, Konsolenfehler, auswerten. Der Agent prüft seine eigene Arbeit, bevor er sagt, dass sie erledigt ist.
+- `serve_local` (System): startet einen Webserver auf dem Telefon für einen Ordner und gibt die LAN-Adresse zurück, die andere Geräte auf Ihrem Wi-Fi öffnen können.
+- `publish_website` (System): Bedient eine Site an einem öffentlichen Port vom Telefon aus. `publish_cloudflare` (System): Stellt eine Website ohne Konto über einen Cloudflare-Tunnel ins Internet und gibt einen öffentlichen https-Link zurück. `publish_github` (System): veröffentlicht ein Projekt mit Ihrem Token in einem GitHub-Repository (Seiten).
+- `git` (System): Klonen, Init, Status, Hinzufügen, Commit, Push, Pull, Branch, Checkout, Log, Diff mit Ihrem gespeicherten Token. `github_pr` (System): Pull-Requests erstellen, auflisten, zusammenführen und kommentieren. `github_actions` (System): Workflows auflisten, ausführen, Ausführungen abfragen und Protokolle lesen, damit Builds vom Telefon aus in der Cloud ausgeführt werden.
+- `build_app` (System): erstellt dieses Projekt mit Gradle auf dem Telefon und installiert das Ergebnis.
+- `files_panel`, `todo_write`: Dateibrowser und Taskboard.
+
+## Qualitätsregeln, denen der Agent folgt
+Vollständiges Layout, responsives Design, funktionierendes JavaScript, Animation, konsistente Farben und Schriftarten (dunkel und hell, wo es passt), keine generische Vorlage. Eine Landingpage umfasst normalerweise 300–900 Zeilen; größere Dinge mehr.
+
+## Wenn etwas kaputt aussieht
+Klicken Sie in der Vorschau auf „Beheben“ oder teilen Sie es dem Agenten mit. Es liest die Konsole, behebt die Ursache, öffnet die Seite erneut und prüft erneut.

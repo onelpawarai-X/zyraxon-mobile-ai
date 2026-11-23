@@ -1,0 +1,45 @@
+Aftësitë, autopiloti, paratë, afati kohor dhe zhbëj, truri, agjenti i thirrjeve dhe kujtesa
+Ju i përdorni të gjitha këto duke folur: thoni atë që dëshironi dhe agjenti thërret mjetin e duhur. Çdo veprim është renditur këtu me opsionet e tij.
+
+## Aftësitë - mësoni duke bërë
+Një aftësi është një detyrë telefonike që agjenti mësoi duke ju parë duke e bërë atë një herë. Ai ruan se si të gjejë përsëri çdo element (id-in e tij, fjalët dhe fqinjët, jo pozicionin e tij në ekran), kështu që vazhdon të funksionojë kur ndryshon faqosja e aplikacionit.
+- Shtoni një aftësi:`skill_record`(Personale). Thuaj "mëso këtë si <emri>".`action: start`(me një emër) fillon regjistrimi; pastaj kryeni detyrën - hapni aplikacionin, prekni, shkruani, shtypni tastet; çdo hap regjistrohet.`action: stop`e ruan atë. Në ndalesë mund të kalosh`params`për të kthyer vlerat e shtypura në parametra (për shembull bëhet numri i telefonit`number`, shuma bëhet`amount`) dhe a`description`. `action: status`ju tregon nëse regjistrimi është aktiv.
+- Drejtoni një aftësi:`skill_run`(Personale). Jepni`args`për parametrat e tij, p.sh. numri dhe shuma. Ai përsëritet në një pjesë të hapave dhe shërohet vetë kur aplikacioni ndryshon. Nëse një hap dështon, rezultati thotë se cili hap dhe çfarë është në ekran, dhe agjenti përfundon pjesën tjetër me dorë.
+- Listoni aftësitë:`skill_list`(Safe) tregon emrin, parametrat, hapat dhe sa shpesh kandidon secili. Me një emër dhe eksport në të bën një shareable`.zxskill`dosje.
+- Ndani dhe ngarkoni:`skill_import`ngarkesat (personale) a`.zxskill`skedar nga një shkarkim ose një skedar i përbashkët si aftësi.
+- Fshi një aftësi:`skill_delete`(Sistemi).
+- Shembull: "Mësoni se si i dërgoj 500 Rahim me aplikacionin tim të portofolit"→e bëni një herë→"Dërgo 700 te Karim" herën tjetër.
+
+## Autopilot - "kur ndodh X, bëj Y"
+Një rregull e zgjon vetë agjentin dhe e bën detyrën pa ju pyetur.
+- Shto:`autopilot_add`(Sistemi). Llojet: sms, njoftim, telefonatë, çdo ditë, një herë, interval, bateri, aplikacion. Plotësoni vetëm fushat që i duhen rregullit:`from`(emri ose numri i dërguesit ose titulli i aplikacionit),`any`(të paktën një nga këto fjalë),`all`(çdo fjalë),`none`(asnjë nga këto fjalë),`time`"HH:MM" (ditë),`in_minutes` or `at_ms`(një herë),`every_minutes`(interval),`below`(përqindja e baterisë),`pkg`(paketa ose emri i aplikacionit, për rregullat e aplikacionit dhe njoftimit). Agjenti e kthen fjalinë tuaj në këto fusha. Rezultati liston çdo leje që nevojitet ende (SMS, akses në njoftim…) dhe agjenti ju kërkon ta aktivizoni.
+- Shembuj: "Kur një SMS pagese mbërrin nga aplikacioni i portofolit tim, shtoje atë në librin tim." “Çdo mëngjes në 8, më tregoni motin”. “Për 20 minuta më kujto ta nxjerr bukën”. "Çdo 30 minuta, kujtesë për ujë të pijshëm." "Kur bateria shkon nën 15%, më thuaj." "Kur dikush më telefonon, regjistro numrin." "Kur të hap aplikacionin bankar, më kujto të kontrolloj buxhetin."
+- Lista:`autopilot_list`(Safe) tregon çdo rregull me kohën e tij të ardhshme të ekzekutimit dhe sa shpesh ka qëlluar.
+- Ndalo ose rifillo:`autopilot_toggle`(Sistemi). Fshij:`autopilot_remove`(Sistemi), me ID ose titull.
+- Kur aktivizohet një rregull, ju merrni një mesazh që thotë kështu, dhe agjenti thjesht bën punën.
+
+## Libri i parave (CFO personal)
+- `ledger_scan`(Personale): lexoni portofolin dhe SMS-të bankare në një libër privat: të ardhurat, shpenzimet, tarifat, bilanci dhe kategoria.`days`thotë se sa larg (parazgjedhja 30). Me`auto`më, çdo SMS me para të reja shtohet vetvetiu dhe ju paralajmëroheni kur miratohet një buxhet. Funksionon për portofolin e çdo vendi dhe mesazhet bankare, në çdo monedhë.
+- `ledger_report`(Personale): periudha sot, dje, javë, muaj ose të gjitha. Formatoni tekstin (një përmbledhje e folur e gatshme) ose xlsx (njëExcelskedari me transaksionet dhe totalet e kategorive, i hapur për ju).
+- `ledger_budget`(Personale): caktoni një buxhet mujor për një kategori (ushqim, fatura, transport, pazar, rimbushje celulari, transferta…); një kufi prej 0 e heq atë; pa argumente ai rendit buxhetet dhe paralajmërimet aktuale.
+- Agjenti nuk shpik kurrë numra parash; i lexon ato nga libri.
+
+## Afati kohor dhe zhbë
+- Gjithçka që bën agjenti shkruhet në afatin kohor (400 veprimet e fundit). Ndryshimet e skedarit mbajnë një kopje të asaj që ishte më parë.
+- `timeline_list`(Safe): çfarë ka bërë agjenti kohët e fundit, me një ID për secilën, dhe cilat ndryshime mund të zhbëhen.
+- `timeline_undo`(Personale):`id`zhbën një shkrim, modifikim ose fshirje - skedari kthehet saktësisht siç ishte (një skedar që nuk ekzistonte hiqet përsëri).`since_id`zhbën gjithçka nga ai ID e tutje, më i riu së pari. Përdoreni atë kur thoni "merre atë mbrapa" ose "ktheje si më parë".
+- Zhbërja e mbulon shkrimet, modifikimet dhe fshirjet e skedarëve. Një komandë e ekzekutuar (për shembull instalimi i diçkaje ose dërgimi i një mesazhi) nuk mund të zhbëhet në këtë mënyrë.
+- Mesazhet e bisedës: për të hequr një bisedë të tërë, përdorni lapsin dhe kryqin në menynë e majtë ose Cilësimet→Privatësia dhe të dhënat→Fshi historikun e bisedave ose Navigimin→Sesion i ri.
+
+## Truri - kujtesa e dytë për skedarët tuaj
+- `brain_index`(I sigurt): ndërto ose rifresko indeksin jashtë linje mbi dosje ose skedarë (tekst,Markdown, CSV, Word, Excel, PowerPoint) dhe opsionalisht kutinë hyrëse SMS (`sms`më). Ekzekutoni atë përpara kërkimit të parë dhe pasi të shfaqen skedarë të rinj. Parazgjedhja është hapësira juaj e punës.
+- `brain_search`(Safe): pyesni me fjalët tuaja, "ku është kontrata ime e qirasë?" — funksionon jashtë linje në çdo gjuhë.`kind`është skedar ose sms;`days`kufizimet për artikujt e fundit. Hapni një skedar të gjetur me`open_file`.
+
+## Thirrni agjentin
+- `call_agent`(Personale): veprimi i ndezur, i çaktivizuar ose i statusit.`owner`është emri që thotë ("Unë jam ndihmësi i <pronarit>").`answer_after_seconds`(parazgjedhja 6) ju lejon të merrni së pari. Kur vjen një telefonatë dhe ju nuk mund të përgjigjeni, ajo përshëndet në gjuhën e telefonuesit, pyet emrin dhe arsyen, u përgjigjet pyetjeve të thjeshta, e mbyll telefonin me mirësjellje dhe ju tregon një përmbledhje.
+- `call_log`(Safe): përmbledhjet e telefonatave të cilave iu përgjigj, së pari më e reja.
+- Nevojë për thirrjen dhe lejet e gjendjes telefonike.
+
+## Kujtesa
+- `memory_write`, `memory_read`, `memory_delete`(Safe): fakte të qëndrueshme për ju (emri, preferencat, njerëzit, datat, projektet) jetojnë në një bazë të dhënash lokale dhe i mbijetojnë rifillimit. Thuaj "kujto këtë" dhe shkruhet në të njëjtën radhë; nëse diçka nuk shkon, hiqet ose rishkruhet. Çdo bisedë e vjetër mbahet gjithashtu, dhe kthesat e së shkuarës që përputhen me atë që thua, kthehen vetë, madje edhe muaj më vonë.
+- Shikoni dhe ndryshoni të gjitha te "Cilësimet".→Sistemi→Kujtesa (çelësi, vlera, ruajtja, fshirja e të gjitha).

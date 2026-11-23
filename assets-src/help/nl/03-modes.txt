@@ -1,0 +1,14 @@
+Modi: Agent en Build
+Er zijn twee modi, gekozen met de modusknop naast het berichtenvenster. De keuze blijft staan ​​totdat u deze wijzigt. Live stem is geen derde modus; het is een manier van spreken die je kunt inschakelen in Instellingen (zie het hoofdstuk Stem).
+
+## Tussenpersoon
+"Volledige automatisering van de telefoon en het systeem." Alles is open: het scherm van de telefoon lezen en besturen, apps openen, oproepen, berichten, camera, bestanden, de terminal en ZYRAXON OS, Git, preview, media, sub-agents, MCP servers, vaardigheden, automatische piloot en meer. Kies Agent als u iets op uw telefoon wilt doen of gewoon wilt praten.
+
+## Bouwen
+"Full-stack apps, websites en automatisering." De agent is een bouwengine: vanuit een korte lijn maakt hij het geheel, voert het uit, bekijkt het en laat het aan jou zien. Het heeft bestanden, terminal, Git, preview, publicatie, media, geheugen en het takenbord. Telefoonbediening, subagenten en apparaatvergrendeling behoren tot de Agent-modus; als je ze nodig hebt in Build, schakel dan over.
+- Landingspagina of website: zeg waarvoor deze dient. De agent bouwt het in één keer, start het op je telefoon en opent het in het voorbeeldpaneel, en vertelt je vervolgens wat het heeft gemaakt. Het wordt niet gepubliceerd tenzij u erom vraagt.
+- App: zeg wat je wilt en hij bouwt de app zoals gevraagd. Een backend, database of login wordt alleen toegevoegd als u daarom vraagt.
+- Full-stack: wanneer u om een ​​backend of database vraagt, stelt de agent u eerst één korte vraag over de keuzes (taal, database, login, waar deze draait), met zijn aanbeveling, en bouwt hij verder nadat u antwoordt.
+
+## Wat 'vragen' betekent
+Wanneer de agent uw beslissing echt nodig heeft, doet hij eerst al het andere, stelt een korte vraag met zijn aanbeveling en wacht. Uw antwoord zet het werk voort waar het stopte.

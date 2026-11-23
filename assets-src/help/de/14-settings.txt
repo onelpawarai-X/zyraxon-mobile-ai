@@ -1,0 +1,42 @@
+Jeder Einstellungsbildschirm, einer nach dem anderen
+Die Einstellungen bestehen aus acht Abschnitten. Jeder Abschnitt verfügt über Pillen für seine Unterbildschirme. Der zuletzt verwendete Abschnitt wird beim nächsten Mal wieder geöffnet.
+
+## 1. Sprache und Übersetzung → App- und Tool-Sprache
+Wählen Sie die Sprache der gesamten App und der Tool-Nachrichten des Agenten. Durchsuchen Sie die Liste und tippen Sie auf eine. Auf dem Bildschirm wird die aktuelle Sprache angezeigt und ob die UI-Übersetzung und die Tool-Nachrichtenübersetzung aktiviert sind. Es stehen 60 Sprachen zur Verfügung. Siehe Kapitel „Sprache“.
+
+## 2. Stimme und Mikrofon
+- Stimmprofil: Wählen Sie weibliche oder männliche Stimme, Geschwindigkeit, Tonhöhe, „Antworten laut vorlesen“, Teststimme, Download-Hinweis für die bengalische Stimme.
+- Mikrofon und Sprache: Erkennungssprache, Mikrofon eingeschaltet lassen, automatisch senden, wenn Sie aufhören zu sprechen.
+- Live-Stimme: Speech-to-Speech ein/aus, Status, Liste der Echtzeitmodelle.
+
+## 3. Anbieter und API
+- KI-Anbieter: Ihre eigenen API-Schlüssel (ZYRAXON, OpenCode kostenloses Kontingent, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) und der Cloud-Agent ZYRAXON Apex. Ein gespeicherter Schlüssel wird durch Lesen des echten Katalogs des Anbieters verifiziert und zeigt die Modellanzahl oder den genauen Fehler an. Eine Schaltfläche öffnet die Website ZYRAXON, auf der Sie einen Schlüssel erstellen.
+- GitHub: Ihr GitHub Zugriffstoken (benötigt Repo-Bereich) für Veröffentlichungen, Git Push- und Pull-Anfragen. Token speichern oder löschen; Der Status zeigt an, ob er gesetzt ist.
+
+## 4. Updates → App-Update
+Zeigt die aktuelle Version an, sucht nach einer neueren Version, lädt sie mit einem Fortschrittsbalken herunter und installiert sie. Ihre Chats, Ihr Speicher und Ihre Einstellungen bleiben erhalten. Wenn Android eine Berechtigung zur Installation benötigt, wird diese Einstellung über eine Schaltfläche geöffnet.
+
+## 5. Modell und Identität
+- Identität: Wählen Sie den Charakter (siehe Kapitel Charaktere).
+- Modell: der Live-Modellkatalog mit Suchfeld, „Alle Modelle“ und „Benutzerdefiniert“-Filtern; schnelle Modelle zuerst.
+- Auf dem Gerät: Modelle herunterladen, laden und entladen, die offline ausgeführt werden; sortiert von klein bis groß; optionales Hugging Face-Token; Zeigt die Zustände „Geladen“, „Laden“ und „Fehler“ an.
+
+## 6. Aura & Thema
+- Thema: Horror, Dunkelheit oder Licht.
+- Aura und Hintergrund: Aura-Stil und -Farbe (Blut, Rosa, Violett, Himmel, Grün, Feuer) mit feiner Farbtonsteuerung; Auragröße, Leuchtstärke, Rotationsgeschwindigkeit, Paneltransparenz; das schwebende Auge (ein/aus, Design, Bildschirmrand, Sprachbefehle/Weckwörter, eigene hinzufügen); Shader-Modus; benutzerdefinierte Hintergrund-URL (mp4, gif oder Bild); Animationsgeschwindigkeit.
+
+## 7. Sicherheit und Datenschutz
+- App-Sperre: ein Passwort (4–8 Ziffern) oder ein 3×3-Punktmuster; bestätigen Sie durch zweimalige Eingabe; Schloss entfernen.
+- Berechtigungen: die Liste im Kapitel „Berechtigungen“, mit Play Protect-Hilfe.
+- Datenschutz und Daten: Alle Daten bleiben auf dem Telefon. Schaltflächen: Gesamten Speicher löschen, Chatverlauf löschen, GitHub-Token löschen.
+
+## 8. System
+Dieser Abschnitt verfügt über eine eigene Schaltflächenreihe, die seitwärts scrollt, sodass nichts gequetscht wird.
+- Automatisierung: Genehmigungsebene und nur auf dem Gerät (siehe Genehmigungsebenen).
+- Navigation: eine Liste von Bereichen, zu denen man springen kann – „keine Schaltflächen oben, alles ist hier“ – einschließlich der ⌘ ZX-System-Shell, einer Schaltfläche „Neue Sitzung“ (löscht den Chat-Verlauf für einen sauberen Start), der Nachrichtenanzahl und der Mikrofonumschaltung.
+- Gedächtnis: Das lokale SQL-Gedächtnis mit den Fakten ZYRAXON erinnert sich; einen Schlüssel und einen Wert hinzufügen; alles löschen.
+- Fertigkeitsleitfaden: eine kurze Liste von Beispielfähigkeiten (Messaging-Apps, Website-Erstellung, Bildschirmlesegerät, Taschenlampe, Kamera, Wi-Fi und Einstellungen) mit Beispielphrasen.
+- Automatisierungs-Hub: Fähigkeiten, Autopilot, Geld, Zeitleiste, Gehirn und der Call-Agent an einem Ort (siehe Automatisierungs-Hub).
+
+## 9. Dokumentation
+Ein eigener Abschnitt in den Einstellungen, getrennt vom System. Dieses Handbuch: einundzwanzig Kapitel, ein Suchfeld und eine Sprachchip-Reihe. Jede Sprache in der App ist bereits vollständig in der App ausgeschrieben – nichts ist auf Ihrem Telefon übersetzt und es ist kein Internet erforderlich, um sie zu lesen.

@@ -1,0 +1,42 @@
+Elke instellingsskerm, een vir een
+Instellings het agt afdelings. Elke afdeling het pille vir sy sub-skerms. Die laaste afdeling wat jy gebruik het, word volgende keer weer oopgemaak.
+
+## 1. Taal en vertaling → Toepassings- en hulpmiddeltaal
+Kies die taal van die hele toepassing en van die agent se gereedskapboodskappe. Soek die lys en tik een. Die skerm wys die huidige taal en of UI-vertaling en hulpmiddelboodskapvertaling aan is. 60 tale is beskikbaar. Sien die Taal hoofstuk.
+
+## 2. Stem en mikrofoon
+- Stemprofiel: kies vroulike of manlike stem, spoed, toonhoogte, "Lees antwoorde hardop", Toetsstem, die Bengaalse stem-aflaaiwenk.
+- Mikrofoon en taal: herkenningstaal, hou die mikrofoon aan, stuur outomaties wanneer jy ophou praat.
+- Regstreekse stem: spraak-tot-spraak aan/af, status, die lys intydse modelle.
+
+## 3. Verskaffers & API
+- KI-verskaffers: jou eie API-sleutels (ZYRAXON, OpenCode gratis kwota, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) en die ZYRAXON Apex wolkagent. 'n Gestoorde sleutel word geverifieer deur die verskaffer se regte katalogus te lees en wys die modeltelling of die presiese fout. 'n Knoppie maak die ZYRAXON webwerf oop waar jy 'n sleutel skep.
+- GitHub: jou GitHub toegangsteken (benodig repo-omvang) vir publisering, Git druk- en trekversoeke. Stoor teken of vee dit uit; die status wys of dit gestel is.
+
+## 4. Opdaterings → Programopdatering
+Wys die huidige weergawe, kyk vir 'n nuwer weergawe, laai dit af met 'n vorderingsbalk en installeer dit. Jou geselsies, geheue en instellings bly. As Android toestemming nodig het om te installeer, maak 'n knoppie daardie instelling oop.
+
+## 5. Model & identiteit
+- Identiteit: kies die karakter (sien die Karakters hoofstuk).
+- Model: die lewendige modelkatalogus met 'n soekkassie, "Alle modelle" en "Gepasmaakte" filters; vinnige modelle eerste.
+- Op die toestel: laai, laai en laai modelle af wat vanlyn werk; klein na groot gesorteer; opsionele Hugging Face teken; wys gelaaide, laai- en mislukte toestande.
+
+## 6. Aura & tema
+- Tema: Gruwel, Donker of Lig.
+- Aura & agtergrond: die aura-styl en -kleur (bloed, pienk, violet, lug, groen, vuur) met fyn kleurbeheer; aura grootte, gloei sterkte, rotasie spoed, paneel deursigtigheid; die drywende oog (aan/af, ontwerp, skermrand, stemopdragte/wekwoorde, voeg jou eie by); skadumodus; persoonlike agtergrond-URL (mp4, gif of prent); animasie spoed.
+
+## 7. Sekuriteit en privaatheid
+- Toepassingslot: 'n wagwoord (4–8 syfers) of 'n 3×3-puntpatroon; bevestig deur dit twee keer in te voer; verwyder slot.
+- Toestemmings: die lys in die Toestemmings hoofstuk, met Play Protect hulp.
+- Privaatheid en data: alle data bly op die telefoon. Knoppies: vee alle geheue uit, vee kletsgeskiedenis uit, vee GitHub-teken uit.
+
+## 8. Stelsel
+Hierdie afdeling het sy eie ry knoppies wat sywaarts rol, sodat niks gedruk word nie.
+- Outomatisering: goedkeuringsvlak en slegs op die toestel (sien Goedkeuringsvlakke).
+- Navigation: 'n lys van areas om na toe te spring — "geen knoppies bo-aan nie, alles is hier" — insluitend die ⌘ ZX-stelselskulp, 'n "New session"-knoppie (vee kletsgeskiedenis uit vir 'n skoon begin), boodskaptelling en die mikrofoonskakelaar.
+- Geheue: die plaaslike SQL geheue met die feite ZYRAXON onthou; voeg 'n sleutel en waarde by; vee alles uit.
+- Skill guide: 'n vinnige lys voorbeeldvermoëns (boodskap-apps, webwerfbou, skermleser, flitslig, kamera, Wi-Fi en instellings) met voorbeeldfrases.
+- Outomatiseringspilpunt: vaardighede, autopilot, geld, tydlyn, brein en die oproepagent op een plek (sien Outomatiseringspilpunt).
+
+## 9. Dokumentasie
+Sy eie afdeling in Instellings, apart van Stelsel. Hierdie gids: een-en-twintig hoofstukke, 'n soekkassie en 'n taalskyfie-ry. Every language in the app is already written out in full inside the app — nothing is translated on your phone and no internet is needed to read it.

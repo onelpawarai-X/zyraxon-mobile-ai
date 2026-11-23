@@ -1,0 +1,34 @@
+Telefono automatizavimo įrankiai
+Agentas valdo jūsų telefoną naudodamas įrankius. Jūs niekada patys jų nevadinate; tu sakai ką nori, o agentas parenka įrankius. Šiame skyriuje išvardyti visi telefoną liečiantys įrankiai ir jo apsauga (žr. Patvirtinimo lygiai: saugus, asmeninis, sistema).
+
+## Atidarymas ir radimas
+- `open_app` (Saugus): atidarykite bet kurią įdiegtą programą pagal pavadinimą arba paketą. `list_apps` (Saugus): įdiegtų programų sąrašas. `open_settings` (Saugus): atidarykite sistemos nustatymų puslapį (prieinamumas, perdanga, pranešimai, programos, Wi-Fi, akumuliatorius, Play Protect). `launch_url` (Saugus): atidarykite nuorodą naršyklėje. `youtube_play` (Saugus): paieškos rezultatuose atidarykite YouTube to, ko prašėte, ir paleiskite.
+
+## Matydamas ekraną
+- `read_screen` (asmeninis): skaito kiekvieną tekstą ir elementą ekrane su bakstelėjimo padėtimis. `screen_shot` (asmeninis): tikra ekrano kopija. Tam reikalingas pritaikymo neįgaliesiems leidimas.
+- `look_camera` (asmeninis): padaro vieną nuotrauką su fotoaparatu ir žiūri į ją. `read_media` (asmeninis): nuskaito paveikslėlį, garso įrašą ar vaizdo įrašą (iš kelio ar nuorodos), kad modelis galėtų tai suprasti.
+
+## Veikimas ekrane
+- `tap` (asmeninis): palieskite tašką. `tap_text` (Asmeninis): bakstelėkite elementą su šia etikete, saugiau nei koordinatės. `swipe` (asmeninis): slinkimas arba gestas atgal. `type_text` (Asmeninis): įveskite į paryškintą lauką. `press_key` (asmeninis): atgal, namai, naujausi, pranešimai, greitieji nustatymai, užraktas.
+- Ekrano veiksmai vykdomi po vieną, eilės tvarka ir po kiekvieno agentas žiūri į naują ekraną.
+
+## Telefonas, žinutės ir iškarpinė
+- `call_dial` (asmeninis): skambinkite numeriu arba kontakto vardu. `call_state` (asmeninis): skamba arba aktyvus skambutis? `call_answer` (asmeninis): atsakymas. `call_hangup` (asmeninis): padėkite ragelį.
+- `read_sms` (Asmeninis): skaitykite naujausias SMS žinutes, pvz. OTP kodas; gali filtruoti pagal tekstą arba siuntėją.
+- `clipboard_read` ir `clipboard_write` (asmeninis): skaitykite arba rašykite iškarpinę.
+- `notify` (asmeninis): paskelbkite tikrą Android pranešimą. `share` (Asmeninis): atidarykite bendrinimo lapą su tekstu, nuoroda arba failu. `channel_post` (Sistema): atidarykite Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail arba SMS su iš anksto užpildytu tekstu, paruoštu siųsti.
+
+## Būsenos ir sistemos faktai
+- `network_status` (saugus): prisijungęs ar ne, Wi-Fi arba mobiliojo ryšio duomenys, Wi-Fi vardas. `sys_info` (Saugus): Android versija, modelis, procesorius, RAM, saugykla, dabartinė programa. `platform_info` (Saugus): kur veikia agentas. `process_list` (Saugus): veikia procesai.
+
+## Leidimai ir ekranas
+- `request_permission` (Saugus): vienu bakstelėjimu atidaromas sistemos leidimo dialogo langas, kai įrankiui nepavyksta gauti leidimo. `device_lock` (Sistema): užrakinkite ekraną iš tikrųjų arba nustatykite leidimą, leidžiantį tai padaryti. `floating_bubble` (asmeninis): įjunkite arba išjunkite plūduriuojančią orbą.
+- `voice_change` (Asmeninis): pakeiskite kalbėjimo greitį, aukštį arba lytį. `live_voice` (Sistema): įjunkite arba išjunkite tiesioginės kalbos pakeitimo į kalbą režimą.
+
+## Sąsajos pagalbininkai
+- `code_box` ir `files_panel`: atidarykite tiesioginio kodo laukelį arba failų naršyklę, kad galėtumėte žiūrėti darbą. `todo_write`: tiesioginė užduočių lenta.
+
+## Patarimai
+- Galite grandine: „Atidaryti nustatymus, rasti Wi-Fi ir pasakyti tinklo pavadinimą“. Agentas skaito ekraną po kiekvieno žingsnio ir nusprendžia kitą.
+- Jei bakstelėjimas nieko nedaro, agentas dar kartą nuskaito ekraną ir bando kitą elementą; jis niekada netrenkia aklai.
+- Jei Play Protect ką nors blokuoja, agentas gali kartu su jumis peržiūrėti nustatymus (žr. Leidimai).

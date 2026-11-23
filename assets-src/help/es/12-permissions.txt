@@ -1,0 +1,27 @@
+Permisos, uno por uno
+Ajustes → Security & privacy → Permissions. Cada fila muestra "Granted" o un botón. Tocar una fila abre el diálogo del sistema; solo pulsa Allow. El agente también puede abrir el diálogo él mismo con `request_permission`.
+
+- Microphone: para que ZYRAXON pueda oírte. Sin él no hay entrada de voz.
+- Camera: para hacer y mirar fotos (`look_camera`, escaneo de documentos, "qué ves").
+- Location: para mapas e información local.
+- Notifications: para avisarte cuando terminan los trabajos en segundo plano.
+- Files & media: para leer fotos, vídeos, audio y documentos.
+- Overlay (dibujar sobre otras apps): necesario para el ojo flotante.
+- Accessibility: permite al agente leer la pantalla y tocar, deslizar y escribir por ti. Es el corazón de la automatización del teléfono. Lo activas en los ajustes de Accesibilidad del sistema.
+- Battery optimization: evita que Android ponga a dormir a ZYRAXON mientras trabaja en segundo plano.
+
+## Otros permisos que declara la app
+- SMS (leer y recibir): para leer códigos, el libro de dinero y las reglas de autopilot por SMS.
+- Phone state, contestar llamadas, llamar, contactos: para las herramientas de llamadas y el agente de llamadas.
+- Notification access: permite que el autopilot reaccione a las notificaciones.
+- Device admin: permite que `device_lock` bloquee realmente la pantalla.
+- Install packages: permite que las actualizaciones y `build_app` instalen APK; Android te pide permitir ZYRAXON como fuente de instalación.
+- Foreground services (micrófono, sincronización de datos) y wake lock: mantienen vivos la voz y los trabajos largos.
+- Internet y network state: la nube y la web.
+- Shizuku (opcional): acceso a nivel de sistema para el shell y el terminal.
+
+## Google Play Protect
+Si Play Protect bloquea un trabajo, el agente puede abrir la página correcta, mirar la pantalla real e ir paso a paso por el engranaje y el interruptor, pero te pregunta primero, porque desactivar la protección es decisión tuya. Para hacerlo tú mismo: Play Store → foto de perfil → Play Protect → ajustes → desactiva "Scan apps with Play Protect". La página tiene un botón que abre Play Store.
+
+## Por qué importa un permiso
+Si una herramienta falla por falta de un permiso, el agente te dice cuál y abre su diálogo. Nada sensible funciona sin tu Allow explícito.

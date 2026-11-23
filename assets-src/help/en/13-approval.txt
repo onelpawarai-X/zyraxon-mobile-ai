@@ -1,0 +1,23 @@
+Approval levels and safety of automation
+Settings → System → Automation. This decides how much the agent may do before it stops and asks you. The setting is enforced in code on every tool call; a model cannot widen it.
+
+## The four levels
+Change the level in Settings → System → Automation. Each level decides when the agent stops and asks, and also how strictly the Content Shield (see Security and privacy) treats text the agent reads from outside.
+1. Full ask (Locked): asks before anything that changes the phone, however small. Safest. The Content Shield is strict: any suspicious text counts as hostile. Use it on a shared phone or while you are testing something new.
+2. Supervised (default): asks before system and personal actions and does ordinary work (reading, opening, searching, building) by itself. The Content Shield is standard: suspicious text is fenced as data, and when text is clearly hostile every changing tool asks you for the rest of that turn.
+3. Balanced: asks only before system-level actions (shell, deleting, publishing, scheduling…). Personal actions such as messages, taps and typing run alone. The Content Shield is light: it acts only on clearly hostile text, and then only system-level tools stop to ask.
+4. Full automation: never asks and never stops. Everything runs straight through, and the Content Shield is switched off completely — nothing is scanned, marked, removed or changed. This is automation in the full sense: you own the risk.
+
+## The three tiers of tools
+- Safe (never asks at any level): reading and listing files, memory, documents, designs, status, opening apps and files, waiting, skills/autopilot/timeline/call lists, brain search.
+- Personal (asked in the first two levels): SMS, calls, camera, screen reading, taps and typing, clipboard, downloads, notifications, sharing, voice change, skills replay, money ledger, call agent, timeline undo.
+- System (asked at every level except Full automation): shell, ZYRAXON OS, builds, publishing, deleting, device lock, scheduling, Git and GitHub, ffmpeg, on-device model, posting to channels, autopilot rules, deleting skills, Shizuku. Any tool the app does not recognise — including MCP tools — is treated as System.
+
+## The approval card
+When a tool needs your approval a card says "Permission needed", tells you what the agent wants to do, shows its tier (Safe, Personal or System), and offers "Yes, run it" or "No, keep it off". The card also reminds you that you can change how often this is asked in Settings → Automation.
+
+## On-device only
+When on, nothing leaves the phone: only the on-device model and local tools run. All network tools (search, fetch, uploads, publishing, GitHub, media generation, MCP, cloud models) are refused in code.
+
+## First launch notice
+The first time, ZYRAXON explains that the agent can act on your phone and where to switch permissions on. Press "Got it, start".

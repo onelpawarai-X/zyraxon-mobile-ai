@@ -1,0 +1,21 @@
+Építés: webhelyek, alkalmazások, előnézet és közzététel
+## Hogyan kérdezz
+- "Csinálj egy nyitóoldalt a kávézómhoz." Az ügynök azonnal elkészíti, elindítja a telefonon, és megnyitja az Előnézetben. 2-3 sort kapsz, amely leírja. Semmit sem tesznek közzé, hacsak nem kéred.
+- "Teendők alkalmazásának elkészítése." Közvetlenül egy értelmes köteggel megépítve, futtatva és bemutatva. Háttér, adatbázis vagy bejelentkezés csak kérésre.
+- "Build a full-stack app." Az ügynök először feltesz egy rövid kérdést a háttérnyelvről, az adatbázisról, a bejelentkezésről és arról, hogy hol fut, az ajánlott alapértékekkel, majd az összeset összeállítja a kezdőadatokkal, és egy teljes folyamatot tesztel.
+- "Készítsen Windows/ZYRAXON OS/macOS/Android programot." A forrás meg van írva, hozzá van adva egy összeállítási munkafolyamat, a GitHub Actions segítségével be van építve a felhőbe, és megkapja a valódi letöltési linket.
+
+## Eszközök
+- `edit_file` és `write_file`: írja a valódi fájlokat (teljes kód, soha nem csonk). `code_box` élőben mutatja be őket.
+- `preview` (Biztonságos): a beépített valódi böngésző. Műveletek: megnyitás (hivatkozás, `localhost:PORT` vagy fájl), újratöltés, vissza, előre, képernyőkép, görgetés, kattintás, gépelés, oldalszöveg olvasása, konzolhibák, eval. Az ügynök megnézi a saját munkáját, mielőtt azt mondaná, hogy elkészült.
+- `serve_local` (Rendszer): elindít egy webszervert a telefonon egy mappához, és visszaadja a LAN címet, amelyet a Wi-Fi-on lévő többi eszköz megnyithat.
+- `publish_website` (Rendszer): egy webhelyet szolgál ki egy nyilvános porton a telefonról. `publish_cloudflare` (Rendszer): fiók nélküli webhelyet helyez az internetre egy Cloudflare alagúton keresztül, és nyilvános https hivatkozást ad vissza. `publish_github` (Rendszer): egy projektet tesz közzé egy GitHub tárolóban (Oldalak) a tokennel.
+- `git` (Rendszer): klónozás, init, állapot, hozzáadása, véglegesítés, leküldés, lehívás, elágazás, fizetés, naplózás, differenciálás a mentett tokennel. `github_pr` (Rendszer): lekérési kérések létrehozása, listázása, egyesítése és megjegyzései. `github_actions` (Rendszer): listázza ki a munkafolyamatokat, futtassa őket, lefut a lekérdezés és olvassa el a naplókat, így a buildek a felhőben futnak a telefonról.
+- `build_app` (Rendszer): elkészíti ezt a projektet a Gradle segítségével a telefonon, és telepíti az eredményt.
+- `files_panel`, `todo_write`: fájlböngésző és feladattábla.
+
+## A minőségi szabályokat az ügynök követi
+Teljes elrendezés, reszponzív dizájn, működő JavaScript, animáció, egységes színek és betűtípusok (sötét és világos, ahol illik), nem egy általános sablon. Egy céloldal általában 300–900 sorból áll; nagyobb dolgokat inkább.
+
+## Ha valami elromlottnak tűnik
+Nyomja meg a Javítás gombot az Előnézetben, vagy szóljon az ügynöknek. Beolvassa a konzolt, kijavítja az okot, újra megnyitja az oldalt és újra ellenőrzi.

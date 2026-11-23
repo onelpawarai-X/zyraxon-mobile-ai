@@ -1,0 +1,21 @@
+Oluşturma: siteler, uygulamalar, önizleme ve yayınlama
+## Nasıl sorulur
+- "Bana kahve dükkanım için bir açılış sayfası yap." Temsilci bunu hemen oluşturur, telefonunuzda başlatır ve Önizleme'de açar. Bunu açıklayan 2-3 satır alırsınız. Siz sormadıkça hiçbir şey yayınlanmaz.
+- "Bir yapılacaklar uygulaması oluşturun." Doğrudan mantıklı bir yığınla oluşturuldu, çalıştırıldı ve gösterildi. Yalnızca siz sorarsanız bir arka uç, veritabanı veya oturum açma.
+- "Tam yığınlı bir uygulama oluşturun." Aracı önce arka uç dili, veritabanı, oturum açma ve önerilen varsayılan ayarlarla nerede çalıştığı hakkında kısa bir soru sorar, ardından bunların hepsini tohum verileriyle oluşturur ve bir tam akışı test eder.
+- "Bir Windows/ZYRAXON OS/macOS/Android programı yapın." Kaynak yazılır, bir derleme iş akışı eklenir, GitHub Eylemlerle buluta aktarılır ve oluşturulur ve gerçek indirme bağlantısını alırsınız.
+
+## Aletler
+- `edit_file` ve `write_file`: gerçek dosyaları yazın (kodun tamamını yazın, asla saplama yapmayın). `code_box` onları canlı olarak gösteriyor.
+- `preview` (Güvenli): yerleşik gerçek tarayıcı. Eylemler: aç (bir bağlantı, `localhost:PORT` veya bir dosya), yeniden yükle, geri, ileri, ekran görüntüsü, kaydırma, tıklama, yazma, sayfa metnini okuma, konsol hataları, değerlendirme. Temsilci, işinin bittiğini söylemeden önce kendi işine bakar.
+- `serve_local` (Sistem): telefonda bir klasör için bir web sunucusu başlatır ve Wi-Fi cihazınızdaki diğer cihazların açabileceği LAN adresini döndürür.
+- `publish_website` (Sistem): telefondan genel bağlantı noktasındaki bir siteye hizmet verir. `publish_cloudflare` (Sistem): Bir siteyi Cloudflare tüneli üzerinden hesap olmadan internete koyar ve genel bir https bağlantısı döndürür. `publish_github` (Sistem): jetonunuzla bir projeyi GitHub deposunda (Sayfalar) yayınlar.
+- `git` (Sistem): kaydettiğiniz jetonla klonlama, başlatma, durum, ekleme, taahhüt etme, gönderme, çekme, şube, ödeme, günlük, fark. `github_pr` (Sistem): çekme isteklerini oluşturun, listeleyin, birleştirin ve yorum yapın. `github_actions` (Sistem): iş akışlarını listeleyin, çalıştırın, çalıştırmaları yoklayın ve günlükleri okuyun, böylece derlemeler telefondan bulutta çalıştırılır.
+- `build_app` (Sistem): bu projeyi telefonda Gradle ile oluşturur ve sonucu yükler.
+- `files_panel`, `todo_write`: dosya tarayıcısı ve görev panosu.
+
+## Temsilcinin takip ettiği kalite kuralları
+Eksiksiz düzen, duyarlı tasarım, çalışan JavaScript, animasyon, tutarlı renkler ve yazı tipleri (uygun olduğu yerde koyu ve açık), genel bir şablon değil. Bir açılış sayfası genellikle 300-900 satırdan oluşur; daha büyük şeyler daha fazla.
+
+## Bir şey kırık görünüyorsa
+Önizleme'de Düzelt'e basın veya temsilciye bildirin. Konsolu okur, nedeni giderir, sayfayı yeniden açar ve tekrar kontrol eder.

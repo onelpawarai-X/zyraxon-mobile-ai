@@ -1,0 +1,35 @@
+Voice: speaking, listening and live talk
+## Listening (microphone)
+Settings → Voice & mic → Mic & language.
+- Speech recognition language: the language you speak to the microphone. Change it any time.
+- Keep the mic on (always listening): when on, the microphone stays open. When off, you turn it on yourself.
+- Auto-send when you stop talking: after about 1.5 seconds of silence your sentence is sent by itself. When off, the words wait in the box for you to press Send.
+- The mic button in the message bar and the banner at the top do the same on/off.
+- The microphone is always open for you, even while ZYRAXON is speaking. The moment you start talking it stops and listens, then answers you. Its own voice coming back through the mic is filtered out by comparing the text with its last reply.
+- A sentence is sent once only. If the recogniser later repeats a slightly different version of the same sentence, it is dropped as the same turn.
+
+## Speaking (text-to-speech)
+Settings → Voice & mic → Voice profile.
+- Choose a voice: female (sweet and romantic) or male (deep and confident). The website's own voices are used when ready; the phone's own speech engine is the fallback.
+- Speed and pitch sliders, and "Test voice".
+- "Read answers aloud" switches speaking on or off.
+- If the phone has no speech engine, install Google Speech Services. If the phone has no Bengali voice data, a button lets you download it.
+- Tap the speaking banner to stop the voice. Tap Listen under any message to hear it.
+- ZYRAXON never reads code, links, JSON or tool names aloud.
+
+## Voice lab (voice changer)
+Choose from the server's catalogue by gender (all, girl, boy), age (child, teen, adult, senior), and language (Bengali, Hindi, English, Urdu, Arabic, Tamil, Nepali, Spanish, French, German, Japanese, Korean, Chinese, Russian, Turkish…). "Listen" previews a voice; "Back to default" restores the character's voice. For audio with many voices ask the agent: each part of a dialogue gets its own voice.
+
+## Live voice (speech-to-speech)
+Settings → Voice & mic → Live voice. With a realtime model (Gemini Live, OpenAI Realtime and similar) the model hears the microphone and answers in its own voice, in one stream, and you can interrupt it mid-word. The phone's own speech is switched off in this session so you never hear two voices.
+- Use the model's own voice: on = live talk; off = the phone reads text answers.
+- Status shows: connecting, listening, speaking, waiting.
+- Picking a realtime model turns it on by itself.
+- If no realtime model is loaded, add a Gemini or OpenAI key in AI providers.
+- The voice you picked in the voice profile is used in live mode too.
+
+## Floating eye
+Settings → Aura & theme → Aura & background.
+- A small floating orb that sits over every other app. Tap to turn the mic on or off; long press to open a text box and close it again.
+- Eight designs: eye, glow orb, neon ring, galaxy, orbit, plasma, pulsar, prism. Edge-of-screen placement.
+- Voice commands (wake words): when the app is in the background, saying the name wakes the floating eye and ZYRAXON answers. Defaults: "zyraxon", "hey zyraxon" and common spellings in Bengali and English. Add your own words in any language; remove them any time.

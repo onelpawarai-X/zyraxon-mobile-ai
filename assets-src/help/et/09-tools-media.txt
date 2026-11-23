@@ -1,0 +1,11 @@
+Pildid, heli, video, dokumendid ja kujundus
+- `generate_image` (võrk): tehke kirjeldusest pilt (kirjutage see üksikasjalikult; inglise keel sobib kõige paremini). See kuvatakse vestluses jagamisnuppudega. Mitme jaoks küsi mitut.
+- `generate_audio` (võrk): kõneheli (.mp3) mis tahes tekstist. Dialoogi või loo jaoks andke igale osale oma hääl (sugu, vanus, keel, toon). Paljud keeled, sealhulgas bengali, hindi ja inglise keel.
+- `generate_video`: päriselt monteeritud video (mitte tehisintellekti kaadrid) stseenidest – pildid, klipid, tekst, värvid, jutustus, subtiitrid, muusika. `ffmpeg`: mis tahes otsene redigeerimine – lõikamine, ühendamine, ülekate, subtiitrid, kiirus, helimiks, teisendamine. Võimalikud on 5–10-minutilised videod, mis on üles ehitatud samm-sammult.
+- Edenemine näitab otseülekandena vestluses protsentides; kui see on valmis, saabub fail koos nuppudega Esita ja Jaga.
+- `make_document`: tõeline Word (.docx), Excel (.xlsx) või PowerPoint (.pptx) fail telefonis, installi pole vaja, mis tahes keel. `office_template`: valmis kontoripaberid tühjade kohtade täitmisega (lahkumisavaldus, tööavaldus, arve, CV, äripakkumine, hinnapakkumine, teade, koosoleku protokollid, leping, kuuarvestus ja palju muud).
+- Dokument fotolt: lisa foto (Doc scan). Tekst kopeeritakse täpselt nii, nagu on kirjutatud (märgitakse ebaselged sõnad), tabelist saab .xlsx, muidu .docx.
+- Koosoleku märkmed: heli, ärakirja või teie öeldu põhjal. Dokumendis on kokkuvõte, otsused, tegevusüksused (ülesanne, omanik, tähtaeg) ja valmis meili mustand.
+- `make_design`: plakatid, bännerid, logod, kaardid, lood, kaaned PNG-vormingus ja PDF. `brand_kit`: anda logo või värvid; need salvestatakse, rakenduse teema muutub ja sellest ajast alates kasutavad dokumendid, slaidid ja saidid teie brändi värve.
+- `present_slides`: tegelane räägib slaidikaartide näitamise ajal; slaidid muutuvad hääle lõppedes iseenesest. Kui soovite faili, küsige .pptx-faili.
+- `open_file`: avab tehtu telefoni pärisrakenduses (Word/Docs, Sheets, Slides, PDF, galeriis, brauseris) või eelvaate paneelis; agent kontrollib ekraani veendumaks, et see avanes.

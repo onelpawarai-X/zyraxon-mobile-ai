@@ -1,0 +1,15 @@
+Awọn olupese, awọn awoṣe ati awọn bọtini
+## Awọn olupese
+ZYRAXON (ila ti ara ati Apex aṣoju awọsanma, ti o ni asopọ nigbagbogbo), OpenCode (ipin ọfẹ), Groq (Lama iyara pupọ), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek ati OpenRouter . Ṣafikun bọtini eyikeyi ninu Eto → Awọn olupese & API. Bọtini naa ti wa ni ipamọ lori foonu rẹ, ṣayẹwo lodi si iwe-akọọlẹ olupese, ati awọn awoṣe nwọle sinu oluyanju bi olupese kọọkan ṣe n dahun.
+
+## Yiyan awoṣe
+Lo bọtini awoṣe ninu ọpa ifiranṣẹ tabi Eto → Awoṣe & idanimọ → Awoṣe. Wa pẹlu orukọ, ṣe àlẹmọ Gbogbo tabi Aṣa. Aṣayan rẹ ti wa ni fipamọ ati mu pada ni ifilọlẹ; isọdọtun ko rọpo awoṣe ti o fipamọ. Awọn awoṣe ti samisi Live le sọ ni ohun tiwọn (wo Ohun Live).
+
+## Awọn awoṣe lori ẹrọ
+Eto → Awoṣe & idanimo → Lori ẹrọ. Awọn awoṣe nṣiṣẹ lori foonu pẹlu ko si data nlọ o. Awọn faili tobi (awọn ọgọọgọrun MB si GB diẹ), nitorinaa ṣe igbasilẹ lori Wi-Fi. Wọn ti wa ni akojọ kekere si tobi; lori foonu pẹlu Ramu kekere yan awọn lightest. Ipe irinṣẹ jẹ atilẹyin nipasẹ awọn idii Gemma ati FunctionGemma. Àmi Hugging Face kan wa fun awọn faili ti o ni gated nikan. Awọn awoṣe ti kojọpọ ni a ranti.
+
+## Oju opo wẹẹbu ZYRAXON naa
+zyraxonai.lovable.app: ṣẹda akọọlẹ kan (imeeli tabi Google), ṣii Eto, Key API Key / Token Wiwọle, ṣẹda bọtini kan ki o lẹẹmọ rẹ sinu app naa. Laisi bọtini kan o tun le lo app pẹlu awọn awoṣe ẹrọ ati awọn irinṣẹ agbegbe.
+
+## Awọn idiyele ati data
+Awọn olupese awọsanma ṣe owo fun ọ gẹgẹbi awọn ofin tiwọn. Pẹlu "Lori-ẹrọ nikan" titan ohunkohun ko firanṣẹ si eyikeyi olupese.

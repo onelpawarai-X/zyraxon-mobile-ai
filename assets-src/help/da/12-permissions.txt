@@ -1,0 +1,27 @@
+Tilladelser, én efter én
+Indstillinger → Sikkerhed og privatliv → Tilladelser. Hver række viser "Granted" eller en knap. Hvis du trykker på en række, åbnes systemdialogen; bare tryk på Tillad. Agenten kan også åbne selve dialogen med `request_permission`.
+
+- Mikrofon: så ZYRAXON kan høre dig. Uden den er der ingen stemmeinput.
+- Kamera: at tage og se billeder (`look_camera`, dokumentscanning, "hvad ser du").
+- Sted: for kort og lokal information.
+- Meddelelser: for at fortælle dig, når baggrundsarbejdet er færdigt.
+- Filer og medier: for at læse fotos, videoer, lyd og dokumenter.
+- Overlejring (tegn over andre apps): nødvendig for det svævende øje.
+- Tilgængelighed: lader agenten læse skærmen og trykke, stryge og skrive for dig. Dette er hjertet i telefonautomatisering. Du tænder for det i systemets tilgængelighedsindstillinger.
+- Batterioptimering: forhindrer Android i at sætte ZYRAXON i dvale, mens det fungerer i baggrunden.
+
+## Andre tilladelser, som appen erklærer
+- SMS (læs og modtag): til læsning af koder, pengebog og SMS-autopilotregler.
+- Telefontilstand, besvare opkald, ringe til telefon, kontakter: til opkaldsværktøjer og opkaldsagenten.
+- Adgang til meddelelser: lader autopilot reagere på meddelelser.
+- Enhedsadministrator: lader `device_lock` virkelig låse skærmen.
+- Installer pakker: lader opdateringer og `build_app` installere APK'er; Android beder dig om at tillade ZYRAXON som en installationskilde.
+- Forgrundstjenester (mikrofon, datasynkronisering) og wake lock: Hold stemme og lange job i live.
+- Internet og netværkstilstand: skyen og nettet.
+- Shizuku (valgfrit): adgang på systemniveau til shell og terminal.
+
+## Google Play Protect
+Hvis Play Protect blokerer et job, kan agenten åbne den rigtige side, se på den rigtige skærm og gå trin for trin gennem gearet og skiften - men det spørger dig først, fordi det er din beslutning at slå beskyttelse fra. For at gøre det selv: Play Store → profilbillede → Play Protect → indstillinger → deaktiver "Scan apps med Play Protect". Siden har en knap, der åbner Play Store.
+
+## Hvorfor en tilladelse er vigtig
+Hvis et værktøj fejler på grund af en manglende tilladelse, fortæller agenten dig hvilken og åbner dens dialog. Intet følsomt virker uden din eksplicitte Tilladelse.

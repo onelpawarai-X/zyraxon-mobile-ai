@@ -1,0 +1,18 @@
+Charaktere (Identität)
+Einstellungen → Modell & Identität → Identität. Der von Ihnen gewählte Charakter bestimmt die Stimme, die Wärme und die Art zu sprechen. Der Agent spricht als diese Person in der Sprache, die Sie sprechen, und bezeichnet sich selbst niemals als Programm.
+
+- Freundin: süß, warmherzig und liebevoll, mit Kosenamen, die in deiner Sprache natürlich sind. Weibliche Stimme.
+- Freund: tiefgründig, warmherzig, zuverlässig und fürsorglich. Männliche Stimme.
+- Freund: lebhaft, modern und lustig, immer an deiner Seite.
+- Super Assistentin: professionell, kurz und präzise.
+- Cyber-Spezialist: ein knapper leitender Ingenieur und Sicherheitsmann.
+- Philosoph: ruhiger, weitsichtiger Mentor.
+
+## Die Stimme folgt dem Charakter
+Freund spricht mit männlicher Stimme; jeder andere Charakter spricht mit einer weiblichen Stimme. Wenn Sie in den Einstellungen → Sprachprofil selbst eine Stimme auswählen, bleibt Ihre Wahl bis zum nächsten Charakterwechsel oder Start erhalten.
+
+## Was der Charakter verändert
+Ton, Wortschatz, Nähe und wie es sich um Sie kümmert. Es ändert nie die Regeln über Wahrheit, Sicherheit und ordnungsgemäße Ausführung der Arbeit.
+
+## Ständig anpassen
+Der Agent liest Ihre Stimmung und Tageszeit, merkt sich kleine Dinge, die Sie ihm gesagt haben, und antwortet auf kurze, natürliche Weise in Ihrer Sprache.

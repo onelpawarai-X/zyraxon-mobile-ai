@@ -1,0 +1,51 @@
+La schermata della chat e ogni pulsante
+## Parte superiore dello schermo
+- Menu: apre il cassetto di sinistra con le tue chat.
+- Chat/Terminale/Codice/Anteprima: cambia la vista principale. La chat è la conversazione; Terminal è il terminale vero e proprio; Il codice è l'area di lavoro del file con Git; L'anteprima è il browser integrato.
+- Aura: mostra la schermata del personaggio animato. I suoi pulsanti laterali sono Mic, Chat (torna alla conversazione) e Aggiorna (ricollega il cloud e ricarica l'elenco dei modelli).
+- Impostazioni: apre le otto sezioni delle impostazioni.
+- Un banner mostra lo stato del microfono: "Ascolto...", "Microfono spento - tocca" o "Parlando... tocca per interrompere".
+- Quando una nuova versione è pronta, viene visualizzato un banner di aggiornamento con i pulsanti Scarica, Installa e Consenti (vedi Aggiornamenti).
+
+## Il menu di sinistra (chat)
+- "+ Nuova chat": avvia una nuova conversazione.
+- Ogni chat nell'elenco mostra un segno di corsa mentre l'agente è occupato lì. La matita lo rinomina; la croce lo cancella (dopo una conferma: tutti i messaggi in esso contenuti vengono cancellati).
+- Tema: scegli Orrore (sangue, fuoco e ombra), Oscuro (vetro scuro pulito) o Luce (vetro brillante).
+
+## La barra dei messaggi
+- Allega (graffetta): foto della galleria, foto della fotocamera, scansione di documenti (trasforma il testo di una foto in un file .docx modificabile), condividi lo schermo in modo che l'agente possa vederlo ("Visualizzazione schermo" attivata o disattivata) e file audio o video. Gli elementi allegati vengono visualizzati come chip; la croce ne rimuove uno, "Cancella tutto" rimuove tutto.
+- Pulsante modalità: Agente o Compila.
+- Pulsante microfono: attiva o disattiva il microfono sempre in ascolto.
+- Pulsante Modello: apre l'elenco dei modelli con una casella di ricerca. I modelli contrassegnati con "Live" possono parlare con la propria voce.
+- Invia: invia il messaggio. Mentre l'agente è in funzione, questo diventa Stop.
+- L'input dice "Cosa dovrei fare?" in modalità Agente e "Cosa dovrei creare? In breve" in modalità Compila.
+
+## Messaggi
+- Copia, Condividi e Ascolta (legge il messaggio ad alta voce; premi di nuovo per interrompere) si trovano sotto ciascun messaggio.
+- "Pensare" mostra il ragionamento del modello quando il modello lo fornisce.
+- Il codice scritto dall'agente appare in tempo reale in una casella, riga per riga, con Copia, Scarica e Apri.
+- I file creati dall'agente vengono visualizzati come schede con Apri (nell'app reale del telefono), Riproduci, Condividi e "Altra app...".
+- Immagini, audio e video mostrano una percentuale di progresso in tempo reale mentre vengono realizzati.
+- Le schede strumenti mostrano cosa sta facendo l'agente: in esecuzione, completato, riuscito o non riuscito.
+
+## Pannelli (cose da fare, strumenti, file, sub-agenti)
+- Scheda Todo: il piano che l'agente scrive per un grosso lavoro e il suo avanzamento (n/totale fatto). Puoi aggiungere la tua attività ed eliminare attività.
+- Strumenti: l'elenco di tutte le chiamate degli strumenti, con stato in tempo reale.
+- File: ogni file creato dall'agente, con Apri, Condividi, Pubblica ed Elimina (con conferma) e una casella di ricerca.
+- Agenti secondari: agenti di supporto in esecuzione in background, con un pulsante Interrompi.
+- Scheda Terminale: il terminale vero e proprio (vedi capitolo File e Terminale).
+
+## Pannello di anteprima
+- Indietro, Avanti, Interrompi, Ricarica e una barra degli indirizzi (digita un indirizzo Web o cerca Google).
+- Apri file: mostra Word, Excel, PowerPoint, PDF, immagini, Markdown, CSV, codice e siti direttamente all'interno dell'app.
+- Dimensioni: riduci o ingrandisci il pannello.
+- Correzione: invia i problemi della pagina (errori della console, caricamenti non riusciti) all'agente, che li risolve in background.
+- Scegli una parte: tocca una parte della pagina, quindi comunica all'agente cosa fare con quella parte.
+- Pulsante Agente: chiedi qualcosa sulla pagina; l'agente ne riceve una foto.
+- Apertura rapida: collegamenti alle pagine recenti.
+
+## Area di lavoro del codice
+- Lato sinistro: i tuoi file (nuovo file, apri, salva).
+- Editor: mostra linee e caratteri; le modifiche apportate dall'agente vengono visualizzate immediatamente.
+- Git: nuovo repository, clone da GitHub, scansione, stato, commit con un messaggio, push, pull, branch, token.
+- Richieste pull: crea, unisci, chiudi. Flussi di lavoro: elenca le esecuzioni, esegue un flusso di lavoro. Il registro mostra l'output del comando.

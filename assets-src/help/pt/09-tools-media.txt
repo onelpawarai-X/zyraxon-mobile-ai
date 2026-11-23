@@ -1,0 +1,11 @@
+Fotos, áudio, vídeo, documentos e design
+- `generate_image` (rede): faça uma imagem a partir de uma descrição (escreva-a detalhadamente; o inglês funciona melhor). Aparece no chat com botões de compartilhamento. Para vários, peça vários.
+- `generate_audio` (rede): áudio falado (.mp3) de qualquer texto. Para um diálogo ou história, dê a cada parte uma voz própria (sexo, idade, idioma, tom). Muitos idiomas, incluindo bengali, hindi e inglês.
+- `generate_video`: um vídeo editado real (não imagens de IA) de cenas - imagens, clipes, texto, cor, narração, legendas, música. `ffmpeg`: qualquer edição direta — cortar, juntar, sobrepor, legendas, velocidade, mixagem de áudio, converter. São possíveis vídeos de 5 a 10 minutos, construídos passo a passo.
+- O progresso é mostrado ao vivo como uma porcentagem no chat; quando terminar, o arquivo chega com os botões Play e Share.
+- `make_document`: um arquivo Word (.docx), Excel (.xlsx) ou PowerPoint (.pptx) real no telefone, sem necessidade de instalação, em qualquer idioma. `office_template`: papéis de escritório prontos com espaços em branco para preencher (formulário de licença, formulário de emprego, fatura, currículo, proposta comercial, cotação, aviso, ata de reunião, contrato, contas mensais e muito mais).
+- Documento de uma foto: anexe uma foto (digitalização de documento). O texto é copiado exatamente como está escrito (palavras pouco claras são marcadas), uma tabela se torna .xlsx, caso contrário, .docx.
+- Notas da reunião: do áudio, da transcrição ou do que você disser. O documento contém um resumo, decisões, itens de ação (tarefa, proprietário, data de vencimento) e um rascunho de e-mail pronto.
+- `make_design`: cartazes, banners, logotipos, cartões, histórias, capas como PNG e PDF. `brand_kit`: forneça um logotipo ou cores; eles são salvos, o tema do aplicativo muda e, a partir daí, documentos, slides e sites usam as cores da sua marca.
+- `present_slides`: o personagem fala enquanto os slides são exibidos; os slides mudam sozinhos quando a voz termina. Peça um arquivo .pptx se desejar um arquivo.
+- `open_file`: abre o que foi feito no aplicativo real do telefone (Word/Docs, Sheets, Slides, PDF, galeria, navegador) ou no painel Preview; o agente verifica a tela para ter certeza de que ela foi aberta.

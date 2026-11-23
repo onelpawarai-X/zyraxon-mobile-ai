@@ -1,0 +1,14 @@
+Odstraňování problémů
+- Žádná odpověď: zkontrolujte svůj internet a klíč API (Nastavení → Providers & API ukazuje skutečnou chybu). Zkuste jiný model nebo model na zařízení.
+- Mikrofon nedělá nic: povolte povolení mikrofonu; zaškrtněte "Nechte mikrofon zapnutý"; zkontrolujte rozpoznávací jazyk.
+- ZYRAXON slyší sám sebe: toto je filtrováno podle textu; pokud k tomu stále dochází, snižte hlasitost nebo použijte sluchátka.
+- Věta se objeví dvakrát: opraveno v aktuálních verzích; aktualizujte aplikaci.
+- Nebude klepat ani číst obrazovku: zapněte službu usnadnění (Nastavení → Oprávnění).
+- Zastaví se na pozadí: povolte upozornění a výjimku optimalizace baterie; překrytí pro plovoucí oko.
+- Nástroj stále žádá o povolení: změňte úroveň v Nastavení → Automatizace nebo přijměte kartu.
+- Play Protect něco blokuje: podívejte se do kapitoly Oprávnění nebo nechte kroky vést agenta.
+- Terminál nebo ZYRAXON OS se nespustí: počkejte na první rozbalení při spuštění aplikace; zkontrolujte volné úložiště.
+- Aktualizace se nenainstaluje: povolte ZYRAXON jako zdroj instalace.
+- Nelze publikovat: přidejte token GitHub pro GitHub; pro veřejný odkaz může agent použít tunel.
+- Kapitola zobrazuje angličtinu: tato kapitola nemá v tomto sestavení žádný text ve vašem jazyce; aktualizujte aplikaci.
+- Něco zvláštního: použijte Nastavení → Navigace → Nová relace pro zahájení čištění (vymaže pouze historii chatu; paměť zůstane).

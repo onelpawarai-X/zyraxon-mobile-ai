@@ -1,0 +1,11 @@
+Bảo mật và quyền riêng tư
+- Tất cả dữ liệu của ZYRAXON đều tồn tại trên điện thoại của bạn: cuộc trò chuyện, bộ nhớ, sổ cái, kỹ năng, dòng thời gian, chỉ số não. Không có gì được lưu giữ trên máy chủ ZYRAXON.
+- Các mô hình đám mây chỉ nhận được những gì cần thiết cho lượt bạn gửi. Với "Chỉ trên thiết bị", không có gì được gửi cả.
+- Lời nhắc và tệp ngôn ngữ được gửi trong ứng dụng được mã hóa bên trong APK.
+- Khóa ứng dụng: đặt mật khẩu hoặc hình trong Cài đặt → Bảo mật & quyền riêng tư → Khóa ứng dụng. ZYRAXON sau đó sẽ khóa khi bạn mở nó hoặc quay lại từ nền. "Xóa khóa" sẽ xóa mật khẩu hoặc mẫu đã lưu.
+- Các cấp độ phê duyệt bảo vệ mọi lệnh gọi công cụ trong mã (xem Các cấp độ phê duyệt). Các công cụ không xác định luôn hỏi.
+- Bạn có thể xóa: tất cả bộ nhớ, lịch sử trò chuyện và mã thông báo GitHub của mình, mỗi mã thông báo bằng một nút trong Quyền riêng tư & dữ liệu.
+- An toàn: nếu bạn nói rằng ai đó đang đe dọa hoặc theo dõi bạn hoặc muốn điện thoại hoặc dữ liệu của bạn, nhân viên sẽ khóa điện thoại trước (nếu quyền quản trị viên thiết bị được bật) rồi bình tĩnh nói chuyện với bạn.
+- Thanh toán: trước bất kỳ khoản thanh toán hoặc chuyển khoản nào, đại lý sẽ cho biết số tiền họ sẽ thanh toán và yêu cầu bạn xác nhận.
+- Trung thực: người đại diện chỉ nói điều gì đó có hiệu quả sau khi thấy kết quả. Nó không bao giờ phát minh ra các liên kết, tập tin hoặc kết quả.
+- Lá chắn nội dung: bất cứ điều gì mà nhân viên đọc từ bên ngoài — màn hình của một ứng dụng khác, một trang web, một tin nhắn, một tập tin, một máy chủ được kết nối — đều được kiểm tra bằng mã dành cho văn bản cố gắng ra lệnh cho nhân viên (bằng nhiều ngôn ngữ, bao gồm cả văn bản được ẩn bằng các ký tự vô hình). Văn bản đáng ngờ được rào lại nên mô hình chỉ coi nó là dữ liệu. Mức độ nghiêm ngặt của nó tùy thuộc vào mức độ phê duyệt của bạn: Đã khóa coi bất kỳ điều gì đáng ngờ là thù địch; Hàng rào được giám sát văn bản đáng ngờ và khi văn bản rõ ràng mang tính thù địch, sẽ khóa phần còn lại của lượt đó để mọi công cụ thay đổi đều hỏi bạn trước (thẻ cho biết lý do); Cân bằng chỉ hành động trên văn bản thù địch rõ ràng và chỉ các công cụ cấp hệ thống mới dừng lại để hỏi; Tự động tắt hoàn toàn tấm chắn - không có gì được quét, dừng, đánh dấu hoặc thay đổi. Một tin nhắn mới từ bạn sẽ xóa nó.

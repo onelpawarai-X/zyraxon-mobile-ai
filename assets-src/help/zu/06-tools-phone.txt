@@ -1,0 +1,34 @@
+Amathuluzi wokuzenzakalela kwefoni
+I-ejenti ilawula ifoni yakho ngamathuluzi. Awukaze uzibize ngokwakho; usho okufunayo bese i-ejenti ikhetha amathuluzi. Lesi sahluko sibonisa wonke amathuluzi athinta ifoni, nokuthi igadwa kanjani (bheka amazinga okuvunyelwa: Iphephile, Okomuntu Siqu, Uhlelo).
+
+## Ukuvula nokuthola
+- `open_app` (Kuphephile): vula noma yiluphi uhlelo lokusebenza olufakiwe ngegama noma ngephakheji. `list_apps` (Kuphephile): faka uhlu lwezinhlelo zokusebenza ezifakiwe. `open_settings` (Kuphephile): vula ikhasi lezilungiselelo zesistimu (ukufinyeleleka, imbondela, izaziso, izinhlelo zokusebenza, Wi-Fi, ibhethri, Play Protect). `launch_url` (Kuphephile): vula isixhumanisi esipheqululini. `youtube_play` (Kuphephile): vula YouTube emiphumeleni yosesho yalokho okucelile, bese ukudlale.
+
+## Ukubona isikrini
+- `read_screen` (Okomuntu siqu): ifunda wonke umbhalo nezinto ezisesikrinini ezinezindawo zokuthepha. `screen_shot` (Okomuntu siqu): isithombe-skrini sangempela. Lokhu kudinga imvume yokufinyelela.
+- `look_camera` (Okomuntu siqu): uthatha isithombe esisodwa ngekhamera bese uyasibheka. `read_media` (Okomuntu siqu): ufunda isithombe, umsindo noma ividiyo (esendleleni noma isixhumanisi) ukuze imodeli ikuqonde.
+
+## Ukwenza esikrinini
+- `tap` (Okomuntu siqu): thepha iphoyinti. `tap_text` (Okomuntu siqu): thepha into enale lebula, iphephe kakhulu kunezixhumanisi. `swipe` (Okomuntu siqu): skrola noma ukuthinta okungemuva. `type_text` (Okomuntu siqu): thayipha ungene enkambini okugxilwe kuyo. `press_key` (Okomuntu siqu): emuva, ikhaya, okwakamuva, izaziso, izilungiselelo ezisheshayo, ukukhiya.
+- Izenzo zesikrini ziqhuba okukodwa ngesikhathi, ngokulandelana, futhi ngemva kwaso ngasinye umenzeli ubheka isikrini esisha.
+
+## Ifoni, imiyalezo kanye nebhodi lokunamathisela
+- `call_dial` (Okomuntu siqu): shaya ucingo ngenombolo noma igama loxhumana naye. `call_state` (Okomuntu siqu): ingabe ucingo luyakhala noma luyasebenza? `call_answer` (Okomuntu siqu): impendulo. `call_hangup` (Okomuntu siqu): vala ucingo.
+- `read_sms` (Okomuntu siqu): funda i-SMS entsha, isb. ikhodi ye-OTP; ingahlunga ngombhalo noma umthumeli.
+- `clipboard_read` kanye `clipboard_write` (Okomuntu siqu): funda noma bhala ibhodi lokunamathisela.
+- `notify` (Okomuntu siqu): thumela Android isaziso sangempela. `share` (Okomuntu siqu): vula ishidi lokwabelana ngombhalo, isixhumanisi noma ifayela. `channel_post` (Isistimu): vula Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail noma i-SMS enombhalo wakho ogcwaliswe kusengaphambili, olungele ukuthunyelwa.
+
+## Isimo namaqiniso wesistimu
+- `network_status` (Kuphephile): ku-inthanethi noma cha, Wi-Fi noma idatha yeselula, Wi-Fi igama. `sys_info` (Kuphephile): Android inguqulo, imodeli, i-CPU, i-RAM, isitoreji, uhlelo lokusebenza lwamanje. `platform_info` (Kuphephile): lapho umenzeli esebenza khona. `process_list` (Kuphephile): izinqubo ezisebenzayo.
+
+## Izimvume nesikrini
+- `request_permission` (Kuphephile): ivula ibhokisi lemvume yesistimu ngokuthepha okukodwa uma ithuluzi lehluleka ukuthola imvume engekho. `device_lock` (Isistimu): khiya isikrini ngokwangempela, noma setha imvume eyenza kube nokwenzeka. `floating_bubble` (Okomuntu siqu): vula noma uvale i-orb entantayo.
+- `voice_change` (Okomuntu siqu): shintsha isivinini sokukhuluma, ukuphakama noma ubulili. `live_voice` (Uhlelo): vula noma uvale imodi ebukhoma yenkulumo-kuya-enkulumweni.
+
+## Abasizi be-interface
+- `code_box` kanye ne-`files_panel`: vula ibhokisi lekhodi ebukhoma noma isiphequluli sefayela ukuze ubuke umsebenzi. `todo_write`: ibhodi lomsebenzi elibukhoma.
+
+## Amathiphu
+- Ungakwazi ukuhlanganisa: "Vula Izilungiselelo, thola Wi-Fi bese ungitshela igama lenethiwekhi". Umenzeli ufunda isikrini ngemva kwesinyathelo ngasinye bese enquma esilandelayo.
+- Uma ukuthepha kungenzi lutho, i-ejenti iphinda ifunde isikrini bese izama into ehlukile; alilokothi lithephe ngokungaboni.
+- Uma Play Protect evimba okuthile, umenzeli angakwazi ukuhamba nawe kuzilungiselelo (bona Izimvume).

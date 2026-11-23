@@ -1,0 +1,27 @@
+Faili, terminālis un sistēma
+## Faili
+- `read_file`, `list_dir`, `find_files`, `grep_files` (drošs): lasīt, uzskaitīt, atrast pēc nosaukuma shēmas un meklēt tekstu failos.
+- `write_file`, `edit_file`: izveidot vai mainīt failus. `edit_file` dara visu: jauns fails, pilnīga pārrakstīšana vai precīza atrašana un aizstāšana; kods parādās tiešraidē tērzēšanā. `delete_file` (Sistēma): dzēst failu vai mapi.
+- Ir atļauta jebkura mape (/sdcard, lejupielāde, dokumenti, SD karte ...). Norādiet pilnu ceļu, un tas tiks izmantots, kā rakstīts.
+- Aģents atver to, ko tas veido: `open_file` (drošs) atver failu tālruņa īstajā lietotnē vai ZYRAXON priekšskatījumā.
+
+## Termināļi (divi īsti)
+- android: paša tālruņa apvalks (busybox plus `sh`), lietojumprogrammas smilškastes iekšpusē. `run_shell` (Sistēma) palaiž komandu tur, ārpus redzesloka.
+- ZYRAXON OS: ZYRAXON paša pilna Unix sistēma, kas iebūvēta lietotnē: bash, apt/pkg, real git, python, node, clang. Tas darbojas bezsaistē. `os_run` (Sistēma) palaiž tur komandu.
+- `terminal_run` (Sistēma): vada rindiņu cilnē Terminālis, kuru skatāties, lai jūs varētu redzēt, kā tas darbojas un pārņemt. Izmantojiet shell android vai ZYRAXON OS. `terminal_open` parāda cilni Terminālis uz priekšu (tikai tad, kad to lūdzat).
+- `system_shell` (Sistēma): sistēmas līmeņa komanda virs lietotnes smilškastes, tāpat kā sistēmas apvalks; ar Shizuku vai sakni tas var sasniegt daudz vairāk.
+- Nav noklusējuma laika ierobežojuma; liels `apt upgrade` vai build darbojas līdz beigām.
+
+## Shizuku (piekļuve sistēmai)
+`setup_shizuku` (Sistēma) iestata Shizuku, kas iekļauts ZYRAXON: pārbaudiet statusu, instalējiet, atveriet, pieprasiet atļauju. Tikai jūs varat pieskarties Instalēt un atļaut; aģents pastāsta soli vienā rindā un dara visu pārējo.
+
+## Ilgi darbi un laiks
+- `background_command` (Sistēma): komanda, kas turpina darboties pēc lietojumprogrammas aizvēršanas (liela lejupielāde, klonēšana, izveide), ar paziņojumu un pogu Apturēt.
+- `schedule_command` (Sistēma): izpildiet komandu reāllaikā ("pēc 10 minūtēm", "plkst. 2:00"); Android aiztur taimeri, tāpēc tas darbojas, kad lietotne ir aizvērta.
+- `wait` (Drošs): nogaidiet ar nolūku (sekundes, līdz atveras ports, tiek parādīts fails, tiek pabeigta komanda), nevis minējat.
+
+## ZYRAXON OS lietojumi
+Instalējiet pakotnes (`apt install …`), palaidiet Python vai Node skriptus, kompilējiet C, izmantojiet git, palaidiet serverus, zip un unzip, curl, ffmpeg. Sistēma tiek klusi izpakota, kad lietotne tiek startēta, un tā paliek pārstartēšanas laikā.
+
+## Termināļa ekrāns
+Cilne Terminālis ir īsts terminālis ar cilni ⌘ ZX. Ierakstiet savas komandas vai skatieties aģenta komandas. Navigācijas ekrānā sadaļā Iestatījumi ir saīsne uz sistēmas čaulu un poga Jauna sesija, kas notīra tērzēšanas vēsturi, lai sāktu no jauna.

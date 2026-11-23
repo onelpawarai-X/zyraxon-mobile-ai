@@ -1,0 +1,20 @@
+Automatisierungs-Hub
+Einstellungen → System → Automatisierungs-Hub. Jede Schaltfläche für die einzelnen Aktionen von ZYRAXON befindet sich an einem Ort auf sechs Registerkarten. Jede Registerkarte beginnt mit einer kurzen Erklärung der Funktionsweise.
+
+## Fähigkeiten
+Bringen Sie ZYRAXON eine Aufgabe auf zwei Arten bei: Erzählen Sie sie im Chat („diese Aufgabe lernen“) oder drücken Sie die Aufnahmetaste und erledigen Sie die Aufgabe selbst in einer anderen App. Kommen Sie dann zurück und drücken Sie Stopp. Der Barrierefreiheitsdienst muss aktiviert sein, sonst sind Ihre Taps nicht sichtbar. Was gelernt wurde, erscheint unter „Erlernte Fähigkeiten“ und kann wiederholt oder gelöscht werden.
+
+## Autopilot
+Regeln wie „Wenn das passiert, tu das“. Wenn das Ereignis eintritt, wacht ZYRAXON von selbst auf und erledigt die Arbeit, ohne zu fragen. Sie können eine Regel auch erstellen, indem Sie sie im Chat sagen. Für jede Regel wird angezeigt, wie oft sie ausgeführt wurde.
+
+## Geld
+Liest die SMS von jeder Bank oder Geldbörse in jedem Land (PayPal, M-Pesa, UPI, Pix, bKash, Karten…) und führt ein Buch über Einnahmen, Ausgaben, Gebühren und Saldo. Sie können ein Budget festlegen und eine Warnung erhalten, wenn Sie es überschreiten. Es funktioniert am Telefon und es wird nichts irgendwohin gesendet.
+
+## Zeitleiste
+Alles, was ZYRAXON getan hat, ist hier geschrieben. Das Schreiben, Bearbeiten und Löschen von Dateien kann mit einer einzigen Schaltfläche rückgängig gemacht werden. Ein ausgeführter Befehl kann nicht rückgängig gemacht werden.
+
+## Gehirn
+Durchsucht Ihre Dateien (Text, Word, Excel, PowerPoint, CSV) und, wenn Sie es zulassen, Ihre SMS, ohne Internet und in jeder Sprache. Drücken Sie zuerst „Index“ und dann „Suchen“.
+
+## Rufen Sie den Agenten an
+Wenn Sie einen Anruf nicht entgegennehmen können, antwortet ZYRAXON, spricht in der Sprache des Anrufers, erfährt den Namen und den Grund und gibt Ihnen eine Zusammenfassung, wenn der Anruf beendet ist. Fünfzehn Sprachen verwenden schnelle integrierte Regeln; Jede andere Sprache wird vom Modell verarbeitet, das in der Sprache des Anrufers antwortet. Wörter, die „Auf Wiedersehen“, „Dringend“ oder „Spam“ bedeuten, werden in allen Sprachen gleichzeitig verstanden. Auf der Registerkarte werden Zusammenfassungen der abgefangenen Anrufe aufgeführt.

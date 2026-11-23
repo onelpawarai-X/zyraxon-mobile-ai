@@ -1,0 +1,20 @@
+Automation hub
+Settings → System → Automation hub. Every button for what ZYRAXON can do by itself is in one place, in six tabs. Each tab starts with a short explanation of how it works.
+
+## Skills
+Teach ZYRAXON a task in two ways: tell it in chat ("learn this task"), or press the record button and do the task yourself in another app, then come back and press Stop. The Accessibility service must be on, or your taps cannot be seen. What it learned appears under "Learned skills" and can be replayed or deleted.
+
+## Autopilot
+Rules of the kind "when this happens, do that". When the event happens ZYRAXON wakes by itself and does the work without asking. You can also create a rule by saying it in chat. Each rule shows how many times it has run.
+
+## Money
+Reads the SMS from any bank or wallet in any country (PayPal, M-Pesa, UPI, Pix, bKash, cards…) and keeps one ledger of income, spending, fees and balance. You can set a budget and get a warning when you pass it. It works on the phone, and nothing is sent anywhere.
+
+## Timeline
+Everything ZYRAXON did is written here. File writes, edits and deletions can be undone with one button. A command that was run cannot be undone.
+
+## Brain
+Searches your files (text, Word, Excel, PowerPoint, CSV) and, if you allow it, your SMS, without the internet and in any language. Press "Index" first, then search.
+
+## Call agent
+When you cannot take a call, ZYRAXON answers, speaks in the caller's own language, learns the name and the reason, and gives you a summary when the call ends. Fifteen languages use fast built-in rules; every other language is handled by the model, which answers in the caller's language. Words that mean goodbye, urgent or spam are understood in all languages at once. Summaries of caught calls are listed in the tab.

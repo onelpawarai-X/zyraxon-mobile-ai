@@ -1,0 +1,34 @@
+Nástroje na automatizáciu telefónu
+Agent ovláda váš telefón pomocou nástrojov. Nikdy ich nevoláš sám; poviete, čo chcete, a agent vyberie nástroje. V tejto kapitole sú uvedené všetky nástroje, ktoré sa dotýkajú telefónu, a ako sú chránené (pozrite si Úrovne schválenia: Bezpečné, Osobné, Systémové).
+
+## Otvorenie a nájdenie
+- `open_app` (Safe): otvorte ľubovoľnú nainštalovanú aplikáciu podľa názvu alebo balíka. `list_apps` (Safe): zoznam nainštalovaných aplikácií. `open_settings` (Safe): otvorenie stránky nastavení systému (dostupnosť, prekrytie, upozornenia, aplikácie, Wi-Fi, batéria, Play Protect). `launch_url` (Bezpečné): otvorte odkaz v prehliadači. `youtube_play` (Safe): otvorte YouTube vo výsledkoch vyhľadávania na to, čo ste požadovali, a prehrajte to.
+
+## Vidieť obrazovku
+- `read_screen` (Osobné): prečíta každý text a prvok na obrazovke pomocou pozícií klepnutia. `screen_shot` (Personal): skutočná snímka obrazovky. Tieto potrebujú povolenie na prístupnosť.
+- `look_camera` (Osobné): urobí jednu fotografiu pomocou fotoaparátu a pozrie si ju. `read_media` (Osobné): prečíta obrázok, zvuk alebo video (z cesty alebo odkazu), aby mu model porozumel.
+
+## Pôsobenie na obrazovke
+- `tap` (Osobné): klepnite na bod. `tap_text` (Osobné): klepnite na prvok s týmto štítkom, ktorý je bezpečnejší ako súradnice. `swipe` (Osobné): posúvanie alebo gesto späť. `type_text` (Osobné): zadajte do vybraného poľa. `press_key` (Osobné): späť, domov, posledné, upozornenia, rýchle nastavenia, zámok.
+- Akcie na obrazovke prebiehajú jedna po druhej, v poradí a po každej sa agent pozrie na novú obrazovku.
+
+## Telefón, správy a schránka
+- `call_dial` (Osobné): zavolajte podľa čísla alebo mena kontaktu. `call_state` (Osobné): zvoní alebo je hovor aktívny? `call_answer` (Osobné): odpoveď. `call_hangup` (osobné): zaveste.
+- `read_sms` (Osobné): prečítajte si najnovšiu SMS, napr. OTP kód; môžete filtrovať podľa textu alebo odosielateľa.
+- `clipboard_read` a `clipboard_write` (osobné): čítanie alebo zápis do schránky.
+- `notify` (Osobné): uverejnite skutočné Android oznámenie. `share` (Osobné): otvorte zdieľaný hárok s textom, odkazom alebo súborom. `channel_post` (Systém): otvorte Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail alebo SMS s predvyplneným textom, pripraveným na odoslanie.
+
+## Stav a systémové fakty
+- `network_status` (Safe): online alebo nie, Wi-Fi alebo mobilné dáta, Wi-Fi meno. `sys_info` (Bezpečné): Android verzia, model, CPU, RAM, úložisko, aktuálna aplikácia. `platform_info` (Safe): kde je spustený agent. `process_list` (Safe): spustené procesy.
+
+## Povolenia a obrazovka
+- `request_permission` (Safe): otvorí dialógové okno systémových povolení jedným klepnutím, keď nástroj zlyhá pre chýbajúce povolenie. `device_lock` (Systém): skutočné uzamknutie obrazovky alebo nastavenie povolenia, ktoré to umožňuje. `floating_bubble` (Osobné): zapnite alebo vypnite plávajúcu guľu.
+- `voice_change` (Osobné): zmeňte rýchlosť reči, výšku hlasu alebo pohlavie. `live_voice` (Systém): zapnutie alebo vypnutie režimu živého prevodu reči na reč.
+
+## Pomocníci rozhrania
+- `code_box` a `files_panel`: otvorte okno so živým kódom alebo prehliadač súborov, aby ste mohli sledovať prácu. `todo_write`: aktuálny panel úloh.
+
+## Tipy
+- Môžete reťaziť: „Otvorte Nastavenia, nájdite Wi-Fi a povedzte mi názov siete“. Agent po každom kroku prečíta obrazovku a rozhodne o ďalšom kroku.
+- Ak klepnutie neurobí nič, agent si znova prečíta obrazovku a vyskúša iný prvok; nikdy neklepe naslepo.
+- Ak Play Protect niečo zablokuje, agent s vami môže prejsť nastaveniami (pozri Povolenia).

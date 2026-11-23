@@ -1,0 +1,45 @@
+Készségek, robotpilóta, pénz, idővonal és visszavonás, agy, hívóügynök és memória
+Ezeket mind úgy használod, hogy beszélsz: mondd el, amit akarsz, és az ügynök hívja a megfelelő eszközt. Itt minden művelet fel van sorolva a lehetőségeivel együtt.
+
+## Készségek – cselekvéssel tanítani
+A készség egy telefonos feladat, amelyet az ügynök úgy tanult meg, hogy egyszer végignézte, ahogy megcsinálja. Tárolja az egyes elemek újbóli megtalálásának módját (azonosítóját, szavait és szomszédait, nem a képernyő pozícióját), így tovább működik, ha az alkalmazás elrendezése megváltozik.
+- Adjon hozzá egy képességet:`skill_record`(Személyes). Mondja azt, hogy „tanuld meg ezt a következő néven: <név>”.`action: start`(névvel) megkezdi a felvételt; majd végezze el a feladatot – nyissa meg az alkalmazást, koppintson, gépeljen, nyomja meg a billentyűket; minden lépést rögzítenek.`action: stop`megmenti. A megállóban át lehet menni`params`a beírt értékek paraméterekké alakításához (például a telefonszám lesz`number`, az összeg válik`amount`) és a`description`. `action: status`jelzi, hogy a felvétel be van-e kapcsolva.
+- Futtasson egy készséget:`skill_run`(Személyes). Ad`args`paramétereihez, pl. száma és összege. A lépések töredékében újrajátssza, és meggyógyul, amikor az alkalmazás megváltozik. Ha egy lépés sikertelen, az eredmény megmutatja, hogy melyik lépés és mi látható a képernyőn, az ügynök pedig kézzel fejezi be a többit.
+- Készségek listája:`skill_list`(Biztonságos) mutatja a nevet, a paramétereket, a lépéseket és az egyes futások gyakoriságát. A névvel és az exportálással megoszthatóvá válik`.zxskill`fájlt.
+- Megosztás és betöltés:`skill_import`(Személyes) terhelések a`.zxskill`fájl letöltésből vagy megosztott fájlból készségként.
+- Készség törlése:`skill_delete`(Rendszer).
+- Példa: „Tudja meg, hogyan küldhetek 500-at Rahimnak a pénztárca alkalmazással”→egyszer megcsinálod→"Küldj 700-at Karimnak" legközelebb.
+
+## Autopilot – "ha X történik, csináld Y"
+A szabály magától felébreszti az ügynököt, és az Ön megkérdezése nélkül elvégzi a feladatot.
+- Hozzáadás:`autopilot_add`(Rendszer). Fajtái: sms, értesítés, hívás, napi, egyszer, intervallum, akkumulátor, app. Csak a szabályhoz szükséges mezőket töltse ki:`from`(a küldő neve vagy szám vagy alkalmazás címe),`any`(e szavak közül legalább egy),`all`(minden szó),`none`(egyik szó sem),`time`"ÓÓ:PP" (naponta),`in_minutes` or `at_ms`(egyszer),`every_minutes`(intervallum),`below`(akkumulátor százalék),`pkg`(alkalmazáscsomag vagy név, az alkalmazás és értesítési szabályokhoz). Az ügynök ezekre a mezőkre fordítja a mondatodat. Az eredmény felsorolja a még szükséges engedélyeket (SMS, értesítési hozzáférés…), és az ügynök kéri, hogy kapcsolja be.
+- Példák: "Ha fizetési SMS érkezik a Wallet alkalmazásomból, adja hozzá a főkönyvemhez." "Minden reggel 8-kor mondd el az időjárást." "20 perc múlva emlékeztessen, hogy vegyem ki a kenyeret." "30 percenként, ivóvíz emlékeztető." "Ha az akkumulátor töltöttsége 15% alá csökken, szóljon." "Ha valaki felhív, naplózza a számot." "Amikor megnyitom a banki alkalmazást, emlékeztessen, hogy ellenőrizzem a költségvetést."
+- Lista:`autopilot_list`A (Biztonságos) minden szabályt a következő futási idejével és az aktiválási gyakorisággal együtt jelenít meg.
+- Szünet vagy folytatás:`autopilot_toggle`(Rendszer). Töröl:`autopilot_remove`(Rendszer), azonosító vagy cím alapján.
+- Amikor egy szabály aktiválódik, kap egy üzenetet, amely ezt mondja, és az ügynök csak elvégzi a munkát.
+
+## Pénzkönyv (személyi pénzügyi igazgató)
+- `ledger_scan`(Személyes): beolvassa a pénztárcát és a banki SMS-eket egy privát főkönyvbe: bevételek, kiadások, díjak, egyenleg és kategória.`days`azt mondja, hogy mennyivel van hátra (alapértelmezett 30). Vel`auto`be, minden új SMS-t magától ad hozzá, és figyelmeztetést kap, ha egy költségvetést elfogadnak. Bármely ország pénztárcájához és banki üzenetekhez használható, bármilyen pénznemben.
+- `ledger_report`(Személyes): időszak ma, tegnap, hét, hónap vagy minden. Formázza meg a szöveget (kész szóbeli összefoglaló) vagy xlsx-et (anExceltranzakciókat és kategóriaösszegeket tartalmazó fájl, megnyitva az Ön számára).
+- `ledger_budget`(Személyes): havi költségvetés beállítása egy kategóriához (étel, számlák, szállítás, vásárlás, mobilfeltöltés, transzferek…); a 0-s határ eltávolítja; érvek nélkül felsorolja a költségvetéseket és az aktuális figyelmeztetéseket.
+- Az ügynök soha nem találja ki a pénzszámokat; kiolvassa őket a főkönyvből.
+
+## Idővonal és visszavonás
+- Minden, amit az ügynök tesz, az idővonalra van írva (az utolsó 400 művelet). A fájl módosításai megőrzik a korábban ott lévők másolatát.
+- `timeline_list`(Biztonságos): mit csinált az ügynök a közelmúltban, mindegyikhez azonosítóval, és mely változtatások vonhatók vissza.
+- `timeline_undo`(Személyes):`id`visszavonja az írást, szerkesztést vagy törlést – a fájl pontosan úgy jön vissza, ahogy volt (a nem létező fájlt ismét eltávolítják).`since_id`mindent visszavon ettől az azonosítótól kezdve, a legújabbak előtt. Használja, amikor azt mondja, hogy "vidd vissza" vagy "tedd vissza, mint korábban".
+- A visszavonás a fájlok írását, szerkesztését és törlését takarja. Egy lefutott parancs (például valami telepítése vagy üzenet küldése) ilyen módon nem vonható vissza.
+- Csevegőüzenetek: a teljes beszélgetés eltávolításához használja a ceruzát és a keresztet a bal oldali menüben vagy a Beállításokban→Adatvédelem és adatok→Törölje a csevegési előzményeket vagy a Navigációt→Új munkamenet.
+
+## Agy – második memória a fájlokhoz
+- `brain_index`(Biztonságos): az offline index létrehozása vagy frissítése mappák vagy fájlok (szöveg,Markdown, CSV, Word, Excel, PowerPoint) és opcionálisan az SMS postafiókot (`sms`on). Futtassa az első keresés előtt és az új fájlok megjelenése után. Az alapértelmezett a munkaterület.
+- `brain_search`(Biztonságos): kérdezze meg saját szavaival: "hol a bérleti szerződésem?" - offline módban működik bármilyen nyelven.`kind`fájl vagy sms;`days`a legutóbbi tételekre vonatkozó korlátok. Nyissa meg a talált fájlt a`open_file`.
+
+## Hívja fel az ügynököt
+- `call_agent`(Személyes): művelet be, ki vagy állapot.`owner`ez a név, amit mond ("Én vagyok a <tulajdonos> asszisztense").`answer_after_seconds`(alapértelmezett 6) lehetővé teszi, hogy először vegye fel. Ha hívás érkezik, és nem tud válaszolni, a hívó fél nyelvén köszön, megkérdezi a nevet és az okot, válaszol egyszerű kérdésekre, udvariasan leteszi a telefont, és összefoglalja.
+- `call_log`(Biztonságos): a fogadott hívások összefoglalója, a legújabbak elöl.
+- Hívás- és telefonállapot-engedélyekre van szüksége.
+
+## Memória
+- `memory_write`, `memory_read`, `memory_delete`(Biztonságos): maradandó tények rólad (név, preferenciák, személyek, dátumok, projektek) egy helyi adatbázisban élnek, és túlélik az újraindításokat. Mondja azt, hogy „emlékezz erre”, és ugyanabban a körben le van írva; ha valami nem stimmel, azt eltávolítják vagy átírják. Minden régi beszélgetést is megtartanak, és a korábbi fordulatok, amelyek megegyeznek az Ön által mondottakkal, maguktól térnek vissza, akár hónapok múlva is.
+- Mindezt megtekintheti és módosíthatja a Beállításokban→Rendszer→Memória (kulcs, érték, mentés, összes törlése).

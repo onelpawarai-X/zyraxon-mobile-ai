@@ -1,0 +1,21 @@
+Tworzenie: witryn, aplikacji, podglądu i publikowania
+## Jak zapytać
+- „Utwórz dla mnie stronę docelową mojej kawiarni”. Agent od razu go buduje, uruchamia na Twoim telefonie i otwiera w Preview. Otrzymujesz 2–3 linijki opisujące to. Nic nie jest publikowane, chyba że o to poprosisz.
+- „Stwórz aplikację z listą zadań”. Zbudowany bezpośrednio z rozsądnym stosem, uruchomiony i pokazany. Zaplecze, baza danych lub login tylko jeśli o to poprosisz.
+- „Zbuduj aplikację z pełnym stosem”. Agent najpierw zadaje jedno krótkie pytanie na temat języka zaplecza, bazy danych, loginu i miejsca działania, z zalecanymi ustawieniami domyślnymi, a następnie buduje wszystko z danymi początkowymi i testuje jeden pełny przepływ.
+- „Utwórz program Windows/ZYRAXON OS/macOS/Android.” Napisano źródło, dodano proces kompilacji, wyrzucono go i wbudowano w chmurze za pomocą GitHub akcji, a otrzymasz prawdziwy link do pobrania.
+
+## Narzędzia
+- `edit_file` i `write_file`: zapisz prawdziwe pliki (kompletny kod, nigdy kody pośredniczące). `code_box` pokazuje je na żywo.
+- `preview` (Bezpieczny): wbudowana prawdziwa przeglądarka. Akcje: otwórz (link, `localhost:PORT` lub plik), załaduj ponownie, wstecz, dalej, zrzut ekranu, przewiń, kliknij, wpisz, przeczytaj tekst strony, błędy konsoli, eval. Agent przygląda się swojej pracy, zanim powie, że jest wykonana.
+- `serve_local` (System): uruchamia w telefonie serwer WWW dla folderu i zwraca adres LAN, który mogą otwierać inne urządzenia w Twoim Wi-Fi.
+- `publish_website` (System): obsługuje witrynę na porcie publicznym z telefonu. `publish_cloudflare` (System): umieszcza witrynę w Internecie bez konta przez tunel Cloudflare i zwraca publiczny link https. `publish_github` (System): publikuje projekt w repozytorium GitHub (Pages) za pomocą Twojego tokena.
+- `git` (System): klonuj, init, status, dodawaj, zatwierdzaj, push, pull, rozgałęziaj, kasuj, loguj, różnicuj za pomocą zapisanego tokena. `github_pr` (System): twórz, wyświetlaj, łącz i komentuj żądania ściągnięcia. `github_actions` (System): wyświetla listę przepływów pracy, uruchamia je, uruchamia ankiety i czyta logi, dzięki czemu kompilacje działają w chmurze z poziomu telefonu.
+- `build_app` (System): buduje ten projekt za pomocą Gradle na telefonie i instaluje wynik.
+- `files_panel`, `todo_write`: przeglądarka plików i tablica zadań.
+
+## Zasady jakości, którymi kieruje się agent
+Kompletny układ, responsywny projekt, działający JavaScript, animacja, spójne kolory i czcionki (ciemne i jasne tam, gdzie pasuje), a nie ogólny szablon. Strona docelowa ma zwykle 300–900 linii; więcej większych rzeczy.
+
+## Jeśli coś wygląda na zepsute
+Naciśnij Napraw w podglądzie lub powiadom agenta. Czyta konsolę, naprawia przyczynę, ponownie otwiera stronę i sprawdza ponownie.

@@ -1,0 +1,21 @@
+Veidošana: vietnes, lietotnes, priekšskatījums un publicēšana
+## Kā jautāt
+- "Padariet man galveno lapu manam kafejnīcai." Aģents to izveido uzreiz, palaiž to tālrunī un atver priekšskatījumā. Jūs saņemat 2–3 rindiņas, kas to apraksta. Nekas netiek publicēts, ja vien nelūdzat.
+- "Izveidojiet uzdevumu lietotni." Izveidots tieši ar saprātīgu kaudzi, palaist un parādīts. Aizmugure, datu bāze vai pieteikšanās tikai tad, ja to lūdzat.
+- "Build a full-steck app." Aģents vispirms uzdod vienu īsu jautājumu par aizmugures valodu, datu bāzi, pieteikšanos un vietu, kur tā darbojas, ar ieteicamajiem noklusējuma iestatījumiem, pēc tam to visu veido ar sākuma datiem un pārbauda vienu pilnu plūsmu.
+- "Izveidojiet Windows/ZYRAXON OS/macOS/Android programmu." Tiek uzrakstīts avots, pievienota izveides darbplūsma, tā tiek virzīta un iebūvēta mākonī ar GitHub darbībām, un jūs saņemat īsto lejupielādes saiti.
+
+## Rīki
+- `edit_file` un `write_file`: ierakstiet īstos failus (pilns kods, nekad nav stubs). `code_box` rāda tos tiešraidē.
+- `preview` (Drošs): iebūvēta īsta pārlūkprogramma. Darbības: atveriet (saite, `localhost:PORT` vai fails), atkārtoti ielādējiet, atpakaļ, uz priekšu, ekrānuzņēmumu, ritiniet, noklikšķiniet, ierakstiet, lasiet lapas tekstu, konsoles kļūdas, eval. Aģents aplūko savu darbu, pirms saka, ka tas ir paveikts.
+- `serve_local` (Sistēma): palaiž tālrunī mapes tīmekļa serveri un atgriež LAN adresi, ko var atvērt citas jūsu Wi-Fi ierīces.
+- `publish_website` (Sistēma): apkalpo vietni publiskajā portā no tālruņa. `publish_cloudflare` (Sistēma): ievieto vietni internetā bez konta caur Cloudflare tuneli un atgriež publisku https saiti. `publish_github` (Sistēma): publicē projektu GitHub repozitorijā (lappuses) ar jūsu pilnvaru.
+- `git` (Sistēma): klons, init, statuss, pievienošana, apņemšanās, push, pull, filiāle, izrakstīšanās, žurnāls, diferencēšana ar saglabāto pilnvaru. `github_pr` (Sistēma): izveidojiet, uzskaitiet, apvienojiet un komentējiet vilkšanas pieprasījumus. `github_actions` (Sistēma): uzskaitiet darbplūsmas, palaidiet tās, veic aptauju un lasa žurnālus, lai būvdarbi tiktu palaisti mākonī no tālruņa.
+- `build_app` (Sistēma): izveido šo projektu ar Gradle tālrunī un instalē rezultātu.
+- `files_panel`, `todo_write`: failu pārlūks un uzdevumu panelis.
+
+## Kvalitātes noteikumi, ko aģents ievēro
+Pilnīgs izkārtojums, atsaucīgs dizains, darbojošs JavaScript, animācija, konsekventas krāsas un fonti (tumši un gaiši, kur tas der), nevis vispārīga veidne. Galvenā lapa parasti ir 300–900 rindiņas; lielākas lietas vairāk.
+
+## Ja kaut kas izskatās bojāts
+Priekšskatījumā nospiediet Labot vai pastāstiet aģentam. Tas nolasa konsoli, novērš cēloni, atkārtoti atver lapu un vēlreiz pārbauda.

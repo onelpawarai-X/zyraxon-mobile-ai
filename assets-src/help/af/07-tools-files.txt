@@ -1,0 +1,27 @@
+Lêers, terminale en stelsel
+## Lêers
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Veilig): lees, lys, vind volgens naampatroon en soek teks binne lêers.
+- `write_file`, `edit_file`: skep of verander lêers. `edit_file` doen dit alles: nuwe lêer, volledige herskryf, of presies soek-en-vervang; die kode verskyn regstreeks in die klets. `delete_file` (Stelsel): verwyder 'n lêer of gids.
+- Enige gids word toegelaat (/sdcard, Aflaai, Dokumente, SD-kaart …). Gee 'n volledige pad en dit word gebruik soos geskryf.
+- Die agent maak oop wat dit maak: `open_file` (Veilig) maak 'n lêer oop in die foon se regte toepassing, of binne ZYRAXON se voorskou.
+
+## Terminale (twee regte)
+- Android: die foon se eie dop (busybox plus `sh`), binne die toepassing se sandbox. `run_shell` (Stelsel) voer 'n opdrag daar uit, buite sig.
+- ZYRAXON OS: ZYRAXON se eie volledige Unix-stelsel, ingebou in die toepassing: bash, apt/pkg, real git, python, node, clang. Dit werk vanlyn. `os_run` (Stelsel) voer 'n opdrag daar uit.
+- `terminal_run` (Stelsel): loop 'n reël in die Terminal-oortjie wat jy kyk, sodat jy kan sien dit werk en oorneem. Gebruik shell Android of ZYRAXON OS. `terminal_open` bring die Terminal-oortjie na die voorkant (slegs wanneer jy vra).
+- `system_shell` (Stelsel): 'n stelselvlak-opdrag, bo die toepassingsandbak, soos 'n stelseldop dit doen; met Shizuku of wortel kan dit baie meer bereik.
+- Daar is geen verstek tydsbeperking nie; 'n groot `apt upgrade` of bouwerk loop tot die einde toe.
+
+## Shizuku (stelseltoegang)
+`setup_shizuku` (Stelsel) stel Shizuku op, gebundel binne ZYRAXON: kontroleer status, installeer, maak oop, versoek toestemming. Net jy kan Installeer en Laat toe tik; die agent vertel jou die stap in een reël en doen die res.
+
+## Lang werke en tydsberekening
+- `background_command` (Stelsel): 'n opdrag wat aanhou loop nadat jy die toepassing gesluit het (groot aflaai, kloon, bou), met 'n kennisgewing en 'n Stop-knoppie.
+- `schedule_command` (Stelsel): voer 'n opdrag op 'n regte tyd ("binne 10 minute", "om 02:00"); Android hou die tydteller vas, so dit loop met die toepassing toe.
+- `wait` (Veilig): wag doelbewus (sekondes, totdat 'n poort oopmaak, 'n lêer verskyn, 'n opdrag klaar is) in plaas van om te raai.
+
+## ZYRAXON OS gebruik
+Installeer pakkette (`apt install …`), hardloop Python of Node skrifte, stel C saam, gebruik git, hardloop bedieners, zip en unzip, krul, ffmpeg. Die stelsel word stilweg uitgepak wanneer die toepassing begin en bly oor herbegin.
+
+## Die terminale skerm
+Die Terminal-oortjie is 'n regte terminale met die ⌘ ZX-oortjie. Tik jou eie opdragte of kyk na die agent s'n. Die navigasieskerm in Instellings het 'n kortpad na die stelseldop en 'n "Nuwe sessie"-knoppie wat die kletsgeskiedenis uitvee om nuut te begin.

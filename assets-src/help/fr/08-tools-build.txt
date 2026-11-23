@@ -1,0 +1,21 @@
+Construire : sites, applications, aperçu et publication
+## Comment demander
+- « Fais-moi une page d'accueil pour mon café. » L'agent la construit tout de suite, la lance sur votre téléphone et l'ouvre dans Preview. Vous recevez 2–3 lignes qui la décrivent. Rien n'est publié sans que vous le demandiez.
+- « Construis une application de tâches. » Construite directement avec une pile raisonnable, exécutée et montrée. Un back end, une base de données ou une connexion seulement si vous les demandez.
+- « Construis une application full-stack. » L'agent pose d'abord une courte question sur le langage du back end, la base de données, la connexion et le lieu d'exécution, avec des valeurs par défaut recommandées, puis construit tout avec des données d'exemple et teste un flux complet.
+- « Fais un programme Windows/ZYRAXON OS/macOS/Android. » Le code source est écrit, un workflow de compilation est ajouté, poussé et construit dans le cloud avec GitHub Actions, et vous obtenez le vrai lien de téléchargement.
+
+## Outils
+- `edit_file` et `write_file` : écrivent les vrais fichiers (code complet, jamais des ébauches). `code_box` les montre en direct.
+- `preview` (Safe) : le vrai navigateur intégré. Actions : ouvrir (un lien, `localhost:PORT` ou un fichier), recharger, retour, avancer, capture, défiler, cliquer, saisir, lire le texte de la page, erreurs de console, eval. L'agent regarde son propre travail avant de dire que c'est terminé.
+- `serve_local` (System) : démarre un serveur web sur le téléphone pour un dossier et renvoie l'adresse du réseau local que les autres appareils de votre Wi-Fi peuvent ouvrir.
+- `publish_website` (System) : sert un site sur un port public depuis le téléphone. `publish_cloudflare` (System) : met un site sur internet sans compte grâce à un tunnel Cloudflare et renvoie un lien https public. `publish_github` (System) : publie un projet dans un dépôt GitHub (Pages) avec votre jeton.
+- `git` (System) : clone, init, status, add, commit, push, pull, branch, checkout, log, diff avec votre jeton enregistré. `github_pr` (System) : créer, lister, fusionner et commenter des pull requests. `github_actions` (System) : lister les workflows, les lancer, suivre les exécutions et lire les journaux, pour que les compilations tournent dans le cloud depuis le téléphone.
+- `build_app` (System) : construit ce projet avec Gradle sur le téléphone et installe le résultat.
+- `files_panel`, `todo_write` : explorateur de fichiers et tableau de tâches.
+
+## Règles de qualité que suit l'agent
+Mise en page complète, design adaptatif, JavaScript fonctionnel, animation, couleurs et polices cohérentes (sombre et clair quand c'est adapté), pas un modèle générique. Une page d'accueil fait généralement 300–900 lignes ; les choses plus grandes, davantage.
+
+## Si quelque chose semble cassé
+Appuyez sur Fix dans Preview, ou dites-le à l'agent. Il lit la console, corrige la cause, rouvre la page et revérifie.

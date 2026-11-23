@@ -1,0 +1,27 @@
+Fail, terminal dan sistem
+## Fail
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Selamat): baca, senarai, cari mengikut corak nama dan cari teks dalam fail.
+- `write_file`, `edit_file`: buat atau tukar fail. `edit_file` melakukan semuanya: fail baharu, penulisan semula penuh atau cari-dan-ganti yang tepat; kod itu muncul secara langsung dalam sembang. `delete_file` (Sistem): padam fail atau folder.
+- Mana-mana folder dibenarkan (/sdcard, Muat Turun, Dokumen, kad SD …). Berikan laluan penuh dan ia digunakan seperti yang tertulis.
+- Ejen membuka perkara yang dibuatnya: `open_file` (Selamat) membuka fail dalam apl sebenar telefon atau dalam pratonton ZYRAXON.
+
+## Terminal (dua yang sebenar)
+- android: cangkerang telefon sendiri (busybox tambah `sh`), di dalam kotak pasir apl. `run_shell` (Sistem) menjalankan arahan di sana, tidak kelihatan.
+- ZYRAXON OS: sistem Unix penuh ZYRAXON sendiri, terbina dalam apl: bash, apt/pkg, git sebenar, python, nod, denting. Ia berfungsi di luar talian. `os_run` (Sistem) menjalankan arahan di sana.
+- `terminal_run` (Sistem): menjalankan baris dalam tab Terminal yang anda sedang tonton, supaya anda boleh melihatnya berfungsi dan mengambil alih. Gunakan shell android atau zyraxon. `terminal_open` membawa tab Terminal ke hadapan (hanya apabila anda bertanya).
+- `system_shell` (Sistem): arahan peringkat sistem, di atas kotak pasir apl, cara shell sistem lakukan; dengan Shizuku atau akar ia boleh mencapai lebih banyak lagi.
+- Tiada had masa lalai; `apt upgrade` atau binaan besar berjalan hingga ke penghujung.
+
+## Shizuku (akses sistem)
+`setup_shizuku` (Sistem) menyediakan Shizuku, digabungkan di dalam ZYRAXON: semak status, pasang, buka, minta kebenaran. Hanya anda boleh mengetik Pasang dan Benarkan; ejen memberitahu anda langkah dalam satu baris dan melakukan yang lain.
+
+## Kerja dan masa yang panjang
+- `background_command` (Sistem): arahan yang terus berjalan selepas anda menutup apl (muat turun besar, klon, binaan), dengan pemberitahuan dan butang Berhenti.
+- `schedule_command` (Sistem): jalankan arahan pada masa nyata ("dalam 10 minit", "pada 2 pagi."); Android memegang pemasa, jadi ia berjalan dengan apl ditutup.
+- `wait` (Selamat): tunggu dengan sengaja (saat, sehingga port dibuka, fail muncul, arahan selesai) dan bukannya meneka.
+
+## ZYRAXON OS kegunaan
+Pasang pakej (`apt install …`), jalankan skrip Python atau Node, susun C, gunakan git, jalankan pelayan, zip dan nyahzip, curl, ffmpeg. Sistem dibongkar secara senyap apabila apl dimulakan dan kekal sepanjang permulaan semula.
+
+## Skrin terminal
+Tab Terminal ialah terminal sebenar dengan tab ⌘ ZX. Taip arahan anda sendiri atau tonton arahan ejen. Skrin Navigasi dalam Tetapan mempunyai pintasan ke cangkerang sistem dan butang "Sesi baharu" yang mengosongkan sejarah sembang untuk bermula baharu.

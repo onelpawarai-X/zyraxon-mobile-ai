@@ -1,0 +1,23 @@
+Níveis de aprovação e segurança da automação
+Configurações → Sistema → Automação. Isso decide quanto o agente pode fazer antes de parar e perguntar a você. A configuração é aplicada no código em cada chamada de ferramenta; um modelo não pode ampliá-lo.
+
+## Os quatro níveis
+Altere o nível em Configurações → Sistema → Automação. Cada nível decide quando o agente para e pergunta, e também com que rigor o Content Shield (consulte Segurança e privacidade) trata o texto que o agente lê de fora.
+1. Pergunta completa (Bloqueada): pergunta antes de qualquer coisa que altere o telefone, por menor que seja. Mais seguro. O Content Shield é rigoroso: qualquer texto suspeito conta como hostil. Use-o em um telefone compartilhado ou enquanto testa algo novo.
+2. Supervisionado (padrão): pergunta antes das ações do sistema e pessoais e realiza o trabalho comum (ler, abrir, pesquisar, construir) sozinho. O Content Shield é padrão: textos suspeitos são protegidos como dados e, quando o texto é claramente hostil, todas as ferramentas de alteração solicitam o resto do turno.
+3. Equilibrado: pergunta apenas antes de ações no nível do sistema (shell, exclusão, publicação, agendamento…). Ações pessoais como mensagens, toques e digitação são executadas sozinhas. O Content Shield é leve: ele atua apenas em textos claramente hostis e, então, apenas as ferramentas de nível de sistema param para perguntar.
+4. Automação total: nunca pergunta e nunca para. Tudo é executado diretamente e o Content Shield é completamente desligado – nada é verificado, marcado, removido ou alterado. Isso é automação no sentido pleno: você assume o risco.
+
+## Os três níveis de ferramentas
+- Seguro (nunca pergunta em nenhum nível): leitura e listagem de arquivos, memória, documentos, designs, status, abertura de aplicativos e arquivos, espera, habilidades/piloto automático/linha do tempo/listas de chamadas, pesquisa cerebral.
+- Pessoal (solicitado nos dois primeiros níveis): SMS, chamadas, câmera, leitura de tela, toques e digitação, área de transferência, downloads, notificações, compartilhamento, mudança de voz, repetição de habilidades, registro de dinheiro, agente de chamadas, desfazer linha do tempo.
+- Sistema (solicitado em todos os níveis, exceto automação completa): shell, ZYRAXON OS, compilações, publicação, exclusão, bloqueio de dispositivo, agendamento, Git e GitHub, ffmpeg, modelo no dispositivo, postagem em canais, regras de piloto automático, exclusão de habilidades, Shizuku. Qualquer ferramenta que o aplicativo não reconheça — incluindo MCP ferramentas — é tratada como System.
+
+## O cartão de aprovação
+Quando uma ferramenta precisa da sua aprovação, um cartão diz "Permissão necessária", informa o que o agente deseja fazer, mostra seu nível (Seguro, Pessoal ou Sistema) e oferece "Sim, execute" ou "Não, mantenha-o desligado". O cartão também lembra que você pode alterar a frequência com que isso é solicitado em Configurações → Automação.
+
+## Apenas no dispositivo
+Quando ativado, nada sai do telefone: apenas o modelo do dispositivo e as ferramentas locais são executados. Todas as ferramentas de rede (pesquisa, busca, uploads, publicação, GitHub, geração de mídia, MCP, modelos de nuvem) são recusadas no código.
+
+## Primeiro aviso de lançamento
+Na primeira vez, ZYRAXON explica que o agente pode agir no seu telefone e onde ativar as permissões. Pressione "Entendi, comece".

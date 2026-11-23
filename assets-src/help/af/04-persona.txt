@@ -1,0 +1,18 @@
+Karakters (identiteit)
+Instellings → Model en identiteit → Identiteit. Die karakter wat jy kies, bepaal die stem, warmte en manier van praat. Die agent praat as daardie persoon, in die taal wat jy praat, en noem homself nooit 'n program nie.
+
+- Vriendin: soet, warm en liefdevol, met troetelname natuurlik in jou taal. Vroulike stem.
+- Kêrel: diep, warm, betroubaar en sorgsaam. Manlike stem.
+- Vriend: lewendig, modern en snaaks, altyd aan jou kant.
+- Super assistent: professioneel, kort en presies.
+- Kuberspesialis: 'n bondige senior ingenieur en sekuriteitspersoon.
+- Filosoof: kalm, versiende mentor.
+
+## Stem volg die karakter
+Kêrel praat met 'n manstem; elke ander karakter praat met 'n vrouestem. As jy self 'n stem kies in Instellings → Stemprofiel, word jou keuse behou tot die volgende karakterwisseling of bekendstelling.
+
+## Wat die karakter verander
+Toon, woordeskat, nabyheid en hoe dit vir jou omgee. Dit verander nooit die reëls oor waarheid, veiligheid en om die werk behoorlik te doen nie.
+
+## Altyd aanpas
+Die agent lees jou bui en tyd van die dag, onthou klein goedjies wat jy dit vertel het, en antwoord in jou taal, op 'n kort natuurlike manier.

@@ -1,0 +1,27 @@
+File, terminale e sistema
+## File
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Sicuro): leggi, elenca, trova per modello di nome e cerca testo all'interno dei file.
+- `write_file`, `edit_file`: crea o modifica file. `edit_file` fa tutto: nuovo file, riscrittura completa o ricerca e sostituzione esatta; il codice appare in diretta nella chat. `delete_file` (Sistema): elimina un file o una cartella.
+- È consentita qualsiasi cartella (/sdcard, Download, Documenti, Scheda SD...). Fornisci un percorso completo e viene utilizzato come scritto.
+- L'agente apre ciò che fa: `open_file` (Sicuro) apre un file nell'app reale del telefono o nell'anteprima di ZYRAXON.
+
+## Terminali (due reali)
+- Android: la shell del telefono (busybox più `sh`), all'interno della sandbox dell'app. `run_shell` (Sistema) esegue un comando lì, fuori dalla vista.
+- ZYRAXON OS: il sistema Unix completo di ZYRAXON, integrato nell'app: bash, apt/pkg, real git, python, node, clang. Funziona offline. `os_run` (Sistema) esegue un comando lì.
+- `terminal_run` (Sistema): esegue una riga nella scheda Terminale che stai guardando, in modo da poterla vedere funzionare e prendere il controllo. Usa la shell Android o ZYRAXON OS. `terminal_open` porta la scheda Terminale in primo piano (solo quando lo chiedi).
+- `system_shell` (Sistema): un comando a livello di sistema, sopra la sandbox dell'app, come fa una shell di sistema; con Shizuku o root si può raggiungere molto di più.
+- Non esiste un limite di tempo predefinito; un grande `apt upgrade` o una build viene eseguita fino alla fine.
+
+## Shizuku (accesso al sistema)
+`setup_shizuku` (Sistema) configura Shizuku, raggruppato all'interno di ZYRAXON: controlla lo stato, installa, apre, richiede l'autorizzazione. Solo tu puoi toccare Installa e Consenti; l'agente ti dice il passaggio in una riga e fa il resto.
+
+## Lavori e tempi lunghi
+- `background_command` (Sistema): un comando che continua a essere eseguito dopo aver chiuso l'app (big download, clone, build), con una notifica e un pulsante Interrompi.
+- `schedule_command` (Sistema): esegue un comando in tempo reale ("tra 10 minuti", "alle 2 del mattino"); Android contiene il timer, quindi funziona con l'app chiusa.
+- `wait` (Sicuro): attendere apposta (secondi, finché non si apre una porta, viene visualizzato un file, termina un comando) invece di indovinare.
+
+## ZYRAXON OS utilizza
+Installa pacchetti (`apt install …`), esegui script Python o Node, compila C, usa git, esegui server, zip e decomprimi, curl, ffmpeg. Il sistema viene decompresso silenziosamente all'avvio dell'app e rimane attivo anche dopo i riavvii.
+
+## Lo schermo del terminale
+La scheda Terminale è un vero e proprio terminale con la scheda ⌘ ZX. Digita i tuoi comandi o guarda quelli dell'agente. La schermata di navigazione in Impostazioni ha un collegamento alla shell di sistema e un pulsante "Nuova sessione" che cancella la cronologia della chat per ricominciare da capo.

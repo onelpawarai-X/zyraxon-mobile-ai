@@ -1,0 +1,21 @@
+Bulut, ağ, modeller ve yardımcılar
+## Bulut ve internet
+- `web_search` (ağ): gerçek web'de arama yapın. `read_url` (ağ): bir sayfayı metin olarak getirir. `http_request` (ağ): başlıkları ve gövdesi olan herhangi bir HTTP çağrısı (GET, POST, PUT, PATCH, DELETE). `verify_url` (ağ): bir bağlantının gerçekten var olup olmadığını kontrol edin ve gerçek durumu öğrenin. `download_file` (Kişisel, ağ): Bir dosyaya URL indirin.
+- Temsilci, bağlantıları yalnızca siz istediğinizde açar.
+- Yapay zeka modelleri, eklediğiniz sağlayıcılar (ZYRAXON, ZYRAXON Apex bulut aracısı, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode) aracılığıyla bulutta çalışır. Model listesi canlı olarak yüklenir ve her sağlayıcı yanıt verdikçe dolar.
+- Derlemeler, yayınlama ve çekme istekleri GitHub ve Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`) üzerinden yürütülür.
+- "Yalnızca cihazda" seçeneğini açın (Otomasyon ayarları) ve hiçbir bulut araması yapılmaz: sağlayıcı yok, web yok, yükleme yok.
+
+## MCP sunucu
+MCP dış hizmetlerin aracıya ekstra araçlar sağlamasına olanak tanır. Canva, Cloudflare, Supabase, GitHub veya kendi sunucunuzu adresine (isteğe bağlı belirteç) göre bağlayın. Bağlı sunucuların araçları, aracının araç listesine `server__tool` olarak katılır.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (nelerin bağlı olduğuna ve hangi araçların mevcut olduğuna bakın), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (değişiklikler için bir kaynağı izleyin), `mcp_complete` (otomatik tamamlama argümanları), `mcp_ping`, `mcp_log_level`. Aramaları ağ aramalarıdır ve bilinmeyen MCP araçlar varsayılan olarak izin ister.
+- MCP ekranı her sunucuyu Bağlı durumu, araçları, kaynakları ve bilgi istemi şablonları ve Ekle, Bağlantıyı Kes, Kaldır, İzin Ver düğmeleriyle birlikte listeler.
+
+## Alt temsilciler
+`sub_agent` (Sistem): Büyük bir işin bazı kısımlarını arka planda çalışan yardımcı ajanlara devredin. Eylemler: ortaya çıkma, durum, liste, sonuç, mesaj, durdurma, bekle. Her biri kendi modelini kullanabilir. Temsilci "bitti" demeden önce sonuçları birleştirir ve kontrol eder.
+
+## Cihaz üstü model
+`on_device_model` (Sistem): İnternet olmadan telefonda yaşayan bir dil modelini listeleyin, yükleyin ve çalıştırın. Ayarlar → Model ve kimlik → Cihazda modelleri indirirsiniz (küçükten büyüğe: FunctionGemma 270M, Qwen3 0,6B, Gemma 4 E2B…); Hugging Face belirteci isteğe bağlıdır ve yalnızca geçitli dosyalar için gereklidir. Yüklenen bir model, başlatma sırasında hatırlanır ve yeniden yüklenir.
+
+## Mesajlaşma kanalları
+`channel_post` (Sistem), metniniz hazır olarak Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail veya SMS'i açar. Sen kendin gönder tuşuna bas.

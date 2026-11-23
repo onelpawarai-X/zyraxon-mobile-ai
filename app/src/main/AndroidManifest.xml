@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Shizuku's own AARs declare minSdk 23, but the parts ZYRAXON uses —
+         ShizukuProvider, the binder plumbing and the static Shizuku class — only
+         touch API-21-safe classes (ContentProvider, Context, Bundle, IBinder,
+         Log). Overriding lets the app itself support Android 5.0 while Shizuku
+         still works on the phones that can run it. -->
+    <uses-sdk tools:overrideLibrary="com.google.ai.edge.litertlm,rikka.shizuku.api,rikka.shizuku.provider,rikka.shizuku.shared,rikka.shizuku.aidl" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Neither camera nor GPS is required: the app works without them, and
+         saying so keeps it installable on tablets and TVs that have no camera. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+
+    <!-- Reading the user's own photos, video and documents. Android 13 split
+         READ_EXTERNAL_STORAGE into media types, so all three are declared and the
+         panel asks for the set that matches the running version. -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Lets the assistant lift the keyguard on a phone that has no PIN set.
+         With a PIN in place Android refuses and the app says so. -->
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+
+    <!-- Android 11+ hides other apps unless they are declared. These are the
+         channels ZYRAXON posts to and the browser it opens. -->
+    <queries>
+        <!-- The speech engine and the recognizer are services in another app.
+             Without these two the platform hides them: TextToSpeech cannot bind
+             an engine (so nothing is ever spoken) and
+             SpeechRecognizer.isRecognitionAvailable() returns false (so the
+             microphone never opens). This is why voice was dead on Android 11+. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="*/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <package android:name="org.telegram.messenger" />
+        <package android:name="com.whatsapp" />
+        <package android:name="com.whatsapp.w4b" />
+        <package android:name="com.facebook.katana" />
+        <package android:name="com.facebook.orca" />
+        <package android:name="com.instagram.android" />
+        <package android:name="com.twitter.android" />
+        <package android:name="com.google.android.youtube" />
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="false"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:hardwareAccelerated="true"
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+
+        <activity
+            android:name="ai.zyraxon.assistant.ai.CameraActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <activity
+            android:name="ai.zyraxon.assistant.MainActivity"
+            android:label="@string/app_name"
+            android:icon="@mipmap/ic_launcher"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden|uiMode|smallestScreenSize|screenLayout"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name="ai.zyraxon.assistant.AccessibilityBridge"
+            android:exported="true"
+            android:label="@string/acc_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_config" />
+        </service>
+
+        <service
+            android:name="ai.zyraxon.assistant.KeepAliveService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <!-- Runs one command in the background so it survives the app being
+             closed, with a Stop action in its notification. -->
+        <service
+            android:name="ai.zyraxon.assistant.shell.BackgroundCommandService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <!-- The floating chat bubble the user asked for. It needs the overlay
+             permission, which the settings row requests. -->
+        <service
+            android:name="ai.zyraxon.assistant.OverlayChatService"
+            android:exported="false"
+            android:stopWithTask="false"
+            android:foregroundServiceType="dataSync|microphone" />
+
+        <!-- The admin component that makes `lockNow()` legal. The user activates
+             it once from the system screen the assistant opens. -->
+        <receiver
+            android:name="ai.zyraxon.assistant.lock.ZyraxonDeviceAdmin"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:description="@string/app_name"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Autopilot: a money SMS goes to the ledger and a matching rule wakes the agent. -->
+        <receiver
+            android:name="ai.zyraxon.assistant.auto.SmsReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter android:priority="100">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Autopilot: notifications from other apps can fire a rule (the user switches this on in system settings). -->
+        <service
+            android:name="ai.zyraxon.assistant.auto.NotifListener"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <!-- Receives the result of an in-app update install. -->
+        <receiver
+            android:name="ai.zyraxon.assistant.update.UpdateInstallReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="ai.zyraxon.assistant.INSTALL_STATUS" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Fires a command the user booked for later. The timer lives in
+             AlarmManager, so it survives this app being closed. -->
+        <receiver
+            android:name="ai.zyraxon.assistant.shell.ScheduledCommandReceiver"
+            android:exported="false" />
+
+        <!-- Lets a shared image be attached to a channel post without exposing
+             the app's private storage. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- Shizuku's provider. It receives the Shizuku binder and lets this app
+             run commands as the `shell` user (uid 2000) or as root (uid 0) on a
+             phone where Shizuku runs as root. This is how the app reaches system
+             level without holding a privileged permission of its own, and it is
+             dormant until the user installs and starts Shizuku. -->
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:enabled="true"
+            android:exported="true"
+            android:multiprocess="false"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+
+    </application>
+
+</manifest>

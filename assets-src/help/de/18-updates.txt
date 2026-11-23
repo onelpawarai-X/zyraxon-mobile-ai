@@ -1,0 +1,7 @@
+Aktualisierungen
+Einstellungen → Updates → App-Update oder das Banner oben in der App.
+- Die App sucht nach neuen Versionen und zeigt „Neues Update verfügbar – Version“ an.
+- Nach Updates suchen: fragt jetzt. Wenn Sie aktuell sind, steht es so.
+- Herunterladen und installieren: Downloads mit Prozentsatz. Wenn Sie fertig sind, klicken Sie auf „Installieren“. Ihre Chats, Ihr Speicher und Ihre Einstellungen bleiben erhalten.
+- Wenn Android die Installation blockiert, drücken Sie die Berechtigungstaste, erlauben Sie ZYRAXON als Installationsquelle und versuchen Sie es dann erneut.
+- Die Banner-Schaltflächen: Herunterladen, Installieren, Zulassen und Schließen.

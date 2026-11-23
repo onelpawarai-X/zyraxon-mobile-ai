@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+   What Android may copy to cloud backup and device transfer.
+
+   The app's own data stays on the phone. The chat database holds the user's
+   conversations and the preference files hold the cloud agent token and the
+   provider keys, so none of it is handed to a backup that leaves the device.
+   A restored token on someone else's account is a credential leak, and the
+   conversations are private by definition.
+-->
+<full-backup-content>
+    <exclude domain="database" path="." />
+    <exclude domain="sharedpref" path="." />
+    <exclude domain="file" path="." />
+</full-backup-content>

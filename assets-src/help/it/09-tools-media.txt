@@ -1,0 +1,11 @@
+Immagini, audio, video, documenti e design
+- `generate_image` (rete): crea un'immagine da una descrizione (scrivila dettagliatamente; l'inglese funziona meglio). Appare nella chat con i pulsanti di condivisione. Per diversi, chiedine diversi.
+- `generate_audio` (rete): audio parlato (.mp3) da qualsiasi testo. Per un dialogo o una storia, dai a ciascuna parte la propria voce (genere, età, lingua, tono). Molte lingue, tra cui bengalese, hindi e inglese.
+- `generate_video`: un vero video modificato (non metraggio AI) da scene: immagini, clip, testo, colore, narrazione, didascalie, musica. `ffmpeg`: qualsiasi modifica diretta: taglia, unisci, sovrapponi, sottotitoli, velocità, mix audio, converti. Sono possibili video di 5-10 minuti, costruiti passo dopo passo.
+- I progressi vengono mostrati in tempo reale nella chat; al termine, il file arriva con i pulsanti Riproduci e Condividi.
+- `make_document`: un vero file Word (.docx), Excel (.xlsx) o PowerPoint (.pptx) sul telefono, nessuna installazione necessaria, qualsiasi lingua. `office_template`: documenti d'ufficio pronti con spazi vuoti da riempire (domanda di ferie, domanda di lavoro, fattura, CV, proposta commerciale, preventivo, avviso, verbale di riunione, contratto, conti mensili e altro).
+- Documento da una foto: allega una foto (Scansione documento). Il testo viene copiato esattamente come scritto (le parole poco chiare vengono evidenziate), una tabella diventa .xlsx, altrimenti .docx.
+- Appunti della riunione: dall'audio, da una trascrizione o da ciò che dici. Il documento contiene un riepilogo, decisioni, elementi di azione (attività, proprietario, data di scadenza) e una bozza di posta elettronica pronta.
+- `make_design`: poster, banner, loghi, cartoline, storie, copertine come PNG e PDF. `brand_kit`: indicare un logo o dei colori; vengono salvati, il tema dell'app cambia e da quel momento in poi documenti, slide e siti utilizzano i colori del tuo brand.
+- `present_slides`: il personaggio parla mentre vengono visualizzate le diapositive; le diapositive cambiano da sole quando la voce finisce. Richiedi un file .pptx se desideri un file.
+- `open_file`: apre quanto realizzato nell'app reale del telefono (Word/Documenti, Fogli, Presentazioni, PDF, gallery, browser) o nel pannello Anteprima; l'agente controlla lo schermo per essere sicuro che sia aperto.

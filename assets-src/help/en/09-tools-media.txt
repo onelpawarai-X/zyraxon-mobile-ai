@@ -1,0 +1,11 @@
+Pictures, audio, video, documents and design
+- `generate_image` (network): make a picture from a description (write it with detail; English works best). It appears in the chat with share buttons. For several, ask for several.
+- `generate_audio` (network): spoken audio (.mp3) from any text. For a dialogue or story, give each part its own voice (gender, age, language, tone). Many languages, including Bengali, Hindi and English.
+- `generate_video`: a real edited video (not AI footage) from scenes — images, clips, text, colour, narration, captions, music. `ffmpeg`: any direct edit — cut, join, overlay, subtitles, speed, audio mix, convert. 5–10 minute videos are possible, built step by step.
+- Progress shows live as a percentage in the chat; when done the file arrives with Play and Share buttons.
+- `make_document`: a real Word (.docx), Excel (.xlsx) or PowerPoint (.pptx) file on the phone, no install needed, any language. `office_template`: ready office papers with blanks to fill (leave application, job application, invoice, CV, business proposal, quotation, notice, meeting minutes, contract, monthly accounts and more).
+- Document from a photo: attach a photo (Doc scan). The text is copied exactly as written (unclear words are marked), a table becomes .xlsx, otherwise .docx.
+- Meeting notes: from audio, a transcript or what you say. The document has a summary, decisions, action items (task, owner, due date) and a ready email draft.
+- `make_design`: posters, banners, logos, cards, stories, covers as PNG and PDF. `brand_kit`: give a logo or colours; they are saved, the app theme changes, and from then on documents, slides and sites use your brand colours.
+- `present_slides`: the character speaks while slide cards show; slides change by themselves when the voice finishes. Ask for a .pptx file if you want a file.
+- `open_file`: opens what was made in the phone's real app (Word/Docs, Sheets, Slides, PDF, gallery, browser) or in the Preview panel; the agent checks the screen to be sure it opened.

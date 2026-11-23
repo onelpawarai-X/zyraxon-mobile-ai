@@ -1,0 +1,35 @@
+Boses: pagsasalita, pakikinig at live talk
+## Pakikinig (mikropono)
+Mga Setting → Boses at mikropono → Mic at wika.
+- Wika ng pagkilala sa pagsasalita: ang wikang ginagamit mo sa mikropono. Baguhin ito anumang oras.
+- Panatilihing naka-on ang mikropono (palaging nakikinig): kapag naka-on, mananatiling bukas ang mikropono. Kapag naka-off, i-on mo ito sa iyong sarili.
+- Awtomatikong ipadala kapag huminto ka sa pagsasalita: pagkatapos ng humigit-kumulang 1.5 segundo ng katahimikan ay ipinadala nang mag-isa ang iyong pangungusap. Kapag naka-off, ang mga salita ay naghihintay sa kahon para pindutin mo ang Ipadala.
+- Ang mic button sa message bar at ang banner sa itaas ay ginagawa ang parehong on/off.
+- Palaging bukas ang mikropono para sa iyo, kahit na nagsasalita si ZYRAXON. Sa sandaling magsimula kang magsalita, huminto ito at nakikinig, pagkatapos ay sasagutin ka. Ang sariling boses na bumabalik sa pamamagitan ng mikropono ay sinasala sa pamamagitan ng paghahambing ng text sa huling tugon nito.
+- Isang pangungusap ay ipinadala nang isang beses lamang. Kung uulitin ng recogniser sa ibang pagkakataon ang isang bahagyang naiibang bersyon ng parehong pangungusap, ibinabagsak ito bilang parehong pagliko.
+
+## Pagsasalita (text-to-speech)
+Mga Setting → Boses at mikropono → Profile ng boses.
+- Pumili ng boses: babae (matamis at romantiko) o lalaki (malalim at may kumpiyansa). Ang sariling mga boses ng website ay ginagamit kapag handa na; ang sariling speech engine ng telepono ay ang fallback.
+- Bilis at pitch slider, at "Subukan ang boses".
+- "Basahin ang mga sagot nang malakas" sa pagsasalita sa on o off.
+- Kung ang telepono ay walang speech engine, i-install ang Google Speech Services. Kung walang Bengali voice data ang telepono, hinahayaan ka ng isang button na i-download ito.
+- I-tap ang nagsasalitang banner para ihinto ang boses. I-tap ang Makinig sa ilalim ng anumang mensahe para marinig ito.
+- ZYRAXON ay hindi kailanman nagbabasa ng code, mga link, JSON o mga pangalan ng tool nang malakas.
+
+## Voice lab (boses changer)
+Pumili mula sa catalog ng server ayon sa kasarian (lahat, babae, lalaki), edad (bata, teen, adult, senior), at wika (Bengali, Hindi, English, Urdu, Arabic, Tamil, Nepali, Spanish, French, German, Japanese, Korean, Chinese, Russian, Turkish…). Ang "Makinig" ay nag-preview ng isang boses; Ibinabalik ng "Bumalik sa default" ang boses ng character. Para sa audio na may maraming boses, tanungin ang ahente: ang bawat bahagi ng isang diyalogo ay nakakakuha ng sarili nitong boses.
+
+## Live na boses (speech-to-speech)
+Mga Setting → Boses at mikropono → Live na boses. Gamit ang realtime na modelo (Gemini Live, OpenAI Realtime at katulad nito) maririnig ng modelo ang mikropono at sumasagot sa sarili nitong boses, sa isang stream, at maaari mo itong matakpan sa kalagitnaan ng salita. Ang sariling pagsasalita ng telepono ay naka-off sa session na ito kaya hindi ka makakarinig ng dalawang boses.
+- Gamitin ang sariling boses ng modelo: on = live talk; off = ang telepono ay nagbabasa ng mga text na sagot.
+- Ipinapakita ng katayuan: pagkonekta, pakikinig, pagsasalita, paghihintay.
+- Ang pagpili ng realtime na modelo ay mag-o-on ito nang mag-isa.
+- Kung walang realtime na modelo ang na-load, magdagdag ng Gemini o OpenAI key sa mga provider ng AI.
+- Ang boses na pinili mo sa voice profile ay ginagamit din sa live mode.
+
+## Lumulutang na mata
+Mga Setting → Aura at tema → Aura at background.
+- Isang maliit na lumulutang na globo na nasa ibabaw ng bawat iba pang app. I-tap para i-on o i-off ang mikropono; pindutin nang matagal upang buksan ang isang text box at isara itong muli.
+- Walong disenyo: mata, glow orb, neon ring, galaxy, orbit, plasma, pulsar, prism. Paglalagay sa gilid ng screen.
+- Mga voice command (wake words): kapag ang app ay nasa background, ang pagsasabi ng pangalan ay nagigising sa lumulutang na mata at ZYRAXON ay sumasagot. Mga Default: "zyraxon", "hey zyraxon" at mga karaniwang spelling sa Bengali at English. Idagdag ang iyong sariling mga salita sa anumang wika; alisin ang mga ito anumang oras.

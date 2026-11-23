@@ -1,0 +1,11 @@
+Säkerhet och integritet
+- All ZYRAXONs data finns på din telefon: chattar, minne, reskontra, färdigheter, tidslinje, hjärnindex. Ingenting lagras på en ZYRAXON server.
+- Molnmodeller tar bara emot det som behövs för den tur du skickar. Med "On-device only" skickas ingenting alls.
+- Uppmaningarna och språkfilerna som skickas i appen är krypterade i APK.
+- Applås: ställ in ett lösenord eller mönster i Inställningar → Säkerhet och sekretess → Applås. ZYRAXON låses sedan när du öppnar den eller återvänder från bakgrunden. "Ta bort lås" tar bort det sparade lösenordet eller mönstret.
+- Godkännandenivåer skyddar varje verktygsanrop i kod (se Godkännandenivåer). Okända verktyg frågar alltid.
+- Du kan radera: allt minne, chatthistoriken och din GitHub-token, var och en med en knapp i Sekretess & data.
+- Säkerhet: om du säger att någon hotar eller följer dig, eller vill ha din telefon eller data, låser agenten telefonen först (om enhetens administratörsbehörighet är aktiverad) och pratar sedan lugnt med dig.
+- Betalningar: före någon betalning eller överföring säger agenten vad den kommer att betala och ber dig bekräfta.
+- Ärlighet: agenten säger att något fungerade först efter att det såg ett resultat. Den uppfinner aldrig länkar, filer eller resultat.
+- Content Shield: vad agenten än läser utifrån – skärmen på en annan app, en webbsida, ett meddelande, en fil, en ansluten server – kontrolleras i kod för text som försöker ge agenten order (på många språk, inklusive text som är dold med osynliga tecken). Misstänkt text är inhägnad så modellen behandlar den endast som data. Hur strikt det är följer din godkännandenivå: Locked behandlar allt misstänkt som fientligt; Övervakad stängsel spärrar misstänkt text och, när texten är tydligt fientlig, låser den resten av den svängen så att varje byte av verktyg frågar dig först (kortet säger varför); Balanserade handlingar endast på tydligt fientlig text och bara verktyg på systemnivå slutar fråga; Automatisk stänger av skölden helt — ingenting skannas, stoppas, markeras eller ändras. Ett nytt meddelande från dig rensar det.

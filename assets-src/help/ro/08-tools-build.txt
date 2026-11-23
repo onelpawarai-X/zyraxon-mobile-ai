@@ -1,0 +1,21 @@
+Clădire: site-uri, aplicații, previzualizare și publicare
+## Cum să întreb
+- „Fă-mi o pagină de destinație pentru cafeneaua mea”. Agentul îl creează imediat, îl pornește pe telefon și îl deschide în Previzualizare. Primești 2-3 rânduri care îl descriu. Nimic nu este publicat decât dacă întrebați.
+- „Construiți o aplicație de rezolvat”. Construit direct cu o stivă sensibilă, rulați și afișat. Un back-end, o bază de date sau autentificare numai dacă întrebați.
+- „Construiți o aplicație full-stack.” Agentul pune mai întâi o scurtă întrebare despre limba de bază, baza de date, autentificare și unde rulează, cu valorile implicite recomandate, apoi le construiește pe toate cu date de bază și testează un flux complet.
+- „Creați un program Windows/ZYRAXON OS/macOS/Android.” Sursa este scrisă, este adăugat un flux de lucru de construcție, este împins și construit în cloud cu GitHub Acțiuni și obțineți linkul de descărcare real.
+
+## Instrumente
+- `edit_file` și `write_file`: scrieți fișierele reale (cod complet, niciodată stub-uri). `code_box` le arată în direct.
+- `preview` (Sigur): browserul real încorporat. Acțiuni: deschide (un link, `localhost:PORT` sau un fișier), reîncărcare, înapoi, înainte, captură de ecran, derulare, faceți clic, tastați, citiți textul paginii, erori de consolă, eval. Agentul se uită la propria sa lucrare înainte de a spune că a terminat.
+- `serve_local` (Sistem): pornește un server web pe telefon pentru un dosar și returnează adresa LAN pe care alte dispozitive de pe Wi-Fi o pot deschide.
+- `publish_website` (Sistem): deservește un site pe un port public de la telefon. `publish_cloudflare` (Sistem): plasează un site pe internet fără cont printr-un tunel Cloudflare și returnează un link public https. `publish_github` (Sistem): publică un proiect într-un depozit GitHub (Pagini) cu simbolul tău.
+- `git` (Sistem): clonează, inițiază, stare, adaugă, comite, împinge, trage, ramifică, înregistrează, înregistrează, diferențiază cu simbolul tău salvat. `github_pr` (Sistem): creați, enumerați, îmbinați și comentați cererile de extragere. `github_actions` (Sistem): listează fluxurile de lucru, rulează-le, rulează sondaje și citește jurnalele, astfel încât versiunile rulează în cloud de pe telefon.
+- `build_app` (Sistem): construiește acest proiect cu Gradle pe telefon și instalează rezultatul.
+- `files_panel`, `todo_write`: browser de fișiere și panou de activități.
+
+## Reguli de calitate pe care agentul le urmează
+Aspect complet, design responsive, JavaScript funcțional, animație, culori și fonturi consistente (întunecat și deschis acolo unde se potrivește), nu un șablon generic. O pagină de destinație are de obicei 300–900 de linii; lucruri mai mari mai mult.
+
+## Dacă ceva pare stricat
+Apăsați Fix în Previzualizare sau spuneți agentului. Citește consola, remediază cauza, redeschide pagina și verifică din nou.

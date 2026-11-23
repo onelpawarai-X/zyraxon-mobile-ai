@@ -1,0 +1,27 @@
+Tập tin, thiết bị đầu cuối và hệ thống
+## Tập tin
+- `read_file`, `list_dir`, `find_files`, `grep_files` (An toàn): đọc, liệt kê, tìm theo mẫu tên và tìm kiếm văn bản bên trong tệp.
+- `write_file`, `edit_file`: tạo hoặc thay đổi file. `edit_file` thực hiện tất cả: tệp mới, viết lại toàn bộ hoặc tìm và thay thế chính xác; mã xuất hiện trực tiếp trong cuộc trò chuyện. `delete_file` (Hệ thống): xóa tập tin hoặc thư mục.
+- Bất kỳ thư mục nào cũng được phép (/sdcard, Download, Documents, SD card…). Đưa ra một đường dẫn đầy đủ và nó được sử dụng như văn bản.
+- Tác nhân sẽ mở những gì nó tạo ra: `open_file` (An toàn) mở một tệp trong ứng dụng thực của điện thoại hoặc bên trong bản xem trước của ZYRAXON.
+
+## Thiết bị đầu cuối (hai cái thật)
+- android: vỏ riêng của điện thoại (busybox cộng với `sh`), bên trong hộp cát của ứng dụng. `run_shell` (Hệ thống) chạy lệnh ở đó, khuất tầm nhìn.
+- ZYRAXON OS: Hệ thống Unix đầy đủ của riêng ZYRAXON, được tích hợp trong ứng dụng: bash, apt/pkg, real git, python, node, clang. Nó hoạt động ngoại tuyến. `os_run` (Hệ thống) chạy lệnh ở đó.
+- `terminal_run` (System): chạy một dòng trong tab Terminal bạn đang xem, do đó bạn có thể thấy nó hoạt động và tiếp quản. Sử dụng shell android hoặc zyraxon. `terminal_open` đưa tab Terminal lên phía trước (chỉ khi bạn yêu cầu).
+- `system_shell` (Hệ thống): lệnh cấp hệ thống, phía trên hộp cát ứng dụng, giống như cách hệ thống thực hiện; với Shizuku hoặc root, nó có thể đạt được nhiều hơn thế.
+- Không có giới hạn thời gian mặc định; một `apt upgrade` lớn hoặc bản dựng chạy đến cuối.
+
+## Shizuku (truy cập hệ thống)
+`setup_shizuku` (System) thiết lập Shizuku, được gói bên trong ZYRAXON: kiểm tra trạng thái, cài đặt, mở, yêu cầu quyền. Chỉ bạn mới có thể nhấn Cài đặt và Cho phép; nhân viên sẽ cho bạn biết từng bước trong một dòng và thực hiện phần còn lại.
+
+## Công việc và thời gian dài
+- `background_command` (Hệ thống): lệnh tiếp tục chạy sau khi bạn đóng ứng dụng (tải xuống lớn, sao chép, xây dựng), kèm theo thông báo và nút Dừng.
+- `schedule_command` (Hệ thống): chạy lệnh theo thời gian thực ("trong 10 phút", "lúc 2 giờ sáng"); Android giữ bộ hẹn giờ để nó chạy khi đóng ứng dụng.
+- `wait` (An toàn): cố ý chờ đợi (giây, cho đến khi một cổng mở ra, một tập tin xuất hiện, một lệnh kết thúc) thay vì đoán.
+
+## ZYRAXON OS sử dụng
+Cài đặt gói (`apt install …`), chạy tập lệnh Python hoặc Node, biên dịch C, sử dụng git, chạy máy chủ, nén và giải nén, cuộn tròn, ffmpeg. Hệ thống được giải nén một cách lặng lẽ khi ứng dụng khởi động và duy trì trong suốt quá trình khởi động lại.
+
+## Màn hình thiết bị đầu cuối
+Tab Terminal là một terminal thực sự có tab ⌘ ZX. Nhập lệnh của riêng bạn hoặc xem lệnh của đại lý. Màn hình Điều hướng trong Cài đặt có lối tắt đến khung hệ thống và nút "Phiên mới" để xóa lịch sử trò chuyện để bắt đầu mới.

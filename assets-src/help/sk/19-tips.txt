@@ -1,0 +1,27 @@
+Tipy a príklady žiadostí
+## Hovorte, čo chcete, nie ako
+- „Vytvorte vstupnú stránku pre telocvičňu, tmavú a výraznú.“
+- "Vytvorte kompletnú rezervačnú aplikáciu s databázou." (agent sa najprv pýta na technické možnosti)
+- "Otvorte YouTube a zahrajte pokojnú pieseň."
+- "Posuňte sa nadol a otvorte prvý výsledok."
+- "What is my battery and Wi-Fi?"
+- "Prečítaj si moju najnovšiu SMS a povedz mi kód."
+- "Zavolaj mame." / "Prijať hovor."
+- "Urobte si životopis z tejto fotografie." (priložiť)
+- "Premeňte tento záznam stretnutia na poznámky pomocou úloh."
+- "Vytvorte plagát na piatkové podujatie v týchto farbách."
+- "Urobte zvukový dialóg medzi dvoma priateľmi, jedným chlapcom a jedným dievčaťom."
+- "Pamätajte, že moja sestra má narodeniny 3. mája."
+- "Každé ráno o ôsmej mi povedz počasie." (autopilot)
+- "Zistite, ako posielam nájomné prostredníctvom aplikácie peňaženky, aby ste to mohli urobiť znova." (zručnosť)
+- "Vráťte späť to, čo ste urobili v priečinku projektu." (časová os)
+- "Kde je moja nájomná zmluva?" (mozog)
+- "Nainštalujte balíky python a spustite tento skript." (ZYRAXON OS)
+- "Zverejnite túto stránku, aby som ju mohol zdieľať." (verejný odkaz)
+
+## Návyky, ktoré pomáhajú
+- Krátke a jasné údery dlhé. Agent vyberie predvolené nastavenia a povie vám, čo si vybral.
+- Keď položí jednu otázku, odpovedzte na ňu a pokračuje z toho istého miesta.
+- Ak chcete získať podrobnú odpoveď, povedzte „vysvetliť“ alebo „zhrnúť“; inak sú odpovede krátke.
+- Môžete sa o tom kedykoľvek porozprávať. Zastaví sa a počúva.
+- Použite režim Build na vytváranie vecí a režim Agent na robenie vecí na telefóne.

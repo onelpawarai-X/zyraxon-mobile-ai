@@ -1,0 +1,20 @@
+Farawa
+ZYRAXON mataimaki ne wanda ke zaune a cikin wayar ku Android. Yana magana da ku, yana sauraron ku, kuma yana iya yin aiki na gaske: buɗe aikace-aikace, matsa kuma buga akan allo, kiran mutane, rubuta fayiloli, gina gidajen yanar gizo da ƙa'idodi, gudanar da tsarin ZYRAXON OS, yin hotuna, sauti, bidiyo da takaddun ofis, kuma suna tunawa da ku tsawon watanni. Yana aiki a kowane harshe da kuke magana.
+
+## Mintunan farko
+- A farkon ƙaddamarwa ZYRAXON yana nuna ɗan gajeren sanarwa cewa wakili zai iya aiki akan wayarka da kanta. Danna "Samu shi, fara" don ci gaba.
+- Ƙara maɓallin AI (Saituna → Masu bayarwa & API → masu samar da AI). Manna maɓalli ga kowane mai bayarwa da kuke so (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Lokacin da ka ajiye maɓalli app ɗin yana karanta kas ɗin mai badawa kuma ya duba shi da gaske, don haka zaka ga “haɗin kai” na gaskiya da adadin ƙira.
+- Babu maɓalli? Har yanzu kuna iya amfani da samfuran kan na'urar (Saituna → Model & ainihi → Kan na'urar). Suna tafiya a waya ba tare da intanet ba.
+- Zabi samfuri tare da maɓallin ƙira a cikin sandar saƙo, da kuma harafi (Saituna → Model & ainihi → Identity).
+- Ba da izini lokacin da fasalin ke buƙatar ɗaya (duba babin Izini). Wakilin kuma zai iya buɗe maka maganganun izini tare da taɓawa ɗaya.
+- Kawai magana ko buga. "Ka sanya mani shafin sauka don gidan burodi na", "bude YouTube a buga waƙa", "menene baturi na?", "kira Mama".
+
+## Hanyoyi biyu na aiki
+Kusa da akwatin saƙo akwai maɓallin yanayi mai nau'i biyu: Agent da Gina. Duba babin Yanayin.
+
+## Inda abubuwa suke
+- Menu na hagu: hirarku, sabon taɗi, sake suna, sharewa, da canjin jigo.
+- Allon taɗi: saƙonni, allo, lissafin kayan aiki, fayiloli, tasha.
+- Preview and Code panels: duba kuma shirya abin da wakili ya gina.
+- Saituna: sassa takwas, an rufe ɗaya bayan ɗaya a cikin wannan takaddun.
+- Wannan takaddun: Saituna → Takaddun bayanai (kana nan).

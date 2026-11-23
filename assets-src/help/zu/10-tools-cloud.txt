@@ -1,0 +1,21 @@
+Amafu, inethiwekhi, amamodeli nabasizi
+## Cloud kanye ne-inthanethi
+- `web_search` (inethiwekhi): sesha iwebhu yangempela. `read_url` (inethiwekhi): landa ikhasi njengombhalo. `http_request` (inethiwekhi): noma iyiphi ikholi ye-HTTP (GET, POST, PUT, PATCH, DELETE) enezihloko nomzimba. `verify_url` (inethiwekhi): hlola ukuthi isixhumanisi sikhona ngempela futhi uthole isimo sangempela. `download_file` (Okomuntu siqu, inethiwekhi): landa i-URL efayeleni.
+- I-ejenti ivula izixhumanisi kuphela uma uyicela.
+- Amamodeli e-AI asebenza emafini ngabahlinzeki obangezile (ZYRAXON, ZYRAXON Apex i-ejenti yamafu, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode. Uhlu lwamamodeli lulayisha bukhoma futhi lugcwalise njengoba umhlinzeki ngamunye ephendula.
+- Ukwakha, ukushicilela kanye nokudonsa izicelo kusebenza ku-GitHub kanye ne-Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Vula "kudivayisi kuphela" (Izilungiselelo zokuzenzakalela) futhi akukho kholi yefu eyenziwa nhlobo: akukho mhlinzeki, akukho webhu, akukho ukulayisha.
+
+## MCP amaseva
+MCP ivumela amasevisi angaphandle ukuthi anikeze umenzeli amathuluzi engeziwe. Xhuma i-Canva, Cloudflare, Supabase, GitHub noma iseva yakho ngekheli layo (ithokheni ozikhethela yona). Amathuluzi eziphakeli ezixhunyiwe ajoyina uhlu lwamathuluzi omenzeli njengokuthi `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (bona ukuthi yini exhunyiwe nokuthi imaphi amathuluzi akhona), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (buka insiza ukuze uthole izinguquko), `mcp_complete` (qedela ngokuzenzakalelayo izimpikiswano), `mcp_ping`, `mcp_log_level`. Izingcingo zabo zingamakholi enethiwekhi, futhi amathuluzi MCP angaziwa acela imvume ngokuzenzakalelayo.
+- Isikrini MCP sibonisa iseva ngayinye enesimo Esixhunyiwe, amathuluzi ayo, izinsiza nezifanekiso zokwaziswa, kanye nezinkinobho zokuthi Engeza, Nqamula, Susa, Vumela.
+
+## Ama-sub-ejenti
+`sub_agent` (Isistimu): isandla izingxenye zomsebenzi omkhulu kubasebenzeli abasizayo abasebenza ngemuva. Izenzo: ukuzala, isimo, uhlu, umphumela, umyalezo, yima, linda. Ngamunye angasebenzisa imodeli yakhe. I-ejenti ihlanganisa futhi ihlole imiphumela yabo ngaphambi kokuthi "kwenziwe".
+
+## Imodeli ekudivayisi
+`on_device_model` (Isistimu): yenza uhlu, layisha futhi uqalise imodeli yolimi ehlala ocingweni, engenayo i-inthanethi. Kumasethingi → Imodeli nobuwena → Kudivayisi ulanda amamodeli (amancane kuya amakhulu: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); ithokheni ye-Hugging Face iyinketho futhi idingeka kuphela kumafayela anesango. Imodeli elayishiwe iyakhunjulwa futhi ilayishwe kabusha lapho yethulwa.
+
+## Iziteshi zemiyalezo
+`channel_post` (Isistimu) ivula okuthi Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail noma i-SMS enombhalo wakho usulungile. Ucindezela zithumele.

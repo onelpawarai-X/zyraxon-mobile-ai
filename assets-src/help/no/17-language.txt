@@ -1,0 +1,16 @@
+Språk
+## Appens språk
+Innstillinger → Språk og oversettelse. 60 språk. Hele grensesnittet og agentens verktøymeldinger følger det. Hvert språk har sin egen oversettelsesfil. Enhver linje som en språkfil ikke har ennå vises på engelsk, aldri tom.
+
+## Hva du snakker
+Agenten svarer alltid på språket du snakker til den, hvilket som helst språk i verden. Hvis du bytter, bytter den. Den bruker den vennlige-respektfulle formen "du" på språket ditt. Merke- og teknologinavn forblir som de er.
+
+## Stemmespråk
+- Gjenkjenningsspråk (det du snakker inn i mikrofonen): Innstillinger → Stemme og mikrofon → Mikrofon og språk.
+- Talende stemme: Innstillinger → Stemme og mikrofon → Stemmeprofil og Stemmelaben for språk som bengali, hindi, engelsk, urdu, arabisk, tamil, nepali, spansk, fransk, tysk, japansk, koreansk, kinesisk, russisk, tyrkisk.
+
+## Denne dokumentasjonen
+Bruk språkbrikkene øverst på denne siden. Hele guiden er skrevet ut på alle språk appen støtter, for hånd, og sendes inne i appen. Ingenting blir oversatt på telefonen din: hvert kapittel åpnes umiddelbart, fungerer offline og trenger ingen modell eller nøkkel.
+
+## Skrive i eget manus
+Dokumenter, plakater og design kan lages i hvilket som helst manus. For bengalsk design brukes riktig font; for andre skript er den matchende fonten valgt.

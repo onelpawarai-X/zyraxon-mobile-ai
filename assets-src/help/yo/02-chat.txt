@@ -1,0 +1,51 @@
+Ojú-ìwé ìjíròrò àti gbogbo bọ́tìnì
+## Òkè ojú-ìwé
+- Menu: ṣí àpótí òsì pẹ̀lú àwọn ìjíròrò rẹ.
+- Chat / Terminal / Code / Preview: yí ìwò pàtàkì padà. Chat ni ìjíròrò; Terminal ni tẹ́mínà gidi; Code ni ibi iṣẹ́ fáìlì pẹ̀lú Git; Preview ni aṣàwákiri tí ó wà nínú app.
+- Aura: fi ojú-ìwé ẹ̀dá alààyè tí ń rìn hàn. Àwọn bọ́tìnì ẹ̀gbẹ́ rẹ̀ ni Mic, Chat (padà sí ìjíròrò) àti Refresh (tún so àwọsánmà pọ̀ ó sì tún gbé àtòkọ àwọn àwòṣe wọlé).
+- Eto: ṣí àwọn abala eto mẹ́jọ.
+- Àsíá kan fi ipò gbohùngbohùn hàn: "Listening…", "Mic off — tap", tàbí "Speaking… tap to stop".
+- Nígbà tí ẹ̀yà tuntun bá ṣetán, àsíá ìmúdójúìwọ̀n yóò hàn pẹ̀lú àwọn bọ́tìnì Download, Install àti Allow (wo Updates).
+
+## Àtòkọ òsì (àwọn ìjíròrò)
+- "+ New chat": bẹ̀rẹ̀ ìjíròrò tuntun.
+- Ìjíròrò kọ̀ọ̀kan nínú àtòkọ fi àmì ṣíṣiṣẹ́ hàn nígbà tí aṣojú bá ń ṣiṣẹ́ níbẹ̀. Ìkọ̀wé ń yí orúkọ padà; àmì àgbélébùú ń pa á rẹ́ (lẹ́yìn ìjẹ́rìsí: gbogbo ifiranṣẹ́ inú rẹ̀ ni a ó pa rẹ́).
+- Theme: yan Horror (ẹ̀jẹ̀, iná àti òjìji), Dark (dígí dúdú tó mọ́) tàbí Light (dígí tó mọ́lẹ̀).
+
+## Ọ̀pá ifiranṣẹ́
+- Attach (àmì ìdè-ìwé): fọ́tò láti àwòrán, fọ́tò kámẹ́rà, ìwòye ìwé (yí ọ̀rọ̀ inú fọ́tò padà sí .docx tí a lè ṣàtúnṣe), pín ìkànnì kí aṣojú lè rí i ("Screen watching" tàn tàbí pa), àti àwọn fáìlì ohùn tàbí fídíò. Àwọn nǹkan tí a so mọ́ hàn bí àwọn chips; àmì àgbélébùú ń yọ ọ̀kan kúrò, "Clear all" ń yọ gbogbo wọn kúrò.
+- Bọ́tìnì ipò: Agent tàbí Build.
+- Bọ́tìnì Mic: ń tan gbohùngbohùn tí ń gbọ́ nígbà gbogbo tàbí kí ó pa á.
+- Bọ́tìnì àwòṣe: ṣí àtòkọ àwọn àwòṣe pẹ̀lú àpótí ìṣàwárí. Àwọn àwòṣe tí a fi àmì "Live" sí lè sọ̀rọ̀ pẹ̀lú ohùn tiwọn.
+- Send: ń fi ifiranṣẹ́ ránṣẹ́. Nígbà tí aṣojú bá ń ṣiṣẹ́ ó di Stop.
+- Àpótí ìtẹ̀wé sọ pé "What should I do?" ní ipò Agent àti "What should I build? Say it short" ní ipò Build.
+
+## Àwọn ifiranṣẹ́
+- Copy, Share àti Listen (ń ka ifiranṣẹ́ sókè; tẹ̀ lẹ́ẹ̀kan sí i láti dá dúró) wà nísàlẹ̀ ifiranṣẹ́ kọ̀ọ̀kan.
+- "Thinking" fi ìrònú àwòṣe hàn nígbà tí àwòṣe bá pèsè rẹ̀.
+- Kóòdù tí aṣojú bá kọ hàn ní tààrà nínú àpótí kan, ìlà lẹ́yìn ìlà, pẹ̀lú Copy, Download àti Open.
+- Àwọn fáìlì tí aṣojú bá ṣe hàn bí àwọn káàdì pẹ̀lú Open (nínú app gidi ti fóònù), Play, Share àti "Other app…".
+- Àwọn àwòrán, ohùn àti fídíò fi ìpín ọgọ́rùn-ún ìlọsíwájú hàn nígbà tí a bá ń ṣe wọ́n.
+- Àwọn káàdì irinṣẹ́ fi ohun tí aṣojú ń ṣe hàn: ń ṣiṣẹ́, ti parí, àṣeyọrí tàbí ó kùnà.
+
+## Àwọn pánẹ́lì (iṣẹ́-ṣíṣe, irinṣẹ́, fáìlì, àwọn aṣojú-kéékèèké)
+- Pátákó iṣẹ́-ṣíṣe: ètò tí aṣojú kọ fún iṣẹ́ ńlá àti ìlọsíwájú rẹ̀ (n/lápapọ̀ ti parí). O lè fi iṣẹ́ tìrẹ kún un kí o sì pa àwọn iṣẹ́ rẹ́.
+- Tools: àtòkọ gbogbo ìpè irinṣẹ́, pẹ̀lú ipò ní tààrà.
+- Files: gbogbo fáìlì tí aṣojú dá, pẹ̀lú Open, Share, Publish àti Delete (pẹ̀lú ìjẹ́rìsí) àti àpótí ìṣàwárí.
+- Sub-agents: àwọn aṣojú olùrànlọ́wọ́ tí ń ṣiṣẹ́ lẹ́yìn ìkànnì, pẹ̀lú bọ́tìnì Stop.
+- Táàbù Terminal: tẹ́mínà gidi (wo orí Files àti Terminal).
+
+## Pánẹ́lì Preview
+- Back, Forward, Stop, Reload àti àpótí àdírẹ́sì (tẹ àdírẹ́sì wẹẹ̀bù, tàbí wá lórí Google).
+- Open file: fi Word, Excel, PowerPoint, PDF, àwọn àwòrán, Markdown, CSV, kóòdù àti àwọn ojú-òpó hàn nínú app gan-an.
+- Size: dín pánẹ́lì kù tàbí mú un tóbi.
+- Fix: fi àwọn ìṣòro ojú-ìwé (àwọn àṣìṣe console, ìgbéwọlé tó kùnà) ránṣẹ́ sí aṣojú, tí yóò tún wọn ṣe lẹ́yìn ìkànnì.
+- Pick part: fọwọ́ kan apá kan ojú-ìwé, lẹ́yìn náà sọ fún aṣojú ohun tí yóò ṣe pẹ̀lú apá yẹn.
+- Bọ́tìnì Agent: béèrè ohun kan nípa ojú-ìwé; aṣojú gba àwòrán rẹ̀.
+- Quick open: àwọn ọ̀nà àbùjá sí àwọn ojú-ìwé àìpẹ́.
+
+## Ibi iṣẹ́ Code
+- Apá òsì: àwọn fáìlì rẹ (fáìlì tuntun, ṣí, fipamọ́).
+- Olùṣàtúnṣe: fi àwọn ìlà àti àwọn ohun kikọ hàn; àwọn àyípadà tí aṣojú ṣe hàn lẹ́sẹ̀kẹsẹ̀.
+- Git: repo tuntun, clone láti GitHub, scan, status, commit pẹ̀lú ifiranṣẹ́, push, pull, àwọn ẹ̀ka, token.
+- Pull requests: dá, dàpọ̀, tì. Workflows: ṣàkójọ àwọn ìṣiṣẹ́, ṣiṣẹ́ workflow kan. Log fi ìjáde àṣẹ hàn.

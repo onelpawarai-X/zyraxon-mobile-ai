@@ -1,0 +1,11 @@
+Myndir, hljóð, myndband, skjöl og hönnun
+- `generate_image` (net): búðu til mynd úr lýsingu (skrifaðu hana með smáatriðum; enska virkar best). Það birtist í spjallinu með deilingarhnöppum. Fyrir nokkra, biðjið um nokkra.
+- `generate_audio` (net): talað hljóð (.mp3) úr hvaða texta sem er. Fyrir samræður eða sögu, gefðu hverjum hluta sína eigin rödd (kyn, aldur, tungumál, tónn). Mörg tungumál, þar á meðal bengalska, hindí og enska.
+- `generate_video`: raunverulegt breytt myndband (ekki gervigreindarupptökur) úr senum — myndir, bút, texti, liti, frásögn, texta, tónlist. `ffmpeg`: hvaða bein breyting - klippa, sameina, leggja yfir, texta, hraða, hljóðblöndun, umbreyta. 5–10 mínútna myndbönd eru möguleg, smíðuð skref fyrir skref.
+- Framfarir sýna beint sem hlutfall í spjallinu; þegar því er lokið kemur skráin með Play og Share takkunum.
+- `make_document`: alvöru Word (.docx), Excel (.xlsx) eða PowerPoint (.pptx) skrá í símanum, engin þörf á uppsetningu, hvaða tungumál sem er. `office_template`: tilbúin skrifstofublöð með eyðum til að fylla út (skilið eftir umsókn, starfsumsókn, reikning, ferilskrá, viðskiptatillögu, tilboð, tilkynningu, fundargerð, samning, mánaðarreikninga og fleira).
+- Skjal úr mynd: hengdu mynd við (Doc scan). Textinn er afritaður nákvæmlega eins og hann er skrifaður (óskýr orð eru merkt), tafla verður .xlsx, annars .docx.
+- Fundargreinar: úr hljóði, afriti eða því sem þú segir. Skjalið hefur yfirlit, ákvarðanir, aðgerðaratriði (verkefni, eigandi, gjalddagi) og tilbúin drög að tölvupósti.
+- `make_design`: veggspjöld, borðar, lógó, spil, sögur, forsíður sem PNG og PDF. `brand_kit`: gefðu lógó eða liti; þær eru vistaðar, þema forritsins breytist og upp frá því nota skjöl, skyggnur og síður vörumerkjalitina þína.
+- `present_slides`: persónan talar á meðan skyggnuspjöld sýna; glærur breytast af sjálfu sér þegar röddin lýkur. Biddu um .pptx skrá ef þú vilt skrá.
+- `open_file`: opnar það sem var búið til í raunverulegu forriti símans (Word/Docs, Sheets, Slides, PDF, gallerí, vafra) eða í Preview spjaldið; umboðsmaðurinn skoðar skjáinn til að vera viss um að hann hafi opnast.

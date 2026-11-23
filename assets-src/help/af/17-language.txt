@@ -1,0 +1,16 @@
+Tale
+## Toepassingstaal
+Instellings → Taal en vertaling. 60 tale. Die hele koppelvlak en die agent se gereedskapboodskappe volg dit. Elke taal het sy eie vertaallêer. Enige reël wat 'n taallêer nog nie het nie, word in Engels gewys, nooit leeg gelaat nie.
+
+## Wat jy praat
+Die agent antwoord altyd in die taal waarmee jy hom praat, enige taal in die wêreld. As jy oorskakel, skakel dit. Dit gebruik die vriendelik-respekvolle vorm van "jy" in jou taal. Handelsmerk- en tegnologiename bly soos hulle is.
+
+## Stem tale
+- Herkenningstaal (wat jy in die mikrofoon praat): Instellings → Stem en mikrofoon → Mikrofoon en taal.
+- Praatstem: Instellings → Stem en mikrofoon → Stemprofiel, en die Stem-laboratorium vir tale soos Bengaals, Hindi, Engels, Oerdoe, Arabies, Tamil, Nepalees, Spaans, Frans, Duits, Japannees, Koreaans, Chinees, Russies, Turks.
+
+## Hierdie dokumentasie
+Gebruik die taalskyfies bo-aan hierdie bladsy. Die hele gids word in elke taal wat die toepassing ondersteun, met die hand geskryf en binne die toepassing gestuur. Niks word op jou foon vertaal nie: elke hoofstuk maak onmiddellik oop, werk vanlyn en het geen model of sleutel nodig nie.
+
+## Skryf in jou eie skrif
+Dokumente, plakkate en ontwerpe kan in enige skrif gemaak word. Vir Bengaalse ontwerpe word die regte lettertipe gebruik; vir ander skrifte word die bypassende lettertipe gekies.

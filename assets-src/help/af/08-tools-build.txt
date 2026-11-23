@@ -1,0 +1,21 @@
+Bou: werwe, toepassings, voorskou en publisering
+## Hoe om te vra
+- "Maak vir my 'n bestemmingsblad vir my koffiewinkel." Die agent bou dit dadelik, begin dit op jou foon en maak dit in Voorskou oop. Jy kry 2–3 reëls wat dit beskryf. Niks word gepubliseer tensy jy vra nie.
+- "Bou 'n doen-toepassing." Gebou direk met 'n sinvolle stapel, hardloop en gewys. 'n Agterkant, databasis of login slegs as jy vra.
+- "Bou 'n volstapel-toepassing." Die agent vra eers een kort vraag oor die agterkanttaal, databasis, aanmelding en waar dit loop, met aanbevole verstekwaardes, bou dit dan alles met saaddata en toets een volle vloei.
+- "Maak 'n Windows/ZYRAXON OS/macOS/Android program." Bron word geskryf, 'n bouwerkvloei word bygevoeg, dit word in die wolk gestoot en gebou met GitHub Aksies, en jy kry die regte aflaaiskakel.
+
+## Gereedskap
+- `edit_file` en `write_file`: skryf die regte lêers (volledige kode, nooit stompe nie). `code_box` wys hulle regstreeks.
+- `preview` (Veilig): die ingeboude regte blaaier. Aksies: maak oop ('n skakel, `localhost:PORT` of 'n lêer), herlaai, terug, vorentoe, skermskoot, blaai, klik, tik, lees bladsyteks, konsolefoute, evalueer. Die agent kyk na sy eie werk voordat hy sê dit is klaar.
+- `serve_local` (Stelsel): begin 'n webbediener op die telefoon vir 'n gids en gee die LAN adres terug wat ander toestelle op jou Wi-Fi kan oopmaak.
+- `publish_website` (Stelsel): bedien 'n webwerf op 'n publieke poort vanaf die telefoon. `publish_cloudflare` (Stelsel): plaas 'n webwerf op die internet sonder 'n rekening deur 'n Cloudflare tonnel en gee 'n publieke https-skakel terug. `publish_github` (Stelsel): publiseer 'n projek na 'n GitHub bewaarplek (Pages) met jou teken.
+- `git` (Stelsel): kloon, begin, status, voeg by, pleeg, druk, trek, tak, betaal, log, verskil met jou gestoorde teken. `github_pr` (Stelsel): skep, lys, voeg saam en lewer kommentaar op trekversoeke. `github_actions` (Stelsel): lys werkvloeie, voer dit uit, peilingslopies en lees logs, so bouwerk loop in die wolk vanaf die foon.
+- `build_app` (Stelsel): bou hierdie projek met Gradle op die telefoon en installeer die resultaat.
+- `files_panel`, `todo_write`: lêerblaaier en taakbord.
+
+## Gehaltereëls wat die agent volg
+Volledige uitleg, responsiewe ontwerp, werkende JavaScript, animasie, konsekwente kleure en lettertipes (donker en lig waar dit pas), nie 'n generiese sjabloon nie. 'n Bestemmingsbladsy is gewoonlik 300–900 reëls; groter dinge meer.
+
+## As iets stukkend lyk
+Druk Fix in Preview, of vertel die agent. Dit lees die konsole, maak die oorsaak reg, maak die bladsy weer oop en kontroleer weer.

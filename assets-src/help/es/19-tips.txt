@@ -1,0 +1,27 @@
+Consejos y ejemplos de peticiones
+## Di qué quieres, no cómo
+- "Haz una página de aterrizaje para un gimnasio, oscura y contundente."
+- "Crea una app de reservas full-stack con base de datos." (el agente primero pregunta las opciones técnicas)
+- "Abre YouTube y pon una canción tranquila."
+- "Desplázate hacia abajo y abre el primer resultado."
+- "¿Cuál es mi batería y mi Wi-Fi?"
+- "Lee mi SMS más reciente y dime el código."
+- "Llama a mamá." / "Contesta la llamada."
+- "Haz un CV a partir de esta foto." (adjúntala)
+- "Convierte esta grabación de reunión en notas con tareas."
+- "Haz un póster para el evento del viernes con estos colores."
+- "Haz un diálogo en audio entre dos amigos, un chico y una chica."
+- "Recuerda que el cumpleaños de mi hermana es el 3 de mayo."
+- "Cada mañana a las 8 dime el tiempo." (autopilot)
+- "Aprende cómo pago el alquiler con mi app de monedero para que puedas repetirlo." (skill)
+- "Deshaz lo que hiciste en la carpeta del proyecto." (línea de tiempo)
+- "¿Dónde está mi contrato de alquiler?" (brain)
+- "Instala paquetes de Python y ejecuta este script." (ZYRAXON OS)
+- "Publica este sitio para que pueda compartirlo." (enlace público)
+
+## Hábitos que ayudan
+- Corto y claro supera a largo. El agente elige valores por defecto y te dice lo que eligió.
+- Cuando hace una pregunta, respóndela y continúa desde el mismo punto.
+- Di "explica" o "resumen" para una respuesta detallada; si no, las respuestas son cortas.
+- Puedes hablar encima de él en cualquier momento. Se detiene y escucha.
+- Usa el modo Build para crear cosas y el modo Agent para hacer cosas en el teléfono.

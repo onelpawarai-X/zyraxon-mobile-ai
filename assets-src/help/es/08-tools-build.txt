@@ -1,0 +1,21 @@
+Construir: sitios, apps, vista previa y publicación
+## Cómo pedirlo
+- "Hazme una página de aterrizaje para mi cafetería." El agente la construye de inmediato, la inicia en tu teléfono y la abre en Preview. Recibes 2–3 líneas que la describen. No se publica nada a menos que lo pidas.
+- "Crea una app de tareas." Se construye directamente con un stack razonable, se ejecuta y se muestra. Un back end, base de datos o inicio de sesión solo si los pides.
+- "Crea una app full-stack." El agente primero hace una pregunta corta sobre el lenguaje del back end, la base de datos, el inicio de sesión y dónde se ejecuta, con valores recomendados por defecto, y luego construye todo con datos de ejemplo y prueba un flujo completo.
+- "Haz un programa para Windows/ZYRAXON OS/macOS/Android." Se escribe el código fuente, se añade un workflow de compilación, se sube y se compila en la nube con GitHub Actions, y recibes el enlace de descarga real.
+
+## Herramientas
+- `edit_file` y `write_file`: escriben los archivos reales (código completo, nunca esbozos). `code_box` los muestra en vivo.
+- `preview` (Safe): el navegador real integrado. Acciones: abrir (un enlace, `localhost:PORT` o un archivo), recargar, atrás, adelante, captura, desplazar, clic, escribir, leer el texto de la página, errores de consola, eval. El agente mira su propio trabajo antes de decir que está hecho.
+- `serve_local` (System): inicia un servidor web en el teléfono para una carpeta y devuelve la dirección de la red local que pueden abrir otros dispositivos de tu Wi-Fi.
+- `publish_website` (System): sirve un sitio en un puerto público desde el teléfono. `publish_cloudflare` (System): pone un sitio en internet sin cuenta mediante un túnel de Cloudflare y devuelve un enlace https público. `publish_github` (System): publica un proyecto en un repositorio de GitHub (Pages) con tu token.
+- `git` (System): clone, init, status, add, commit, push, pull, branch, checkout, log, diff con tu token guardado. `github_pr` (System): crear, listar, fusionar y comentar pull requests. `github_actions` (System): listar workflows, ejecutarlos, vigilar ejecuciones y leer logs, para que las compilaciones se ejecuten en la nube desde el teléfono.
+- `build_app` (System): compila este proyecto con Gradle en el teléfono e instala el resultado.
+- `files_panel`, `todo_write`: explorador de archivos y tablero de tareas.
+
+## Reglas de calidad que sigue el agente
+Diseño completo, diseño adaptable, JavaScript que funciona, animación, colores y tipografías coherentes (oscuro y claro cuando encaja), no una plantilla genérica. Una página de aterrizaje suele tener 300–900 líneas; las cosas más grandes, más.
+
+## Si algo se ve roto
+Pulsa Fix en Preview, o díselo al agente. Lee la consola, arregla la causa, vuelve a abrir la página y comprueba de nuevo.

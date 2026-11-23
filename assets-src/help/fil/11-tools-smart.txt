@@ -1,0 +1,45 @@
+Mga kasanayan, autopilot, pera, timeline at i-undo, utak, ahente ng tawag at memorya
+Ginagamit mo ang lahat ng ito sa pamamagitan ng pakikipag-usap: sabihin kung ano ang gusto mo at tinawag ng ahente ang tamang tool. Ang bawat aksyon ay nakalista dito kasama ang mga pagpipilian nito.
+
+## Kasanayan — magturo sa pamamagitan ng paggawa
+Ang kasanayan ay isang gawain sa telepono na natutunan ng ahente sa pamamagitan ng panonood sa iyo na gawin ito nang isang beses. Iniimbak nito kung paano hanapin muli ang bawat elemento (ang id nito, mga salita at mga kapitbahay, hindi ang posisyon ng screen nito), kaya patuloy itong gumagana kapag nagbago ang layout ng app.
+- Magdagdag ng kasanayan:`skill_record`(Personal). Sabihin ang "alamin ito bilang <pangalan>".`action: start`(na may pangalan) ay nagsimulang mag-record; pagkatapos ay gawin ang gawain — buksan ang app, i-tap, i-type, pindutin ang mga key; ang bawat hakbang ay naitala.`action: stop`nai-save ito. Sa hintuan maaari kang dumaan`params`upang gawing mga parameter ang mga nai-type na halaga (halimbawa ang numero ng telepono ay nagiging`number`, ang halaga ay nagiging`amount`) at a`description`. `action: status`sasabihin sa iyo kung naka-on ang pagre-record.
+- Magpatakbo ng isang kasanayan:`skill_run`(Personal). Bigyan`args`para sa mga parameter nito, hal. numero at halaga. Nagre-replay ito sa isang bahagi ng mga hakbang at nagpapagaling sa sarili kapag nagbago ang app. Kung nabigo ang isang hakbang, sasabihin ng resulta kung aling hakbang at kung ano ang nasa screen, at tatapusin ng ahente ang iba sa pamamagitan ng kamay.
+- Listahan ng mga kasanayan:`skill_list`(Ligtas) ay nagpapakita ng pangalan, mga parameter, mga hakbang at kung gaano kadalas tumakbo ang bawat isa. Sa pamamagitan ng isang pangalan at pag-export dito, maaari itong maibahagi`.zxskill`file.
+- Ibahagi at i-load:`skill_import`(Personal) load a`.zxskill`file mula sa isang pag-download o isang nakabahaging file bilang isang kasanayan.
+- Magtanggal ng kasanayan:`skill_delete`(System).
+- Halimbawa: "Alamin kung paano ako magpadala ng 500 kay Rahim sa pamamagitan ng aking wallet app"→gawin mo ito minsan→"Send 700 to Karim" next time.
+
+## Autopilot — "kapag nangyari ang X, gawin ang Y"
+Isang panuntunan ang gumising sa ahente nang mag-isa at ginagawa nito ang gawain nang hindi humihiling sa iyo.
+- Idagdag:`autopilot_add`(System). Mga uri: sms, notification, tawag, araw-araw, isang beses, pagitan, baterya, app. Punan lamang ang mga field na kailangan ng panuntunan:`from`(pangalan ng nagpadala o numero o pamagat ng app),`any`(kahit isa sa mga salitang ito),`all`(bawat salita),`none`(wala sa mga salitang ito),`time`"HH:MM" (araw-araw),`in_minutes` or `at_ms`(minsan),`every_minutes`(pagitan),`below`(porsiyento ng baterya),`pkg`(app package o pangalan, para sa app at mga panuntunan sa notification). Ginagawa ng ahente ang iyong pangungusap sa mga field na ito. Inililista ng resulta ang anumang pahintulot na kailangan pa (SMS, pag-access sa notification...), at hinihiling sa iyo ng ahente na i-on ito.
+- Mga Halimbawa: "Kapag may dumating na SMS sa pagbabayad mula sa aking wallet app, idagdag ito sa aking ledger." "Tuwing umaga sa 8, sabihin sa akin ang panahon." "Sa loob ng 20 minuto, ipaalala sa akin na ilabas ang tinapay." "Tuwing 30 minuto, paalala ng inuming tubig." "Kapag ang baterya ay bumaba sa 15%, sabihin sa akin." "Kapag may tumawag sa akin, log the number." "Kapag binuksan ko ang banking app, ipaalala sa akin na suriin ang badyet."
+- Listahan:`autopilot_list`Ipinapakita ng (Ligtas) ang bawat panuntunan kasama ang susunod na oras ng pagtakbo nito at kung gaano ito kadalas gumana.
+- I-pause o ipagpatuloy:`autopilot_toggle`(System). Tanggalin:`autopilot_remove`(System), ayon sa id o pamagat.
+- Kapag nagpaputok ang isang panuntunan, makakatanggap ka ng mensaheng nagsasabi, at ginagawa lang ng ahente ang trabaho.
+
+## Money ledger (personal na CFO)
+- `ledger_scan`(Personal): basahin ang wallet at bank SMS sa isang pribadong ledger: kita, paggastos, bayarin, balanse at kategorya.`days`sinasabi kung gaano kalayo ang likod (default 30). Sa`auto`sa, bawat bagong pera SMS ay idinagdag sa kanyang sarili at ikaw ay binigyan ng babala kapag ang isang badyet ay naipasa. Gumagana para sa anumang pitaka ng bansa at mga mensahe sa bangko, sa anumang pera.
+- `ledger_report`(Personal): panahon ngayon, kahapon, linggo, buwan o lahat. I-format ang text (isang handa na pasalitang buod) o xlsx (anExcelfile na may mga transaksyon at kabuuan ng kategorya, binuksan para sa iyo).
+- `ledger_budget`(Personal): magtakda ng buwanang badyet para sa isang kategorya (pagkain, singil, transportasyon, pamimili, mobile recharge, paglilipat...); ang limitasyon ng 0 ay nag-aalis nito; nang walang mga argumento, naglilista ito ng mga badyet at kasalukuyang mga babala.
+- Ang ahente ay hindi kailanman nag-imbento ng mga numero ng pera; binabasa nito ang mga ito mula sa ledger.
+
+## Timeline at i-undo
+- Lahat ng ginagawa ng ahente ay nakasulat sa timeline (ang huling 400 na pagkilos). Ang mga pagbabago sa file ay nagpapanatili ng isang kopya ng kung ano ang naroon dati.
+- `timeline_list`(Ligtas): kung ano ang ginawa ng ahente kamakailan, na may id para sa bawat isa, at kung aling mga pagbabago ang maaaring i-undo.
+- `timeline_undo`(Personal):`id`ina-undo ang isang pagsulat, pag-edit o pagtanggal — ang file ay babalik nang eksakto tulad ng dati (isang file na hindi umiiral ay inalis muli).`since_id`ina-undo ang lahat mula sa id na iyon, una ang pinakabago. Gamitin ito kapag sinabi mong "bawiin mo iyan" o "ibalik mo ito tulad ng dati".
+- I-undo ang mga saklaw ng pagsusulat, pag-edit at pagtanggal ng file. Ang isang command na tumakbo (halimbawa, pag-install ng isang bagay o pagpapadala ng mensahe) ay hindi maa-undo sa ganitong paraan.
+- Mga mensahe sa chat: upang alisin ang isang buong pag-uusap gamitin ang lapis at i-cross sa kaliwang menu, o Mga Setting→Privacy at data→Tanggalin ang kasaysayan ng chat, o Navigation→Bagong session.
+
+## Utak — pangalawang memorya para sa iyong mga file
+- `brain_index`(Ligtas): buuin o i-refresh ang offline na index sa mga folder o file (teksto,Markdown, CSV, Word, Excel, PowerPoint) at opsyonal ang SMS inbox (`sms`sa). Patakbuhin ito bago ang unang paghahanap at pagkatapos lumitaw ang mga bagong file. Ang default ay ang iyong workspace.
+- `brain_search`(Safe): itanong sa sarili mong salita, "nasaan ang kontrata ko sa pag-upa?" — ito ay gumagana offline sa anumang wika.`kind`ay file o sms;`days`mga limitasyon sa mga kamakailang item. Magbukas ng nahanap na file gamit ang`open_file`.
+
+## Tawagan ang ahente
+- `call_agent`(Personal): aksyon sa, off o status.`owner`ang pangalang sinasabi nito ("Ako ang katulong ng <owner>").`answer_after_seconds`(default 6) hinahayaan kang kunin muna. Kapag dumating ang isang tawag at hindi mo masagot, bumabati ito sa wika ng tumatawag, nagtatanong ng pangalan at dahilan, sumasagot sa mga simpleng tanong, magalang na ibinaba ang tawag at sasabihin sa iyo ang isang buod.
+- `call_log`(Safe): mga buod ng mga tawag na sinagot nito, pinakabago muna.
+- Nangangailangan ng mga pahintulot ng tawag at estado ng telepono.
+
+## Alaala
+- `memory_write`, `memory_read`, `memory_delete`(Ligtas): ang mga pangmatagalang katotohanan tungkol sa iyo (pangalan, mga kagustuhan, mga tao, mga petsa, mga proyekto) ay nakatira sa isang lokal na database at nakaligtas sa pag-restart. Sabihin ang "tandaan mo ito" at ito ay nakasulat sa parehong turn; kung may mali, ito ay aalisin o muling isusulat. Ang bawat lumang pag-uusap ay pinapanatili din, at ang mga nakaraang pagliko na tumutugma sa iyong sinasabi ay babalik nang mag-isa, kahit na ilang buwan.
+- Tingnan at baguhin ang lahat ng ito sa Mga Setting→Sistema→Memorya (susi, halaga, i-save, tanggalin ang lahat).

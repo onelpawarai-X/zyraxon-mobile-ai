@@ -1,0 +1,11 @@
+Saugumas ir privatumas
+- Visi ZYRAXON duomenys yra jūsų telefone: pokalbiai, atmintis, knyga, įgūdžiai, laiko juosta, smegenų indeksas. Niekas nesaugomas ZYRAXON serveryje.
+- Debesų modeliai gauna tik tai, ko reikia jūsų siunčiamam posūkiui. Naudojant „Tik įrenginyje“ nieko nesiunčiama.
+- Programoje pateikiami raginimai ir kalbos failai yra užšifruoti APK viduje.
+- Programos užraktas: nustatykite slaptažodį arba šabloną nustatymuose → Sauga ir privatumas → Programos užraktas. ZYRAXON užrakinamas, kai jį atidarote arba grįžtate iš fono. „Pašalinti užraktą“ ištrina išsaugotą slaptažodį arba šabloną.
+- Patvirtinimo lygiai saugo kiekvieną įrankio iškvietimą į kodą (žr. Patvirtinimo lygiai). Nežinomi įrankiai visada klausia.
+- Galite ištrinti: visą atmintį, pokalbių istoriją ir savo GitHub prieigos raktą, kiekvieną naudodami vieną mygtuką Privatumas ir duomenys.
+- Sauga: jei sakote, kad kažkas grasina ar seka jus arba nori jūsų telefono ar duomenų, agentas pirmiausia užrakina telefoną (jei įjungtas įrenginio administratoriaus leidimas), o tada ramiai su jumis pasikalba.
+- Mokėjimai: prieš bet kokį mokėjimą ar pervedimą agentas pasako, kiek mokės, ir prašo patvirtinti.
+- Sąžiningumas: agentas sako tik po to, kai pamatė rezultatą. Ji niekada nesugalvoja nuorodų, failų ar rezultatų.
+- Turinio skydas: viskas, ką agentas skaito iš išorės – kitos programos ekranas, tinklalapis, pranešimas, failas, prijungtas serveris – patikrinama teksto, kuris bando agentui duoti nurodymus (daugeliu kalbų, įskaitant tekstą, paslėptą nematomais simboliais), kode. Įtartinas tekstas yra aptvertas, todėl modelis traktuoja jį tik kaip duomenis. Kaip griežtai laikomasi jūsų patvirtinimo lygio: Užrakinta viskas, kas įtartina, laikoma priešiška; Prižiūrimas atitveria įtartiną tekstą ir, kai tekstas yra aiškiai priešiškas, užrakina likusį posūkį, todėl kiekvienas keičiamas įrankis pirmiausia klausia jūsų (kortelė nurodo kodėl); Subalansuoti veiksmai tik aiškiai priešišką tekstą ir tik sistemos lygio įrankiai nustoja klausti; Automatiškai visiškai išjungia skydą – niekas nėra nuskaitomas, sustabdomas, nepažymėtas ir nekeičiamas. Naujas jūsų pranešimas jį išvalo.

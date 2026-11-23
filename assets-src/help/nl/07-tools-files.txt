@@ -1,0 +1,27 @@
+Bestanden, terminal en systeem
+## Bestanden
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Veilig): lezen, weergeven, zoeken op naampatroon en zoeken naar tekst in bestanden.
+- `write_file`, `edit_file`: bestanden maken of wijzigen. `edit_file` doet het allemaal: nieuw bestand, volledig herschrijven of exact zoeken en vervangen; de code verschijnt live in de chat. `delete_file` (Systeem): verwijder een bestand of map.
+- Elke map is toegestaan ​​(/sdcard, Download, Documenten, SD-kaart …). Geef een volledig pad op en het wordt gebruikt zoals geschreven.
+- De agent opent wat hij maakt: `open_file` (Veilig) opent een bestand in de echte app van de telefoon, of in het voorbeeld van ZYRAXON.
+
+## Terminals (twee echte)
+- Android: de eigen shell van de telefoon (busybox plus `sh`), in de sandbox van de app. `run_shell` (Systeem) voert daar een commando uit, uit het zicht.
+- ZYRAXON OS: ZYRAXON's eigen volledige Unix-systeem, ingebouwd in de app: bash, apt/pkg, real git, python, node, clang. Het werkt offline. `os_run` (Systeem) voert daar een opdracht uit.
+- `terminal_run` (Systeem): voert een regel uit op het tabblad Terminal dat u bekijkt, zodat u kunt zien dat het werkt en het overneemt. Gebruik shell-Android of ZYRAXON OS. `terminal_open` brengt het tabblad Terminal naar voren (alleen als je daarom vraagt).
+- `system_shell` (Systeem): een opdracht op systeemniveau, boven de app-sandbox, zoals een systeemshell dat doet; met Shizuku of root kan het veel meer bereiken.
+- Er is geen standaardtermijn; een grote `apt upgrade` of build loopt tot het einde.
+
+## Shizuku (systeemtoegang)
+`setup_shizuku` (Systeem) stelt Shizuku in, gebundeld in ZYRAXON: status controleren, installeren, openen, toestemming vragen. Alleen jij kunt op Installeren en Toestaan ​​tikken; de agent vertelt u in één regel de stap en doet de rest.
+
+## Lange klussen en timing
+- `background_command` (Systeem): een commando dat blijft draaien nadat je de app afsluit (grote download, kloon, build), met een melding en een stopknop.
+- `schedule_command` (Systeem): voer een opdracht in realtime uit ("over 10 minuten", "om 02.00 uur"); Android houdt de timer vast, zodat deze loopt als de app gesloten is.
+- `wait` (Veilig): wacht expres (seconden, totdat een poort opengaat, een bestand verschijnt, een opdracht eindigt) in plaats van te raden.
+
+## ZYRAXON OS gebruikt
+Installeer pakketten (`apt install …`), voer Python of Node scripts uit, compileer C, gebruik git, voer servers uit, zip en unzip, curl, ffmpeg. Het systeem wordt geruisloos uitgepakt wanneer de app start en blijft ook bij opnieuw opstarten actief.
+
+## Het terminalscherm
+Het tabblad Terminal is een echte terminal met het tabblad ⌘ ZX. Typ uw eigen opdrachten of bekijk die van de agent. Het navigatiescherm in Instellingen heeft een snelkoppeling naar de systeemshell en een knop "Nieuwe sessie" waarmee de chatgeschiedenis wordt gewist om opnieuw te beginnen.

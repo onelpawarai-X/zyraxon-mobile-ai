@@ -1,0 +1,11 @@
+Zdjęcia, audio, wideo, dokumenty i projekty
+- `generate_image` (sieć): zrób obrazek z opisu (napisz go szczegółowo; angielski najlepiej się sprawdza). Pojawia się na czacie z przyciskami udostępniania. Dla kilku, poproś o kilka.
+- `generate_audio` (sieć): dźwięk mówiony (.mp3) dowolnego tekstu. W przypadku dialogu lub historii nadaj każdej części własny głos (płeć, wiek, język, ton). Wiele języków, w tym bengalski, hindi i angielski.
+- `generate_video`: prawdziwie zmontowane wideo (nie materiał AI) ze scen — obrazy, klipy, tekst, kolor, narracja, podpisy, muzyka. `ffmpeg`: dowolna edycja bezpośrednia — wycinanie, łączenie, nakładanie, napisy, prędkość, miks audio, konwersja. Możliwe są filmy o długości 5–10 minut, tworzone krok po kroku.
+- Postęp pokazuje na żywo procentowo na czacie; po zakończeniu plik zostanie wyświetlony z przyciskami Odtwórz i Udostępnij.
+- `make_document`: prawdziwy plik Word (.docx), Excel (.xlsx) lub PowerPoint (.pptx) w telefonie, nie wymaga instalacji, w dowolnym języku. `office_template`: gotowe dokumenty biurowe z pustymi polami do wypełnienia (wniosek o urlop, podanie o pracę, faktura, CV, propozycja biznesowa, wycena, zawiadomienie, protokoły ze spotkań, umowa, miesięczne sprawozdania i inne).
+- Dokument ze zdjęcia: dołącz zdjęcie (skan dokumentu). Tekst jest kopiowany dokładnie tak, jak został napisany (zaznaczane są niejasne słowa), tabela przyjmuje postać .xlsx, w przeciwnym razie .docx.
+- Notatki ze spotkań: z nagrania audio, transkrypcji lub Twojej wypowiedzi. Dokument zawiera podsumowanie, decyzje, elementy działań (zadanie, właściciel, termin) oraz gotowy projekt e-maila.
+- `make_design`: plakaty, banery, logo, karty, historie, okładki w formacie PNG i PDF. `brand_kit`: podaj logo lub kolory; zostaną zapisane, zmieni się motyw aplikacji i od tego momentu dokumenty, slajdy i strony będą używać kolorów Twojej marki.
+- `present_slides`: postać mówi podczas pokazywania slajdów; slajdy zmieniają się same po zakończeniu głosu. Jeśli chcesz plik, poproś o plik .pptx.
+- `open_file`: otwiera to, co zostało zrobione w prawdziwej aplikacji telefonu (Word/Dokumenty, Arkusze, Prezentacje, PDF, galeria, przeglądarka) lub w panelu Podgląd; agent sprawdza ekran, aby upewnić się, że jest otwarty.

@@ -1,0 +1,14 @@
+Veaotsing
+- Vastust pole: kontrollige oma Interneti- ja API-võtit (Seaded → Pakkujad ja API näitab tegelikku viga). Proovige mõnda muud mudelit või seadmes olevat mudelit.
+- Mikrofon ei tee midagi: luba mikrofonile luba; märkige "Hoidke mikrofon sees"; kontrollige tuvastuskeelt.
+- ZYRAXON kuuleb ennast: see filtreeritakse teksti järgi; kui see ikka juhtub, vähendage helitugevust või kasutage kõrvaklappe.
+- Lause ilmub kaks korda: praegustes versioonides fikseeritud; värskendage rakendust.
+- See ei puuduta ega loe ekraani: lülitage sisse juurdepääsetavuse teenus (Seaded → Load).
+- See peatub taustal: lubage teatised ja aku optimeerimise erand; ujuva silma kattekiht.
+- Tööriist küsib pidevalt luba: muutke taset jaotises Seaded → Automatiseerimine või vastake kaardile.
+- Play Protect blokeerib midagi: vaadake peatükki Õigused või laske agendil samme juhendada.
+- Terminal või ZYRAXON OS ei käivitu: oodake rakenduse käivitamisel esmakordset lahtipakkimist; kontrollige tasuta salvestusruumi.
+- Värskendust ei installita: luba ZYRAXON installiallikana.
+- Ei saa avaldada: lisage GitHub märk GitHub jaoks; avaliku lingi jaoks saab agent kasutada tunnelit.
+- Peatükk näitab inglise keelt: selles peatükis pole selles järgus teksti teie keeles; värskendage rakendust.
+- Midagi veidrat: kasutage seadeid → Navigeerimine → Uus seanss, et alustada puhtalt (see kustutab ainult vestluste ajaloo; mälu jääb alles).

@@ -1,0 +1,14 @@
+Modes : Agent et Build
+Il existe deux modes, choisis avec le bouton de mode à côté de la zone de message. Le choix reste jusqu'à ce que vous le changiez. La voix en direct n'est pas un troisième mode ; c'est une manière de parler que vous pouvez activer dans les Réglages (voir le chapitre Voix).
+
+## Agent
+« Automatisation complète du téléphone et du système. » Tout est ouvert : lire et piloter l'écran du téléphone, ouvrir des applications, appels, messages, appareil photo, fichiers, terminal et ZYRAXON OS, Git, aperçu, médias, sous-agents, serveurs MCP, skills, autopilot et plus encore. Choisissez Agent quand vous voulez qu'on fasse quelque chose sur votre téléphone ou simplement discuter.
+
+## Build
+« Applications full-stack, sites web et automatisation. » L'agent est un moteur de construction : à partir d'une courte phrase, il fait tout, l'exécute, le regarde et vous le montre. Il dispose de fichiers, terminal, Git, aperçu, publication, médias, mémoire et du tableau de tâches. Le contrôle du téléphone, les sous-agents et le verrouillage de l'appareil relèvent du mode Agent ; si vous en avez besoin dans Build, changez de mode.
+- Page d'accueil ou site web : dites à quoi il sert. L'agent le construit aussitôt, le lance sur votre téléphone et l'ouvre dans le panneau Preview, puis vous dit ce qu'il a fait. Il ne publie pas sans que vous le demandiez.
+- Application : dites ce que vous voulez et il construit l'application comme demandé. Un back end, une base de données ou une connexion ne sont ajoutés que si vous les demandez.
+- Full-stack : quand vous demandez un back end ou une base de données, l'agent vous pose d'abord une courte question sur les choix (langage, base de données, connexion, lieu d'exécution), avec sa recommandation, et construit après votre réponse.
+
+## Ce que signifie « demander »
+Quand l'agent a vraiment besoin de votre décision, il fait d'abord tout le reste, pose une courte question avec sa recommandation, et attend. Votre réponse reprend le travail là où il s'était arrêté.

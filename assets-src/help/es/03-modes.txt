@@ -1,0 +1,14 @@
+Modos: Agent y Build
+Hay dos modos, que se eligen con el botón de modo junto al cuadro de mensaje. La elección se mantiene hasta que la cambies. La voz en vivo no es un tercer modo; es una forma de hablar que puedes activar en Ajustes (consulta el capítulo Voz).
+
+## Agent
+"Automatización total del teléfono y del sistema." Todo está abierto: leer y manejar la pantalla del teléfono, abrir aplicaciones, llamadas, mensajes, cámara, archivos, el terminal y ZYRAXON OS, Git, vista previa, medios, subagentes, servidores MCP, skills, autopilot y más. Elige Agent cuando quieras que se haga algo en tu teléfono o simplemente quieras conversar.
+
+## Build
+"Aplicaciones full-stack, sitios web y automatización." El agente es un motor de construcción: a partir de una línea corta hace todo, lo ejecuta, lo mira y te lo muestra. Tiene archivos, terminal, Git, vista previa, publicación, medios, memoria y el tablero de tareas. El control del teléfono, los subagentes y el bloqueo del dispositivo pertenecen al modo Agent; si los necesitas en Build, cambia de modo.
+- Página de aterrizaje o sitio web: di para qué es. El agente lo construye al instante, lo inicia en tu teléfono y lo abre en el panel Preview, y luego te cuenta qué hizo. No publica a menos que lo pidas.
+- Aplicación: di lo que quieres y construye la app tal como la pides. Un back end, una base de datos o un inicio de sesión solo se añaden si lo pides.
+- Full-stack: cuando pides un back end o una base de datos, el agente primero te hace una pregunta corta sobre las opciones (lenguaje, base de datos, inicio de sesión, dónde se ejecuta), con su recomendación, y construye después de que respondas.
+
+## Qué significa "preguntar"
+Cuando el agente realmente necesita tu decisión, hace todo lo demás primero, te hace una pregunta corta con su recomendación y espera. Tu respuesta continúa el trabajo desde donde se detuvo.

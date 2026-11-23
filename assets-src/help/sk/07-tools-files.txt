@@ -1,0 +1,27 @@
+Súbory, terminál a systém
+## Súbory
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Bezpečné): čítanie, zoznam, vyhľadávanie podľa vzoru názvu a vyhľadávanie textu v súboroch.
+- `write_file`, `edit_file`: vytváranie alebo zmena súborov. `edit_file` robí všetko: nový súbor, úplné prepísanie alebo presné nájdenie a nahradenie; kód sa zobrazí naživo v chate. `delete_file` (Systém): odstránenie súboru alebo priečinka.
+- Akýkoľvek priečinok je povolený (/sdcard, Download, Documents, SD card …). Zadajte úplnú cestu a použije sa tak, ako je napísané.
+- Agent otvorí to, čo vytvorí: `open_file` (Safe) otvorí súbor v skutočnej aplikácii telefónu alebo v náhľade ZYRAXON.
+
+## Terminály (dva skutočné)
+- android: vlastný shell telefónu (busybox plus `sh`) v karanténe aplikácie. `run_shell` (Systém) tam spustí príkaz, mimo dohľadu.
+- ZYRAXON OS: vlastný úplný unixový systém ZYRAXON zabudovaný do aplikácie: bash, apt/pkg, real git, python, node, clang. Funguje offline. `os_run` (Systém) tam spustí príkaz.
+- `terminal_run` (Systém): spustí riadok na karte Terminál, ktorý sledujete, takže môžete vidieť, že funguje a prevziať kontrolu. Použite shell android alebo zyraxon. `terminal_open` presunie kartu Terminál do popredia (iba keď o to požiadate).
+- `system_shell` (Systém): príkaz na úrovni systému nad karanténou aplikácie, ako to robí systémový shell; s Shizuku alebo root môže dosiahnuť oveľa viac.
+- Neexistuje žiadny predvolený časový limit; veľká `apt upgrade` alebo zostava beží až do konca.
+
+## Shizuku (systémový prístup)
+`setup_shizuku` (Systém) nastaví Shizuku, ktoré je súčasťou ZYRAXON: kontrola stavu, inštalácia, otvorenie, vyžiadanie povolenia. Iba vy môžete klepnúť na Inštalovať a Povoliť; agent vám povie krok v jednom riadku a urobí zvyšok.
+
+## Dlhé práce a načasovanie
+- `background_command` (Systém): príkaz, ktorý je spustený aj po zatvorení aplikácie (veľké stiahnutie, klonovanie, zostavenie) s upozornením a tlačidlom Zastaviť.
+- `schedule_command` (Systém): spustiť príkaz v reálnom čase ("o 10 minút", "o 2:00."); Android drží časovač, takže beží so zatvorenou aplikáciou.
+- `wait` (Bezpečné): čakajte schválne (sekundy, kým sa otvorí port, objaví sa súbor, skončí príkaz) namiesto hádania.
+
+## ZYRAXON OS použitia
+Inštalujte balíčky (`apt install …`), spúšťajte Python alebo Node skripty, kompilujte C, používajte git, spúšťajte servery, zipsujte a rozbaľte, curl, ffmpeg. Systém sa ticho rozbalí pri spustení aplikácie a zostane zachovaný aj počas reštartov.
+
+## Obrazovka terminálu
+Záložka Terminal je skutočný terminál s kartou ⌘ ZX. Zadajte svoje vlastné príkazy alebo sledujte príkazy agenta. Navigačná obrazovka v Nastaveniach má skratku k systémovému shellu a tlačidlo „Nová relácia“, ktoré vymaže históriu chatu, aby ste mohli začať odznova.

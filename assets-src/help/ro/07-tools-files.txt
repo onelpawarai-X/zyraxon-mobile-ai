@@ -1,0 +1,27 @@
+Fișiere, terminal și sistem
+## Fișiere
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Sigur): citiți, enumerați, găsiți după model de nume și căutați text în fișiere.
+- `write_file`, `edit_file`: creați sau modificați fișiere. `edit_file` face totul: fișier nou, rescriere completă sau căutare și înlocuire exactă; codul apare live în chat. `delete_file` (Sistem): ștergeți un fișier sau dosar.
+- Este permis orice folder (/sdcard, Download, Documents, SD card …). Dați o cale completă și este folosit așa cum este scris.
+- Agentul deschide ceea ce face: `open_file` (Sigur) deschide un fișier în aplicația reală a telefonului sau în previzualizarea lui ZYRAXON.
+
+## Terminale (două reale)
+- Android: propriul shell al telefonului (busybox plus `sh`), în interiorul sandbox-ului aplicației. `run_shell` (Sistem) execută o comandă acolo, fără vedere.
+- ZYRAXON OS: propriul sistem Unix complet al lui ZYRAXON, încorporat în aplicație: bash, apt/pkg, real git, python, node, clang. Funcționează offline. `os_run` (Sistem) rulează o comandă acolo.
+- `terminal_run` (Sistem): rulează o linie în fila Terminal pe care o vizionați, astfel încât să puteți vedea că funcționează și să preia controlul. Utilizați shell Android sau ZYRAXON OS. `terminal_open` aduce fila Terminal în față (doar când întrebați).
+- `system_shell` (Sistem): o comandă la nivel de sistem, deasupra sandbox-ului aplicației, așa cum o face un shell de sistem; cu Shizuku sau root poate ajunge mult mai mult.
+- Nu există o limită de timp implicită; un `apt upgrade` mare sau build rulează până la sfârșit.
+
+## Shizuku (acces la sistem)
+`setup_shizuku` (Sistemul) setează Shizuku, inclus în ZYRAXON: verificați starea, instalați, deschideți, solicitați permisiunea. Numai tu poți atinge Instalare și Permite; agentul vă spune pasul într-o singură linie și face restul.
+
+## Lucrări lungi și timp
+- `background_command` (Sistem): o comandă care continuă să ruleze după ce închideți aplicația (descărcare mare, clonare, compilare), cu o notificare și un buton Stop.
+- `schedule_command` (Sistem): rulați o comandă în timp real ("în 10 minute", "la 2 a.m."); Android deține cronometrul, așa că rulează cu aplicația închisă.
+- `wait` (Sigur): așteptați intenționat (secunde, până când se deschide un port, apare un fișier, se termină o comandă) în loc să ghicească.
+
+## ZYRAXON OS utilizări
+Instalați pachete (`apt install …`), rulați Python sau Node scripturi, compilați C, utilizați git, rulați servere, zip și dezarhivați, curl, ffmpeg. Sistemul este despachetat în liniște când pornește aplicația și rămâne în timpul repornirilor.
+
+## Ecranul terminalului
+Fila Terminal este un terminal real cu fila ⌘ ZX. Introduceți propriile comenzi sau urmăriți cele ale agentului. Ecranul de navigare din Setări are o comandă rapidă către shell-ul sistemului și un buton „Sesiune nouă” care șterge istoricul chat-ului pentru a începe din nou.

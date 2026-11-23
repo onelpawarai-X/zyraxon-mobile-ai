@@ -1,0 +1,27 @@
+Amafayela, itheminali kanye nesistimu
+## Amafayela
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Kuphephile): funda, yenza uhlu, thola ngephethini yegama, futhi useshe umbhalo ngaphakathi kwamafayela.
+- `write_file`, `edit_file`: dala noma shintsha amafayela. `edit_file` yenza konke: ifayela elisha, bhala kabusha ngokugcwele, noma thola-futhi-umisele ngokunembile; ikhodi ivela bukhoma engxoxweni. `delete_file` (Isistimu): susa ifayela noma ifolda.
+- Noma iyiphi ifolda ivunyelwe (/ikhadi le-sd, Landa, Amadokhumenti, ikhadi le-SD ...). Nikeza indlela ephelele futhi isetshenziswa njengoba ibhaliwe.
+- Umenzeli uvula akwenzayo: `open_file` (Kuphephile) uvula ifayela kuhlelo lokusebenza lwangempela lwefoni, noma ngaphakathi kokubuka kuqala kwe-ZYRAXON.
+
+## Amatheminali (amabili angempela)
+- i-android: igobolondo lefoni (busybox kanye no-`sh`), ngaphakathi kwebhokisi lesihlabathi lohlelo lokusebenza. `run_shell` (Isistimu) isebenzisa umyalo lapho, ngaphandle kokubona.
+- ZYRAXON OS: ZYRAXON eyakhe isistimu ye-Unix ephelele, eyakhelwe kuhlelo lokusebenza: bash, apt/pkg, real git, python, node, clang. Isebenza ungaxhunyiwe ku-inthanethi. `os_run` (Isistimu) isebenzisa umyalo lapho.
+- `terminal_run` (Isistimu): isebenzisa umugqa kuthebhu Yetheminali oyibukile, ukuze uwubone usebenza futhi uthathe izintambo. Sebenzisa igobolondo le-android noma i-zyraxon. `terminal_open` iletha ithebhu yetheminali ngaphambili (kuphela uma ubuza).
+- `system_shell` (Isistimu): umyalo wezinga lesistimu, ngaphezu kwebhokisi lesihlabathi lohlelo lokusebenza, ngendlela igobolondo lesistimu elenza ngayo; nge Shizuku noma impande ingafinyelela kokuningi.
+- Awukho umkhawulo wesikhathi omisiwe; `apt upgrade` enkulu noma isakhiwo sisebenza kuze kube sekupheleni.
+
+## Shizuku (ukufinyelela ohlelweni)
+`setup_shizuku` (Isistimu) iyamisa Shizuku, igoqwe ngaphakathi ZYRAXON: hlola isimo, faka, vula, cela imvume. Uwena kuphela ongakwazi ukuthepha Faka futhi Vumela; i-ejenti ikutshela isinyathelo emugqeni owodwa bese yenza okunye.
+
+## Imisebenzi emide nesikhathi
+- `background_command` (Isistimu): umyalo oqhubeka usebenza ngemva kokuvala uhlelo lokusebenza (ukulanda okukhulu, fanisa, ukwakha), ngesaziso nenkinobho ethi Misa.
+- `schedule_command` (Isistimu): sebenzisa umyalo ngesikhathi sangempela ("emizuzwini eyi-10", "ngo-2 ekuseni); Android ibamba isibali sikhathi, ngakho sisebenza nohlelo lokusebenza luvaliwe.
+- `wait` (Kuphephile): linda ngenjongo (imizuzwana, kuze kuvuleke imbobo, kuvela ifayela, umyalo uphela) esikhundleni sokuqagela.
+
+## ZYRAXON OS ukusetshenziswa
+Faka amaphakheji (`apt install …`), sebenzisa izikripthi ze-Python noma ze-Node, hlanganisa u-C, sebenzisa i-git, sebenzisa iziphakeli, zip futhi unzip, curl, ffmpeg. Isistimu ikhishwa ngokuthula lapho uhlelo lokusebenza luqala futhi luhlala lapho luqala kabusha.
+
+## Isikrini setheminali
+Ithebhu yetheminali iyitheminali yangempela enethebhu ethi ⌘ ZX. Thayipha eyakho imiyalo noma ubuke eye-ejenti. Isikrini sokuzulazula kokuthi Izilungiselelo sinesinqamuleli segobolondo lesistimu kanye nenkinobho ethi "Iseshini entsha" esula umlando wengxoxo ukuze uqale kabusha.

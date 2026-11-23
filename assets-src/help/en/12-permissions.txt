@@ -1,0 +1,27 @@
+Permissions, one by one
+Settings → Security & privacy → Permissions. Each row shows "Granted" or a button. Tapping a row opens the system dialog; just press Allow. The agent can also open the dialog itself with `request_permission`.
+
+- Microphone: so ZYRAXON can hear you. Without it there is no voice input.
+- Camera: to take and look at photos (`look_camera`, document scan, "what do you see").
+- Location: for maps and local information.
+- Notifications: to tell you when background work finishes.
+- Files & media: to read photos, videos, audio and documents.
+- Overlay (draw over other apps): needed for the floating eye.
+- Accessibility: lets the agent read the screen and tap, swipe and type for you. This is the heart of phone automation. You switch it on in the system's Accessibility settings.
+- Battery optimization: stops Android from putting ZYRAXON to sleep while it works in the background.
+
+## Other permissions the app declares
+- SMS (read and receive): for reading codes, the money ledger and SMS autopilot rules.
+- Phone state, answer calls, call phone, contacts: for call tools and the call agent.
+- Notification access: lets autopilot react to notifications.
+- Device admin: lets `device_lock` really lock the screen.
+- Install packages: lets updates and `build_app` install APKs; Android asks you to allow ZYRAXON as an install source.
+- Foreground services (microphone, data sync) and wake lock: keep voice and long jobs alive.
+- Internet and network state: the cloud and the web.
+- Shizuku (optional): system-level access for the shell and terminal.
+
+## Google Play Protect
+If Play Protect blocks a job, the agent can open the right page, look at the real screen and go step by step through the gear and the toggle — but it asks you first, because turning protection off is your decision. To do it yourself: Play Store → profile picture → Play Protect → settings → switch off "Scan apps with Play Protect". The page has a button that opens Play Store.
+
+## Why a permission matters
+If a tool fails for a missing permission, the agent tells you which one and opens its dialog. Nothing sensitive works without your explicit Allow.

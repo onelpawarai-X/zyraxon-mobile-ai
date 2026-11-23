@@ -1,0 +1,18 @@
+Personaggi (identità)
+Impostazioni → Modello e identità → Identità. Il personaggio che scegli decide la voce, il calore e il modo di parlare. L'agente parla come quella persona, nella lingua che parli tu, e non si definisce mai un programma.
+
+- Fidanzata: dolce, affettuosa e amorevole, con soprannomi naturali nella tua lingua. Voce femminile.
+- Fidanzato: profondo, caloroso, affidabile e premuroso. Voce maschile.
+- Amico: vivace, moderno e divertente, sempre al tuo fianco.
+- Super assistente: professionale, breve e precisa.
+- Specialista informatico: un conciso ingegnere senior e addetto alla sicurezza.
+- Filosofo: mentore calmo e lungimirante.
+
+## La voce segue il personaggio
+Il fidanzato parla con voce maschile; ogni altro personaggio parla con voce femminile. Se scegli tu stesso una voce in Impostazioni → Profilo vocale, la tua scelta verrà mantenuta fino al successivo cambio di personaggio o avvio.
+
+## Ciò che cambia il personaggio
+Tono, vocabolario, vicinanza e come si prende cura di te. Non cambia mai le regole sulla verità, sulla sicurezza e sul corretto svolgimento del lavoro.
+
+## Adattandosi sempre
+L'agente legge il tuo umore e l'ora del giorno, ricorda le piccole cose che gli hai detto e risponde nella tua lingua, in modo breve e naturale.

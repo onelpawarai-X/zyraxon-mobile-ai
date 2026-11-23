@@ -1,0 +1,14 @@
+Režīmi: aģents un veidošana
+Ir divi režīmi, kurus izvēlas ar režīma pogu blakus ziņojumu lodziņam. Izvēle paliek līdz brīdim, kad to mainīsit. Dzīvā balss nav trešais režīms; tas ir runas veids, ko var ieslēgt iestatījumos (skatiet nodaļu Balss).
+
+## Aģents
+"Pilna tālruņa un sistēmas automatizācija." Viss ir atvērts: tālruņa ekrāna lasīšana un vadīšana, lietotņu atvēršana, zvani, ziņas, kamera, faili, terminālis un ZYRAXON OS, Git, priekšskatījums, multivide, apakšaģenti, MCP serveri, prasmes, autopilots un daudz kas cits. Izvēlieties Agent, ja vēlaties kaut ko darīt pa tālruni vai vienkārši runāt.
+
+## Veidot
+"Pilnas skursteņa lietotnes, vietnes un automatizācija." Aģents ir uzbūves dzinējs: no īsas līnijas tas veido visu, palaiž to, apskata un parāda jums. Tam ir faili, terminālis, Git, priekšskatījums, publicēšana, multivide, atmiņa un uzdevumu dēlis. Tālruņa vadība, apakšaģenti un ierīces bloķēšana pieder aģenta režīmam; ja jums tie ir nepieciešami Build, pārslēdzieties.
+- Galvenā lapa vai vietne: sakiet, kam tā paredzēta. Aģents to izveido uzreiz, palaiž to tālrunī un atver priekšskatījuma panelī, pēc tam pastāsta, ko tas izveidojis. Tas netiek publicēts, ja vien jūs nelūdzat.
+- Lietojumprogramma: sakiet, ko vēlaties, un tā izveido lietotni pēc pieprasījuma. Aizmugure, datu bāze vai pieteikšanās tiek pievienota tikai tad, ja to lūdzat.
+- Pilna kaudze: kad jūs jautājat par aizmuguri vai datu bāzi, aģents vispirms uzdod vienu īsu jautājumu par izvēlēm (valoda, datu bāze, pieteikšanās, kur tas darbojas) ar ieteikumu un veido pēc jūsu atbildes.
+
+## Ko nozīmē "jautāt".
+Kad aģentam patiešām ir vajadzīgs jūsu lēmums, tas vispirms dara visu pārējo, uzdod vienu īsu jautājumu ar ieteikumu un gaida. Jūsu atbilde turpina darbu no vietas, kur tā tika pārtraukta.

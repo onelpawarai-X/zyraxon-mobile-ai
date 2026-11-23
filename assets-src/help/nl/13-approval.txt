@@ -1,0 +1,23 @@
+Goedkeuringsniveaus en veiligheid van automatisering
+Instellingen → Systeem → Automatisering. Dit bepaalt hoeveel de agent mag doen voordat hij stopt en u vraagt. De instelling wordt bij elke gereedschapsoproep in code afgedwongen; een model kan het niet verbreden.
+
+## De vier niveaus
+Wijzig het niveau in Instellingen → Systeem → Automatisering. Elk niveau bepaalt wanneer de agent stopt en vraagt, en ook hoe strikt het Content Shield (zie Beveiliging en privacy) omgaat met tekst die de agent van buitenaf leest.
+1. Volledige vraag (vergrendeld): vraagt ​​vóór alles wat de telefoon verandert, hoe klein ook. Veiligste. Het Content Shield is streng: elke verdachte tekst geldt als vijandig. Gebruik het op een gedeelde telefoon of terwijl u iets nieuws test.
+2. Onder toezicht (standaard): vraagt ​​vóór systeem- en persoonlijke acties en doet het gewone werk (lezen, openen, zoeken, bouwen) zelf. Het Content Shield is standaard: verdachte tekst wordt afgeschermd als data, en als de tekst duidelijk vijandig is, vraagt ​​elk wisseltool je om de rest van die beurt.
+3. Evenwichtig: vraagt ​​alleen vóór acties op systeemniveau (shell, verwijderen, publiceren, plannen…). Persoonlijke acties zoals berichten, tikken en typen worden alleen uitgevoerd. Het Content Shield is licht: het werkt alleen op duidelijk vijandige tekst, en dan stoppen alleen tools op systeemniveau met vragen.
+4. Volledige automatisering: vraagt ​​nooit en stopt nooit. Alles loopt door en het Content Shield is volledig uitgeschakeld: er wordt niets gescand, gemarkeerd, verwijderd of gewijzigd. Dit is automatisering in de volle zin van het woord: u bent eigenaar van het risico.
+
+## De drie niveaus van tools
+- Veilig (vraagt ​​nooit op welk niveau dan ook): bestanden lezen en weergeven, geheugen, documenten, ontwerpen, status, apps en bestanden openen, wachten, vaardigheden/automatische piloot/tijdlijn/oproeplijsten, hersenonderzoek.
+- Persoonlijk (gevraagd in de eerste twee niveaus): sms, oproepen, camera, schermlezen, tikken en typen, klembord, downloads, meldingen, delen, stemverandering, herhaling van vaardigheden, geldboek, oproepagent, tijdlijn ongedaan maken.
+- Systeem (gevraagd op elk niveau behalve volledige automatisering): shell, ZYRAXON OS, builds, publiceren, verwijderen, apparaatvergrendeling, planning, Git en GitHub, ffmpeg, model op het apparaat, posten op kanalen, regels voor de automatische piloot, vaardigheden verwijderen, Shizuku. Elk hulpmiddel dat de app niet herkent (inclusief MCP-hulpmiddelen) wordt behandeld als Systeem.
+
+## De goedkeuringskaart
+Wanneer een tool uw goedkeuring nodig heeft, staat er op een kaart "Toestemming nodig", vertelt u wat de agent wil doen, toont het niveau ervan (Veilig, Persoonlijk of Systeem) en biedt "Ja, voer het uit" of "Nee, houd het uit". De kaart herinnert u er ook aan dat u kunt wijzigen hoe vaak dit wordt gevraagd in Instellingen → Automatisering.
+
+## Alleen op het apparaat
+Als deze is ingeschakeld, verlaat niets de telefoon: alleen het model op het apparaat en de lokale tools worden uitgevoerd. Alle netwerktools (zoeken, ophalen, uploaden, publiceren, GitHub, media genereren, MCP, cloudmodellen) worden in code geweigerd.
+
+## Eerste lanceringsaankondiging
+De eerste keer legt ZYRAXON uit dat de agent op uw telefoon kan handelen en waar u de rechten kunt inschakelen. Druk op "Begrepen, begin".

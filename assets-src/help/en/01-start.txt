@@ -1,0 +1,20 @@
+Getting started
+ZYRAXON is an assistant that lives inside your Android phone. It talks with you, listens to you, and can do real work: open apps, tap and type on the screen, call people, write files, build websites and apps, run a ZYRAXON OS system, make pictures, audio, video and office documents, and remember you over months. It works in any language you speak.
+
+## The first minutes
+- On first launch ZYRAXON shows a short notice that the agent can act on your phone by itself. Press "Got it, start" to go on.
+- Add an AI key (Settings → Providers & API → AI providers). Paste a key for any provider you like (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). When you save a key the app reads that provider's catalogue and checks it for real, so you see a true "connected" and the number of models.
+- No key? You can still use the on-device models (Settings → Model & identity → On-device). They run on the phone with no internet.
+- Pick a model with the model button in the message bar, and a character (Settings → Model & identity → Identity).
+- Grant permissions when a feature needs one (see the Permissions chapter). The agent can also open the permission dialog for you with one tap.
+- Just talk or type. "Make me a landing page for my bakery", "open YouTube and play a song", "what is my battery?", "call Mom".
+
+## The two ways of working
+Next to the message box there is a mode button with two modes: Agent and Build. See the Modes chapter.
+
+## Where things are
+- Left menu: your chats, new chat, rename, delete, and the theme switch.
+- Chat screen: messages, the todo board, tool list, files, the terminal.
+- Preview and Code panels: see and edit what the agent builds.
+- Settings: eight sections, covered one by one in this documentation.
+- This documentation: Settings → Documentation (you are here).

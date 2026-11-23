@@ -1,0 +1,27 @@
+Berechtigungen, eine nach der anderen
+Einstellungen → Sicherheit und Datenschutz → Berechtigungen. In jeder Zeile wird „Gewährt“ oder eine Schaltfläche angezeigt. Durch Tippen auf eine Zeile wird der Systemdialog geöffnet. drücken Sie einfach Zulassen. Der Agent kann den Dialog auch selbst mit `request_permission` öffnen.
+
+- Mikrofon: damit ZYRAXON Sie hören kann. Ohne sie gibt es keine Spracheingabe.
+- Kamera: zum Aufnehmen und Betrachten von Fotos (`look_camera`, Dokumentenscan, „Was siehst du“).
+- Standort: für Karten und lokale Informationen.
+- Benachrichtigungen: um Sie zu informieren, wenn die Hintergrundarbeit abgeschlossen ist.
+- Dateien und Medien: Zum Lesen von Fotos, Videos, Audiodateien und Dokumenten.
+- Overlay (über andere Apps zeichnen): Wird für das schwebende Auge benötigt.
+- Barrierefreiheit: Der Agent kann den Bildschirm lesen und für Sie tippen, wischen und tippen. Dies ist das Herzstück der Telefonautomatisierung. Sie schalten es in den Barrierefreiheitseinstellungen des Systems ein.
+- Batterieoptimierung: Verhindert, dass Android ZYRAXON in den Ruhezustand versetzt, während es im Hintergrund arbeitet.
+
+## Andere Berechtigungen, die die App deklariert
+- SMS (Lesen und Empfangen): Zum Lesen von Codes, dem Geldbuch und den SMS-Autopilot-Regeln.
+- Telefonstatus, Anrufe annehmen, Telefon anrufen, Kontakte: für Anruftools und den Anrufagenten.
+- Benachrichtigungszugriff: Ermöglicht dem Autopiloten, auf Benachrichtigungen zu reagieren.
+- Geräteadministrator: Ermöglicht `device_lock`, den Bildschirm wirklich zu sperren.
+- Pakete installieren: Ermöglicht die Installation von Updates und `build_app` APKs. Android fordert Sie auf, ZYRAXON als Installationsquelle zuzulassen.
+- Vordergrunddienste (Mikrofon, Datensynchronisierung) und Wecksperre: Halten Sie Sprache und lange Jobs am Leben.
+- Internet- und Netzwerkstatus: die Cloud und das Web.
+- Shizuku (optional): Zugriff auf Systemebene für die Shell und das Terminal.
+
+## Google Play Protect
+Wenn Play Protect einen Job blockiert, kann der Agent die rechte Seite öffnen, auf den echten Bildschirm schauen und Schritt für Schritt durch das Zahnrad und den Schalter gehen – aber er fragt Sie zuerst, denn das Ausschalten des Schutzes ist Ihre Entscheidung. Um es selbst zu machen: Play Store → Profilbild → Play Protect → Einstellungen → „Apps scannen mit Play Protect“ ausschalten. Die Seite verfügt über eine Schaltfläche, die Play Store öffnet.
+
+## Warum eine Erlaubnis wichtig ist
+Wenn ein Tool aufgrund einer fehlenden Berechtigung fehlschlägt, teilt Ihnen der Agent mit, welche Berechtigung vorliegt, und öffnet den entsprechenden Dialog. Nichts Sensibles funktioniert ohne Ihre ausdrückliche Erlaubnis.

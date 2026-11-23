@@ -1,0 +1,35 @@
+Ääni: puhuminen, kuunteleminen ja elävä puhe
+## Kuuntele (mikrofoni)
+Asetukset → Ääni ja mikrofoni → Mikrofoni ja kieli.
+- Puheentunnistuskieli: kieli, jota puhut mikrofoniin. Vaihda se milloin tahansa.
+- Pidä mikrofoni päällä (aina kuuntelemassa): kun se on päällä, mikrofoni pysyy auki. Kun sammutat, kytket sen päälle itse.
+- Automaattinen lähetys, kun lopetat puhumisen: noin 1,5 sekunnin hiljaisuuden jälkeen lauseesi lähetetään itsestään. Kun se ei ole käytössä, sanat odottavat ruudussa, että painat Lähetä.
+- Viestipalkin mikrofonipainike ja yläreunassa oleva banneri kytkevät saman päälle/pois.
+- Mikrofoni on aina avoinna sinulle, vaikka ZYRAXON puhuu. Heti kun alat puhua, se pysähtyy ja kuuntelee ja sitten vastaa sinulle. Sen oma ääni, joka tulee takaisin mikrofonin kautta, suodatetaan pois vertaamalla tekstiä sen viimeiseen vastaukseen.
+- Lause lähetetään vain kerran. Jos tunnistaja myöhemmin toistaa hieman erilaista versiota samasta lauseesta, se pudotetaan samana käännöksenä.
+
+## Puhuminen (tekstistä puheeksi)
+Asetukset → Ääni ja mikrofoni → Ääniprofiili.
+- Valitse ääni: nainen (suloinen ja romanttinen) tai mies (syvä ja itsevarma). Sivuston omia ääniä käytetään, kun ne ovat valmiita; puhelimen oma puhemoottori on varavaihtoehto.
+- Nopeus- ja sävelkorkeuden liukusäätimet ja "Testaa ääni".
+- "Lue vastaukset ääneen" kytkee puhumisen päälle tai pois.
+- Jos puhelimessa ei ole puhemoottoria, asenna Google Puhepalvelut. Jos puhelimessa ei ole bengali-äänitietoja, voit ladata sen painikkeella.
+- Napauta puhuvaa banneria pysäyttääksesi äänen. Napauta Kuuntele minkä tahansa viestin alla kuullaksesi sen.
+- ZYRAXON ei koskaan lue koodia, linkkejä, JSON tai työkalujen nimiä ääneen.
+
+## Voice Lab (äänenvaihtaja)
+Valitse palvelimen luettelosta sukupuolen (kaikki, tyttö, poika), iän (lapsi, teini, aikuinen, vanhempi) ja kielen (bengali, hindi, englanti, urdu, arabia, tamili, nepali, espanja, ranska, saksa, japani, korea, kiina, venäjä, turkki…) mukaan. "Listen" esikatselee ääntä; "Takaisin oletusarvoon" palauttaa hahmon äänen. Moniäänistä ääntä varten kysy agentilta: jokainen dialogin osa saa oman äänensä.
+
+## Live-ääni (puheesta puheeksi)
+Asetukset → Ääni ja mikrofoni → Live-ääni. Reaaliaikaisessa mallissa (Gemini Live, OpenAI Realtime ja vastaavat) malli kuulee mikrofonin ja vastaa omalla äänellään, yhdessä streamissa, ja voit keskeyttää sen sanan puolivälissä. Puhelimen oma puhe on kytketty pois päältä tässä istunnossa, joten et koskaan kuule kahta ääntä.
+- Käytä mallin omaa ääntä: päällä = live talk; pois päältä = puhelin lukee tekstivastaukset.
+- Tila näyttää: muodostaa yhteyden, kuuntelee, puhuu, odottaa.
+- Reaaliaikaisen mallin valitseminen käynnistää sen itsestään.
+- Jos reaaliaikaista mallia ei ole ladattu, lisää Gemini tai OpenAI avain tekoälyn tarjoajiin.
+- Ääniprofiilista valitsemaasi ääntä käytetään myös live-tilassa.
+
+## Kelluva silmä
+Asetukset → Aura ja teema → Aura ja tausta.
+- Pieni kelluva pallo, joka istuu kaikkien muiden sovellusten päällä. Napauta kytkeäksesi mikrofonin päälle tai pois päältä; paina pitkään avataksesi tekstilaatikon ja sulkeaksesi sen uudelleen.
+- Kahdeksan mallia: silmä, hehkupallo, neonrengas, galaksi, kiertorata, plasma, pulsari, prisma. Sijoitus näytön reunaan.
+- Äänikomennot (herätyssanat): kun sovellus on taustalla, nimen sanominen herättää kelluvan silmän ja ZYRAXON vastaa. Oletusasetukset: "zyraxon", "hey zyraxon" ja yleiset kirjoitusasut bengalin ja englannin kielellä. Lisää omia sanojasi millä tahansa kielellä; poista ne milloin tahansa.

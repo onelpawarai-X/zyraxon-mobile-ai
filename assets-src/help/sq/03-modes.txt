@@ -1,0 +1,14 @@
+Mënyrat: Agjenti dhe Ndërtimi
+Ka dy mënyra, të zgjedhura me butonin e modalitetit pranë kutisë së mesazheve. Zgjedhja qëndron derisa ta ndryshoni. Zëri i drejtpërdrejtë nuk është një mënyrë e tretë; është një mënyrë e të folurit që mund ta aktivizoni te Cilësimet (shih kapitullin Voice).
+
+## Agjenti
+Automatizimi i plotë i telefonit dhe sistemit. Gjithçka është e hapur: leximi dhe drejtimi i ekranit të telefonit, hapja e aplikacioneve, thirrjeve, mesazheve, kamerës, skedarëve, terminalit dhe ZYRAXON OS, Git, pamje paraprake, media, nën-agjentë, MCP serverë, aftësi, autopilot dhe më shumë. Zgjidhni Agjentin kur doni të bëni diçka në telefonin tuaj ose dëshironi thjesht të flisni.
+
+## Ndërtoni
+"Aplikacionet, faqet e internetit dhe automatizimi me grumbull të plotë." Agjenti është një motor i ndërtuar: nga një linjë e shkurtër e bën të gjithë, e drejton, e shikon dhe ua tregon. Ai ka skedarë, terminal, Git, pamje paraprake, publikim, media, memorie dhe bordin e detyrave. Kontrolli i telefonit, nën-agjentët dhe kyçja e pajisjes i përkasin modalitetit Agent; nëse ju duhen në Build, ndërroni.
+- Faqja e uljes ose faqja e internetit: thoni për çfarë shërben. Agjenti e ndërton atë menjëherë, e nis në telefonin tuaj dhe e hap në panelin e Paraafishimit, më pas ju tregon se çfarë bëri. Nuk publikohet nëse nuk e pyet.
+- Aplikacioni: thuani atë që dëshironi dhe ai ndërton aplikacionin siç kërkohet. Një fund prapa, bazë të dhënash ose hyrje shtohet vetëm nëse e kërkoni.
+- Full-stack: kur kërkoni një fund të pasme ose bazë të dhënash, agjenti së pari ju bën një pyetje të shkurtër në lidhje me zgjedhjet (gjuha, baza e të dhënave, identifikimi, ku funksionon), me rekomandimin e tij dhe ndërton pasi të përgjigjeni.
+
+## Çfarë do të thotë "pyet".
+Kur agjenti ka vërtet nevojë për vendimin tuaj, ai bën gjithçka tjetër në fillim, bën një pyetje të shkurtër me rekomandimin e tij dhe pret. Përgjigja juaj vazhdon punën nga ku u ndal.

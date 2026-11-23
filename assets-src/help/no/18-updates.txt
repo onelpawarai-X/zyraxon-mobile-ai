@@ -1,0 +1,7 @@
+Oppdateringer
+Innstillinger → Oppdateringer → Appoppdatering, eller banneret øverst i appen.
+- Appen ser etter nye utgivelser og viser "Ny oppdatering tilgjengelig — versjon".
+- Se etter oppdateringer: spør nå. Hvis du er aktuell står det slik.
+- Last ned og installer: nedlastinger med en prosentandel. Trykk på Installer når du er ferdig. Chattene, minnet og innstillingene dine forblir.
+- Hvis Android blokkerer installasjonen, trykk på tillatelsesknappen, tillat ZYRAXON som en installasjonskilde, og prøv igjen.
+- Bannerknappene: Last ned, Installer, Tillat og Lukk.

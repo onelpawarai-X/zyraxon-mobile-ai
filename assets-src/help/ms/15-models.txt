@@ -1,0 +1,15 @@
+Pembekal, model dan kunci
+## Pembekal
+ZYRAXON (talian sendiri dan ejen awan Apex, sentiasa disambungkan), OpenCode (kuota percuma), Groq (Llama sangat laju), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek dan OpenRouter. Tambahkan sebarang kunci dalam Tetapan → Pembekal & API. Kunci disimpan pada telefon anda, disemak pada katalog pembekal, dan model mengalir ke pemilih apabila setiap pembekal menjawab.
+
+## Memilih model
+Gunakan butang model dalam bar mesej atau Tetapan → Model & identiti → Model. Cari mengikut nama, tapis Semua atau Tersuai. Pilihan anda disimpan dan dipulihkan semasa pelancaran; muat semula tidak pernah menggantikan model anda yang disimpan. Model bertanda Langsung boleh bercakap dalam suara mereka sendiri (lihat suara Langsung).
+
+## Model pada peranti
+Tetapan → Model & identiti → Pada peranti. Model ini berjalan pada telefon tanpa data meninggalkannya. Fail adalah besar (ratusan MB hingga beberapa GB), jadi muat turun pada Wi-Fi. Mereka disenaraikan dari kecil hingga besar; pada telefon dengan sedikit RAM pilih yang paling ringan. Panggilan alat disokong oleh berkas Gemma dan FunctionGemma. Token Hugging Face hanya untuk fail berpagar. Model yang dimuatkan diingati.
+
+## Laman web ZYRAXON.
+zyraxonai.lovable.app: buat akaun (e-mel atau Google), buka Tetapan, Kunci API / Token Akses, buat kunci dan tampalkannya dalam apl. Tanpa kunci anda masih boleh menggunakan apl dengan model pada peranti dan alatan setempat.
+
+## Kos dan data
+Pembekal awan mengebil anda mengikut peraturan mereka sendiri. Dengan "Pada peranti sahaja" dihidupkan, tiada apa yang dihantar kepada mana-mana pembekal.

@@ -1,0 +1,23 @@
+Onay seviyeleri ve otomasyonun güvenliği
+Ayarlar → Sistem → Otomasyon. Bu, acentenin durup size sormadan önce ne kadar yapabileceğine karar verir. Ayar, her araç çağrısında kod olarak uygulanır; bir model onu genişletemez.
+
+## Dört seviye
+Ayarlar → Sistem → Otomasyon'da seviyeyi değiştirin. Her düzey, aracının ne zaman durup soru soracağına ve ayrıca İçerik Kalkanı'nın (bkz. Güvenlik ve gizlilik), aracının dışarıdan okuduğu metinlere ne kadar sıkı davranacağına karar verir.
+1. Tam sor (Kilitli): küçük de olsa telefonu değiştiren herhangi bir şeyden önce sorar. En güvenli. İçerik Kalkanı son derece katıdır: Her türlü şüpheli metin düşmanca sayılır. Paylaşılan bir telefonda veya yeni bir şeyi test ederken kullanın.
+2. Denetimli (varsayılan): sistem ve kişisel eylemlerden önce sorar ve sıradan işleri (okuma, açma, arama, oluşturma) kendi başına yapar. İçerik Kalkanı standarttır: şüpheli metin, veri olarak korunur ve metin açıkça düşmanca olduğunda, her değiştirme aracı sizden bu dönüşün geri kalanını ister.
+3. Dengeli: yalnızca sistem düzeyindeki işlemlerden (kabuk, silme, yayınlama, planlama…) önce sorar. Mesajlar, dokunmalar ve yazma gibi kişisel işlemler tek başına yürütülür. İçerik Kalkanı hafiftir: yalnızca açıkça düşmanca olan metinlere etki eder ve ardından yalnızca sistem düzeyindeki araçlar soru sormayı bırakır.
+4. Tam otomasyon: asla sormaz ve asla durmaz. Her şey doğrudan çalışır ve İçerik Kalkanı tamamen kapatılır; hiçbir şey taranmaz, işaretlenmez, kaldırılmaz veya değiştirilmez. Bu tam anlamıyla otomasyondur: risk size aittir.
+
+## Araçların üç katmanı
+- Güvenli (hiçbir seviyede sormaz): Dosyaları, hafızayı, belgeleri, tasarımları, durumu okuma ve listeleme, uygulamaları ve dosyaları açma, bekleme, beceriler/otomatik pilot/zaman çizelgesi/çağrı listeleri, beyin araması.
+- Kişisel (ilk iki seviyede sorulur): SMS, aramalar, kamera, ekran okuma, dokunma ve yazma, pano, indirmeler, bildirimler, paylaşım, ses değiştirme, becerilerin tekrar oynatılması, para defteri, çağrı aracısı, zaman çizelgesi geri alma.
+- Sistem (Tam otomasyon hariç her seviyede sorulur): kabuk, ZYRAXON OS, derlemeler, yayınlama, silme, cihaz kilitleme, planlama, Git ve GitHub, ffmpeg, cihaz üzeri model, kanallara gönderme, otopilot kuralları, silme becerileri, Shizuku. Uygulamanın tanımadığı herhangi bir araç (MCP araçları dahil) Sistem olarak değerlendirilir.
+
+## Onay kartı
+Bir araç onayınıza ihtiyaç duyduğunda, bir kartta "İzin gerekli" ifadesi yer alır, size aracının ne yapmak istediğini söyler, katmanını (Güvenli, Kişisel veya Sistem) gösterir ve "Evet, çalıştırın" veya "Hayır, uzak tutun" seçeneğini sunar. Kart ayrıca, bunun sorulma sıklığını Ayarlar → Otomasyon bölümünden değiştirebileceğinizi de hatırlatır.
+
+## Yalnızca cihazda
+Açıkken telefondan hiçbir şey çıkmıyor: yalnızca cihazdaki model ve yerel araçlar çalışıyor. Tüm ağ araçları (arama, getirme, yükleme, yayınlama, GitHub, medya oluşturma, MCP, bulut modelleri) kodda reddedilir.
+
+## İlk lansman bildirimi
+İlk seferde ZYRAXON, aracının telefonunuzda işlem yapabileceğini ve izinlerin nereden değiştirileceğini açıklıyor. "Anladım, başla"ya basın.

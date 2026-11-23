@@ -1,0 +1,14 @@
+Načini rada: Agent i Build
+Postoje dva načina rada, koja se biraju gumbom načina rada pored okvira s porukom. Izbor ostaje dok ga ne promijenite. Glas uživo nije treći način rada; to je način govora koji možete uključiti u postavkama (pogledajte poglavlje Glas).
+
+## Agent
+"Potpuna automatizacija telefona i sustava." Sve je otvoreno: čitanje i upravljanje zaslonom telefona, otvaranje aplikacija, pozivi, poruke, kamera, datoteke, terminal i ZYRAXON OS, Git, pregled, mediji, podagenti, MCP poslužitelji, vještine, autopilot i više. Odaberite agenta kada želite da se nešto obavi na vašem telefonu ili želite jednostavno razgovarati.
+
+## Build
+"Full stack aplikacije, web stranice i automatizacija." Agent je motor za izgradnju: iz kratke linije napravi cijelu stvar, pokrene je, pogleda i pokaže vam. Ima datoteke, terminal, Git, pregled, objavljivanje, medije, memoriju i ploču sa obvezama. Kontrola telefona, pod-agenti i zaključavanje uređaja pripadaju modu agenta; ako ih trebaš u Gradnji, prebaci.
+- Odredišna stranica ili web-stranica: recite čemu služi. Agent je odmah izgradi, pokrene na vašem telefonu i otvori u ploči Preview, a zatim vam kaže što je napravio. Ne objavljuje ako to ne zatražite.
+- Aplikacija: recite što želite i on izgradi aplikaciju kako ste tražili. Pozadinski sustav, baza podataka ili prijava dodaju se samo ako to zatražite.
+- Full-stack: kad zatražite pozadinski sustav ili bazu podataka, agent vam prvo postavi jedno kratko pitanje o izborima (jezik, baza podataka, prijava, gdje se izvodi), uz svoju preporuku, i gradi nakon vašeg odgovora.
+
+## Što znači "pitati"
+Kad agentu doista treba vaša odluka, prvo napravi sve ostalo, postavi jedno kratko pitanje uz svoju preporuku i čeka. Vaš odgovor nastavlja posao od mjesta na kojem je stao.

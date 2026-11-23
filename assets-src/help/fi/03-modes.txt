@@ -1,0 +1,14 @@
+Tilat: Agent ja Build
+Tilaa on kaksi, jotka valitaan viestiruudun vieressä olevalla tilapainikkeella. Valinta pysyy, kunnes muutat sen. Elävä ääni ei ole kolmas tila; se on puhetapa, jonka voit ottaa käyttöön asetuksista (katso Ääni-luku).
+
+## Agentti
+"Puhelimen ja järjestelmän täysi automatisointi." Kaikki on auki: puhelimen näytön lukeminen ja ajaminen, sovellusten avaaminen, puhelut, viestit, kamera, tiedostot, pääte ja ZYRAXON OS, Git, esikatselu, media, aliagentit, MCP palvelimet, taidot, autopilotti ja paljon muuta. Valitse Agent, kun haluat tehdä jotain puhelimellasi tai haluat vain puhua.
+
+## Rakentaa
+"Täysi pino sovelluksia, verkkosivustoja ja automaatiota." Agentti on rakennusmoottori: lyhyestä rivistä se tekee kokonaisuuden, ajaa sitä, katsoo sitä ja näyttää sen sinulle. Siinä on tiedostot, pääte, Git, esikatselu, julkaisu, media, muisti ja todo-kortti. Puhelimen ohjaus, aliagentit ja laitteen lukitus kuuluvat agenttitilaan; Jos tarvitset niitä Buildissa, vaihda.
+- Aloitussivu tai verkkosivusto: kerro, mihin se on tarkoitettu. Agentti rakentaa sen kerralla, käynnistää sen puhelimessasi ja avaa sen Esikatselu-paneelissa ja kertoo sitten, mitä se teki. Se ei julkaista, ellet pyydä.
+- Sovellus: sano mitä haluat ja se rakentaa sovelluksen pyydettäessä. Taustapää, tietokanta tai kirjautuminen lisätään vain, jos pyydät sitä.
+- Täyspino: kun kysyt taustaa tai tietokantaa, agentti kysyy ensin yhden lyhyen kysymyksen valinnoista (kieli, tietokanta, sisäänkirjautuminen, missä se toimii) suosituksellaan ja rakentaa vastauksen jälkeen.
+
+## Mitä "kysy" tarkoittaa
+Kun agentti todella tarvitsee päätöstäsi, se tekee kaiken muun ensin, kysyy yhden lyhyen kysymyksen suosituksellaan ja odottaa. Vastauksesi jatkaa työtä siitä, mihin se jäi.

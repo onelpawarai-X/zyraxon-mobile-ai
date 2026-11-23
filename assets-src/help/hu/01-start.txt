@@ -1,0 +1,20 @@
+Kezdő lépések
+A ZYRAXON egy asszisztens, aki a Android telefonjában lakik. Beszél Önnel, meghallgatja Önt, és valódi munkát végezhet: alkalmazásokat nyithat meg, koppinthat és gépelhet a képernyőn, hívhat embereket, fájlokat írhat, webhelyeket és alkalmazásokat készíthet, ZYRAXON OS rendszert futtathat, képeket, hang-, videó- ​​és irodai dokumentumokat készíthet, és hónapokon át emlékezhet Önre. Bármilyen nyelven működik, amit beszélsz.
+
+## Az első percek
+- Az első indításkor a ZYRAXON egy rövid értesítést jelenít meg arról, hogy az ügyintéző önállóan is intézkedhet a telefonján. A folytatáshoz nyomja meg az "Értem, kezdje" gombot.
+- Adjon hozzá egy AI-kulcsot (Beállítások → Szolgáltatók és API → AI-szolgáltatók). Illesszen be egy kulcsot bármely tetszőleges szolgáltatóhoz (ZYRAXON, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Amikor ment egy kulcsot, az alkalmazás beolvassa az adott szolgáltató katalógusát, és ellenőrzi, hogy valódi-e, így megjelenik a valódi „csatlakozás” és a modellek száma.
+- Nincs kulcs? Továbbra is használhatja az eszközön található modelleket (Beállítások → Modell és azonosító → Az eszközön). Telefonon futnak internet nélkül.
+- Válasszon ki egy modellt az üzenetsorban található modell gombbal, és egy karaktert (Beállítások → Modell és identitás → Identitás).
+- Engedélyek megadása, ha egy funkciónak szüksége van rá (lásd az Engedélyek fejezetet). Az ügynök egyetlen érintéssel megnyithatja az engedélyezési párbeszédpanelt is.
+- Csak beszélj vagy írj. „Készítsen nyitóoldalt a pékségemhez”, „nyissa meg a YouTube-ot és játsszon le egy dalt”, „mi az akkumulátorom?”, „Hívja fel anyát”.
+
+## A két munkamódszer
+Az üzenetablak mellett található egy mód gomb két móddal: Agent és Build. Lásd az Üzemmódok fejezetet.
+
+## Hol vannak a dolgok
+- Bal oldali menü: a csevegések, az új csevegés, az átnevezés, a törlés és a témaváltás.
+- Chat képernyő: üzenetek, teendőtábla, eszközlista, fájlok, terminál.
+- Előnézet és kód panelek: megtekintheti és szerkesztheti, hogy mit épít az ügynök.
+- Beállítások: nyolc szakasz, egyenként lefedve ebben a dokumentációban.
+- Ez a dokumentáció: Beállítások → Dokumentáció (itt van).

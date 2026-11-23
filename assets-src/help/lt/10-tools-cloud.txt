@@ -1,0 +1,21 @@
+Debesis, tinklas, modeliai ir pagalbininkai
+## Debesis ir internetas
+- `web_search` (tinklas): ieškokite tikrame žiniatinklyje. `read_url` (tinklas): gauti puslapį kaip tekstą. `http_request` (tinklas): bet koks HTTP skambutis (GET, POST, PUT, PATCH, DELETE) su antraštėmis ir turiniu. `verify_url` (tinklas): patikrinkite, ar nuoroda tikrai egzistuoja, ir sužinokite tikrąją būseną. `download_file` (asmeninis, tinklas): atsisiųskite failo URL.
+- Agentas atidaro nuorodas tik tada, kai to prašote.
+- AI modeliai veikia debesyje per jūsų pridėtus teikėjus (ZYRAXON, ZYRAXON Apex debesies agentas, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Modelių sąrašas įkeliamas tiesiogiai ir pildomas, kai kiekvienas teikėjas atsako.
+- Sukūrimo, publikavimo ir ištraukimo užklausos vykdomos per GitHub ir Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Įjunkite „tik įrenginyje“ (automatizacijos nustatymai) ir iš viso nebus skambinama iš debesies: nėra tiekėjo, nėra žiniatinklio, nėra įkėlimo.
+
+## MCP serveriai
+MCP leidžia išorinėms paslaugoms suteikti agentui papildomų įrankių. Prijunkite Canva, Cloudflare, Supabase, GitHub arba savo serverį pagal jo adresą (pasirenkamas prieigos raktas). Prijungtų serverių įrankiai prisijungia prie agento įrankių sąrašo kaip `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (žr., kas prijungta ir kokie įrankiai yra), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (žiūrėkite pakeitimų šaltinį), `mcp_complete` (automatinio užbaigimo argumentai), `mcp_ping`, `mcp_log_level`. Jų skambučiai yra tinklo skambučiai, o pagal numatytuosius nustatymus nežinomi MCP įrankiai prašo leidimo.
+- Ekrane MCP pateikiamas kiekvieno serverio prisijungimo būsenos sąrašas, jo įrankiai, ištekliai ir raginimo šablonai bei mygtukai Pridėti, atjungti, pašalinti, leisti.
+
+## Subagentai
+`sub_agent` (Sistema): didelio darbo dalis perduokite pagalbiniams agentams, dirbantiems fone. Veiksmai: gimimas, būsena, sąrašas, rezultatas, pranešimas, sustabdyti, laukti. Kiekvienas gali naudoti savo modelį. Agentas sujungia ir patikrina jų rezultatus prieš sakydamas „atlikta“.
+
+## Įrenginio modelis
+`on_device_model` (Sistema): išvardykite, įkelkite ir paleiskite kalbos modelį, kuris veikia telefone be interneto. Nustatymuose → Modelis ir tapatybė → Įrenginyje atsisiunčiate modelius (nuo mažo iki didelio: FunctionGemma 270M, Qwen3 0.6B, Gemma 4 E2B…); Hugging Face prieigos raktas yra neprivalomas ir reikalingas tik užblokuotiems failams. Įkeltas modelis įsimenamas ir įkeliamas iš naujo paleidimo metu.
+
+## Pranešimų kanalai
+`channel_post` (Sistema) atidaro Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail arba SMS žinutę su paruoštu tekstu. Pats spaudžiate siųsti.

@@ -1,0 +1,21 @@
+Cloud, rețea, modele și ajutoare
+## Cloud și internet
+- `web_search` (rețea): căutați pe web real. `read_url` (rețea): preluați o pagină ca text. `http_request` (rețea): orice apel HTTP (GET, POST, PUT, PATCH, DELETE) cu anteturi și corp. `verify_url` (rețea): verificați existența unei legături și obțineți starea reală. `download_file` (Personal, de rețea): descărcați o adresă URL într-un fișier.
+- Agentul deschide link-uri numai atunci când îi ceri.
+- Modelele AI rulează în cloud prin intermediul furnizorilor pe care i-ați adăugat (ZYRAXON, ZYRAXON Apex agent cloud, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter, OpenCode). Lista de modele se încarcă live și se completează pe măsură ce fiecare furnizor răspunde.
+- Solicitările de compilare, publicare și extragere rulează prin GitHub și Cloudflare (`publish_*`, `github_actions`, `github_pr`, `git`).
+- Porniți „numai pe dispozitiv” (Setări de automatizare) și nu se efectuează niciun apel în cloud: fără furnizor, fără web, fără încărcare.
+
+## MCP servere
+MCP permite serviciilor externe să ofere agentului instrumente suplimentare. Conectați Canva, Cloudflare, Supabase, GitHub sau propriul dvs. server prin adresa sa (indicativ opțional). Instrumentele serverelor conectate se alătură listei de instrumente a agentului ca `server__tool`.
+- `mcp_connect`, `mcp_disconnect`, `mcp_list` (vedeți ce este conectat și ce instrumente există), `mcp_resources`, `mcp_read_resource`, `mcp_prompts`, `mcp_prompt`, `mcp_subscribe` (vizionați o resursă pentru modificări), `mcp_complete` (argumente de completare automată), `mcp_ping`, `mcp_log_level`. Apelurile lor sunt apeluri de rețea, iar instrumentele MCP necunoscute solicită permisiunea în mod implicit.
+- Ecranul MCP afișează fiecare server cu starea Conectat, instrumentele, resursele și șabloanele de solicitare ale acestuia și butoanele Adăugați, Deconectați, Eliminați, Permiteți.
+
+## Sub-agenți
+`sub_agent` (Sistem): predați părți ale unei sarcini mari agenților de ajutor care rulează în fundal. Acțiuni: spawn, stare, listă, rezultat, mesaj, oprire, așteptare. Fiecare își poate folosi propriul model. Agentul combină și verifică rezultatele lor înainte de a spune „terminat”.
+
+## Model pe dispozitiv
+`on_device_model` (Sistem): enumerați, încărcați și rulați un model de limbă care se află pe telefon, fără internet. În Setări → Model și identitate → Pe dispozitiv descărcați modele (de la mic la mare: FunctionGemma 270M, Qwen3 0,6B, Gemma 4 E2B…); un token Hugging Face este opțional și necesar doar pentru fișierele cu blocare. Un model încărcat este reținut și reîncărcat la lansare.
+
+## Canale de mesagerie
+`channel_post` (Sistemul) deschide Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail sau SMS-ul cu textul gata. Apăsați pe trimiteți.

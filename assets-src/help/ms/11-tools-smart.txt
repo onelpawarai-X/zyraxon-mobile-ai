@@ -1,0 +1,45 @@
+Kemahiran, autopilot, wang, garis masa dan buat asal, otak, ejen panggilan dan ingatan
+Anda menggunakan semua ini dengan bercakap: katakan apa yang anda mahu dan ejen memanggil alat yang betul. Setiap tindakan disenaraikan di sini dengan pilihannya.
+
+## Kemahiran - mengajar dengan melakukan
+Kemahiran ialah tugas telefon yang dipelajari oleh ejen dengan melihat anda melakukannya sekali. Ia menyimpan cara untuk mencari setiap elemen sekali lagi (id, perkataan dan jirannya, bukan kedudukan skrinnya), jadi ia terus berfungsi apabila reka letak apl berubah.
+- Tambah kemahiran: `skill_record` (Peribadi). Sebut "belajar ini sebagai <nama>". `action: start` (dengan nama) mula merakam; kemudian lakukan tugas — buka aplikasi, ketik, taip, tekan kekunci; setiap langkah direkodkan. `action: stop` menyimpannya. Pada hentian anda boleh lulus `params` untuk menukar nilai yang ditaip menjadi parameter (contohnya nombor telefon menjadi `number`, jumlahnya menjadi `amount`) dan `description`. `action: status` memberitahu anda sama ada rakaman dihidupkan.
+- Jalankan kemahiran: `skill_run` (Peribadi). Berikan `args` untuk parameternya, mis. nombor dan jumlah. Ia memainkan semula dalam sebahagian kecil daripada langkah dan menyembuhkan dirinya sendiri apabila apl berubah. Jika satu langkah gagal, keputusan menyatakan langkah mana dan apa yang ada pada skrin, dan ejen menyelesaikan selebihnya dengan tangan.
+- Senaraikan kemahiran: `skill_list` (Selamat) menunjukkan nama, parameter, langkah dan kekerapan setiap satu dijalankan. Dengan nama dan eksport padanya menjadikan fail `.zxskill` yang boleh dikongsi.
+- Kongsi dan muatkan: `skill_import` (Peribadi) memuatkan fail `.zxskill` daripada muat turun atau fail kongsi sebagai kemahiran.
+- Padamkan kemahiran: `skill_delete` (Sistem).
+- Contoh: "Ketahui cara saya menghantar 500 kepada Rahim melalui apl dompet saya" → anda melakukannya sekali → "Hantar 700 kepada Karim" lain kali.
+
+## Autopilot — "apabila X berlaku, lakukan Y"
+Peraturan membangunkan ejen dengan sendirinya dan ia melakukan tugas tanpa meminta anda.
+- Tambah: `autopilot_add` (Sistem). Jenis: sms, pemberitahuan, panggilan, setiap hari, sekali, selang waktu, bateri, aplikasi. Isikan hanya medan yang diperlukan oleh peraturan: `from` (nama atau nombor pengirim atau tajuk apl), `any` (sekurang-kurangnya satu daripada perkataan ini), `all` (setiap perkataan), `none` (tiada satu pun daripada perkataan ini), `time` "HH:MM" (harian), `in_minutes` atau `at_ms` (sekali), `every_minutes`] (sekali), `every_minutes`] (selang), `every_minutes` (selang) pakej atau nama, untuk peraturan apl dan pemberitahuan). Ejen menukar ayat anda kepada medan ini. Hasilnya menyenaraikan sebarang kebenaran yang masih diperlukan (SMS, akses pemberitahuan…), dan ejen meminta anda menghidupkannya.
+- Contoh: "Apabila SMS pembayaran diterima daripada apl dompet saya, tambahkannya pada lejar saya." "Setiap pagi pukul 8, beritahu saya cuaca." "Dalam 20 minit, ingatkan saya nak keluarkan roti." "Setiap 30 minit, peringatan minum air." "Apabila bateri habis 15%, beritahu saya." "Apabila seseorang menghubungi saya, log nombornya." "Apabila saya membuka aplikasi perbankan, ingatkan saya untuk menyemak belanjawan."
+- Senarai: `autopilot_list` (Selamat) menunjukkan setiap peraturan dengan masa larian seterusnya dan kekerapan ia dicetuskan.
+- Jeda atau sambung semula: `autopilot_toggle` (Sistem). Padam: `autopilot_remove` (Sistem), mengikut id atau tajuk.
+- Apabila peraturan dibubarkan, anda mendapat mesej yang menyatakan demikian, dan ejen itu hanya melakukan tugas itu.
+
+## Lejar wang (CFO peribadi)
+- `ledger_scan` (Peribadi): baca dompet dan SMS bank ke dalam lejar peribadi: pendapatan, perbelanjaan, yuran, baki dan kategori. `days` menyatakan sejauh mana ke belakang (lalai 30). Dengan `auto` dihidupkan, setiap SMS wang baharu ditambah dengan sendirinya dan anda diberi amaran apabila belanjawan diluluskan. Berfungsi untuk dompet dan mesej bank mana-mana negara, dalam sebarang mata wang.
+- `ledger_report` (Peribadi): tempoh hari ini, semalam, minggu, bulan atau semua. Format teks (ringkasan pertuturan sedia) atau xlsx (fail Excel dengan jumlah transaksi dan kategori, dibuka untuk anda).
+- `ledger_budget` (Peribadi): tetapkan belanjawan bulanan untuk kategori (makanan, bil, pengangkutan, membeli-belah, caj semula mudah alih, pemindahan...); had 0 mengeluarkannya; tanpa hujah ia menyenaraikan belanjawan dan amaran semasa.
+- Ejen tidak pernah mencipta nombor wang; ia membacanya dari lejar.
+
+## Garis masa dan buat asal
+- Semua yang dilakukan ejen ditulis pada garis masa (400 tindakan terakhir). Perubahan fail menyimpan salinan apa yang ada sebelum ini.
+- `timeline_list` (Selamat): perkara yang dilakukan ejen baru-baru ini, dengan id untuk setiap satu dan perubahan yang boleh dibuat asal.
+- `timeline_undo` (Peribadi): `id` membuat asal satu penulisan, edit atau padam — fail kembali sama seperti sebelumnya (fail yang tidak wujud akan dialih keluar semula). `since_id` membuat asal semua daripada id itu dan seterusnya, terbaharu dahulu. Gunakannya apabila anda menyebut "ambil semula" atau "letak semula seperti dahulu".
+- Buat asal meliputi penulisan, pengeditan dan pemadaman fail. Perintah yang dijalankan (contohnya memasang sesuatu atau menghantar mesej) tidak boleh dibuat asal dengan cara ini.
+- Mesej sembang: untuk mengalih keluar keseluruhan perbualan gunakan pensel dan salib di menu kiri, atau Tetapan → Privasi & data → Padam sejarah sembang, atau Navigasi → Sesi baharu.
+
+## Otak — memori kedua untuk fail anda
+- `brain_index` (Selamat): bina atau muat semula indeks luar talian pada folder atau fail (teks, Markdown, CSV, Word, Excel, PowerPoint) dan secara pilihan peti masuk SMS (`sms` dihidupkan). Jalankannya sebelum carian pertama dan selepas fail baharu muncul. Lalai ialah ruang kerja anda.
+- `brain_search` (Selamat): tanya dalam perkataan anda sendiri, "di manakah kontrak sewa saya?" — ia berfungsi di luar talian dalam mana-mana bahasa. `kind` ialah fail atau sms; `days` had kepada item terkini. Buka fail yang ditemui dengan `open_file`.
+
+## Hubungi ejen
+- `call_agent` (Peribadi): tindakan dihidupkan, dimatikan atau status. `owner` ialah nama yang tertera ("Saya ialah <owner>'s assistant"). `answer_after_seconds` (lalai 6) membolehkan anda mengambilnya dahulu. Apabila panggilan datang dan anda tidak dapat menjawab, ia memberi salam dalam bahasa pemanggil, bertanya nama dan sebabnya, menjawab soalan mudah, meletakkan telefon dengan sopan dan memberitahu anda ringkasan.
+- `call_log` (Selamat): ringkasan panggilan yang dijawab, terbaharu dahulu.
+- Memerlukan kebenaran panggilan dan keadaan telefon.
+
+## Ingatan
+- `memory_write`, `memory_read`, `memory_delete` (Selamat): fakta kekal tentang anda (nama, keutamaan, orang, tarikh, projek) tinggal dalam pangkalan data tempatan dan bertahan dimulakan semula. Sebut "ingat ini" dan ia ditulis dalam giliran yang sama; jika ada yang salah, ia dikeluarkan atau ditulis semula. Setiap perbualan lama juga disimpan, dan giliran lampau yang sepadan dengan apa yang anda katakan kembali dengan sendirinya, walaupun beberapa bulan kemudian.
+- Lihat dan tukar semuanya dalam Tetapan → Sistem → Memori (kunci, nilai, simpan, padam semua).

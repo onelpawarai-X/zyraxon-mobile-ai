@@ -1,0 +1,11 @@
+Slike, audio, video, dokumenti i dizajn
+- `generate_image` (mreža): napravite sliku iz opisa (napišite je s detaljima; engleski najbolje funkcionira). Pojavljuje se u chatu s gumbima za dijeljenje. Za nekoliko, tražite nekoliko.
+- `generate_audio` (mreža): govorni zvuk (.mp3) iz bilo kojeg teksta. Za dijalog ili priču, svakom dijelu dajte vlastiti glas (spol, dob, jezik, ton). Mnogi jezici, uključujući bengalski, hindi i engleski.
+- `generate_video`: pravi montirani video (ne AI snimak) od scena — slike, isječci, tekst, boja, naracija, opisi, glazba. `ffmpeg`: bilo koje izravno uređivanje — rezanje, spajanje, preklapanje, titlovi, brzina, audio miks, pretvaranje. Mogući su videozapisi od 5 do 10 minuta, koji se izrađuju korak po korak.
+- Napredak se prikazuje uživo kao postotak u chatu; kada je gotovo, datoteka stiže s gumbima Reproduciraj i Dijeli.
+- `make_document`: prava Word (.docx), Excel (.xlsx) ili PowerPoint (.pptx) datoteka na telefonu, nije potrebna instalacija, bilo koji jezik. `office_template`: spremni uredski papiri s prazninama za popunjavanje (molba za odsustvo, molba za posao, faktura, životopis, poslovni prijedlog, ponuda, obavijest, zapisnik sa sastanka, ugovor, mjesečni računi i više).
+- Dokument s fotografije: priložite fotografiju (Doc scan). Tekst se kopira točno onako kako je napisan (nejasne riječi su označene), tablica postaje .xlsx, inače .docx.
+- Bilješke sa sastanka: iz audio zapisa, transkripta ili onoga što kažete. Dokument ima sažetak, odluke, radnje (zadatak, vlasnik, rok) i spreman nacrt e-pošte.
+- `make_design`: posteri, banneri, logotipi, kartice, priče, naslovnice kao PNG i PDF. `brand_kit`: dajte logo ili boje; oni se spremaju, tema aplikacije se mijenja, a od tada dokumenti, slajdovi i web-mjesta koriste boje vaše marke.
+- `present_slides`: lik govori dok se prikazuju dijapozitivi; slajdovi se mijenjaju sami od sebe kada glas završi. Zatražite .pptx datoteku ako želite datoteku.
+- `open_file`: otvara ono što je napravljeno u stvarnoj aplikaciji telefona (Word/Dokumenti, Tablice, Slajdovi, PDF, galerija, preglednik) ili na ploči Preview; agent provjerava zaslon kako bi bio siguran da je otvoren.

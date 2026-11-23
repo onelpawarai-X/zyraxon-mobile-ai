@@ -1,0 +1,27 @@
+File, terminal dan sistem
+## File
+- `read_file`, `list_dir`, `find_files`, `grep_files` (Aman): membaca, membuat daftar, menemukan pola berdasarkan nama, dan mencari teks di dalam file.
+- `write_file`, `edit_file`: membuat atau mengubah file. `edit_file` melakukan semuanya: file baru, penulisan ulang penuh, atau pencarian dan penggantian yang tepat; kodenya muncul langsung di chat. `delete_file` (Sistem): menghapus file atau folder.
+- Folder apa pun diperbolehkan (/sdcard, Unduh, Dokumen, kartu SD…). Berikan path lengkap dan digunakan seperti yang tertulis.
+- Agen membuka apa yang dilakukannya: `open_file` (Aman) membuka file di aplikasi ponsel yang sebenarnya, atau di dalam pratinjau ZYRAXON.
+
+## Terminal (dua yang asli)
+- android: shell ponsel itu sendiri (busybox plus `sh`), di dalam kotak pasir aplikasi. `run_shell` (Sistem) menjalankan perintah di sana, tanpa terlihat.
+- ZYRAXON OS: sistem Unix lengkap milik ZYRAXON, terpasang di dalam aplikasi: bash, apt/pkg, real git, python, node, clang. Ini bekerja secara offline. `os_run` (Sistem) menjalankan perintah di sana.
+- `terminal_run` (Sistem): menjalankan garis di tab Terminal yang Anda tonton, sehingga Anda dapat melihatnya berfungsi dan mengambil alih. Gunakan shell android atau zyraxon. `terminal_open` membawa tab Terminal ke depan (hanya jika Anda bertanya).
+- `system_shell` (Sistem): perintah tingkat sistem, di atas kotak pasir aplikasi, seperti yang dilakukan shell sistem; dengan Shizuku atau root, itu bisa menjangkau lebih banyak lagi.
+- Tidak ada batasan waktu default; `apt upgrade` atau build yang besar berjalan hingga akhir.
+
+## Shizuku (akses sistem)
+`setup_shizuku` (Sistem) menyiapkan Shizuku, dibundel di dalam ZYRAXON: memeriksa status, menginstal, membuka, meminta izin. Hanya Anda yang dapat mengetuk Instal dan Izinkan; agen memberi tahu Anda langkahnya dalam satu baris dan melakukan sisanya.
+
+## Pekerjaan dan waktu yang panjang
+- `background_command` (Sistem): perintah yang terus berjalan setelah Anda menutup aplikasi (unduhan besar, kloning, pembuatan), dengan pemberitahuan dan tombol Berhenti.
+- `schedule_command` (Sistem): menjalankan perintah secara real time ("dalam 10 menit", "pada jam 2 pagi"); Android menahan pengatur waktu, sehingga berjalan saat aplikasi ditutup.
+- `wait` (Aman): sengaja menunggu (detik, hingga port terbuka, file muncul, perintah selesai) alih-alih menebak-nebak.
+
+## ZYRAXON OS digunakan
+Instal paket (`apt install …`), jalankan skrip Python atau Node, kompilasi C, gunakan git, jalankan server, zip dan unzip, curl, ffmpeg. Sistem dibongkar secara diam-diam saat aplikasi dimulai dan tetap ada saat aplikasi dimulai ulang.
+
+## Layar terminal
+Tab Terminal adalah terminal nyata dengan tab ⌘ ZX. Ketik perintah Anda sendiri atau perhatikan perintah agen. Layar Navigasi di Pengaturan memiliki pintasan ke shell sistem dan tombol "Sesi baru" yang menghapus riwayat obrolan untuk memulai dari awal.

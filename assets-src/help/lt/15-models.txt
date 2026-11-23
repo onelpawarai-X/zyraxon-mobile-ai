@@ -1,0 +1,15 @@
+Tiekėjai, modeliai ir raktai
+## Teikėjai
+ZYRAXON (savo linija ir Apex debesies agentas, visada prijungtas), OpenCode (nemokama kvota), Groq (labai greita lama), Gemini, OpenAI, Grok (xAI), Claude, DeepSeek ir OpenRouter. Pridėkite bet kurį raktą nustatymuose → Teikėjai ir API. Raktas išsaugomas jūsų telefone, patikrinamas pagal teikėjo katalogą, o modeliai perduodami į parinkiklį, kai kiekvienas teikėjas atsako.
+
+## Renkantis modelį
+Naudokite modelio mygtuką pranešimų juostoje arba Nustatymai → Modelis ir tapatybė → Modelis. Ieškokite pagal pavadinimą, filtruokite Visi arba Custom. Jūsų pasirinkimas išsaugomas ir atkuriamas paleidimo metu; atnaujinimas niekada nepakeičia išsaugoto modelio. Modeliai, pažymėti Live, gali kalbėti savo balsu (žr. Tiesioginis balsas).
+
+## Įrenginiuose montuojami modeliai
+Nustatymai → Modelis ir tapatybė → Įrenginyje. Modelis veikia telefone be jokių duomenų. Failai dideli (nuo šimtų MB iki kelių GB), todėl atsisiųskite Wi-Fi. Jie išvardyti nuo mažų iki didelių; telefone su mažai RAM pasirinkite lengviausią. Įrankių iškvietimą palaiko Gemma ir FunctionGemma paketai. Ženklas Hugging Face skirtas tik užblokuotiems failams. Pakrauti modeliai įsimenami.
+
+## ZYRAXON svetainė
+zyraxonai.lovable.app: sukurkite paskyrą (el. paštą arba Google), atidarykite nustatymus, API raktą / prieigos prieigos raktą, sukurkite raktą ir įklijuokite jį programoje. Be rakto vis tiek galite naudoti programą su įrenginio modeliais ir vietiniais įrankiais.
+
+## Išlaidos ir duomenys
+Debesijos paslaugų teikėjai atsiskaito jums pagal savo taisykles. Kai įjungta parinktis „Tik įrenginyje“, niekas nesiunčiama jokiam teikėjui.

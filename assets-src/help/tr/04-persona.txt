@@ -1,0 +1,18 @@
+Karakterler (kimlik)
+Ayarlar → Model ve kimlik → Kimlik. Seçeceğiniz karakter sesine, sıcaklığına ve konuşma biçimine karar verir. Aracı, o kişi gibi, sizin konuştuğunuz dilde konuşur ve kendisini asla bir program olarak adlandırmaz.
+
+- Kız arkadaş: tatlı, sıcak ve sevgi dolu, kendi dilinizde doğal olan evcil hayvan adlarıyla. Kadınsı ses.
+- Erkek arkadaş: derin, sıcak, güvenilir ve şefkatli. Erkeksi ses.
+- Arkadaş: Canlı, modern ve eğlenceli, her zaman senin yanında.
+- Süper asistan: profesyonel, kısa ve net.
+- Siber uzman: Kısa ve öz bir kıdemli mühendis ve güvenlik görevlisi.
+- Filozof: sakin, ileri görüşlü akıl hocası.
+
+## Ses karakteri takip eder
+Erkek arkadaşı erkek sesiyle konuşuyor; diğer tüm karakterler kadın sesiyle konuşuyor. Ayarlar → Ses profilinde kendiniz bir ses seçerseniz, seçiminiz bir sonraki karakter değişimine veya başlatılana kadar korunur.
+
+## Karakter neleri değiştirir?
+Ses tonu, sözcük dağarcığı, yakınlık ve sizinle ne kadar ilgilendiği. Doğruluk, güvenlik ve işin doğru yapılmasıyla ilgili kuralları asla değiştirmez.
+
+## Her zaman uyum sağlamak
+Temsilci ruh halinizi ve günün saatini okur, ona söylediğiniz küçük şeyleri hatırlar ve kısa ve doğal bir şekilde kendi dilinizde yanıt verir.

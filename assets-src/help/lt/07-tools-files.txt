@@ -1,0 +1,27 @@
+Failai, terminalas ir sistema
+## Failai
+- `read_file`, `list_dir`, `find_files`, `grep_files` (saugus): skaitykite, išvardykite, raskite pagal pavadinimą ir ieškokite teksto failuose.
+- `write_file`, `edit_file`: kurti arba keisti failus. `edit_file` daro viską: naujas failas, pilnas perrašymas arba tikslus radimas ir pakeitimas; kodas rodomas gyvai pokalbyje. `delete_file` (Sistema): ištrinti failą arba aplanką.
+- Leidžiamas bet koks aplankas (/sdcard, atsisiuntimas, dokumentai, SD kortelė ...). Nurodykite visą kelią ir jis bus naudojamas kaip parašyta.
+- Agentas atidaro tai, ką daro: `open_file` (saugus) atidaro failą tikrojoje telefono programoje arba ZYRAXON peržiūroje.
+
+## Terminalai (du tikri)
+- Android: paties telefono apvalkalas (busybox ir `sh`), programos smėlio dėžėje. `run_shell` (Sistema) vykdo komandą ten, nepastebimai.
+- ZYRAXON OS: ZYRAXON visa Unix sistema, integruota programoje: bash, apt/pkg, real git, python, node, clang. Tai veikia neprisijungus. `os_run` (Sistema) ten paleidžia komandą.
+- `terminal_run` (Sistema): paleidžia eilutę skirtuke Terminalas, kurį žiūrite, kad galėtumėte matyti, kaip ji veikia ir perimti. Naudokite „Shell Android“ arba „ZYRAXON OS“. `terminal_open` perkelia terminalo skirtuką į priekį (tik tada, kai to prašote).
+- `system_shell` (Sistema): sistemos lygio komanda virš programos smėlio dėžės, kaip tai daro sistemos apvalkalas; su Shizuku arba šaknimis jis gali pasiekti daug daugiau.
+- Nėra numatytojo laiko limito; didelis `apt upgrade` arba pastatymas veikia iki galo.
+
+## Shizuku (prieiga prie sistemos)
+`setup_shizuku` (Sistema) nustato Shizuku, įtraukta į ZYRAXON: patikrinkite būseną, įdiekite, atidarykite, paprašykite leidimo. Tik jūs galite bakstelėti Įdiegti ir leisti; agentas nurodo žingsnį vienoje eilutėje, o visa kita atlieka.
+
+## Ilgi darbai ir laikas
+- `background_command` (Sistema): komanda, kuri ir toliau vykdoma uždarius programą (didelis atsisiuntimas, klonavimas, kūrimas), su pranešimu ir sustabdymo mygtuku.
+- `schedule_command` (Sistema): paleiskite komandą realiu laiku ("po 10 minučių", "2 val."); Android laiko laikmatį, todėl jis veikia uždarius programą.
+- `wait` (Saugus): tyčia laukite (sekundės, kol atsidarys prievadas, atsiras failas, baigsis komanda), o ne spėliokite.
+
+## ZYRAXON OS naudoja
+Įdiekite paketus (`apt install …`), paleiskite Python arba Node scenarijus, kompiliuokite C, naudokite git, paleiskite serverius, supakuokite ir išpakuokite, curl, ffmpeg. Sistema tyliai išpakuojama, kai programa paleidžiama, ir lieka iš naujo paleidžiant.
+
+## Terminalo ekranas
+Skirtukas Terminalas yra tikras terminalas su ⌘ ZX skirtuku. Įveskite savo komandas arba stebėkite agento komandas. Nustatymų naršymo ekrane yra sistemos apvalkalo nuoroda ir mygtukas „Nauja sesija“, kuris išvalo pokalbių istoriją, kad būtų galima pradėti iš naujo.

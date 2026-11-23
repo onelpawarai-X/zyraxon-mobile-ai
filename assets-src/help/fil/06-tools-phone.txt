@@ -1,0 +1,34 @@
+Mga tool sa automation ng telepono
+Kinokontrol ng ahente ang iyong telepono sa pamamagitan ng mga tool. Hindi mo sila tinatawag sa iyong sarili; sasabihin mo kung ano ang gusto mo at pinipili ng ahente ang mga tool. Inililista ng kabanatang ito ang bawat tool na humahawak sa telepono, at kung paano ito binabantayan (tingnan ang Mga antas ng Pag-apruba: Ligtas, Personal, System).
+
+## Pagbubukas at paghahanap
+- `open_app` (Ligtas): buksan ang anumang naka-install na app ayon sa pangalan o package. `list_apps` (Ligtas): maglista ng mga naka-install na app. `open_settings` (Ligtas): magbukas ng page ng mga setting ng system (accessibility, overlay, notification, app, Wi-Fi, baterya, Play Protect). `launch_url` (Ligtas): magbukas ng link sa browser. `youtube_play` (Ligtas): buksan ang YouTube sa mga resulta ng paghahanap para sa iyong hiniling, at i-play ito.
+
+## Nakikita ang screen
+- `read_screen` (Personal): binabasa ang bawat text at elemento sa screen na may mga posisyon sa pag-tap. `screen_shot` (Personal): isang tunay na screenshot. Kailangan ng mga ito ang pahintulot sa Accessibility.
+- `look_camera` (Personal): kumukuha ng isang larawan gamit ang camera at tinitingnan ito. `read_media` (Personal): nagbabasa ng larawan, audio o video (mula sa isang landas o link) upang maunawaan ito ng modelo.
+
+## Kumikilos sa screen
+- `tap` (Personal): i-tap ang isang punto. `tap_text` (Personal): i-tap ang elemento na may ganitong label, mas ligtas kaysa sa mga coordinate. `swipe` (Personal): mag-scroll o ang back gesture. `type_text` (Personal): mag-type sa nakatutok na field. `press_key` (Personal): pabalik, tahanan, kamakailang, notification, mabilisang setting, lock.
+- Ang mga pagkilos sa screen ay tumatakbo nang paisa-isa, sa pagkakasunud-sunod, at pagkatapos ng bawat isa ay tumingin ang ahente sa bagong screen.
+
+## Telepono, mga mensahe at clipboard
+- `call_dial` (Personal): tumawag sa pamamagitan ng numero o pangalan ng contact. `call_state` (Personal): nagri-ring ba o aktibo ang isang tawag? `call_answer` (Personal): sagot. `call_hangup` (Personal): ibaba ang tawag.
+- `read_sms` (Personal): basahin ang pinakabagong SMS, hal. isang OTP code; maaaring mag-filter sa pamamagitan ng text o nagpadala.
+- `clipboard_read` at `clipboard_write` (Personal): basahin o isulat ang clipboard.
+- `notify` (Personal): mag-post ng totoong Android notification. `share` (Personal): buksan ang share sheet na may text, link o file. `channel_post` (System): buksan ang Telegram, WhatsApp, Facebook, Messenger, YouTube, X, Instagram, Gmail o SMS nang na-prefill na ang iyong text, handa nang ipadala.
+
+## Katayuan at mga katotohanan ng system
+- `network_status` (Ligtas): online o hindi, Wi-Fi o mobile data, Wi-Fi pangalan. `sys_info` (Ligtas): Android bersyon, modelo, CPU, RAM, storage, kasalukuyang app. `platform_info` (Ligtas): kung saan tumatakbo ang ahente. `process_list` (Ligtas): tumatakbong mga proseso.
+
+## Mga pahintulot at screen
+- `request_permission` (Ligtas): binubuksan ang dialog ng pahintulot ng system sa isang pag-tap kapag nabigo ang isang tool para sa isang nawawalang pahintulot. `device_lock` (System): i-lock ang screen nang totoo, o i-set up ang pahintulot na ginagawang posible. `floating_bubble` (Personal): i-on o i-off ang lumulutang na orb.
+- `voice_change` (Personal): baguhin ang bilis ng pagsasalita, pitch o kasarian. `live_voice` (System): i-on o i-off ang live na speech-to-speech mode.
+
+## Mga katulong sa interface
+- `code_box` at `files_panel`: buksan ang live code box o ang file browser para mapanood mo ang trabaho. `todo_write`: ang live na task board.
+
+## Mga tip
+- Maaari mong i-chain ang: "Buksan ang Mga Setting, hanapin ang Wi-Fi at sabihin sa akin ang pangalan ng network". Binabasa ng ahente ang screen pagkatapos ng bawat hakbang at magpapasya sa susunod.
+- Kung walang gagawin ang isang tap, babasahin muli ng ahente ang screen at susubukan ang ibang elemento; hindi ito tumatapik nang bulag.
+- Kung haharangin ng Play Protect ang isang bagay, maaaring maglakad ang ahente sa mga setting kasama mo (tingnan ang Mga Pahintulot).

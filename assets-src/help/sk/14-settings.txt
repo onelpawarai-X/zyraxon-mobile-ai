@@ -1,0 +1,42 @@
+Každá obrazovka s nastaveniami, jedno po druhom
+Nastavenia majú osem sekcií. Každá sekcia má pilulky pre svoje podobrazovky. Posledná použitá sekcia sa nabudúce znova otvorí.
+
+## 1. Jazyk a preklad → Jazyk aplikácií a nástrojov
+Vyberte jazyk celej aplikácie a správ nástroja agenta. Vyhľadajte zoznam a klepnite na jeden. Na obrazovke sa zobrazuje aktuálny jazyk a či je zapnutý preklad používateľského rozhrania a preklad správ nástroja. K dispozícii je 60 jazykov. Pozrite si kapitolu Jazyk.
+
+## 2. Hlas a mikrofón
+- Hlasový profil: vyberte si ženský alebo mužský hlas, rýchlosť, výšku, „Prečítajte odpovede nahlas“, Testovací hlas, tip na stiahnutie bengálskeho hlasu.
+- Mikrofón a jazyk: jazyk rozpoznávania, ponechajte mikrofón zapnutý, automaticky sa odošle, keď prestanete hovoriť.
+- Živý hlas: zapnutie/vypnutie prevodu reči na reč, stav, zoznam modelov v reálnom čase.
+
+## 3. Poskytovatelia a API
+- Poskytovatelia AI: vaše vlastné kľúče API (ZYRAXON, OpenCode bezplatná kvóta, Groq, Gemini, OpenAI, Grok, Claude, DeepSeek, OpenRouter) a cloudový agent ZYRAXON Apex. Uložený kľúč je overený prečítaním skutočného katalógu poskytovateľa a zobrazuje počet modelov alebo presnú chybu. Tlačidlo otvorí webovú stránku ZYRAXON, kde vytvoríte kľúč.
+- GitHub: váš prístupový token GitHub (vyžaduje rozsah repo) na publikovanie, Git žiadostí push a pull. Uložte token alebo ho odstráňte; stav ukazuje, či je nastavený.
+
+## 4. Aktualizácie → Aktualizácia aplikácie
+Zobrazí aktuálnu verziu, skontroluje novšie vydanie, stiahne ju s indikátorom priebehu a nainštaluje ju. Vaše rozhovory, pamäť a nastavenia zostanú zachované. Ak Android potrebuje povolenie na inštaláciu, tlačidlo otvorí toto nastavenie.
+
+## 5. Model & identita
+- Identita: vyberte postavu (pozri kapitolu Postavy).
+- Model: aktuálny katalóg modelov s vyhľadávacím poľom, filtrami „Všetky modely“ a „Vlastné“; najskôr rýchle modely.
+- Na zariadení: sťahovanie, načítanie a uvoľnenie modelov, ktoré bežia offline; triedené od malých po veľké; voliteľný Hugging Face token; zobrazuje stavy načítania, načítania a zlyhania.
+
+## 6. Aura a téma
+- Téma: horor, tma alebo svetlo.
+- Aura a pozadie: štýl a farba aury (krv, ružová, fialová, obloha, zelená, oheň) s jemným ovládaním odtieňa; veľkosť aury, sila žiary, rýchlosť otáčania, priehľadnosť panelu; plávajúce oko (zapnutie/vypnutie, dizajn, okraj obrazovky, hlasové príkazy/prebudenie, pridajte svoje vlastné); režim shadera; vlastná adresa URL pozadia (mp4, gif alebo obrázok); rýchlosť animácie.
+
+## 7. Bezpečnosť a súkromie
+- Zámok aplikácie: heslo (4–8 číslic) alebo vzor 3 × 3 bodky; potvrďte zadaním dvakrát; odstráňte zámok.
+- Povolenia: zoznam v kapitole Povolenia s pomocou Play Protect.
+- Súkromie a dáta: všetky dáta zostanú v telefóne. Tlačidlá: vymazať celú pamäť, vymazať históriu chatu, vymazať GitHub token.
+
+## 8. Systém
+Táto časť má svoj vlastný rad tlačidiel, ktoré sa posúvajú do strán, takže sa nič nestláča.
+- Automatizácia: úroveň schválenia a iba na zariadení (pozri Úrovne schválenia).
+- Navigácia: zoznam oblastí, na ktoré sa dá preskočiť – „žiadne tlačidlá navrchu, všetko je tu“ – vrátane systémového shellu ⌘ ZX, tlačidla „Nová relácia“ (vymaže históriu chatu pre čistý začiatok), počtu správ a prepínača mikrofónu.
+- Pamäť: lokálna SQL pamäť s faktami, ktoré si ZYRAXON pamätá; pridať kľúč a hodnotu; vymazať všetky.
+- Sprievodca zručnosťami: rýchly zoznam príkladov schopností (aplikácie na odosielanie správ, vytváranie webových stránok, čítačka obrazovky, baterka, fotoaparát, Wi-Fi a nastavenia) s príkladmi fráz.
+- Centrum automatizácie: zručnosti, autopilot, peniaze, časová os, mozog a volací agent na jednom mieste (pozri centrum automatizácie).
+
+## 9. Dokumentácia
+Vlastná sekcia v Nastaveniach, oddelená od Systému. Táto príručka: dvadsaťjeden kapitol, vyhľadávacie pole a riadok jazykového čipu. Každý jazyk v aplikácii je už v aplikácii úplne napísaný – v telefóne sa nič neprekladá a na jeho prečítanie nie je potrebný žiadny internet.
