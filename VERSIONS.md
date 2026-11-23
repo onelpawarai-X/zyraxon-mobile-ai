@@ -123,7 +123,7 @@ Status: **✅ published** · **🟡 ready (not yet published)** · **🔜 planne
 | `6.25.7` | `69` | 2026-11-18 | ✅ published | Content Shield follows the permission level (strict at Locked, off at Full automation); Documentation is its own section with all 60 languages written inside the app; new chapters for approval levels, settings, the automation hub, security and troubleshooting |
 | `6.25.8` | `70` | 2026-11-19 | ✅ published | The maker's identity in every prompt: his name, family, links, contact and favourites, with "Alex" refused outright |
 | `6.25.9` | `71` | 2026-11-20 | ✅ published | Every prompt leaves the APK: eight sealed files downloaded on first open, the download is a real first screen, and a corrected prompt reaches every phone without a new build |
-| `6.25.10` | `72` | 2026-11-23 | 🟡 ready | One name, one address: the system layer carries no other project's name anywhere, and `apt`/`pkg` now speak only to a ZYRAXON host that serves the real repository byte for byte |
+| `6.25.10` | `72` | 2026-11-23 | ✅ published | One name, one address; the voice follows the identity, the mic never posts the assistant's own speech, all 60 languages are complete, and the agent runs the Automation hub itself |
 
 > **What is the next version?** — the row below the last ✅ row, and nothing
 > else. With `6.25.6` published the next is `6.25.7` — the last published number
