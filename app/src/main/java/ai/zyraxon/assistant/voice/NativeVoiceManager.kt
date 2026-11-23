@@ -182,6 +182,31 @@ class NativeVoiceManager(
     /** Bumped by [stopSpeaking], so ids from an abandoned queue are never reused. */
     private var speechGeneration = 0
 
+    /**
+     * The text actually handed to a voice in the last [SPOKEN_MEMORY_MS], oldest
+     * first. The recognizer hears the speaker, not the model's intent, so the
+     * echo check has to compare against what was *said* — cleaned of markdown and
+     * emoji — not only against the raw reply. Kept short so a genuinely new
+     * sentence later in the conversation is never mistaken for the echo.
+     */
+    private val spokenLog = java.util.ArrayDeque<Pair<Long, String>>()
+
+    private fun recordSpoken(text: String) {
+        val clean = text.trim()
+        if (clean.isEmpty()) return
+        synchronized(spokenLog) {
+            val now = System.currentTimeMillis()
+            spokenLog.addLast(now to clean)
+            while (spokenLog.isNotEmpty() && now - spokenLog.first.first > SPOKEN_MEMORY_MS) spokenLog.removeFirst()
+            while (spokenLog.size > 60) spokenLog.removeFirst()
+        }
+    }
+
+    /** Everything spoken in the last [SPOKEN_MEMORY_MS], joined, for echo matching. */
+    fun recentSpeech(): String = synchronized(spokenLog) {
+        spokenLog.joinToString(" ") { it.second }
+    }
+
     var onSpeechRecognized: ((text: String, isFinal: Boolean) -> Unit)? = null
 
     init {
@@ -736,6 +761,7 @@ class NativeVoiceManager(
     fun speak(text: String) {
         val clean = cleanForSpeech(text)
         if (clean.isBlank()) return
+        recordSpoken(clean)
         if (useRemoteVoice) {
             _voiceSource.value = "website"
             speakRemote(clean, replace = true)
@@ -753,6 +779,7 @@ class NativeVoiceManager(
     fun speakQueued(text: String) {
         val clean = cleanForSpeech(text)
         if (clean.isBlank()) return
+        recordSpoken(clean)
         if (useRemoteVoice) {
             speakRemote(clean, replace = false)
             return
@@ -972,6 +999,13 @@ class NativeVoiceManager(
          * recognizer can deliver a final result slightly after the ear reopens.
          */
         private const val ECHO_TAIL_MS = 1_200L
+
+        /**
+         * How far back [recentSpeech] keeps the words it has spoken. Long enough
+         * to cover a streamed reply whose sentences are still being recognised,
+         * short enough that a genuinely new sentence a while later is not matched.
+         */
+        private const val SPOKEN_MEMORY_MS = 20_000L
 
         /** Debounce before reopening the microphone, and the backoff ceiling. */
         private const val RESTART_BASE_MS = 300L

@@ -733,7 +733,24 @@ class ZyraxonAiEngine(private val context: Context) {
         // back when the same subject is raised again.
         append("\n## Remembering (mandatory)\n")
         append("- When the user tells you a durable fact — their name, a preference, a person, a project, a plan, a date, anything worth recalling months later — call `memory_write` with a short `key` and the `value` in the same turn. Do not wait to be asked.\n")
+        append("- Save how the user likes to be spoken to as well: their preferred language, tone (warm, direct, playful, formal), the words they dislike, and anything they ask you to remember about them. Use keys like `পছন্দের_ভাষা`, `কথার_ধরন`, `ডাকনাম`, `পছন্দ`, `অপছন্দ`. Then talk to them that way on every turn.\n")
+        append("- When the user says a remembered fact is wrong, or asks you to forget it, call `memory_delete` with that key. Never keep a fact they corrected.\n")
         append("- Every past conversation is kept in the local database. When the user refers to something from before, or asks whether you remember, call `memory_read` with a `query` before answering; never say you have forgotten without checking first.\n")
+
+        // The Automation hub is the user's control panel for everything the
+        // assistant does on its own. The tools exist; without this section the
+        // model never reaches for them and tells the user to open the Hub and set
+        // things up by hand — the exact complaint that "it cannot set them itself".
+        append("\n## The Automation hub is yours to run (do it yourself, never send the user to a screen)\n")
+        append("Every tab of the Automation hub has a tool behind it. When the user asks for something the hub does, call the tool in the same turn and report what you actually set up. Never answer \"open the hub and add it\" — you are the one who adds it.\n")
+        append("- **Skills** (`skill_record` / `skill_run` / `skill_list` / `skill_delete` / `skill_import`): \"teach yourself to do X in app Y\", \"do that again\", \"what skills do you know\", \"export that skill\". Record by doing it once: `skill_record` action=start, then open_app / tap_text / type_text / press_key, then action=stop with `params` mapping the literal values to parameter names.\n")
+        append("- **Autopilot** (`autopilot_add` / `autopilot_list` / `autopilot_toggle` / `autopilot_remove`): \"when X happens, do Y\", \"every morning at 8…\", \"in 10 minutes…\", \"every 30 minutes…\". Turn the sentence into kind + from/any/all/time/every_minutes/below/pkg and the `task` to run; call it instead of describing it.\n")
+        append("- **Money ledger** (`ledger_scan` / `ledger_report` / `ledger_budget`): \"how much did I spend\", \"scan my bank SMS\", \"set a food budget\". Read the SMS, report per currency, and set budgets with the tool.\n")
+        append("- **Timeline** (`timeline_list` / `timeline_undo`): \"what did you change\", \"undo that\", \"take back the last edit\". Every write/edit/delete is on the timeline with an id; undo it yourself.\n")
+        append("- **Brain** (`brain_index` / `brain_search`): \"where is my rental agreement\", \"search my files\", \"index my documents\". Build the offline index, then search it in any language.\n")
+        append("- **Call agent** (`call_agent` / `call_log`): \"answer my calls\", \"stop answering calls\", \"who called and what did they want\". Turn it on/off with the owner's name and read the summaries.\n")
+        append("- **Memory** (`memory_write` / `memory_read` / `memory_delete`): save and recall the user's facts and preferences as described above.\n")
+        append("Some of these ask the user for approval the first time (the phone's automation level decides). If the call is refused, say plainly which action needs their OK and continue with the rest — never pretend it ran.\n")
 
         // The language and speech rules
         append("\n## Speaking like a person (Conversational Voice Rules)\n")
