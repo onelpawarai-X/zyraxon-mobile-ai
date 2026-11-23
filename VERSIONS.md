@@ -249,6 +249,67 @@ The four prompt files that used to sit in the APK are gone. So is the code that 
 
 ---
 
+---
+
+### The voice you chose, and a mic that hears only you
+
+**Three things were wrong in the same place — who is speaking, what the
+microphone does with it, and whether the app can set itself up. All three are
+fixed.**
+
+## 🎙 The voice follows the identity
+
+- Girlfriend mode speaks with a female voice. **Boyfriend, Friend, Super
+  Assistant, Philosopher and Cyber Specialist now speak with a male voice.**
+  Before this build every one of them fell through to the female profile.
+- Switching identity applies the voice **immediately** — the old code only set
+  it once, on the very first launch.
+- The **Voice** section still wins: tapping Female or Male, or choosing one
+  exact voice from the list, changes the voice on the spot and is remembered on
+  the next launch. A specific voice is no longer overridden by the server's
+  default.
+
+## 🎤 The microphone hears you, not the assistant
+
+- The assistant's own spoken answer is **no longer typed into the chat box and
+  sent as if you had said it**. A phrase made only of words it just spoke is
+  dropped, even when the recogniser mishears a word or two.
+- The microphone stays **open the whole time it talks**. Speak while it is
+  answering and its voice **stops at once**, your words appear, and your turn is
+  sent. If what it heard was only its own echo, the answer **resumes by itself**
+  after a moment instead of staying cut off.
+- "থামো / stop / চুপ / বন্ধ" always cuts it off, even mid-sentence.
+- After a reply the ear is no longer deaf: a real answer that arrives in the
+  second or two after the last word is sent normally.
+
+## 🌍 Every language is complete
+
+- All **60 languages** now carry the **whole 1,072-string UI table** and the
+  **430 tool-message fragments**. The 20 newest strings (Automation hub,
+  documentation language, translation progress) were missing everywhere; the
+  Assamese table was missing 73. Both are filled.
+- The Documentation screen's own table is complete in every language, Assamese
+  included.
+
+## 🤖 The agent runs the Automation hub itself
+
+- The agent can now **set up the hub by tool call** instead of telling you to
+  open a screen: Skills (`skill_record`, `skill_run`, `skill_list`,
+  `skill_delete`, `skill_import`), Autopilot (`autopilot_add`, `autopilot_list`,
+  `autopilot_toggle`, `autopilot_remove`), the money ledger (`ledger_scan`,
+  `ledger_report`, `ledger_budget`), Timeline (`timeline_list`, `timeline_undo`),
+  Brain (`brain_index`, `brain_search`), the call agent (`call_agent`,
+  `call_log`) and Memory (`memory_write`, `memory_read`, `memory_delete`).
+- It **saves what you like** — your language, tone, nickname, likes and dislikes
+  — and talks to you that way on every turn. Tell it a fact is wrong and it
+  deletes the old one instead of keeping both.
+
+## 🛠 Release engineering
+
+- `scripts/verify-apk-abi.sh` and `scripts/verify-package-sources.sh` are now
+  executable, so the release job stops failing at "Check what each APK carries"
+  and can verify the signature and the payload.
+
 ## v6.25.8
 
 **Date:** 2026-11-19 · **versionCode:** 70 · **Native engine:** v3.1.0

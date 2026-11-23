@@ -234,4 +234,14 @@ class SttDecisionTest {
         assertFalse(SttDecision.isSameTurn("open the camera", "open the settings", 500L))
         assertFalse(SttDecision.isSameTurn("হ্যাঁ", "না", 500L))
     }
+
+    @Test
+    fun `a stop command is recognised so it can always cut the assistant off`() {
+        for (word in listOf("থামো", "একটু থামো", "stop", "বন্ধ করো", "চুপ")) {
+            assertTrue("'$word' স্টপ কমান্ড হিসেবে ধরা পড়েনি", SttDecision.isStopCommand(word))
+        }
+        for (word in listOf("হ্যাঁ", "আজকের আবহাওয়া কেমন", "open the settings")) {
+            assertFalse("'$word' ভুল করে স্টপ কমান্ড হয়েছে", SttDecision.isStopCommand(word))
+        }
+    }
 }

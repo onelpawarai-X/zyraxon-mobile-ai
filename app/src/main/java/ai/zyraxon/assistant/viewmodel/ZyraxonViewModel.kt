@@ -145,6 +145,13 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      */
     private var pausedByUser = false
 
+    /**
+     * Resumes a reply paused by a *suspected* barge-in that turned out to be the
+     * assistant's own echo. Without it the voice stayed stopped mid-answer forever
+     * whenever the recognizer misheard the speaker as a person.
+     */
+    private var echoResumeJob: kotlinx.coroutines.Job? = null
+
     // SQLite Local Room Database & Repository
     val database = ZyraxonDatabase.getDatabase(application)
     val repository = ZyraxonRepository(database.dao())
@@ -762,10 +769,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun pickVoice(v: VoiceInfo) {
+        // A specific voice is an explicit choice too, so it must survive a launch
+        // even when the catalogue entry carries no gender.
+        _voiceChosenByUser.value = true
+        prefs.edit().putBoolean("voice_chosen_by_user", true).apply()
+        // Apply the voice's gender first (keeping the specific pick), then record
+        // the exact voice, because setVoiceGender clears a specific voice when the
+        // caller is not the one setting it.
+        if (v.gender.isNotBlank()) setVoiceGender(if (v.gender.startsWith("m")) "male" else "female", keepPick = true, preview = false)
         _voiceId.value = v.id
         ai.zyraxon.assistant.voice.RemoteTtsRequest.voiceName = v.id
         prefs.edit().putString("voice_id", v.id).apply()
-        if (v.gender.isNotBlank()) setVoiceGender(if (v.gender.startsWith("m")) "male" else "female")
         if (v.locale.isNotBlank()) setVoiceLanguage(v.locale)
         if (v.age.isNotBlank()) setVoiceAge(v.age)
         speak(when (v.locale.substringBefore('-').lowercase()) {
@@ -1665,27 +1679,41 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             // tail is treated this way: while the speaker is genuinely talking a
             // final is still the assistant's own sentence coming back.
             val echoTail = voiceManager.isEchoTail()
-            // Never the strict form here. Strict echo matching flags a phrase
-            // that shares even one content word with the reply, which is right
-            // for the assistant's own sentence coming back but would swallow a
-            // genuine interruption that happens to reuse a word ("আজকের আবহাওয়া
- // কেমন?" over an answer about the weather). The assistant's own
-            // sentence is dropped by the final/partial rule instead.
-            val repeatsReply = looksLikeOwnSpeech(text)
+            // While the assistant is talking, while its voice is still ringing
+            // out, or just after it was paused by a suspected barge-in, a phrase
+            // made only of words it has just said is its own voice coming back —
+            // the net that stops a misrecognised reply being sent when the
+            // half-overlap bar is too high. A stop command is exempt so it can
+            // always cut the assistant off, and once the ear has been quiet for a
+            // while nothing is filtered this way, so a user who repeats one of its
+            // words is still heard.
+            val echoWindow = speakerActive || echoTail || sinceInterrupt < INTERRUPT_GRACE_MS
+            val repeatsReply = looksLikeOwnSpeech(text) ||
+                (echoWindow && echoesRecentSpeech(text) && !SttDecision.isStopCommand(text))
             when (SttDecision.decide(text, isFinal, speakerActive, repeatsReply, echoTail)) {
                 SttDecision.Action.IGNORE -> return@stt
                 SttDecision.Action.INTERRUPT -> {
-                    // A partial only ever interrupts: it stops the assistant so
-                    // the user can finish their sentence, and it is shown in the
-                    // box. It is never sent on its own; the final result that
-                    // follows, now that the speaker is quiet, is sent normally.
                     lastUserInterruptMs = System.currentTimeMillis()
                     onUserStartedSpeaking()
-                    _inputText.value = text
-                    armSettleSubmit(text)
+                    // A partial heard *while* the assistant is talking is the
+                    // assistant's own voice as often as it is the user, so it is
+                    // neither shown in the box nor armed to send by itself: the
+                    // settle timer is what turned the assistant's own sentence
+                    // into a sent message. If the user really is talking, their
+                    // next partial arrives once the voice has paused and is shown
+                    // and sent normally. If it was only echo, the reply resumes
+                    // after a moment instead of staying stopped.
+                    if (!speakerActive) {
+                        echoResumeJob?.cancel()
+                        _inputText.value = text
+                        armSettleSubmit(text)
+                    } else {
+                        scheduleEchoResume()
+                    }
                     return@stt
                 }
                 SttDecision.Action.SUBMIT -> {
+                    echoResumeJob?.cancel()
                     _inputText.value = text
                     if (_autoSend.value) {
                         // The settled partial above may already have sent these
@@ -1807,6 +1835,15 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         return ai.zyraxon.assistant.voice.EchoMatcher.isOwnSpeech(heard, reply, strict)
     }
 
+    /**
+     * True when every content word in [heard] is a word the voice has just said,
+     * i.e. the phrase carries nothing new and is the assistant's own voice coming
+     * back. Only consulted while the assistant is talking (or in the tail after
+     * its last word); in a quiet ear a user may repeat a word freely.
+     */
+    private fun echoesRecentSpeech(heard: String): Boolean =
+        ai.zyraxon.assistant.voice.EchoMatcher.allWordsIn(heard, voiceManager.recentSpeech())
+
     private fun currentTimeString(): String {
         return SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
     }
@@ -1835,12 +1872,17 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /**
-     * The voice that belongs to a character. The boyfriend speaks male; every
-     * other character speaks female. Kept in one place so the startup path and
-     * the switch path can never disagree about which voice a character uses.
+     * The voice that belongs to a character. Only the girlfriend ("lover") speaks
+     * female; the boyfriend, the friend, the super assistant, the cyber specialist
+     * and the philosopher all speak male. Kept in one place so the startup path
+     * and the switch path can never disagree about which voice a character uses.
+     *
+     * The old rule made every character except the boyfriend female, so choosing
+     * "friend" or "super assistant" still spoke with a woman's voice — the exact
+     * report that "whichever identity I pick, the TTS is female".
      */
     private fun genderForPersona(persona: Persona): String =
-        if (persona.id == "boyfriend") "male" else "female"
+        if (persona.id == "lover") "female" else "male"
 
     /**
      * Reloads the on-device bundle the user last loaded, off the main thread. A
@@ -1891,19 +1933,28 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /**
-     * Applies a voice the user picked in Settings, as a preview. The character
-     * still owns the voice — boyfriend mode is always male and every other mode
-     * female — so this pick lasts until the next character switch or launch. That
-     * is deliberate: the user asked for the character to decide the voice.
+     * Applies a voice the user picked in Settings. Choosing a gender profile means
+     * "speak with a male/female voice", so a specific catalogue voice chosen
+     * earlier is dropped — otherwise its `voice=` parameter travels with every
+     * request and overrides the gender, which is why a male profile still sounded
+     * female on the website's voice. The character owns the voice by default, but
+     * this explicit pick wins until the next character switch or launch.
+     *
+     * [keepPick] is true only from [pickVoice], which sets the exact voice itself
+     * after this call.
      */
-    fun setVoiceGender(gender: String) {
+    fun setVoiceGender(gender: String, keepPick: Boolean = false, preview: Boolean = true) {
         val g = if (gender.lowercase() == "male") "male" else "female"
         voiceManager.setVoiceGender(g)
         prefs.edit().putString("voice_gender", g).apply()
+        // A gender profile and a specific voice contradict each other, so the
+        // specific voice is cleared unless the caller is the one setting it.
+        if (!keepPick) clearVoicePick()
         // The user made this choice deliberately, so a later character switch must
         // not quietly override it, and the next launch speaks with the same voice.
         _voiceChosenByUser.value = true
         prefs.edit().putBoolean("voice_chosen_by_user", true).apply()
+        if (!preview) return
         val sample = if (g == "female") "হ্যালো সোনা! এটি মিষ্টি মেয়ের কণ্ঠ।"
         else "নমস্কার! এটি গভীর স্পষ্ট ছেলের কণ্ঠ।"
         voiceManager.speak(sample)
@@ -2034,16 +2085,19 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
     fun setPersona(persona: Persona) {
         _selectedPersona.value = persona
         prefs.edit().putString("selected_persona_id", persona.id).apply()
-        // The character picks the voice, but only until the user chooses one
-        // themselves: boyfriend mode speaks male, every other character female,
-        // and an explicit pick in Settings (or `voice_change`) then wins and is
-        // remembered. Both voices must work, and the user's own choice must not
-        // be overwritten by a later character switch.
-        if (!_voiceChosenByUser.value) {
-            val g = genderForPersona(persona)
-            voiceManager.setVoiceGender(g)
-            prefs.edit().putString("voice_gender", g).apply()
-        }
+        // The character owns the voice: switching identity always switches the
+        // gender with it, so the girlfriend speaks female and every other
+        // character (boyfriend, friend, super assistant, cyber, philosopher)
+        // speaks male. The old guard skipped this whenever a voice had been picked
+        // once, so a later identity switch left the previous voice in place — the
+        // "whichever identity I pick, the TTS stays female" report.
+        val g = genderForPersona(persona)
+        voiceManager.setVoiceGender(g)
+        prefs.edit().putString("voice_gender", g).apply()
+        // A specific catalogue voice contradicts the character's gender, so it is
+        // dropped here as well; otherwise its `voice=` parameter would keep the
+        // old voice and defeat the switch.
+        clearVoicePick()
         val greeting = ChatMessage(
             role = MessageRole.ASSISTANT,
             text = t(persona.greeting),
@@ -2493,6 +2547,24 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
         if (isSpeaking.value) {
             pausedByUser = true
             voiceManager.pauseSpeaking()
+        }
+    }
+
+    /**
+     * A suspected barge-in heard while the assistant was talking may simply be its
+     * own voice. Give the user a moment to keep talking; if nothing more arrives,
+     * the reply resumes where it paused, so a misheard echo never leaves the
+     * assistant stopped mid-sentence. A real continuation cancels this timer and
+     * becomes the new turn instead.
+     */
+    private fun scheduleEchoResume() {
+        echoResumeJob?.cancel()
+        echoResumeJob = viewModelScope.launch {
+            kotlinx.coroutines.delay(ECHO_RESUME_MS)
+            if (pausedByUser) {
+                pausedByUser = false
+                voiceManager.resumeSpeaking()
+            }
         }
     }
 
@@ -5634,6 +5706,14 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
          * delivering the final result of that same interruption.
          */
         private const val INTERRUPT_GRACE_MS = 4_000L
+
+        /**
+         * How long a reply paused by a suspected barge-in waits for the user to
+         * keep talking before it resumes. A real continuation arrives well within
+         * this; the assistant's own echo never continues, so the voice picks back
+         * up instead of staying stopped mid-answer.
+         */
+        private const val ECHO_RESUME_MS = 2_500L
 
         /** How long a screen read is reused. Long enough to serve one turn's two
          * asks, short enough that a screen the user just changed is re-read. */

@@ -47,6 +47,20 @@ object EchoMatcher {
         return if (strict) overlap >= 1 else overlap * 2 >= heardWords.size
     }
 
+    /**
+     * True when every content word in [heard] also appears in [spoken]. That is
+     * the shape of the assistant's own voice coming back: it carries only words
+     * it is saying. A real reply from the user almost always introduces at least
+     * one new content word, so it is not mistaken for echo.
+     */
+    fun allWordsIn(heard: String, spoken: String?): Boolean {
+        if (spoken.isNullOrBlank()) return false
+        val heardWords = words(heard)
+        if (heardWords.isEmpty()) return false
+        val spokenLower = spoken.lowercase()
+        return heardWords.all { spokenLower.contains(it) }
+    }
+
     private fun words(text: String): List<String> =
         // \p{M} keeps the Bengali combining marks (the vowel signs and hasanta
         // that glue a word together); without it every conjunct splits the word

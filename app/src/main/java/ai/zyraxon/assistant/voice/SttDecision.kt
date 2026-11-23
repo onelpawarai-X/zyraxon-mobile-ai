@@ -42,8 +42,8 @@ object SttDecision {
 
     /** One-word phrases that genuinely mean "stop" and may cut the assistant off. */
     val STOP_COMMANDS = setOf(
-        "থামো", "থাম", "শোনো", "শোন", "স্টপ", "বন্ধ",
-        "stop", "wait", "shut", "hold", "hey"
+        "থামো", "থাম", "শোনো", "শোন", "স্টপ", "বন্ধ", "চুপ",
+        "stop", "wait", "shut", "hold", "hey", "quiet", "enough"
     )
 
     /** What the caller should do with the phrase. */
@@ -142,6 +142,18 @@ object SttDecision {
         // dropped earlier by the text match against its last reply.
         return words.any { it in STOP_COMMANDS || it.count { c -> Character.isLetter(c) } >= 3 }
     }
+
+    /**
+     * True when the phrase is one of the words that mean "stop". A stop command
+     * must always cut the assistant off, so it is exempt from the stricter echo
+     * filter applied while the assistant is speaking: "থামো" is the user's word
+     * even if the assistant happens to be using the same one.
+     */
+    fun isStopCommand(text: String): Boolean =
+        text.trim()
+            .lowercase()
+            .split(Regex("[^\\p{L}\\p{M}\\p{N}]+"))
+            .any { it.isNotBlank() && it in STOP_COMMANDS }
 
     /**
      * True when a recognized phrase is the same turn as words already sent from a
