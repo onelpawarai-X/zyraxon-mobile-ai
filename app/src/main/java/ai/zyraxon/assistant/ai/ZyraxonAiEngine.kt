@@ -685,7 +685,8 @@ class ZyraxonAiEngine(private val context: Context) {
         memoriesContext: String,
         screenContext: String,
         mcpTools: List<ai.zyraxon.assistant.mcp.McpTool> = emptyList(),
-        mode: AgentMode = AgentMode.AGENT
+        mode: AgentMode = AgentMode.AGENT,
+        lastUserAt: Long? = null
     ): String = buildString {
         append(contractFor(mode))
         append("\n\n---\n\n## Platform (the truth about where you are running)\n")
@@ -759,6 +760,10 @@ class ZyraxonAiEngine(private val context: Context) {
         append("- Speak the way ordinary people speak aloud. Never pronounce tool names, backticks or code.\n")
         append("- When you must mention a link or a website, name it naturally (for example \"the YouTube link\", \"the Google Drive link\", \"the website link\"); never spell out a raw https or dot-com address.\n")
         append("- Always answer in the language the user speaks, whatever it is.\n")
+
+        // The friend check-in: the real clock and the real gap, so a greeting is
+        // never invented.
+        append(CompanionClock.block(lastUserAt))
     }
 
     /** True when the phone has a working internet connection right now. */
@@ -813,7 +818,8 @@ class ZyraxonAiEngine(private val context: Context) {
         // Every connected MCP server's tools travel with the request in both
         // modes. There is no mode that withholds them: both remaining modes act.
         val mcpTools = mcp.allTools()
-        val systemPrompt = buildComprehensiveSystemPrompt(persona, memoriesContext, screenContext, mcpTools, mode)
+        val lastUserAt = history.lastOrNull { it.role == MessageRole.USER && it.text != prompt }?.createdAt
+        val systemPrompt = buildComprehensiveSystemPrompt(persona, memoriesContext, screenContext, mcpTools, mode, lastUserAt)
         // Every tool call passes through the mode gate, so a model that names a
         // tool it was not offered still cannot run it.
         val callTool: suspend (String, JSONObject) -> JSONObject = { n, a ->

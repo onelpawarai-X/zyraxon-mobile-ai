@@ -7,6 +7,7 @@ package ai.zyraxon.assistant.viewmodel
 import ai.zyraxon.assistant.core.safe
 
 import ai.zyraxon.assistant.DeviceBridge
+import ai.zyraxon.assistant.ai.CompanionClock
 import ai.zyraxon.assistant.ai.ToolRegistry
 import ai.zyraxon.assistant.ai.PartialJson
 import ai.zyraxon.assistant.chat.ChatSession
@@ -3023,7 +3024,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                         chatId = c.id,
                         prompt = effectivePrompt,
                         mode = mode,
-                        systemSuffix = cloudSuffix(mode),
+                        systemSuffix = cloudSuffix(mode, effectivePrompt),
                         // The phone's own tools, published to the cloud. The agent
                         // then calls them by name and the bridge runs them here, so
                         // "open WhatsApp" is done on the phone, not described.
@@ -3289,7 +3290,7 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
      * assumes it is confined to its sandbox. It is not: the phone's tools are
      * registered alongside its own, so it should reach for them.
      */
-    private fun cloudSuffix(mode: AgentMode): String = buildString {
+    private fun cloudSuffix(mode: AgentMode, prompt: String = ""): String = buildString {
         // The cloud agent gets the same contract as the phone agent, downloaded
         // on first open. There is no separate cloud prompt: one text, one place
         // to correct it, and the cloud can never drift from the phone.
@@ -3327,6 +3328,10 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
                 AgentMode.AGENT -> "Mode: AGENT. Automate the phone and the system end to end."
             }
         )
+
+        // The friend check-in: the same real clock and real gap the local engine gets.
+        val lastUserAt = _messages.value.lastOrNull { it.role == MessageRole.USER && it.text != prompt }?.createdAt
+        append(CompanionClock.block(lastUserAt))
     }
 
     /** The first message names a new chat, so the sidebar reads like a list of topics. */
