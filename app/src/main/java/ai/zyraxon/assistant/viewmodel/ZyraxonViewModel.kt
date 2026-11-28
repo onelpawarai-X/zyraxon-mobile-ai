@@ -3249,9 +3249,9 @@ class ZyraxonViewModel(application: Application) : AndroidViewModel(application)
             }
         if (lines.isEmpty()) return ""
         return buildString {
-            append("[এই চ্যাটে আগে যা বলা হয়েছে — ধারাবাহিকতা ধরে রাখো]\n")
+            append(CloudScreen.SEED_OPEN + " — ধারাবাহিকতা ধরে রাখো]\n")
             append(lines.joinToString("\n"))
-            append("\n[এখান থেকে আগের কাজ চালিয়ে যাও]\n\n")
+            append("\n" + CloudScreen.SEED_CLOSE + "\n\n")
         }
     }
 

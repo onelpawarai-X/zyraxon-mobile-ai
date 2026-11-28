@@ -103,4 +103,31 @@ class CloudScreenTest {
         // Nothing readable in it, so nothing is sent — but no crash either.
         assertEquals("", CloudScreen.digest("App", "com.app", "not json"))
     }
+
+    // ── what the person sees when the conversation is read back ──
+
+    @Test
+    fun `the screen block is cut off a user message read back from the cloud`() {
+        val sent = "মেসেজ পাঠাও" + CloudScreen.block("WhatsApp", "com.whatsapp", nodes, "HAPPY BIRTHDAY")
+        assertEquals("মেসেজ পাঠাও", CloudScreen.clean(sent))
+    }
+
+    @Test
+    fun `the history seed in front of the first message is cut too`() {
+        val seed = CloudScreen.SEED_OPEN + " — ধারাবাহিকতা ধরে রাখো]\nব্যবহারকারী: হাই\n" + CloudScreen.SEED_CLOSE + "\n\n"
+        val sent = seed + "গান চালাও" + CloudScreen.block("Spotify", "com.spotify", nodes)
+        assertEquals("গান চালাও", CloudScreen.clean(sent))
+    }
+
+    @Test
+    fun `a phone tool result is the app talking and is not shown as the person`() {
+        val sent = CloudScreen.TOOL_RESULT_PREFIX + " tap success\nok" + CloudScreen.block("App", "a.b", nodes)
+        assertEquals("", CloudScreen.clean(sent))
+    }
+
+    @Test
+    fun `plain text and later injections pass through untouched`() {
+        assertEquals("শুধু একটা কথা", CloudScreen.clean("শুধু একটা কথা"))
+        assertEquals("এক\n\nদুই", CloudScreen.clean("এক\n\nদুই" + CloudScreen.block("A", "a.b", nodes)))
+    }
 }
