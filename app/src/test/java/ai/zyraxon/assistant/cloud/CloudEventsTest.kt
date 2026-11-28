@@ -228,4 +228,16 @@ class CloudEventsTest {
 
         assertTrue("every page must carry the cursor: $paths", paths.size >= 2 && paths.all { it.contains("timestamp__gte=") })
     }
+
+    @Test
+    fun `a user message read back shows what was typed, not the screen the app attached`() {
+        val raw = JSONObject()
+            .put("id", "u1").put("kind", "MessageEvent")
+            .put("llm_message", JSONObject().put("role", "user").put("content",
+                "ওয়াইফাই অন করো" + ai.zyraxon.assistant.ai.CloudScreen.block("Settings", "com.android.settings",
+                    """[{"text":"Wi-Fi","x":10,"y":20,"click":true}]""", "OCR TEXT")))
+            .toString()
+        val e = CloudEvent.parse(raw) as CloudEvent.Message
+        assertEquals("ওয়াইফাই অন করো", e.text)
+    }
 }

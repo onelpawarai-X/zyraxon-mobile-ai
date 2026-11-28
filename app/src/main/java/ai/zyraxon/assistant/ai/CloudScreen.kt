@@ -25,6 +25,44 @@ import org.json.JSONArray
  */
 object CloudScreen {
 
+    /**
+     * The line every screen block opens with. It is a wire format: the block is
+     * appended to the end of each message sent to the cloud, and [clean] finds it
+     * again by this exact text when the conversation is read back.
+     */
+    const val MARK = "এখনকার স্ক্রিন (লাইভ, প্রতি ২ সেকেন্ডে হালনাগাদ):"
+
+    /** The history seed the first message of a re-bound chat opens with. */
+    const val SEED_OPEN = "[এই চ্যাটে আগে যা বলা হয়েছে"
+    const val SEED_CLOSE = "[এখান থেকে আগের কাজ চালিয়ে যাও]"
+
+    /** A phone tool's result is sent to the cloud as a user message; it is the app talking, not the person. */
+    const val TOOL_RESULT_PREFIX = "[phone tool result]"
+
+    /**
+     * What the person actually typed, out of a user message read back from the cloud.
+     *
+     * The app sends the agent more than the person wrote: the live screen digest
+     * (every label, coordinate and OCR line), a seed of earlier turns, and the
+     * result of each phone tool as its own user message. All of that is for the
+     * model. Reading the conversation back showed it as the person's own words —
+     * a screenful of coordinates under every message. This keeps only the typed
+     * text, and returns "" for a message that is purely the app's own.
+     */
+    fun clean(text: String): String {
+        var t = text
+        val at = t.indexOf(MARK)
+        if (at >= 0) t = t.substring(0, at)
+        val lead = t.trimStart()
+        if (lead.startsWith(SEED_OPEN)) {
+            val close = lead.indexOf(SEED_CLOSE)
+            t = if (close >= 0) lead.substring(close + SEED_CLOSE.length) else ""
+        }
+        t = t.trim()
+        if (t.startsWith(TOOL_RESULT_PREFIX)) return ""
+        return t
+    }
+
     /** Longest digest sent in one message. A screen longer than this is cut. */
     const val DEFAULT_MAX_CHARS = 1800
 
@@ -112,6 +150,6 @@ object CloudScreen {
             }
         }
         if (body.isBlank()) return ""
-        return "\n\nএখনকার স্ক্রিন (লাইভ, প্রতি ২ সেকেন্ডে হালনাগাদ):\n$body"
+        return "\n\n$MARK\n$body"
     }
 }

@@ -155,7 +155,12 @@ sealed class CloudEvent {
                     Message(
                         id = id,
                         role = m.str("role"),
-                        text = contentText(m.opt("content")),
+                        // A user message carries the screen digest and the history
+                        // seed the app added for the model; only what the person
+                        // typed is shown.
+                        text = contentText(m.opt("content")).let {
+                            if (m.str("role") == "user") ai.zyraxon.assistant.ai.CloudScreen.clean(it) else it
+                        },
                         reasoning = m.str("reasoning_content")
                             .ifBlank { m.str("reasoning") }
                     )
